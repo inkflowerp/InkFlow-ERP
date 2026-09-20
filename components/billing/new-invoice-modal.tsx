@@ -87,8 +87,12 @@ interface ItemRowState {
   dimension_unit?: 'ft' | 'inch' | 'm' | string
   quantity: number
   unit: string
+  base_rate?: number
   rate: number
   finishing: string
+  finishing_rate?: number
+  add_on?: string
+  add_on_rate?: number
   rateSource?: 'custom' | 'last_invoice' | 'default' | 'manual'
   tier_applied?: string
   moq?: number
@@ -96,6 +100,7 @@ interface ItemRowState {
   unit_cost?: number
   available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
   available_finishing_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
+  available_additional_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
   printable_material_name?: string
   showAdvanced?: boolean
   isManualRate?: boolean
@@ -104,20 +109,77 @@ interface ItemRowState {
   workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production'
 }
 
-const FINISHING_OPTIONS = [
-  'None',
-  'Cutting',
-  'Eyelet / Grommets',
-  'Lamination (Gloss)',
-  'Lamination (Matt)',
-  'Folding',
-  'Mounting (PVC Board)',
-  'Pocket & Pipe',
-  'Hemming / Border',
-  'Stitching',
-  'Perforation',
-  'Die Cutting',
+export interface FinishingOptionItem {
+  id: string
+  name: string
+  name_bn?: string
+  rate: number
+}
+
+export interface AddOnOptionItem {
+  id: string
+  name: string
+  name_bn?: string
+  rate: number
+}
+
+export const STANDARD_FINISHING_OPTIONS: FinishingOptionItem[] = [
+  { id: 'none', name: 'None', name_bn: 'কোনোটি নয়', rate: 0 },
+  { id: 'eyelet', name: 'Eyelet / Grommets', name_bn: 'আইলেট / রিং পাঞ্চ', rate: 5 },
+  { id: 'lam_gloss', name: 'Lamination (Gloss)', name_bn: 'গ্লসি লেমিনেশন', rate: 5 },
+  { id: 'lam_matt', name: 'Lamination (Matt)', name_bn: 'ম্যাট লেমিনেশন', rate: 6 },
+  { id: 'cutting', name: 'Cutting / Trim', name_bn: 'কাটিং ও ট্রিম', rate: 2 },
+  { id: 'die_cutting', name: 'Die Cutting', name_bn: 'ডাই কাটিং', rate: 8 },
+  { id: 'folding', name: 'Folding / Creasing', name_bn: 'ভাজ / ক্রিজিং', rate: 2 },
+  { id: 'mounting_pvc', name: 'Mounting (PVC Board)', name_bn: 'পিভিসি বোর্ড মাউন্টিং', rate: 25 },
+  { id: 'pocket_pipe', name: 'Pocket & Pipe', name_bn: 'পকেট ও পাইপ', rate: 10 },
+  { id: 'hemming_border', name: 'Hemming / Border', name_bn: 'হেমিং ও বর্ডার', rate: 4 },
+  { id: 'stitching', name: 'Stitching / Sewing', name_bn: 'সেলাই / স্টিচিং', rate: 4 },
+  { id: 'perforation', name: 'Perforation', name_bn: 'ছিদ্র / পারফোরেশন', rate: 3 },
 ]
+
+export const STANDARD_ADD_ON_OPTIONS: AddOnOptionItem[] = [
+  { id: 'none', name: 'None', name_bn: 'কোনোটি নয়', rate: 0 },
+  { id: 'pvc_pasting_3mm', name: '3mm PVC Pasting', name_bn: '৩মিমি পিভিসি পেস্টিং', rate: 45 },
+  { id: 'pvc_pasting_5mm', name: '5mm PVC Pasting', name_bn: '৫মিমি পিভিসি পেস্টিং', rate: 70 },
+  { id: 'acrylic_5mm', name: '5mm Acrylic Board', name_bn: '৫মিমি অ্যাক্রিলিক', rate: 180 },
+  { id: 'x_stand', name: 'X-Stand Hardware', name_bn: 'এক্স-স্ট্যান্ড', rate: 50 },
+  { id: 'roll_up_stand', name: 'Roll-up Stand', name_bn: 'রোল-আপ স্ট্যান্ড', rate: 100 },
+  { id: 'double_tape', name: 'Double Tape / Paste', name_bn: 'ডাবল সাইড টেপ', rate: 4 },
+  { id: 'corner_patch', name: 'Corner Patch Reinforce', name_bn: 'কর্নার রিইনফোর্স', rate: 5 },
+  { id: 'uv_coating', name: 'UV Protective Coating', name_bn: 'ইউভি কোটিং', rate: 8 },
+  { id: 'express_rush', name: 'Express / Same Day Rush', name_bn: 'জরুরি ডেলিভারি', rate: 10 },
+]
+
+export function getFinishingRate(
+  nameOrId?: string,
+  availableOptions?: Array<{ id: string; name: string; unit_price?: number; selling_price?: number }>
+): number {
+  if (!nameOrId || nameOrId === 'None' || nameOrId === 'none') return 0
+  if (availableOptions && availableOptions.length > 0) {
+    const matched = availableOptions.find((o) => o.name === nameOrId || o.id === nameOrId)
+    if (matched && (matched.unit_price !== undefined || matched.selling_price !== undefined)) {
+      return Number(matched.unit_price ?? matched.selling_price) || 0
+    }
+  }
+  const std = STANDARD_FINISHING_OPTIONS.find((f) => f.name === nameOrId || f.id === nameOrId)
+  return std ? std.rate : 0
+}
+
+export function getAddOnRate(
+  nameOrId?: string,
+  availableOptions?: Array<{ id: string; name: string; unit_price?: number; selling_price?: number }>
+): number {
+  if (!nameOrId || nameOrId === 'None' || nameOrId === 'none') return 0
+  if (availableOptions && availableOptions.length > 0) {
+    const matched = availableOptions.find((o) => o.name === nameOrId || o.id === nameOrId)
+    if (matched && (matched.unit_price !== undefined || matched.selling_price !== undefined)) {
+      return Number(matched.unit_price ?? matched.selling_price) || 0
+    }
+  }
+  const std = STANDARD_ADD_ON_OPTIONS.find((a) => a.name === nameOrId || a.id === nameOrId)
+  return std ? std.rate : 0
+}
 
 const UNIT_OPTIONS = [
   { value: 'sft', label: 'SFT (স্কয়ার ফুট)' },
@@ -141,6 +203,231 @@ export function detectProductKind(p: ProductRecord | any): 'ready_product' | 'ma
   if (isReadyProduct(p)) return 'ready_product'
   if (isMaterialProduct(p)) return 'material'
   return 'service'
+}
+
+interface CatalogComboboxProps {
+  products: ProductRecord[]
+  selectedProductId?: string
+  onSelectProduct: (productId: string) => void
+  onCustomSelect?: () => void
+}
+
+function CatalogItemCombobox({
+  products,
+  selectedProductId,
+  onSelectProduct,
+  onCustomSelect,
+}: CatalogComboboxProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+
+  const selectedProduct = useMemo(() => {
+    return products.find((p) => p.id === selectedProductId)
+  }, [products, selectedProductId])
+
+  // Close when clicked outside
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleDocClick)
+    return () => document.removeEventListener('mousedown', handleDocClick)
+  }, [])
+
+  const filteredProducts = useMemo(() => {
+    const term = keyword.toLowerCase().trim()
+    if (!term) return products
+    return products.filter((p) => {
+      return (
+        p.name.toLowerCase().includes(term) ||
+        (p.sku && p.sku.toLowerCase().includes(term)) ||
+        ((p as any).code && (p as any).code.toLowerCase().includes(term)) ||
+        ((p as any).name_bn && (p as any).name_bn.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.product_type && p.product_type.toLowerCase().includes(term))
+      )
+    })
+  }, [products, keyword])
+
+  const services = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'service'), [filteredProducts])
+  const readyProducts = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'ready_product'), [filteredProducts])
+  const materials = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'material'), [filteredProducts])
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div className="relative">
+        <Input
+          placeholder="Type keyword to search catalog (e.g. flex, vinyl, 3D)..."
+          value={isOpen ? keyword : selectedProduct ? selectedProduct.name : keyword}
+          onFocus={() => {
+            setIsOpen(true)
+            setKeyword('')
+          }}
+          onChange={(e) => {
+            setKeyword(e.target.value)
+            if (!isOpen) setIsOpen(true)
+          }}
+          className="text-xs h-9 pr-14 font-medium"
+        />
+        <div className="absolute right-1.5 top-1.5 flex items-center gap-1">
+          {selectedProductId && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelectProduct('')
+                setKeyword('')
+                if (onCustomSelect) onCustomSelect()
+              }}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+              title="Clear to Custom Item"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+          >
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+          {/* Option for Custom Item */}
+          <div
+            onClick={() => {
+              onSelectProduct('')
+              setIsOpen(false)
+              setKeyword('')
+              if (onCustomSelect) onCustomSelect()
+            }}
+            className={cn(
+              "p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer font-semibold flex items-center justify-between",
+              !selectedProductId ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300" : "text-slate-600 dark:text-slate-400"
+            )}
+          >
+            <span>✨ -- Custom Item (No Catalog) --</span>
+            {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
+          </div>
+
+          {/* Printing Services */}
+          {services.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider">
+                🖨️ Printing & Services ({services.length})
+              </div>
+              {services.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    onSelectProduct(p.id)
+                    setIsOpen(false)
+                    setKeyword('')
+                  }}
+                  className={cn(
+                    "p-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 cursor-pointer flex items-center justify-between gap-2",
+                    selectedProductId === p.id && "bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                  )}
+                >
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <span>Unit: {p.unit || 'sft'}</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
+                    ৳{p.selling_price}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Ready Products */}
+          {readyProducts.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider">
+                📦 Ready Products ({readyProducts.length})
+              </div>
+              {readyProducts.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    onSelectProduct(p.id)
+                    setIsOpen(false)
+                    setKeyword('')
+                  }}
+                  className={cn(
+                    "p-2.5 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center justify-between gap-2",
+                    selectedProductId === p.id && "bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                  )}
+                >
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <span>Unit: {p.unit || 'pcs'}</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
+                    ৳{p.selling_price}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Raw Materials */}
+          {materials.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider">
+                🧵 Raw Materials ({materials.length})
+              </div>
+              {materials.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    onSelectProduct(p.id)
+                    setIsOpen(false)
+                    setKeyword('')
+                  }}
+                  className={cn(
+                    "p-2.5 hover:bg-purple-50/70 dark:hover:bg-purple-950/40 cursor-pointer flex items-center justify-between gap-2",
+                    selectedProductId === p.id && "bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                  )}
+                >
+                  <div>
+                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                      <span>Unit: {p.unit || 'roll'}</span>
+                    </div>
+                  </div>
+                  <span className="font-mono font-bold text-purple-600 dark:text-purple-400 shrink-0">
+                    ৳{p.selling_price}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {filteredProducts.length === 0 && (
+            <div className="p-4 text-center text-slate-400">
+              No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export function NewInvoiceModal({
@@ -209,7 +496,7 @@ export function NewInvoiceModal({
   const [isSearching, setIsSearching] = useState(false)
   const [isExistingCustomerSelected, setIsExistingCustomerSelected] = useState(false)
 
-  // Items State
+  // Items State (Default width and height are blank without prefilled 4 and 6)
   const [items, setItems] = useState<ItemRowState[]>([
     {
       id: `item-${Date.now()}-1`,
@@ -217,13 +504,17 @@ export function NewInvoiceModal({
       item_kind: 'service',
       workflow_routing: 'design_required',
       itemName: 'Pana Flex Banner Print',
-      width: '4',
-      height: '6',
+      width: '',
+      height: '',
       dimension_unit: 'ft',
       quantity: 1,
       unit: 'sft',
+      base_rate: 22,
       rate: 22,
       finishing: 'None',
+      finishing_rate: 0,
+      add_on: 'None',
+      add_on_rate: 0,
       rateSource: 'default',
       design_required: true,
       customer_approval_required: true,
@@ -554,6 +845,7 @@ export function NewInvoiceModal({
           pcs_per_carton: undefined,
           available_dimension_presets: [],
           available_finishing_options: [],
+          available_additional_options: [],
           printable_material_name: undefined,
         }
         return next
@@ -615,31 +907,31 @@ export function NewInvoiceModal({
         (prd as any).finishing_options ||
         []
 
+      const additionalOptions =
+        (prd.service_config as any)?.additional_options ||
+        (prd as any).additional_options ||
+        []
+
       const printableMaterial =
         prd.service_config?.printable_material_name ||
         prd.printable_material_name ||
         prd.material_spec
 
-      let w = isReady || isMat ? '0' : (current.width && current.width !== '0' ? current.width : '4')
-      let h = isReady || isMat ? '0' : (current.height && current.height !== '0' ? current.height : '6')
-      let dimUnit = isReady ? (prd.selling_unit || prd.unit || 'pcs') : (current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft')
-
-      if (isService && (!current.width || current.width === '0') && (!current.height || current.height === '0')) {
-        if (dimensionPresets.length > 0) {
-          w = String(dimensionPresets[0].width || 4)
-          h = String(dimensionPresets[0].length || 6)
-          dimUnit = dimensionPresets[0].unit || 'ft'
-        } else {
-          w = '4'
-          h = '6'
-        }
-      }
+      const w = isReady || isMat ? '0' : (current.width || '')
+      const h = isReady || isMat ? '0' : (current.height || '')
+      const dimUnit = isReady ? (prd.selling_unit || prd.unit || 'pcs') : (current.dimension_unit || (prd.service_config?.default_unit as any) || 'ft')
 
       const prdUnit = isReady
         ? prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'pcs'
         : isMat
         ? prd.purchase_unit || prd.unit || 'roll'
         : prd.selling_unit || prd.unit || (prd as any).unit_of_measure || 'sft'
+
+      const curFinishing = isReady ? 'None' : (current.finishing || 'None')
+      const curAddOn = isReady ? 'None' : (current.add_on || 'None')
+      const finishingRate = getFinishingRate(curFinishing, finishingOptions)
+      const addOnRate = getAddOnRate(curAddOn, additionalOptions)
+      const totalRate = effectiveRate + finishingRate + addOnRate
 
       next[index] = {
         ...current,
@@ -652,7 +944,10 @@ export function NewInvoiceModal({
         height: h,
         dimension_unit: dimUnit,
         unit: prdUnit,
-        rate: effectiveRate,
+        base_rate: effectiveRate,
+        finishing_rate: finishingRate,
+        add_on_rate: addOnRate,
+        rate: totalRate,
         rateSource: rateSrc,
         tier_applied: tierApplied,
         moq: prd.min_order_quantity || undefined,
@@ -664,8 +959,10 @@ export function NewInvoiceModal({
         customer_approval_required: isService,
         available_dimension_presets: dimensionPresets,
         available_finishing_options: finishingOptions,
+        available_additional_options: additionalOptions,
         printable_material_name: printableMaterial || undefined,
-        finishing: isReady ? 'None' : (current.finishing || 'None'),
+        finishing: curFinishing,
+        add_on: curAddOn,
       }
       return next
     })
@@ -681,11 +978,12 @@ export function NewInvoiceModal({
         workflow_routing: newKind === 'ready_product' ? 'ready_product' : 'design_required',
         design_required: newKind === 'service',
         customer_approval_required: newKind === 'service',
-        width: newKind === 'service' ? (current.width && current.width !== '0' ? current.width : '4') : '0',
-        height: newKind === 'service' ? (current.height && current.height !== '0' ? current.height : '6') : '0',
+        width: newKind === 'service' ? (current.width && current.width !== '0' ? current.width : '') : '0',
+        height: newKind === 'service' ? (current.height && current.height !== '0' ? current.height : '') : '0',
         unit: newKind === 'service' ? 'sft' : 'pcs',
         dimension_unit: newKind === 'service' ? 'ft' : 'pcs',
         finishing: newKind === 'ready_product' ? 'None' : (current.finishing || 'None'),
+        add_on: newKind === 'ready_product' ? 'None' : (current.add_on || 'None'),
       }
       return next
     })
@@ -716,10 +1014,27 @@ export function NewInvoiceModal({
     setItems((prev) => {
       const next = [...prev]
       const current = { ...next[index], [field]: value }
-      if (field === 'rate') {
+
+      if (field === 'finishing') {
+        const fRate = getFinishingRate(value, current.available_finishing_options)
+        current.finishing_rate = fRate
+        const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
+        current.base_rate = Math.max(0, base)
+        current.rate = Math.max(0, current.base_rate + fRate + (current.add_on_rate || 0))
+      } else if (field === 'add_on') {
+        const aRate = getAddOnRate(value, current.available_additional_options)
+        current.add_on_rate = aRate
+        const base = current.base_rate !== undefined ? current.base_rate : (Number(current.rate) - (current.finishing_rate || 0) - (current.add_on_rate || 0))
+        current.base_rate = Math.max(0, base)
+        current.rate = Math.max(0, current.base_rate + (current.finishing_rate || 0) + aRate)
+      } else if (field === 'rate') {
         current.isManualRate = true
         current.rateSource = 'manual'
+        const fRate = current.finishing_rate || 0
+        const aRate = current.add_on_rate || 0
+        current.base_rate = Math.max(0, Number(value) - fRate - aRate)
       }
+
       next[index] = current
       return next
     })
@@ -734,13 +1049,17 @@ export function NewInvoiceModal({
         item_kind: 'service',
         workflow_routing: 'design_required',
         itemName: '',
-        width: '4',
-        height: '6',
+        width: '',
+        height: '',
         dimension_unit: 'ft',
         quantity: 1,
         unit: 'sft',
+        base_rate: 0,
         rate: 0,
         finishing: 'None',
+        finishing_rate: 0,
+        add_on: 'None',
+        add_on_rate: 0,
         rateSource: 'custom',
         design_required: true,
         customer_approval_required: true,
@@ -873,6 +1192,8 @@ export function NewInvoiceModal({
         moq: it.moq || undefined,
         unit_cost: it.unit_cost || undefined,
         finishing: it.finishing,
+        add_on: it.add_on,
+        add_on_rate: it.add_on_rate,
         design_required: routing === 'design_required',
         customer_approval_required: routing === 'design_required' && it.customer_approval_required !== false,
         workflow_routing: routing,
@@ -1125,7 +1446,7 @@ export function NewInvoiceModal({
           </div>
 
           {/* Customer Search & Inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             <div className="relative" ref={searchContainerRef}>
               <Label className="text-xs font-semibold mb-1 block">
                 Customer Name <span className="text-rose-500">*</span>
@@ -1181,7 +1502,21 @@ export function NewInvoiceModal({
               />
             </div>
 
-            <div className="sm:col-span-2">
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Customer Type</Label>
+              <select
+                value={customerType}
+                onChange={(e) => setCustomerType(e.target.value as any)}
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+              >
+                <option value="retail">Retail / Walk-in (খুচরা)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="reseller">Reseller / Dealer (রিসেলার)</option>
+                <option value="government">Government / Org (সরকারি)</option>
+              </select>
+            </div>
+
+            <div className="sm:col-span-2 md:col-span-2 lg:col-span-3">
               <Label className="text-xs font-semibold mb-1 block">
                 Billing Address <span className="text-rose-500">*</span>
               </Label>
@@ -1205,6 +1540,21 @@ export function NewInvoiceModal({
               />
             </div>
           </div>
+
+          {/* Save Customer Checkbox */}
+          {!isExistingCustomerSelected && (
+            <div className="pt-1 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  checked={saveCustomer}
+                  onChange={(e) => setSaveCustomer(e.target.checked)}
+                  className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 h-4 w-4"
+                />
+                <span>Save customer details to directory for future invoices</span>
+              </label>
+            </div>
+          )}
 
           {/* CUSTOMER CREDIT HUD */}
           {selectedCustomer && (
@@ -1393,43 +1743,12 @@ export function NewInvoiceModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
                     <div className="sm:col-span-5">
                       <Label className="text-xs font-semibold mb-1 block">Select Catalog Item</Label>
-                      <select
-                        value={item.productId || ''}
-                        onChange={(e) => handleProductSelect(index, e.target.value)}
-                        className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
-                      >
-                        <option value="">-- Custom Item (No Catalog) --</option>
-
-                        {servicesList.length > 0 && (
-                          <optgroup label="🖨️ Printing & Fabrication Services">
-                            {servicesList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'sft'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-
-                        {readyProductsList.length > 0 && (
-                          <optgroup label="📦 Ready Products & Display Hardware">
-                            {readyProductsList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'pcs'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-
-                        {materialsList.length > 0 && (
-                          <optgroup label="🧵 Raw Materials">
-                            {materialsList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'roll'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-                      </select>
+                      <CatalogItemCombobox
+                        products={products}
+                        selectedProductId={item.productId}
+                        onSelectProduct={(pid) => handleProductSelect(index, pid)}
+                        onCustomSelect={() => handleProductSelect(index, '')}
+                      />
                     </div>
 
                     <div className="sm:col-span-7">
@@ -1558,10 +1877,10 @@ export function NewInvoiceModal({
                     </div>
                   )}
 
-                  {/* SERVICE CONTROLS (Width × Height + Unit + Qty + Rate + Dynamic Finishing) */}
+                  {/* SERVICE CONTROLS ([ Width ] [ Height ] [ Dim. Unit ] [ Qty ] [ Finishing ] [ Add on ] [ Rate ]) */}
                   {isService && (
-                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
-                      <div>
+                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5">
+                      <div className="sm:col-span-1">
                         <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
                         <Input
                           type="number"
@@ -1573,7 +1892,7 @@ export function NewInvoiceModal({
                         />
                       </div>
 
-                      <div>
+                      <div className="sm:col-span-1">
                         <Label className="text-[11px] font-semibold mb-1 block">Height</Label>
                         <Input
                           type="number"
@@ -1585,21 +1904,21 @@ export function NewInvoiceModal({
                         />
                       </div>
 
-                      <div>
+                      <div className="sm:col-span-1">
                         <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="ft">ft (ফুট)</option>
-                          <option value="inch">inch (ইঞ্চি)</option>
-                          <option value="m">m (মিটার)</option>
+                          <option value="ft">ft</option>
+                          <option value="inch">inch</option>
+                          <option value="m">m</option>
                         </select>
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Qty (Prints)</Label>
+                      <div className="sm:col-span-1">
+                        <Label className="text-[11px] font-semibold mb-1 block">Qty</Label>
                         <Input
                           type="number"
                           min="1"
@@ -1610,8 +1929,77 @@ export function NewInvoiceModal({
                         />
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Rate / sft (৳)</Label>
+                      <div className="sm:col-span-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-[11px] font-semibold block">Finishing</Label>
+                          {(item.finishing_rate ?? 0) > 0 && (
+                            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-bold">
+                              +৳{item.finishing_rate}
+                            </span>
+                          )}
+                        </div>
+                        <select
+                          value={item.finishing || 'None'}
+                          onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="None">None (+৳0)</option>
+                          {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
+                            item.available_finishing_options.map((f) => (
+                              <option key={f.id} value={f.name}>
+                                {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
+                              </option>
+                            ))
+                          ) : (
+                            STANDARD_FINISHING_OPTIONS.filter((f) => f.id !== 'none').map((f) => (
+                              <option key={f.id} value={f.name}>
+                                {f.name} (+৳{f.rate})
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-[11px] font-semibold block">Add on</Label>
+                          {(item.add_on_rate ?? 0) > 0 && (
+                            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-bold">
+                              +৳{item.add_on_rate}
+                            </span>
+                          )}
+                        </div>
+                        <select
+                          value={item.add_on || 'None'}
+                          onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="None">None (+৳0)</option>
+                          {item.available_additional_options && item.available_additional_options.length > 0 ? (
+                            item.available_additional_options.map((a) => (
+                              <option key={a.id} value={a.name}>
+                                {a.name} {a.unit_price ? `(+৳${a.unit_price})` : ''}
+                              </option>
+                            ))
+                          ) : (
+                            STANDARD_ADD_ON_OPTIONS.filter((a) => a.id !== 'none').map((a) => (
+                              <option key={a.id} value={a.name}>
+                                {a.name} (+৳{a.rate})
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+
+                      <div className="sm:col-span-2">
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-[11px] font-semibold block">Rate / sft (৳)</Label>
+                          {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
+                            <span className="text-[10px] text-slate-400 font-mono" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                              (Base ৳{item.base_rate ?? 0})
+                            </span>
+                          )}
+                        </div>
                         <Input
                           type="number"
                           step="0.5"
@@ -1620,30 +2008,6 @@ export function NewInvoiceModal({
                           className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
                           required
                         />
-                      </div>
-
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
-                        <select
-                          value={item.finishing || 'None'}
-                          onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-                        >
-                          <option value="None">None</option>
-                          {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
-                            item.available_finishing_options.map((f) => (
-                              <option key={f.id} value={f.name}>
-                                {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
-                              </option>
-                            ))
-                          ) : (
-                            FINISHING_OPTIONS.map((f) => (
-                              <option key={f} value={f}>
-                                {f}
-                              </option>
-                            ))
-                          )}
-                        </select>
                       </div>
                     </div>
                   )}
@@ -1755,6 +2119,16 @@ export function NewInvoiceModal({
                       </div>
 
                       <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Material Spec</Label>
+                        <Input
+                          placeholder="e.g. 280 GSM Frontlit"
+                          value={item.dimensions_spec || ''}
+                          onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
+                          className="text-xs h-9"
+                        />
+                      </div>
+
+                      <div>
                         <Label className="text-[11px] font-semibold mb-1 block">Rate / Unit (৳)</Label>
                         <Input
                           type="number"
@@ -1763,16 +2137,6 @@ export function NewInvoiceModal({
                           onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
                           className="text-xs h-9 font-mono font-bold text-purple-600 dark:text-purple-400"
                           required
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Material Spec</Label>
-                        <Input
-                          placeholder="e.g. 280 GSM Frontlit"
-                          value={item.dimensions_spec || ''}
-                          onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
-                          className="text-xs h-9"
                         />
                       </div>
                     </div>

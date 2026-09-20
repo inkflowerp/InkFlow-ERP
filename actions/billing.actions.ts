@@ -47,6 +47,8 @@ export interface CreateInvoiceItemInput {
   moq?: number
   unit_cost?: number
   finishing?: string
+  add_on?: string
+  add_on_rate?: number
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
   design_required?: boolean
   customer_approval_required?: boolean
@@ -288,7 +290,10 @@ export async function createInvoiceAction(
       calculatedSubtotal += lineTotal
 
       const dimensionStr = it.dimensions_spec || (w > 0 && h > 0 ? `${w} × ${h} ${it.unit || 'inch'}` : null)
-      const finishingStr = it.finishing && it.finishing !== 'None' ? ` (${it.finishing})` : ''
+      const specParts: string[] = []
+      if (it.finishing && it.finishing !== 'None') specParts.push(`Finishing: ${it.finishing}`)
+      if (it.add_on && it.add_on !== 'None') specParts.push(`Add-on: ${it.add_on}`)
+      const finishingStr = specParts.length > 0 ? ` (${specParts.join(', ')})` : ''
 
       const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
       const routing =
