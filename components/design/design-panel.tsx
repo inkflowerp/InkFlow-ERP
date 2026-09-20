@@ -111,15 +111,6 @@ export type DesignPanelTab =
   | 'tasks'
   | 'notifications'
 
-export type PipelineSubFilter =
-  | 'all'
-  | 'new'
-  | 'designing'
-  | 'awaiting_approval'
-  | 'revision'
-  | 'invoice_requested'
-  | 'ready_for_production'
-
 export type ViewMode = 'cards' | 'table'
 
 const PRINT_MACHINERY_LIST = [
@@ -187,7 +178,6 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
 
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState<DesignPanelTab>(initialTab)
-  const [workFilter, setWorkFilter] = useState<PipelineSubFilter>('all')
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
@@ -632,23 +622,9 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         return job.status !== 'approved'
       }
 
-      if (activeTab === 'pipeline') {
-        if (workFilter === 'new') return job.status === 'received'
-        if (workFilter === 'designing') return job.status === 'designing' || job.status === 'in_progress'
-        if (workFilter === 'awaiting_approval') return job.status === 'customer_approval'
-        if (workFilter === 'revision') return job.status === 'revision'
-        if (workFilter === 'invoice_requested') return job.commercial_status === 'invoice_requested'
-        if (workFilter === 'ready_for_production') {
-          return (
-            (job.status === 'approved' || job.is_locked) &&
-            (job.commercial_status === 'invoice_created' || Boolean(job.invoice_id))
-          )
-        }
-      }
-
       return true
     })
-  }, [tenantJobs, activeTab, workFilter, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
+  }, [tenantJobs, activeTab, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
 
   // Interactive Status Transitions
   const handleQuickStatusMove = async (job: DesignJobRecord, targetStatus: DesignStatus) => {
@@ -1173,11 +1149,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         <Card
           onClick={() => {
             handleTabChange('pipeline')
-            setWorkFilter('new')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            workFilter === 'new' && activeTab === 'pipeline' ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30' : ''
+            activeTab === 'pipeline' ? 'ring-1 ring-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1191,11 +1166,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         <Card
           onClick={() => {
             handleTabChange('pipeline')
-            setWorkFilter('designing')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            workFilter === 'designing' && activeTab === 'pipeline' ? 'ring-2 ring-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30' : ''
+            activeTab === 'pipeline' ? 'ring-1 ring-indigo-500/50 bg-indigo-50/30 dark:bg-indigo-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1225,12 +1199,11 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
 
         <Card
           onClick={() => {
-            handleTabChange('pipeline')
-            setWorkFilter('revision')
+            handleTabChange('customer_approvals')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            workFilter === 'revision' && activeTab === 'pipeline' ? 'ring-2 ring-rose-500 bg-rose-50/50 dark:bg-rose-950/30' : ''
+            activeTab === 'customer_approvals' ? 'ring-1 ring-rose-500/50 bg-rose-50/30 dark:bg-rose-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1244,11 +1217,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         <Card
           onClick={() => {
             handleTabChange('pipeline')
-            setWorkFilter('invoice_requested')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            workFilter === 'invoice_requested' && activeTab === 'pipeline' ? 'ring-2 ring-amber-500 bg-amber-50/50 dark:bg-amber-950/30' : ''
+            activeTab === 'pipeline' ? 'ring-1 ring-amber-500/50 bg-amber-50/30 dark:bg-amber-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1262,11 +1234,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         <Card
           onClick={() => {
             handleTabChange('pipeline')
-            setWorkFilter('ready_for_production')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            workFilter === 'ready_for_production' && activeTab === 'pipeline' ? 'ring-2 ring-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30' : ''
+            activeTab === 'pipeline' ? 'ring-1 ring-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1281,7 +1252,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
           onClick={() => {
             handleTabChange('work_orders')
           }}
-          className="p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800"
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            activeTab === 'work_orders' ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30' : ''
+          )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>Work Orders</span>
@@ -1295,7 +1269,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
           onClick={() => {
             handleTabChange('tasks')
           }}
-          className="p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800"
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            activeTab === 'tasks' ? 'ring-2 ring-red-500 bg-red-50/50 dark:bg-red-950/30' : ''
+          )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span>Due Today</span>
@@ -1367,7 +1344,7 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
             )}
           >
             <Layers className="h-4 w-4" />
-            <span>Designer Queue</span>
+            <span>{tBilingual('Design Pipeline', 'ডিজাইন পাইপলাইন')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
               {kpiStats.designingCount + kpiStats.newCount}
             </Badge>
@@ -1526,47 +1503,10 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
             className="text-xs h-8 px-2.5"
           >
             <User className="h-3.5 w-3.5 mr-1" />
-            {onlyMyJobs ? 'My Queue Only' : 'My Queue'}
+            {onlyMyJobs ? 'My Jobs Only' : 'My Jobs'}
           </Button>
         </div>
       </div>
-
-      {/* Sub-Filters for Pipeline Tab */}
-      {activeTab === 'pipeline' && (
-        <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">
-          <span className="text-slate-400 mr-1 text-[11px] uppercase tracking-wider">Queue:</span>
-          {[
-            { id: 'all', label: 'All Jobs', count: tenantJobs.length },
-            { id: 'new', label: 'New Briefs', count: kpiStats.newCount },
-            { id: 'designing', label: 'Designing', count: kpiStats.designingCount },
-            { id: 'awaiting_approval', label: 'Awaiting Proof', count: kpiStats.approvalCount },
-            { id: 'revision', label: 'Revisions', count: kpiStats.revisionCount },
-            { id: 'invoice_requested', label: 'Invoice Req.', count: kpiStats.invoiceRequestedCount },
-            { id: 'ready_for_production', label: 'Ready for Print', count: kpiStats.readyProdCount },
-          ].map((sf) => (
-            <button
-              key={sf.id}
-              onClick={() => setWorkFilter(sf.id as PipelineSubFilter)}
-              className={cn(
-                'px-2.5 py-1 rounded-md transition-all text-xs flex items-center gap-1.5 cursor-pointer',
-                workFilter === sf.id
-                  ? 'bg-indigo-600 text-white font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
-              )}
-            >
-              <span>{sf.label}</span>
-              <span
-                className={cn(
-                  'text-[10px] px-1 rounded-full',
-                  workFilter === sf.id ? 'bg-indigo-700 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
-                )}
-              >
-                {sf.count}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* =========================================================================
           VIEW MODES: CARDS GRID & TABLE VIEW
