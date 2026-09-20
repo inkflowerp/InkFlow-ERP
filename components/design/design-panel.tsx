@@ -19,7 +19,6 @@ import {
   AlertTriangle,
   User,
   Filter,
-  Kanban,
   List,
   LayoutGrid,
   FileCode,
@@ -103,7 +102,6 @@ import { getInvoicesAction } from '@/actions/billing.actions'
 import { cn } from '@/lib/utils'
 
 export type DesignPanelTab =
-  | 'kanban'
   | 'pipeline'
   | 'design_requests'
   | 'design_checks'
@@ -123,15 +121,7 @@ export type PipelineSubFilter =
   | 'invoice_requested'
   | 'ready_for_production'
 
-export type ViewMode = 'kanban' | 'cards' | 'table'
-
-const KANBAN_COLUMNS: { id: DesignStatus; title: string; titleBn: string; color: string; badgeBg: string }[] = [
-  { id: 'received', title: 'Received', titleBn: 'নতুন রিকুয়েস্ট', color: 'border-t-blue-500', badgeBg: 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300' },
-  { id: 'designing', title: 'Designing', titleBn: 'ডিজাইন চলছে', color: 'border-t-indigo-500', badgeBg: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300' },
-  { id: 'customer_approval', title: 'Customer Approval', titleBn: 'অনুমোদনের অপেক্ষায়', color: 'border-t-amber-500', badgeBg: 'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300' },
-  { id: 'revision', title: 'Revision Needed', titleBn: 'সংশোধন', color: 'border-t-purple-500', badgeBg: 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' },
-  { id: 'approved', title: 'Approved & Locked', titleBn: 'অনুমোদিত ও লক', color: 'border-t-emerald-500', badgeBg: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' },
-]
+export type ViewMode = 'cards' | 'table'
 
 const PRINT_MACHINERY_LIST = [
   { id: 'roland_eco', name: 'Roland SolJet Pro-4 Eco-Solvent (10ft Outdoor)', type: 'Roll-to-Roll' },
@@ -147,7 +137,7 @@ export interface DesignPanelProps {
   defaultTab?: DesignPanelTab
 }
 
-function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
+function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -183,7 +173,6 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const initialTab: DesignPanelTab =
     tabParam &&
     [
-      'kanban',
       'pipeline',
       'design_requests',
       'design_checks',
@@ -200,7 +189,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const [isPending, startTransition] = useTransition()
   const [activeTab, setActiveTab] = useState<DesignPanelTab>(initialTab)
   const [workFilter, setWorkFilter] = useState<PipelineSubFilter>('all')
-  const [viewMode, setViewMode] = useState<ViewMode>(initialTab === 'kanban' ? 'kanban' : 'cards')
+  const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [intakeFilter, setIntakeFilter] = useState<string>('all')
@@ -571,11 +560,6 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   // Handle Tab Switch
   const handleTabChange = (tab: DesignPanelTab) => {
     setActiveTab(tab)
-    if (tab === 'kanban') {
-      setViewMode('kanban')
-    } else if (viewMode === 'kanban') {
-      setViewMode('cards')
-    }
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('tab', tab)
     router.replace(`${pathname}?${currentQuery.toString()}`, { scroll: false })
@@ -1179,18 +1163,6 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             <div className="flex items-center rounded-lg border border-slate-300 dark:border-slate-700 p-0.5 bg-white dark:bg-slate-900 shadow-2xs">
               <Button
                 size="sm"
-                variant={viewMode === 'kanban' ? 'default' : 'ghost'}
-                onClick={() => {
-                  setViewMode('kanban')
-                  if (activeTab !== 'kanban') setActiveTab('kanban')
-                }}
-                className="h-7 text-xs px-2.5 bangla-text"
-              >
-                <Kanban className="h-3.5 w-3.5 mr-1" />
-                {tBilingual('Board', 'বোর্ড')}
-              </Button>
-              <Button
-                size="sm"
                 variant={viewMode === 'cards' ? 'default' : 'ghost'}
                 onClick={() => setViewMode('cards')}
                 className="h-7 text-xs px-2.5 bangla-text"
@@ -1426,18 +1398,18 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
           <button
-            onClick={() => handleTabChange('kanban')}
+            onClick={() => handleTabChange('pipeline')}
             className={cn(
               'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
-              activeTab === 'kanban'
-                ? 'border-pink-600 text-pink-600 dark:text-pink-400 bg-pink-50/50 dark:bg-pink-950/30'
+              activeTab === 'pipeline'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            <Kanban className="h-4 w-4" />
-            <span>Kanban Board</span>
+            <Layers className="h-4 w-4" />
+            <span>Designer Queue</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-              {tenantJobs.length}
+              {kpiStats.designingCount + kpiStats.newCount}
             </Badge>
           </button>
 
@@ -1685,217 +1657,11 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       )}
 
       {/* =========================================================================
-          VIEW MODE 1: KANBAN WORKFLOW BOARD
+          VIEW MODES: CARDS GRID & TABLE VIEW
          ========================================================================= */}
-      {viewMode === 'kanban' && activeTab === 'kanban' && (
-        <div className="flex md:grid md:grid-cols-5 gap-4 overflow-x-auto touch-scroll snap-x snap-mandatory pb-4">
-          {KANBAN_COLUMNS.map((col) => {
-            const colJobs = filteredJobs.filter((j: DesignJobRecord) => {
-              if (col.id === 'approved') return j.status === 'approved'
-              if (col.id === 'revision') return j.status === 'revision'
-              if (col.id === 'customer_approval') return j.status === 'customer_approval'
-              if (col.id === 'designing') return j.status === 'designing' || j.status === 'in_progress'
-              return j.status === 'received'
-            })
-
-            return (
-              <div
-                key={col.id}
-                className={cn(
-                  'bg-slate-50/80 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200 dark:border-slate-800 flex flex-col min-w-[280px] sm:min-w-[260px] md:min-w-0 snap-center shrink-0 md:shrink border-t-4',
-                  col.color
-                )}
-              >
-                {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800 mb-3">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-xs text-slate-800 dark:text-slate-200">{col.title}</span>
-                    <span className="h-5 px-1.5 rounded-full bg-slate-200 dark:bg-slate-800 text-[11px] font-mono font-bold flex items-center justify-center text-slate-600 dark:text-slate-400">
-                      {colJobs.length}
-                    </span>
-                  </div>
-                  {col.id === 'approved' && <Lock className="h-3.5 w-3.5 text-emerald-600" />}
-                </div>
-
-                {/* Job Cards in Column */}
-                <div className="space-y-3 flex-1 overflow-y-auto max-h-[650px] pr-0.5">
-                  {colJobs.map((job: DesignJobRecord) => {
-                    const latestVersion = job.versions?.[job.versions.length - 1]
-                    const format = latestVersion?.file_format || 'ai'
-                    const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
-                    const isInvoicePending = job.commercial_status === 'invoice_requested'
-
-                    return (
-                      <Card
-                        key={job.id}
-                        className="p-3 hover:shadow-md transition-all border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 group relative"
-                      >
-                        {/* Thumbnail / Lightbox preview trigger */}
-                        <div
-                          onClick={() => handleOpenLightbox(job)}
-                          className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 mb-2.5 cursor-pointer group-hover:opacity-95"
-                        >
-                          <img
-                            src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
-                            alt={job.title}
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          />
-                          {/* File Format Badge */}
-                          <div className="absolute top-2 left-2">
-                            <span className={`uppercase text-[10px] font-black px-1.5 py-0.5 rounded border shadow-sm ${getFormatBadgeColor(format)}`}>
-                              .{format}
-                            </span>
-                          </div>
-
-                          {/* Version Counter Badge */}
-                          <div className="absolute top-2 right-2 flex items-center gap-1">
-                            <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-black/75 text-white backdrop-blur-xs">
-                              v{job.current_version || 1}
-                            </span>
-                          </div>
-
-                          {/* Lightbox Zoom Icon on Hover */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white gap-1.5 text-xs font-bold">
-                            <Eye className="h-4 w-4" />
-                            <span>Preview</span>
-                          </div>
-
-                          {/* Lock Badge if Approved */}
-                          {job.is_locked && (
-                            <div className="absolute bottom-2 right-2">
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow">
-                                <Lock className="h-2.5 w-2.5" /> Locked
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Card Meta & Header */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-[11px] font-bold text-pink-600 dark:text-pink-400">
-                              {job.design_number}
-                            </span>
-                            {job.priority === 'very_urgent' ? (
-                              <span className="text-[10px] font-black text-red-600 flex items-center gap-0.5">
-                                <Flame className="h-3 w-3" /> Urgent
-                              </span>
-                            ) : (
-                              <span className="text-[10px] font-medium text-slate-400 capitalize">
-                                {job.priority}
-                              </span>
-                            )}
-                          </div>
-
-                          <h4 className="font-bold text-xs text-slate-900 dark:text-white line-clamp-2">
-                            {job.title}
-                          </h4>
-
-                          <div className="text-[11px] text-slate-500 truncate flex items-center justify-between">
-                            <span>{job.customer_name}</span>
-                            <span className="font-mono text-[10px] text-slate-400">{job.dimensions_spec}</span>
-                          </div>
-
-                          {/* Prepress Quality Indicators */}
-                          <div className="flex flex-wrap items-center gap-1 pt-1">
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300">
-                              CMYK 300DPI
-                            </span>
-                            {hasInvoice ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 flex items-center gap-0.5">
-                                <Receipt className="h-2.5 w-2.5" /> Invoiced
-                              </span>
-                            ) : isInvoicePending ? (
-                              <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300 flex items-center gap-0.5">
-                                <Clock className="h-2.5 w-2.5" /> Inv. Req
-                              </span>
-                            ) : null}
-                          </div>
-                        </div>
-
-                        {/* Interactive Quick-Action Toolbar */}
-                        <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1 text-[11px]">
-                          <div className="flex items-center gap-1">
-                            {/* WhatsApp Share Button */}
-                            <button
-                              onClick={() => handleOpenWhatsApp(job)}
-                              title="Share proof via WhatsApp"
-                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 hover:text-emerald-600 flex items-center justify-center text-slate-500"
-                            >
-                              <Phone className="h-3.5 w-3.5" />
-                            </button>
-
-                            {/* Upload Version Button */}
-                            <button
-                              onClick={() => handleOpenUploadModal(job)}
-                              title="Upload new version"
-                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:text-indigo-600 flex items-center justify-center text-slate-500"
-                            >
-                              <Upload className="h-3.5 w-3.5" />
-                            </button>
-
-                            {/* Flightcheck / Prepress Machine routing */}
-                            <button
-                              onClick={() => handleOpenPrepress(job)}
-                              title="Pre-press flightcheck & machine dispatch"
-                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-pink-50 dark:hover:bg-pink-950 hover:text-pink-600 flex items-center justify-center text-slate-500"
-                            >
-                              <Printer className="h-3.5 w-3.5" />
-                            </button>
-
-                            {/* Delete Job */}
-                            <button
-                              onClick={() => handleDeleteJob(job.id)}
-                              title="Delete design job"
-                              className="h-7 w-7 rounded-md border border-slate-200 dark:border-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950 hover:text-rose-600 hover:border-rose-300 flex items-center justify-center text-slate-400 transition-colors"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-
-                          <div className="flex items-center gap-2">
-                            {hasInvoice && (job.status === 'approved' || job.is_locked) && (
-                              <Link
-                                href={getTenantHref('/production')}
-                                className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline text-[11px]"
-                                title="Sent to Production Floor"
-                              >
-                                <Printer className="h-3 w-3" />
-                                <span>Production &rarr;</span>
-                              </Link>
-                            )}
-                            <Link
-                              href={getTenantHref(`/design/${job.id}`)}
-                              className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
-                            >
-                              <span>Studio</span>
-                              <ExternalLink className="h-3 w-3" />
-                            </Link>
-                          </div>
-                        </div>
-                      </Card>
-                    )
-                  })}
-
-                  {colJobs.length === 0 && (
-                    <div className="p-6 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-lg">
-                      No jobs in {col.title}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {/* =========================================================================
-          VIEW MODE 2: CARDS GRID & TABLE VIEW
-         ========================================================================= */}
-      {(viewMode === 'cards' || viewMode === 'table' || activeTab !== 'kanban') && (
-        <div className="space-y-4">
-          {/* Main Grid / Table of Jobs */}
-          {activeTab !== 'overview' && activeTab !== 'notifications' && (
+      <div className="space-y-4">
+        {/* Main Grid / Table of Jobs */}
+        {activeTab !== 'overview' && activeTab !== 'notifications' && (
             <>
               {viewMode === 'table' ? (
                 <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
@@ -2369,7 +2135,6 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             </Card>
           )}
         </div>
-      )}
 
       {/* =========================================================================
           POWER UPGRADE MODAL 1: HIGH-RES ARTWORK LIGHTBOX & ZOOM INSPECTOR

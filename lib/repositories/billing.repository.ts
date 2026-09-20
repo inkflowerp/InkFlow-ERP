@@ -1128,6 +1128,33 @@ export class BillingRepository {
             })
           }
         } catch {}
+
+        // Send In-App Notifications for newly assigned design jobs
+        try {
+          const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+          for (let i = 0; i < newDesignJobs.length; i++) {
+            const dj = newDesignJobs[i]
+            const isDesignOk = dj.workflow_routing === 'design_ok'
+            notifs.unshift({
+              id: `notif-${Date.now()}-${i + 1}`,
+              company_id: companyId,
+              user_id: null,
+              type: 'design_assigned',
+              title: isDesignOk ? `Pre-Press Check: ${dj.design_number}` : `New Design Task: ${dj.design_number}`,
+              title_bn: isDesignOk ? `প্রি-প্রেস চেক: ${dj.design_number}` : `নতুন ডিজাইন টাস্ক: ${dj.design_number}`,
+              message: isDesignOk
+                ? `Artwork received for #${invoice.invoice_number} (${dj.title}). Please complete pre-press flightcheck.`
+                : `Invoice #${invoice.invoice_number} created with design required for ${invoice.customer_name}.`,
+              message_bn: isDesignOk
+                ? `ইনভয়েস #${invoice.invoice_number}-এর ডিজাইন চেকের জন্য পাঠানো হয়েছে।`
+                : `ইনভয়েস #${invoice.invoice_number}-এ নতুন ডিজাইন রিকোয়েস্ট তৈরি হয়েছে।`,
+              action_url: `/${companyId}/design?tab=${isDesignOk ? 'design_checks' : 'pipeline'}`,
+              is_read: false,
+              created_at: new Date().toISOString(),
+            })
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, notifs)
+        } catch {}
       }
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 

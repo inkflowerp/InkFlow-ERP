@@ -18,7 +18,7 @@ function DesignPanelLoading() {
 export default function DesignPage() {
   return (
     <Suspense fallback={<DesignPanelLoading />}>
-      <DesignPanel defaultTab="kanban" />
+      <DesignPanel defaultTab="pipeline" />
     </Suspense>
   )
 }
