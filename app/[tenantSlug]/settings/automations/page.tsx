@@ -50,11 +50,15 @@ import { FeatureGate } from '@/components/shared/feature-gate'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
+import { SettingsNav } from '@/components/settings/settings-nav'
+import { PageHeader } from '@/components/shared/page-header'
+import { useI18n } from '@/i18n/context'
 
 export default function WorkflowAutomationsPage() {
   const params = useParams()
   const tenantSlug = (params?.tenantSlug as string) || 'my-company'
   const { company } = useTenant()
+  const { tBilingual } = useI18n()
   const activeCompanyId = company?.id || 'c-01'
 
   const [activeTab, setActiveTab] = useState<'rules' | 'logs'>('rules')
@@ -154,42 +158,37 @@ export default function WorkflowAutomationsPage() {
   return (
     <FeatureGate feature="custom_workflows">
       <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
-            <Zap className="h-4 w-4" />
-            <span>Process Orchestration Engine</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-            <Workflow className="h-7 w-7 text-indigo-400" />
-            Workflow Automation
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Automate quotation conversions, press job generation, delivery dispatching, and multi-channel client alerts without custom code.
-          </p>
-        </div>
+        <PageHeader
+          titleEn="Workflow Automations Engine"
+          titleBn="কাজের অটোমেশন ও পাইপলাইন"
+          descriptionEn="Automate quotation conversions, press job generation, delivery dispatching, and multi-channel client alerts without custom code."
+          descriptionBn="কোটেশন রূপান্তর, প্রেস জব জেনারেশন এবং ক্লায়েন্ট অ্যালার্ট সম্পূর্ণ কোডহীনভাবে অটোমেট করুন।"
+          icon={Workflow}
+          iconColor="text-indigo-600 dark:text-indigo-400"
+          actions={
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Button
+                size="sm"
+                onClick={handleOpenNewModal}
+                className="flex-1 sm:flex-none h-10 sm:h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 font-semibold shadow-lg shadow-indigo-600/30"
+              >
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
+                {tBilingual('New Automation Rule', 'নতুন অটোমেশন রুল')}
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={loadData}
+                className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
+              >
+                <RotateCcw className="h-3.5 w-3.5 mr-1" />
+                {tBilingual('Refresh', 'রিফ্রেশ')}
+              </Button>
+            </div>
+          }
+        />
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button
-            size="sm"
-            onClick={handleOpenNewModal}
-            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-3 font-semibold shadow-lg shadow-indigo-600/30"
-          >
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            New Automation Rule
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={loadData}
-            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl"
-          >
-            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-            Refresh
-          </Button>
-        </div>
-      </div>
+        <SettingsNav />
 
       {/* Safety & Architecture Compliance Banner */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/30 border border-slate-800 flex items-start gap-3.5">

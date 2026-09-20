@@ -24,6 +24,7 @@ import {
   Info,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
+import { useTenant } from '@/hooks/use-tenant'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -31,6 +32,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -54,9 +56,11 @@ import { notify } from '@/lib/notifications/notification-bus'
 import { useToast } from '@/components/shared/toast-feedback'
 
 export default function NotificationSettingsPage() {
+  const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { showToast } = useToast()
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   // Sound and browser notification state
   const [soundMuted, setSoundMutedState] = useState(isSoundMuted())
@@ -70,8 +74,8 @@ export default function NotificationSettingsPage() {
   }, [])
 
   const [notif, setNotif] = useDataStore(STORAGE_KEYS.NOTIFICATION_SETTINGS, {
-    whatsapp_enabled: false,
-    whatsapp_number: '',
+    whatsapp_enabled: !!(company?.whatsapp || settings?.whatsapp),
+    whatsapp_number: company?.whatsapp || settings?.whatsapp || '',
     sms_enabled: false,
     sms_gateway: 'Greenweb SMS Gateway',
     sms_sender_id: '',
@@ -80,6 +84,15 @@ export default function NotificationSettingsPage() {
     low_stock_alerts: true,
     low_stock_threshold: 50, // 50 sft / rolls
   })
+
+  useEffect(() => {
+    if (company?.whatsapp || settings?.whatsapp) {
+      setNotif((prev) => ({
+        ...prev,
+        whatsapp_number: prev.whatsapp_number || company?.whatsapp || settings?.whatsapp || '',
+      }))
+    }
+  }, [company, settings, setNotif])
 
   const handleToggleSoundMute = () => {
     const next = !soundMuted
@@ -204,18 +217,34 @@ export default function NotificationSettingsPage() {
     })
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setNotif(notif)
-    setIsSaved(true)
-    showToast({
-      title: 'Settings Saved',
-      titleBn: 'সেটিংস সংরক্ষিত হয়েছে',
-      type: 'success',
-      message: 'Notification gateways and audio preferences updated successfully.',
-      messageBn: 'নোটিফিকেশন গেটওয়ে এবং অডিও কনফিগারেশন আপডেট করা হয়েছে।',
-    })
-    setTimeout(() => setIsSaved(false), 3500)
+    setIsLoading(true)
+    setIsSaved(false)
+    try {
+      if (company?.id) {
+        const phoneToSave = notif.whatsapp_enabled ? notif.whatsapp_number : null
+        await updateCompanyAction(company.id, {
+          whatsapp: phoneToSave,
+        })
+        await updateCompanySettingsAction(company.id, {
+          whatsapp: phoneToSave,
+        })
+        await refreshTenant()
+      }
+      setNotif(notif)
+      setIsSaved(true)
+      showToast({
+        title: 'Settings Saved',
+        titleBn: 'সেটিংস সংরক্ষিত হয়েছে',
+        type: 'success',
+        message: 'Notification gateways and audio preferences updated successfully.',
+        messageBn: 'নোটিফিকেশন গেটওয়ে এবং অডিও কনফিগারেশন আপডেট করা হয়েছে।',
+      })
+      setTimeout(() => setIsSaved(false), 3500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -577,7 +606,7 @@ export default function NotificationSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
+          <Button type="submit" isLoading={isLoading} className="bg-amber-600 hover:bg-amber-700 text-white font-bold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Notification Gateways
           </Button>

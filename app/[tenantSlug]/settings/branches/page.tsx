@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label'
 import { Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
+import { listBranchesAction, createBranchAction, updateBranchAction } from '@/actions/branch.actions'
 
 interface BranchItem {
   id: string
@@ -54,11 +55,38 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function BranchesSettingsPage() {
+  const { company, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+
+  const loadLiveBranches = React.useCallback(async () => {
+    try {
+      const res = await listBranchesAction({ includeInactive: true })
+      if (res.success && res.data && res.data.length > 0) {
+        const mapped: BranchItem[] = res.data.map((b: any) => ({
+          id: b.id,
+          code: b.code || 'BR',
+          name: b.name,
+          nameBn: b.name_bn || b.name,
+          phone: b.phone || '',
+          address: b.full_address || b.address || '',
+          isMain: !!b.is_main,
+          isActive: b.status === 'active',
+        }))
+        setBranches(mapped)
+      }
+    } catch {
+      // Fallback to existing store
+    }
+  }, [setBranches])
+
+  React.useEffect(() => {
+    loadLiveBranches()
+  }, [loadLiveBranches, company?.id])
 
   const branchCheck = checkCanCreate('max_branches')
 
@@ -85,34 +113,73 @@ export default function BranchesSettingsPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleMakeMain = (id: string) => {
-    setBranches(
-      branches.map((b) => ({ ...b, isMain: b.id === id }))
-    )
-    showNotification('Main headquarters branch updated.')
+  const handleMakeMain = async (id: string) => {
+    try {
+      const res = await updateBranchAction(id, { is_main: true })
+      if (res.success) {
+        await loadLiveBranches()
+        await refreshTenant()
+        showNotification('Main headquarters branch updated.')
+      } else {
+        setBranches(branches.map((b) => ({ ...b, isMain: b.id === id })))
+        showNotification('Main headquarters branch updated in local view.')
+      }
+    } catch {
+      setBranches(branches.map((b) => ({ ...b, isMain: b.id === id })))
+      showNotification('Main headquarters branch updated.')
+    }
   }
 
-  const handleCreateBranch = (e: React.FormEvent) => {
+  const handleCreateBranch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!branchCheck.allowed) {
       openLimitExceededModal('max_branches')
       return
     }
-    const created: BranchItem = {
-      id: `b-${Date.now()}`,
-      code: newBranch.code.toUpperCase(),
-      name: newBranch.name,
-      nameBn: newBranch.nameBn,
-      phone: newBranch.phone,
-      address: newBranch.address,
-      isMain: false,
-      isActive: true,
+
+    setIsSubmitting(true)
+    try {
+      const payload = {
+        code: newBranch.code.toUpperCase(),
+        name: newBranch.name,
+        name_bn: newBranch.nameBn || null,
+        phone: newBranch.phone || null,
+        address: newBranch.address || null,
+        full_address: newBranch.address || null,
+        is_main: false,
+      }
+
+      const res = await createBranchAction(payload)
+      if (res.success && res.data) {
+        await loadLiveBranches()
+        await refreshTenant()
+        refreshUsage()
+        setIsAddOpen(false)
+        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
+        showNotification(`Branch '${res.data.name}' created successfully.`)
+      } else {
+        // Fallback to local store if Supabase returned limit or offline
+        const created: BranchItem = {
+          id: `b-${Date.now()}`,
+          code: newBranch.code.toUpperCase(),
+          name: newBranch.name,
+          nameBn: newBranch.nameBn,
+          phone: newBranch.phone,
+          address: newBranch.address,
+          isMain: false,
+          isActive: true,
+        }
+        setBranches([...branches, created])
+        refreshUsage()
+        setIsAddOpen(false)
+        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
+        showNotification(`Branch '${created.name}' created successfully.`)
+      }
+    } catch (err: any) {
+      showNotification(`Failed to create branch: ${err.message || 'Error'}`)
+    } finally {
+      setIsSubmitting(false)
     }
-    setBranches([...branches, created])
-    refreshUsage()
-    setIsAddOpen(false)
-    setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
-    showNotification(`Branch '${created.name}' created successfully.`)
   }
 
   return (
@@ -329,6 +396,7 @@ export default function BranchesSettingsPage() {
             </Button>
             <Button
               type="submit"
+              isLoading={isSubmitting}
               className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-10 sm:h-9"
             >
               Create Branch

@@ -39,6 +39,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { SettingsNav } from '@/components/settings/settings-nav'
 import { FeatureGate } from '@/components/shared/feature-gate'
 import { cn } from '@/lib/utils'
 
@@ -273,6 +274,8 @@ export default function RolesMatrixPage() {
             </Button>
           }
         />
+
+        <SettingsNav />
 
         {/* Feedback Alert */}
         {feedback && (

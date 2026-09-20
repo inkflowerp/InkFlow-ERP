@@ -18,15 +18,31 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { PrintERPDataStore } from '@/lib/db/data-store'
+import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 
 export default function LocalizationSettingsPage() {
-  const { settings } = useTenant()
+  const { company, settings, refreshTenant } = useTenant()
   const { locale, setLocale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const [languageMode, setLanguageMode] = useState<'en' | 'bn'>(locale || 'bn')
-  const [currency, setCurrency] = useState('BDT')
+  const [languageMode, setLanguageMode] = useState<'en' | 'bn'>(
+    (settings?.default_language as 'en' | 'bn') || (company?.default_locale as 'en' | 'bn') || locale || 'bn'
+  )
+  const [currency, setCurrency] = useState(company?.currency || settings?.default_currency || 'BDT')
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
+
+  React.useEffect(() => {
+    if (company || settings) {
+      if (company?.currency || settings?.default_currency) {
+        setCurrency(company?.currency || settings?.default_currency || 'BDT')
+      }
+      if (settings?.default_language || company?.default_locale) {
+        const lang = (settings?.default_language || company?.default_locale) as 'en' | 'bn'
+        setLanguageMode(lang)
+      }
+    }
+  }, [company, settings])
 
   React.useEffect(() => {
     const savedLoc = PrintERPDataStore.get<any>('printerp_tenant_localization' as any)
@@ -37,17 +53,34 @@ export default function LocalizationSettingsPage() {
     }
   }, [])
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLocale(languageMode)
-    PrintERPDataStore.set('printerp_tenant_localization' as any, {
-      languageMode,
-      currency,
-      dateFormat,
-      updated_at: new Date().toISOString(),
-    })
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3500)
+    setIsLoading(true)
+    setIsSaved(false)
+    try {
+      setLocale(languageMode)
+      if (company?.id) {
+        await updateCompanyAction(company.id, {
+          currency,
+          default_locale: languageMode,
+        })
+        await updateCompanySettingsAction(company.id, {
+          default_currency: currency,
+          default_language: languageMode,
+        })
+        await refreshTenant()
+      }
+      PrintERPDataStore.set('printerp_tenant_localization' as any, {
+        languageMode,
+        currency,
+        dateFormat,
+        updated_at: new Date().toISOString(),
+      })
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 3500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
 
@@ -181,7 +214,7 @@ export default function LocalizationSettingsPage() {
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+          <Button type="submit" isLoading={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Localization Settings
           </Button>

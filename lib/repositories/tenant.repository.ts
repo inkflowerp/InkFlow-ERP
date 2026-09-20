@@ -511,6 +511,7 @@ export class TenantRepository {
     if (error) {
       throw new Error(`Failed to update company settings: ${error.message}`)
     }
+    TenantRepository.invalidateCompanyCache(companyId)
     return data as CompanySettingsRow
   }
 
@@ -531,6 +532,10 @@ export class TenantRepository {
 
     if (error) {
       throw new Error(`Failed to update company: ${error.message}`)
+    }
+    TenantRepository.invalidateCompanyCache(companyId)
+    if (data?.slug) {
+      TenantRepository.invalidateCompanyCache(data.slug)
     }
     return data as CompanyRow
   }

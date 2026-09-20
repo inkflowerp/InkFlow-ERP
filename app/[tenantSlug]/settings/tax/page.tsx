@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { SettingsNav } from '@/components/settings/settings-nav'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 import {
   DEMO_TAX_SETTINGS,
   DEMO_VAT_MONTHLY_RETURN,
@@ -36,14 +38,37 @@ import { CompanyTaxSettingsRecord, VatPricingMode } from '@/types/tax-and-docs.t
 import { formatBDT } from '@/lib/formatters'
 
 export default function TaxSettingsPage() {
-  const { company } = useTenant()
+  const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
+  const [isLoading, setIsLoading] = useState(false)
 
   const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
     STORAGE_KEYS.TAX_SETTINGS,
-    DEMO_TAX_SETTINGS
+    {
+      ...DEMO_TAX_SETTINGS,
+      bin_number: company?.bin_no || DEMO_TAX_SETTINGS.bin_number,
+      tin_number: company?.tin_no || DEMO_TAX_SETTINGS.tin_number,
+      trade_license_number: company?.trade_license_no || DEMO_TAX_SETTINGS.trade_license_number,
+      vat_enabled: settings?.vat_enabled ?? DEMO_TAX_SETTINGS.vat_enabled,
+      default_vat_rate: settings?.vat_rate ?? DEMO_TAX_SETTINGS.default_vat_rate,
+    }
   )
+
+  // Sync with company/settings if updated
+  React.useEffect(() => {
+    if (company || settings) {
+      setTaxSettings((prev) => ({
+        ...prev,
+        bin_number: company?.bin_no || prev.bin_number,
+        tin_number: company?.tin_no || prev.tin_number,
+        trade_license_number: company?.trade_license_no || prev.trade_license_number,
+        vat_enabled: settings?.vat_enabled ?? prev.vat_enabled,
+        default_vat_rate: settings?.vat_rate ?? prev.default_vat_rate,
+      }))
+    }
+  }, [company, settings])
+
   const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
   const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
   const [notification, setNotification] = useState<string | null>(null)
@@ -81,10 +106,27 @@ export default function TaxSettingsPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleSaveTax = (e: React.FormEvent) => {
+  const handleSaveTax = async (e: React.FormEvent) => {
     e.preventDefault()
-    setTaxSettings(taxSettings)
-    showNotification('Company tax and Bangladesh VAT settings saved successfully!')
+    setIsLoading(true)
+    try {
+      if (company?.id) {
+        await updateCompanyAction(company.id, {
+          bin_no: taxSettings.bin_number || null,
+          tin_no: taxSettings.tin_number || null,
+          trade_license_no: taxSettings.trade_license_number || null,
+        })
+        await updateCompanySettingsAction(company.id, {
+          vat_enabled: taxSettings.vat_enabled,
+          vat_rate: taxSettings.default_vat_rate,
+        })
+        await refreshTenant()
+      }
+      setTaxSettings(taxSettings)
+      showNotification('Company tax and Bangladesh VAT settings saved successfully!')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const testCalcResult = calculateVat(testAmount, testRate, testMode)
@@ -110,6 +152,8 @@ export default function TaxSettingsPage() {
           </Link>
         }
       />
+
+      <SettingsNav />
 
       {/* Notification */}
       {notification && (
@@ -352,7 +396,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="flex justify-end pt-3 border-t">
-            <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold w-full sm:w-auto h-11 sm:h-9">
+            <Button type="submit" isLoading={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold w-full sm:w-auto h-11 sm:h-9">
               <Save className="mr-1.5 h-3.5 w-3.5" />
               Save Tax Particulars
             </Button>

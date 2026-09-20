@@ -45,6 +45,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PageHeader } from '@/components/shared/page-header'
+import { SettingsNav } from '@/components/settings/settings-nav'
 import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
@@ -389,6 +390,8 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
           }
         />
       )}
+
+      {!hideHeader && <SettingsNav />}
 
       {/* User Quota Status Alert & Action Bar when header is hidden */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs shadow-xs">

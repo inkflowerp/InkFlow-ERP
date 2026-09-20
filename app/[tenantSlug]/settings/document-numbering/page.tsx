@@ -10,6 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
+import { useTenant } from '@/hooks/use-tenant'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,6 +19,7 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/shared/page-header'
 import { DocumentType } from '@/types/settings.types'
+import { updateCompanySettingsAction } from '@/actions/tenant.actions'
 
 interface SequenceConfig {
   doc_type: DocumentType
@@ -41,9 +43,31 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function DocumentNumberingSettingsPage() {
+  const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const [sequences, setSequences] = useDataStore<SequenceConfig[]>(STORAGE_KEYS.DOCUMENT_NUMBERING, INITIAL_SEQUENCES)
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Sync with company_settings on load
+  React.useEffect(() => {
+    if (settings) {
+      setSequences((prev) =>
+        prev.map((s) => {
+          if (s.doc_type === 'invoice' && settings.invoice_prefix) {
+            return { ...s, prefix: settings.invoice_prefix }
+          }
+          if (s.doc_type === 'quotation' && settings.quotation_prefix) {
+            return { ...s, prefix: settings.quotation_prefix }
+          }
+          if (s.doc_type === 'challan' && settings.challan_prefix) {
+            return { ...s, prefix: settings.challan_prefix }
+          }
+          return s
+        })
+      )
+    }
+  }, [settings])
 
   const handlePrefixChange = (doc_type: DocumentType, newPrefix: string) => {
     setSequences(
@@ -57,11 +81,29 @@ export default function DocumentNumberingSettingsPage() {
     )
   }
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSequences(sequences)
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3500)
+    setIsLoading(true)
+    setIsSaved(false)
+    try {
+      if (company?.id) {
+        const invPrefix = sequences.find((s) => s.doc_type === 'invoice')?.prefix || 'INV'
+        const quoPrefix = sequences.find((s) => s.doc_type === 'quotation')?.prefix || 'QUO'
+        const chlPrefix = sequences.find((s) => s.doc_type === 'challan')?.prefix || 'CHL'
+
+        await updateCompanySettingsAction(company.id, {
+          invoice_prefix: invPrefix,
+          quotation_prefix: quoPrefix,
+          challan_prefix: chlPrefix,
+        })
+        await refreshTenant()
+      }
+      setSequences(sequences)
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 3500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const formatPreview = (s: SequenceConfig) => {
@@ -221,7 +263,7 @@ export default function DocumentNumberingSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+          <Button type="submit" isLoading={isLoading} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Document Numbering
           </Button>

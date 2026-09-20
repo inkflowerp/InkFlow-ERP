@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import {
@@ -19,6 +20,16 @@ import {
   Image as ImageIcon,
   Landmark,
   Sparkles,
+  Palette,
+  GitBranch,
+  QrCode,
+  Bell,
+  Users,
+  Workflow,
+  Crown,
+  ArrowRight,
+  Hash,
+  Globe2,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
@@ -28,6 +39,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 
@@ -199,33 +211,203 @@ export default function CompanySettingsPage() {
 
       <SettingsNav />
 
-      {/* Tabs */}
-      <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll">
+      {/* Master Settings Modules Directory Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {[
-          { id: 'general', label: 'General Identity', icon: Building2 },
-          { id: 'schedule', label: 'Office Hours & Holidays', icon: Clock },
-          { id: 'tax', label: 'BIN, TIN & Trade License', icon: ShieldCheck },
-          { id: 'prefixes', label: 'Document Prefixes', icon: FileText },
-          { id: 'regional', label: 'Regional & Language', icon: Globe },
-        ].map((tab) => {
-          const Icon = tab.icon
-          const isActive = activeTab === tab.id
+          {
+            title: 'Company Profile',
+            titleBn: 'প্রতিষ্ঠান পরিচিতি',
+            desc: 'Legal entity, office hours, contacts & trade license',
+            href: company?.slug ? `/${company.slug}/settings/company` : '/settings/company',
+            icon: Building2,
+            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            badge: company?.name ? 'Configured' : 'Setup Required',
+          },
+          {
+            title: 'Branding & Theme',
+            titleBn: 'ব্র্যান্ডিং ও লোগো',
+            desc: 'Custom colors, header logos, and bill footer terms',
+            href: company?.slug ? `/${company.slug}/settings/branding` : '/settings/branding',
+            icon: Palette,
+            color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
+            badge: 'Theme Active',
+          },
+          {
+            title: 'Language & Formats',
+            titleBn: 'ভাষা ও মুদ্রা',
+            desc: 'BDT / USD, DD/MM/YYYY, Bengali/English UI',
+            href: company?.slug ? `/${company.slug}/settings/localization` : '/settings/localization',
+            icon: Globe2,
+            color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+            badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
+          },
+          {
+            title: 'Tax & NBR BIN/TIN',
+            titleBn: 'ট্যাক্স ও ভ্যাট',
+            desc: '13-digit BIN, Mushak 6.3 rates, inclusive/exclusive pricing',
+            href: company?.slug ? `/${company.slug}/settings/tax` : '/settings/tax',
+            icon: Landmark,
+            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            badge: company?.bin_no ? 'BIN Active' : 'No BIN',
+          },
+          {
+            title: 'Document Numbering',
+            titleBn: 'ডকুমেন্ট নাম্বারিং',
+            desc: 'INV, QUO, CHL sequence prefixes and padding',
+            href: company?.slug ? `/${company.slug}/settings/document-numbering` : '/settings/document-numbering',
+            icon: Hash,
+            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            badge: 'PostgreSQL Safe',
+          },
+          {
+            title: 'Document Templates',
+            titleBn: 'ডকুমেন্ট টেমপ্লেট',
+            desc: 'PDF invoice, quotation designer & WhatsApp variables',
+            href: company?.slug ? `/${company.slug}/settings/documents` : '/settings/documents',
+            icon: FileText,
+            color: 'text-cyan-600 bg-cyan-50 dark:bg-cyan-950/50',
+            badge: 'Live Preview',
+          },
+          {
+            title: 'Workflow Automations',
+            titleBn: 'কাজের অটোমেশন',
+            desc: 'Auto-convert quotations, trigger jobs & status alerts',
+            href: company?.slug ? `/${company.slug}/settings/automations` : '/settings/automations',
+            icon: Workflow,
+            color: 'text-pink-600 bg-pink-50 dark:bg-pink-950/50',
+            badge: 'Pipelines Active',
+          },
+          {
+            title: 'Branches & Factories',
+            titleBn: 'শাখা ও কারখানা',
+            desc: 'Showrooms, print floors & regional fabrication hubs',
+            href: company?.slug ? `/${company.slug}/settings/branches` : '/settings/branches',
+            icon: GitBranch,
+            color: 'text-teal-600 bg-teal-50 dark:bg-teal-950/50',
+            badge: 'Hubs Managed',
+          },
+          {
+            title: 'Attendance & QR',
+            titleBn: 'হাজিরা ও কিউআর',
+            desc: 'Workplace geofence GPS and cryptographic QR tokens',
+            href: company?.slug ? `/${company.slug}/settings/attendance` : '/settings/attendance',
+            icon: QrCode,
+            color: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-950/50',
+            badge: 'Geofence Active',
+          },
+          {
+            title: 'Notifications & SMS',
+            titleBn: 'নোটিফিকেশন ও এসএমএস',
+            desc: 'Bangladeshi masked SMS, WhatsApp & audio chimes',
+            href: company?.slug ? `/${company.slug}/settings/notifications` : '/settings/notifications',
+            icon: Bell,
+            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            badge: 'Audio & SMS',
+          },
+          {
+            title: 'Email Gateway',
+            titleBn: 'ইমেইল গেটওয়ে',
+            desc: 'Gmail OAuth 2.0 and custom authenticated SMTP server',
+            href: company?.slug ? `/${company.slug}/settings/email` : '/settings/email',
+            icon: Mail,
+            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+            badge: 'Gmail / SMTP',
+          },
+          {
+            title: 'Team Users',
+            titleBn: 'টিম মেম্বার',
+            desc: 'Manage staff accounts, departments & responsibilities',
+            href: company?.slug ? `/${company.slug}/settings/users` : '/settings/users',
+            icon: Users,
+            color: 'text-violet-600 bg-violet-50 dark:bg-violet-950/50',
+            badge: 'RBAC Members',
+          },
+          {
+            title: 'Roles & Permissions',
+            titleBn: 'অনুমতি ম্যাট্রিক্স',
+            desc: 'Custom roles & granular module action checkboxes',
+            href: company?.slug ? `/${company.slug}/settings/roles` : '/settings/roles',
+            icon: ShieldCheck,
+            color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+            badge: 'Permission Matrix',
+          },
+          {
+            title: 'Subscription & Quotas',
+            titleBn: 'সাবস্ক্রিপশন ও কোটা',
+            desc: 'Plan tier, 6 resource limit meters & billing statements',
+            href: company?.slug ? `/${company.slug}/settings/subscription` : '/settings/subscription',
+            icon: Crown,
+            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+            badge: 'Tier Status',
+          },
+        ].map((item) => {
+          const Icon = item.icon
           return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id as typeof activeTab)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
-                isActive
-                  ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
-                  : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-              }`}
+            <Link
+              key={item.href}
+              href={item.href}
+              className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-blue-400 dark:hover:border-blue-600 transition-all flex flex-col justify-between group"
             >
-              <Icon className="h-4 w-4 shrink-0" />
-              {tab.label}
-            </button>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
+                    <Icon className="h-4.5 w-4.5" />
+                  </div>
+                  <Badge variant="outline" className="text-[10px] font-mono font-semibold px-2 py-0.5">
+                    {item.badge}
+                  </Badge>
+                </div>
+                <div>
+                  <div className="font-bold text-sm text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+                    <span>{item.title}</span>
+                    <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600" />
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">{item.titleBn}</div>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
+                </div>
+              </div>
+            </Link>
           )
         })}
+      </div>
+
+      {/* Quick Settings Tabs */}
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-blue-600" />
+            Quick Settings Editor
+          </h2>
+          <span className="text-xs text-slate-400">Inline General &amp; Tax Configuration</span>
+        </div>
+
+        <div className="-mx-4 px-4 sm:mx-0 sm:px-0 flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll">
+          {[
+            { id: 'general', label: 'General Identity', icon: Building2 },
+            { id: 'schedule', label: 'Office Hours & Holidays', icon: Clock },
+            { id: 'tax', label: 'BIN, TIN & Trade License', icon: ShieldCheck },
+            { id: 'prefixes', label: 'Document Prefixes', icon: FileText },
+            { id: 'regional', label: 'Regional & Language', icon: Globe },
+          ].map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold border-b-2 -mb-px transition-colors whitespace-nowrap h-10 sm:h-9 shrink-0 ${
+                  isActive
+                    ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-400 font-bold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>

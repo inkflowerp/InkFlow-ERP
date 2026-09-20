@@ -18,6 +18,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
@@ -32,25 +33,58 @@ const COLOR_PRESETS = [
 ]
 
 export default function BrandingSettingsPage() {
-  const { company } = useTenant()
+  const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const [isSaved, setIsSaved] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
   const [branding, setBranding] = useDataStore(STORAGE_KEYS.BRANDING_SETTINGS, {
     company_name: company?.name || '',
     primary_color: '#2563eb',
-    logo_url: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
-    invoice_logo_url: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
-    quotation_logo_url: 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
+    logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
+    invoice_logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
+    quotation_logo_url: company?.logo_url || settings?.logo_url || 'https://images.unsplash.com/photo-1572044162444-ad60f128bdea?w=150',
     footer_text: 'Thank you for choosing our print services. Delivery within 24-48 hours from proof sign-off.',
     footer_text_bn: 'আমাদের প্রিন্টিং সেবায় আস্থা রাখার জন্য ধন্যবাদ। প্রুফ অনুমোদনের ২৪-৪৮ ঘণ্টার মধ্যে ডেলিভারি সম্পন্ন হয়।',
   })
 
-  const handleSave = (e: React.FormEvent) => {
+  // Sync logo if available on company
+  React.useEffect(() => {
+    if (company?.logo_url || settings?.logo_url) {
+      const activeLogo = company?.logo_url || settings?.logo_url || ''
+      setBranding((prev) => ({
+        ...prev,
+        logo_url: prev.logo_url || activeLogo,
+        invoice_logo_url: prev.invoice_logo_url || activeLogo,
+        quotation_logo_url: prev.quotation_logo_url || activeLogo,
+      }))
+    }
+  }, [company, settings])
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
-    setBranding(branding)
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3500)
+    setIsLoading(true)
+    setIsSaved(false)
+    try {
+      if (company?.id) {
+        await updateCompanyAction(company.id, {
+          logo_url: branding.logo_url || null,
+          settings: {
+            ...((company.settings as any) || {}),
+            branding,
+          },
+        })
+        await updateCompanySettingsAction(company.id, {
+          logo_url: branding.logo_url || null,
+        })
+        await refreshTenant()
+      }
+      setBranding(branding)
+      setIsSaved(true)
+      setTimeout(() => setIsSaved(false), 3500)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -239,7 +273,7 @@ export default function BrandingSettingsPage() {
         </Card>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+          <Button type="submit" isLoading={isLoading} className="bg-purple-600 hover:bg-purple-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
             <Save className="mr-1.5 h-4 w-4" />
             Save Branding Configuration
           </Button>

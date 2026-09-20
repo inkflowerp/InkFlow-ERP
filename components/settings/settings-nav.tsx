@@ -123,10 +123,12 @@ export function SettingsNav() {
           ? pathname.slice(`/${company.slug}`.length) || '/'
           : (pathname || '')
         const isActive = pathname === link.href || cleanPath === link.href
+        const targetHref = company?.slug ? `/${company.slug}${link.href}` : link.href
+
         return (
           <Link
             key={link.href}
-            href={link.href}
+            href={targetHref}
             className={cn(
               'flex items-center gap-2 px-3.5 py-2.5 rounded-t-lg text-xs font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px h-10 sm:h-9 shrink-0',
               isActive
