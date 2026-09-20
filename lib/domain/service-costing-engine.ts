@@ -403,3 +403,96 @@ export function calculateServiceCosting(input: any): any {
     commercial_snapshot: commercialSnapshot,
   }
 }
+
+export interface BOMConsumptionContext {
+  orderQuantity?: number
+  customerWidthFt?: number
+  customerLengthFt?: number
+  customerAreaSqft?: number
+  productionAreaSqft?: number
+  perimeterFt?: number
+}
+
+/**
+ * Canonical formula engine for evaluating raw material BOM consumption and cost
+ */
+export function evaluateBOMConsumption(
+  item: ServiceRequiredMaterial,
+  context: BOMConsumptionContext = {}
+): {
+  requiredQuantity: number
+  unitCost: number
+  subtotalCost: number
+  wasteQuantity: number
+} {
+  const method = item.consumption_method || item.consumption_rule || 'per_sqft'
+  const qtyPerUnit = Number(item.quantity_per_unit ?? item.quantity_required) || 1
+  const wastePercent = Number(item.waste_percent) || 0
+  const unitCost = Number(item.unit_cost) || 0
+  const orderQty = Math.max(1, Number(context.orderQuantity) || 1)
+  const areaSqft = Number(context.productionAreaSqft ?? context.customerAreaSqft) || 1
+  const perimeterFt = Number(context.perimeterFt) || (2 * ((context.customerWidthFt || 1) + (context.customerLengthFt || 1)))
+
+  let baseQty = qtyPerUnit
+
+  switch (method) {
+    case 'area_print':
+    case 'area_direct':
+    case 'area_sqft':
+      baseQty = areaSqft * qtyPerUnit
+      break
+    case 'per_piece':
+    case 'piece_count':
+      baseQty = orderQty * qtyPerUnit
+      break
+    case 'per_sqft':
+      baseQty = areaSqft * qtyPerUnit
+      break
+    case 'per_sqm':
+      baseQty = (areaSqft / 10.7639) * qtyPerUnit
+      break
+    case 'per_rft':
+    case 'linear_direct':
+    case 'roll_linear_length':
+      baseQty = perimeterFt * qtyPerUnit
+      break
+    case 'per_inch':
+      baseQty = perimeterFt * 12 * qtyPerUnit
+      break
+    case 'fixed':
+      baseQty = qtyPerUnit
+      break
+    case 'formula':
+      if (item.consumption_formula) {
+        try {
+          const formula = item.consumption_formula
+            .replace(/width/gi, String(context.customerWidthFt || 1))
+            .replace(/height|length/gi, String(context.customerLengthFt || 1))
+            .replace(/area/gi, String(areaSqft))
+            .replace(/qty|quantity/gi, String(orderQty))
+            .replace(/perimeter/gi, String(perimeterFt))
+          const calculated = Function(`"use strict"; return (${formula})`)()
+          if (!isNaN(calculated) && calculated > 0) {
+            baseQty = Number(calculated)
+          }
+        } catch {
+          baseQty = qtyPerUnit
+        }
+      }
+      break
+    default:
+      baseQty = qtyPerUnit
+      break
+  }
+
+  const wasteQty = baseQty * (wastePercent / 100)
+  const totalQty = baseQty + wasteQty
+  const subtotalCost = Math.round(totalQty * unitCost * 100) / 100
+
+  return {
+    requiredQuantity: parseFloat(totalQty.toFixed(4)),
+    unitCost,
+    subtotalCost,
+    wasteQuantity: parseFloat(wasteQty.toFixed(4)),
+  }
+}

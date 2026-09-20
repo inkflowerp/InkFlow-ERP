@@ -581,6 +581,16 @@ export interface ProductRecord {
   updated_at: string
   usage_stats?: ProductUsageStats
   // V3 Rebuild Architecture additions
+  sub_category?: string | null
+  print_technology?: string | null
+  production_method?: string | null
+  trim_allowance_in?: number | null
+  production_bleed_inches?: number | null
+  nesting_rule?: string | null
+  ink_profile?: string | null
+  quantity_calculation_method?: string | null
+  is_installation_required?: boolean | null
+  is_delivery_required?: boolean | null
   entity_type?: EntityType
   is_service?: boolean
   is_ready_product?: boolean
@@ -706,6 +716,8 @@ export interface ServiceRequiredMaterial {
   category?: string
   is_required?: boolean
   is_primary?: boolean
+  consumption_method?: 'area_print' | 'per_piece' | 'per_sqft' | 'per_sqm' | 'per_rft' | 'per_inch' | 'fixed' | 'formula' | string
+  consumption_formula?: string
   consumption_rule?: 'roll_geometry' | 'area_direct' | 'linear_direct' | 'liquid_volume' | 'piece_count' | 'roll_linear_length' | 'area_sqft' | string
   quantity_per_unit?: number
   quantity_required?: number
@@ -733,6 +745,9 @@ export interface ServiceFinishingOption {
   cost?: number
   unit_cost?: number
   is_default?: boolean
+  is_required?: boolean
+  requirement_type?: 'required' | 'optional' | 'customer_selectable'
+  finishing_operation?: string
 }
 
 export interface ServiceAdditionalOption {
@@ -785,7 +800,19 @@ export interface ServiceConfiguration {
   printable_material_id?: string | null
   printable_material_name?: string | null
   service_type?: string
+  category?: string
+  sub_category?: string
   print_category?: string
+  print_technology?: string
+  production_method?: string
+  default_department?: string
+  trim_allowance_in?: number
+  bleed_in?: number
+  nesting_rule?: string
+  ink_profile?: string
+  quantity_calculation_method?: 'area' | 'linear' | 'piece' | 'weight' | 'time' | 'fixed_job' | string
+  is_installation_required?: boolean
+  is_delivery_required?: boolean
   finishing_category?: string
   finishing_material_id?: string | null
   finishing_material_name?: string | null
@@ -846,6 +873,85 @@ export interface ServiceConfiguration {
     sequence_order: number
     estimated_duration_minutes?: number
   }>
+  // Structured hierarchical config
+  identity?: {
+    name_en: string
+    name_bn?: string
+    code?: string
+    description?: string
+    active?: boolean
+  }
+  classification?: {
+    service_type: string
+    category: string
+    sub_category?: string
+    technology?: string
+    production_method?: string
+    department?: string
+  }
+  substrate?: {
+    material_id?: string
+    material_name?: string
+    supported_widths?: number[]
+    sheet_sizes?: Array<{ width: number; length: number; label?: string }>
+    trim_allowance_in?: number
+    bleed_in?: number
+    print_allowance_ft?: number
+    nesting_rule?: string
+  }
+  ink?: {
+    profile?: string
+    ink_type?: string
+    channels?: LinkedInkChannel[]
+    total_ml_per_sqft?: number
+    consume_per_unit_ml?: number
+    auto_calculate_cost?: boolean
+    unit_cost?: number
+  }
+  billing?: {
+    selling_unit: string
+    calculation_method: string
+    minimum_billable_qty?: number
+    minimum_job_charge?: number
+  }
+  production?: {
+    required?: boolean
+    machine_ids?: string[]
+    default_machine_id?: string
+    machine_hourly_rate?: number
+    estimated_speed?: number
+    speed_unit?: string
+    production_time_minutes?: number
+    design_required?: boolean
+    approval_required?: boolean
+    qc_required?: boolean
+  }
+  bom?: {
+    required_materials?: ServiceRequiredMaterial[]
+    default_wastage_percent?: number
+    total_bom_cost?: number
+  }
+  finishing?: {
+    options?: ServiceFinishingOption[]
+  }
+  addons?: {
+    additional_options?: ServiceAdditionalOption[]
+    is_installation_required?: boolean
+    installation_options?: ServiceInstallationOption[]
+    is_delivery_required?: boolean
+    delivery_options?: any[]
+  }
+  costing?: {
+    breakdown?: ProductCostBreakdown
+    total_direct_cost?: number
+  }
+  pricing?: {
+    base_price?: number
+    minimum_charge?: number
+    price_tiers?: ProductPriceTiers
+    target_margin?: number
+    min_allowed_margin?: number
+  }
   // General fields
   general_category?: string
   deliverable_format?: string

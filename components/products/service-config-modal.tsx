@@ -81,7 +81,7 @@ interface ServiceConfigModalProps {
   installationMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
 }
 
-const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: PricingMethod }[] = [
+export const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: PricingMethod }[] = [
   { value: 'sft', label: 'Square Feet (sft / sqft) — বর্গফুট', defaultMethod: 'per_area' },
   { value: 'pcs', label: 'Piece (pcs) — পিস', defaultMethod: 'per_piece' },
   { value: 'rft', label: 'Running Feet (rft) — রানিং ফিট', defaultMethod: 'per_length' },
@@ -115,6 +115,181 @@ export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
   { value: 'set', label: 'set (Set — সেট)' },
   { value: 'sqm', label: 'sqm (Square Meter — বর্গমিটার)' },
   { value: 'job', label: 'job (Job / Flat — এককালীন)' },
+]
+
+export const PRINT_TECHNOLOGIES = [
+  'Eco-Solvent',
+  'Solvent Heavy Duty',
+  'UV Flatbed',
+  'UV Roll-to-Roll',
+  'HP Latex',
+  'Digital Laser / Toner',
+  'Offset Press',
+  'DTF (Direct to Film)',
+  'DTG (Direct to Garment)',
+  'Dye Sublimation',
+  'Screen Printing',
+  'Laser / CNC Cutting',
+  'Manual / Handcraft',
+]
+
+export const PRODUCTION_METHODS = [
+  'Roll-to-Roll',
+  'Flatbed',
+  'Sheet-fed',
+  'Direct-to-Garment',
+  'Heat Transfer',
+  'Sheet Processing',
+  'Welding & Metal Assembly',
+  'Channel Letter Bending',
+  'Contour Plotter Cutting',
+  'Manual Assembly / Fitting',
+]
+
+export const DEFAULT_DEPARTMENTS = [
+  'Digital Printing',
+  'UV Printing',
+  'Offset Press',
+  'Garment Printing',
+  'Finishing & Lamination',
+  'Fabrication & Welding',
+  'Site Installation',
+  'Logistics & Dispatch',
+  'Design & Pre-Press',
+]
+
+export const BOM_CONSUMPTION_METHODS: Array<{ value: string; label: string; description: string }> = [
+  { value: 'AREA_PRINT', label: 'AREA_PRINT (Job Production Area × Wastage)', description: 'Total printed square footage including production bleed & margins' },
+  { value: 'PER_PIECE', label: 'PER_PIECE (Order Quantity × Formula)', description: 'Fixed units per finished ordered piece (e.g. 4 eyelets/pc)' },
+  { value: 'PER_SQFT', label: 'PER_SQFT (Customer Billable Sqft × Rate)', description: 'Linear consumption per net square foot billed' },
+  { value: 'PER_SQM', label: 'PER_SQM (Square Meters × Rate)', description: 'Metric square meter area consumption' },
+  { value: 'PER_RFT', label: 'PER_RFT (Running Feet / Perimeter)', description: 'Banner edge hemming, framing pipe, seam tape' },
+  { value: 'PER_INCH', label: 'PER_INCH (Linear Inches)', description: '3D letter strip border, acrylic perimeter' },
+  { value: 'FIXED', label: 'FIXED (Fixed Quantity per Job)', description: 'Setup sheets, calibration test print, packaging box' },
+  { value: 'FORMULA', label: 'FORMULA (Custom Expression)', description: 'e.g. ceil(width / 2) × 2, ceil(perimeter / 12)' },
+]
+
+export const QUANTITY_CALCULATION_METHODS = [
+  { value: 'area', label: 'Area (Width × Height × Qty)', description: 'Billed per square foot or square meter' },
+  { value: 'linear', label: 'Linear Length (Length × Qty)', description: 'Billed per running foot, meter or inch' },
+  { value: 'piece', label: 'Piece / Unit Count (Quantity)', description: 'Billed per individual finished piece' },
+  { value: 'weight', label: 'Weight (kg / lbs)', description: 'Billed by material weight' },
+  { value: 'time', label: 'Machine Time (Hours / Mins)', description: 'Billed per operational production hour' },
+  { value: 'fixed_job', label: 'Fixed Job / Project Rate', description: 'Single flat rate per job order' },
+]
+
+export const NESTING_RULES = [
+  { value: 'optimal_roll_width', label: 'Optimal Roll Width Fit (Minimize roll trim waste)' },
+  { value: 'sheet_grid', label: 'Sheet Nesting Grid (Max pieces per 4x8 sheet)' },
+  { value: 'lengthwise_gang', label: 'Lengthwise Gang Run (Continuous roll feeding)' },
+  { value: 'single_job_direct', label: 'Direct Single Job (No automated batch nesting)' },
+]
+
+export const INK_PROFILES: Array<{
+  id: string
+  name: string
+  name_bn: string
+  tech: string
+  defaultMlPerSqft: number
+  channels: Array<{ channel: string; color_code: string; unit_price: number; unit: string }>
+}> = [
+  {
+    id: 'eco_solvent_cmyk',
+    name: 'Eco-Solvent CMYK (4-Color Standard)',
+    name_bn: 'ইকো-সলভেন্ট সিএমওয়াইকে ৪-কালার',
+    tech: 'Eco-Solvent',
+    defaultMlPerSqft: 1.2,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 2800, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'eco_solvent_6c',
+    name: 'Eco-Solvent CMYK + LC + LM (6-Color Photo High Density)',
+    name_bn: 'ইকো-সলভেন্ট ৬-কালার ফটো প্রিন্ট',
+    tech: 'Eco-Solvent',
+    defaultMlPerSqft: 1.5,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Light Cyan', color_code: '#80d6f7', unit_price: 2800, unit: 'bottle' },
+      { channel: 'Light Magenta', color_code: '#f680c5', unit_price: 2800, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'uv_cmyk',
+    name: 'UV LED CMYK (4-Color Process)',
+    name_bn: 'ইউভি এলইডি সিএমওয়াইকে ৪-কালার',
+    tech: 'UV Flatbed',
+    defaultMlPerSqft: 1.4,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 5200, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'uv_cmyk_white',
+    name: 'UV LED CMYK + High Opacity White (5-Channel)',
+    name_bn: 'ইউভি সিএমওয়াইকে + হাই অপাসিটি হোয়াইট',
+    tech: 'UV Flatbed',
+    defaultMlPerSqft: 2.2,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 5200, unit: 'bottle' },
+      { channel: 'White', color_code: '#ffffff', unit_price: 5800, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'uv_cmyk_white_varnish',
+    name: 'UV LED CMYK + White + Gloss Varnish / Clear (6-Channel)',
+    name_bn: 'ইউভি সিএমওয়াইকে + হোয়াইট + গ্লস বার্নিশ',
+    tech: 'UV Flatbed',
+    defaultMlPerSqft: 2.8,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 5200, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 5200, unit: 'bottle' },
+      { channel: 'White', color_code: '#ffffff', unit_price: 5800, unit: 'bottle' },
+      { channel: 'Varnish / Clear', color_code: '#ffd700', unit_price: 6200, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'dtf_cmyk_white',
+    name: 'DTF Textile CMYK + White Backer',
+    name_bn: 'ডিটিএফ টেক্সটাইল সিএমওয়াইকে + হোয়াইট',
+    tech: 'DTF',
+    defaultMlPerSqft: 2.0,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 4500, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 4500, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 4500, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 4500, unit: 'bottle' },
+      { channel: 'White', color_code: '#ffffff', unit_price: 5200, unit: 'bottle' },
+    ],
+  },
+  {
+    id: 'solvent_cmyk',
+    name: 'Solvent Heavy Duty CMYK (Banner Grade)',
+    name_bn: 'সলভেন্ট হেভি ডিউটি ব্যানার কালি',
+    tech: 'Solvent Heavy Duty',
+    defaultMlPerSqft: 1.0,
+    channels: [
+      { channel: 'Cyan', color_code: '#00aeef', unit_price: 2200, unit: 'bottle' },
+      { channel: 'Magenta', color_code: '#ec008c', unit_price: 2200, unit: 'bottle' },
+      { channel: 'Yellow', color_code: '#fff200', unit_price: 2200, unit: 'bottle' },
+      { channel: 'Black', color_code: '#231f20', unit_price: 2200, unit: 'bottle' },
+    ],
+  },
 ]
 
 export const SERVICE_TYPE_CATEGORIES: Record<
@@ -401,12 +576,16 @@ export function ServiceConfigModal({
   // 5 Responsive Tabs (Dimensions Tab Removed)
   const [activeTab, setActiveTab] = useState<'basic' | 'materials' | 'finishing' | 'additionals' | 'pricing'>('basic')
 
-  // 1. Basic Info
+  // 1. Basic Info & 4-Level Canonical Classification
   const [name, setName] = useState('')
   const [nameBn, setNameBn] = useState('')
   const [sku, setSku] = useState('')
   const [serviceType, setServiceType] = useState<'printing' | 'production' | 'finishing' | 'installation' | 'delivery' | 'general'>('printing')
-  const [category, setCategory] = useState('printing_service')
+  const [category, setCategory] = useState('large_format_printing')
+  const [subCategory, setSubCategory] = useState<string>('')
+  const [printTechnology, setPrintTechnology] = useState<string>('Eco-Solvent')
+  const [productionMethod, setProductionMethod] = useState<string>('Roll-to-Roll')
+  const [defaultDepartment, setDefaultDepartment] = useState<string>('Digital Printing')
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
@@ -418,8 +597,9 @@ export function ServiceConfigModal({
   const [estimatedSpeed, setEstimatedSpeed] = useState<number | ''>('')
   const [speedUnit, setSpeedUnit] = useState<string>('sqft_per_hr')
   const [printableMaterialId, setPrintableMaterialId] = useState<string>('')
+  const [selectedInkProfile, setSelectedInkProfile] = useState<string>('eco_solvent_cmyk')
   const [inkType, setInkType] = useState<string>('Eco-Solvent High Pigment Ink')
-  const [selectedInks, setSelectedInks] = useState<LinkedInkChannel[]>(INK_CHANNEL_PRESETS.cmyk)
+  const [selectedInks, setSelectedInks] = useState<LinkedInkChannel[]>(INK_PROFILES[0].channels)
   const [consumePerUnitMl, setConsumePerUnitMl] = useState<number | string>(1.2)
   const [autoCalculateInkCost, setAutoCalculateInkCost] = useState<boolean>(true)
   const [inkCost, setInkCost] = useState<number | ''>(3.36)
@@ -461,16 +641,20 @@ export function ServiceConfigModal({
 
   // 1.3 Substrate & Auto-Inherited Print Sizes from Selected Printable Material
   const [availableRollWidths, setAvailableRollWidths] = useState<number[]>([3.25, 4.25, 5.25, 6, 10])
+  const [newRollWidth, setNewRollWidth] = useState<string>('')
   const [standardRollLength, setStandardRollLength] = useState<number | string>(164)
   const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0.25)
+  const [trimAllowanceIn, setTrimAllowanceIn] = useState<number>(0.25)
+  const [nestingRule, setNestingRule] = useState<string>('optimal_roll_width')
   const [availableSheetSizes, setAvailableSheetSizes] = useState<Array<{ width: number; length: number; label?: string }>>([
     { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
   ])
 
-  // 1.4 Commercial Billing Units
+  // 1.4 Commercial Billing Units & Calculation Method
   const [sellingUnit, setSellingUnit] = useState<string>('sft')
   const [purchaseUnit, setPurchaseUnit] = useState<string>('roll')
   const [pricingMethod, setPricingMethod] = useState<PricingMethod>('per_area')
+  const [quantityCalculationMethod, setQuantityCalculationMethod] = useState<string>('area')
   const [dimensionUnit, setDimensionUnit] = useState<string>('ft')
   const [minBillableQty, setMinBillableQty] = useState<number>(1)
   const [productionBleedInches, setProductionBleedInches] = useState<number>(0.5)
@@ -491,13 +675,16 @@ export function ServiceConfigModal({
   const [showCustomFinishingForm, setShowCustomFinishingForm] = useState(false)
   const [customFinishingName, setCustomFinishingName] = useState('')
   const [customFinishingMaterialId, setCustomFinishingMaterialId] = useState('')
+  const [customFinishingRequirementType, setCustomFinishingRequirementType] = useState<'required' | 'optional' | 'customer_selectable'>('optional')
   const [customFinishingMethod, setCustomFinishingMethod] = useState('per_sqft')
   const [customFinishingPrice, setCustomFinishingPrice] = useState<number | ''>('')
   const [customFinishingCost, setCustomFinishingCost] = useState<number | ''>('')
 
-  // 4. Additional Options & Installation
+  // 4. Additional Options, Installation & Delivery Required
   const [additionalOptions, setAdditionalOptions] = useState<ServiceAdditionalOption[]>([])
   const [installationOptions, setInstallationOptions] = useState<ServiceInstallationOption[]>([])
+  const [isInstallationRequired, setIsInstallationRequired] = useState<boolean>(false)
+  const [isDeliveryRequired, setIsDeliveryRequired] = useState<boolean>(false)
   const [showCustomAddonForm, setShowCustomAddonForm] = useState(false)
   const [customAddonType, setCustomAddonType] = useState<'pasting' | 'installation'>('pasting')
   const [customAddonName, setCustomAddonName] = useState('')
@@ -549,6 +736,17 @@ export function ServiceConfigModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Strict Raw Material check: excludes ready products, outsource items, and standalone services
+  const isRawMaterial = (m: MaterialRecord) => {
+    const itemType = ((m as any).item_type || (m as any).type || (m as any).commercial_type || '').toLowerCase()
+    const prodType = ((m as any).product_type || (m as any).entity_type || '').toLowerCase()
+    const isReady = Boolean((m as any).is_ready_product || (m as any).is_service)
+    if (isReady) return false
+    if (itemType === 'ready_product' || itemType === 'service' || itemType === 'outsource' || itemType === 'outsource_product') return false
+    if (prodType === 'ready_product' || prodType === 'service' || prodType === 'outsource' || prodType === 'outsource_product') return false
+    return true
+  }
+
   // Filter ink materials from inventory
   const inkMaterials = useMemo(() => {
     return availableMaterials.filter((m) => {
@@ -574,9 +772,10 @@ export function ServiceConfigModal({
     })
   }, [availableMaterials])
 
-  // Filter substrate materials from inventory
+  // Filter substrate materials from inventory - strictly raw materials
   const substrateMaterials = useMemo(() => {
     return availableMaterials.filter((m) => {
+      if (!isRawMaterial(m)) return false
       const cat = (m.category || '').toLowerCase()
       const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
       const isExplicitInkOnly = (cat === 'ink' || cat === 'inks' || cat === 'ink_chemistry') && (u === 'liter' || u === 'ml' || u === 'bottle')
@@ -952,7 +1151,7 @@ export function ServiceConfigModal({
       setName(initialData.name || '')
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
-      setCategory(initialData.category || 'printing_service')
+      setCategory(initialData.category || 'large_format_printing')
       const loadedSrvType = (initialData as any).service_type || (initialData.product_type === 'finishing' || (initialData as any).entity_type === 'finishing' ? 'finishing' : 'printing')
       setServiceType(loadedSrvType)
       setSellingUnit(initialData.selling_unit || initialData.unit || 'sft')
@@ -975,6 +1174,19 @@ export function ServiceConfigModal({
 
       const cfg: ServiceConfiguration = initialData.service_config || {}
       
+      // 4-Level Classification & Production Routing
+      setSubCategory(cfg.classification?.sub_category ?? (initialData as any).sub_category ?? cfg.sub_category ?? '')
+      setPrintTechnology(cfg.classification?.technology ?? (initialData as any).print_technology ?? cfg.print_technology ?? 'Eco-Solvent')
+      setProductionMethod(cfg.classification?.production_method ?? (initialData as any).production_method ?? cfg.production_method ?? 'Roll-to-Roll')
+      setDefaultDepartment(cfg.classification?.department ?? (initialData as any).default_department ?? cfg.default_department ?? 'Digital Printing')
+      setTrimAllowanceIn(cfg.substrate?.trim_allowance_in ?? (initialData as any).trim_allowance_in ?? cfg.trim_allowance_in ?? 0.25)
+      setProductionBleedInches(cfg.substrate?.bleed_in ?? (initialData as any).production_bleed_inches ?? (initialData as any).production_width_allowance ?? 0.5)
+      setNestingRule(cfg.substrate?.nesting_rule ?? (initialData as any).nesting_rule ?? cfg.nesting_rule ?? 'optimal_roll_width')
+      setSelectedInkProfile(cfg.ink?.profile ?? (initialData as any).ink_profile ?? cfg.ink_profile ?? 'eco_solvent_cmyk')
+      setQuantityCalculationMethod(cfg.billing?.calculation_method ?? (initialData as any).quantity_calculation_method ?? cfg.quantity_calculation_method ?? 'area')
+      setIsInstallationRequired(cfg.addons?.is_installation_required ?? (initialData as any).is_installation_required ?? Boolean(cfg.is_installation_required))
+      setIsDeliveryRequired(cfg.addons?.is_delivery_required ?? (initialData as any).is_delivery_required ?? Boolean(cfg.is_delivery_required))
+
       // Print category & methods
       const loadedPrintCat = (initialData as any).print_category || cfg.print_category || 'Large Format Eco-Solvent Print'
       setPrintCategory(loadedPrintCat)
@@ -1049,7 +1261,7 @@ export function ServiceConfigModal({
       if (cfg.selected_inks && Array.isArray(cfg.selected_inks) && cfg.selected_inks.length > 0) {
         setSelectedInks(cfg.selected_inks)
       } else {
-        setSelectedInks(INK_CHANNEL_PRESETS.cmyk)
+        setSelectedInks(INK_PROFILES[0].channels)
       }
 
       setConsumePerUnitMl(cfg.consume_per_unit_ml ?? cfg.ink_consumption_ml ?? (initialData as any).consume_per_unit_ml ?? 1.2)
@@ -1081,7 +1293,7 @@ export function ServiceConfigModal({
       setDimensionUnit(cfg.dimension_unit || 'ft')
       setAllowCustomDimensions(cfg.allow_custom_dimensions !== false)
       setAvailableRollWidths(cfg.available_widths_ft || initialData.available_widths_ft || [3.25, 4.25, 5.25, 6, 10])
-      setExtraWidthAllowance(cfg.extra_width_allowance_ft != null ? cfg.extra_width_allowance_ft : (initialData.production_width_allowance != null ? initialData.production_width_allowance : 0))
+      setExtraWidthAllowance(cfg.extra_width_allowance_ft != null ? cfg.extra_width_allowance_ft : (initialData.production_width_allowance != null ? initialData.production_width_allowance : 0.25))
       setStandardRollLength(cfg.standard_roll_length_ft || initialData.standard_roll_length_ft || 164)
       setAvailableSheetSizes(cfg.available_sheet_sizes || [
         { width: 4, length: 8, label: '4ft × 8ft (Standard Sheet Board)' },
@@ -1106,7 +1318,18 @@ export function ServiceConfigModal({
       setName('')
       setNameBn('')
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
-      setCategory('wide_format_printing')
+      setCategory('large_format_printing')
+      setSubCategory('')
+      setPrintTechnology('Eco-Solvent')
+      setProductionMethod('Roll-to-Roll')
+      setDefaultDepartment('Digital Printing')
+      setTrimAllowanceIn(0.25)
+      setProductionBleedInches(0.5)
+      setNestingRule('optimal_roll_width')
+      setSelectedInkProfile('eco_solvent_cmyk')
+      setQuantityCalculationMethod('area')
+      setIsInstallationRequired(false)
+      setIsDeliveryRequired(false)
       setServiceType('printing')
       setPrintCategory('Large Format Eco-Solvent Print')
       setFinishingCategory('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
@@ -1146,7 +1369,7 @@ export function ServiceConfigModal({
       setSpeedUnit('sqft_per_hr')
       setPrintableMaterialId('')
       setInkType('Eco-Solvent High Pigment Ink')
-      setSelectedInks(INK_CHANNEL_PRESETS.cmyk)
+      setSelectedInks(INK_PROFILES[0].channels)
       setConsumePerUnitMl(1.2)
       setAutoCalculateInkCost(true)
       setInkCost(3.36)
@@ -1169,7 +1392,6 @@ export function ServiceConfigModal({
       setDimensionUnit('ft')
       setAllowCustomDimensions(true)
       setMinBillableQty(1)
-      setProductionBleedInches(0.5)
       setDefaultWastagePercent(5)
       setAvailableRollWidths([3.25, 4.25, 5.25, 6, 10])
       setExtraWidthAllowance(0.25)
@@ -1491,6 +1713,18 @@ export function ServiceConfigModal({
     const preset = INK_CHANNEL_PRESETS[presetKey]
     if (preset) {
       setSelectedInks(preset.map((p) => ({ ...p })))
+    }
+  }
+
+  const handleApplyInkProfile = (profileId: string) => {
+    setSelectedInkProfile(profileId)
+    const prof = INK_PROFILES.find((p) => p.id === profileId)
+    if (prof) {
+      setSelectedInks(prof.channels.map((c) => ({ ...c })))
+      setConsumePerUnitMl(prof.defaultMlPerSqft)
+      if (prof.tech) {
+        setPrintTechnology(prof.tech)
+      }
     }
   }
 
@@ -1846,6 +2080,19 @@ export function ServiceConfigModal({
     ])
   }
 
+  const handleAddRollWidth = () => {
+    const w = parseFloat(newRollWidth)
+    if (!isNaN(w) && w > 0 && !availableRollWidths.includes(w)) {
+      setAvailableRollWidths([...availableRollWidths, w].sort((a, b) => a - b))
+      setNewRollWidth('')
+    }
+  }
+
+  const handleRemoveRollWidth = (wToRemove: number) => {
+    if (availableRollWidths.length <= 1) return
+    setAvailableRollWidths(availableRollWidths.filter((w) => w !== wToRemove))
+  }
+
   const handleAddCustomFinishing = () => {
     if (!customFinishingName.trim()) return
     const linkedMat = availableMaterials.find((m) => m.id === customFinishingMaterialId)
@@ -1855,6 +2102,8 @@ export function ServiceConfigModal({
       {
         id: `custom-fin-${Date.now()}`,
         name: customFinishingName.trim(),
+        finishing_operation: customFinishingName.trim(),
+        requirement_type: customFinishingRequirementType,
         material_id: customFinishingMaterialId || undefined,
         material_name: linkedMat?.name || undefined,
         unit: linkedMat ? (linkedMat.unit || (linkedMat as any).purchase_unit || (linkedMat as any).selling_unit) : undefined,
@@ -1863,13 +2112,14 @@ export function ServiceConfigModal({
         price: Number(customFinishingPrice) || 0,
         unit_cost: Number(customFinishingCost) || 0,
         cost: Number(customFinishingCost) || 0,
-        is_default: false,
+        is_default: customFinishingRequirementType === 'required',
       },
     ])
     setCustomFinishingName('')
     setCustomFinishingMaterialId('')
     setCustomFinishingPrice('')
     setCustomFinishingCost('')
+    setCustomFinishingRequirementType('optional')
     setShowCustomFinishingForm(false)
   }
 
@@ -2072,6 +2322,94 @@ export function ServiceConfigModal({
       }
 
       const serviceConfig: ServiceConfiguration = {
+        identity: {
+          name_en: name.trim(),
+          name_bn: nameBn.trim() || undefined,
+          code: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
+          description: description.trim() || undefined,
+          active: isActive,
+        },
+        classification: {
+          service_type: serviceType,
+          category: category,
+          sub_category: subCategory.trim() || undefined,
+          technology: printTechnology,
+          production_method: productionMethod,
+          department: defaultDepartment,
+        },
+        substrate: {
+          material_id: printableMaterialId || undefined,
+          material_name: selectedMat?.name || undefined,
+          supported_widths: purchaseUnit === 'roll' ? availableRollWidths : undefined,
+          sheet_sizes: purchaseUnit === 'sheet' ? availableSheetSizes : undefined,
+          trim_allowance_in: Number(trimAllowanceIn) || 0,
+          bleed_in: Number(productionBleedInches) || 0,
+          print_allowance_ft: purchaseUnit === 'roll' ? (extraWidthAllowance !== '' && !isNaN(Number(extraWidthAllowance)) ? Number(extraWidthAllowance) : 0) : undefined,
+          nesting_rule: nestingRule,
+        },
+        ink: {
+          ink_type: inkType,
+          profile: selectedInkProfile,
+          channels: selectedInks,
+          total_ml_per_sqft: Number(consumePerUnitMl) || 1.2,
+          auto_calculate_cost: autoCalculateInkCost,
+          unit_cost: inkCostNum,
+        },
+        billing: {
+          selling_unit: sellingUnit,
+          calculation_method: quantityCalculationMethod,
+          minimum_billable_qty: minBillableQty,
+          minimum_job_charge: minimumCharge !== '' ? Number(minimumCharge) : undefined,
+        },
+        production: {
+          required: true,
+          machine_ids: selectedMachineId ? [selectedMachineId] : undefined,
+          default_machine_id: selectedMachineId || undefined,
+          machine_hourly_rate: Number(machineHourlyRate) || undefined,
+          estimated_speed: Number(estimatedSpeed) || undefined,
+          speed_unit: speedUnit || undefined,
+          production_time_minutes: undefined,
+          design_required: true,
+          approval_required: true,
+          qc_required: true,
+        },
+        bom: {
+          required_materials: requiredMaterials,
+          default_wastage_percent: defaultWastagePercent,
+          total_bom_cost: totalBOMCost,
+        },
+        finishing: {
+          options: finishingOptions,
+        },
+        addons: {
+          additional_options: additionalOptions,
+          is_installation_required: isInstallationRequired,
+          installation_options: installationOptions,
+          is_delivery_required: isDeliveryRequired,
+          delivery_options: [],
+        },
+        costing: {
+          breakdown: costBreakdown,
+          total_direct_cost: totalDirectCostNum,
+        },
+        pricing: {
+          base_price: sp,
+          minimum_charge: minimumCharge !== '' ? Number(minimumCharge) : undefined,
+          price_tiers: finalPriceTiers,
+          target_margin: Number(targetMargin) || 35.0,
+          min_allowed_margin: Number(minAllowedMargin) || 15.0,
+        },
+        sub_category: subCategory.trim() || undefined,
+        print_technology: printTechnology,
+        production_method: productionMethod,
+        default_department: defaultDepartment,
+        trim_allowance_in: Number(trimAllowanceIn) || 0,
+        bleed_in: Number(productionBleedInches) || 0,
+        nesting_rule: nestingRule,
+        ink_profile: selectedInkProfile,
+        quantity_calculation_method: quantityCalculationMethod,
+        is_installation_required: isInstallationRequired,
+        is_delivery_required: isDeliveryRequired,
         dimension_unit: dimensionUnit,
         allow_custom_dimensions: allowCustomDimensions,
         available_widths_ft: purchaseUnit === 'roll' ? availableRollWidths : undefined,
@@ -2148,11 +2486,22 @@ export function ServiceConfigModal({
         name_bn: nameBn.trim() || undefined,
         sku: sku.trim() || `SRV-${Date.now().toString().slice(-5)}`,
         category: category || (serviceType === 'finishing' ? 'finishing_service' : (serviceType === 'production' ? 'production_service' : 'printing_service')),
+        sub_category: subCategory.trim() || undefined,
         product_type: serviceType === 'finishing' ? 'finishing' : (serviceType === 'production' ? 'fabrication' : 'print_service'),
         entity_type: serviceType === 'finishing' ? 'finishing' : 'service',
         commercial_type: 'service',
         is_service: true,
         service_type: serviceType,
+        print_technology: printTechnology,
+        production_method: productionMethod,
+        default_department: defaultDepartment,
+        trim_allowance_in: Number(trimAllowanceIn) || 0,
+        production_bleed_inches: Number(productionBleedInches) || 0,
+        nesting_rule: nestingRule,
+        ink_profile: selectedInkProfile,
+        quantity_calculation_method: quantityCalculationMethod,
+        is_installation_required: isInstallationRequired,
+        is_delivery_required: isDeliveryRequired,
         machine_id: selectedMachineId || undefined,
         machine_name: selectedFleetMach?.name || undefined,
         machine_code: selectedFleetMach?.code || undefined,
@@ -2391,11 +2740,11 @@ export function ServiceConfigModal({
         </div>
 
         {/* ======================================================== */}
-        {/* TAB 1: BASIC INFO & PRINTING SERVICE CONFIGURATION        */}
+        {/* STEP 1: BASIC & PRINT CONFIG                             */}
         {/* ======================================================== */}
         {activeTab === 'basic' && (
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-4 shadow-xs animate-in fade-in-0">
-            {/* Section 1: Basic Identity */}
+            {/* 1.1 Basic Information */}
             <div className="space-y-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between pb-1.5 border-b border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2">
@@ -2403,10 +2752,10 @@ export function ServiceConfigModal({
                     1
                   </div>
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Basic Info & Service Type
+                    Basic Information & Classification
                   </h3>
                 </div>
-                <span className="text-[11px] text-slate-400 font-medium">Bilingual naming & category</span>
+                <span className="text-[11px] text-slate-400 font-medium">Bilingual naming & 4-level classification</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2438,7 +2787,7 @@ export function ServiceConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    SKU / Service Code
+                    Service Code / SKU <span className="text-rose-500">*</span>
                   </Label>
                   <Input
                     placeholder="e.g. SRV-UV-VINYL-01"
@@ -2449,33 +2798,33 @@ export function ServiceConfigModal({
                 </div>
               </div>
 
-              {/* Service Type & Category Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+              {/* Service Type, Category & Sub-category */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                    Service Type (সার্ভিসের ধরন) <span className="text-rose-500">*</span>
+                    Service Type <span className="text-rose-500">*</span>
                   </Label>
                   <select
                     value={serviceType}
                     onChange={(e) => handleSelectServiceType(e.target.value as any)}
                     className="w-full h-9 text-xs rounded-md border border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/30 px-2.5 font-bold text-blue-900 dark:text-blue-200"
                   >
-                    <option value="printing">🖨️ Printing Service (প্রিন্টিং সার্ভিস - Large Format, UV, Offset)</option>
-                    <option value="production">🏗️ Production & Fabrication (প্রোডাকশন ও কাঠামো নির্মাণ)</option>
-                    <option value="finishing">✂️ Finishing & Lamination (ফিনিশিং, কাটিং ও ল্যামিনেশন)</option>
-                    <option value="installation">🔧 Installation & Fitting (সাইট ফিটিং ও ইন্সটলেশন)</option>
-                    <option value="delivery">🚚 Delivery & Logistics (ডেলিভারি ও পরিবহন)</option>
-                    <option value="general">⚙️ General Service (সাধারণ সার্ভিস)</option>
+                    <option value="printing">🖨️ Printing & Production Service</option>
+                    <option value="production">🏗️ Fabrication & Assembly</option>
+                    <option value="finishing">✂️ Finishing & Lamination</option>
+                    <option value="installation">🔧 Installation & Fitting</option>
+                    <option value="delivery">🚚 Delivery & Logistics</option>
+                    <option value="general">⚙️ General Service</option>
                   </select>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold block text-slate-800 dark:text-slate-200">
-                      Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
+                      Category <span className="text-rose-500">*</span>
                     </Label>
                     <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold uppercase">
-                      {filteredCatalogCategories.length} {serviceType} Categories
+                      {filteredCatalogCategories.length} Options
                     </span>
                   </div>
                   <select
@@ -2501,335 +2850,490 @@ export function ServiceConfigModal({
                     )}
                   </select>
                 </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
+                    Sub-category (উপ-ক্যাটাগরি)
+                  </Label>
+                  <Input
+                    placeholder="e.g. Flex Printing, Rigid UV, Acrylic Letters..."
+                    value={subCategory}
+                    onChange={(e) => setSubCategory(e.target.value)}
+                    className="h-9 text-xs"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Section 2: If Service Type == 'printing' */}
-            {serviceType === 'printing' && (
-              <div className="space-y-4 p-4 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
-                <div className="flex items-center gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-900/60">
-                  <Printer className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Print Technology, Substrate & Inks Formulation
-                  </h4>
-                </div>
+            {/* 1.2 Print / Production Configuration */}
+            <div className="space-y-3 p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20">
+              <div className="flex items-center gap-2 pb-1.5 border-b border-blue-200/60 dark:border-blue-900/60">
+                <Printer className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Print & Production Configuration
+                </h4>
+              </div>
 
-                {/* Print Category & Printable Material (Inventory Item) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Print Category (প্রিন্ট ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={printCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setPrintCategory(val)
-                        const matched = DEFAULT_PRINT_CATEGORIES.find((c) => c.name === val)
-                        if (matched) {
-                          setInkType(matched.defaultInk)
-                          setSelectedPrintingMethods([matched.name_bn || matched.name])
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_PRINT_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs font-semibold block">
-                        Printable Material (Inventory Item) <span className="text-rose-500">*</span>
-                      </Label>
-                      {printableMaterialId && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
-                        </span>
-                      )}
-                    </div>
-                    <select
-                      value={printableMaterialId}
-                      onChange={(e) => handleSelectPrintableMaterial(e.target.value)}
-                      className={cn(
-                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
-                        printableMaterialId
-                          ? 'border-emerald-400 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-200 font-bold'
-                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
-                      )}
-                    >
-                      <option value="">-- Select Raw Media Substrate / Paper --</option>
-                      {substrateMaterials.map((mat) => {
-                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
-                        return (
-                          <option key={mat.id} value={mat.id}>
-                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/sft` : ''}
-                          </option>
-                        )
-                      })}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Fleet Machinery Pre-selection */}
-                {machineries.length > 0 && (
-                  <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
-                        <Cpu className="w-3.5 h-3.5 text-blue-600" />
-                        Assigned Production Machinery / Fleet Equipment
-                      </Label>
-                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Auto-populates speed & machine cost</span>
-                    </div>
-                    <select
-                      value={selectedMachineId}
-                      onChange={(e) => handleFleetMachineSelect(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 font-medium"
-                    >
-                      <option value="">-- Auto-Match Best Available Machine --</option>
-                      {machineries.map((m) => (
-                        <option key={m.id} value={m.id}>
-                          {m.name} ({m.code || 'NO-CODE'}) — {m.category} {m.max_print_width_inches ? `[Max Width: ${m.max_print_width_inches}"]` : ''} • Rate: ৳{m.hourly_rate_bdt || 0}/hr • Speed: {m.speed_sqft_per_hour || m.speed_sheets_per_hour || 'N/A'} {m.speed_sheets_per_hour ? 'sheets/hr' : 'sqft/hr'}
-                        </option>
-                      ))}
-                    </select>
-
-                    {selectedMachineId && (
-                      <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 pt-1">
-                        <span>Hourly Rate: <strong className="text-slate-900 dark:text-white font-mono">৳{machineHourlyRate || 0}/hr</strong></span>
-                        <span>Speed: <strong className="text-blue-600 dark:text-blue-400 font-mono">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
-                        <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">৳{machineCost || 0}/sft</strong></span>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Print size available: all size that configured and selected from Printable Material */}
-                <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Maximize2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Print Size Available (From Linked Printable Material)
-                      </span>
-                    </div>
-                    {selectedMaterialRecord ? (
-                      <Badge className="bg-emerald-600 text-white text-[10px] font-mono py-0.5">
-                        ✓ {selectedMaterialRecord.name}
-                      </Badge>
-                    ) : (
-                      <span className="text-[11px] text-slate-500 font-medium">
-                        (Default roll media dimensions)
-                      </span>
-                    )}
-                  </div>
-
-                  {purchaseUnit === 'roll' ? (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-emerald-950 dark:text-emerald-200">
-                          Active Roll Sizes:
-                        </span>
-                        {availableRollWidths.map((w) => (
-                          <span
-                            key={w}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 text-xs font-mono font-bold text-emerald-900 dark:text-emerald-200 shadow-2xs"
-                          >
-                            <span>{w} ft Roll {extraWidthAllowance !== '' && Number(extraWidthAllowance) > 0 ? `(+${extraWidthAllowance}ft allowance)` : ''}</span>
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-emerald-800 dark:text-emerald-300">
-                        Roll length: <strong>{standardRollLength} ft</strong> • Machine nesting will match customer widths to these configured physical rolls with zero manual entry.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-emerald-950 dark:text-emerald-200">
-                          Active Sheet Sizes:
-                        </span>
-                        {availableSheetSizes.map((s, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-700 text-xs font-mono font-bold text-emerald-900 dark:text-emerald-200 shadow-2xs"
-                          >
-                            <span>{s.label || `${s.width}ft × ${s.length}ft`}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Ink Type Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    Ink Type (কালির ধরন) <span className="text-rose-500">*</span>
+                    Print Category <span className="text-rose-500">*</span>
                   </Label>
                   <select
-                    value={inkType}
-                    onChange={(e) => setInkType(e.target.value)}
-                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    value={printCategory}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setPrintCategory(val)
+                      const matched = DEFAULT_PRINT_CATEGORIES.find((c) => c.name === val)
+                      if (matched) {
+                        setInkType(matched.defaultInk)
+                        setSelectedPrintingMethods([matched.name_bn || matched.name])
+                      }
+                    }}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                   >
-                    {DEFAULT_INK_TYPES.map((it) => (
-                      <option key={it.id} value={it.name}>
-                        {it.name} (Avg: ৳{it.defaultRatePerLiter}/L)
+                    {DEFAULT_PRINT_CATEGORIES.map((c) => (
+                      <option key={c.id} value={c.name}>
+                        {c.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Select Ink (4-6 inks from inventory) */}
-                <div className="p-3.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 space-y-3 shadow-2xs">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
-                    <div className="flex items-center gap-2">
-                      <Droplets className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                      <div>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-                          Select Ink ({selectedInks.length} Inks from Inventory)
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400">
-                          Link Cyan, Magenta, Yellow, Black (+ Light Colors/White) to raw inventory ink items
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Quick Ink Presets */}
-                    <div className="flex items-center gap-1 flex-wrap">
-                      <button
-                        type="button"
-                        onClick={() => handleApplyInkPreset('cmyk')}
-                        className={cn(
-                          'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
-                          selectedInks.length === 4 && !selectedInks.some((i) => i.channel.includes('White'))
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                        )}
-                      >
-                        4 Inks (CMYK)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyInkPreset('cmyk_lc_lm')}
-                        className={cn(
-                          'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
-                          selectedInks.length === 6 && selectedInks.some((i) => i.channel.includes('Light'))
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                        )}
-                      >
-                        6 Inks (CMYK+LC+LM)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyInkPreset('cmyk_white')}
-                        className={cn(
-                          'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
-                          selectedInks.length === 5 && selectedInks.some((i) => i.channel.includes('White'))
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                        )}
-                      >
-                        5 Inks (CMYK+White)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleApplyInkPreset('cmyk_white_varnish')}
-                        className={cn(
-                          'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
-                          selectedInks.length === 6 && selectedInks.some((i) => i.channel.includes('Varnish'))
-                            ? 'bg-blue-600 text-white border-blue-600'
-                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
-                        )}
-                      >
-                        6 Inks (CMYK+W+V)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Ink Channels Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {selectedInks.map((ink, idx) => (
-                      <div
-                        key={idx}
-                        className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex items-center justify-between gap-2 text-xs"
-                      >
-                        <div className="flex items-center gap-2 flex-1 min-w-0">
-                          <span
-                            className="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-300 shadow-2xs"
-                            style={{ backgroundColor: ink.color_code || '#64748b' }}
-                          />
-                          <div className="flex-1 min-w-0">
-                            <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
-                              {ink.channel}
-                            </span>
-                            <select
-                              value={ink.material_id || ''}
-                              onChange={(e) => handleChannelInkChange(idx, e.target.value)}
-                              className="w-full mt-1 h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 font-medium truncate"
-                            >
-                              <option value="">-- Link Inventory Ink Bottle/Can --</option>
-                              {inkMaterials.length > 0 ? (
-                                inkMaterials.map((im) => (
-                                  <option key={im.id} value={im.id}>
-                                    {im.name} (৳{(im as any).purchase_price || im.cost_per_unit || (im as any).base_cost || 2800}/L)
-                                  </option>
-                                ))
-                              ) : (
-                                availableMaterials.map((im) => (
-                                  <option key={im.id} value={im.id}>
-                                    {im.name}
-                                  </option>
-                                ))
-                              )}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-white block">
-                            ৳{ink.unit_price || 2800}/L
-                          </span>
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            (৳{((ink.unit_price || 2800) / 1000).toFixed(2)}/ml)
-                          </span>
-                        </div>
-
-                        {selectedInks.length > 4 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveInkChannel(idx)}
-                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                            title="Remove channel"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
-                      </div>
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Technology (প্রযুক্তি) <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={printTechnology}
+                    onChange={(e) => setPrintTechnology(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {PRINT_TECHNOLOGIES.map((tech) => (
+                      <option key={tech} value={tech}>
+                        {tech}
+                      </option>
                     ))}
-                  </div>
-
-                  {selectedInks.length < 8 && (
-                    <button
-                      type="button"
-                      onClick={handleAddInkChannel}
-                      className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1 cursor-pointer pt-1"
-                    >
-                      <Plus className="w-3.5 h-3.5" /> Add Additional Ink Channel (White, Varnish, Spot)
-                    </button>
-                  )}
+                  </select>
                 </div>
 
-                {/* Consume per Unit [ ] (ml) & Inks Cost Auto Calculate */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Production Method <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={productionMethod}
+                    onChange={(e) => setProductionMethod(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {PRODUCTION_METHODS.map((pm) => (
+                      <option key={pm} value={pm}>
+                        {pm}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Default Department <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={defaultDepartment}
+                    onChange={(e) => setDefaultDepartment(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {DEFAULT_DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Machinery Fleet Pre-selection */}
+              {machineries.length > 0 && (
+                <div className="p-2.5 bg-white dark:bg-slate-900/80 rounded-lg border border-blue-200/80 dark:border-blue-900/60 space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-blue-600" />
+                      Assigned Machinery Fleet Routing
+                    </Label>
+                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Auto-populates speed & machine cost</span>
+                  </div>
+                  <select
+                    value={selectedMachineId}
+                    onChange={(e) => handleFleetMachineSelect(e.target.value)}
+                    className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 font-medium"
+                  >
+                    <option value="">-- Auto-Match Best Available Machine --</option>
+                    {machineries.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.code || 'NO-CODE'}) — {m.category} {m.max_print_width_inches ? `[Max: ${m.max_print_width_inches}"]` : ''} • Rate: ৳{m.hourly_rate_bdt || 0}/hr • Speed: {m.speed_sqft_per_hour || m.speed_sheets_per_hour || 'N/A'} {m.speed_sheets_per_hour ? 'sheets/hr' : 'sqft/hr'}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedMachineId && (
+                    <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 pt-0.5">
+                      <span>Hourly Rate: <strong className="text-slate-900 dark:text-white font-mono">৳{machineHourlyRate || 0}/hr</strong></span>
+                      <span>Speed: <strong className="text-blue-600 dark:text-blue-400 font-mono">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
+                      <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">৳{machineCost || 0}/sft</strong></span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 1.3 Primary Substrate & Material Info Card */}
+            <div className="space-y-3 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20">
+              <div className="flex items-center justify-between pb-1.5 border-b border-emerald-200/60 dark:border-emerald-900/60">
+                <div className="flex items-center gap-2">
+                  <Boxes className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Primary Substrate (Raw Material Isolation)
+                  </h4>
+                </div>
+                {printableMaterialId && (
+                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Inventory Linked (item_type = raw_material)
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Primary Raw Material Substrate <span className="text-rose-500">*</span>
+                </Label>
+                <select
+                  value={printableMaterialId}
+                  onChange={(e) => handleSelectPrintableMaterial(e.target.value)}
+                  className={cn(
+                    'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
+                    printableMaterialId
+                      ? 'border-emerald-500 bg-emerald-50/60 dark:bg-emerald-950/40 text-emerald-950 dark:text-emerald-200 font-bold'
+                      : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
+                  )}
+                >
+                  <option value="">-- Select Inventory Raw Material Substrate / Media --</option>
+                  {substrateMaterials.map((mat) => {
+                    const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
+                    return (
+                      <option key={mat.id} value={mat.id}>
+                        {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/sft` : ''}
+                      </option>
+                    )
+                  })}
+                </select>
+              </div>
+
+              {/* Substrate Details Card */}
+              {selectedMaterialRecord && (
+                <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-emerald-300 dark:border-emerald-800 grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block font-medium">Material / SKU</span>
+                    <span className="font-bold text-slate-900 dark:text-white truncate block">{selectedMaterialRecord.name}</span>
+                    <span className="text-[10px] font-mono text-slate-400">{selectedMaterialRecord.sku}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block font-medium">Purchase / Stock Unit</span>
+                    <span className="font-mono font-bold text-emerald-700 dark:text-emerald-300 uppercase">
+                      {purchaseUnit} / {selectedMaterialRecord.unit || 'roll'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block font-medium">Roll Widths</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                      {availableRollWidths.join(', ')} ft
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block font-medium">Roll Length</span>
+                    <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
+                      {standardRollLength} ft
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase block font-medium">Average Cost</span>
+                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                      ৳{getMaterialCost(selectedMaterialRecord)} / {purchaseUnit === 'roll' ? 'sft' : purchaseUnit}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 1.4 Dimension Rules & Nesting */}
+            <div className="space-y-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center justify-between pb-1.5 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center gap-2">
+                  <Maximize2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Dimension Rules & Media Nesting
+                  </h4>
+                </div>
+              </div>
+
+              {/* Supported Roll Widths Pills + Inline Add */}
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
+                  Supported Roll Widths (ফিট প্রস্থ)
+                </Label>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {availableRollWidths.map((w) => (
+                    <span
+                      key={w}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-slate-100 shadow-2xs"
+                    >
+                      <span>{w} ft</span>
+                      {availableRollWidths.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRollWidth(w)}
+                          className="text-slate-400 hover:text-rose-500 ml-0.5 cursor-pointer"
+                        >
+                          ×
+                        </button>
+                      )}
+                    </span>
+                  ))}
+
+                  <div className="inline-flex items-center gap-1">
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0.1"
+                      placeholder="+ Width (ft)"
+                      value={newRollWidth}
+                      onChange={(e) => setNewRollWidth(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddRollWidth())}
+                      className="h-7 w-24 text-xs font-mono"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={handleAddRollWidth}
+                      className="h-7 px-2 text-xs font-bold"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trim, Bleed, Print Allowance & Nesting Rule */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Trim Allowance (Inches)
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={trimAllowanceIn}
+                      onChange={(e) => setTrimAllowanceIn(parseFloat(e.target.value) || 0)}
+                      className="h-9 text-xs font-mono pr-8"
+                    />
+                    <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">in</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Production Bleed (Inches)
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={productionBleedInches}
+                      onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
+                      className="h-9 text-xs font-mono pr-8"
+                    />
+                    <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">in</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Print Allowance (Feet)
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={extraWidthAllowance}
+                      onChange={(e) => setExtraWidthAllowance(e.target.value)}
+                      className="h-9 text-xs font-mono pr-8"
+                    />
+                    <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Nesting Rule <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={nestingRule}
+                    onChange={(e) => setNestingRule(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                  >
+                    {NESTING_RULES.map((rule) => (
+                      <option key={rule.value} value={rule.value}>
+                        {rule.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* 1.5 Ink Configuration (when serviceType === 'printing') */}
+            {serviceType === 'printing' && (
+              <div className="space-y-3.5 p-3.5 rounded-xl border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 shadow-2xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
+                        Ink Configuration & Channel Formulation
+                      </span>
+                      <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                        Select reusable ink profile or link individual ink channels to inventory items
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Quick Ink Profile Selectors */}
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {INK_PROFILES.map((prof) => (
+                      <button
+                        key={prof.id}
+                        type="button"
+                        onClick={() => handleApplyInkProfile(prof.id)}
+                        className={cn(
+                          'px-2 py-1 rounded text-[11px] font-bold border transition-colors cursor-pointer',
+                          selectedInkProfile === prof.id
+                            ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
+                            : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                        )}
+                      >
+                        {prof.name.split(' (')[0]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Ink Chemistry Type <span className="text-rose-500">*</span>
+                    </Label>
+                    <select
+                      value={inkType}
+                      onChange={(e) => setInkType(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {DEFAULT_INK_TYPES.map((it) => (
+                        <option key={it.id} value={it.name}>
+                          {it.name} (Avg: ৳{it.defaultRatePerLiter}/L)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-semibold mb-1 block">
+                      Active Ink Profile
+                    </Label>
+                    <select
+                      value={selectedInkProfile}
+                      onChange={(e) => handleApplyInkProfile(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                    >
+                      {INK_PROFILES.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Ink Channels Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  {selectedInks.map((ink, idx) => (
+                    <div
+                      key={idx}
+                      className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex items-center justify-between gap-2 text-xs"
+                    >
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <span
+                          className="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-300 shadow-2xs"
+                          style={{ backgroundColor: ink.color_code || '#64748b' }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
+                            {ink.channel}
+                          </span>
+                          <select
+                            value={ink.material_id || ''}
+                            onChange={(e) => handleChannelInkChange(idx, e.target.value)}
+                            className="w-full mt-1 h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 font-medium truncate"
+                          >
+                            <option value="">-- Link Inventory Ink Bottle/Can --</option>
+                            {inkMaterials.length > 0 ? (
+                              inkMaterials.map((im) => (
+                                <option key={im.id} value={im.id}>
+                                  {im.name} (৳{(im as any).purchase_price || im.cost_per_unit || (im as any).base_cost || 2800}/L)
+                                </option>
+                              ))
+                            ) : (
+                              availableMaterials.map((im) => (
+                                <option key={im.id} value={im.id}>
+                                  {im.name}
+                                </option>
+                              ))
+                            )}
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-white block">
+                          ৳{ink.unit_price || 2800}/L
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-mono">
+                          (৳{((ink.unit_price || 2800) / 1000).toFixed(2)}/ml)
+                        </span>
+                      </div>
+
+                      {selectedInks.length > 4 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveInkChannel(idx)}
+                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                          title="Remove channel"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Consumption & Inks Cost Auto-Calculation */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50/60 dark:bg-blue-950/40">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                      Consume per Unit (ml) <span className="text-rose-500">*</span>
+                      Channel Consumption (ml / {sellingUnit || 'sft'}) <span className="text-rose-500">*</span>
                     </Label>
                     <div className="relative">
                       <Input
@@ -2845,15 +3349,12 @@ export function ServiceConfigModal({
                         ml / {sellingUnit || 'sft'}
                       </span>
                     </div>
-                    <span className="text-[10px] text-blue-700 dark:text-blue-300 mt-1 block font-medium">
-                      ✓ Automatically reduces stock from linked ink inventory on job production runs.
-                    </span>
                   </div>
 
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <Label className="text-xs font-semibold block text-slate-800 dark:text-slate-200">
-                        Inks Cost Auto Calculate
+                        Total Inks Cost Auto-Calculate
                       </Label>
                       <label className="flex items-center gap-1 text-[11px] font-semibold text-blue-600 cursor-pointer">
                         <input
@@ -2875,8 +3376,8 @@ export function ServiceConfigModal({
                         placeholder="3.36"
                         value={inkCost}
                         onChange={(e) => {
-                          setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value))
-                          setAutoCalculateInkCost(false)
+                          setInkCost(e.target.value === '' ? '' : parseFloat(e.target.value));
+                          setAutoCalculateInkCost(false);
                         }}
                         className="h-9 text-xs font-mono font-bold pl-7 pr-12 bg-white dark:bg-slate-900 text-blue-700 dark:text-blue-300"
                       />
@@ -2884,775 +3385,113 @@ export function ServiceConfigModal({
                         / {sellingUnit || 'sft'}
                       </span>
                     </div>
-
-                    <div className="mt-1 flex items-center gap-1 text-[11px] font-mono text-emerald-700 dark:text-emerald-300">
-                      <Calculator className="w-3 h-3 shrink-0" />
-                      <span>{Number(consumePerUnitMl) || 1.2} ml × ৳{(autoCalculatedInkMetrics.avgRatePerMl).toFixed(3)}/ml = ৳{Number(inkCost || 0).toFixed(2)}/{sellingUnit || 'sft'}</span>
-                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Section 2.1: If Service Type == 'finishing' (Finishing & Lamination) */}
-            {serviceType === 'finishing' && (
-              <div className="space-y-4 p-4 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 animate-in fade-in-0">
-                <div className="flex items-center gap-2 pb-2 border-b border-purple-200/60 dark:border-purple-900/60">
-                  <Scissors className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Finishing & Lamination Configuration
-                  </h4>
-                </div>
-
-                {/* Finishing Category & Primary Finishing Raw Material (Raw Product - Finishing) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Finishing Category (ফিনিশিং ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={finishingCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setFinishingCategory(val)
-                        const match = DEFAULT_FINISHING_CATEGORIES.find((c) => c.name === val)
-                        if (match) {
-                          setFinishingMethod(match.name)
-                          if (match.defaultUnit) {
-                            setSellingUnit(match.defaultUnit)
-                            const unitMatch = COMMON_SELLING_UNITS.find((u) => u.value === match.defaultUnit)
-                            if (unitMatch) setPricingMethod(unitMatch.defaultMethod)
-                          }
-                          if (match.defaultRate && (!sellingPrice || Number(sellingPrice) === 0)) {
-                            setSellingPrice(match.defaultRate)
-                          }
-                          if (match.defaultCost && (!materialCost || Number(materialCost) === 0)) {
-                            setMaterialCost(match.defaultCost)
-                          }
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_FINISHING_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs font-semibold block">
-                        Finishing Raw Material (Raw Product — Finishing) <span className="text-rose-500">*</span>
-                      </Label>
-                      {finishingMaterialId && (
-                        <span className="text-[10px] text-purple-600 dark:text-purple-400 font-semibold flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
-                        </span>
-                      )}
-                    </div>
-                    <select
-                      value={finishingMaterialId}
-                      onChange={(e) => handleSelectFinishingMaterial(e.target.value)}
-                      className={cn(
-                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
-                        finishingMaterialId
-                          ? 'border-purple-400 dark:border-purple-700 bg-purple-50/40 dark:bg-purple-950/20 text-purple-950 dark:text-purple-200 font-bold'
-                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
-                      )}
-                    >
-                      <option value="">-- Select Raw Finishing Media / Film / Hardware --</option>
-                      {(finishingMaterials.length > 0 ? finishingMaterials : availableMaterials).map((mat) => {
-                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
-                        return (
-                          <option key={mat.id} value={mat.id}>
-                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/${mat.unit || 'unit'}` : ''}
-                          </option>
-                        )
-                      })}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Finishing & Lamination Specs */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Film Thickness / Micron (ফিল্মের পুরুত্ব)
-                    </Label>
-                    <select
-                      value={laminationMicron}
-                      onChange={(e) => setLaminationMicron(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {LAMINATION_MICRON_PRESETS.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Surface Finish / Texture (সারফেস ফিনিশ)
-                    </Label>
-                    <select
-                      value={laminationType}
-                      onChange={(e) => setLaminationType(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      <option value="Gloss">Gloss (চকচকে গ্লসি)</option>
-                      <option value="Matt">Matt / Matte (ম্যাট ফিনিশ)</option>
-                      <option value="Soft Touch">Soft Touch / Velvet (ভেলভেট)</option>
-                      <option value="Satin">Satin (সাটিন ফিনিশ)</option>
-                      <option value="Anti-Scratch">Anti-Scratch Heavy Duty (স্ক্র্যাচ-প্রুফ)</option>
-                      <option value="3D Holographic">3D Holographic (হোলোগ্রাফিক)</option>
-                      <option value="Sand Textured">Sand Textured (ফ্লোর স্যান্ড টেক্সচার)</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Available Finishing Widths / Sheet Sizes from Linked Material */}
-                <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/50 dark:bg-purple-950/30 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Maximize2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Available Finishing Sizes (From Linked Raw Material)
-                      </span>
-                    </div>
-                    {finishingMaterialId ? (
-                      <Badge className="bg-purple-600 text-white text-[10px] font-mono py-0.5">
-                        ✓ Linked Material Configured
-                      </Badge>
-                    ) : (
-                      <span className="text-[11px] text-slate-500 font-medium">
-                        (Standard roll & sheet finishing widths)
-                      </span>
-                    )}
-                  </div>
-
-                  {purchaseUnit === 'roll' ? (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-purple-950 dark:text-purple-200">
-                          Active Roll Sizes:
-                        </span>
-                        {availableRollWidths.map((w) => (
-                          <span
-                            key={w}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 text-xs font-mono font-bold text-purple-900 dark:text-purple-200 shadow-2xs"
-                          >
-                            <span>{w} ft Laminator Roll {extraWidthAllowance !== '' && Number(extraWidthAllowance) > 0 ? `(+${extraWidthAllowance}ft allowance)` : ''}</span>
-                          </span>
-                        ))}
-                      </div>
-                      <p className="text-[11px] text-purple-800 dark:text-purple-300">
-                        Roll length: <strong>{standardRollLength} ft</strong> • Automatic nesting will align jobs with these roll dimensions.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1.5 pt-1">
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="text-[11px] font-bold text-purple-950 dark:text-purple-200">
-                          Active Sheet Sizes:
-                        </span>
-                        {availableSheetSizes.map((s, idx) => (
-                          <span
-                            key={idx}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-900 border border-purple-300 dark:border-purple-700 text-xs font-mono font-bold text-purple-900 dark:text-purple-200 shadow-2xs"
-                          >
-                            <span>{s.label || `${s.width}ft × ${s.length}ft`}</span>
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
+            {/* 1.6 Commercial Billing & Scope */}
+            <div className="space-y-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="flex items-center gap-2 pb-1.5 border-b border-slate-200 dark:border-slate-800">
+                <Calculator className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                  Commercial Billing & Scope
+                </h4>
               </div>
-            )}
 
-            {/* Section 2.2: If Service Type == 'production' (Production & Fabrication) */}
-            {serviceType === 'production' && (
-              <div className="space-y-4 p-4 rounded-xl border border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 animate-in fade-in-0">
-                <div className="flex items-center gap-2 pb-2 border-b border-amber-200/60 dark:border-amber-900/60">
-                  <Hammer className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Production & Fabrication Parameters (কাঠামো ও মেটাল আর্কিটেকচার)
-                  </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Selling Unit (বিলিং একক) <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={sellingUnit}
+                    onChange={(e) => {
+                      const u = e.target.value
+                      setSellingUnit(u)
+                      const match = COMMON_SELLING_UNITS.find((x) => x.value === u)
+                      if (match) setPricingMethod(match.defaultMethod)
+                    }}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                  >
+                    {COMMON_SELLING_UNITS.map((u) => (
+                      <option key={u.value} value={u.value}>
+                        {u.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Production Category & Base Substrate / Sheet / Pipe Material */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Fabrication Category (প্রোডাকশন ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={productionCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setProductionCategory(val)
-                        const match = DEFAULT_PRODUCTION_CATEGORIES.find((c) => c.name === val)
-                        if (match) {
-                          setStructureFrameType(match.defaultFrame)
-                          setFrameDepth(match.defaultDepth)
-                          setLightingType(match.defaultLighting)
-                          if (match.defaultUnit) {
-                            setSellingUnit(match.defaultUnit)
-                            setPricingMethod(match.defaultMethod)
-                          }
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_PRODUCTION_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs font-semibold block">
-                        Base Substrate / Sheet / Pipe (Inventory Item)
-                      </Label>
-                      {productionMaterialId && (
-                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
-                        </span>
-                      )}
-                    </div>
-                    <select
-                      value={productionMaterialId}
-                      onChange={(e) => handleSelectProductionMaterial(e.target.value)}
-                      className={cn(
-                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
-                        productionMaterialId
-                          ? 'border-amber-400 dark:border-amber-700 bg-amber-50/40 dark:bg-amber-950/20 text-amber-950 dark:text-amber-200 font-bold'
-                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
-                      )}
-                    >
-                      <option value="">-- Select Sheet Board, Acrylic or MS Pipe --</option>
-                      {(productionMaterials.length > 0 ? productionMaterials : availableMaterials).map((mat) => {
-                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
-                        return (
-                          <option key={mat.id} value={mat.id}>
-                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/${mat.unit || 'unit'}` : ''}
-                          </option>
-                        )
-                      })}
-                    </select>
-                  </div>
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Quantity Calculation Method <span className="text-rose-500">*</span>
+                  </Label>
+                  <select
+                    value={quantityCalculationMethod}
+                    onChange={(e) => setQuantityCalculationMethod(e.target.value)}
+                    className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
+                  >
+                    {QUANTITY_CALCULATION_METHODS.map((q) => (
+                      <option key={q.value} value={q.value}>
+                        {q.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                {/* Structure Frame Type & Frame Depth */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Structure Frame Type (কাঠামো ও ফ্রেমের ধরন)
-                    </Label>
-                    <select
-                      value={structureFrameType}
-                      onChange={(e) => setStructureFrameType(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {STRUCTURE_FRAME_PRESETS.map((f) => (
-                        <option key={f.value} value={f.value}>
-                          {f.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Structure / 3D Frame Depth (কাঠামোর পুরুত্ব/গভীরতা)
-                    </Label>
-                    <select
-                      value={frameDepth}
-                      onChange={(e) => setFrameDepth(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {FRAME_DEPTH_PRESETS.map((d) => (
-                        <option key={d.value} value={d.value}>
-                          {d.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Lighting Type & Fabrication Method */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Lighting & Illumination (আলোর সংস্থাপন)
-                    </Label>
-                    <select
-                      value={lightingType}
-                      onChange={(e) => setLightingType(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {LIGHTING_TYPE_PRESETS.map((l) => (
-                        <option key={l.value} value={l.value}>
-                          {l.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Fabrication Method (প্রস্তুত প্রণালী ও কৌশল)
-                    </Label>
-                    <select
-                      value={fabricationMethod}
-                      onChange={(e) => setFabricationMethod(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {FABRICATION_METHOD_PRESETS.map((m) => (
-                        <option key={m.value} value={m.value}>
-                          {m.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* If Lighting is enabled, show Electrical Sub-BOM linkage */}
-                {lightingType !== 'none' && (
-                  <div className="p-3.5 rounded-xl border border-amber-300 dark:border-amber-800/80 bg-amber-100/40 dark:bg-amber-950/40 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                        Electrical & LED Injection Module Auto-Linkage
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                          LED Module / Strip (Inventory Item)
-                        </Label>
-                        <select
-                          value={ledModuleMaterialId}
-                          onChange={(e) => setLedModuleMaterialId(e.target.value)}
-                          className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                        >
-                          <option value="">-- Select LED Module / Strip --</option>
-                          {electricalMaterials.map((mat) => (
-                            <option key={mat.id} value={mat.id}>
-                              {mat.name} ({mat.unit || 'pcs'})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      <div>
-                        <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                          Power Supply SMPS / Transformer (Inventory Item)
-                        </Label>
-                        <select
-                          value={powerSupplyMaterialId}
-                          onChange={(e) => setPowerSupplyMaterialId(e.target.value)}
-                          className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                        >
-                          <option value="">-- Select SMPS Power Supply --</option>
-                          {electricalMaterials.map((mat) => (
-                            <option key={mat.id} value={mat.id}>
-                              {mat.name} ({mat.unit || 'pcs'})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Section 2.3: If Service Type == 'installation' (Installation & Fitting) */}
-            {serviceType === 'installation' && (
-              <div className="space-y-4 p-4 rounded-xl border border-cyan-200 dark:border-cyan-900/60 bg-cyan-50/30 dark:bg-cyan-950/20 animate-in fade-in-0">
-                <div className="flex items-center gap-2 pb-2 border-b border-cyan-200/60 dark:border-cyan-900/60">
-                  <Wrench className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Site Installation & Fitting Configuration
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Installation Category (ইন্সটলেশন ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={installationCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setInstallationCategory(val)
-                        const match = DEFAULT_INSTALLATION_CATEGORIES.find((c) => c.name === val)
-                        if (match) {
-                          setInstallationHeightTier(match.defaultHeight)
-                          setInstallationCrewSize(match.defaultCrew)
-                          if (match.defaultUnit) {
-                            setSellingUnit(match.defaultUnit)
-                            setPricingMethod(match.defaultMethod)
-                          }
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_INSTALLATION_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs font-semibold block">
-                        Hardware, Fasteners & Sealants (Inventory Item)
-                      </Label>
-                      {installationHardwareId && (
-                        <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-semibold flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
-                        </span>
-                      )}
-                    </div>
-                    <select
-                      value={installationHardwareId}
-                      onChange={(e) => handleSelectInstallationHardware(e.target.value)}
-                      className={cn(
-                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
-                        installationHardwareId
-                          ? 'border-cyan-400 dark:border-cyan-700 bg-cyan-50/40 dark:bg-cyan-950/20 text-cyan-950 dark:text-cyan-200 font-bold'
-                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
-                      )}
-                    >
-                      <option value="">-- Select Fastener, Screws, Silicone or Adhesive --</option>
-                      {(installationHardwareMaterials.length > 0 ? installationHardwareMaterials : availableMaterials).map((mat) => (
-                        <option key={mat.id} value={mat.id}>
-                          {mat.name} ({mat.unit || 'unit'})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Elevation / Height Tier (কাজের উচ্চতা)
-                    </Label>
-                    <select
-                      value={installationHeightTier}
-                      onChange={(e) => setInstallationHeightTier(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {HEIGHT_TIER_PRESETS.map((h) => (
-                        <option key={h.value} value={h.value}>
-                          {h.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Technician Crew Size (জনবল)
-                    </Label>
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Minimum Billable Qty Floor
+                  </Label>
+                  <div className="relative">
                     <Input
                       type="number"
-                      min={1}
-                      max={20}
-                      value={installationCrewSize}
-                      onChange={(e) => setInstallationCrewSize(parseInt(e.target.value, 10) || 1)}
-                      className="h-9 text-xs font-semibold"
+                      step="any"
+                      min="0.1"
+                      value={minBillableQty}
+                      onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
+                      className="h-9 text-xs font-mono pr-10"
+                    />
+                    <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400 uppercase">
+                      {sellingUnit}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Minimum Job Charge (৳)
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
+                    <Input
+                      type="number"
+                      step="any"
+                      min="0"
+                      placeholder="0"
+                      value={minimumCharge}
+                      onChange={(e) => setMinimumCharge(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      className="h-9 text-xs font-mono pl-7"
                     />
                   </div>
-
-                  <div className="flex flex-col justify-end">
-                    <label className="flex items-center gap-2 h-9 px-3 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={safetyEquipmentRequired}
-                        onChange={(e) => setSafetyEquipmentRequired(e.target.checked)}
-                        className="rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
-                      />
-                      <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                        Scaffolding & Safety Gear
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Section 2.4: If Service Type == 'delivery' (Delivery & Logistics) */}
-            {serviceType === 'delivery' && (
-              <div className="space-y-4 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/30 dark:bg-emerald-950/20 animate-in fade-in-0">
-                <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/60 dark:border-emerald-900/60">
-                  <Truck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    Delivery & Logistics Transport Configuration
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Delivery Category (ডেলিভারি ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={deliveryCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setDeliveryCategory(val)
-                        const match = DEFAULT_DELIVERY_CATEGORIES.find((c) => c.name === val)
-                        if (match) {
-                          setDeliveryVehicleType(match.defaultVehicle)
-                          if (match.defaultUnit) {
-                            setSellingUnit(match.defaultUnit)
-                            setPricingMethod(match.defaultMethod)
-                          }
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_DELIVERY_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1">
-                      <Label className="text-xs font-semibold block">
-                        Packaging Consumables (Inventory Item)
-                      </Label>
-                      {packagingMaterialId && (
-                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-0.5">
-                          <CheckCircle2 className="w-3 h-3" /> Auto-Linked
-                        </span>
-                      )}
-                    </div>
-                    <select
-                      value={packagingMaterialId}
-                      onChange={(e) => handleSelectPackagingMaterial(e.target.value)}
-                      className={cn(
-                        'w-full h-9 text-xs rounded-md border px-2.5 font-medium transition-colors',
-                        packagingMaterialId
-                          ? 'border-emerald-400 dark:border-emerald-700 bg-emerald-50/40 dark:bg-emerald-950/20 text-emerald-950 dark:text-emerald-200 font-bold'
-                          : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200'
-                      )}
-                    >
-                      <option value="">-- Select Bubble Wrap, Carton or Box --</option>
-                      {(packagingMaterials.length > 0 ? packagingMaterials : availableMaterials).map((mat) => (
-                        <option key={mat.id} value={mat.id}>
-                          {mat.name} ({mat.unit || 'unit'})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Vehicle Type (যানবাহন)
-                    </Label>
-                    <select
-                      value={deliveryVehicleType}
-                      onChange={(e) => setDeliveryVehicleType(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {VEHICLE_TYPE_PRESETS.map((v) => (
-                        <option key={v.value} value={v.value}>
-                          {v.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Coverage Zone (ডেলিভারি অঞ্চল)
-                    </Label>
-                    <select
-                      value={deliveryDistanceZone}
-                      onChange={(e) => setDeliveryDistanceZone(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      <option value="inside_city">Inside City Metro (মহানগরীর ভেতরে)</option>
-                      <option value="suburbs">Greater Suburbs / Outer Radius (উপশহর ও সীমানা)</option>
-                      <option value="inter_district">Inter-District Courier / Nationwide (সারাদেশে কুরিয়ার)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Section 2.5: If Service Type == 'general' (General & Design Services) */}
-            {serviceType === 'general' && (
-              <div className="space-y-4 p-4 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-indigo-950/20 animate-in fade-in-0">
-                <div className="flex items-center gap-2 pb-2 border-b border-indigo-200/60 dark:border-indigo-900/60">
-                  <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                    General Service & Design Deliverable Configuration
-                  </h4>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      General Service Category (সার্ভিস ক্যাটাগরি) <span className="text-rose-500">*</span>
-                    </Label>
-                    <select
-                      value={generalCategory}
-                      onChange={(e) => {
-                        const val = e.target.value
-                        setGeneralCategory(val)
-                        const match = DEFAULT_GENERAL_CATEGORIES.find((c) => c.name === val)
-                        if (match) {
-                          setDeliverableFormat(match.defaultFormat)
-                          if (match.defaultUnit) {
-                            setSellingUnit(match.defaultUnit)
-                            setPricingMethod(match.defaultMethod)
-                          }
-                        }
-                      }}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      {DEFAULT_GENERAL_CATEGORIES.map((c) => (
-                        <option key={c.id} value={c.name}>
-                          {c.name} ({c.name_bn})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Deliverable Format / Output (ফলাফল বা আউটপুট)
-                    </Label>
-                    <select
-                      value={deliverableFormat}
-                      onChange={(e) => setDeliverableFormat(e.target.value)}
-                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                    >
-                      <option value="vector_ai_pdf">Print-Ready Vector Files (AI, PDF, EPS)</option>
-                      <option value="site_survey_cad">Site Measurement Sheet & CAD Layout</option>
-                      <option value="on_site_repair">On-Site Technical Maintenance & Inspection</option>
-                      <option value="custom_deliverable">Custom Job Deliverable</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs font-semibold mb-1 block">
-                      Standard Turnaround Time (সার্ভিস ডেলিভারি সময়)
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="number"
-                        min={1}
-                        max={720}
-                        value={turnaroundHours}
-                        onChange={(e) => setTurnaroundHours(parseInt(e.target.value, 10) || 24)}
-                        className="h-9 text-xs font-semibold w-28"
-                      />
-                      <span className="text-xs text-slate-500 font-medium">Hours (ঘণ্টা)</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Section 3: Commercial Billing Units & Scope */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Selling Unit (বিলিং একক) <span className="text-rose-500">*</span>
-                </Label>
-                <select
-                  value={sellingUnit}
-                  onChange={(e) => {
-                    const u = e.target.value
-                    setSellingUnit(u)
-                    const match = COMMON_SELLING_UNITS.find((x) => x.value === u)
-                    if (match) setPricingMethod(match.defaultMethod)
-                  }}
-                  className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
-                >
-                  {COMMON_SELLING_UNITS.map((u) => (
-                    <option key={u.value} value={u.value}>
-                      {u.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Min Billable Qty Floor
-                </Label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0.1"
-                    value={minBillableQty}
-                    onChange={(e) => setMinBillableQty(parseFloat(e.target.value) || 1)}
-                    className="h-9 text-xs font-mono pr-10"
-                  />
-                  <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400 uppercase">
-                    {sellingUnit}
-                  </span>
                 </div>
               </div>
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  Trim Bleed Margin (Inches)
+                  Technical Scope & Service Description
                 </Label>
-                <div className="relative">
-                  <Input
-                    type="number"
-                    step="any"
-                    min="0"
-                    value={productionBleedInches}
-                    onChange={(e) => setProductionBleedInches(parseFloat(e.target.value) || 0)}
-                    className="h-9 text-xs font-mono pr-8"
-                  />
-                  <span className="absolute right-3 top-2 text-[11px] font-bold text-slate-400">in</span>
-                </div>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. High resolution 1440 DPI outdoor UV curing print. UV resistant for up to 3 years without color fading..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                />
               </div>
             </div>
 
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                Technical Scope & Service Description
-              </Label>
-              <textarea
-                rows={2}
-                placeholder="e.g. High resolution 1440 DPI outdoor UV curing print. UV resistant for up to 3 years without color fading..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-2.5 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs focus:ring-1 focus:ring-blue-500 outline-none resize-none"
-              />
-            </div>
-
+            {/* Step 1 Footer Actions */}
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
                 <input
@@ -3669,7 +3508,7 @@ export function ServiceConfigModal({
                 variant="outline"
                 size="sm"
                 onClick={() => setActiveTab('materials')}
-                className="h-8 text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1"
+                className="h-8 text-xs font-bold border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300 gap-1 cursor-pointer"
               >
                 <span>Next: Additional BOM</span>
                 <ArrowRight className="w-3.5 h-3.5" />

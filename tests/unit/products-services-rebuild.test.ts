@@ -1,7 +1,7 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
-import { calculateServiceCosting } from '../../lib/domain/service-costing-engine.ts'
-import type { ProductRecord } from '../../types/product.types.ts'
+import { calculateServiceCosting, evaluateBOMConsumption } from '../../lib/domain/service-costing-engine.ts'
+import type { ProductRecord, ServiceRequiredMaterial } from '../../types/product.types.ts'
 
 describe('Products & Services Rebuild Domain Model', () => {
   const uvVinylService: ProductRecord = {
@@ -159,5 +159,79 @@ describe('Products & Services Rebuild Domain Model', () => {
     assert.strictEqual(snapshot.unit_price, 35)
     assert.strictEqual(snapshot.total_area_sqft, 60) // 3*10*2 = 60
     assert.ok(snapshot.selected_finishing?.includes('Matte Lamination'))
+  })
+
+  describe('BOM Formula Engine (evaluateBOMConsumption)', () => {
+    test('evaluates AREA_PRINT consumption method with waste %', () => {
+      const item: ServiceRequiredMaterial = {
+        material_name: 'Gloss Lamination Film',
+        consumption_method: 'area_print',
+        quantity_per_unit: 1.0,
+        waste_percent: 5,
+        unit_cost: 2.5,
+      }
+      const result = evaluateBOMConsumption(item, {
+        customerAreaSqft: 100,
+        productionAreaSqft: 100,
+        orderQuantity: 1,
+      })
+      // 100 sqft * 1.05 waste = 105 sqft @ ৳2.5 = ৳262.50
+      assert.strictEqual(result.requiredQuantity, 105)
+      assert.strictEqual(result.unitCost, 2.5)
+      assert.strictEqual(result.subtotalCost, 262.5)
+      assert.strictEqual(result.wasteQuantity, 5)
+    })
+
+    test('evaluates PER_PIECE consumption method', () => {
+      const item: ServiceRequiredMaterial = {
+        material_name: 'Eyelets (Brass Ring)',
+        consumption_method: 'per_piece',
+        quantity_per_unit: 4, // 4 eyelets per banner
+        waste_percent: 10,
+        unit_cost: 1.5,
+      }
+      const result = evaluateBOMConsumption(item, {
+        orderQuantity: 10, // 10 banners
+      })
+      // 10 * 4 = 40 + 10% waste (4) = 44 @ ৳1.5 = ৳66.00
+      assert.strictEqual(result.requiredQuantity, 44)
+      assert.strictEqual(result.subtotalCost, 66)
+    })
+
+    test('evaluates PER_RFT (Perimeter Running Feet) consumption method', () => {
+      const item: ServiceRequiredMaterial = {
+        material_name: 'Seaming Tape',
+        consumption_method: 'per_rft',
+        quantity_per_unit: 1.0,
+        waste_percent: 0,
+        unit_cost: 3.0,
+      }
+      // 4ft x 6ft banner -> Perimeter = 2 * (4 + 6) = 20 ft
+      const result = evaluateBOMConsumption(item, {
+        customerWidthFt: 4,
+        customerLengthFt: 6,
+        perimeterFt: 20,
+      })
+      assert.strictEqual(result.requiredQuantity, 20)
+      assert.strictEqual(result.subtotalCost, 60)
+    })
+
+    test('evaluates dynamic FORMULA consumption server-side', () => {
+      const item: ServiceRequiredMaterial = {
+        material_name: 'MS Box Pipe 1" (Custom Frame Formula)',
+        consumption_method: 'formula',
+        consumption_formula: '(width * 2) + (height * 2) + 2', // Perimeter + 2ft extra braces
+        quantity_per_unit: 1,
+        waste_percent: 5,
+        unit_cost: 45.0, // ৳45 per rft
+      }
+      const result = evaluateBOMConsumption(item, {
+        customerWidthFt: 5,
+        customerLengthFt: 10,
+      })
+      // (5 * 2) + (10 * 2) + 2 = 10 + 20 + 2 = 32 ft + 5% waste (1.6) = 33.6 ft @ ৳45 = ৳1,512.00
+      assert.strictEqual(result.requiredQuantity, 33.6)
+      assert.strictEqual(result.subtotalCost, 1512)
+    })
   })
 })
