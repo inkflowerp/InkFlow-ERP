@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Sparkles, AlertCircle, RefreshCw, Scissors, TrendingUp, Layers, CheckCircle2, Zap } from 'lucide-react'
-import type { FinishingOptionRecord } from '@/types/product.types'
+import type { FinishingOptionRecord, ProductRecord } from '@/types/product.types'
 import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -15,6 +15,7 @@ interface FinishingOptionModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   finishing?: FinishingOptionRecord | null
+  materials?: ProductRecord[]
   onSave: (data: Partial<FinishingOptionRecord>) => Promise<void>
 }
 
@@ -31,11 +32,13 @@ export function FinishingOptionModal({
   open,
   onOpenChange,
   finishing,
+  materials = [],
   onSave,
 }: FinishingOptionModalProps) {
   const [name, setName] = useState('')
   const [nameBn, setNameBn] = useState('')
   const [category, setCategory] = useState('lamination')
+  const [materialId, setMaterialId] = useState('')
   const [pricingMethod, setPricingMethod] = useState('sqft')
   const [sellingPrice, setSellingPrice] = useState('0')
   const [cost, setCost] = useState('0')
@@ -48,6 +51,7 @@ export function FinishingOptionModal({
       setName(finishing.name || '')
       setNameBn(finishing.name_bn || '')
       setCategory(finishing.category || 'general')
+      setMaterialId(finishing.material_id || '')
       setPricingMethod(finishing.pricing_method || 'sqft')
       setSellingPrice(String(finishing.selling_price || 0))
       setCost(String(finishing.cost || 0))
@@ -56,6 +60,7 @@ export function FinishingOptionModal({
       setName('')
       setNameBn('')
       setCategory('lamination')
+      setMaterialId('')
       setPricingMethod('sqft')
       setSellingPrice('0')
       setCost('0')
@@ -70,6 +75,17 @@ export function FinishingOptionModal({
     const c = Number(cost) || 0
     return calculateGrossMargin(c, sell)
   }, [sellingPrice, cost])
+
+  const handleMaterialSelect = (mId: string) => {
+    setMaterialId(mId)
+    const selected = materials.find((m) => m.id === mId)
+    if (selected) {
+      if (!name) setName(selected.name)
+      if (selected.name_bn && !nameBn) setNameBn(selected.name_bn)
+      const unitCost = Number(selected.effective_unit_cost || selected.base_cost || 0)
+      if (unitCost > 0) setCost(String(unitCost))
+    }
+  }
 
   const handleApplyPreset = (preset: typeof COMMON_FINISHING_PRESETS[0]) => {
     setName(preset.name)
@@ -94,6 +110,7 @@ export function FinishingOptionModal({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
         category: category.trim() || 'general',
+        material_id: materialId || undefined,
         pricing_method: pricingMethod,
         selling_price: Number(sellingPrice) || 0,
         cost: Number(cost) || 0,
@@ -234,6 +251,26 @@ export function FinishingOptionModal({
               </select>
             </div>
           </div>
+
+          {materials.length > 0 && (
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Link with Consumable Inventory Material (Optional)
+              </Label>
+              <select
+                value={materialId}
+                onChange={(e) => handleMaterialSelect(e.target.value)}
+                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+              >
+                <option value="">-- Standalone Operation (No Raw Material Link) --</option>
+                {materials.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.sku || 'No SKU'}) — Unit Cost: ৳{m.effective_unit_cost || m.base_cost || 0} / {m.selling_unit || 'unit'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>

@@ -72,14 +72,26 @@ export function AdditionalOptionModal({
     return calculateGrossMargin(c, sell)
   }, [sellingPrice, cost])
 
+  const consumableMaterials = useMemo(
+    () => products.filter((p) => p.product_type === 'material' || (p as any).entity_type === 'material'),
+    [products]
+  )
+  const readyHardware = useMemo(
+    () => products.filter((p) => p.product_type !== 'material' && (p as any).entity_type !== 'material'),
+    [products]
+  )
+
   const handleProductSelect = (pId: string) => {
     setProductId(pId)
     const selected = products.find((p) => p.id === pId)
-    if (selected && !name) {
-      setName(selected.name)
-      if (selected.name_bn) setNameBn(selected.name_bn)
-      setSellingPrice(String(selected.selling_price || 0))
-      setCost(String(selected.base_cost || 0))
+    if (selected) {
+      if (!name) setName(selected.name)
+      if (selected.name_bn && !nameBn) setNameBn(selected.name_bn)
+      if (selected.selling_price && Number(selected.selling_price) > 0) {
+        setSellingPrice(String(selected.selling_price))
+      }
+      const unitCost = Number(selected.effective_unit_cost || selected.base_cost || 0)
+      if (unitCost > 0) setCost(String(unitCost))
     }
   }
 
@@ -212,7 +224,7 @@ export function AdditionalOptionModal({
           {products.length > 0 && (
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                Link with Catalog Product (Optional)
+                Link with Inventory Substrate / Hardware Item (Optional)
               </Label>
               <select
                 value={productId}
@@ -220,11 +232,24 @@ export function AdditionalOptionModal({
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
               >
                 <option value="">-- Standalone Additional (No Catalog Link) --</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} ({p.sku || 'No SKU'}) — ৳{p.selling_price}
-                  </option>
-                ))}
+                {consumableMaterials.length > 0 && (
+                  <optgroup label="📦 Consumable Substrates & Raw Materials (Sheets, Boards, Pipes)">
+                    {consumableMaterials.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.sku || 'No SKU'}) — Cost: ৳{p.effective_unit_cost || p.base_cost || 0} / {p.selling_unit || 'unit'}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                {readyHardware.length > 0 && (
+                  <optgroup label="🏷️ Reusable Display Hardware & Finished Products (Stands, Frames)">
+                    {readyHardware.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name} ({p.sku || 'No SKU'}) — Sell: ৳{p.selling_price} | Cost: ৳{p.base_cost || 0}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
           )}

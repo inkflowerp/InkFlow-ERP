@@ -5239,6 +5239,7 @@ export default function ProductsCatalogPage() {
         open={isFinishingModalOpen}
         onOpenChange={setIsFinishingModalOpen}
         finishing={editingFinishing}
+        materials={products.filter((p) => p.product_type === 'material' || (p as any).entity_type === 'material')}
         onSave={handleSaveFinishingOption}
       />
 
