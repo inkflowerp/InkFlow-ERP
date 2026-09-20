@@ -2,7 +2,7 @@
 
 import React, { useState, useTransition, useMemo, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
 import {
   Palette,
   Plus,
@@ -151,10 +151,20 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname() || '/design'
   const { company, currentUser } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id || (slug !== 'my-company' ? slug : '2af84f1d-1ebd-48e7-9795-fd5c24c38a96')
+
+  // Helper for generating dynamic tenant links that work for both subdomains and subpaths
+  const getTenantHref = (path: string) => {
+    const cleanPath = path.startsWith('/') ? path : `/${path}`
+    if (pathname.startsWith(`/${slug}`)) {
+      return `/${slug}${cleanPath}`
+    }
+    return cleanPath
+  }
 
   // Helper for strict tenant scoping
   const isMatchingCompany = (id?: string | null) => {
@@ -568,7 +578,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     }
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('tab', tab)
-    router.replace(`/design?${currentQuery.toString()}`)
+    router.replace(`${pathname}?${currentQuery.toString()}`, { scroll: false })
   }
 
   // Tenant-scoped jobs
@@ -640,9 +650,11 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
           job.design_number.toLowerCase().includes(q) ||
           job.title.toLowerCase().includes(q) ||
           job.customer_name.toLowerCase().includes(q) ||
-          job.designer_name.toLowerCase().includes(q) ||
+          (job.designer_name && job.designer_name.toLowerCase().includes(q)) ||
+          ((job as any).customer_phone && (job as any).customer_phone.toLowerCase().includes(q)) ||
           (job.order_number && job.order_number.toLowerCase().includes(q)) ||
-          (job.invoice_number && job.invoice_number.toLowerCase().includes(q))
+          (job.invoice_number && job.invoice_number.toLowerCase().includes(q)) ||
+          (job.dimensions_spec && job.dimensions_spec.toLowerCase().includes(q))
         if (!match) return false
       }
 
@@ -660,7 +672,13 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       // Format filter
       if (formatFilter !== 'all') {
         const latestVersion = job.versions?.[job.versions.length - 1]
-        if (latestVersion?.file_format !== formatFilter) return false
+        const versionFmt = (latestVersion?.file_format || latestVersion?.proof_file_name?.split('.').pop() || '').toLowerCase()
+        const targetFmt = formatFilter.toLowerCase()
+        if (targetFmt === 'jpg' || targetFmt === 'jpeg') {
+          if (versionFmt !== 'jpg' && versionFmt !== 'jpeg') return false
+        } else if (versionFmt !== targetFmt) {
+          return false
+        }
       }
 
       // Intake source filter
@@ -1587,6 +1605,8 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
             className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
           >
             <option value="all">All Formats</option>
+            <option value="png">.PNG (Raster Image)</option>
+            <option value="jpg">.JPG / .JPEG</option>
             <option value="ai">.AI (Illustrator)</option>
             <option value="psd">.PSD (Photoshop)</option>
             <option value="cdr">.CDR (CorelDraw)</option>
@@ -1836,7 +1856,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                           <div className="flex items-center gap-2">
                             {hasInvoice && (job.status === 'approved' || job.is_locked) && (
                               <Link
-                                href="/production"
+                                href={getTenantHref('/production')}
                                 className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold hover:underline text-[11px]"
                                 title="Sent to Production Floor"
                               >
@@ -1845,7 +1865,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                               </Link>
                             )}
                             <Link
-                              href={`/design/${job.id}`}
+                              href={getTenantHref(`/design/${job.id}`)}
                               className="inline-flex items-center gap-1 text-pink-600 dark:text-pink-400 font-bold hover:underline"
                             >
                               <span>Studio</span>
@@ -2010,7 +2030,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                                 <Link
-                                  href={`/design/${job.id}`}
+                                  href={getTenantHref(`/design/${job.id}`)}
                                   className="inline-flex items-center gap-0.5 text-xs font-bold text-pink-600 hover:underline ml-1"
                                 >
                                   <span>Studio</span>
@@ -2169,7 +2189,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
 
                             {job.status === 'approved' && hasInvoice && (
                               <Link
-                                href="/production"
+                                href={getTenantHref('/production')}
                                 className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
                               >
                                 <Printer className="h-3.5 w-3.5" />
@@ -2201,7 +2221,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                               <Trash2 className="h-3.5 w-3.5" />
                             </Button>
                             <Link
-                              href={`/design/${job.id}`}
+                              href={getTenantHref(`/design/${job.id}`)}
                               className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
                             >
                               <span>Workbench &rarr;</span>
@@ -2490,7 +2510,7 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
                   asChild
                   className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs"
                 >
-                  <Link href={`/design/${lightboxJob.id}`}>
+                  <Link href={getTenantHref(`/design/${lightboxJob.id}`)}>
                     <ExternalLink className="h-3.5 w-3.5 mr-1" />
                     <span>Open Full Studio</span>
                   </Link>

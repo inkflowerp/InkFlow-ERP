@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Palette,
   ArrowLeft,
@@ -62,10 +62,12 @@ import { Printer } from 'lucide-react'
 
 export default function DesignDetailPage() {
   const params = useParams()
+  const pathname = usePathname() || ''
   const jobId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const backHref = pathname.startsWith(`/${slug}`) ? `/${slug}/design` : '/design'
 
   const [isPending, startTransition] = useTransition()
   const [jobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
@@ -575,7 +577,7 @@ export default function DesignDetailPage() {
       {/* Top Header & Back Link */}
       <div>
         <Link
-          href="/design"
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
