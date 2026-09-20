@@ -21,6 +21,9 @@ import {
   Calendar,
   User,
   ExternalLink,
+  Clock,
+  Info,
+  ShieldAlert,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -33,7 +36,12 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { TrashRepository } from '@/lib/repositories/trash.repository'
-import type { TrashCategory, TrashRecord } from '@/types/trash.types'
+import {
+  TRASH_RETENTION_DAYS,
+  getTrashDaysRemaining,
+  type TrashCategory,
+  type TrashRecord,
+} from '@/types/trash.types'
 import { cn } from '@/lib/utils'
 
 export default function TrashPage() {
@@ -51,7 +59,9 @@ export default function TrashPage() {
     if (tabParam) {
       setSelectedCategory(tabParam)
     }
-  }, [tabParam])
+    // Auto-purge any records older than 30 days on page load
+    TrashRepository.purgeExpiredTrash(companyId, TRASH_RETENTION_DAYS).catch(() => {})
+  }, [tabParam, companyId])
 
   // Modals state
   const [itemToPermanentDelete, setItemToPermanentDelete] = useState<TrashRecord | null>(null)
@@ -231,6 +241,32 @@ export default function TrashPage() {
         </div>
       )}
 
+      {/* 30-DAY AUTO RETENTION POLICY BANNER */}
+      <div className="p-3.5 bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/60 rounded-xl text-xs text-amber-900 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg text-amber-800 dark:text-amber-300 shrink-0">
+            <Clock className="h-4 w-4" />
+          </div>
+          <div>
+            <span className="font-bold block sm:inline">
+              {tBilingual('30-Day Auto Permanent Deletion Policy:', '৩০ দিনের স্বয়ংক্রিয় ডিলিট পলিসি:')}{' '}
+            </span>
+            <span className="text-amber-800/90 dark:text-amber-300/90">
+              {tBilingual(
+                'Items in Trash are permanently deleted from database and backend automatically after 30 days.',
+                'ট্র্যাশে থাকা আইটেমসমূহ ৩০ দিন পর ডাটাবেজ ও ব্যাকএন্ড থেকে স্থায়ীভাবে স্বয়ংক্রিয়ভাবে মুছে যায়।'
+              )}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
+          <Badge variant="outline" className="bg-white/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-[11px] px-2.5 py-0.5">
+            <ShieldAlert className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400" />
+            {TRASH_RETENTION_DAYS} Days Retention
+          </Badge>
+        </div>
+      </div>
+
       {/* CATEGORY SUMMARY KPI CARDS */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
         {/* All Items */}
@@ -394,6 +430,7 @@ export default function TrashPage() {
                   <th className="py-3 px-4">{tBilingual('Item Title / Name', 'নাম ও বিবরণ')}</th>
                   <th className="py-3 px-4">{tBilingual('Reference / Code', 'রেফারেন্স / কোড')}</th>
                   <th className="py-3 px-4">{tBilingual('Deleted Date', 'মুছে ফেলার তারিখ')}</th>
+                  <th className="py-3 px-4">{tBilingual('Auto-Delete in', 'স্বয়ংক্রিয় ডিলিট')}</th>
                   <th className="py-3 px-4">{tBilingual('Deleted By', 'মুছেছেন')}</th>
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
@@ -401,97 +438,120 @@ export default function TrashPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filteredItems.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-xs text-slate-400">
+                    <td colSpan={7} className="py-12 text-center text-xs text-slate-400">
                       <Trash2 className="h-8 w-8 text-slate-300 mx-auto mb-2" />
                       {tBilingual('Trash is clean! No deleted items found.', 'ট্র্যাশ খালি! কোন মুছে ফেলা আইটেম নেই।')}
                     </td>
                   </tr>
                 ) : (
-                  filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      {/* Category */}
-                      <td className="py-3.5 px-4">
-                        {getCategoryBadge(item.category)}
-                      </td>
+                  filteredItems.map((item) => {
+                    const daysLeft = getTrashDaysRemaining(item.expires_at, item.deleted_at, TRASH_RETENTION_DAYS)
+                    const isUrgent = daysLeft <= 3
 
-                      {/* Title & Subtitle */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-bold text-slate-900 dark:text-white">
-                          {item.title}
-                        </div>
-                        {item.subtitle && (
-                          <div className="text-xs text-slate-500 dark:text-slate-400">
-                            {item.subtitle}
+                    return (
+                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        {/* Category */}
+                        <td className="py-3.5 px-4">
+                          {getCategoryBadge(item.category)}
+                        </td>
+
+                        {/* Title & Subtitle */}
+                        <td className="py-3.5 px-4">
+                          <div className="font-bold text-slate-900 dark:text-white">
+                            {item.title}
                           </div>
-                        )}
-                      </td>
+                          {item.subtitle && (
+                            <div className="text-xs text-slate-500 dark:text-slate-400">
+                              {item.subtitle}
+                            </div>
+                          )}
+                        </td>
 
-                      {/* Reference Number */}
-                      <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300">
-                        {item.reference_number || '—'}
-                      </td>
+                        {/* Reference Number */}
+                        <td className="py-3.5 px-4 font-mono text-xs text-slate-600 dark:text-slate-300">
+                          {item.reference_number || '—'}
+                        </td>
 
-                      {/* Deleted Date */}
-                      <td className="py-3.5 px-4 text-xs text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{new Date(item.deleted_at).toLocaleString()}</span>
-                        </div>
-                      </td>
+                        {/* Deleted Date */}
+                        <td className="py-3.5 px-4 text-xs text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                            <span>{new Date(item.deleted_at).toLocaleString()}</span>
+                          </div>
+                        </td>
 
-                      {/* Deleted By */}
-                      <td className="py-3.5 px-4 text-xs text-slate-500">
-                        <div className="flex items-center gap-1">
-                          <User className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{item.deleted_by_name || 'System User'}</span>
-                        </div>
-                      </td>
-
-                      {/* Actions */}
-                      <td className="py-3.5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Inspect Snapshot */}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setInspectedItem(item)
-                              setIsInspectModalOpen(true)
-                            }}
-                            className="h-7 px-2 text-xs text-slate-500 hover:text-indigo-600"
-                            title="Inspect Payload"
+                        {/* Auto-Delete Countdown */}
+                        <td className="py-3.5 px-4 text-xs">
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-1 font-semibold text-[11px] px-2 py-0.5 rounded-full border',
+                              isUrgent
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900'
+                                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
+                            )}
+                            title={`Expires on ${new Date(item.expires_at || Date.now()).toLocaleDateString()}`}
                           >
-                            <Eye className="h-3.5 w-3.5" />
-                          </Button>
+                            <Clock className="h-3 w-3" />
+                            {daysLeft === 0
+                              ? tBilingual('Expiring today', 'আজ মেয়াদ শেষ')
+                              : `${daysLeft} ${tBilingual('days left', 'দিন বাকি')}`}
+                          </span>
+                        </td>
 
-                          {/* Restore Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleRestore(item)}
-                            className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
-                          >
-                            <RotateCcw className="h-3 w-3 mr-1" />
-                            {tBilingual('Restore', 'রিস্টোর')}
-                          </Button>
+                        {/* Deleted By */}
+                        <td className="py-3.5 px-4 text-xs text-slate-500">
+                          <div className="flex items-center gap-1">
+                            <User className="h-3.5 w-3.5 text-slate-400" />
+                            <span>{item.deleted_by_name || 'System User'}</span>
+                          </div>
+                        </td>
 
-                          {/* Delete Forever Button */}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              setItemToPermanentDelete(item)
-                              setIsPermanentModalOpen(true)
-                            }}
-                            className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-200 dark:border-rose-900"
-                            title="Permanent Delete"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Inspect Snapshot */}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setInspectedItem(item)
+                                setIsInspectModalOpen(true)
+                              }}
+                              className="h-7 px-2 text-xs text-slate-500 hover:text-indigo-600"
+                              title="Inspect Payload"
+                            >
+                              <Eye className="h-3.5 w-3.5" />
+                            </Button>
+
+                            {/* Restore Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleRestore(item)}
+                              className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800"
+                            >
+                              <RotateCcw className="h-3 w-3 mr-1" />
+                              {tBilingual('Restore', 'রিস্টোর')}
+                            </Button>
+
+                            {/* Delete Forever Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setItemToPermanentDelete(item)
+                                setIsPermanentModalOpen(true)
+                              }}
+                              className="h-7 px-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 border-rose-200 dark:border-rose-900"
+                              title="Permanent Delete"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
                 )}
               </tbody>
             </table>
@@ -504,54 +564,72 @@ export default function TrashPage() {
                 {tBilingual('Trash is clean! No deleted items found.', 'ট্র্যাশ খালি! কোন মুছে ফেলা আইটেম নেই।')}
               </div>
             ) : (
-              filteredItems.map((item) => (
-                <div key={item.id} className="p-4 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
-                  <div className="flex items-center justify-between gap-2">
-                    {getCategoryBadge(item.category)}
-                    <span className="text-[11px] font-mono text-slate-400">
-                      {new Date(item.deleted_at).toLocaleDateString()}
-                    </span>
-                  </div>
+              filteredItems.map((item) => {
+                const daysLeft = getTrashDaysRemaining(item.expires_at, item.deleted_at, TRASH_RETENTION_DAYS)
+                const isUrgent = daysLeft <= 3
 
-                  <div>
-                    <div className="font-bold text-sm text-slate-900 dark:text-white">{item.title}</div>
-                    {item.subtitle && <div className="text-xs text-slate-500">{item.subtitle}</div>}
-                    {item.reference_number && (
-                      <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
-                        Ref: {item.reference_number}
+                return (
+                  <div key={item.id} className="p-4 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {getCategoryBadge(item.category)}
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.2 rounded-full border',
+                            isUrgent
+                              ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+                              : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                          )}
+                        >
+                          <Clock className="h-2.5 w-2.5" />
+                          {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
+                        </span>
                       </div>
-                    )}
-                  </div>
+                      <span className="text-[11px] font-mono text-slate-400">
+                        {new Date(item.deleted_at).toLocaleDateString()}
+                      </span>
+                    </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-400">
-                      By: {item.deleted_by_name || 'System User'}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRestore(item)}
-                        className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200"
-                      >
-                        <RotateCcw className="h-3 w-3 mr-1" />
-                        Restore
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setItemToPermanentDelete(item)
-                          setIsPermanentModalOpen(true)
-                        }}
-                        className="h-7 px-2 text-xs text-rose-600 border-rose-200"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                    <div>
+                      <div className="font-bold text-sm text-slate-900 dark:text-white">{item.title}</div>
+                      {item.subtitle && <div className="text-xs text-slate-500">{item.subtitle}</div>}
+                      {item.reference_number && (
+                        <div className="text-xs font-mono text-indigo-600 dark:text-indigo-400 mt-0.5">
+                          Ref: {item.reference_number}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <span className="text-[11px] text-slate-400">
+                        By: {item.deleted_by_name || 'System User'}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRestore(item)}
+                          className="h-7 px-2.5 text-xs font-bold text-emerald-700 bg-emerald-50 border-emerald-200"
+                        >
+                          <RotateCcw className="h-3 w-3 mr-1" />
+                          Restore
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setItemToPermanentDelete(item)
+                            setIsPermanentModalOpen(true)
+                          }}
+                          className="h-7 px-2 text-xs text-rose-600 border-rose-200"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </CardContent>

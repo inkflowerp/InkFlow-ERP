@@ -1,11 +1,57 @@
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
-import type { TrashCategory, TrashRecord, TrashSummary } from '../../types/trash.types.ts'
+import {
+  TRASH_RETENTION_DAYS,
+  computeTrashExpiration,
+  isTrashExpired,
+  type TrashCategory,
+  type TrashRecord,
+  type TrashSummary,
+} from '../../types/trash.types.ts'
 
 export class TrashRepository {
   /**
-   * Retrieves all trashed records for a company, optionally filtered by category
+   * Purges items older than the retention period (default: 30 days) permanently from the database.
    */
-  static async getTrashItems(companyId: string, category?: TrashCategory): Promise<TrashRecord[]> {
+  static async purgeExpiredTrash(
+    companyId?: string,
+    retentionDays: number = TRASH_RETENTION_DAYS
+  ): Promise<{ purgedCount: number; purgedIds: string[] }> {
+    const all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    const purgedIds: string[] = []
+    const unexpired: TrashRecord[] = []
+
+    for (const item of all) {
+      const matchCompany = !companyId || item.company_id === companyId || item.company_id === 'default'
+      if (matchCompany && isTrashExpired(item.expires_at, item.deleted_at, retentionDays)) {
+        purgedIds.push(item.id)
+      } else {
+        unexpired.push(item)
+      }
+    }
+
+    if (purgedIds.length > 0) {
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, unexpired)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.TRASH_ITEMS } }))
+      }
+    }
+
+    return { purgedCount: purgedIds.length, purgedIds }
+  }
+
+  /**
+   * Retrieves all trashed records for a company, optionally filtered by category.
+   * Automatically executes purgeExpiredTrash so expired records are permanently removed.
+   */
+  static async getTrashItems(
+    companyId: string,
+    category?: TrashCategory,
+    autoPurge = true
+  ): Promise<TrashRecord[]> {
+    if (autoPurge) {
+      await this.purgeExpiredTrash(companyId)
+    }
+
     const all = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     return all.filter((item) => {
       const matchCompany = !companyId || item.company_id === companyId || item.company_id === 'default'
@@ -15,10 +61,10 @@ export class TrashRepository {
   }
 
   /**
-   * Retrieves summary counts of trashed items
+   * Retrieves summary counts of trashed items after auto-purging expired items.
    */
   static async getTrashSummary(companyId: string): Promise<TrashSummary> {
-    const items = await this.getTrashItems(companyId)
+    const items = await this.getTrashItems(companyId, undefined, true)
     return {
       total: items.length,
       quotations: items.filter((i) => i.category === 'quotations').length,
@@ -109,6 +155,9 @@ export class TrashRepository {
       )
     }
 
+    const nowISO = new Date().toISOString()
+    const expiresISO = computeTrashExpiration(nowISO, TRASH_RETENTION_DAYS)
+
     const trashRecord: TrashRecord = {
       id: `trash-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       company_id: companyId || item.company_id || 'default',
@@ -117,13 +166,17 @@ export class TrashRepository {
       title,
       subtitle,
       reference_number: refNum,
-      deleted_at: new Date().toISOString(),
+      deleted_at: nowISO,
+      expires_at: expiresISO,
       deleted_by_name: deletedByName,
       payload: item,
     }
 
     const trashList = PrintERPDataStore.get<TrashRecord[]>(STORAGE_KEYS.TRASH_ITEMS) || []
     PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList])
+
+    // Purge any preexisting expired records in the background
+    this.purgeExpiredTrash(companyId).catch(() => {})
 
     // Broadcast client sync events
     if (typeof window !== 'undefined') {

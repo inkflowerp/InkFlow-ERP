@@ -27,6 +27,10 @@ export class TrashService {
     return TrashRepository.permanentDelete(trashId, companyId)
   }
 
+  static async purgeExpiredTrash(companyId?: string, retentionDays?: number): Promise<{ purgedCount: number; purgedIds: string[] }> {
+    return TrashRepository.purgeExpiredTrash(companyId, retentionDays)
+  }
+
   static async emptyTrash(companyId: string, category?: TrashCategory): Promise<number> {
     return TrashRepository.emptyTrash(companyId, category)
   }

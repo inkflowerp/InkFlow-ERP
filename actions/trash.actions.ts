@@ -182,3 +182,40 @@ export async function emptyTrashAction(
     return { success: false, error: err.message || 'Failed to empty trash' }
   }
 }
+
+export async function purgeExpiredTrashAction(
+  arg1?: string | { companyId?: string; tenantSlug?: string; retentionDays?: number },
+  arg2?: string,
+  arg3?: number
+) {
+  try {
+    let companyId: string | undefined
+    let tenantSlug: string | undefined
+    let retentionDays: number | undefined
+
+    if (typeof arg1 === 'object' && arg1 !== null) {
+      companyId = arg1.companyId
+      tenantSlug = arg1.tenantSlug
+      retentionDays = arg1.retentionDays
+    } else {
+      companyId = arg1
+      tenantSlug = arg2
+      retentionDays = arg3
+    }
+
+    const tenant = await getCurrentTenant(companyId)
+    const effectiveCompanyId = companyId || tenant?.companyId || 'default'
+    const result = await TrashService.purgeExpiredTrash(effectiveCompanyId, retentionDays)
+
+    if (tenantSlug) {
+      try {
+        revalidatePath(`/${tenantSlug}/trash`)
+      } catch {}
+    }
+
+    return { success: true, ...result }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to purge expired trash items' }
+  }
+}
+

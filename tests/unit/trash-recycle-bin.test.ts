@@ -239,4 +239,106 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     assert.strictEqual(itemsB.length, 1)
     assert.strictEqual(itemsB[0].payload.name, 'Company B Product')
   })
+
+  it('9. Trash items record 30-day expiration date automatically upon moving to trash', async () => {
+    const item = await TrashRepository.moveToTrash({
+      category: 'materials',
+      item: { id: 'mat-exp-01', name: 'Reflective Vinyl 3M' },
+      companyId: COMPANY_A,
+    })
+
+    assert.ok(item.deleted_at)
+    assert.ok(item.expires_at)
+    const deletedTime = new Date(item.deleted_at).getTime()
+    const expiresTime = new Date(item.expires_at).getTime()
+    const diffDays = Math.round((expiresTime - deletedTime) / (1000 * 60 * 60 * 24))
+    assert.strictEqual(diffDays, 30, 'Expiration must be exactly 30 days after deletion')
+  })
+
+  it('10. Items older than 30 days are automatically purged permanently on getTrashItems and getTrashSummary', async () => {
+    const thirtyOneDaysAgo = new Date(Date.now() - 31 * 24 * 60 * 60 * 1000).toISOString()
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString()
+
+    const expiredRecord = {
+      id: 'trash-expired-1',
+      company_id: COMPANY_A,
+      category: 'quotations' as const,
+      original_id: 'quote-old-01',
+      title: 'Quotation Old',
+      deleted_at: thirtyOneDaysAgo,
+      expires_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      payload: { id: 'quote-old-01' },
+    }
+
+    const activeRecord = {
+      id: 'trash-active-1',
+      company_id: COMPANY_A,
+      category: 'invoices' as const,
+      original_id: 'inv-recent-01',
+      title: 'Invoice Recent',
+      deleted_at: tenDaysAgo,
+      expires_at: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+      payload: { id: 'inv-recent-01' },
+    }
+
+    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [expiredRecord, activeRecord])
+
+    // Fetching items should auto-purge expired items permanently
+    const items = await TrashRepository.getTrashItems(COMPANY_A)
+    assert.strictEqual(items.length, 1)
+    assert.strictEqual(items[0].id, 'trash-active-1')
+
+    // Verify underlying store was permanently modified
+    const inStore = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    assert.strictEqual(inStore.length, 1)
+    assert.strictEqual(inStore[0].id, 'trash-active-1')
+  })
+
+  it('11. purgeExpiredTrash explicitly purges all expired records across or per tenant', async () => {
+    const fortyDaysAgo = new Date(Date.now() - 40 * 24 * 60 * 60 * 1000).toISOString()
+
+    const oldA = {
+      id: 'old-a',
+      company_id: COMPANY_A,
+      category: 'customers' as const,
+      original_id: 'c-a',
+      title: 'Old Customer A',
+      deleted_at: fortyDaysAgo,
+      expires_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      payload: { id: 'c-a' },
+    }
+
+    const oldB = {
+      id: 'old-b',
+      company_id: COMPANY_B,
+      category: 'suppliers' as const,
+      original_id: 's-b',
+      title: 'Old Supplier B',
+      deleted_at: fortyDaysAgo,
+      expires_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+      payload: { id: 's-b' },
+    }
+
+    const recentA = {
+      id: 'recent-a',
+      company_id: COMPANY_A,
+      category: 'products' as const,
+      original_id: 'p-a',
+      title: 'Recent Product A',
+      deleted_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      payload: { id: 'p-a' },
+    }
+
+    PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [oldA, oldB, recentA])
+
+    // Global purge across all tenants
+    const result = await TrashService.purgeExpiredTrash()
+    assert.strictEqual(result.purgedCount, 2)
+    assert.deepStrictEqual(result.purgedIds.sort(), ['old-a', 'old-b'].sort())
+
+    const remaining = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+    assert.strictEqual(remaining.length, 1)
+    assert.strictEqual(remaining[0].id, 'recent-a')
+  })
 })
