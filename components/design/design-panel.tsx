@@ -89,9 +89,8 @@ import {
   sendToPrintOperatorAction,
   getDesignJobsAction,
   deleteDesignJobAction,
-  purgeAllDesignJobsAction,
 } from '@/actions/design.actions'
-import { getOrdersAction, purgeAllOrdersAction } from '@/actions/order.actions'
+import { getOrdersAction } from '@/actions/order.actions'
 import {
   getInAppNotificationsAction,
   deleteNotificationAction,
@@ -455,65 +454,6 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
         showNotification('Design job deleted successfully!')
       } catch (err: any) {
         showNotification(err.message || 'Failed to delete job', 'warning')
-      }
-    })
-  }
-
-  // Purge all jobs handler
-  const handlePurgeAllJobs = async () => {
-    if (
-      !confirm(
-        'WARNING: Are you sure you want to delete ALL design jobs in this pipeline? This will permanently wipe all artwork files and revision history for this organization.'
-      )
-    ) {
-      return
-    }
-    startTransition(async () => {
-      try {
-        const res = await purgeAllDesignJobsAction(companyId)
-        if (!res.success) {
-          showNotification(res.error || 'Failed to delete all jobs', 'warning')
-          return
-        }
-        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-        const remaining = allStored.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, remaining)
-        setJobs(remaining)
-        showNotification('All design jobs have been permanently deleted!')
-      } catch (err: any) {
-        showNotification(err.message || 'Failed to purge jobs', 'warning')
-      }
-    })
-  }
-
-  // Purge all work orders handler
-  const handlePurgeAllOrders = async () => {
-    if (
-      !confirm(
-        'WARNING: Are you sure you want to delete ALL work orders for this organization? This action cannot be undone.'
-      )
-    ) {
-      return
-    }
-    startTransition(async () => {
-      try {
-        const res = await purgeAllOrdersAction(companyId)
-        if (!res.success) {
-          showNotification(res.error || 'Failed to delete work orders', 'warning')
-          return
-        }
-        const allStored = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-        const remaining = allStored.filter((o) => o.company_id && !isMatchingCompany(o.company_id))
-        PrintERPDataStore.set(STORAGE_KEYS.ORDERS, remaining)
-        setOrders(remaining)
-
-        const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-        const remainingJobs = allJobs.filter((j) => j.company_id && !isMatchingCompany(j.company_id))
-        PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, remainingJobs)
-
-        showNotification('All work orders have been deleted!')
-      } catch (err: any) {
-        showNotification(err.message || 'Failed to purge work orders', 'warning')
       }
     })
   }
@@ -1200,34 +1140,6 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Design Job', 'নতুন ডিজাইন জব')}
             </Button>
-
-            {/* Delete All Jobs Button */}
-            {tenantJobs.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handlePurgeAllJobs}
-                disabled={isPending}
-                className="border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs font-bold bangla-text shadow-xs"
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Delete All Jobs', 'সকল জব মুছুন')}
-              </Button>
-            )}
-
-            {/* Delete All Work Orders Button */}
-            {tenantOrders.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handlePurgeAllOrders}
-                disabled={isPending}
-                className="border-rose-300 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950 text-xs font-bold bangla-text shadow-xs"
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Delete All Work Orders', 'সকল ওয়ার্ক অর্ডার মুছুন')}
-              </Button>
-            )}
           </div>
         }
       />
