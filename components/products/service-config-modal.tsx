@@ -1689,28 +1689,6 @@ export function ServiceConfigModal({
     }
   }
 
-  // Finishing Options Handlers
-  const handleToggleMasterFinishing = (fOption: { id: string; name: string; pricing_method: string; selling_price: number; cost: number }) => {
-    const exists = finishingOptions.some((f) => f.name.toLowerCase() === fOption.name.toLowerCase())
-    if (exists) {
-      setFinishingOptions(finishingOptions.filter((f) => f.name.toLowerCase() !== fOption.name.toLowerCase()))
-    } else {
-      setFinishingOptions([
-        ...finishingOptions,
-        {
-          id: `fin-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
-          name: fOption.name,
-          pricing_method: fOption.pricing_method || 'per_sqft',
-          unit_price: fOption.selling_price || 0,
-          price: fOption.selling_price || 0,
-          unit_cost: fOption.cost || 0,
-          cost: fOption.cost || 0,
-          is_default: false,
-        },
-      ])
-    }
-  }
-
   // Toggle linking a raw material from inventory (Raw Product - Finishing) directly into finishingOptions
   const handleToggleFinishingRawMaterial = (mat: MaterialRecord) => {
     const existsIdx = finishingOptions.findIndex(
@@ -1721,14 +1699,45 @@ export function ServiceConfigModal({
       return
     }
 
-    const pUnit = (mat.unit || (mat as any).purchase_unit || '').toLowerCase()
+    const pUnit = (mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || '').toLowerCase()
     const cat = (mat.category || '').toLowerCase()
     const n = (mat.name || '').toLowerCase()
+    const explicitMethod = ((mat as any).pricing_method || (mat as any).material_config?.pricing_method || '').toLowerCase()
 
     let pricing_method = 'per_sqft'
     if (
+      explicitMethod === 'per_rft' ||
+      explicitMethod === 'rft' ||
+      explicitMethod === 'per_linear_ft' ||
+      explicitMethod === 'per_length' ||
+      explicitMethod === 'per_perimeter_ft'
+    ) {
+      pricing_method = 'per_rft'
+    } else if (
+      explicitMethod === 'per_piece' ||
+      explicitMethod === 'piece' ||
+      explicitMethod === 'per_unit' ||
+      explicitMethod === 'pcs'
+    ) {
+      pricing_method = 'per_piece'
+    } else if (
+      explicitMethod === 'per_sqft' ||
+      explicitMethod === 'sqft' ||
+      explicitMethod === 'sft' ||
+      explicitMethod === 'per_area'
+    ) {
+      pricing_method = 'per_sqft'
+    } else if (
+      explicitMethod === 'fixed' ||
+      explicitMethod === 'per_job' ||
+      explicitMethod === 'job'
+    ) {
+      pricing_method = 'fixed'
+    } else if (
       pUnit === 'meter' ||
       pUnit === 'rft' ||
+      pUnit === 'inch' ||
+      pUnit === 'linear_ft' ||
       cat.includes('seaming') ||
       cat.includes('hemming') ||
       n.includes('seaming') ||
@@ -1738,19 +1747,51 @@ export function ServiceConfigModal({
       pricing_method = 'per_rft'
     } else if (
       pUnit === 'piece' ||
+      pUnit === 'pcs' ||
       pUnit === 'box' ||
       pUnit === 'pack' ||
+      pUnit === 'sheet' ||
+      pUnit === 'unit' ||
+      pUnit === 'set' ||
+      pUnit === 'item' ||
       cat.includes('eyelet') ||
       n.includes('eyelet') ||
       n.includes('grommet') ||
       n.includes('stand') ||
-      n.includes('ring')
+      n.includes('ring') ||
+      n.includes('die_cutting') ||
+      n.includes('die cut') ||
+      n.includes('punching')
     ) {
       pricing_method = 'per_piece'
+    } else if (pUnit === 'job' || pUnit === 'fixed' || pUnit === 'trip') {
+      pricing_method = 'fixed'
+    } else {
+      pricing_method = 'per_sqft'
     }
 
-    const cost = Number((mat as any).purchase_price_per_sft ?? (mat as any).purchase_price ?? mat.cost_per_unit ?? 0)
-    const markup = cost > 0 ? (pricing_method === 'per_piece' ? Math.max(5, Math.ceil(cost * 2.5)) : Math.max(5, Math.ceil(cost * 1.5))) : 8
+    const cost = Number(
+      (mat as any).purchase_price_per_sft ??
+      (mat as any).purchase_price ??
+      mat.cost_per_unit ??
+      (mat as any).base_cost ??
+      (mat as any).effective_unit_cost ??
+      (mat as any).manual_cost ??
+      0
+    )
+
+    const rawSellingPrice =
+      (mat as any).selling_price ??
+      (mat as any).price ??
+      (mat as any).material_config?.selling_price ??
+      (mat as any).price_tiers?.retail
+    const sellPrice =
+      rawSellingPrice !== undefined &&
+      rawSellingPrice !== null &&
+      rawSellingPrice !== '' &&
+      Number(rawSellingPrice) > 0
+        ? Number(rawSellingPrice)
+        : cost
 
     setFinishingOptions([
       ...finishingOptions,
@@ -1760,9 +1801,10 @@ export function ServiceConfigModal({
         name_bn: (mat as any).name_bn || undefined,
         material_id: mat.id,
         material_name: mat.name,
+        unit: mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || undefined,
         pricing_method,
-        unit_price: markup,
-        price: markup,
+        unit_price: sellPrice,
+        price: sellPrice,
         unit_cost: cost,
         cost: cost,
         is_default: false,
@@ -1781,6 +1823,7 @@ export function ServiceConfigModal({
         name: customFinishingName.trim(),
         material_id: customFinishingMaterialId || undefined,
         material_name: linkedMat?.name || undefined,
+        unit: linkedMat ? (linkedMat.unit || (linkedMat as any).purchase_unit || (linkedMat as any).selling_unit) : undefined,
         pricing_method: customFinishingMethod,
         unit_price: Number(customFinishingPrice) || 0,
         price: Number(customFinishingPrice) || 0,
@@ -3988,7 +4031,7 @@ export function ServiceConfigModal({
                     Post-Press Finishing Operations & Raw Materials
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Select raw materials from inventory (Raw Product — Finishing) or add standard finishing operations.
+                    Select raw materials from inventory (Raw Product — Finishing) or add custom finishing operations.
                   </p>
                 </div>
               </div>
@@ -4077,7 +4120,8 @@ export function ServiceConfigModal({
                       const isLinked = finishingOptions.some(
                         (f) => f.material_id === mat.id || f.name.toLowerCase() === mat.name.toLowerCase()
                       )
-                      const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost
+                      const costVal = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost || 0)
+                      const sellVal = Number((mat as any).selling_price || (mat as any).price || (mat as any).material_config?.selling_price || (mat as any).price_tiers?.retail || 0)
                       const pUnit = (mat as any).purchase_unit || mat.unit || 'unit'
 
                       return (
@@ -4100,14 +4144,21 @@ export function ServiceConfigModal({
                               </Badge>
                             </div>
                             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
-                              {mat.sku} • {pUnit}{costStr ? ` • ৳${costStr}/${pUnit}` : ''}
+                              {mat.sku} • {pUnit}{costVal > 0 ? ` • ৳${costVal}/${pUnit}` : ''}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${pUnit}` : ''}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                            <span className="text-[11px] font-mono font-bold text-purple-700 dark:text-purple-300">
-                              {costStr ? `Cost: ৳${costStr}` : 'Raw Item'}
-                            </span>
+                            <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
+                              <span className="text-purple-700 dark:text-purple-300">
+                                {costVal > 0 ? `Cost: ৳${costVal}` : 'Raw Item'}
+                              </span>
+                              {sellVal > 0 && (
+                                <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">
+                                  • Sell: ৳{sellVal}
+                                </span>
+                              )}
+                            </div>
                             <button
                               type="button"
                               onClick={() => handleToggleFinishingRawMaterial(mat)}
@@ -4164,6 +4215,11 @@ export function ServiceConfigModal({
                             {opt.material_name && (
                               <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
                                 🔗 {opt.material_name}
+                              </Badge>
+                            )}
+                            {opt.unit && (
+                              <Badge variant="outline" className="text-[10px] bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300">
+                                Unit: {opt.unit}
                               </Badge>
                             )}
                             {opt.is_default && (
@@ -4255,48 +4311,6 @@ export function ServiceConfigModal({
                 </div>
               )}
 
-              {/* Section C: Preset Standard Finishing Options */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  Quick Standard Finishing Presets:
-                </Label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                  {[
-                    { id: 'f-1', name: 'Eyelets (আইলেটস)', pricing_method: 'per_piece', selling_price: 5, cost: 2 },
-                    { id: 'f-2', name: 'Hemming / Edge Seaming (সেলাই)', pricing_method: 'per_perimeter_ft', selling_price: 3, cost: 1 },
-                    { id: 'f-3', name: 'Gloss Lamination (গ্লস ল্যামিনেশন)', pricing_method: 'per_sqft', selling_price: 8, cost: 4 },
-                    { id: 'f-4', name: 'Matt Lamination (ম্যাট ল্যামিনেশন)', pricing_method: 'per_sqft', selling_price: 8, cost: 4 },
-                    { id: 'f-5', name: 'Die-Cutting / Contour Cut (ডাই-কাট)', pricing_method: 'per_piece', selling_price: 15, cost: 5 },
-                    { id: 'f-6', name: 'Pocket / Pole Loop (পকেট সিমিং)', pricing_method: 'per_perimeter_ft', selling_price: 10, cost: 4 },
-                    ...finishingMasterOptions,
-                  ].map((opt) => {
-                    const isSelected = finishingOptions.some((f) => f.name.toLowerCase() === opt.name.toLowerCase())
-                    return (
-                      <div
-                        key={opt.id}
-                        onClick={() => handleToggleMasterFinishing(opt)}
-                        className={cn(
-                          'p-2.5 rounded-xl border text-xs cursor-pointer transition-all flex items-center justify-between',
-                          isSelected
-                            ? 'border-purple-600 bg-purple-50/70 dark:bg-purple-950/40 text-purple-950 dark:text-purple-200 shadow-2xs font-semibold'
-                            : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
-                        )}
-                      >
-                        <div>
-                          <span className="block font-bold">{opt.name}</span>
-                          <span className="text-[10px] text-slate-500 font-mono">
-                            ৳{opt.selling_price}/{opt.pricing_method === 'per_piece' ? 'pc' : 'sft'}
-                          </span>
-                        </div>
-                        <div className={cn('p-1 rounded-md', isSelected ? 'bg-purple-600 text-white' : 'text-slate-400')}>
-                          {isSelected ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-
               {/* Section D: Custom Finishing Form */}
               <div className="pt-2">
                 {showCustomFinishingForm ? (
@@ -4326,9 +4340,42 @@ export function ServiceConfigModal({
                               const mat = availableMaterials.find((m) => m.id === matId)
                               if (mat) {
                                 if (!customFinishingName) setCustomFinishingName(mat.name)
-                                const c = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || 0)
-                                setCustomFinishingCost(c)
-                                setCustomFinishingPrice(c > 0 ? Math.ceil(c * 1.6) : 15)
+                                const c = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost || 0)
+                                const sp = Number((mat as any).selling_price ?? (mat as any).price ?? (mat as any).material_config?.selling_price ?? (mat as any).price_tiers?.retail ?? 0)
+                                setCustomFinishingCost(c > 0 ? c : '')
+                                setCustomFinishingPrice(sp > 0 ? sp : (c > 0 ? c : ''))
+
+                                const pUnit = (mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || '').toLowerCase()
+                                const explicitMethod = ((mat as any).pricing_method || (mat as any).material_config?.pricing_method || '').toLowerCase()
+                                if (
+                                  explicitMethod === 'per_rft' ||
+                                  explicitMethod === 'rft' ||
+                                  explicitMethod === 'per_linear_ft' ||
+                                  explicitMethod === 'per_length'
+                                ) {
+                                  setCustomFinishingMethod('per_rft')
+                                } else if (
+                                  explicitMethod === 'per_piece' ||
+                                  explicitMethod === 'piece' ||
+                                  explicitMethod === 'pcs' ||
+                                  explicitMethod === 'per_unit'
+                                ) {
+                                  setCustomFinishingMethod('per_piece')
+                                } else if (
+                                  explicitMethod === 'per_sqft' ||
+                                  explicitMethod === 'sqft' ||
+                                  explicitMethod === 'sft'
+                                ) {
+                                  setCustomFinishingMethod('per_sqft')
+                                } else if (pUnit === 'meter' || pUnit === 'rft' || pUnit === 'linear_ft' || pUnit === 'inch') {
+                                  setCustomFinishingMethod('per_rft')
+                                } else if (pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
+                                  setCustomFinishingMethod('per_piece')
+                                } else if (pUnit === 'job' || pUnit === 'fixed') {
+                                  setCustomFinishingMethod('fixed')
+                                } else if (pUnit === 'sft' || pUnit === 'sqft' || pUnit === 'sqm') {
+                                  setCustomFinishingMethod('per_sqft')
+                                }
                               }
                             }
                           }}

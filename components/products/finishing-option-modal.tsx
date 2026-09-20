@@ -91,8 +91,45 @@ export function FinishingOptionModal({
     if (selected) {
       if (!name) setName(selected.name)
       if (selected.name_bn && !nameBn) setNameBn(selected.name_bn)
-      const unitCost = Number(selected.effective_unit_cost || selected.base_cost || 0)
+      const unitCost = Number(
+        (selected as any).purchase_price_per_sft ??
+        selected.effective_unit_cost ??
+        selected.base_cost ??
+        (selected as any).purchase_price ??
+        (selected as any).cost_per_unit ??
+        0
+      )
       if (unitCost > 0) setCost(String(unitCost))
+
+      const rawSellingPrice =
+        (selected as any).selling_price ??
+        (selected as any).price ??
+        (selected as any).material_config?.selling_price ??
+        (selected as any).price_tiers?.retail
+      const unitPrice =
+        rawSellingPrice !== undefined &&
+        rawSellingPrice !== null &&
+        rawSellingPrice !== '' &&
+        Number(rawSellingPrice) > 0
+          ? Number(rawSellingPrice)
+          : unitCost
+      if (unitPrice > 0) setSellingPrice(String(unitPrice))
+
+      const pUnit = (selected.unit || (selected as any).purchase_unit || (selected as any).selling_unit || '').toLowerCase()
+      const explicitMethod = ((selected as any).pricing_method || (selected as any).material_config?.pricing_method || '').toLowerCase()
+      if (explicitMethod === 'sqft' || explicitMethod === 'per_sqft' || explicitMethod === 'per_area') {
+        setPricingMethod('sqft')
+      } else if (explicitMethod === 'per_linear_ft' || explicitMethod === 'per_rft' || explicitMethod === 'rft' || explicitMethod === 'per_length') {
+        setPricingMethod('per_linear_ft')
+      } else if (explicitMethod === 'per_piece' || explicitMethod === 'piece' || explicitMethod === 'pcs' || explicitMethod === 'per_unit') {
+        setPricingMethod('per_piece')
+      } else if (pUnit === 'meter' || pUnit === 'rft' || pUnit === 'linear_ft' || pUnit === 'inch') {
+        setPricingMethod('per_linear_ft')
+      } else if (pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
+        setPricingMethod('per_piece')
+      } else if (pUnit === 'sqft' || pUnit === 'sft' || pUnit === 'sqm') {
+        setPricingMethod('sqft')
+      }
     }
   }
 

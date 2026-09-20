@@ -727,6 +727,7 @@ export interface ServiceFinishingOption {
   material_id?: string
   material_name?: string
   pricing_method: string // 'per_sqft' | 'per_rft' | 'per_piece' | 'fixed'
+  unit?: string
   price?: number
   unit_price?: number
   cost?: number
