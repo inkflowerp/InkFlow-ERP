@@ -118,6 +118,12 @@ export const COMMERCIAL_PRODUCT_TYPES: CommercialProductTypeDefinition[] = [
     label_bn: 'প্যাকেজ পণ্য',
     description: 'Turnkey event branding bundles (e.g. Backdrop + X-Stand + Installation)',
   },
+  {
+    id: 'outsource',
+    label: 'Outsource Product (আউটসোর্স পণ্য - নন-ইনভেন্টরি)',
+    label_bn: 'আউটসোর্স পণ্য (নন-ইনভেন্টরি)',
+    description: 'Third-party vendor outsourced products & jobs (e.g. Offset, Neon bending, Embroidery, Debossing) requiring no internal stock depletion.',
+  },
 ]
 
 export const MEASUREMENT_TYPES: { id: MeasurementType; label: string; description: string }[] = [
@@ -1472,8 +1478,29 @@ export function validateCircularBOM(
  * Authoritative Entity Type Classification
  * Standardizes categorization across Catalog, Detail Pages, Quoting, Invoicing, and Order Processing.
  */
+export function isOutsourceProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+  if (!p) return false
+  const cat = (p.category || '').toLowerCase()
+  const sku = (p.sku || '').toUpperCase()
+
+  return Boolean(
+    p.is_outsource === true ||
+    p.is_non_inventory === true ||
+    p.entity_type === 'outsource' ||
+    p.commercial_type === 'outsource' ||
+    p.product_type === 'outsource' ||
+    p.product_type === 'outsource_product' ||
+    sku.startsWith('OUT-') ||
+    cat === 'outsource' ||
+    cat.startsWith('outsource_') ||
+    cat === 'subcontract' ||
+    (p.outsource_config && typeof p.outsource_config === 'object' && Object.keys(p.outsource_config).length > 0)
+  )
+}
+
 export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): boolean {
   if (!p) return false
+  if (isOutsourceProduct(p)) return false
   const cat = (p.category || '').toLowerCase()
   const name = (p.name || '').toLowerCase()
   const sku = (p.sku || '').toUpperCase()
@@ -1583,6 +1610,7 @@ export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): 
 
 export function isReadyProduct(p: Partial<ProductRecord> | null | undefined): boolean {
   if (!p) return false
+  if (isOutsourceProduct(p)) return false
   if (isServiceProduct(p)) return false
   const cat = (p.category || '').toLowerCase()
   const sku = (p.sku || '').toUpperCase()
@@ -1632,6 +1660,7 @@ export function isReadyProduct(p: Partial<ProductRecord> | null | undefined): bo
 
 export function isMaterialProduct(p: Partial<ProductRecord> | null | undefined): boolean {
   if (!p) return false
+  if (isOutsourceProduct(p)) return false
   if (isServiceProduct(p) || isReadyProduct(p)) return false
   const cat = (p.category || '').toLowerCase()
   const sku = (p.sku || '').toUpperCase()
@@ -1652,16 +1681,18 @@ export function isMaterialProduct(p: Partial<ProductRecord> | null | undefined):
   )
 }
 
-export function getProductEntityKind(p: Partial<ProductRecord> | null | undefined): 'service' | 'material' | 'product' {
+export function getProductEntityKind(p: Partial<ProductRecord> | null | undefined): 'service' | 'material' | 'product' | 'outsource' {
   if (!p) return 'product'
+  if (isOutsourceProduct(p)) return 'outsource'
   if (isServiceProduct(p)) return 'service'
   if (isReadyProduct(p)) return 'product'
   if (isMaterialProduct(p)) return 'material'
   return 'product'
 }
 
-export function getProductEntityKindLabel(p: Partial<ProductRecord> | null | undefined): 'Service' | 'Raw Material' | 'Ready Product' {
+export function getProductEntityKindLabel(p: Partial<ProductRecord> | null | undefined): 'Service' | 'Raw Material' | 'Ready Product' | 'Outsource (Non-Inventory)' {
   const kind = getProductEntityKind(p)
+  if (kind === 'outsource') return 'Outsource (Non-Inventory)'
   if (kind === 'service') return 'Service'
   if (kind === 'material') return 'Raw Material'
   return 'Ready Product'

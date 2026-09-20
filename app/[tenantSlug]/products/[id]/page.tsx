@@ -49,6 +49,7 @@ import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { MaterialConfigModal } from '@/components/products/material-config-modal'
 import { ServiceConfigModal } from '@/components/products/service-config-modal'
 import { ReadyProductModal } from '@/components/products/ready-product-modal'
+import { OutsourceProductModal } from '@/components/products/outsource-product-modal'
 import {
   getProductByIdAction,
   updateProductAction,
@@ -80,6 +81,7 @@ import {
   isServiceProduct,
   isReadyProduct,
   isMaterialProduct,
+  isOutsourceProduct,
   getProductEntityKind,
   getProductEntityKindLabel,
 } from '@/lib/units'
@@ -125,6 +127,7 @@ export default function ProductDetailPage() {
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
   const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
+  const [isOutsourceModalOpen, setIsOutsourceModalOpen] = useState(false)
   const [newPrice, setNewPrice] = useState<number>(0)
   const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
   const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
@@ -151,7 +154,9 @@ export default function ProductDetailPage() {
 
   const handleOpenEdit = () => {
     if (!product) return
-    if (isServiceProduct(product)) {
+    if (isOutsourceProduct(product)) {
+      setIsOutsourceModalOpen(true)
+    } else if (isServiceProduct(product)) {
       setIsServiceModalOpen(true)
     } else if (isMaterialProduct(product)) {
       setIsMaterialModalOpen(true)
@@ -528,7 +533,9 @@ export default function ProductDetailPage() {
               <span
                 className={cn(
                   'capitalize px-2 py-0.5 rounded text-xs font-bold border',
-                  isServiceProduct(product)
+                  isOutsourceProduct(product)
+                    ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                    : isServiceProduct(product)
                     ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                     : isMaterialProduct(product)
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
@@ -578,7 +585,7 @@ export default function ProductDetailPage() {
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs"
             >
               <Boxes className="mr-1.5 h-3.5 w-3.5" />
-              Edit {isServiceProduct(product) ? 'Service' : isMaterialProduct(product) ? 'Material' : 'Product'}
+              Edit {isOutsourceProduct(product) ? 'Outsource Product' : isServiceProduct(product) ? 'Service' : isMaterialProduct(product) ? 'Material' : 'Product'}
             </Button>
 
             <Button
@@ -770,6 +777,66 @@ export default function ProductDetailPage() {
                 <div>Min Order Quantity (MOQ): <strong className="text-slate-900 dark:text-white">{product.min_order_quantity || 1} {product.selling_unit}</strong></div>
               </div>
             </div>
+
+            {/* Outsource Subcontract Details (if Outsource Product) */}
+            {(isOutsourceProduct(product) || product.is_outsource) && (
+              <div className="p-4 bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/60 rounded-xl text-xs space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-purple-900 dark:text-purple-300 font-bold text-sm">
+                    <Building2 className="h-4 w-4 text-purple-600" />
+                    <span>Outsource Vendor & Subcontract Production</span>
+                  </div>
+                  <Badge className="bg-purple-600 text-white text-[10px]">Non-Inventory Item</Badge>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-700 dark:text-slate-300">
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Vendor Name</span>
+                    <strong className="text-slate-900 dark:text-white text-xs block mt-0.5">
+                      {product.vendor_name || product.outsource_config?.vendor_name || 'Third-Party Vendor'}
+                    </strong>
+                    {(product.vendor_phone || product.outsource_config?.vendor_phone) && (
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        📞 {product.vendor_phone || product.outsource_config?.vendor_phone}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Turnaround Lead Time</span>
+                    <strong className="text-amber-700 dark:text-amber-400 text-xs block mt-0.5">
+                      ⏱️ {product.turnaround_days ?? product.outsource_config?.turnaround_days ?? 3} Business Days
+                    </strong>
+                    <span className="text-[10px] text-slate-400">Target Fulfillment Time</span>
+                  </div>
+
+                  <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Vendor Item Code / Ref</span>
+                    <strong className="text-slate-900 dark:text-white font-mono text-xs block mt-0.5">
+                      {product.vendor_item_code || product.outsource_config?.vendor_item_code || '—'}
+                    </strong>
+                    <span className="text-[10px] text-slate-400">Supplier Reference ID</span>
+                  </div>
+                </div>
+
+                {(product.vendor_address || product.outsource_config?.vendor_address) && (
+                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold">Vendor Address / Delivery Point:</span> {product.vendor_address || product.outsource_config?.vendor_address}
+                  </div>
+                )}
+
+                {(product.outsource_notes || product.outsource_config?.vendor_notes) && (
+                  <div className="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg text-purple-900 dark:text-purple-200 text-[11px]">
+                    <span className="font-bold">Subcontract Instructions / Spec: </span>
+                    {product.outsource_notes || product.outsource_config?.vendor_notes}
+                  </div>
+                )}
+
+                <p className="text-[11px] text-purple-700 dark:text-purple-300 italic">
+                  💡 Non-Inventory Rule: Subcontracted on-demand from third-party vendor upon order placement. Does not track warehouse bin stock or consume raw material media rolls.
+                </p>
+              </div>
+            )}
 
             {product.internal_notes && (
               <div className="p-3.5 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs space-y-1">
@@ -1644,6 +1711,13 @@ export default function ProductDetailPage() {
       <ReadyProductModal
         isOpen={isReadyProductModalOpen}
         onClose={() => setIsReadyProductModalOpen(false)}
+        onSave={handleSaveProductConfig}
+        initialData={product}
+      />
+
+      <OutsourceProductModal
+        isOpen={isOutsourceModalOpen}
+        onClose={() => setIsOutsourceModalOpen(false)}
         onSave={handleSaveProductConfig}
         initialData={product}
       />

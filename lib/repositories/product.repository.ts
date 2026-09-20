@@ -29,6 +29,7 @@ import {
   normalizePricingMethod,
   validateCircularBOM,
   getProductEntityKind,
+  isOutsourceProduct,
   isServiceProduct,
   isReadyProduct,
   isMaterialProduct,
@@ -72,6 +73,18 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'pricing_formula',
     'material_config',
     'service_config',
+    'outsource_config',
+    'is_outsource',
+    'is_non_inventory',
+    'track_inventory',
+    'vendor_id',
+    'vendor_name',
+    'vendor_phone',
+    'vendor_address',
+    'vendor_item_code',
+    'turnaround_days',
+    'outsource_notes',
+    'outsource_category',
     'vat_applicable',
     'is_tax_inclusive',
     'roll_width_ft',
@@ -185,6 +198,7 @@ export function enrichProductRecord(p: any): ProductRecord {
 
   const serviceConfig = p.service_config || formula.service_config || null
   const materialConfig = p.material_config || formula.material_config || null
+  const outsourceConfig = p.outsource_config || formula.outsource_config || null
   const availableWidths = p.available_widths_ft || materialConfig?.available_widths_ft || formula.available_widths_ft || null
   const rollSizes = p.roll_sizes || materialConfig?.roll_sizes || formula.roll_sizes || null
   const standardRollLength = p.standard_roll_length_ft || materialConfig?.standard_roll_length_ft || formula.standard_roll_length_ft || null
@@ -197,11 +211,15 @@ export function enrichProductRecord(p: any): ProductRecord {
     ? Number(p.production_length_allowance)
     : Number(formula.production_length_allowance) || 0
 
+  const isOutsource = p.is_outsource !== undefined ? Boolean(p.is_outsource) : (p.entity_type === 'outsource' || p.commercial_type === 'outsource' || p.product_type === 'outsource' || isOutsourceProduct(p))
+  const isNonInventory = p.is_non_inventory !== undefined ? Boolean(p.is_non_inventory) : isOutsource
   const resolvedEntityKind = getProductEntityKind(p)
   const entityType =
     p.entity_type ||
     formula.entity_type ||
-    (p.product_type === 'ready_product'
+    (isOutsource || p.product_type === 'outsource' || p.product_type === 'outsource_product'
+      ? 'outsource'
+      : p.product_type === 'ready_product'
       ? 'product'
       : p.product_type === 'material'
       ? 'material'
@@ -218,17 +236,29 @@ export function enrichProductRecord(p: any): ProductRecord {
     entity_type: entityType,
     service_config: serviceConfig,
     material_config: materialConfig,
+    outsource_config: outsourceConfig,
+    is_outsource: isOutsource,
+    is_non_inventory: isNonInventory,
+    track_inventory: p.track_inventory !== undefined ? Boolean(p.track_inventory) : !isNonInventory,
+    vendor_id: p.vendor_id || outsourceConfig?.vendor_id || null,
+    vendor_name: p.vendor_name || outsourceConfig?.vendor_name || null,
+    vendor_phone: p.vendor_phone || outsourceConfig?.vendor_phone || null,
+    vendor_address: p.vendor_address || outsourceConfig?.vendor_address || null,
+    vendor_item_code: p.vendor_item_code || outsourceConfig?.vendor_item_code || null,
+    turnaround_days: p.turnaround_days !== undefined && p.turnaround_days !== null ? Number(p.turnaround_days) : (outsourceConfig?.turnaround_days ?? null),
+    outsource_notes: p.outsource_notes || outsourceConfig?.vendor_notes || null,
+    outsource_category: p.outsource_category || (isOutsource ? p.category : null),
     roll_sizes: rollSizes,
     available_widths_ft: availableWidths,
     standard_roll_length_ft: standardRollLength,
     available_sheet_sizes: availableSheetSizes,
-    is_service: p.is_service !== undefined ? Boolean(p.is_service) : entityType === 'service' || isServiceProduct(p),
-    is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : entityType === 'product' || isReadyProduct(p),
-    commercial_type: p.commercial_type || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : entityType === 'service' ? 'service' : 'ready_product'),
-    measurement_type: p.measurement_type || 'area',
+    is_service: p.is_service !== undefined ? Boolean(p.is_service) : !isOutsource && (entityType === 'service' || isServiceProduct(p)),
+    is_ready_product: p.is_ready_product !== undefined ? Boolean(p.is_ready_product) : !isOutsource && (entityType === 'product' || isReadyProduct(p)),
+    commercial_type: p.commercial_type || (isOutsource ? 'outsource' : p.product_type === 'print_service' || p.category?.includes('flex') ? 'production_product' : entityType === 'service' ? 'service' : 'ready_product'),
+    measurement_type: p.measurement_type || (p.selling_unit === 'sft' || p.unit === 'sft' ? 'area' : p.selling_unit === 'rft' || p.unit === 'rft' ? 'length' : p.selling_unit === 'job' || p.unit === 'job' ? 'job' : 'piece'),
     pricing_method: pricingMethod,
     selling_unit: p.selling_unit || p.unit,
-    purchase_unit: p.purchase_unit || (p.product_type === 'print_service' || p.category?.includes('flex') ? 'roll' : p.unit),
+    purchase_unit: p.purchase_unit || (isOutsource ? p.selling_unit || p.unit : p.product_type === 'print_service' || p.category?.includes('flex') ? 'roll' : p.unit),
     purchase_price: purchasePrice,
     conversion_ratio: conversionRatio,
     production_unit: p.production_unit || p.unit,
@@ -304,7 +334,11 @@ export class ProductRepository {
         let filtered = prods.filter((p) => !p.company_id || p.company_id === companyId)
         if (activeOnly) filtered = filtered.filter((p) => p.is_active !== false)
         if (entityType && entityType !== 'all') {
-          filtered = filtered.filter((p) => p.entity_type === entityType)
+          if (entityType === 'outsource') {
+            filtered = filtered.filter((p) => p.entity_type === 'outsource' || p.is_outsource || p.is_non_inventory || isOutsourceProduct(p))
+          } else {
+            filtered = filtered.filter((p) => p.entity_type === entityType)
+          }
         }
         if (category && category !== 'all') filtered = filtered.filter((p) => p.category === category || p.product_type === category)
         if (search && search.trim()) {
@@ -314,10 +348,11 @@ export class ProductRepository {
               p.name.toLowerCase().includes(q) ||
               (p.name_bn && p.name_bn.includes(q)) ||
               p.sku.toLowerCase().includes(q) ||
-              (p.material_spec && p.material_spec.toLowerCase().includes(q))
+              (p.material_spec && p.material_spec.toLowerCase().includes(q)) ||
+              (p.vendor_name && p.vendor_name.toLowerCase().includes(q))
           )
         }
-        return filtered
+        return filtered.map(enrichProductRecord)
       }
 
       try {
@@ -349,7 +384,11 @@ export class ProductRepository {
 
         let enriched = ((data || []) as ProductRecord[]).map(enrichProductRecord)
         if (entityType && entityType !== 'all') {
-          enriched = enriched.filter((p) => p.entity_type === entityType)
+          if (entityType === 'outsource') {
+            enriched = enriched.filter((p) => p.entity_type === 'outsource' || p.is_outsource || p.is_non_inventory || isOutsourceProduct(p))
+          } else {
+            enriched = enriched.filter((p) => p.entity_type === entityType)
+          }
         }
         return enriched
       } catch (err: any) {
@@ -583,11 +622,23 @@ export class ProductRepository {
         requires_finishing: Boolean(product.requires_finishing),
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
-        entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
+        entity_type: product.entity_type || (product.is_outsource || product.product_type === 'outsource' ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
         service_config: product.service_config || {},
         material_config: product.material_config || {},
-        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (product.entity_type === 'service' || product.product_type === 'print_service' || isServiceProduct(product)),
-        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (product.entity_type === 'product' || product.product_type === 'ready_product' || isReadyProduct(product)),
+        outsource_config: product.outsource_config || {},
+        is_outsource: product.is_outsource !== undefined ? Boolean(product.is_outsource) : (product.entity_type === 'outsource' || product.product_type === 'outsource' || isOutsourceProduct(product)),
+        is_non_inventory: product.is_non_inventory !== undefined ? Boolean(product.is_non_inventory) : (product.is_outsource || product.entity_type === 'outsource' || isOutsourceProduct(product)),
+        track_inventory: product.track_inventory !== undefined ? Boolean(product.track_inventory) : !(product.is_outsource || product.is_non_inventory || product.entity_type === 'outsource' || isOutsourceProduct(product)),
+        vendor_id: product.vendor_id || product.outsource_config?.vendor_id || null,
+        vendor_name: product.vendor_name || product.outsource_config?.vendor_name || null,
+        vendor_phone: product.vendor_phone || product.outsource_config?.vendor_phone || null,
+        vendor_address: product.vendor_address || product.outsource_config?.vendor_address || null,
+        vendor_item_code: product.vendor_item_code || product.outsource_config?.vendor_item_code || null,
+        turnaround_days: product.turnaround_days !== undefined && product.turnaround_days !== null ? Number(product.turnaround_days) : (product.outsource_config?.turnaround_days ?? null),
+        outsource_notes: product.outsource_notes || product.outsource_config?.vendor_notes || null,
+        outsource_category: product.outsource_category || (product.is_outsource ? product.category : null),
+        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (!product.is_outsource && (product.entity_type === 'service' || product.product_type === 'print_service' || isServiceProduct(product))),
+        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (!product.is_outsource && (product.entity_type === 'product' || product.product_type === 'ready_product' || isReadyProduct(product))),
         default_department: product.default_department || 'printing',
         estimated_production_time_hours: product.estimated_production_time_hours !== undefined && product.estimated_production_time_hours !== null && !isNaN(Number(product.estimated_production_time_hours)) ? Number(product.estimated_production_time_hours) : 4.0,
         default_finishing: product.default_finishing?.trim() || null,
@@ -713,6 +764,27 @@ export class ProductRepository {
         payload.material_config = updates.material_config || {}
         formulaUpdates.material_config = updates.material_config || {}
       }
+      if (updates.outsource_config !== undefined) {
+        payload.outsource_config = updates.outsource_config || {}
+        formulaUpdates.outsource_config = updates.outsource_config || {}
+      }
+      if (updates.is_outsource !== undefined) {
+        payload.is_outsource = Boolean(updates.is_outsource)
+      }
+      if (updates.is_non_inventory !== undefined) {
+        payload.is_non_inventory = Boolean(updates.is_non_inventory)
+      }
+      if (updates.track_inventory !== undefined) {
+        payload.track_inventory = Boolean(updates.track_inventory)
+      }
+      if (updates.vendor_id !== undefined) payload.vendor_id = updates.vendor_id
+      if (updates.vendor_name !== undefined) payload.vendor_name = updates.vendor_name
+      if (updates.vendor_phone !== undefined) payload.vendor_phone = updates.vendor_phone
+      if (updates.vendor_address !== undefined) payload.vendor_address = updates.vendor_address
+      if (updates.vendor_item_code !== undefined) payload.vendor_item_code = updates.vendor_item_code
+      if (updates.turnaround_days !== undefined) payload.turnaround_days = updates.turnaround_days !== null ? Number(updates.turnaround_days) : null
+      if (updates.outsource_notes !== undefined) payload.outsource_notes = updates.outsource_notes
+      if (updates.outsource_category !== undefined) payload.outsource_category = updates.outsource_category
       if (updates.available_widths_ft !== undefined) {
         payload.available_widths_ft = updates.available_widths_ft
         formulaUpdates.available_widths_ft = updates.available_widths_ft

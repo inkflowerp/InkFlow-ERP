@@ -17,9 +17,10 @@ export class ProductService {
     companyId: string,
     activeOnly: boolean = false,
     category?: string,
-    search?: string
+    search?: string,
+    entityType?: string
   ): Promise<ProductRecord[]> {
-    return ProductRepository.getProducts(companyId, activeOnly, category, search)
+    return ProductRepository.getProducts(companyId, activeOnly, category, search, entityType)
   }
 
   static async getProductById(id: string, companyId: string): Promise<ProductRecord | null> {

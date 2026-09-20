@@ -3,13 +3,13 @@
 import React from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
-import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette, Layers } from 'lucide-react'
+import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette, Layers, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface EntityTypeSelectorModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelect: (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_method') => void
+  onSelect: (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => void
 }
 
 export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTypeSelectorModalProps) {
@@ -46,6 +46,17 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       borderClass: 'border-amber-200 dark:border-amber-900/60 hover:border-amber-500 hover:bg-amber-50/50 dark:hover:bg-amber-950/30',
       badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300 border-amber-200 dark:border-amber-800',
       iconClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/60 dark:text-amber-300',
+    },
+    {
+      id: 'outsource' as const,
+      title: 'Outsource Product (Non-Inventory Item)',
+      subtitle: 'Offset Printing, Neon Flex Signs, Computer Embroidery, Gold Foil Stamping',
+      description: 'Jobs & items contracted to third-party vendors. Direct vendor costing, lead times, and zero stock depletion.',
+      icon: Share2,
+      badge: 'Non-Inventory',
+      borderClass: 'border-purple-200 dark:border-purple-900/60 hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-950/30',
+      badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
+      iconClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300',
     },
   ]
 

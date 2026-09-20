@@ -96,6 +96,7 @@ import { EntityTypeSelectorModal } from '@/components/products/entity-type-selec
 import { ReadyProductModal } from '@/components/products/ready-product-modal'
 import { ServiceConfigModal } from '@/components/products/service-config-modal'
 import { MaterialConfigModal } from '@/components/products/material-config-modal'
+import { OutsourceProductModal } from '@/components/products/outsource-product-modal'
 import { PrintingMethodModal } from '@/components/products/printing-method-modal'
 import { FinishingOptionModal } from '@/components/products/finishing-option-modal'
 import { AdditionalOptionModal } from '@/components/products/additional-option-modal'
@@ -139,6 +140,7 @@ import {
   isServiceProduct,
   isReadyProduct,
   isMaterialProduct,
+  isOutsourceProduct,
   getProductEntityKind,
   getProductEntityKindLabel,
 } from '@/lib/units'
@@ -164,7 +166,7 @@ export default function ProductsCatalogPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [selectedType, setSelectedType] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'low_margin' | 'archived'>('active')
-  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_methods'>('all')
+  const [entityTypeFilter, setEntityTypeFilter] = useState<'all' | 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_methods'>('all')
 
   // Notification alert
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
@@ -180,6 +182,7 @@ export default function ProductsCatalogPage() {
   const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
   const [isServiceModalOpen, setIsServiceModalOpen] = useState(false)
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
+  const [isOutsourceModalOpen, setIsOutsourceModalOpen] = useState(false)
 
   // Configuration Master Modals State
   const [isPrintingMethodModalOpen, setIsPrintingMethodModalOpen] = useState(false)
@@ -480,7 +483,7 @@ export default function ProductsCatalogPage() {
     }
   }
 
-  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
+  const handleSelectEntityType = (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => {
     setEditingProduct(null)
     if (type === 'product') {
       setIsReadyProductModalOpen(true)
@@ -488,6 +491,8 @@ export default function ProductsCatalogPage() {
       setIsServiceModalOpen(true)
     } else if (type === 'material') {
       setIsMaterialModalOpen(true)
+    } else if (type === 'outsource') {
+      setIsOutsourceModalOpen(true)
     } else if (type === 'printing_method') {
       setEditingPrintingMethod(null)
       setIsPrintingMethodModalOpen(true)
@@ -823,7 +828,9 @@ export default function ProductsCatalogPage() {
 
   const handleOpenEdit = (p: ProductRecord) => {
     setEditingProduct(p)
-    if (isServiceProduct(p)) {
+    if (isOutsourceProduct(p)) {
+      setIsOutsourceModalOpen(true)
+    } else if (isServiceProduct(p)) {
       setIsServiceModalOpen(true)
     } else if (isMaterialProduct(p)) {
       setIsMaterialModalOpen(true)
@@ -1450,22 +1457,35 @@ export default function ProductsCatalogPage() {
     setIsMaterialModalOpen(true)
   }
 
+  const handleOpenCreateOutsource = () => {
+    const check = checkCanCreate('max_products')
+    if (!check.allowed) {
+      openLimitExceededModal('max_products')
+      return
+    }
+    setEditingProduct(null)
+    setIsOutsourceModalOpen(true)
+  }
+
   // Entity Type Helpers
   const isServiceItem = isServiceProduct
   const isMaterialItem = isMaterialProduct
   const isReadyProductItem = isReadyProduct
+  const isOutsourceItem = isOutsourceProduct
 
   // Live Tab Counts Memo
   const tabCounts = useMemo(() => {
     const serviceCount = products.filter(isServiceItem).length
     const materialCount = products.filter(isMaterialItem).length
     const productCount = products.filter(isReadyProductItem).length
+    const outsourceCount = products.filter(isOutsourceItem).length
 
     return {
       all: products.length,
       service: serviceCount,
       product: productCount,
       material: materialCount,
+      outsource: outsourceCount,
       finishing: finishingOptions.length,
       additional: additionalOptions.length,
       installation: installationOptions.length,
@@ -1484,7 +1504,8 @@ export default function ProductsCatalogPage() {
         p.sku.toLowerCase().includes(q) ||
         (p.material_spec && p.material_spec.toLowerCase().includes(q)) ||
         (p.category && p.category.toLowerCase().includes(q)) ||
-        (p.dimensions_spec && p.dimensions_spec.toLowerCase().includes(q))
+        (p.dimensions_spec && p.dimensions_spec.toLowerCase().includes(q)) ||
+        (p.vendor_name && p.vendor_name.toLowerCase().includes(q))
 
       const matchCategory =
         selectedCategory === 'all' ||
@@ -1503,6 +1524,8 @@ export default function ProductsCatalogPage() {
         matchEntityType = isServiceItem(p)
       } else if (entityTypeFilter === 'material') {
         matchEntityType = isMaterialItem(p)
+      } else if (entityTypeFilter === 'outsource') {
+        matchEntityType = isOutsourceItem(p)
       } else if (
         entityTypeFilter === 'finishing' ||
         entityTypeFilter === 'additional' ||
@@ -1670,6 +1693,15 @@ export default function ProductsCatalogPage() {
 
             <Button
               size="sm"
+              onClick={handleOpenCreateOutsource}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>+ Outsource</span>
+            </Button>
+
+            <Button
+              size="sm"
               variant="outline"
               onClick={handleOpenCreate}
               className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
@@ -1748,7 +1780,7 @@ export default function ProductsCatalogPage() {
             {metrics.totalActive}
           </div>
           <div className="text-xs text-slate-500 font-numeric tabular-nums mt-0.5">
-            {tabCounts.service} Services • {tabCounts.product} Products • {tabCounts.material} Materials
+            {tabCounts.service} Services • {tabCounts.product} Products • {tabCounts.material} Materials • {tabCounts.outsource} Outsource
           </div>
         </Card>
 
@@ -1792,13 +1824,14 @@ export default function ProductsCatalogPage() {
         </Card>
       </div>
 
-      {/* 8 Specialized Commercial Navigation Tabs with Live Counts */}
+      {/* 9 Specialized Commercial Navigation Tabs with Live Counts */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-200 dark:border-slate-800 scrollbar-thin">
         {[
           { id: 'all', label: 'All Items', count: tabCounts.all, icon: Package },
           { id: 'service', label: 'Services', count: tabCounts.service, icon: Printer },
           { id: 'product', label: 'Ready Products', count: tabCounts.product, icon: Package },
           { id: 'material', label: 'Raw Materials', count: tabCounts.material, icon: Layers },
+          { id: 'outsource', label: 'Outsource (Non-Inventory)', count: tabCounts.outsource, icon: Share2 },
           { id: 'finishing', label: 'Finishing Masters', count: tabCounts.finishing, icon: Scissors },
           { id: 'additional', label: 'Additional Work', count: tabCounts.additional, icon: PlusCircle },
           { id: 'installation', label: 'Installation & Delivery', count: tabCounts.installation, icon: Truck },
@@ -1897,7 +1930,7 @@ export default function ProductsCatalogPage() {
         )}
 
         {/* Commercial Type Dropdown (Catalog Tabs only) */}
-        {(entityTypeFilter === 'all' || entityTypeFilter === 'product' || entityTypeFilter === 'service' || entityTypeFilter === 'material') && (
+        {(entityTypeFilter === 'all' || entityTypeFilter === 'product' || entityTypeFilter === 'service' || entityTypeFilter === 'material' || entityTypeFilter === 'outsource') && (
           <div>
             <select
               value={selectedType}
@@ -3167,6 +3200,228 @@ export default function ProductsCatalogPage() {
       )}
 
       {/* ======================================================== */}
+      {/* VIEW 7.5: OUTSOURCE PRODUCTS (NON-INVENTORY) TABLE       */}
+      {/* ======================================================== */}
+      {entityTypeFilter === 'outsource' && (
+        <Card className="shadow-xs overflow-hidden">
+          <CardHeader className="py-3.5 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <span>Outsource Products & Subcontract Services (Non-Inventory)</span>
+                <Badge variant="outline" className="text-xs font-mono font-bold text-purple-600 border-purple-300">
+                  {filteredProducts.length}
+                </Badge>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Subcontracted non-inventory products (Offset leaflets, neon flex signs, computer embroidery, special foil/die-cut, 3D channel letters) routed directly to third-party vendors.
+              </CardDescription>
+            </div>
+            <Button
+              size="sm"
+              onClick={handleOpenCreateOutsource}
+              className="bg-purple-600 hover:bg-purple-700 text-white text-xs shrink-0 font-bold"
+            >
+              <Plus className="mr-1.5 h-3.5 w-3.5" />
+              New Outsource Product
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <div className="p-8 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-lg animate-pulse" />
+                ))}
+              </div>
+            ) : filteredProducts.length === 0 ? (
+              <div className="p-12 text-center space-y-3">
+                <Share2 className="h-10 w-10 text-purple-300 mx-auto" />
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">No Outsource Products Found</h3>
+                <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                  Add non-inventory outsource items with third-party vendor cost, turnaround lead time, and multi-tier pricing.
+                </p>
+                <Button size="sm" onClick={handleOpenCreateOutsource} className="mt-2 text-xs bg-purple-600 hover:bg-purple-700 text-white">
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Add Outsource Product
+                </Button>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="py-3 px-4">Product & SKU</th>
+                      <th className="py-3 px-3">Subcontract Vendor</th>
+                      <th className="py-3 px-3">Lead Time & Inventory</th>
+                      <th className="py-3 px-3">Price Tiers</th>
+                      <th className="py-3 px-3">Vendor Cost</th>
+                      <th className="py-3 px-3">Selling Rate</th>
+                      <th className="py-3 px-3">Gross Margin</th>
+                      <th className="py-3 px-3">Status</th>
+                      <th className="py-3 px-4 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {filteredProducts.map((item) => {
+                      const marginPercent =
+                        item.selling_price > 0
+                          ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
+                          : 0
+                      const tiers = item.price_tiers || {}
+                      const vendorName = item.vendor_name || item.outsource_config?.vendor_name || 'Vendor Subcontract'
+                      const vendorPhone = item.vendor_phone || item.outsource_config?.vendor_phone
+                      const turnaround = item.turnaround_days ?? item.outsource_config?.turnaround_days ?? 3
+
+                      return (
+                        <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                          <td className="py-3.5 px-4">
+                            <Link
+                              href={`/products/${item.id}`}
+                              className="font-bold text-slate-900 dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
+                            >
+                              <span>{item.name}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-purple-600 transition-opacity" />
+                            </Link>
+                            {item.name_bn && (
+                              <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
+                            )}
+                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                              {item.sku} • {item.category || 'outsource'}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                              <Building2 className="h-3 w-3 text-purple-500" />
+                              <span>{vendorName}</span>
+                            </div>
+                            {vendorPhone && (
+                              <div className="text-[11px] text-slate-400 font-mono">{vendorPhone}</div>
+                            )}
+                            {item.vendor_item_code && (
+                              <div className="text-[10px] text-slate-400 font-mono">Ref: {item.vendor_item_code}</div>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="flex flex-col gap-1">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                <Clock className="h-3 w-3 text-amber-500" />
+                                {turnaround} {turnaround === 1 ? 'day' : 'days'}
+                              </span>
+                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit">
+                                Non-Inventory
+                              </Badge>
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                              {tiers.corporate ? (
+                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200">
+                                  Corp: ৳{tiers.corporate}
+                                </span>
+                              ) : null}
+                              {tiers.dealer ? (
+                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200">
+                                  Dealer: ৳{tiers.dealer}
+                                </span>
+                              ) : null}
+                              {tiers.wholesale ? (
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200">
+                                  WS: ৳{tiers.wholesale}
+                                </span>
+                              ) : null}
+                              {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
+                                <span className="text-slate-400 italic">Standard Retail</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <CurrencyDisplay amount={item.base_cost} />
+                            <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <CurrencyDisplay amount={item.selling_price} />
+                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          </td>
+                          <td className="py-3.5 px-3 font-mono text-xs">
+                            <span
+                              className={cn(
+                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                marginPercent >= 35
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                  : marginPercent >= 20
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                              )}
+                            >
+                              {marginPercent}%
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-3">
+                            {item.is_active !== false ? (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                                <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                onClick={() => handleOpenFastQuote(item)}
+                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
+                              >
+                                <Calculator className="h-3 w-3 mr-1" />
+                                Quote
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setPricingProduct(item)
+                                  setNewPrice(item.selling_price)
+                                  setNewPurchasePrice(item.purchase_price || 0)
+                                  setNewTargetMargin(item.target_margin_percentage || 35)
+                                  setNewWastage(item.default_wastage_percentage || 0)
+                                }}
+                                className="h-7 text-xs px-2"
+                                title="Adjust price"
+                              >
+                                <Edit3 className="h-3 w-3 mr-1" />
+                                Price
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenEdit(item)}
+                                className="h-7 text-xs px-2"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleInitiateDelete(item)}
+                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
+                                title="Delete Outsource Item"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ======================================================== */}
       {/* VIEW 8: UNIFIED ALL COMMERCIAL CATALOG ITEMS             */}
       {/* ======================================================== */}
       {entityTypeFilter === 'all' && (
@@ -3257,7 +3512,9 @@ export default function ProductsCatalogPage() {
                             <span
                               className={cn(
                                 'capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
-                                isServiceProduct(item)
+                                isOutsourceProduct(item)
+                                  ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                                  : isServiceProduct(item)
                                   ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                                   : isMaterialProduct(item)
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
@@ -3448,7 +3705,9 @@ export default function ProductsCatalogPage() {
                         <span
                           className={cn(
                             'capitalize px-2 py-0.5 rounded text-[10px] font-semibold border shrink-0',
-                            isServiceProduct(item)
+                            isOutsourceProduct(item)
+                              ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
+                              : isServiceProduct(item)
                               ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
                               : isMaterialProduct(item)
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
@@ -4994,6 +5253,17 @@ export default function ProductsCatalogPage() {
         initialData={editingProduct}
         categories={categories}
         printingMethods={printingMethods}
+      />
+
+      <OutsourceProductModal
+        isOpen={isOutsourceModalOpen}
+        onClose={() => {
+          setIsOutsourceModalOpen(false)
+          setEditingProduct(null)
+        }}
+        onSave={handleSaveRebuiltProduct}
+        initialData={editingProduct}
+        categories={categories}
       />
 
       {/* Standalone Configuration Master Modals */}

@@ -17,6 +17,8 @@ export type ProductType =
   | 'installation'
   | 'delivery'
   | 'package_bundle'
+  | 'outsource'
+  | 'outsource_product'
 
 export type CommercialProductType =
   | 'ready_product'
@@ -30,6 +32,7 @@ export type CommercialProductType =
   | 'package_bundle'
   | 'material'
   | 'package'
+  | 'outsource'
 
 export type MeasurementType =
   | 'piece'
@@ -613,6 +616,19 @@ export interface ProductRecord {
   general_category?: string
   deliverable_format?: string
   turnaround_hours?: number
+  // Outsource (Non-Inventory Item) fields
+  is_outsource?: boolean
+  is_non_inventory?: boolean
+  track_inventory?: boolean
+  vendor_id?: string | null
+  vendor_name?: string | null
+  vendor_phone?: string | null
+  vendor_address?: string | null
+  vendor_item_code?: string | null
+  turnaround_days?: number | null
+  outsource_notes?: string | null
+  outsource_category?: string | null
+  outsource_config?: OutsourceConfiguration | null
   // Computed commercial helpers
   effective_unit_cost?: number
   suggested_selling_price?: number
@@ -620,6 +636,23 @@ export interface ProductRecord {
   estimated_material_cost?: number
   estimated_direct_cost?: number
   cost_basis_type?: CostBasisType
+}
+
+export interface OutsourceConfiguration {
+  vendor_id?: string | null
+  vendor_name?: string | null
+  vendor_phone?: string | null
+  vendor_address?: string | null
+  vendor_item_code?: string | null
+  vendor_unit_cost?: number
+  purchase_unit?: string
+  conversion_ratio?: number
+  markup_percent?: number
+  turnaround_days?: number
+  delivery_method?: 'vendor_delivery' | 'shop_pickup' | 'direct_customer_dispatch' | string
+  specifications?: string | null
+  vendor_notes?: string | null
+  is_non_inventory?: boolean
 }
 
 export interface LinkedInkChannel {
@@ -633,7 +666,7 @@ export interface LinkedInkChannel {
   cost_per_ml?: number
 }
 
-export type EntityType = 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation'
+export type EntityType = 'product' | 'service' | 'material' | 'finishing' | 'additional' | 'installation' | 'outsource'
 
 export interface ServiceDimensionPreset {
   id?: string

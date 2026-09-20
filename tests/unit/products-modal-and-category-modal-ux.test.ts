@@ -10,9 +10,9 @@ import type { CommercialProductType, PricingMethod } from '../../types/product.t
 import type { ProductCategoryRecord, CreateCategoryInput } from '../../types/category.types.ts'
 
 describe('InkFlow — Simplified Product Modal & Category Modal UX Suite', () => {
-  describe('1. Product Type Selector Cards (8 Human-Friendly Types)', () => {
-    it('1.1 Exposes exactly 8 human-readable product type cards with no technical enum jargon', () => {
-      assert.equal(PRODUCT_TYPE_CARDS.length, 8)
+  describe('1. Product Type Selector Cards (Human-Friendly Types)', () => {
+    it('1.1 Exposes human-readable product type cards with no technical enum jargon', () => {
+      assert.equal(PRODUCT_TYPE_CARDS.length, 9)
       const keys = PRODUCT_TYPE_CARDS.map(c => c.key)
       assert.deepEqual(keys, [
         'production_product',
@@ -23,6 +23,7 @@ describe('InkFlow — Simplified Product Modal & Category Modal UX Suite', () =>
         'installation',
         'delivery',
         'package',
+        'outsource',
       ])
 
       for (const card of PRODUCT_TYPE_CARDS) {
@@ -45,6 +46,12 @@ describe('InkFlow — Simplified Product Modal & Category Modal UX Suite', () =>
       assert.equal(productDefaults.pricing_method, 'per_piece')
       assert.equal(productDefaults.selling_unit, 'piece')
       assert.equal(productDefaults.requires_production, false)
+
+      // Outsource (Non-Inventory)
+      const outsourceDefaults = PRODUCT_TYPE_DEFAULT_MAP['outsource']
+      assert.equal(outsourceDefaults.pricing_method, 'per_piece')
+      assert.equal(outsourceDefaults.selling_unit, 'piece')
+      assert.equal(outsourceDefaults.requires_production, false)
 
       // Fabrication / Production
       const fabDefaults = PRODUCT_TYPE_DEFAULT_MAP['fabrication']

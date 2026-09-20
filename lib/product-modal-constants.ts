@@ -83,6 +83,15 @@ export const PRODUCT_TYPE_CARDS = [
     desc: 'Combination of products/services',
     iconName: 'Boxes',
   },
+  {
+    key: 'outsource' as CommercialProductType,
+    type: 'outsource' as CommercialProductType,
+    label: 'Outsource Product',
+    label_bn: 'আউটসোর্স পণ্য',
+    description: 'Third-party vendor outsourced item (Non-inventory item)',
+    desc: 'Third-party vendor outsourced item (Non-inventory item)',
+    iconName: 'Share2',
+  },
 ]
 
 export interface PricingPill {
@@ -180,6 +189,12 @@ export const PRODUCT_TYPE_DEFAULT_MAP: Record<
     selling_unit: 'piece',
     requires_production: false,
     product_type: 'ready_product',
+  },
+  outsource: {
+    pricing_method: 'per_piece',
+    selling_unit: 'piece',
+    requires_production: false,
+    product_type: 'outsource',
   },
 }
 
