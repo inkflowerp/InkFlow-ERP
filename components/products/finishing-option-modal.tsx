@@ -10,6 +10,7 @@ import { Sparkles, AlertCircle, RefreshCw, Scissors, TrendingUp, Layers, CheckCi
 import type { FinishingOptionRecord, ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { calculateGrossMargin } from '@/lib/units'
+import { getMaterialUnitDetails } from './service-config-modal'
 import { cn } from '@/lib/utils'
 
 interface FinishingOptionModalProps {
@@ -91,14 +92,8 @@ export function FinishingOptionModal({
     if (selected) {
       if (!name) setName(selected.name)
       if (selected.name_bn && !nameBn) setNameBn(selected.name_bn)
-      const unitCost = Number(
-        (selected as any).purchase_price_per_sft ??
-        selected.effective_unit_cost ??
-        selected.base_cost ??
-        (selected as any).purchase_price ??
-        (selected as any).cost_per_unit ??
-        0
-      )
+      const { consumeUnit, costVal, isFastener, isInk, isRollMedia, isSheet } = getMaterialUnitDetails(selected as any)
+      const unitCost = costVal
       if (unitCost > 0) setCost(String(unitCost))
 
       const rawSellingPrice =
@@ -106,16 +101,21 @@ export function FinishingOptionModal({
         (selected as any).price ??
         (selected as any).material_config?.selling_price ??
         (selected as any).price_tiers?.retail
-      const unitPrice =
-        rawSellingPrice !== undefined &&
-        rawSellingPrice !== null &&
-        rawSellingPrice !== '' &&
-        Number(rawSellingPrice) > 0
-          ? Number(rawSellingPrice)
-          : unitCost
-      if (unitPrice > 0) setSellingPrice(String(unitPrice))
 
       const pUnit = (selected.unit || (selected as any).purchase_unit || (selected as any).selling_unit || '').toLowerCase()
+      let unitPrice = unitCost
+      if (rawSellingPrice !== undefined && rawSellingPrice !== null && rawSellingPrice !== '' && Number(rawSellingPrice) > 0) {
+        const numSp = Number(rawSellingPrice)
+        if (isFastener && consumeUnit === 'pcs' && (pUnit === 'box' || pUnit === 'pack') && numSp >= 50) {
+          unitPrice = parseFloat((numSp / 1000).toFixed(4))
+        } else if (isInk && consumeUnit === 'ml' && numSp >= 50) {
+          unitPrice = parseFloat((numSp / 1000).toFixed(4))
+        } else {
+          unitPrice = numSp
+        }
+      }
+      if (unitPrice > 0) setSellingPrice(String(unitPrice))
+
       const explicitMethod = ((selected as any).pricing_method || (selected as any).material_config?.pricing_method || '').toLowerCase()
       if (explicitMethod === 'sqft' || explicitMethod === 'per_sqft' || explicitMethod === 'per_area') {
         setPricingMethod('sqft')
@@ -125,7 +125,7 @@ export function FinishingOptionModal({
         setPricingMethod('per_piece')
       } else if (pUnit === 'meter' || pUnit === 'rft' || pUnit === 'linear_ft' || pUnit === 'inch') {
         setPricingMethod('per_linear_ft')
-      } else if (pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
+      } else if (isFastener || consumeUnit === 'pcs' || pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
         setPricingMethod('per_piece')
       } else if (pUnit === 'sqft' || pUnit === 'sft' || pUnit === 'sqm') {
         setPricingMethod('sqft')

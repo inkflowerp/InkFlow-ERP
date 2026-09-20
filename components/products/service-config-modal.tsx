@@ -118,7 +118,7 @@ export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
 ]
 
 
-export const getMaterialCost = (mat: MaterialRecord | null | undefined): number => {
+export const getMaterialCost = (mat: MaterialRecord | ProductRecord | any | null | undefined): number => {
   if (!mat) return 0
   const cost =
     (mat as any).purchase_price_per_sft ??
@@ -156,7 +156,7 @@ export interface MaterialUnitDetails {
   stockSubtitle: string
 }
 
-export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): MaterialUnitDetails => {
+export const getMaterialUnitDetails = (mat: MaterialRecord | ProductRecord | any | null | undefined): MaterialUnitDetails => {
   if (!mat) {
     return {
       stockUnit: 'unit',
@@ -2140,6 +2140,7 @@ export function ServiceConfigModal({
       return
     }
 
+    const { consumeUnit, costVal, isFastener, isInk, isRollMedia, isSheet } = getMaterialUnitDetails(mat)
     const pUnit = (mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || '').toLowerCase()
     const cat = (mat.category || '').toLowerCase()
     const n = (mat.name || '').toLowerCase()
@@ -2187,14 +2188,13 @@ export function ServiceConfigModal({
     ) {
       pricing_method = 'per_rft'
     } else if (
+      isFastener ||
+      consumeUnit === 'pcs' ||
+      consumeUnit === 'piece' ||
       pUnit === 'piece' ||
       pUnit === 'pcs' ||
       pUnit === 'box' ||
       pUnit === 'pack' ||
-      pUnit === 'sheet' ||
-      pUnit === 'unit' ||
-      pUnit === 'set' ||
-      pUnit === 'item' ||
       cat.includes('eyelet') ||
       n.includes('eyelet') ||
       n.includes('grommet') ||
@@ -2211,28 +2211,25 @@ export function ServiceConfigModal({
       pricing_method = 'per_sqft'
     }
 
-    const cost = Number(
-      (mat as any).purchase_price_per_sft ??
-      (mat as any).purchase_price ??
-      mat.cost_per_unit ??
-      (mat as any).base_cost ??
-      (mat as any).effective_unit_cost ??
-      (mat as any).manual_cost ??
-      0
-    )
+    const cost = costVal
 
     const rawSellingPrice =
       (mat as any).selling_price ??
       (mat as any).price ??
       (mat as any).material_config?.selling_price ??
       (mat as any).price_tiers?.retail
-    const sellPrice =
-      rawSellingPrice !== undefined &&
-      rawSellingPrice !== null &&
-      rawSellingPrice !== '' &&
-      Number(rawSellingPrice) > 0
-        ? Number(rawSellingPrice)
-        : cost
+
+    let sellPrice = cost
+    if (rawSellingPrice !== undefined && rawSellingPrice !== null && rawSellingPrice !== '' && Number(rawSellingPrice) > 0) {
+      const numSp = Number(rawSellingPrice)
+      if (isFastener && consumeUnit === 'pcs' && (pUnit === 'box' || pUnit === 'pack') && numSp >= 50) {
+        sellPrice = parseFloat((numSp / 1000).toFixed(4))
+      } else if (isInk && consumeUnit === 'ml' && numSp >= 50) {
+        sellPrice = parseFloat((numSp / 1000).toFixed(4))
+      } else {
+        sellPrice = numSp
+      }
+    }
 
     setFinishingOptions([
       ...finishingOptions,
@@ -2242,7 +2239,7 @@ export function ServiceConfigModal({
         name_bn: (mat as any).name_bn || undefined,
         material_id: mat.id,
         material_name: mat.name,
-        unit: mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || undefined,
+        unit: consumeUnit || mat.unit || (mat as any).purchase_unit || (mat as any).selling_unit || undefined,
         pricing_method,
         unit_price: sellPrice,
         price: sellPrice,
@@ -2279,7 +2276,7 @@ export function ServiceConfigModal({
         requirement_type: customFinishingRequirementType,
         material_id: customFinishingMaterialId || undefined,
         material_name: linkedMat?.name || undefined,
-        unit: linkedMat ? (linkedMat.unit || (linkedMat as any).purchase_unit || (linkedMat as any).selling_unit) : undefined,
+        unit: linkedMat ? (getMaterialUnitDetails(linkedMat).consumeUnit || linkedMat.unit) : undefined,
         pricing_method: customFinishingMethod,
         unit_price: Number(customFinishingPrice) || 0,
         price: Number(customFinishingPrice) || 0,
@@ -4422,8 +4419,19 @@ export function ServiceConfigModal({
                               const mat = availableMaterials.find((m) => m.id === matId)
                               if (mat) {
                                 if (!customFinishingName) setCustomFinishingName(mat.name)
-                                const c = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost || 0)
-                                const sp = Number((mat as any).selling_price ?? (mat as any).price ?? (mat as any).material_config?.selling_price ?? (mat as any).price_tiers?.retail ?? 0)
+                                const { consumeUnit, costVal, isFastener, isInk } = getMaterialUnitDetails(mat)
+                                const c = costVal
+                                const rawSp = Number((mat as any).selling_price ?? (mat as any).price ?? (mat as any).material_config?.selling_price ?? (mat as any).price_tiers?.retail ?? 0)
+                                let sp = c
+                                if (rawSp > 0) {
+                                  if (isFastener && consumeUnit === 'pcs' && rawSp >= 50) {
+                                    sp = parseFloat((rawSp / 1000).toFixed(4))
+                                  } else if (isInk && consumeUnit === 'ml' && rawSp >= 50) {
+                                    sp = parseFloat((rawSp / 1000).toFixed(4))
+                                  } else {
+                                    sp = rawSp
+                                  }
+                                }
                                 setCustomFinishingCost(c > 0 ? c : '')
                                 setCustomFinishingPrice(sp > 0 ? sp : (c > 0 ? c : ''))
 
@@ -4451,7 +4459,7 @@ export function ServiceConfigModal({
                                   setCustomFinishingMethod('per_sqft')
                                 } else if (pUnit === 'meter' || pUnit === 'rft' || pUnit === 'linear_ft' || pUnit === 'inch') {
                                   setCustomFinishingMethod('per_rft')
-                                } else if (pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
+                                } else if (isFastener || consumeUnit === 'pcs' || pUnit === 'piece' || pUnit === 'pcs' || pUnit === 'box' || pUnit === 'pack' || pUnit === 'sheet' || pUnit === 'unit' || pUnit === 'set' || pUnit === 'item') {
                                   setCustomFinishingMethod('per_piece')
                                 } else if (pUnit === 'job' || pUnit === 'fixed') {
                                   setCustomFinishingMethod('fixed')
