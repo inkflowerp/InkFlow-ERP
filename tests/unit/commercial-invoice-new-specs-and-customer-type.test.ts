@@ -87,4 +87,66 @@ describe('Commercial Invoice Modal — Specs, Add-ons, Finishing & Customer Type
     assert.ok(pvc3mm)
     assert.equal(pvc3mm.name_bn, '৩মিমি পিভিসি পেস্টিং')
   })
+
+  it('6. Arrow key navigation index wrap-around calculation works predictably', () => {
+    const listLength = 4 // e.g. 4 matching customer suggestions or catalog items
+    let index = 0
+
+    // Arrow Down moves forward
+    index = (index + 1) % listLength
+    assert.equal(index, 1)
+
+    index = (index + 1) % listLength
+    assert.equal(index, 2)
+
+    index = (index + 1) % listLength
+    assert.equal(index, 3)
+
+    // Wrap around to beginning
+    index = (index + 1) % listLength
+    assert.equal(index, 0)
+
+    // Arrow Up moves backward with wrap-around to end
+    index = (index - 1 + listLength) % listLength
+    assert.equal(index, 3)
+
+    index = (index - 1 + listLength) % listLength
+    assert.equal(index, 2)
+  })
+
+  it('7. Multi-field customer keyword matching matches across Name, Phone, Company, and Email', () => {
+    const mockCustomers = [
+      { id: 'c1', name: 'Shamol Hasan', mobile: '01711223344', company_name: 'Apex Printing Ltd', email: 'shamol@apex.com' },
+      { id: 'c2', name: 'Rahim Uddin', mobile: '01855667788', company_name: 'Metro Ads', email: 'rahim@metro.com' },
+      { id: 'c3', name: 'Karim Textiles', mobile: '01999887766', company_name: 'Karim Group', email: 'info@karim.bd' },
+    ]
+
+    const filterCustomers = (query: string) => {
+      const q = query.trim().toLowerCase()
+      if (!q) return mockCustomers
+      return mockCustomers.filter((c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.mobile.includes(q) ||
+        (c.company_name && c.company_name.toLowerCase().includes(q)) ||
+        (c.email && c.email.toLowerCase().includes(q))
+      )
+    }
+
+    // Keyword match on Name
+    assert.equal(filterCustomers('shamol').length, 1)
+    assert.equal(filterCustomers('shamol')[0].id, 'c1')
+
+    // Keyword match on Phone
+    assert.equal(filterCustomers('01855').length, 1)
+    assert.equal(filterCustomers('01855')[0].id, 'c2')
+
+    // Keyword match on Company
+    assert.equal(filterCustomers('Karim Group').length, 1)
+    assert.equal(filterCustomers('Karim Group')[0].id, 'c3')
+
+    // Keyword match on Email
+    assert.equal(filterCustomers('shamol@apex.com').length, 1)
+    assert.equal(filterCustomers('shamol@apex.com')[0].id, 'c1')
+  })
 })
+

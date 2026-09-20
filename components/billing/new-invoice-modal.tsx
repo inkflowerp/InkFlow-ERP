@@ -220,7 +220,9 @@ function CatalogItemCombobox({
 }: CatalogComboboxProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [keyword, setKeyword] = useState('')
+  const [highlightedIndex, setHighlightedIndex] = useState(0)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.id === selectedProductId)
@@ -256,6 +258,66 @@ function CatalogItemCombobox({
   const readyProducts = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'ready_product'), [filteredProducts])
   const materials = useMemo(() => filteredProducts.filter((p) => detectProductKind(p) === 'material'), [filteredProducts])
 
+  // Flat list of selectable items for arrow key navigation
+  const flatSelectableItems = useMemo(() => {
+    const list: Array<{ id: string; type: 'custom' | 'product'; product?: ProductRecord }> = [
+      { id: '', type: 'custom' }
+    ]
+    services.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    readyProducts.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    materials.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    return list
+  }, [services, readyProducts, materials])
+
+  // Reset highlightedIndex when keyword changes or menu opens
+  useEffect(() => {
+    setHighlightedIndex(0)
+  }, [keyword, isOpen])
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (isOpen && itemRefs.current.has(highlightedIndex)) {
+      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedIndex, isOpen])
+
+  const handleSelect = (item: { id: string; type: 'custom' | 'product'; product?: ProductRecord }) => {
+    if (item.type === 'custom' || !item.id) {
+      onSelectProduct('')
+      if (onCustomSelect) onCustomSelect()
+    } else {
+      onSelectProduct(item.id)
+    }
+    setIsOpen(false)
+    setKeyword('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+        setIsOpen(true)
+        e.preventDefault()
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlightedIndex((prev) => (prev + 1) % flatSelectableItems.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightedIndex((prev) => (prev - 1 + flatSelectableItems.length) % flatSelectableItems.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (flatSelectableItems[highlightedIndex]) {
+        handleSelect(flatSelectableItems[highlightedIndex])
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setIsOpen(false)
+    }
+  }
+
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div className="relative">
@@ -270,6 +332,7 @@ function CatalogItemCombobox({
             setKeyword(e.target.value)
             if (!isOpen) setIsOpen(true)
           }}
+          onKeyDown={handleKeyDown}
           className="text-xs h-9 pr-14 font-medium"
         />
         <div className="absolute right-1.5 top-1.5 flex items-center gap-1">
@@ -300,21 +363,28 @@ function CatalogItemCombobox({
 
       {isOpen && (
         <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-          {/* Option for Custom Item */}
+          {/* Custom Item option (Index 0) */}
           <div
-            onClick={() => {
-              onSelectProduct('')
-              setIsOpen(false)
-              setKeyword('')
-              if (onCustomSelect) onCustomSelect()
+            ref={(el) => {
+              if (el) itemRefs.current.set(0, el)
+              else itemRefs.current.delete(0)
             }}
+            onMouseEnter={() => setHighlightedIndex(0)}
+            onClick={() => handleSelect({ id: '', type: 'custom' })}
             className={cn(
-              "p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer font-semibold flex items-center justify-between",
-              !selectedProductId ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300" : "text-slate-600 dark:text-slate-400"
+              "p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
+              highlightedIndex === 0
+                ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                : !selectedProductId
+                ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
             )}
           >
             <span>✨ -- Custom Item (No Catalog) --</span>
-            {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
+            <div className="flex items-center gap-1.5">
+              {highlightedIndex === 0 && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
+            </div>
           </div>
 
           {/* Printing Services */}
@@ -323,31 +393,43 @@ function CatalogItemCombobox({
               <div className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider">
                 🖨️ Printing & Services ({services.length})
               </div>
-              {services.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    onSelectProduct(p.id)
-                    setIsOpen(false)
-                    setKeyword('')
-                  }}
-                  className={cn(
-                    "p-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 cursor-pointer flex items-center justify-between gap-2",
-                    selectedProductId === p.id && "bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
-                  )}
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
-                      <span>Unit: {p.unit || 'sft'}</span>
+              {services.map((p, sIdx) => {
+                const globalIdx = 1 + sIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                        : "hover:bg-blue-50/70 dark:hover:bg-blue-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'sft'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400 shrink-0">
-                    ৳{p.selling_price}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -357,31 +439,43 @@ function CatalogItemCombobox({
               <div className="px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider">
                 📦 Ready Products ({readyProducts.length})
               </div>
-              {readyProducts.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    onSelectProduct(p.id)
-                    setIsOpen(false)
-                    setKeyword('')
-                  }}
-                  className={cn(
-                    "p-2.5 hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40 cursor-pointer flex items-center justify-between gap-2",
-                    selectedProductId === p.id && "bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                  )}
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
-                      <span>Unit: {p.unit || 'pcs'}</span>
+              {readyProducts.map((p, rIdx) => {
+                const globalIdx = 1 + services.length + rIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                        : "hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'pcs'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400 shrink-0">
-                    ৳{p.selling_price}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -391,31 +485,43 @@ function CatalogItemCombobox({
               <div className="px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider">
                 🧵 Raw Materials ({materials.length})
               </div>
-              {materials.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => {
-                    onSelectProduct(p.id)
-                    setIsOpen(false)
-                    setKeyword('')
-                  }}
-                  className={cn(
-                    "p-2.5 hover:bg-purple-50/70 dark:hover:bg-purple-950/40 cursor-pointer flex items-center justify-between gap-2",
-                    selectedProductId === p.id && "bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
-                  )}
-                >
-                  <div>
-                    <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
-                      {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
-                      <span>Unit: {p.unit || 'roll'}</span>
+              {materials.map((p, mIdx) => {
+                const globalIdx = 1 + services.length + readyProducts.length + mIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                        : "hover:bg-purple-50/70 dark:hover:bg-purple-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'roll'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
                     </div>
                   </div>
-                  <span className="font-mono font-bold text-purple-600 dark:text-purple-400 shrink-0">
-                    ৳{p.selling_price}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -426,6 +532,79 @@ function CatalogItemCombobox({
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+interface CustomerSuggestionsDropdownProps {
+  results: CustomerRecord[]
+  highlightedIndex: number
+  onSelect: (cust: CustomerRecord) => void
+  onHover: (idx: number) => void
+}
+
+function CustomerSuggestionsDropdown({
+  results,
+  highlightedIndex,
+  onSelect,
+  onHover,
+}: CustomerSuggestionsDropdownProps) {
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    if (itemRefs.current.has(highlightedIndex)) {
+      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedIndex])
+
+  return (
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl divide-y divide-slate-100 dark:divide-slate-800 text-xs animate-in fade-in-0">
+      {results.map((cust, idx) => {
+        const isHighlighted = idx === highlightedIndex
+        return (
+          <div
+            key={cust.id}
+            ref={(el) => {
+              if (el) itemRefs.current.set(idx, el)
+              else itemRefs.current.delete(idx)
+            }}
+            onMouseEnter={() => onHover(idx)}
+            onClick={() => onSelect(cust)}
+            className={cn(
+              'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
+              isHighlighted
+                ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
+                : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+            )}
+          >
+            <div className="min-w-0">
+              <div className="font-bold flex items-center gap-1.5 truncate">
+                <span>{cust.name}</span>
+                {cust.company_name && (
+                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 truncate">
+                    • {cust.company_name}
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
+                <span>📞 {cust.mobile}</span>
+                {cust.email && <span className="truncate">✉️ {cust.email}</span>}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {cust.customer_type || 'Retail'}
+              </span>
+              {isHighlighted && (
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                  ↵ Enter
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -490,9 +669,11 @@ export function NewInvoiceModal({
   const [creditOverrideReason, setCreditOverrideReason] = useState('')
   const [confirmCreditOverride, setConfirmCreditOverride] = useState(false)
 
-  // Search suggestions dropdown
+  // Search suggestions dropdown across name, phone, company, email
+  const [activeCustomerSearchField, setActiveCustomerSearchField] = useState<'name' | 'phone' | 'company' | 'email' | null>(null)
   const [searchResults, setSearchResults] = useState<CustomerRecord[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [customerHighlightedIndex, setCustomerHighlightedIndex] = useState(0)
   const [isSearching, setIsSearching] = useState(false)
   const [isExistingCustomerSelected, setIsExistingCustomerSelected] = useState(false)
 
@@ -539,10 +720,13 @@ export function NewInvoiceModal({
     format?: string
   }>({ status: 'idle', message: '' })
 
-  // Send Dropdown state
+  // Send Dropdown state & Customer Search Container Refs
   const [showSendMenu, setShowSendMenu] = useState(false)
   const sendMenuRef = useRef<HTMLDivElement>(null)
-  const searchContainerRef = useRef<HTMLDivElement>(null)
+  const nameSearchRef = useRef<HTMLDivElement>(null)
+  const phoneSearchRef = useRef<HTMLDivElement>(null)
+  const companySearchRef = useRef<HTMLDivElement>(null)
+  const emailSearchRef = useRef<HTMLDivElement>(null)
 
   // Inventory state for stock availability checking
   const [materials, setMaterials] = useState<MaterialRecord[]>([])
@@ -576,8 +760,15 @@ export function NewInvoiceModal({
       if (sendMenuRef.current && !sendMenuRef.current.contains(e.target as Node)) {
         setShowSendMenu(false)
       }
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+      const clickedInsideCustomerField =
+        (nameSearchRef.current && nameSearchRef.current.contains(e.target as Node)) ||
+        (phoneSearchRef.current && phoneSearchRef.current.contains(e.target as Node)) ||
+        (companySearchRef.current && companySearchRef.current.contains(e.target as Node)) ||
+        (emailSearchRef.current && emailSearchRef.current.contains(e.target as Node))
+
+      if (!clickedInsideCustomerField) {
         setShowSuggestions(false)
+        setActiveCustomerSearchField(null)
       }
     }
     document.addEventListener('mousedown', handleOutsideClick)
@@ -736,20 +927,35 @@ export function NewInvoiceModal({
     company?.id,
   ])
 
-  // Customer keyword search
+  // Customer keyword search across name, phone, company, email
   useEffect(() => {
-    if (!customerName.trim() || isExistingCustomerSelected) {
+    if (!activeCustomerSearchField || isExistingCustomerSelected) {
       setSearchResults([])
+      setShowSuggestions(false)
+      return
+    }
+
+    let query = ''
+    if (activeCustomerSearchField === 'name') query = customerName
+    else if (activeCustomerSearchField === 'phone') query = phoneNumber
+    else if (activeCustomerSearchField === 'company') query = companyName
+    else if (activeCustomerSearchField === 'email') query = emailAddress
+
+    const trimmed = query.trim()
+    if (!trimmed) {
+      setSearchResults([])
+      setShowSuggestions(false)
       return
     }
 
     const timer = setTimeout(async () => {
       setIsSearching(true)
       try {
-        const res = await searchInvoiceCustomersAction(customerName, company?.id)
+        const res = await searchInvoiceCustomersAction(trimmed, company?.id)
         if (res.success && res.data && res.data.length > 0) {
           setSearchResults(res.data)
           setShowSuggestions(true)
+          setCustomerHighlightedIndex(0)
         } else {
           setSearchResults([])
           setShowSuggestions(false)
@@ -762,7 +968,15 @@ export function NewInvoiceModal({
     }, 200)
 
     return () => clearTimeout(timer)
-  }, [customerName, isExistingCustomerSelected, company?.id])
+  }, [
+    activeCustomerSearchField,
+    customerName,
+    phoneNumber,
+    companyName,
+    emailAddress,
+    isExistingCustomerSelected,
+    company?.id,
+  ])
 
   // Select existing customer & auto-fill without creating duplicates
   const handleSelectCustomer = async (cust: CustomerRecord) => {
@@ -780,6 +994,8 @@ export function NewInvoiceModal({
     setEmailAddress(cust.email || '')
     setIsExistingCustomerSelected(true)
     setShowSuggestions(false)
+    setActiveCustomerSearchField(null)
+    setCustomerHighlightedIndex(0)
     setErrorMessage(null)
 
     // Resolve 3-tier customer pricing
@@ -808,13 +1024,52 @@ export function NewInvoiceModal({
     }
   }
 
-  const handleCustomerNameChange = (val: string) => {
-    setCustomerName(val)
+  const handleCustomerFieldChange = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    val: string
+  ) => {
+    if (field === 'name') setCustomerName(val)
+    else if (field === 'phone') setPhoneNumber(val)
+    else if (field === 'company') setCompanyName(val)
+    else if (field === 'email') setEmailAddress(val)
+
+    setActiveCustomerSearchField(field)
+    setCustomerHighlightedIndex(0)
+
     if (isExistingCustomerSelected) {
       setIsExistingCustomerSelected(false)
       setSelectedCustomer(null)
       setCustomerId(undefined)
       setCustomerRates([])
+    }
+  }
+
+  const handleCustomerKeyDown = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (!showSuggestions || searchResults.length === 0) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        setActiveCustomerSearchField(field)
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (searchResults[customerHighlightedIndex]) {
+        handleSelectCustomer(searchResults[customerHighlightedIndex])
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setShowSuggestions(false)
+      setActiveCustomerSearchField(null)
     }
   }
 
@@ -1448,7 +1703,7 @@ export function NewInvoiceModal({
           {/* Customer Search & Inputs */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
-            <div className="relative" ref={searchContainerRef}>
+            <div className="relative" ref={nameSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
                 Customer Name <span className="text-rose-500">*</span>
               </Label>
@@ -1456,51 +1711,92 @@ export function NewInvoiceModal({
                 <Input
                   placeholder="Type name to search or enter new..."
                   value={customerName}
-                  onChange={(e) => handleCustomerNameChange(e.target.value)}
+                  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('name')
+                    if (customerName.trim().length > 0 && !isExistingCustomerSelected) {
+                      setShowSuggestions(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('name', e)}
                   className="text-xs h-9 pr-8"
                   required
                 />
-                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Suggestions */}
-              {showSuggestions && searchResults.length > 0 && (
-                <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
-                  {searchResults.map((cust) => (
-                    <div
-                      key={cust.id}
-                      onClick={() => handleSelectCustomer(cust)}
-                      className="p-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 cursor-pointer text-xs"
-                    >
-                      <div className="font-bold text-slate-900 dark:text-slate-100">{cust.name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">{cust.mobile} {cust.company_name ? `• ${cust.company_name}` : ''}</div>
-                    </div>
-                  ))}
-                </div>
+              {activeCustomerSearchField === 'name' && showSuggestions && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
               )}
             </div>
 
-            <div>
+            <div className="relative" ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
                 Phone Number <span className="text-rose-500">*</span>
               </Label>
-              <Input
-                placeholder="01XXXXXXXXX"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                className="text-xs h-9 font-mono"
-                required
-              />
+              <div className="relative">
+                <Input
+                  placeholder="01XXXXXXXXX"
+                  value={phoneNumber}
+                  onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('phone')
+                    if (phoneNumber.trim().length > 0 && !isExistingCustomerSelected) {
+                      setShowSuggestions(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
+                  className="text-xs h-9 pr-8 font-mono"
+                  required
+                />
+                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+              </div>
+
+              {/* Suggestions */}
+              {activeCustomerSearchField === 'phone' && showSuggestions && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
+              )}
             </div>
 
-            <div>
+            <div className="relative" ref={companySearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Company Name (Optional)</Label>
-              <Input
-                placeholder="Business / Organization"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="text-xs h-9"
-              />
+              <div className="relative">
+                <Input
+                  placeholder="Business / Organization"
+                  value={companyName}
+                  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('company')
+                    if (companyName.trim().length > 0 && !isExistingCustomerSelected) {
+                      setShowSuggestions(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('company', e)}
+                  className="text-xs h-9 pr-8"
+                />
+                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+              </div>
+
+              {/* Suggestions */}
+              {activeCustomerSearchField === 'company' && showSuggestions && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
+              )}
             </div>
 
             {/* Row 2: [Billing Address] [Email] [Customer Type] */}
@@ -1517,15 +1813,35 @@ export function NewInvoiceModal({
               />
             </div>
 
-            <div>
+            <div className="relative" ref={emailSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
-              <Input
-                type="email"
-                placeholder="client@domain.com"
-                value={emailAddress}
-                onChange={(e) => setEmailAddress(e.target.value)}
-                className="text-xs h-9"
-              />
+              <div className="relative">
+                <Input
+                  type="email"
+                  placeholder="client@domain.com"
+                  value={emailAddress}
+                  onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('email')
+                    if (emailAddress.trim().length > 0 && !isExistingCustomerSelected) {
+                      setShowSuggestions(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('email', e)}
+                  className="text-xs h-9 pr-8"
+                />
+                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+              </div>
+
+              {/* Suggestions */}
+              {activeCustomerSearchField === 'email' && showSuggestions && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
+              )}
             </div>
 
             <div>
