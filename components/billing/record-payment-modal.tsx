@@ -306,7 +306,71 @@ export function RecordPaymentModal({
             </div>
           </div>
         }
-        hideFooter
+        footer={
+          <div className="flex items-center justify-between w-full gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              {selectedInvoice ? (
+                <div className="text-xs truncate">
+                  <span className="text-slate-500 font-medium">Collecting: </span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                    {numericAmount > 0 ? formatBDT(numericAmount) : '৳0'}
+                  </span>
+                  {remainingDue !== null && numericAmount > 0 && (
+                    <span className="text-slate-400 font-mono text-[11px] ml-2">
+                      (Rem Due: {formatBDT(remainingDue)})
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <span className="text-xs text-slate-400">Select an unpaid invoice above</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+                className="h-10 text-xs px-4 rounded-xl cursor-pointer"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+
+              {selectedInvoice && (
+                <Button
+                  type="submit"
+                  form="collect-due-form"
+                  size="sm"
+                  disabled={isSubmitting || isZeroOrNegative || isOverpaid}
+                  className={cn(
+                    'h-10 text-xs sm:text-sm font-black text-white px-5 sm:px-6 shadow-md gap-2 rounded-xl transition-all cursor-pointer',
+                    isFullySettled
+                      ? 'bg-emerald-600 hover:bg-emerald-700'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  )}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Collecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>
+                        {numericAmount > 0
+                          ? `Collect ${formatBDT(numericAmount)}`
+                          : 'Enter Payment Amount'}
+                      </span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+        }
       >
         <div className="space-y-4 pt-1 pb-2">
           {/* ERROR BANNER */}
@@ -435,7 +499,7 @@ export function RecordPaymentModal({
             </div>
           ) : (
             /* STEP 2: INVOICE SUMMARY & PAYMENT COLLECTION FORM */
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form id="collect-due-form" onSubmit={handleSubmit} className="space-y-4">
               {/* SELECTED INVOICE SUMMARY CARD */}
               <div className="p-3.5 rounded-xl border border-blue-200 bg-blue-50/50 dark:border-blue-900/60 dark:bg-blue-950/20 space-y-2">
                 <div className="flex flex-wrap items-center justify-between gap-2">
@@ -673,48 +737,6 @@ export function RecordPaymentModal({
                   onChange={(e) => setNotes(e.target.value)}
                   className="h-9 text-xs rounded-xl"
                 />
-              </div>
-
-              {/* DYNAMIC CONFIRMATION BUTTON */}
-              <div className="pt-2 flex items-center justify-end gap-2.5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onOpenChange(false)}
-                  className="h-11 text-xs px-5 rounded-xl cursor-pointer"
-                  disabled={isSubmitting}
-                >
-                  Cancel
-                </Button>
-
-                <Button
-                  type="submit"
-                  size="sm"
-                  disabled={isSubmitting || isZeroOrNegative || isOverpaid}
-                  className={cn(
-                    'h-11 text-sm font-black text-white px-7 shadow-md gap-2 rounded-xl transition-all cursor-pointer',
-                    isFullySettled
-                      ? 'bg-emerald-600 hover:bg-emerald-700'
-                      : 'bg-blue-600 hover:bg-blue-700'
-                  )}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      <span>Collecting...</span>
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle2 className="h-4 w-4" />
-                      <span>
-                        {numericAmount > 0
-                          ? `Collect ${formatBDT(numericAmount)}`
-                          : 'Enter Payment Amount'}
-                      </span>
-                    </>
-                  )}
-                </Button>
               </div>
             </form>
           )}
