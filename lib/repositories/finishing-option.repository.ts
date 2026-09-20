@@ -76,6 +76,8 @@ export class FinishingOptionRepository {
         query = query.eq('is_active', true)
       }
 
+      const { data, error } = await query
+
       if (!error && data) {
         return data as FinishingOptionRecord[]
       }
