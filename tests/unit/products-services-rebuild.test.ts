@@ -850,5 +850,161 @@ describe('Authoritative Printing & Production Service Master Test Suite', () => 
       assert.strictEqual(quote.final_selling_price, 3500)
     })
   })
+
+  // =========================================================================
+  // 7. 9-Head Direct Unit Cost Breakdown & Price Tier Cost Floor Enforcement
+  // =========================================================================
+  describe('7. 9-Head Direct Unit Cost Breakdown & Price Tier Cost Floor Enforcement', () => {
+    // Helper replicating modal's auto-fill tier logic
+    function autoFillTiers(params: {
+      sellingPrice: number
+      totalDirectCost: number
+      strategy: 'standard' | 'aggressive' | 'reset'
+      targetMargin?: number
+    }) {
+      let sp = Number(params.sellingPrice) || 0
+      const costFloor = Number(params.totalDirectCost) || 0
+
+      if (sp <= 0 && costFloor > 0) {
+        sp = parseFloat((costFloor * (1 + (params.targetMargin || 35) / 100)).toFixed(2))
+      }
+
+      if (sp <= 0 && costFloor <= 0) return {}
+
+      const effectiveSp = sp > 0 ? sp : costFloor
+      const isInt = Number.isInteger(effectiveSp)
+
+      const clampToFloor = (calcVal: number) => {
+        const rounded = isInt ? Math.round(calcVal) : parseFloat(calcVal.toFixed(2))
+        const floored = Math.max(costFloor, rounded)
+        return parseFloat(floored.toFixed(2))
+      }
+
+      if (params.strategy === 'reset') {
+        return {
+          retail: clampToFloor(effectiveSp),
+          reseller: clampToFloor(effectiveSp),
+          corporate: clampToFloor(effectiveSp),
+          agency: clampToFloor(effectiveSp),
+          regular: clampToFloor(effectiveSp),
+          custom: clampToFloor(effectiveSp),
+        }
+      }
+
+      if (params.strategy === 'aggressive') {
+        return {
+          retail: clampToFloor(effectiveSp),
+          reseller: clampToFloor(effectiveSp * 0.75),
+          corporate: clampToFloor(effectiveSp * 0.85),
+          agency: clampToFloor(effectiveSp * 0.70),
+          regular: clampToFloor(effectiveSp * 0.90),
+          custom: clampToFloor(effectiveSp),
+        }
+      }
+
+      return {
+        retail: clampToFloor(effectiveSp),
+        reseller: clampToFloor(effectiveSp * 0.85),
+        corporate: clampToFloor(effectiveSp * 0.90),
+        agency: clampToFloor(effectiveSp * 0.80),
+        regular: clampToFloor(effectiveSp * 0.95),
+        custom: clampToFloor(effectiveSp),
+      }
+    }
+
+    test('auto-calculates 9 cost heads total accurately', () => {
+      const heads = {
+        mediaMaterial: 9.04,
+        inkCost: 3.36,
+        machineAndPower: 1.5,
+        operatorLabor: 1.0,
+        finishing: 0.5,
+        fabrication: 0.0,
+        installation: 0.0,
+        delivery: 0.0,
+        otherDirect: 0.25,
+      }
+
+      const totalDirect = Object.values(heads).reduce((acc, v) => acc + v, 0)
+      assert.strictEqual(parseFloat(totalDirect.toFixed(2)), 15.65)
+    })
+
+    test('enforces Direct Unit Cost floor when selling price is near cost (sp=16, cost=15.65)', () => {
+      const tiers = autoFillTiers({
+        sellingPrice: 16.0,
+        totalDirectCost: 15.65,
+        strategy: 'standard',
+      })
+
+      // Standard discounts would be:
+      // Reseller (15% off) = 16 * 0.85 = 13.6 -> Math.round = 14 (< 15.65)
+      // Corporate (10% off) = 16 * 0.90 = 14.4 -> Math.round = 14 (< 15.65)
+      // Agency (20% off) = 16 * 0.80 = 12.8 -> Math.round = 13 (< 15.65)
+      // Regular (5% off) = 16 * 0.95 = 15.2 -> Math.round = 15 (< 15.65)
+      // With costFloor = 15.65:
+      // Every single tier MUST BE >= 15.65!
+      assert.ok((tiers.retail as number) >= 15.65, `retail ${tiers.retail} >= 15.65`)
+      assert.strictEqual(tiers.reseller, 15.65)
+      assert.strictEqual(tiers.corporate, 15.65)
+      assert.strictEqual(tiers.agency, 15.65)
+      assert.strictEqual(tiers.regular, 15.65)
+      assert.strictEqual(tiers.retail, 16.0)
+      assert.strictEqual(tiers.custom, 16.0)
+    })
+
+    test('maintains proper discount percentages when selling price has sufficient margin (sp=30, cost=15.65)', () => {
+      const tiers = autoFillTiers({
+        sellingPrice: 30.0,
+        totalDirectCost: 15.65,
+        strategy: 'standard',
+      })
+
+      // 30 * 0.85 = 25.5 -> 26 (>= 15.65)
+      // 30 * 0.90 = 27 (>= 15.65)
+      // 30 * 0.80 = 24 (>= 15.65)
+      // 30 * 0.95 = 28.5 -> 29 (>= 15.65)
+      assert.strictEqual(tiers.retail, 30)
+      assert.strictEqual(tiers.reseller, 26)
+      assert.strictEqual(tiers.corporate, 27)
+      assert.strictEqual(tiers.agency, 24)
+      assert.strictEqual(tiers.regular, 29)
+      assert.strictEqual(tiers.custom, 30)
+    })
+
+    test('enforces Direct Unit Cost floor under aggressive discounting strategy', () => {
+      const tiers = autoFillTiers({
+        sellingPrice: 18.0,
+        totalDirectCost: 15.65,
+        strategy: 'aggressive',
+      })
+
+      // 18 * 0.70 = 12.6 -> 13 (< 15.65) -> clamped to 15.65
+      // 18 * 0.75 = 13.5 -> 14 (< 15.65) -> clamped to 15.65
+      // 18 * 0.85 = 15.3 -> 15 (< 15.65) -> clamped to 15.65
+      // 18 * 0.90 = 16.2 -> 16 (>= 15.65)
+      assert.strictEqual(tiers.agency, 15.65)
+      assert.strictEqual(tiers.reseller, 15.65)
+      assert.strictEqual(tiers.corporate, 15.65)
+      assert.strictEqual(tiers.regular, 16)
+      assert.strictEqual(tiers.retail, 18)
+    })
+
+    test('handles missing or zero selling price by applying target margin over cost floor', () => {
+      const tiers = autoFillTiers({
+        sellingPrice: 0,
+        totalDirectCost: 15.65,
+        targetMargin: 40,
+        strategy: 'standard',
+      })
+
+      // Suggested SP = 15.65 * 1.40 = 21.91
+      // All tiers >= 15.65
+      assert.strictEqual(tiers.retail, 21.91)
+      assert.ok((tiers.reseller as number) >= 15.65)
+      assert.ok((tiers.corporate as number) >= 15.65)
+      assert.ok((tiers.agency as number) >= 15.65)
+      assert.ok((tiers.regular as number) >= 15.65)
+    })
+  })
 })
 

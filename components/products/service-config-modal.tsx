@@ -2623,45 +2623,118 @@ export function ServiceConfigModal({
     return calculateGrossMargin(totalDirectCost, sp)
   }, [totalDirectCost, sellingPrice])
 
-  // Auto-fill price tiers based on standard industry percentages
+  // Auto-fill price tiers based on standard industry percentages (MUST NEVER be less than Direct Unit Cost)
   const handleAutoFillTiers = (discountStrategy: 'standard' | 'aggressive' | 'reset') => {
-    const sp = Number(sellingPrice) || 0
-    if (sp <= 0) return
+    let sp = Number(sellingPrice) || 0
+    const costFloor = Number(totalDirectCost) || 0
+
+    if (sp <= 0 && costFloor > 0) {
+      sp = parseFloat((costFloor * (1 + (targetMargin || 35) / 100)).toFixed(2))
+      setSellingPrice(sp)
+    }
+
+    if (sp <= 0 && costFloor <= 0) return
+
+    const effectiveSp = sp > 0 ? sp : costFloor
+    const isInt = Number.isInteger(effectiveSp)
+
+    const clampToFloor = (calcVal: number) => {
+      const rounded = isInt ? Math.round(calcVal) : parseFloat(calcVal.toFixed(2))
+      // Strictly enforce that price tiers are NEVER less than Direct Unit Cost
+      const floored = Math.max(costFloor, rounded)
+      return parseFloat(floored.toFixed(2))
+    }
 
     if (discountStrategy === 'reset') {
       setPriceTiers({
-        retail: sp,
-        reseller: sp,
-        corporate: sp,
-        agency: sp,
-        regular: sp,
-        custom: sp,
+        retail: clampToFloor(effectiveSp),
+        reseller: clampToFloor(effectiveSp),
+        corporate: clampToFloor(effectiveSp),
+        agency: clampToFloor(effectiveSp),
+        regular: clampToFloor(effectiveSp),
+        custom: clampToFloor(effectiveSp),
       })
       return
     }
 
     if (discountStrategy === 'aggressive') {
       setPriceTiers({
-        retail: sp,
-        reseller: Math.round(sp * 0.75), // 25% discount
-        corporate: Math.round(sp * 0.85), // 15% discount
-        agency: Math.round(sp * 0.70),    // 30% discount
-        regular: Math.round(sp * 0.90),   // 10% discount
-        custom: sp,
+        retail: clampToFloor(effectiveSp),
+        reseller: clampToFloor(effectiveSp * 0.75), // 25% discount, clamped to costFloor
+        corporate: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
+        agency: clampToFloor(effectiveSp * 0.70),    // 30% discount, clamped to costFloor
+        regular: clampToFloor(effectiveSp * 0.90),   // 10% discount, clamped to costFloor
+        custom: clampToFloor(effectiveSp),
       })
       return
     }
 
-    // Standard commercial print shop tiers in Bangladesh
+    // Standard commercial print shop tiers in Bangladesh (clamped to Direct Unit Cost floor)
     setPriceTiers({
-      retail: sp,
-      reseller: Math.round(sp * 0.85), // 15% wholesale discount
-      corporate: Math.round(sp * 0.90), // 10% corporate contract discount
-      agency: Math.round(sp * 0.80),    // 20% creative agency partner discount
-      regular: Math.round(sp * 0.95),   // 5% loyal client discount
-      custom: sp,
+      retail: clampToFloor(effectiveSp),
+      reseller: clampToFloor(effectiveSp * 0.85), // 15% wholesale discount, clamped to costFloor
+      corporate: clampToFloor(effectiveSp * 0.90), // 10% corporate contract discount, clamped to costFloor
+      agency: clampToFloor(effectiveSp * 0.80),    // 20% creative agency partner discount, clamped to costFloor
+      regular: clampToFloor(effectiveSp * 0.95),   // 5% loyal client discount, clamped to costFloor
+      custom: clampToFloor(effectiveSp),
     })
   }
+
+  // Auto-synchronize Direct Unit Cost Heads dynamically when BOM, Inks, Machine, Finishing, or Installation change
+  useEffect(() => {
+    // 1. Direct Material from BOM or primary selected material
+    if (totalBOMCost > 0) {
+      const bomCostRounded = parseFloat(totalBOMCost.toFixed(2))
+      setMaterialCost(bomCostRounded)
+      setPurchasePrice(bomCostRounded)
+      setBaseCostEstimate(bomCostRounded)
+    } else if (printableMaterialId || productionMaterialId || finishingMaterialId) {
+      const primaryId = printableMaterialId || productionMaterialId || finishingMaterialId
+      const mat = availableMaterials.find((m) => m.id === primaryId)
+      if (mat) {
+        const matCost = getMaterialCost(mat)
+        if (matCost > 0) {
+          setMaterialCost(matCost)
+          setPurchasePrice(matCost)
+          setBaseCostEstimate(matCost)
+        }
+      }
+    }
+
+    // 2. Machine & Power Cost auto-calculated from speed and hourly rate
+    if (machineHourlyRate && estimatedSpeed && Number(estimatedSpeed) > 0) {
+      const calcMach = Math.round((Number(machineHourlyRate) / Number(estimatedSpeed)) * 100) / 100
+      if (calcMach > 0) {
+        setMachineCost(calcMach)
+      }
+    }
+
+    // 3. Finishing Direct Cost auto-calculated from active finishing options
+    const defaultFinCosts = finishingOptions
+      .filter((f) => f.is_default || f.pricing_method === 'per_sqft' || f.pricing_method === 'per_unit' || f.pricing_method === 'per_item')
+      .reduce((acc, f) => acc + (Number(f.unit_cost ?? f.cost) || 0), 0)
+    if (defaultFinCosts > 0) {
+      setFinishingCost(parseFloat(defaultFinCosts.toFixed(2)))
+    }
+
+    // 4. Installation Direct Cost auto-calculated from active installation options
+    const defaultInstCosts = installationOptions
+      .filter((i) => i.pricing_method === 'per_sqft' || i.pricing_method === 'per_unit' || i.pricing_method === 'per_item')
+      .reduce((acc, i) => acc + (Number(i.unit_cost ?? i.cost) || 0), 0)
+    if (defaultInstCosts > 0) {
+      setInstallationCost(parseFloat(defaultInstCosts.toFixed(2)))
+    }
+  }, [
+    totalBOMCost,
+    printableMaterialId,
+    productionMaterialId,
+    finishingMaterialId,
+    availableMaterials,
+    machineHourlyRate,
+    estimatedSpeed,
+    finishingOptions,
+    installationOptions,
+  ])
 
   // Material Toggle for Tab 2 (Add / Remove from BOM)
   const handleToggleMaterial = (mat: MaterialRecord) => {
@@ -2750,7 +2823,7 @@ export function ServiceConfigModal({
 
   // 1-Click Auto-Calculate All Direct Costs across BOM, Inks, Finishing, Fabrication & Installation
   const handleAutoCalculateAllDirectCosts = () => {
-    // 1. Direct Material from BOM
+    // 1. Direct Material from BOM or primary selected material
     let calcMat = totalBOMCost > 0 ? parseFloat(totalBOMCost.toFixed(2)) : (Number(materialCost) || 0)
     if (calcMat === 0 && (printableMaterialId || productionMaterialId || finishingMaterialId)) {
       const primaryId = printableMaterialId || productionMaterialId || finishingMaterialId
@@ -2764,22 +2837,44 @@ export function ServiceConfigModal({
     // 2. Inks Cost
     if (serviceType === 'printing') {
       setInkCost(autoCalculatedInkMetrics.unitInkCost)
+    } else {
+      setInkCost(0)
     }
 
-    // 3. Finishing Direct Cost
+    // 3. Machine & Power Cost
+    if (machineHourlyRate && estimatedSpeed && Number(estimatedSpeed) > 0) {
+      const calcMach = Math.round((Number(machineHourlyRate) / Number(estimatedSpeed)) * 100) / 100
+      setMachineCost(calcMach > 0 ? calcMach : 1.5)
+    } else {
+      setMachineCost(1.5)
+    }
+
+    // 4. Operator Labor
+    if (laborCost === '' || Number(laborCost) <= 0) {
+      setLaborCost(1.0)
+    }
+
+    // 5. Finishing Direct Cost
     const defaultFinCosts = finishingOptions
-      .filter((f) => f.is_default || f.pricing_method === 'per_sqft' || f.pricing_method === 'per_unit')
+      .filter((f) => f.is_default || f.pricing_method === 'per_sqft' || f.pricing_method === 'per_unit' || f.pricing_method === 'per_item')
       .reduce((acc, f) => acc + (Number(f.unit_cost ?? f.cost) || 0), 0)
-    if (defaultFinCosts > 0) {
-      setFinishingCost(parseFloat(defaultFinCosts.toFixed(2)))
-    }
+    setFinishingCost(parseFloat(defaultFinCosts.toFixed(2)))
 
-    // 4. Installation Direct Cost
+    // 6. Fabrication Direct Cost
+    if (fabricationCost === '') setFabricationCost(0)
+
+    // 7. Installation Direct Cost
     const defaultInstCosts = installationOptions
-      .filter((i) => i.pricing_method === 'per_sqft' || i.pricing_method === 'per_unit')
+      .filter((i) => i.pricing_method === 'per_sqft' || i.pricing_method === 'per_unit' || i.pricing_method === 'per_item')
       .reduce((acc, i) => acc + (Number(i.unit_cost ?? i.cost) || 0), 0)
-    if (defaultInstCosts > 0) {
-      setInstallationCost(parseFloat(defaultInstCosts.toFixed(2)))
+    setInstallationCost(parseFloat(defaultInstCosts.toFixed(2)))
+
+    // 8. Delivery Direct Cost
+    if (deliveryCost === '') setDeliveryCost(0)
+
+    // 9. Other Direct Overhead Allowance
+    if (otherDirectCost === '' || Number(otherDirectCost) === 0) {
+      setOtherDirectCost(0.25)
     }
   }
 
@@ -6282,65 +6377,162 @@ export function ServiceConfigModal({
               </div>
             </div>
 
-            {/* Multi-Tier Pricing Fields */}
+            {/* Multi-Tier Pricing Fields with Cost Floor Indicator & Warnings */}
             <div className="space-y-2 pt-1">
-              <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                Customer Category Price Tiers (৳ / {sellingUnit || 'sft'}):
-              </Label>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                  Customer Category Price Tiers (৳ / {sellingUnit || 'sft'}):
+                </Label>
+                {totalDirectCost > 0 && (
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Break-Even Floor: <strong className="font-mono text-emerald-700 dark:text-emerald-300 font-bold">≥ ৳{totalDirectCost.toFixed(2)}</strong> (Prevents Selling at a Loss)
+                  </span>
+                )}
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 <div>
-                  <Label className="text-[11px] mb-1 block">Retail (খুচরা)</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Retail (খুচরা)</Label>
+                    {priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.retail}
                     onChange={(e) => setPriceTiers({ ...priceTiers, retail: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.retail !== '' && Number(priceTiers.retail) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-[11px] mb-1 block">Reseller (পাইকারি)</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Reseller (পাইকারি)</Label>
+                    {priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.reseller}
                     onChange={(e) => setPriceTiers({ ...priceTiers, reseller: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.reseller !== '' && Number(priceTiers.reseller) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-[11px] mb-1 block">Corporate (কর্পোরেট)</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Corporate (কর্পোরেট)</Label>
+                    {priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.corporate}
                     onChange={(e) => setPriceTiers({ ...priceTiers, corporate: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.corporate !== '' && Number(priceTiers.corporate) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-[11px] mb-1 block">Agency (বিজ্ঞাপনী সংস্থা)</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Agency (বিজ্ঞাপনী সংস্থা)</Label>
+                    {priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.agency}
                     onChange={(e) => setPriceTiers({ ...priceTiers, agency: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.agency !== '' && Number(priceTiers.agency) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-[11px] mb-1 block">Regular (নিয়মিত)</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Regular (নিয়মিত)</Label>
+                    {priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.regular}
                     onChange={(e) => setPriceTiers({ ...priceTiers, regular: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.regular !== '' && Number(priceTiers.regular) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
                 <div>
-                  <Label className="text-[11px] mb-1 block">Special / VIP</Label>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label className="text-[11px]">Special / VIP</Label>
+                    {priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0 && (
+                      <span className="text-[9px] font-bold text-rose-600 dark:text-rose-400">Below Cost</span>
+                    )}
+                  </div>
                   <Input
                     type="number"
+                    step="any"
                     value={priceTiers.custom}
                     onChange={(e) => setPriceTiers({ ...priceTiers, custom: e.target.value === '' ? '' : parseFloat(e.target.value) })}
-                    className="h-8 text-xs font-mono"
+                    className={`h-8 text-xs font-mono ${
+                      priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0
+                        ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300 font-bold'
+                        : ''
+                    }`}
                   />
+                  {priceTiers.custom !== '' && Number(priceTiers.custom) < totalDirectCost && totalDirectCost > 0 && (
+                    <span className="text-[9px] text-rose-500 block mt-0.5 leading-tight">
+                      Min: ৳{totalDirectCost.toFixed(2)}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

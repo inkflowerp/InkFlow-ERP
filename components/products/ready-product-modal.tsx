@@ -516,17 +516,31 @@ export function ReadyProductModal({
     return calculateGrossMargin(cost, sp)
   }, [totalLandedCost, sellingPrice])
 
-  // Auto-fill price tiers based on standard segment percentages
+  // Auto-fill price tiers based on standard segment percentages (MUST NOT be less than Landed Unit Cost)
   const handleAutoFillTiers = () => {
-    const sp = Number(sellingPrice) || 0
-    if (sp <= 0) return
+    let sp = Number(sellingPrice) || 0
+    const costFloor = Number(totalLandedCost) || 0
+    if (sp <= 0 && costFloor > 0) {
+      sp = parseFloat((costFloor * (1 + (targetMargin || 35) / 100)).toFixed(2))
+      setSellingPrice(sp)
+    }
+    if (sp <= 0 && costFloor <= 0) return
+
+    const effectiveSp = sp > 0 ? sp : costFloor
+    const isInt = Number.isInteger(effectiveSp)
+
+    const clampToFloor = (calcVal: number) => {
+      const rounded = isInt ? Math.round(calcVal) : parseFloat(calcVal.toFixed(2))
+      const floored = Math.max(costFloor, rounded)
+      return parseFloat(floored.toFixed(2))
+    }
 
     setPriceTiers({
-      retail: sp,
-      corporate: Math.round(sp * 0.95), // 5% discount
-      dealer: Math.round(sp * 0.90),    // 10% discount
-      wholesale: Math.round(sp * 0.85), // 15% discount
-      custom: sp,
+      retail: clampToFloor(effectiveSp),
+      corporate: clampToFloor(effectiveSp * 0.95), // 5% discount, clamped to costFloor
+      dealer: clampToFloor(effectiveSp * 0.90),    // 10% discount, clamped to costFloor
+      wholesale: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
+      custom: clampToFloor(effectiveSp),
     })
   }
 
