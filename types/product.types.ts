@@ -565,6 +565,16 @@ export interface ProductRecord {
   default_finishing?: string | null
   production_instructions?: string | null
   internal_notes?: string | null
+  // Machine Fleet & Routing Integration
+  machine_id?: string | null
+  machine_name?: string | null
+  machine_code?: string | null
+  machine_hourly_rate?: number
+  estimated_speed?: number
+  speed_unit?: string
+  setup_time_mins?: number
+  machine_operations?: FormulaMachineOperation[]
+  machine_routing?: any[]
   is_active: boolean
   created_by?: string | null
   created_at: string
@@ -815,6 +825,13 @@ export interface ServiceConfiguration {
   packaging_material_name?: string | null
   delivery_distance_zone?: string
   // Machine Fleet & Routing Integration
+  machine_id?: string | null
+  machine_name?: string | null
+  machine_code?: string | null
+  machine_hourly_rate?: number
+  estimated_speed?: number
+  speed_unit?: string
+  setup_time_mins?: number
   assigned_machine_id?: string | null
   assigned_machine_name?: string | null
   required_machine_type?: string | null

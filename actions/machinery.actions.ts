@@ -512,6 +512,7 @@ export async function completeMaintenanceAction(
 export async function reportBreakdownAction(
   input: {
     machine_id: string
+    reported_by_name?: string
     problem_title: string
     problem_description: string
     severity?: any
@@ -529,7 +530,7 @@ export async function reportBreakdownAction(
     }
     const companyId = tenant.companyId
 
-    const reporterName = tenant?.fullName || 'Operator'
+    const reporterName = input.reported_by_name || tenant?.fullName || 'Operator'
 
     const breakdown = await MachineryService.reportBreakdown({
       ...input,

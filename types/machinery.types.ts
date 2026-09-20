@@ -102,6 +102,13 @@ export interface MachineryRecord {
   maintenance_cost_per_hour: number
   other_operating_cost_per_hour: number
 
+  // Dynamic compatibility aliases for legacy & print calculators
+  hourly_rate_bdt?: number
+  speed_sqft_per_hour?: number
+  speed_sheets_per_hour?: number
+  max_print_width_inches?: number
+  is_active?: boolean
+
   // Joined/Aggregated relationships
   current_assignment?: MachineryAssignmentRecord | null
   latest_breakdown?: MachineryBreakdownRecord | null

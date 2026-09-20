@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import {
@@ -53,7 +53,7 @@ import {
 } from '@/actions/machinery.actions'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
 
-export default function MobileOperatorPanelPage() {
+function MobileOperatorPanelContent() {
   const { tBilingual } = useI18n()
   const { company } = useTenant()
   const searchParams = useSearchParams()
@@ -773,6 +773,14 @@ export default function MobileOperatorPanelPage() {
         }}
       />
     </div>
+  )
+}
+
+export default function MobileOperatorPanelPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-slate-500">Loading operator workstation...</div>}>
+      <MobileOperatorPanelContent />
+    </Suspense>
   )
 }
 

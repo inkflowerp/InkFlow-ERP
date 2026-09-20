@@ -231,7 +231,9 @@ export interface CreateProductionTaskInput {
   height?: number | null
   estimated_duration_minutes?: number
   assigned_machine_id?: string | null
+  assigned_machine_name?: string | null
   assigned_operator_id?: string | null
+  assigned_operator_name?: string | null
   scheduled_start?: string | null
   scheduled_end?: string | null
   branch_id?: string | null
@@ -253,7 +255,9 @@ export interface UpdateProductionTaskInput {
   height?: number | null
   estimated_duration_minutes?: number
   assigned_machine_id?: string | null
+  assigned_machine_name?: string | null
   assigned_operator_id?: string | null
+  assigned_operator_name?: string | null
   scheduled_start?: string | null
   scheduled_end?: string | null
   branch_id?: string | null

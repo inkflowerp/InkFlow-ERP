@@ -258,11 +258,13 @@ export class MachineryRepository {
       return data as unknown as MachineryRecord
     } catch (err: any) {
       const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-      const newRec: MachineryRecord = {
+      const newRec = {
         ...payload,
-        id: payload.id || `mach-${Date.now()}`,
-        is_active: payload.is_active !== false,
-      } as MachineryRecord
+        id: (payload as any).id || `mach-${Date.now()}`,
+        is_active: (payload as any).is_active !== false,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as unknown as MachineryRecord
       PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
         ...all.filter((m) => m.id !== newRec.id),
         newRec,

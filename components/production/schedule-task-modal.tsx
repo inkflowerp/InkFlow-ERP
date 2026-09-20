@@ -59,7 +59,7 @@ export function ScheduleTaskModal({
   // Fetch registered users / operators from local data store or fallback
   const operators = React.useMemo(() => {
     try {
-      const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
+      const users = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || [])
       return users.filter((u) => u.role === 'operator' || u.role === 'worker' || u.role === 'designer' || u.role === 'manager' || !u.role)
     } catch {
       return []
