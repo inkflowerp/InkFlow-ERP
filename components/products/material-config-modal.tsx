@@ -1862,33 +1862,6 @@ export function MaterialConfigModal({
               {/* Geometry Case A: Continuous Roll Media */}
               {(materialType === 'roll' || purchaseUnit === 'roll') && (
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
-                  {/* Quick Preset Buttons */}
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-                      Quick Add Popular Roll Widths:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {QUICK_ROLL_WIDTH_PRESETS.map((p) => {
-                        const isConfigured = configuredRolls.some((r) => r.width === p.width)
-                        return (
-                          <button
-                            key={p.width}
-                            type="button"
-                            onClick={() => handleQuickAddRollWidth(p.width)}
-                            className={cn(
-                              'px-2 py-1 rounded-md text-[11px] font-mono font-bold transition-all cursor-pointer border',
-                              isConfigured
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500'
-                            )}
-                          >
-                            +{p.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
                   {/* Roll Width & Allowance Input Row */}
                   <div className="space-y-2.5 pt-1">
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
@@ -1952,31 +1925,6 @@ export function MaterialConfigModal({
                           <Plus className="w-3.5 h-3.5 mr-1" /> Add Size
                         </Button>
                       </div>
-                    </div>
-
-                    {/* Quick Preset Roll Length Buttons */}
-                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 mr-1">
-                        Preset Lengths:
-                      </span>
-                      {QUICK_ROLL_LENGTH_PRESETS.map((lp) => {
-                        const isSelected = Number(standardRollLength) === lp.length
-                        return (
-                          <button
-                            key={lp.length}
-                            type="button"
-                            onClick={() => handleRollLengthChange(lp.length.toString())}
-                            className={cn(
-                              'px-2 py-0.5 rounded-md text-[10px] font-mono font-bold transition-all cursor-pointer border',
-                              isSelected
-                                ? 'bg-blue-600 text-white border-blue-600 shadow-2xs'
-                                : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
-                            )}
-                          >
-                            {lp.label}
-                          </button>
-                        )
-                      })}
                     </div>
                   </div>
 

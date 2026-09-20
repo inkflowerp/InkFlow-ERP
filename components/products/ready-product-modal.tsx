@@ -799,37 +799,6 @@ export function ReadyProductModal({
         {/* ======================================================== */}
         {activeTab === 'basic' && (
           <div className="space-y-4 animate-in fade-in-0">
-            {/* Quick 1-Click Hardware & Display Preset Template Picker */}
-            {!initialData && (
-              <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200/70 dark:border-blue-900/40 rounded-xl space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs font-bold text-blue-950 dark:text-blue-200">
-                      Quick 1-Click Hardware & Display Presets
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-blue-600 dark:text-blue-300 font-medium">
-                    Preloads specs, dimensions, weights & pricing
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                  {READY_PRODUCT_PRESETS.map((p) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => handleApplyPreset(p)}
-                      className="px-2.5 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-300 transition-all shrink-0 cursor-pointer shadow-2xs flex items-center gap-1.5"
-                    >
-                      <Zap className="w-3 h-3 text-amber-500 shrink-0" />
-                      <span>{p.name.split('(')[0]}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Section 1: Core Identification */}
             <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
               <div className="flex items-center gap-2">

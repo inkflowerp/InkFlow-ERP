@@ -553,7 +553,7 @@ export function OutsourceProductModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-slate-900 dark:text-white">
-                {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product (Non-Inventory Item)'}
+                {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
               <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
                 Non-Inventory Item
@@ -668,41 +668,10 @@ export function OutsourceProductModal({
         </div>
 
         {/* ======================================================== */}
-        {/* TAB 1: BASIC IDENTITY & 1-CLICK INDUSTRY PRESETS */}
+        {/* TAB 1: BASIC IDENTITY */}
         {/* ======================================================== */}
         {activeTab === 'basic' && (
           <div className="space-y-4">
-            {/* 1-Click Industry Templates */}
-            {!initialData && (
-              <div className="p-3.5 rounded-xl border border-purple-200 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-bold text-purple-900 dark:text-purple-200">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
-                    <span>1-Click Popular Outsource Presets</span>
-                  </div>
-                  <span className="text-[11px] text-purple-700 dark:text-purple-300 font-medium">Click to pre-fill vendor cost & specs</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {OUTSOURCE_PRESETS.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => handleApplyPreset(preset)}
-                      className="p-2.5 rounded-lg border border-purple-200 dark:border-purple-800/80 bg-white dark:bg-slate-900 hover:border-purple-500 hover:shadow-xs transition-all text-left text-xs group cursor-pointer"
-                    >
-                      <div className="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 transition-colors line-clamp-1">
-                        {preset.name}
-                      </div>
-                      <div className="text-[10px] text-slate-500 mt-0.5 flex items-center justify-between">
-                        <span className="text-purple-600 font-semibold font-mono">৳{preset.defaultSellingPrice} / {preset.unit}</span>
-                        <span className="font-mono text-slate-400">Cost: ৳{preset.vendorCost}</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Product Identity Form */}
             <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

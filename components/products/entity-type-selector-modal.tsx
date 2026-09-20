@@ -49,7 +49,7 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
     },
     {
       id: 'outsource' as const,
-      title: 'Outsource Product (Non-Inventory Item)',
+      title: 'Outsource Product',
       subtitle: 'Offset Printing, Neon Flex Signs, Computer Embroidery, Gold Foil Stamping',
       description: 'Jobs & items contracted to third-party vendors. Direct vendor costing, lead times, and zero stock depletion.',
       icon: Share2,
