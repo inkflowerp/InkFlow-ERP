@@ -52,7 +52,11 @@ async function checkCounts() {
     'production_reworks',
     'invoice_requests',
     'delivery_challans',
-    'delivery_challan_items'
+    'delivery_challan_items',
+    'printing_methods',
+    'finishing_options',
+    'additional_options',
+    'installation_options'
   ]
 
   console.log('--- Supabase Table Row Counts ---')

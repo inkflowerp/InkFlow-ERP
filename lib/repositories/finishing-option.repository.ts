@@ -76,15 +76,8 @@ export class FinishingOptionRepository {
         query = query.eq('is_active', true)
       }
 
-      const { data, error } = await query
-
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data as FinishingOptionRecord[]
-      }
-
-      if (!error && data && data.length === 0) {
-        const seeded = await this.seedDefaultOptions(companyId)
-        if (seeded.length > 0) return seeded
       }
     } catch {
       // Fallback
@@ -94,21 +87,6 @@ export class FinishingOptionRepository {
       STORAGE_KEYS.FINISHING_OPTIONS,
       companyId
     ) || []
-
-    if (all.length === 0) {
-      const now = new Date().toISOString()
-      const defaults: FinishingOptionRecord[] = DEFAULT_FINISHING_OPTIONS.map((d, idx) => ({
-        ...d,
-        id: `fin-seed-${idx + 1}`,
-        company_id: companyId,
-        created_at: now,
-        updated_at: now,
-      }))
-      defaults.forEach((item) =>
-        PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item, companyId)
-      )
-      return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
-    }
 
     return options?.includeInactive ? all : all.filter((d) => d.is_active)
   }

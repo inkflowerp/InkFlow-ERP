@@ -72,15 +72,8 @@ export class InstallationOptionRepository {
         query = query.eq('is_active', true)
       }
 
-      const { data, error } = await query
-
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data as InstallationOptionRecord[]
-      }
-
-      if (!error && data && data.length === 0) {
-        const seeded = await this.seedDefaultOptions(companyId)
-        if (seeded.length > 0) return seeded
       }
     } catch {
       // Fallback
@@ -90,21 +83,6 @@ export class InstallationOptionRepository {
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       companyId
     ) || []
-
-    if (all.length === 0) {
-      const now = new Date().toISOString()
-      const defaults: InstallationOptionRecord[] = DEFAULT_INSTALLATION_OPTIONS.map((d, idx) => ({
-        ...d,
-        id: `inst-seed-${idx + 1}`,
-        company_id: companyId,
-        created_at: now,
-        updated_at: now,
-      }))
-      defaults.forEach((item) =>
-        PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item, companyId)
-      )
-      return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
-    }
 
     return options?.includeInactive ? all : all.filter((d) => d.is_active)
   }

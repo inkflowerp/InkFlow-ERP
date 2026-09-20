@@ -3,13 +3,13 @@
 import React from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
-import { Package, Wrench, Boxes, Sparkles, PlusCircle, ArrowRight, ShieldCheck, Palette, Layers, Share2 } from 'lucide-react'
+import { Package, Wrench, Boxes, ArrowRight, Layers, Share2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface EntityTypeSelectorModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelect: (type: 'product' | 'service' | 'material' | 'outsource' | 'finishing' | 'additional' | 'installation' | 'printing_method') => void
+  onSelect: (type: 'product' | 'service' | 'material' | 'outsource') => void
 }
 
 export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTypeSelectorModalProps) {
@@ -57,37 +57,6 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
       borderClass: 'border-purple-200 dark:border-purple-900/60 hover:border-purple-500 hover:bg-purple-50/50 dark:hover:bg-purple-950/30',
       badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300 border-purple-200 dark:border-purple-800',
       iconClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/60 dark:text-purple-300',
-    },
-  ]
-
-  const auxiliaryOptions = [
-    {
-      id: 'finishing' as const,
-      title: 'Finishing Operation',
-      description: 'Glossy/Matte Lamination, Eyelet, MS Frame',
-      icon: Sparkles,
-      colorClass: 'hover:border-purple-400 hover:bg-purple-50/40 dark:hover:bg-purple-950/30',
-    },
-    {
-      id: 'additional' as const,
-      title: 'Additional Work / Pasting',
-      description: '3mm PVC Board Pasting, Foam Board, Framing',
-      icon: PlusCircle,
-      colorClass: 'hover:border-cyan-400 hover:bg-cyan-50/40 dark:hover:bg-cyan-950/30',
-    },
-    {
-      id: 'installation' as const,
-      title: 'Installation / Fulfillment',
-      description: 'On-Site Installation, Shop Delivery, Dispatch',
-      icon: ShieldCheck,
-      colorClass: 'hover:border-indigo-400 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30',
-    },
-    {
-      id: 'printing_method' as const,
-      title: 'Printing Method',
-      description: 'Eco-Solvent, UV Flatbed, DTF, Latex',
-      icon: Palette,
-      colorClass: 'hover:border-rose-400 hover:bg-rose-50/40 dark:hover:bg-rose-950/30',
     },
   ]
 
@@ -159,39 +128,6 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
               </button>
             )
           })}
-        </div>
-
-        <div className="pt-3 border-t border-slate-200 dark:border-slate-800">
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2.5">
-            Reusable Operations & Add-ons
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-            {auxiliaryOptions.map((aux) => {
-              const AuxIcon = aux.icon
-              return (
-                <button
-                  key={aux.id}
-                  type="button"
-                  onClick={() => {
-                    onSelect(aux.id)
-                    onClose()
-                  }}
-                  className={cn(
-                    'p-3 rounded-xl border border-slate-200 dark:border-slate-800 text-left transition-all hover:shadow-xs group cursor-pointer bg-white dark:bg-slate-900',
-                    aux.colorClass
-                  )}
-                >
-                  <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs">
-                    <AuxIcon className="w-4 h-4 text-slate-500 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
-                    <span>{aux.title}</span>
-                  </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                    {aux.description}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
         </div>
 
         {/* Standardized Bottom Action */}

@@ -216,8 +216,7 @@ describe('Unit: Products & Commercial Masters 2.0 Upgrade Suite', () => {
       // Delete Alpha Option
       await FinishingOptionRepository.deleteFinishingOption(tenantAlpha, alphaEyelet.id)
       const afterDeleteAlpha = await FinishingOptionRepository.getFinishingOptions(tenantAlpha)
-      // Note: when list becomes empty, getFinishingOptions will reseed defaults
-      assert.ok(afterDeleteAlpha.length > 0)
+      assert.strictEqual(afterDeleteAlpha.length, 0)
       assert.ok(!afterDeleteAlpha.some((item) => item.id === alphaEyelet.id))
     })
 

@@ -65,7 +65,11 @@ export async function executePurge() {
     'supplier_material_prices',
     'materials',
     'products',
-    'product_categories'
+    'product_categories',
+    'printing_methods',
+    'finishing_options',
+    'additional_options',
+    'installation_options'
   ]
 
   for (const table of tablesToPurge) {

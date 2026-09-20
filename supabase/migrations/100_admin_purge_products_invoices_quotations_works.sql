@@ -190,7 +190,28 @@ begin
         where company_id = p_company_id;
     end if;
 
-    -- 13. Reset customer financial balances
+    -- 13. Delete Printing Methods, Finishing Options, Additional Options & Installation Options
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'printing_methods') then
+        delete from public.printing_methods
+        where company_id = p_company_id;
+    end if;
+
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'finishing_options') then
+        delete from public.finishing_options
+        where company_id = p_company_id;
+    end if;
+
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'additional_options') then
+        delete from public.additional_options
+        where company_id = p_company_id;
+    end if;
+
+    if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'installation_options') then
+        delete from public.installation_options
+        where company_id = p_company_id;
+    end if;
+
+    -- 14. Reset customer financial balances
     if exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = 'customers') then
         update public.customers
         set total_due_balance = 0,

@@ -104,14 +104,8 @@ export class PrintingMethodRepository {
 
       const { data, error } = await query
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data as PrintingMethod[]
-      }
-
-      // If empty in database, seed default methods for tenant
-      if (!error && data && data.length === 0) {
-        const seeded = await this.seedDefaultMethods(companyId)
-        if (seeded.length > 0) return seeded
       }
     } catch {
       // Fallback to data store
@@ -122,21 +116,6 @@ export class PrintingMethodRepository {
       STORAGE_KEYS.PRINTING_METHODS,
       companyId
     ) || []
-
-    if (all.length === 0) {
-      const now = new Date().toISOString()
-      const defaults: PrintingMethod[] = DEFAULT_PRINTING_METHODS.map((d, idx) => ({
-        ...d,
-        id: `pm-seed-${idx + 1}`,
-        company_id: companyId,
-        created_at: now,
-        updated_at: now,
-      }))
-      defaults.forEach((item) =>
-        PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item, companyId)
-      )
-      return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
-    }
 
     return options?.includeInactive ? all : all.filter((d) => d.is_active)
   }
