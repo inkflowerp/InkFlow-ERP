@@ -16,7 +16,6 @@ import { MobileBottomNav } from '@/components/mobile/bottom-nav'
 import { useShortcuts } from '@/hooks/use-shortcuts'
 import { ToastProvider } from '@/components/shared/toast-feedback'
 import { PlatformSupportBanner } from './platform-support-banner'
-import { PracticeModeBanner } from '@/components/onboarding/practice-mode-banner'
 
 const CommandPalette = dynamic(
   () => import('@/components/search/command-palette').then((mod) => mod.CommandPalette),
@@ -84,7 +83,6 @@ export function AppShell({
           <div className="flex h-screen max-h-screen bg-slate-50/60 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex-col overflow-hidden print:h-auto print:max-h-none print:overflow-visible print:bg-white print:text-slate-900">
             <div className="print:hidden">
               <PlatformSupportBanner />
-              <PracticeModeBanner />
               <NetworkBanner onOpenSyncDrawer={() => setSyncDrawerOpen(true)} />
               <SubscriptionStatusBanner />
             </div>
