@@ -1663,52 +1663,13 @@ export default function ProductsCatalogPage() {
         iconColor="text-blue-600"
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            {/* Direct Quick Launchers */}
             <Button
               size="sm"
-              onClick={handleOpenCreateService}
+              onClick={handleOpenCreate}
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
             >
-              <Printer className="h-4 w-4" />
-              <span>+ Service</span>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={handleOpenCreateProduct}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
-            >
-              <Package className="h-4 w-4" />
-              <span>+ Ready Product</span>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={handleOpenCreateMaterial}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
-            >
-              <Layers className="h-4 w-4" />
-              <span>+ Raw Material</span>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={handleOpenCreateOutsource}
-              className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
-            >
-              <Share2 className="h-4 w-4" />
-              <span>+ Outsource</span>
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={handleOpenCreate}
-              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-bold shadow-xs h-9 gap-1.5 cursor-pointer"
-              title="Add Other Configuration Master"
-            >
-              <Sliders className="h-4 w-4 text-slate-600 dark:text-slate-300" />
-              <span>Masters</span>
+              <Plus className="h-4 w-4" />
+              <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
             </Button>
 
             <Link href="/pricing">
