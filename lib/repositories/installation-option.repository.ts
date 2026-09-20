@@ -86,10 +86,10 @@ export class InstallationOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.getAll<InstallationOptionRecord>(
+    const all = PrintERPDataStore.get<InstallationOptionRecord[]>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       companyId
-    )
+    ) || []
 
     if (all.length === 0) {
       const now = new Date().toISOString()
@@ -101,7 +101,7 @@ export class InstallationOptionRepository {
         updated_at: now,
       }))
       defaults.forEach((item) =>
-        PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item)
+        PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item, companyId)
       )
       return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
     }
@@ -136,7 +136,7 @@ export class InstallationOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item)
+      PrintERPDataStore.addItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -191,7 +191,8 @@ export class InstallationOptionRepository {
 
     PrintERPDataStore.addItem<InstallationOptionRecord>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
-      localRecord
+      localRecord,
+      companyId
     )
     return localRecord
   }
@@ -226,7 +227,8 @@ export class InstallationOptionRepository {
     return PrintERPDataStore.updateItem<InstallationOptionRecord>(
       STORAGE_KEYS.INSTALLATION_OPTIONS,
       id,
-      updates
+      updates,
+      companyId
     )
   }
 
@@ -247,7 +249,7 @@ export class InstallationOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, id)
+    PrintERPDataStore.removeItem<InstallationOptionRecord>(STORAGE_KEYS.INSTALLATION_OPTIONS, id, companyId)
     return true
   }
 }

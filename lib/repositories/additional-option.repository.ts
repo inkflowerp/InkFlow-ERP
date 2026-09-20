@@ -76,10 +76,10 @@ export class AdditionalOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.getAll<AdditionalOptionRecord>(
+    const all = PrintERPDataStore.get<AdditionalOptionRecord[]>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
       companyId
-    )
+    ) || []
 
     if (all.length === 0) {
       const now = new Date().toISOString()
@@ -91,7 +91,7 @@ export class AdditionalOptionRepository {
         updated_at: now,
       }))
       defaults.forEach((item) =>
-        PrintERPDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item)
+        PrintERPDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item, companyId)
       )
       return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
     }
@@ -126,7 +126,7 @@ export class AdditionalOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item)
+      PrintERPDataStore.addItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -180,7 +180,8 @@ export class AdditionalOptionRepository {
 
     PrintERPDataStore.addItem<AdditionalOptionRecord>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
-      localRecord
+      localRecord,
+      companyId
     )
     return localRecord
   }
@@ -215,7 +216,8 @@ export class AdditionalOptionRepository {
     return PrintERPDataStore.updateItem<AdditionalOptionRecord>(
       STORAGE_KEYS.ADDITIONAL_OPTIONS,
       id,
-      updates
+      updates,
+      companyId
     )
   }
 
@@ -236,7 +238,7 @@ export class AdditionalOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, id)
+    PrintERPDataStore.removeItem<AdditionalOptionRecord>(STORAGE_KEYS.ADDITIONAL_OPTIONS, id, companyId)
     return true
   }
 }

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Palette, AlertCircle, RefreshCw } from 'lucide-react'
+import { Palette, AlertCircle, RefreshCw, Sparkles, Zap, Droplets, Layers } from 'lucide-react'
 import type { PrintingMethod } from '@/types/product.types'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +16,45 @@ interface PrintingMethodModalProps {
   method?: PrintingMethod | null
   onSave: (data: Partial<PrintingMethod>) => Promise<void>
 }
+
+const COMMON_PRINT_TECH_PRESETS = [
+  {
+    name: 'Eco-Solvent Print (1440 DPI)',
+    name_bn: 'ইকো-সলভেন্ট প্রিন্ট (১৪৪০ ডিপিআই)',
+    code: 'ECO_SOLVENT_1440',
+    cost_per_sqft: 4.5,
+    default_ink_type: 'Eco-Solvent DX5 / XP600 Ink',
+    compatible_types: ['roll'],
+    description: 'High-resolution indoor/outdoor prints for vinyl stickers, canvas, and photo paper.',
+  },
+  {
+    name: 'Solvent Heavy-Duty (720 DPI)',
+    name_bn: 'সলভেন্ট ব্যানার প্রিন্ট (৭২০ ডিপিআই)',
+    code: 'SOLVENT_HEAVY_720',
+    cost_per_sqft: 2.2,
+    default_ink_type: 'Industrial Solvent Konica 512i / StarFire Ink',
+    compatible_types: ['roll'],
+    description: 'High-speed long-distance outdoor advertising billboard flex banners.',
+  },
+  {
+    name: 'UV LED Curable Flatbed (1440 DPI)',
+    name_bn: 'ইউভি ফ্ল্যাটবেড প্রিন্ট (১৪৪০ ডিপিআই)',
+    code: 'UV_FLATBED_1440',
+    cost_per_sqft: 14.0,
+    default_ink_type: 'UV Curable Hard/Flexible CMYK+White Ink',
+    compatible_types: ['roll', 'sheet', 'rigid'],
+    description: 'Instant-cure direct printing on acrylic sheets, PVC foam boards, wood, glass, and leather.',
+  },
+  {
+    name: 'Sublimation / DTF Textile Print',
+    name_bn: 'সাবলিমেশন ও ডিটিএফ প্রিন্ট',
+    code: 'SUBLIMATION_DTF',
+    cost_per_sqft: 8.0,
+    default_ink_type: 'Disperse Sublimation / DTF Pigment Ink',
+    compatible_types: ['roll', 'hardware'],
+    description: 'Heat-transfer disperse dye printing for flags, sportswear, satin banners, and apparel.',
+  },
+]
 
 export function PrintingMethodModal({
   open,
@@ -63,6 +102,16 @@ export function PrintingMethodModal({
     )
   }
 
+  const handleApplyPreset = (preset: typeof COMMON_PRINT_TECH_PRESETS[0]) => {
+    setName(preset.name)
+    setNameBn(preset.name_bn)
+    setCode(preset.code)
+    setCostPerSqft(String(preset.cost_per_sqft))
+    setDefaultInkType(preset.default_ink_type)
+    setCompatibleTypes(preset.compatible_types)
+    setDescription(preset.description)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
@@ -104,14 +153,14 @@ export function PrintingMethodModal({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-slate-900 dark:text-white">
-                {method ? 'Edit Printing Method' : 'Add Printing Technology'}
+                {method ? 'Edit Printing Technology' : 'Add Printing Technology'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-rose-50 text-rose-700 border-rose-200">
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
                 Technology Master
               </Badge>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Configure dynamic print technologies (Eco-Solvent, UV, DTF, Latex) without code changes.
+              Configure dynamic print technologies (Eco-Solvent, UV, DTF, Latex) and consumable ink rates.
             </p>
           </div>
         </div>
@@ -126,11 +175,37 @@ export function PrintingMethodModal({
           </div>
         )}
 
+        {/* Quick Presets Picker */}
+        {!method && (
+          <div className="p-3 bg-rose-50/60 dark:bg-rose-950/20 border border-rose-200/60 dark:border-rose-900/40 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-rose-900 dark:text-rose-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-rose-600" />
+                Popular Printing Method Templates:
+              </span>
+              <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium">Click to fill tech specs</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {COMMON_PRINT_TECH_PRESETS.map((p) => (
+                <button
+                  key={p.code}
+                  type="button"
+                  onClick={() => handleApplyPreset(p)}
+                  className="px-2.5 py-1 rounded-lg border border-rose-200 dark:border-rose-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium text-[11px] hover:border-rose-500 hover:text-rose-600 transition-all cursor-pointer flex items-center gap-1"
+                >
+                  <Zap className="w-3 h-3 text-amber-500 shrink-0" />
+                  <span>{p.name.split('(')[0]}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                Method Name <span className="text-rose-500">*</span>
+                Technology Name <span className="text-rose-500">*</span>
               </Label>
               <Input
                 type="text"
@@ -149,7 +224,7 @@ export function PrintingMethodModal({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                Method Name (Bengali)
+                Technology Name (Bengali)
               </Label>
               <Input
                 type="text"
@@ -185,8 +260,8 @@ export function PrintingMethodModal({
                 min="0"
                 value={costPerSqft}
                 onChange={(e) => setCostPerSqft(e.target.value)}
-                placeholder="e.g. 15.00"
-                className="h-9 text-xs font-mono"
+                placeholder="e.g. 14.00"
+                className="h-9 text-xs font-mono font-bold text-rose-600 dark:text-rose-400"
               />
             </div>
           </div>
@@ -199,7 +274,7 @@ export function PrintingMethodModal({
               type="text"
               value={defaultInkType}
               onChange={(e) => setDefaultInkType(e.target.value)}
-              placeholder="e.g. UV Curable Hard Ink, Eco-Solvent DX5 Ink"
+              placeholder="e.g. UV Curable CMYK+White Ink, Eco-Solvent DX5 Ink"
               className="h-9 text-xs"
             />
           </div>
@@ -210,9 +285,9 @@ export function PrintingMethodModal({
             </Label>
             <div className="flex flex-wrap gap-2">
               {[
-                { id: 'roll', label: 'Roll Stock (Vinyl, PVC, Fabric)' },
-                { id: 'sheet', label: 'Flat Sheets (Paper, Board)' },
-                { id: 'rigid', label: 'Rigid Substrates (Acrylic, MDF, Metal)' },
+                { id: 'roll', label: 'Roll Substrates (Vinyl, PVC, Fabric)' },
+                { id: 'sheet', label: 'Flat Sheets (Paper, Sunboard)' },
+                { id: 'rigid', label: 'Rigid Boards (Acrylic, MDF, Metal)' },
                 { id: 'hardware', label: 'Direct Products / Hardware' },
               ].map((fmt) => (
                 <button
@@ -222,7 +297,7 @@ export function PrintingMethodModal({
                   className={cn(
                     'px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer',
                     compatibleTypes.includes(fmt.id)
-                      ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800'
+                      ? 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
                       : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                   )}
                 >
@@ -273,7 +348,7 @@ export function PrintingMethodModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
+            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>
@@ -283,7 +358,7 @@ export function PrintingMethodModal({
             ) : (
               <>
                 <Palette className="h-4 w-4" />
-                <span>{method ? 'Update Method' : 'Save Printing Method'}</span>
+                <span>{method ? 'Update Technology' : 'Save Printing Technology'}</span>
               </>
             )}
           </Button>

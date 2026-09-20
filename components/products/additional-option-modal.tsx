@@ -1,13 +1,14 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { PlusCircle, AlertCircle, RefreshCw } from 'lucide-react'
+import { PlusCircle, AlertCircle, RefreshCw, TrendingUp, Sparkles, Layers, Box, Zap } from 'lucide-react'
 import type { AdditionalOptionRecord, ProductRecord } from '@/types/product.types'
+import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 interface AdditionalOptionModalProps {
@@ -17,6 +18,14 @@ interface AdditionalOptionModalProps {
   products?: ProductRecord[]
   onSave: (data: Partial<AdditionalOptionRecord>) => Promise<void>
 }
+
+const COMMON_ADDITIONAL_PRESETS = [
+  { name: '3mm PVC Sunboard Pasting', name_bn: '৩মিমি পিভিসি সানবোর্ড পেস্টিং', pricing_method: 'sqft', selling_price: 35, cost: 18 },
+  { name: '5mm PVC Foam Board Pasting', name_bn: '৫মিমি পিভিসি ফোম বোর্ড পেস্টিং', pricing_method: 'sqft', selling_price: 55, cost: 28 },
+  { name: '1" MS Box Pipe Welded Frame', name_bn: '১ ইঞ্চি এমএস বক্স পাইপ ফ্রেম', pricing_method: 'sqft', selling_price: 45, cost: 22 },
+  { name: '5mm Clear Acrylic Sandwich Board', name_bn: '৫মিমি এক্রিলিক স্যান্ডউইচ বোর্ড', pricing_method: 'sqft', selling_price: 320, cost: 160 },
+  { name: 'X-Stand Display Frame 2×5 ft', name_bn: 'এক্স-স্ট্যান্ড ডিসপ্লে ফ্রেম ২×৫ ফিট', pricing_method: 'per_piece', selling_price: 750, cost: 420 },
+]
 
 export function AdditionalOptionModal({
   open,
@@ -56,14 +65,30 @@ export function AdditionalOptionModal({
     setError(null)
   }, [additional, open])
 
+  // Live Gross Margin Calculation
+  const marginMath = useMemo(() => {
+    const sell = Number(sellingPrice) || 0
+    const c = Number(cost) || 0
+    return calculateGrossMargin(c, sell)
+  }, [sellingPrice, cost])
+
   const handleProductSelect = (pId: string) => {
     setProductId(pId)
     const selected = products.find((p) => p.id === pId)
     if (selected && !name) {
       setName(selected.name)
+      if (selected.name_bn) setNameBn(selected.name_bn)
       setSellingPrice(String(selected.selling_price || 0))
       setCost(String(selected.base_cost || 0))
     }
+  }
+
+  const handleApplyPreset = (preset: typeof COMMON_ADDITIONAL_PRESETS[0]) => {
+    setName(preset.name)
+    setNameBn(preset.name_bn)
+    setPricingMethod(preset.pricing_method)
+    setSellingPrice(String(preset.selling_price))
+    setCost(String(preset.cost))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,12 +133,12 @@ export function AdditionalOptionModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {additional ? 'Edit Additional Work' : 'Add Additional Work'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200">
+              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
                 Substrate & Addon Master
               </Badge>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Define add-ons (3mm PVC Board, Acrylic Mount, X-Stand Hardware).
+              Define substrate pastings (PVC Board, Acrylic Mount, Metal Pipe Frame Fabrication).
             </p>
           </div>
         </div>
@@ -128,6 +153,32 @@ export function AdditionalOptionModal({
           </div>
         )}
 
+        {/* Quick Presets Picker */}
+        {!additional && (
+          <div className="p-3 bg-cyan-50/60 dark:bg-cyan-950/20 border border-cyan-200/60 dark:border-cyan-900/40 rounded-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-cyan-900 dark:text-cyan-200 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
+                Popular Substrate & Addon Templates:
+              </span>
+              <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium">Click to fill rates</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {COMMON_ADDITIONAL_PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  type="button"
+                  onClick={() => handleApplyPreset(p)}
+                  className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium text-[11px] hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1"
+                >
+                  <Zap className="w-3 h-3 text-amber-500 shrink-0" />
+                  <span>{p.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -139,7 +190,7 @@ export function AdditionalOptionModal({
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. 3mm PVC Board Pasting, X-Stand Display"
+                placeholder="e.g. 3mm PVC Board Pasting, MS Pipe Frame"
                 className="h-9 text-xs"
               />
             </div>
@@ -161,14 +212,14 @@ export function AdditionalOptionModal({
           {products.length > 0 && (
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                Link with Existing Catalog Product (Optional)
+                Link with Catalog Product (Optional)
               </Label>
               <select
                 value={productId}
                 onChange={(e) => handleProductSelect(e.target.value)}
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
               >
-                <option value="">-- Standalone Additional (No Product Link) --</option>
+                <option value="">-- Standalone Additional (No Catalog Link) --</option>
                 {products.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name} ({p.sku || 'No SKU'}) — ৳{p.selling_price}
@@ -188,8 +239,9 @@ export function AdditionalOptionModal({
                 onChange={(e) => setPricingMethod(e.target.value)}
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
               >
-                <option value="sqft">Per Sqft (Area based)</option>
+                <option value="sqft">Per Sqft (Board / Sheet Area)</option>
                 <option value="per_piece">Per Piece / Unit</option>
+                <option value="per_linear_ft">Per Running Foot (Pipe/Profile)</option>
                 <option value="fixed">Fixed Flat Price</option>
               </select>
             </div>
@@ -225,6 +277,32 @@ export function AdditionalOptionModal({
             </div>
           </div>
 
+          {/* Live Margin Calculation Card */}
+          <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                Gross Profit: <span className="font-mono font-bold text-slate-900 dark:text-white">৳{marginMath.grossProfit.toFixed(2)}</span>
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-slate-500">Margin:</span>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'font-mono font-bold text-xs py-0.5 px-2',
+                  marginMath.grossMarginPercent >= 30
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : marginMath.grossMarginPercent >= 15
+                    ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
+                    : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
+                )}
+              >
+                {marginMath.grossMarginPercent.toFixed(1)}%
+              </Badge>
+            </div>
+          </div>
+
           <div className="pt-1">
             <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800 dark:text-slate-200">
               <input
@@ -253,7 +331,7 @@ export function AdditionalOptionModal({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
+            className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>

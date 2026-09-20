@@ -118,10 +118,10 @@ export class PrintingMethodRepository {
     }
 
     // In-memory data store fallback
-    const all = PrintERPDataStore.getAll<PrintingMethod>(
+    const all = PrintERPDataStore.get<PrintingMethod[]>(
       STORAGE_KEYS.PRINTING_METHODS,
       companyId
-    )
+    ) || []
 
     if (all.length === 0) {
       const now = new Date().toISOString()
@@ -133,7 +133,7 @@ export class PrintingMethodRepository {
         updated_at: now,
       }))
       defaults.forEach((item) =>
-        PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item)
+        PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item, companyId)
       )
       return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
     }
@@ -168,7 +168,7 @@ export class PrintingMethodRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item)
+      PrintERPDataStore.addItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, item, companyId)
     )
     return defaults
   }
@@ -245,7 +245,8 @@ export class PrintingMethodRepository {
 
     PrintERPDataStore.addItem<PrintingMethod>(
       STORAGE_KEYS.PRINTING_METHODS,
-      localRecord
+      localRecord,
+      companyId
     )
     return localRecord
   }
@@ -280,7 +281,8 @@ export class PrintingMethodRepository {
     return PrintERPDataStore.updateItem<PrintingMethod>(
       STORAGE_KEYS.PRINTING_METHODS,
       id,
-      updates
+      updates,
+      companyId
     )
   }
 
@@ -301,7 +303,7 @@ export class PrintingMethodRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, id)
+    PrintERPDataStore.removeItem<PrintingMethod>(STORAGE_KEYS.PRINTING_METHODS, id, companyId)
     return true
   }
 }

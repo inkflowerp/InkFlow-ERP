@@ -90,10 +90,10 @@ export class FinishingOptionRepository {
       // Fallback
     }
 
-    const all = PrintERPDataStore.getAll<FinishingOptionRecord>(
+    const all = PrintERPDataStore.get<FinishingOptionRecord[]>(
       STORAGE_KEYS.FINISHING_OPTIONS,
       companyId
-    )
+    ) || []
 
     if (all.length === 0) {
       const now = new Date().toISOString()
@@ -105,7 +105,7 @@ export class FinishingOptionRepository {
         updated_at: now,
       }))
       defaults.forEach((item) =>
-        PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item)
+        PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item, companyId)
       )
       return options?.includeInactive ? defaults : defaults.filter((d) => d.is_active)
     }
@@ -140,7 +140,7 @@ export class FinishingOptionRepository {
       updated_at: now,
     }))
     defaults.forEach((item) =>
-      PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item)
+      PrintERPDataStore.addItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, item, companyId)
     )
     return defaults
   }
@@ -195,7 +195,8 @@ export class FinishingOptionRepository {
 
     PrintERPDataStore.addItem<FinishingOptionRecord>(
       STORAGE_KEYS.FINISHING_OPTIONS,
-      localRecord
+      localRecord,
+      companyId
     )
     return localRecord
   }
@@ -230,7 +231,8 @@ export class FinishingOptionRepository {
     return PrintERPDataStore.updateItem<FinishingOptionRecord>(
       STORAGE_KEYS.FINISHING_OPTIONS,
       id,
-      updates
+      updates,
+      companyId
     )
   }
 
@@ -251,7 +253,7 @@ export class FinishingOptionRepository {
       // Fallback
     }
 
-    PrintERPDataStore.removeItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, id)
+    PrintERPDataStore.removeItem<FinishingOptionRecord>(STORAGE_KEYS.FINISHING_OPTIONS, id, companyId)
     return true
   }
 }

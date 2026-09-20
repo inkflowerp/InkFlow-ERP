@@ -1792,7 +1792,7 @@ export default function ProductsCatalogPage() {
           { id: 'service', label: 'Services', count: tabCounts.service, icon: Printer },
           { id: 'product', label: 'Ready Products', count: tabCounts.product, icon: Package },
           { id: 'material', label: 'Raw Materials', count: tabCounts.material, icon: Layers },
-          { id: 'outsource', label: 'Outsource (Non-Inventory)', count: tabCounts.outsource, icon: Share2 },
+          { id: 'outsource', label: 'Outsource Products', count: tabCounts.outsource, icon: Share2 },
           { id: 'finishing', label: 'Finishing Masters', count: tabCounts.finishing, icon: Scissors },
           { id: 'additional', label: 'Additional Work', count: tabCounts.additional, icon: PlusCircle },
           { id: 'installation', label: 'Installation & Delivery', count: tabCounts.installation, icon: Truck },
