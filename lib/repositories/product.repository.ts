@@ -73,18 +73,6 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'pricing_formula',
     'material_config',
     'service_config',
-    'outsource_config',
-    'is_outsource',
-    'is_non_inventory',
-    'track_inventory',
-    'vendor_id',
-    'vendor_name',
-    'vendor_phone',
-    'vendor_address',
-    'vendor_item_code',
-    'turnaround_days',
-    'outsource_notes',
-    'outsource_category',
     'vat_applicable',
     'is_tax_inclusive',
     'roll_width_ft',
@@ -538,6 +526,22 @@ export class ProductRepository {
         }
       }
 
+      const isOutsource = product.is_outsource !== undefined ? Boolean(product.is_outsource) : (product.entity_type === 'outsource' || product.product_type === 'outsource' || isOutsourceProduct(product))
+      const isNonInventory = product.is_non_inventory !== undefined ? Boolean(product.is_non_inventory) : isOutsource
+      const trackInventory = product.track_inventory !== undefined ? Boolean(product.track_inventory) : !isNonInventory
+      const outsourceConfig = isOutsource
+        ? (product.outsource_config || {
+            vendor_id: product.vendor_id || null,
+            vendor_name: product.vendor_name || null,
+            vendor_phone: product.vendor_phone || null,
+            vendor_address: product.vendor_address || null,
+            vendor_item_code: product.vendor_item_code || null,
+            turnaround_days: product.turnaround_days || null,
+            vendor_notes: product.outsource_notes || null,
+            is_non_inventory: isNonInventory,
+          })
+        : null
+
       const payload: any = {
         company_id: product.company_id,
         branch_id: product.branch_id || null,
@@ -604,7 +608,19 @@ export class ProductRepository {
         tax_rate: product.tax_rate !== undefined && product.tax_rate !== null && !isNaN(Number(product.tax_rate)) ? Number(product.tax_rate) : 7.5,
         pricing_formula: {
           ...(typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}),
-          entity_type: product.entity_type || (product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
+          entity_type: product.entity_type || (isOutsource ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
+          is_outsource: isOutsource,
+          is_non_inventory: isNonInventory,
+          track_inventory: trackInventory,
+          outsource_config: outsourceConfig,
+          vendor_id: product.vendor_id || outsourceConfig?.vendor_id || null,
+          vendor_name: product.vendor_name || outsourceConfig?.vendor_name || null,
+          vendor_phone: product.vendor_phone || outsourceConfig?.vendor_phone || null,
+          vendor_address: product.vendor_address || outsourceConfig?.vendor_address || null,
+          vendor_item_code: product.vendor_item_code || outsourceConfig?.vendor_item_code || null,
+          turnaround_days: product.turnaround_days !== undefined && product.turnaround_days !== null ? Number(product.turnaround_days) : (outsourceConfig?.turnaround_days ?? null),
+          outsource_notes: product.outsource_notes || outsourceConfig?.vendor_notes || null,
+          outsource_category: product.outsource_category || (isOutsource ? product.category : null),
           service_config: product.service_config || null,
           material_config: product.material_config || null,
           available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
@@ -622,23 +638,23 @@ export class ProductRepository {
         requires_finishing: Boolean(product.requires_finishing),
         requires_installation: Boolean(product.requires_installation),
         requires_delivery: Boolean(product.requires_delivery),
-        entity_type: product.entity_type || (product.is_outsource || product.product_type === 'outsource' ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
+        entity_type: product.entity_type || (isOutsource ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
         service_config: product.service_config || {},
         material_config: product.material_config || {},
-        outsource_config: product.outsource_config || {},
-        is_outsource: product.is_outsource !== undefined ? Boolean(product.is_outsource) : (product.entity_type === 'outsource' || product.product_type === 'outsource' || isOutsourceProduct(product)),
-        is_non_inventory: product.is_non_inventory !== undefined ? Boolean(product.is_non_inventory) : (product.is_outsource || product.entity_type === 'outsource' || isOutsourceProduct(product)),
-        track_inventory: product.track_inventory !== undefined ? Boolean(product.track_inventory) : !(product.is_outsource || product.is_non_inventory || product.entity_type === 'outsource' || isOutsourceProduct(product)),
-        vendor_id: product.vendor_id || product.outsource_config?.vendor_id || null,
-        vendor_name: product.vendor_name || product.outsource_config?.vendor_name || null,
-        vendor_phone: product.vendor_phone || product.outsource_config?.vendor_phone || null,
-        vendor_address: product.vendor_address || product.outsource_config?.vendor_address || null,
-        vendor_item_code: product.vendor_item_code || product.outsource_config?.vendor_item_code || null,
-        turnaround_days: product.turnaround_days !== undefined && product.turnaround_days !== null ? Number(product.turnaround_days) : (product.outsource_config?.turnaround_days ?? null),
-        outsource_notes: product.outsource_notes || product.outsource_config?.vendor_notes || null,
-        outsource_category: product.outsource_category || (product.is_outsource ? product.category : null),
-        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (!product.is_outsource && (product.entity_type === 'service' || product.product_type === 'print_service' || isServiceProduct(product))),
-        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (!product.is_outsource && (product.entity_type === 'product' || product.product_type === 'ready_product' || isReadyProduct(product))),
+        outsource_config: outsourceConfig,
+        is_outsource: isOutsource,
+        is_non_inventory: isNonInventory,
+        track_inventory: trackInventory,
+        vendor_id: product.vendor_id || outsourceConfig?.vendor_id || null,
+        vendor_name: product.vendor_name || outsourceConfig?.vendor_name || null,
+        vendor_phone: product.vendor_phone || outsourceConfig?.vendor_phone || null,
+        vendor_address: product.vendor_address || outsourceConfig?.vendor_address || null,
+        vendor_item_code: product.vendor_item_code || outsourceConfig?.vendor_item_code || null,
+        turnaround_days: product.turnaround_days !== undefined && product.turnaround_days !== null ? Number(product.turnaround_days) : (outsourceConfig?.turnaround_days ?? null),
+        outsource_notes: product.outsource_notes || outsourceConfig?.vendor_notes || null,
+        outsource_category: product.outsource_category || (isOutsource ? product.category : null),
+        is_service: product.is_service !== undefined ? Boolean(product.is_service) : (!isOutsource && (product.entity_type === 'service' || product.product_type === 'print_service' || isServiceProduct(product))),
+        is_ready_product: product.is_ready_product !== undefined ? Boolean(product.is_ready_product) : (!isOutsource && (product.entity_type === 'product' || product.product_type === 'ready_product' || isReadyProduct(product))),
         default_department: product.default_department || 'printing',
         estimated_production_time_hours: product.estimated_production_time_hours !== undefined && product.estimated_production_time_hours !== null && !isNaN(Number(product.estimated_production_time_hours)) ? Number(product.estimated_production_time_hours) : 4.0,
         default_finishing: product.default_finishing?.trim() || null,
@@ -770,21 +786,48 @@ export class ProductRepository {
       }
       if (updates.is_outsource !== undefined) {
         payload.is_outsource = Boolean(updates.is_outsource)
+        formulaUpdates.is_outsource = Boolean(updates.is_outsource)
       }
       if (updates.is_non_inventory !== undefined) {
         payload.is_non_inventory = Boolean(updates.is_non_inventory)
+        formulaUpdates.is_non_inventory = Boolean(updates.is_non_inventory)
       }
       if (updates.track_inventory !== undefined) {
         payload.track_inventory = Boolean(updates.track_inventory)
+        formulaUpdates.track_inventory = Boolean(updates.track_inventory)
       }
-      if (updates.vendor_id !== undefined) payload.vendor_id = updates.vendor_id
-      if (updates.vendor_name !== undefined) payload.vendor_name = updates.vendor_name
-      if (updates.vendor_phone !== undefined) payload.vendor_phone = updates.vendor_phone
-      if (updates.vendor_address !== undefined) payload.vendor_address = updates.vendor_address
-      if (updates.vendor_item_code !== undefined) payload.vendor_item_code = updates.vendor_item_code
-      if (updates.turnaround_days !== undefined) payload.turnaround_days = updates.turnaround_days !== null ? Number(updates.turnaround_days) : null
-      if (updates.outsource_notes !== undefined) payload.outsource_notes = updates.outsource_notes
-      if (updates.outsource_category !== undefined) payload.outsource_category = updates.outsource_category
+      if (updates.vendor_id !== undefined) {
+        payload.vendor_id = updates.vendor_id
+        formulaUpdates.vendor_id = updates.vendor_id
+      }
+      if (updates.vendor_name !== undefined) {
+        payload.vendor_name = updates.vendor_name
+        formulaUpdates.vendor_name = updates.vendor_name
+      }
+      if (updates.vendor_phone !== undefined) {
+        payload.vendor_phone = updates.vendor_phone
+        formulaUpdates.vendor_phone = updates.vendor_phone
+      }
+      if (updates.vendor_address !== undefined) {
+        payload.vendor_address = updates.vendor_address
+        formulaUpdates.vendor_address = updates.vendor_address
+      }
+      if (updates.vendor_item_code !== undefined) {
+        payload.vendor_item_code = updates.vendor_item_code
+        formulaUpdates.vendor_item_code = updates.vendor_item_code
+      }
+      if (updates.turnaround_days !== undefined) {
+        payload.turnaround_days = updates.turnaround_days !== null ? Number(updates.turnaround_days) : null
+        formulaUpdates.turnaround_days = updates.turnaround_days !== null ? Number(updates.turnaround_days) : null
+      }
+      if (updates.outsource_notes !== undefined) {
+        payload.outsource_notes = updates.outsource_notes
+        formulaUpdates.outsource_notes = updates.outsource_notes
+      }
+      if (updates.outsource_category !== undefined) {
+        payload.outsource_category = updates.outsource_category
+        formulaUpdates.outsource_category = updates.outsource_category
+      }
       if (updates.available_widths_ft !== undefined) {
         payload.available_widths_ft = updates.available_widths_ft
         formulaUpdates.available_widths_ft = updates.available_widths_ft
