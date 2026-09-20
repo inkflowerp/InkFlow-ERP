@@ -500,6 +500,8 @@ export class CompanyUsersService {
         role_id: targetRoleId,
       })
 
+      TenantRepository.invalidateMembershipCache()
+
       if (companyId) {
         await AuditService.logEvent(
           companyId,
@@ -536,6 +538,8 @@ export class CompanyUsersService {
           updated_at: new Date().toISOString(),
         })
         .eq('id', companyUserId)
+
+      TenantRepository.invalidateMembershipCache()
 
       return { success: true, message: 'Branch assigned successfully.' }
     } catch (error: any) {
@@ -575,6 +579,7 @@ export class CompanyUsersService {
     responsibilities?: string[]
     overrides?: Record<string, boolean>
     dataScopes?: Record<string, DataScope>
+    authorizedBranchIds?: string[]
     department?: string | null
     branchId?: string | null
     actorName?: string
@@ -587,6 +592,8 @@ export class CompanyUsersService {
         branchId: params.branchId,
         responsibilities: params.responsibilities,
         overrides: params.overrides,
+        dataScopes: params.dataScopes,
+        authorizedBranchIds: params.authorizedBranchIds,
       })
 
       if (params.companyId) {
@@ -599,6 +606,7 @@ export class CompanyUsersService {
           {
             responsibilities: params.responsibilities,
             overrides: params.overrides,
+            dataScopes: params.dataScopes,
             department: params.department,
             branchId: params.branchId,
           }

@@ -558,6 +558,48 @@ export class TenantRepository {
     }
   }
 
+  static async ensurePermission(code: string): Promise<string | null> {
+    const admin = createAdminClient()
+    try {
+      const { data: existing } = await (admin as any)
+        .from('permissions')
+        .select('id')
+        .eq('code', code)
+        .maybeSingle()
+
+      if (existing?.id) return existing.id
+
+      const parts = code.split('.')
+      const moduleName = parts[0] || 'general'
+      const actionName = parts[1] || 'view'
+
+      const { data: created, error } = await (admin as any)
+        .from('permissions')
+        .insert({
+          code,
+          name: code,
+          module: moduleName,
+          action: actionName,
+          description: `Permission for ${moduleName} ${actionName}`,
+          created_at: new Date().toISOString(),
+        })
+        .select('id')
+        .maybeSingle()
+
+      if (error) {
+        const { data: recheck } = await (admin as any)
+          .from('permissions')
+          .select('id')
+          .eq('code', code)
+          .maybeSingle()
+        return recheck?.id || null
+      }
+      return created?.id || null
+    } catch {
+      return null
+    }
+  }
+
   /**
    * Updates user responsibilities, role assignments, overrides, data scopes, and branch access
    */
@@ -621,17 +663,13 @@ export class TenantRepository {
       await (admin as any).from('user_permission_overrides').delete().eq('company_user_id', params.companyUserId)
 
       for (const [permCode, isGranted] of Object.entries(params.overrides)) {
-        const { data: perm } = await admin
-          .from('permissions')
-          .select('id')
-          .eq('code', permCode)
-          .maybeSingle()
+        const permId = await TenantRepository.ensurePermission(permCode)
 
-        if (perm?.id) {
+        if (permId) {
           await (admin as any).from('user_permission_overrides').insert({
             company_id: companyId,
             company_user_id: params.companyUserId,
-            permission_id: perm.id,
+            permission_id: permId,
             is_granted: isGranted,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
@@ -652,6 +690,12 @@ export class TenantRepository {
           created_at: new Date().toISOString(),
         })
       }
+    }
+
+    // Invalidate membership cache so changes are immediately active
+    TenantRepository.invalidateMembershipCache(userId)
+    if (companyId) {
+      TenantRepository.invalidateCompanyCache(companyId)
     }
   }
 
@@ -718,19 +762,20 @@ export class TenantRepository {
       throw new Error(`Failed to create custom role: ${error?.message || 'Database error'}`)
     }
 
-    // Insert permissions into role_permissions
+    // Insert permissions into role_permissions with auto-provisioning
     if (params.permissions.length > 0) {
       for (const code of params.permissions) {
-        const { data: perm } = await (admin as any).from('permissions').select('id').eq('code', code).maybeSingle()
-        if (perm?.id) {
+        const permId = await TenantRepository.ensurePermission(code)
+        if (permId) {
           await (admin as any).from('role_permissions').insert({
             role_id: newRole.id,
-            permission_id: perm.id,
+            permission_id: permId,
           })
         }
       }
     }
 
+    TenantRepository.invalidateMembershipCache()
     return newRole
   }
 
@@ -745,27 +790,29 @@ export class TenantRepository {
       await (admin as any)
         .from('roles')
         .update({
-          ...(details.name ? { name: details.name } : {}),
-          ...(details.nameBn !== undefined ? { name_bn: details.nameBn } : {}),
-          ...(details.description !== undefined ? { description: details.description } : {}),
+          ...(details.name ? { name: details.name.trim() } : {}),
+          ...(details.nameBn !== undefined ? { name_bn: details.nameBn ? details.nameBn.trim() : null } : {}),
+          ...(details.description !== undefined ? { description: details.description ? details.description.trim() : null } : {}),
           permissions_count: permissions.length,
           updated_at: new Date().toISOString(),
         })
         .eq('id', roleId)
     }
 
-    // Replace role_permissions
+    // Replace role_permissions with auto-provisioning
     await (admin as any).from('role_permissions').delete().eq('role_id', roleId)
 
     for (const code of permissions) {
-      const { data: perm } = await (admin as any).from('permissions').select('id').eq('code', code).maybeSingle()
-      if (perm?.id) {
+      const permId = await TenantRepository.ensurePermission(code)
+      if (permId) {
         await (admin as any).from('role_permissions').insert({
           role_id: roleId,
-          permission_id: perm.id,
+          permission_id: permId,
         })
       }
     }
+
+    TenantRepository.invalidateMembershipCache()
   }
 
   static async deleteCustomRole(roleId: string, companyId: string) {
@@ -791,6 +838,8 @@ export class TenantRepository {
     if (error) {
       throw new Error(`Failed to delete role: ${error.message}`)
     }
+
+    TenantRepository.invalidateMembershipCache()
   }
 
   /**
@@ -875,10 +924,20 @@ export class TenantRepository {
       })
     } catch {}
 
-    const responsibilities = roles.map((r: any) => r.slug || r.name)
+    if (cu.overrides && typeof cu.overrides === 'object') {
+      Object.assign(overrides, cu.overrides)
+    }
+
+    const roleResponsibilities = roles.map((r: any) => r.slug || r.name)
+    const rawResponsibilities = Array.isArray(cu.responsibilities) && cu.responsibilities.length > 0
+      ? cu.responsibilities
+      : roleResponsibilities
+    const responsibilities = rawResponsibilities.length > 0 ? rawResponsibilities : ['general_staff']
+
     const isOwner =
       responsibilities.includes('owner') ||
-      responsibilities.includes('business_owner')
+      responsibilities.includes('business_owner') ||
+      roles.some((r) => r.slug === 'owner' || r.slug === 'business_owner' || r.slug === 'platform_owner')
     const primaryRole = isOwner ? 'business_owner' : responsibilities[0] || 'general_staff'
 
     // Compute effective permissions across all responsibilities & overrides
@@ -927,6 +986,18 @@ export class TenantRepository {
       } catch {}
     }
 
+    const dataScopes: Record<string, DataScope> =
+      cu.data_scopes && typeof cu.data_scopes === 'object' && Object.keys(cu.data_scopes).length > 0
+        ? cu.data_scopes
+        : {
+            customers: 'company',
+            orders: 'company',
+            invoices: 'company',
+            reports: 'company',
+            production: 'company',
+            inventory: 'company',
+          }
+
     const companyUser: CompanyUserWithProfile = {
       id: cu.id,
       company_id: cu.company_id,
@@ -936,21 +1007,14 @@ export class TenantRepository {
       department: cu.department || 'Operations',
       responsibilities: responsibilities.length > 0 ? responsibilities : ['general_staff'],
       overrides,
-      data_scopes: {
-        customers: 'company',
-        orders: 'company',
-        invoices: 'company',
-        reports: 'company',
-        production: 'company',
-        inventory: 'company',
-      },
+      data_scopes: dataScopes,
       invited_email: cu.invited_email,
       created_at: cu.created_at,
       updated_at: cu.updated_at,
       profile: userProfile || {
         id: cu.user_id,
         email: cu.invited_email || '',
-        full_name: 'Business Owner',
+        full_name: 'Team Member',
         full_name_bn: null,
         phone: null,
         avatar_url: null,

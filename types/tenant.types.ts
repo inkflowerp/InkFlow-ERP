@@ -39,6 +39,7 @@ export interface CompanyUserWithProfile extends CompanyUserRow {
   responsibilities?: string[]
   overrides?: Record<string, boolean>
   data_scopes?: Record<string, DataScope>
+  authorized_branch_ids?: string[]
 }
 
 export interface TenantContextType {

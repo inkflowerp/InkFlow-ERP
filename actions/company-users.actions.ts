@@ -183,6 +183,7 @@ export async function listBranchesAction(companyId: string) {
 export async function updateUserAccessAndPermissionsAction(params: {
   companyUserId: string
   companyId?: string
+  tenantSlug?: string
   responsibilities?: string[]
   overrides?: Record<string, boolean>
   dataScopes?: any
@@ -208,12 +209,20 @@ export async function updateUserAccessAndPermissionsAction(params: {
     return { success: false, message: 'Self-escalation denied: You cannot modify your own access privileges.' }
   }
 
-  return await CompanyUsersService.updateUserAccessAndPermissions({
+  const result = await CompanyUsersService.updateUserAccessAndPermissions({
     ...params,
     companyId: tenant.companyId,
     actorName: tenant.fullName || params.actorName || 'Owner',
     actorId: tenant.userId || params.actorId || 'system',
   })
+
+  const slug = params.tenantSlug || tenant.companySlug
+  if (slug) {
+    revalidatePath(`/${slug}/settings/users`)
+    revalidatePath(`/${slug}/settings/roles`)
+  }
+
+  return result
 }
 
 export async function resetUserAccessAction(email: string) {

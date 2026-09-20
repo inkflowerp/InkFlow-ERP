@@ -19,6 +19,9 @@ import {
   Layers,
   Sparkles,
   Info,
+  Check,
+  Ban,
+  Plus,
 } from 'lucide-react'
 import { CompanyUserWithProfile, RoleRow, BranchRow } from '@/types/tenant.types'
 import {
@@ -44,7 +47,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { formatDateTime } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
-const ALL_RESPONSIBILITIES: { slug: ResponsibilitySlug; name: string; nameBn: string; desc: string }[] = [
+const BASE_RESPONSIBILITIES: { slug: ResponsibilitySlug; name: string; nameBn: string; desc: string }[] = [
   { slug: 'business_owner', name: 'Business Owner', nameBn: 'ব্যবসার মালিক', desc: 'Full company-level control across all modules' },
   { slug: 'sales_manager', name: 'Sales Manager', nameBn: 'সেলস ম্যানেজার', desc: 'Quotations, pricing, invoices, orders & customers' },
   { slug: 'designer', name: 'Graphic Designer', nameBn: 'গ্রাফিক ডিজাইনার', desc: 'Prepress proofs, customer designs, job orders & proofs' },
@@ -55,6 +58,35 @@ const ALL_RESPONSIBILITIES: { slug: ResponsibilitySlug; name: string; nameBn: st
   { slug: 'delivery_coordinator', name: 'Delivery Coordinator', nameBn: 'ডেলিভারি সমন্বয়কারী', desc: 'Challans, transport dispatch, site installations' },
   { slug: 'general_staff', name: 'General Staff', nameBn: 'সাধারণ কর্মী', desc: 'Basic job status and assigned tasks viewing' },
 ]
+
+type ModuleCategoryFilter = 'all' | 'sales' | 'production' | 'inventory' | 'hr' | 'system'
+
+const MODULE_DRAWER_CATEGORIES: Record<ModuleCategoryFilter, { label: string; modules: PermissionModule[] }> = {
+  all: {
+    label: 'All (20)',
+    modules: Object.keys(MODULE_ACTION_SPECS) as PermissionModule[],
+  },
+  sales: {
+    label: 'Sales & Billing (8)',
+    modules: ['products', 'pricing', 'customers', 'quotations', 'orders', 'design', 'invoices', 'payments'],
+  },
+  production: {
+    label: 'Production (3)',
+    modules: ['production', 'machineries', 'tasks'],
+  },
+  inventory: {
+    label: 'Inventory (2)',
+    modules: ['inventory', 'delivery'],
+  },
+  hr: {
+    label: 'HR (1)',
+    modules: ['hr'],
+  },
+  system: {
+    label: 'System (6)',
+    modules: ['settings', 'branches', 'users', 'notifications', 'support', 'reports'],
+  },
+}
 
 interface UserPermissionsDrawerProps {
   user: CompanyUserWithProfile | null
@@ -73,11 +105,13 @@ export function UserPermissionsDrawer({
   onSaved,
   companyId,
   allBranches,
+  allRoles,
 }: UserPermissionsDrawerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([])
   const [overrides, setOverrides] = useState<Record<string, boolean>>({})
   const [dataScopes, setDataScopes] = useState<Record<string, DataScope>>({})
+  const [authorizedBranchIds, setAuthorizedBranchIds] = useState<string[]>([])
   const [department, setDepartment] = useState<string>('')
   const [branchId, setBranchId] = useState<string | null>(null)
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
@@ -86,7 +120,26 @@ export function UserPermissionsDrawer({
   const [isSaving, setIsSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'summary' | 'permissions' | 'responsibilities'>('summary')
+  const [activeTab, setActiveTab] = useState<'summary' | 'permissions' | 'responsibilities' | 'branches'>('summary')
+  const [moduleCategory, setModuleCategory] = useState<ModuleCategoryFilter>('all')
+
+  // Combine standard responsibilities with custom company roles
+  const availableResponsibilities = useMemo(() => {
+    const list = [...BASE_RESPONSIBILITIES]
+    if (allRoles && allRoles.length > 0) {
+      allRoles.forEach((r) => {
+        if (!r.is_system && !list.some((item) => item.slug === r.slug)) {
+          list.push({
+            slug: r.slug as ResponsibilitySlug,
+            name: r.name,
+            nameBn: r.name_bn || r.name,
+            desc: r.description || 'Custom company role template',
+          })
+        }
+      })
+    }
+    return list
+  }, [allRoles])
 
   // Initial load when user opens
   useEffect(() => {
@@ -102,6 +155,7 @@ export function UserPermissionsDrawer({
     setDataScopes(user.data_scopes || {})
     setDepartment(user.department || '')
     setBranchId(user.branch_id || null)
+    setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
 
     // Expand all modules by default
     const allExpanded: Record<string, boolean> = {}
@@ -124,15 +178,18 @@ export function UserPermissionsDrawer({
     const curScopes = JSON.stringify(dataScopes)
     const origDept = user.department || ''
     const origBranch = user.branch_id || null
+    const origAuthBranches = JSON.stringify(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
+    const curAuthBranches = JSON.stringify(authorizedBranchIds)
 
     return (
       origResp !== curResp ||
       origOverrides !== curOverrides ||
       origScopes !== curScopes ||
       origDept !== department ||
-      origBranch !== branchId
+      origBranch !== branchId ||
+      origAuthBranches !== curAuthBranches
     )
-  }, [user, selectedResponsibilities, overrides, dataScopes, department, branchId])
+  }, [user, selectedResponsibilities, overrides, dataScopes, department, branchId, authorizedBranchIds])
 
   if (!isOpen || !user) return null
 
@@ -147,6 +204,9 @@ export function UserPermissionsDrawer({
 
   // Filter modules
   const filteredModuleEntries = Object.entries(MODULE_ACTION_SPECS).filter(([modKey, spec]) => {
+    const categoryModules = new Set(MODULE_DRAWER_CATEGORIES[moduleCategory].modules)
+    if (!categoryModules.has(modKey as PermissionModule)) return false
+
     const q = searchQuery.toLowerCase().trim()
     if (!q) return true
     return (
@@ -186,6 +246,24 @@ export function UserPermissionsDrawer({
     setOverrides(nextOverrides)
   }
 
+  const grantAllModuleActions = (module: PermissionModule) => {
+    const spec = MODULE_ACTION_SPECS[module]
+    const nextOverrides = { ...overrides }
+    spec.actions.forEach((a) => {
+      nextOverrides[`${module}.${a}`] = true
+    })
+    setOverrides(nextOverrides)
+  }
+
+  const denyAllModuleActions = (module: PermissionModule) => {
+    const spec = MODULE_ACTION_SPECS[module]
+    const nextOverrides = { ...overrides }
+    spec.actions.forEach((a) => {
+      nextOverrides[`${module}.${a}`] = false
+    })
+    setOverrides(nextOverrides)
+  }
+
   const resetModuleOverrides = (module: PermissionModule) => {
     const spec = MODULE_ACTION_SPECS[module]
     const nextOverrides = { ...overrides }
@@ -211,6 +289,16 @@ export function UserPermissionsDrawer({
     setSelectedResponsibilities(next)
   }
 
+  const toggleAuthorizedBranch = (bId: string) => {
+    let next: string[]
+    if (authorizedBranchIds.includes(bId)) {
+      next = authorizedBranchIds.filter((id) => id !== bId)
+    } else {
+      next = [...authorizedBranchIds, bId]
+    }
+    setAuthorizedBranchIds(next)
+  }
+
   const handleSave = async () => {
     if (!user) return
     setIsSaving(true)
@@ -224,13 +312,14 @@ export function UserPermissionsDrawer({
         responsibilities: selectedResponsibilities,
         overrides,
         dataScopes,
+        authorizedBranchIds,
         department: department || null,
         branchId,
         actorName: 'Admin',
       })
 
       if (res.success) {
-        setSuccessMsg(res.message || 'Permissions updated successfully.')
+        setSuccessMsg(res.message || 'Permissions and access scopes updated successfully.')
         setTimeout(() => {
           onSaved()
           setSuccessMsg(null)
@@ -261,6 +350,7 @@ export function UserPermissionsDrawer({
     setDataScopes(user.data_scopes || {})
     setDepartment(user.department || '')
     setBranchId(user.branch_id || null)
+    setAuthorizedBranchIds(user.authorized_branch_ids || (user.branch_id ? [user.branch_id] : []))
   }
 
   return (
@@ -332,7 +422,7 @@ export function UserPermissionsDrawer({
 
               <div>
                 <label className="text-[11px] font-semibold text-slate-500 block mb-1">
-                  Assigned Branch
+                  Assigned Primary Branch
                 </label>
                 <select
                   value={branchId || ''}
@@ -362,7 +452,7 @@ export function UserPermissionsDrawer({
                 )}
               >
                 <Shield className="h-3.5 w-3.5" />
-                <span>Owner Access Summary</span>
+                <span>Access Summary</span>
               </button>
               <button
                 type="button"
@@ -374,7 +464,7 @@ export function UserPermissionsDrawer({
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
-                Module Access & Permissions
+                Module Permissions & Scopes
               </button>
               <button
                 type="button"
@@ -390,6 +480,24 @@ export function UserPermissionsDrawer({
                 <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
                   {selectedResponsibilities.length}
                 </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('branches')}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
+                  activeTab === 'branches'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
+                )}
+              >
+                <Building className="h-3.5 w-3.5" />
+                <span>Branch Scopes</span>
+                {authorizedBranchIds.length > 0 && (
+                  <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
+                    {authorizedBranchIds.length}
+                  </span>
+                )}
               </button>
             </div>
           </div>
@@ -430,7 +538,7 @@ export function UserPermissionsDrawer({
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {selectedResponsibilities.map((slug) => {
-                      const r = ALL_RESPONSIBILITIES.find((item) => item.slug === slug)
+                      const r = availableResponsibilities.find((item) => item.slug === slug)
                       return (
                         <Badge
                           key={slug}
@@ -446,7 +554,7 @@ export function UserPermissionsDrawer({
                   <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <Building className="h-3.5 w-3.5 text-slate-400" />
-                      Branch Scope:
+                      Primary Branch:
                     </span>
                     <span className="font-semibold text-slate-900 dark:text-white">
                       {branchId ? allBranches.find((b) => b.id === branchId)?.name || 'Branch' : 'All Branches (Company-Wide)'}
@@ -513,17 +621,17 @@ export function UserPermissionsDrawer({
                   </span>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                     {[
-                      { code: 'invoices.delete', label: 'Delete Invoices', risk: 'high' },
-                      { code: 'invoices.cancel', label: 'Cancel Invoices', risk: 'medium' },
-                      { code: 'payments.create', label: 'Record Payments', risk: 'medium' },
-                      { code: 'payments.delete', label: 'Delete Payments', risk: 'high' },
-                      { code: 'inventory.adjust', label: 'Adjust Inventory', risk: 'high' },
-                      { code: 'inventory.issue', label: 'Issue Raw Materials', risk: 'low' },
-                      { code: 'salary.edit', label: 'Edit Salaries', risk: 'high' },
-                      { code: 'payroll.approve', label: 'Approve Payroll', risk: 'high' },
-                      { code: 'users.create', label: 'Create Team Users', risk: 'medium' },
-                      { code: 'users.permission_manage', label: 'Manage Roles/Access', risk: 'high' },
-                    ].map(({ code, label, risk }) => {
+                      { code: 'invoices.delete', label: 'Delete Invoices' },
+                      { code: 'invoices.cancel', label: 'Cancel Invoices' },
+                      { code: 'payments.create', label: 'Record Payments' },
+                      { code: 'payments.delete', label: 'Delete Payments' },
+                      { code: 'inventory.adjust', label: 'Adjust Inventory' },
+                      { code: 'salary.edit', label: 'Edit Salaries' },
+                      { code: 'payroll.approve', label: 'Approve Payroll' },
+                      { code: 'users.create', label: 'Create Team Users' },
+                      { code: 'users.permission_manage', label: 'Manage Roles/Access' },
+                      { code: 'machineries.delete', label: 'Delete Machinery' },
+                    ].map(({ code, label }) => {
                       const [mod, act] = code.split('.')
                       const detail = getPermissionDetail(
                         simulatedUserCtx,
@@ -574,13 +682,13 @@ export function UserPermissionsDrawer({
                   <div>
                     <p className="font-semibold">Multi-Responsibility Role System</p>
                     <p className="text-[11px] text-blue-800/80 dark:text-blue-300/80 mt-0.5">
-                      Users receive the combined permissions of all assigned responsibilities. You can also customize individual overrides per module.
+                      Users receive the merged permissions of all selected roles. You can also define specific permission overrides per module.
                     </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-2.5">
-                  {ALL_RESPONSIBILITIES.map((r) => {
+                  {availableResponsibilities.map((r) => {
                     const isSelected = selectedResponsibilities.includes(r.slug)
 
                     return (
@@ -630,18 +738,100 @@ export function UserPermissionsDrawer({
                   })}
                 </div>
               </div>
+            ) : activeTab === 'branches' ? (
+              /* TAB 3: AUTHORIZED BRANCHES */
+              <div className="space-y-3">
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2.5">
+                  <Building className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold">Multi-Branch Scoping</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Select which operational branches this team member is authorized to access when branch-scoped data rules apply.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2">
+                  {allBranches.map((b) => {
+                    const isChecked = authorizedBranchIds.includes(b.id)
+                    const isPrimary = branchId === b.id
+
+                    return (
+                      <div
+                        key={b.id}
+                        onClick={() => toggleAuthorizedBranch(b.id)}
+                        className={cn(
+                          'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
+                          isChecked
+                            ? 'border-blue-300 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/30'
+                            : 'border-slate-200 dark:border-slate-800'
+                        )}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {}}
+                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                          />
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-semibold text-xs text-slate-900 dark:text-white">
+                                {b.name}
+                              </span>
+                              <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
+                                {b.code}
+                              </Badge>
+                              {isPrimary && (
+                                <Badge className="bg-blue-600 text-white text-[9px] px-1 py-0">
+                                  Primary
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-[11px] text-slate-400">{b.address || 'No address specified'}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
             ) : (
               /* TAB 2: MODULE ACCESS & OVERRIDES */
-              <div className="space-y-3">
-                {/* Search Bar */}
-                <div className="relative">
-                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                  <Input
-                    placeholder="Search module (e.g. Customers, Invoices, Production)..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9 text-xs"
-                  />
+              <div className="space-y-3.5">
+                {/* Search Bar & Category Filter */}
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Input
+                      placeholder="Search module (e.g. Customers, Invoices, Production)..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-9 h-9 text-xs"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+                    {(Object.keys(MODULE_DRAWER_CATEGORIES) as ModuleCategoryFilter[]).map((catKey) => {
+                      const cat = MODULE_DRAWER_CATEGORIES[catKey]
+                      const isCatSelected = moduleCategory === catKey
+                      return (
+                        <button
+                          key={catKey}
+                          type="button"
+                          onClick={() => setModuleCategory(catKey)}
+                          className={cn(
+                            'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
+                            isCatSelected
+                              ? 'bg-blue-600 text-white shadow-2xs'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
+                          )}
+                        >
+                          {cat.label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
 
                 {/* Precedence Legend */}
@@ -653,11 +843,11 @@ export function UserPermissionsDrawer({
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-blue-600" />
-                    User Override (Allow)
+                    Override (Allow)
                   </span>
                   <span className="inline-flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-red-500" />
-                    User Override (Deny)
+                    Override (Deny)
                   </span>
                 </div>
 
@@ -730,32 +920,68 @@ export function UserPermissionsDrawer({
                         {/* Module Expanded Settings */}
                         {isExpanded && (
                           <div className="p-4 space-y-4 border-t border-slate-100 dark:border-slate-800/80">
-                            {/* Data Scope Selector */}
+                            {/* Data Scope Selector & Quick Overrides Bar */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-slate-800 text-xs">
                               <div>
                                 <span className="font-semibold text-slate-800 dark:text-slate-200">
                                   Data Scope for {spec.label}:
                                 </span>
                                 <p className="text-[11px] text-slate-500">
-                                  Controls which records the user can access within this module.
+                                  Controls record visibility within this module.
                                 </p>
                               </div>
 
-                              <select
-                                value={currentScope}
-                                onChange={(e) =>
-                                  setDataScopes({
-                                    ...dataScopes,
-                                    [modName]: e.target.value as DataScope,
-                                  })
-                                }
-                                className="h-7 px-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
-                              >
-                                <option value="own">Own (Created by user)</option>
-                                <option value="assigned">Assigned (Assigned to user / own)</option>
-                                <option value="department">Department</option>
-                                <option value="company">Entire Company / Branch</option>
-                              </select>
+                              <div className="flex items-center gap-2">
+                                <select
+                                  value={currentScope}
+                                  onChange={(e) =>
+                                    setDataScopes({
+                                      ...dataScopes,
+                                      [modName]: e.target.value as DataScope,
+                                    })
+                                  }
+                                  className="h-7 px-2 text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md text-slate-900 dark:text-slate-100"
+                                >
+                                  <option value="own">Own (Created by user)</option>
+                                  <option value="assigned">Assigned (Assigned or own)</option>
+                                  <option value="department">Department</option>
+                                  <option value="branch">Assigned Branch</option>
+                                  <option value="company">Entire Company / All Branches</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* Quick Module Actions Toolbar */}
+                            <div className="flex items-center justify-between text-xs pt-1 border-b border-slate-100 dark:border-slate-800/80 pb-2">
+                              <span className="text-[11px] text-slate-500 font-medium">Quick Override:</span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => grantAllModuleActions(modName as PermissionModule)}
+                                  className="text-[11px] text-emerald-600 hover:underline flex items-center gap-0.5 cursor-pointer font-medium"
+                                >
+                                  <Check className="h-3 w-3" />
+                                  Allow All
+                                </button>
+                                <span className="text-slate-300 dark:text-slate-700">•</span>
+                                <button
+                                  type="button"
+                                  onClick={() => denyAllModuleActions(modName as PermissionModule)}
+                                  className="text-[11px] text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer font-medium"
+                                >
+                                  <Ban className="h-3 w-3" />
+                                  Deny All
+                                </button>
+                                <span className="text-slate-300 dark:text-slate-700">•</span>
+                                <button
+                                  type="button"
+                                  onClick={() => resetModuleOverrides(modName as PermissionModule)}
+                                  className="text-[11px] text-slate-500 hover:text-blue-600 flex items-center gap-0.5 cursor-pointer font-medium"
+                                >
+                                  <RotateCcw className="h-3 w-3" />
+                                  Reset
+                                </button>
+                              </div>
                             </div>
 
                             {/* Actions Checkboxes Grid */}
@@ -823,18 +1049,6 @@ export function UserPermissionsDrawer({
                                   </div>
                                 )
                               })}
-                            </div>
-
-                            {/* Reset Module Overrides Action */}
-                            <div className="flex justify-end pt-1">
-                              <button
-                                type="button"
-                                onClick={() => resetModuleOverrides(modName as PermissionModule)}
-                                className="text-[11px] text-slate-500 hover:text-blue-600 flex items-center gap-1 cursor-pointer"
-                              >
-                                <RotateCcw className="h-3 w-3" />
-                                Reset {spec.label} Overrides to Defaults
-                              </button>
                             </div>
                           </div>
                         )}

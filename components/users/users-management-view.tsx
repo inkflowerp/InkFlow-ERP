@@ -218,13 +218,50 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
     }
   }, [company])
 
-  // Filtered users
+  // Filtered users with multi-dimensional filtering (search, role, status, branch)
   const filteredUsers = users.filter((u) => {
-    const term = searchQuery.toLowerCase()
-    const name = u.profile?.full_name?.toLowerCase() || ''
-    const email = (u.profile?.email || u.invited_email || '').toLowerCase()
-    const phone = u.profile?.phone || ''
-    return name.includes(term) || email.includes(term) || phone.includes(term)
+    // 1. Search Query
+    if (searchQuery) {
+      const term = searchQuery.toLowerCase().trim()
+      const name = u.profile?.full_name?.toLowerCase() || ''
+      const nameBn = u.profile?.full_name_bn?.toLowerCase() || ''
+      const email = (u.profile?.email || u.invited_email || '').toLowerCase()
+      const phone = u.profile?.phone || ''
+      const dept = u.department?.toLowerCase() || ''
+      const matchesSearch =
+        name.includes(term) ||
+        nameBn.includes(term) ||
+        email.includes(term) ||
+        phone.includes(term) ||
+        dept.includes(term)
+      if (!matchesSearch) return false
+    }
+
+    // 2. Role Filter
+    if (roleFilter !== 'all') {
+      const hasRole =
+        u.roles?.some((r) => r.id === roleFilter || r.slug === roleFilter) ||
+        u.responsibilities?.includes(roleFilter)
+      if (!hasRole) return false
+    }
+
+    // 3. Status Filter
+    if (statusFilter !== 'all') {
+      if (u.status !== statusFilter) return false
+    }
+
+    // 4. Branch Filter
+    if (branchFilter !== 'all') {
+      if (branchFilter === 'global') {
+        if (u.branch_id) return false
+      } else {
+        if (u.branch_id !== branchFilter && !u.authorized_branch_ids?.includes(branchFilter)) {
+          return false
+        }
+      }
+    }
+
+    return true
   })
 
   // Handlers
@@ -476,11 +513,16 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
 
       {/* Users Card Table */}
       <Card className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs overflow-hidden">
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <CardTitle className="text-base font-bold">Company System Users ({filteredUsers.length})</CardTitle>
-              <CardDescription className="text-xs">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-bold">Company System Users ({filteredUsers.length})</CardTitle>
+                <Badge variant="secondary" className="text-2xs px-2 py-0.5">
+                  Total: {users.length}
+                </Badge>
+              </div>
+              <CardDescription className="text-xs mt-0.5">
                 Active users can log in, access modules, and perform operations according to their branch & role permissions.
               </CardDescription>
             </div>
@@ -495,6 +537,71 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
                 className="pl-8 h-9 text-xs rounded-xl"
               />
             </div>
+          </div>
+
+          {/* Filter Toolbar */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+              >
+                <option value="all">All Statuses ({users.length})</option>
+                <option value="active">Active ({users.filter((u) => u.status === 'active').length})</option>
+                <option value="invited">Pending Invite ({users.filter((u) => u.status === 'invited').length})</option>
+                <option value="disabled">Disabled ({users.filter((u) => u.status === 'disabled').length})</option>
+              </select>
+
+              {/* Role Filter */}
+              <select
+                value={roleFilter}
+                onChange={(e) => setRoleFilter(e.target.value)}
+                className="h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+              >
+                <option value="all">All Roles ({roles.length})</option>
+                {roles.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
+                  </option>
+                ))}
+              </select>
+
+              {/* Branch Filter */}
+              <select
+                value={branchFilter}
+                onChange={(e) => setBranchFilter(e.target.value)}
+                className="h-8 px-2.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-800 dark:text-slate-200"
+              >
+                <option value="all">All Locations</option>
+                <option value="global">Central / All Branches</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.code})
+                  </option>
+                ))}
+              </select>
+
+              {(searchQuery || roleFilter !== 'all' || statusFilter !== 'all' || branchFilter !== 'all') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery('')
+                    setRoleFilter('all')
+                    setStatusFilter('all')
+                    setBranchFilter('all')
+                  }}
+                  className="text-xs text-blue-600 hover:text-blue-700 font-semibold cursor-pointer ml-1"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            <span className="text-[11px] text-slate-400">
+              Showing {filteredUsers.length} of {users.length} members
+            </span>
           </div>
         </CardHeader>
 
