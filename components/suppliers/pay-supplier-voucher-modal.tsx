@@ -24,6 +24,8 @@ import { useI18n } from '@/i18n/context'
 import type { SupplierRecord } from '@/types/crm.types'
 import { formatBDT } from '@/lib/formatters'
 import { BANGLADESH_BANKS } from './supplier-types'
+import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 interface PaySupplierVoucherModalProps {
   open: boolean
@@ -46,7 +48,7 @@ export function PaySupplierVoucherModal({
 
   const [amount, setAmount] = useState('')
   const [method, setMethod] = useState<PaymentMethodType>('cheque')
-  const [bankName, setBankName] = useState(supplier?.bank_name || 'The City Bank PLC')
+  const [bankName, setBankName] = useState('The City Bank PLC')
   const [chequeNumber, setChequeNumber] = useState('')
   const [chequeDate, setChequeDate] = useState(new Date().toISOString().split('T')[0])
   const [transactionRef, setTransactionRef] = useState('')
@@ -55,7 +57,7 @@ export function PaySupplierVoucherModal({
   const [authorizedBy, setAuthorizedBy] = useState('Accounts Officer')
   const [remarks, setRemarks] = useState('')
   const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (open && supplier) {
@@ -68,7 +70,7 @@ export function PaySupplierVoucherModal({
       setMfsNumber(supplier.mobile || '')
       setVoucherNumber(`PV-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`)
       setRemarks(`Payment against outstanding balance for ${supplier.supplier_name}`)
-      setErrorMsg(null)
+      setFieldErrors({})
     }
   }, [open, supplier])
 
@@ -76,21 +78,32 @@ export function PaySupplierVoucherModal({
     if (currentBalance > 0) {
       const calculated = Math.round((currentBalance * pct) / 100)
       setAmount(calculated.toString())
+      if (fieldErrors.amount) setFieldErrors((prev) => ({ ...prev, amount: '' }))
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMsg(null)
+    setFieldErrors({})
 
+    const errors: Record<string, string> = {}
     const numAmount = Number(amount)
     if (!numAmount || numAmount <= 0) {
-      setErrorMsg(tBilingual('Please enter a valid disbursement amount greater than ৳ 0.', 'অনুগ্রহ করে ৳ ০ এর বেশি সঠিক পেমেন্ট পরিমাণ লিখুন।'))
-      return
+      errors.amount = tBilingual('Please enter a valid disbursement amount greater than ৳ 0.', 'অনুগ্রহ করে ৳ ০ এর বেশি সঠিক পেমেন্ট পরিমাণ লিখুন।')
     }
 
     if (method === 'cheque' && !chequeNumber.trim()) {
-      setErrorMsg(tBilingual('Cheque Number is required for Bank Cheque disbursements.', 'ব্যাংক চেকের ক্ষেত্রে চেক নম্বর দেওয়া আবশ্যক।'))
+      errors.chequeNumber = tBilingual('Cheque Number is required for Bank Cheque disbursements.', 'ব্যাংক চেকের ক্ষেত্রে চেক নম্বর দেওয়া আবশ্যক।')
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      const firstMsg = Object.values(errors)[0]
+      dispatchToast({
+        type: 'warning',
+        title: tBilingual('Validation Warning', 'সতর্কতা'),
+        message: firstMsg,
+      })
       return
     }
 
@@ -111,9 +124,18 @@ export function PaySupplierVoucherModal({
       }
 
       onPaymentRecorded(numAmount, paymentDetails)
+      dispatchToast({
+        type: 'success',
+        title: 'Payment Recorded',
+        message: `Payment voucher ${voucherNumber} recorded successfully.`,
+      })
       onOpenChange(false)
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to record payment voucher.')
+      dispatchToast({
+        type: 'error',
+        title: 'Payment Failed',
+        message: err.message || 'Failed to record payment voucher.',
+      })
     } finally {
       setLoading(false)
     }
@@ -154,13 +176,6 @@ export function PaySupplierVoucherModal({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-        {errorMsg && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
         {/* VENDOR BALANCE SUMMARY BANNER */}
         <div className="p-4 rounded-xl bg-gradient-to-r from-teal-50 to-slate-50 dark:from-teal-950/40 dark:to-slate-900/60 border border-teal-200 dark:border-teal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div>
@@ -223,11 +238,23 @@ export function PaySupplierVoucherModal({
               step="1"
               placeholder="e.g. 50000"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="text-base h-11 pl-9 font-mono font-black text-slate-900 dark:text-white"
+              onChange={(e) => {
+                setAmount(e.target.value)
+                if (fieldErrors.amount) setFieldErrors((prev) => ({ ...prev, amount: '' }))
+              }}
+              className={cn(
+                "text-base h-11 pl-9 font-mono font-black text-slate-900 dark:text-white",
+                fieldErrors.amount && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+              )}
               required
             />
           </div>
+          {fieldErrors.amount && (
+            <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{fieldErrors.amount}</span>
+            </p>
+          )}
         </div>
 
         {/* PAYMENT METHOD SELECTION */}
@@ -291,10 +318,22 @@ export function PaySupplierVoucherModal({
                 <Input
                   placeholder="e.g. 9821043"
                   value={chequeNumber}
-                  onChange={(e) => setChequeNumber(e.target.value)}
-                  className="text-xs h-9 font-mono"
+                  onChange={(e) => {
+                    setChequeNumber(e.target.value)
+                    if (fieldErrors.chequeNumber) setFieldErrors((prev) => ({ ...prev, chequeNumber: '' }))
+                  }}
+                  className={cn(
+                    "text-xs h-9 font-mono",
+                    fieldErrors.chequeNumber && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                  )}
                   required
                 />
+                {fieldErrors.chequeNumber && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.chequeNumber}</span>
+                  </p>
+                )}
               </div>
 
               <div>

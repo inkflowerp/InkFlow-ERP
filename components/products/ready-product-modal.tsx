@@ -36,11 +36,12 @@ import {
   MapPin,
   Clock,
 } from 'lucide-react'
+import { dispatchToast } from '@/components/shared/toast-feedback'
+import { cn } from '@/lib/utils'
 import type { ProductRecord, UnitOfMeasure, ProductPriceTiers } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin } from '@/lib/units'
-import { cn } from '@/lib/utils'
 
 interface ReadyProductModalProps {
   isOpen: boolean
@@ -386,7 +387,7 @@ export function ReadyProductModal({
   const [allowManualOverride, setAllowManualOverride] = useState(true)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (initialData) {
@@ -499,7 +500,6 @@ export function ReadyProductModal({
       setAllowManualOverride(true)
     }
     setActiveTab('basic')
-    setErrorMessage(null)
   }, [initialData, isOpen])
 
   // Total Landed Cost (Base Purchase Cost + Freight/Import Surcharge)
@@ -576,19 +576,29 @@ export function ReadyProductModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setErrorMessage('Product name is required.')
+      setFieldErrors({ name: 'Product name is required.' })
       setActiveTab('basic')
+      dispatchToast({
+        type: 'warning',
+        title: 'Product Name Required',
+        message: 'Product name is required before proceeding.',
+      })
       return
     }
 
     if (sellingPrice === '' || Number(sellingPrice) < 0) {
-      setErrorMessage('Please enter a valid base selling price.')
+      setFieldErrors({ sellingPrice: 'Please enter a valid base selling price.' })
       setActiveTab('pricing')
+      dispatchToast({
+        type: 'warning',
+        title: 'Selling Price Required',
+        message: 'Please enter a valid base selling price.',
+      })
       return
     }
 
     setIsSubmitting(true)
-    setErrorMessage(null)
+    setFieldErrors({})
 
     try {
       const sp = Number(sellingPrice) || 0
@@ -665,7 +675,11 @@ export function ReadyProductModal({
       } as any)
       onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save ready product.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save ready product.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -734,10 +748,15 @@ export function ReadyProductModal({
                 variant="outline"
                 onClick={() => {
                   if (activeTab === 'basic' && !name.trim()) {
-                    setErrorMessage('Product name is required before proceeding.')
+                    setFieldErrors({ name: 'Product name is required before proceeding.' })
+                    dispatchToast({
+                      type: 'warning',
+                      title: 'Product Name Required',
+                      message: 'Product name is required before proceeding.',
+                    })
                     return
                   }
-                  setErrorMessage(null)
+                  setFieldErrors({})
                   setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
                 className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer"
@@ -771,13 +790,6 @@ export function ReadyProductModal({
       }
     >
       <div className="space-y-4 py-1">
-        {errorMessage && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium shadow-xs animate-in fade-in-0">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* 4-Tab Stepper Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
           {TABS_CONFIG.map((tab) => {
@@ -826,11 +838,23 @@ export function ReadyProductModal({
                   <Input
                     placeholder="e.g. X-Stand Display 2×5 ft, Roll-up Banner Stand 33×80 in..."
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                    }}
                     required
-                    className="h-9 text-xs"
+                    className={cn(
+                      'h-9 text-xs transition-colors',
+                      fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                    )}
                     autoFocus
                   />
+                  {fieldErrors.name && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -1203,12 +1227,24 @@ export function ReadyProductModal({
                       min="0"
                       placeholder="e.g. 750"
                       value={sellingPrice}
-                      onChange={(e) => setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))}
+                      onChange={(e) => {
+                        setSellingPrice(e.target.value === '' ? '' : parseFloat(e.target.value))
+                        if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
+                      }}
                       required
-                      className="pl-7 h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400"
+                      className={cn(
+                        'pl-7 h-9 text-xs font-mono font-bold text-blue-600 dark:text-blue-400 transition-colors',
+                        fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                      )}
                       autoFocus
                     />
                   </div>
+                  {fieldErrors.sellingPrice && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.sellingPrice}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>

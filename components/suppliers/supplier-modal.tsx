@@ -31,6 +31,8 @@ import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
 import type { SupplierRecord, SupplierCategory, SupplierPaymentTerms } from '@/types/crm.types'
 import { normalizeBdPhone } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import {
   BANGLADESH_MARKET_HUBS,
   SUPPLIER_CATEGORY_META,
@@ -60,7 +62,7 @@ export function SupplierModal({
 
   const [activeTab, setActiveTab] = useState<TabKey>('identity')
   const [loading, setLoading] = useState(false)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // Form State
   const [formData, setFormData] = useState({
@@ -108,7 +110,7 @@ export function SupplierModal({
   // Reset or Populate when modal opens
   useEffect(() => {
     if (open) {
-      setErrorMsg(null)
+      setFieldErrors({})
       setActiveTab('identity')
       if (supplierToEdit) {
         setFormData({
@@ -212,30 +214,42 @@ export function SupplierModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMsg(null)
+    setFieldErrors({})
 
+    const errors: Record<string, string> = {}
     if (!formData.supplier_name.trim()) {
-      setErrorMsg(tBilingual('Supplier Name is required.', 'সাপ্লায়ারের নাম অবশ্যই দিতে হবে।'))
-      setActiveTab('identity')
-      return
+      errors.supplier_name = tBilingual('Supplier Name is required.', 'সাপ্লায়ারের নাম অবশ্যই দিতে হবে।')
     }
 
     if (!formData.mobile.trim()) {
-      setErrorMsg(tBilingual('Primary Mobile number is required.', 'প্রাথমিক মোবাইল নম্বর আবশ্যক।'))
-      setActiveTab('contact')
-      return
+      errors.mobile = tBilingual('Primary Mobile number is required.', 'প্রাথমিক মোবাইল নম্বর আবশ্যক।')
+    } else {
+      const normMobile = normalizeBdPhone(formData.mobile)
+      if (!normMobile) {
+        errors.mobile = tBilingual('Invalid Bangladesh phone format (e.g. 017XXXXXXXX).', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: ০১৭XXXXXXXX)।')
+      }
     }
 
-    const normMobile = normalizeBdPhone(formData.mobile)
-    if (!normMobile) {
-      setErrorMsg(tBilingual('Invalid Bangladesh phone format (e.g. 017XXXXXXXX).', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: ০১৭XXXXXXXX)।'))
-      setActiveTab('contact')
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      if (errors.supplier_name) {
+        setActiveTab('identity')
+      } else if (errors.mobile) {
+        setActiveTab('contact')
+      }
+      const firstMsg = Object.values(errors)[0]
+      dispatchToast({
+        type: 'warning',
+        title: tBilingual('Validation Warning', 'সতর্কতা'),
+        message: firstMsg,
+      })
       return
     }
 
     setLoading(true)
 
     try {
+      const normMobile = normalizeBdPhone(formData.mobile) || formData.mobile
       const payload: SupplierRecord = {
         id: supplierToEdit?.id || `supp-${Date.now()}`,
         company_id: company?.id || 'c-01',
@@ -280,9 +294,18 @@ export function SupplierModal({
       }
 
       onSave(payload)
+      dispatchToast({
+        type: 'success',
+        title: isEditing ? 'Supplier Updated' : 'Supplier Registered',
+        message: `${payload.supplier_name} saved successfully.`,
+      })
       onOpenChange(false)
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to save supplier.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save supplier.',
+      })
     } finally {
       setLoading(false)
     }
@@ -326,13 +349,6 @@ export function SupplierModal({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-        {/* Error Alert */}
-        {errorMsg && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 animate-in fade-in-0">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
 
         {/* TAB NAVIGATION STRIP */}
         <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto pb-0.5">
@@ -406,10 +422,22 @@ export function SupplierModal({
                     <Input
                       placeholder="e.g. Nayabazar Paper House & Media"
                       value={formData.supplier_name}
-                      onChange={(e) => setFormData({ ...formData, supplier_name: e.target.value })}
-                      className="text-xs h-9"
+                      onChange={(e) => {
+                        setFormData({ ...formData, supplier_name: e.target.value })
+                        if (fieldErrors.supplier_name) setFieldErrors((prev) => ({ ...prev, supplier_name: '' }))
+                      }}
+                      className={cn(
+                        "text-xs h-9",
+                        fieldErrors.supplier_name && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                      )}
                       required
                     />
+                    {fieldErrors.supplier_name && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{fieldErrors.supplier_name}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -550,11 +578,23 @@ export function SupplierModal({
                       <Input
                         placeholder="01711-XXXXXX"
                         value={formData.mobile}
-                        onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                        className="text-xs h-9 pl-9 font-mono"
+                        onChange={(e) => {
+                          setFormData({ ...formData, mobile: e.target.value })
+                          if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
+                        }}
+                        className={cn(
+                          "text-xs h-9 pl-9 font-mono",
+                          fieldErrors.mobile && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                        )}
                         required
                       />
                     </div>
+                    {fieldErrors.mobile && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{fieldErrors.mobile}</span>
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -961,6 +1001,35 @@ export function SupplierModal({
                 type="button"
                 variant="outline"
                 onClick={() => {
+                  if (activeTab === 'identity' && !formData.supplier_name.trim()) {
+                    setFieldErrors({ supplier_name: tBilingual('Supplier Name is required.', 'সাপ্লায়ারের নাম অবশ্যই দিতে হবে।') })
+                    dispatchToast({
+                      type: 'warning',
+                      title: tBilingual('Required Information', 'প্রয়োজনীয় তথ্য'),
+                      message: tBilingual('Please enter Supplier Name before proceeding.', 'অনুগ্রহ করে সাপ্লায়ারের নাম লিখুন।'),
+                    })
+                    return
+                  }
+                  if (activeTab === 'contact') {
+                    if (!formData.mobile.trim()) {
+                      setFieldErrors({ mobile: tBilingual('Primary Mobile number is required.', 'প্রাথমিক মোবাইল নম্বর আবশ্যক।') })
+                      dispatchToast({
+                        type: 'warning',
+                        title: tBilingual('Required Information', 'প্রয়োজনীয় তথ্য'),
+                        message: tBilingual('Please enter Primary Mobile number.', 'অনুগ্রহ করে মোবাইল নম্বর দিন।'),
+                      })
+                      return
+                    }
+                    if (!normalizeBdPhone(formData.mobile)) {
+                      setFieldErrors({ mobile: tBilingual('Invalid Bangladesh phone format.', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন।') })
+                      dispatchToast({
+                        type: 'warning',
+                        title: tBilingual('Invalid Phone Format', 'মোবাইল নম্বর সঠিক নয়'),
+                        message: tBilingual('Please provide a valid phone number (e.g. 017XXXXXXXX).', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: ০১৭XXXXXXXX)।'),
+                      })
+                      return
+                    }
+                  }
                   const tabs: TabKey[] = ['identity', 'contact', 'location', 'terms', 'banking']
                   const nextIdx = tabs.indexOf(activeTab) + 1
                   if (nextIdx < tabs.length) setActiveTab(tabs[nextIdx])

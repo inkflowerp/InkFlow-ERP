@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label'
 import { QuotationRecord } from '@/types/quotation.types'
 import { applyQuotationNegotiationAction } from '@/actions/quotation.actions'
 import { formatBDT } from '@/lib/formatters'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export interface NegotiationModalProps {
   open: boolean
@@ -36,13 +37,11 @@ export function NegotiationModal({
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open && quotation) {
       setDiscountAmount(quotation.discount_amount || 0)
       setNotes('')
-      setError(null)
       setIsSubmitting(false)
     }
   }, [open, quotation])
@@ -75,7 +74,6 @@ export function NegotiationModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setError(null)
 
     try {
       const res = await applyQuotationNegotiationAction(
@@ -87,16 +85,29 @@ export function NegotiationModal({
 
       setIsSubmitting(false)
       if (res.success && res.data) {
+        dispatchToast({
+          type: 'success',
+          title: 'Concession Applied',
+          message: `Negotiated discount of ৳${calculated.discount.toLocaleString()} applied to quotation.`,
+        })
         if (onNegotiationApplied) {
           onNegotiationApplied(res.data)
         }
         onOpenChange(false)
       } else {
-        setError(res.error || 'Failed to apply negotiated concession.')
+        dispatchToast({
+          type: 'error',
+          title: 'Concession Failed',
+          message: res.error || 'Failed to apply negotiated concession.',
+        })
       }
     } catch (err: any) {
       setIsSubmitting(false)
-      setError(err?.message || 'Unexpected error occurred.')
+      dispatchToast({
+        type: 'error',
+        title: 'Error Occurred',
+        message: err?.message || 'Unexpected error occurred.',
+      })
     }
   }
 
@@ -175,12 +186,6 @@ export function NegotiationModal({
                 Gross margin is under 25%. This quotation may risk losses when account labor, machine wear, and delivery costs are factored in.
               </p>
             </div>
-          </div>
-        )}
-
-        {error && (
-          <div className="p-2.5 rounded-lg bg-red-50 text-red-800 border border-red-200 text-xs">
-            {error}
           </div>
         )}
 

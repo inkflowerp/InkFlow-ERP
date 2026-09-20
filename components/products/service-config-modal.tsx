@@ -66,6 +66,7 @@ import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 interface ServiceConfigModalProps {
   isOpen: boolean
@@ -1202,7 +1203,7 @@ export function ServiceConfigModal({
   const [taxRate, setTaxRate] = useState<number>(7.5)
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // Strict Raw Material check: excludes ready products, outsource items, and standalone services
   const isRawMaterial = (m: MaterialRecord) => {
@@ -2257,7 +2258,6 @@ export function ServiceConfigModal({
       })
     }
     setActiveTab('basic')
-    setErrorMessage(null)
   }, [initialData, isOpen])
 
   // Material Cost and Unit helpers defined at module level
@@ -3178,19 +3178,29 @@ export function ServiceConfigModal({
     e.preventDefault()
     if (!name.trim()) {
       setActiveTab('basic')
-      setErrorMessage('Service name is required.')
+      setFieldErrors({ name: 'Service name is required before proceeding.' })
+      dispatchToast({
+        type: 'warning',
+        title: 'Service Name Required',
+        message: 'Service name is required before proceeding.',
+      })
       return
     }
 
     const sp = Number(sellingPrice) || 0
     if (sp <= 0) {
       setActiveTab('pricing')
-      setErrorMessage('Selling price must be greater than 0.')
+      setFieldErrors({ sellingPrice: 'Selling price must be greater than 0.' })
+      dispatchToast({
+        type: 'warning',
+        title: 'Selling Price Required',
+        message: 'Selling price must be greater than 0.',
+      })
       return
     }
 
     setIsSubmitting(true)
-    setErrorMessage(null)
+    setFieldErrors({})
 
     try {
       const finalPriceTiers: ProductPriceTiers = {
@@ -3412,11 +3422,7 @@ export function ServiceConfigModal({
         ink_cost_per_unit: inkCostNum,
         cost_breakdown: costBreakdown,
         machine_id: selectedMachineId || undefined,
-        machine_hourly_rate: Number(machineHourlyRate) || undefined,
-        estimated_speed: Number(estimatedSpeed) || undefined,
-        speed_unit: speedUnit || undefined,
       }
-
       const selectedFinishingMat = availableMaterials.find((m) => m.id === finishingMaterialId)
       const selectedProductionMat = availableMaterials.find((m) => m.id === productionMaterialId)
       const selectedInstallationHardwareMat = availableMaterials.find((m) => m.id === installationHardwareId)
@@ -3526,7 +3532,11 @@ export function ServiceConfigModal({
       })
       onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save service configuration.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save service configuration.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -3594,7 +3604,19 @@ export function ServiceConfigModal({
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  if (activeTab === 'basic') setActiveTab('materials')
+                  if (activeTab === 'basic') {
+                    if (!name.trim()) {
+                      setFieldErrors({ name: 'Service name is required before proceeding.' })
+                      dispatchToast({
+                        type: 'warning',
+                        title: 'Service Name Required',
+                        message: 'Service name is required before proceeding.',
+                      })
+                      return
+                    }
+                    setFieldErrors({})
+                    setActiveTab('materials')
+                  }
                   else if (activeTab === 'materials') setActiveTab('finishing')
                   else if (activeTab === 'finishing') setActiveTab('additionals')
                   else if (activeTab === 'additionals') setActiveTab('pricing')
@@ -3630,13 +3652,6 @@ export function ServiceConfigModal({
       }
     >
       <div className="space-y-4 py-1">
-        {errorMessage && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2.5 font-medium shadow-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* 5-Tab Navigation Stepper Bar (Dimensions Tab Removed) */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
           {[
@@ -3702,11 +3717,23 @@ export function ServiceConfigModal({
                   <Input
                     placeholder="e.g. UV Vinyl Sticker Printing (High Density), Eco PVC Frontlit Banner Print..."
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                    }}
                     required
-                    className="h-9 text-xs font-medium"
+                    className={cn(
+                      'h-9 text-xs font-medium transition-colors',
+                      fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                    )}
                     autoFocus
                   />
+                  {fieldErrors.name && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -6121,11 +6148,21 @@ export function ServiceConfigModal({
                     onChange={(e) => {
                       const val = e.target.value === '' ? '' : parseFloat(e.target.value)
                       setSellingPrice(val)
+                      if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
                     }}
                     required
-                    className="h-9 text-xs font-mono font-bold pl-7 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300"
+                    className={cn(
+                      'h-9 text-xs font-mono font-bold pl-7 bg-white dark:bg-slate-900 text-emerald-700 dark:text-emerald-300 transition-colors',
+                      fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                    )}
                   />
                 </div>
+                {fieldErrors.sellingPrice && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.sellingPrice}</span>
+                  </p>
+                )}
               </div>
 
               <div>

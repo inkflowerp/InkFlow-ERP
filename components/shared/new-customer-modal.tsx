@@ -20,6 +20,7 @@ import {
   Percent,
   ChevronLeft,
   ChevronRight,
+  AlertCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -46,6 +47,7 @@ import {
 } from '@/types/crm.types'
 import { ProductRecord } from '@/types/product.types'
 import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export interface NewCustomerModalProps {
   open: boolean
@@ -109,7 +111,7 @@ export function NewCustomerModal({
   const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatchResult[]>([])
   const [dismissDuplicate, setDismissDuplicate] = useState<boolean>(false)
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // Geo cascading
   const divisions = useMemo(() => GeoService.getDivisions(), [])
@@ -145,7 +147,6 @@ export function NewCustomerModal({
       setSameAsMobile(true)
       setDismissDuplicate(false)
       setDuplicateMatches([])
-      setErrorMessage(null)
       setIsSubmitting(false)
       setActiveTab('info')
       setCustomRateOverrides({})
@@ -204,7 +205,7 @@ export function NewCustomerModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMessage(null)
+    setFieldErrors({})
 
     // Plan check
     const quota = checkCanCreate('max_customers')
@@ -213,15 +214,23 @@ export function NewCustomerModal({
       return
     }
 
+    const errors: Record<string, string> = {}
     if (!name.trim()) {
-      setErrorMessage('Customer Name is required.')
-      setActiveTab('info')
-      return
+      errors.name = 'Customer Name is required.'
+    }
+    if (!mobile.trim()) {
+      errors.mobile = 'Mobile Phone Number is required.'
     }
 
-    if (!mobile.trim()) {
-      setErrorMessage('Mobile Phone Number is required.')
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       setActiveTab('info')
+      const firstMsg = Object.values(errors)[0]
+      dispatchToast({
+        type: 'warning',
+        title: 'Required Information',
+        message: firstMsg,
+      })
       return
     }
 
@@ -254,7 +263,12 @@ export function NewCustomerModal({
       })
 
       if (!res.success || !res.data) {
-        setErrorMessage(res.error || 'Failed to create customer.')
+        const msg = res.error || 'Failed to create customer.'
+        dispatchToast({
+          type: 'error',
+          title: 'Error Creating Customer',
+          message: msg,
+        })
         setIsSubmitting(false)
         return
       }
@@ -275,10 +289,20 @@ export function NewCustomerModal({
       }
 
       refreshUsage()
+      dispatchToast({
+        type: 'success',
+        title: 'Customer Created',
+        message: `${createdCustomer.name} has been added successfully.`,
+      })
       onCustomerCreated?.(createdCustomer)
       onOpenChange(false)
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Unexpected error creating customer.')
+      const msg = err?.message || 'Unexpected error creating customer.'
+      dispatchToast({
+        type: 'error',
+        title: 'Creation Failed',
+        message: msg,
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -326,7 +350,22 @@ export function NewCustomerModal({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setActiveTab('rates')}
+                onClick={() => {
+                  const errors: Record<string, string> = {}
+                  if (!name.trim()) errors.name = 'Customer Name is required.'
+                  if (!mobile.trim()) errors.mobile = 'Mobile Phone Number is required.'
+                  if (Object.keys(errors).length > 0) {
+                    setFieldErrors(errors)
+                    const firstMsg = Object.values(errors)[0]
+                    dispatchToast({
+                      type: 'warning',
+                      title: 'Required Information',
+                      message: firstMsg,
+                    })
+                    return
+                  }
+                  setActiveTab('rates')
+                }}
                 className="h-10 px-4 rounded-xl font-bold border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 gap-1.5 cursor-pointer text-xs"
               >
                 <span>Next: Custom Rates</span>
@@ -385,14 +424,6 @@ export function NewCustomerModal({
             <span>Customer Rates ({Object.keys(customRateOverrides).length} custom)</span>
           </button>
         </div>
-
-        {/* Error Alert */}
-        {errorMessage && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-300 text-xs flex items-center gap-2">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
 
         {/* Duplicate Matches Alert */}
         {duplicateMatches.length > 0 && !dismissDuplicate && (
@@ -479,9 +510,21 @@ export function NewCustomerModal({
                     required
                     placeholder="e.g. Rahim Chowdhury"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="text-xs h-9 font-medium"
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                    }}
+                    className={cn(
+                      "text-xs h-9 font-medium",
+                      fieldErrors.name && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                    )}
                   />
+                  {fieldErrors.name && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -561,9 +604,21 @@ export function NewCustomerModal({
                     type="tel"
                     placeholder="01XXXXXXXXX"
                     value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    className="text-xs h-9 font-mono"
+                    onChange={(e) => {
+                      setMobile(e.target.value)
+                      if (fieldErrors.mobile) setFieldErrors((prev) => ({ ...prev, mobile: '' }))
+                    }}
+                    className={cn(
+                      "text-xs h-9 font-mono",
+                      fieldErrors.mobile && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                    )}
                   />
+                  {fieldErrors.mobile && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.mobile}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>

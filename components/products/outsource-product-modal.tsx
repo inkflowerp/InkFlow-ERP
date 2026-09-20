@@ -41,11 +41,12 @@ import {
   Send,
   UserCheck,
 } from 'lucide-react'
+import { dispatchToast } from '@/components/shared/toast-feedback'
+import { cn } from '@/lib/utils'
 import type { ProductRecord, UnitOfMeasure, ProductPriceTiers, OutsourceConfiguration } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
-import { cn } from '@/lib/utils'
 
 interface OutsourceProductModalProps {
   isOpen: boolean
@@ -262,7 +263,7 @@ export function OutsourceProductModal({
   const [internalNotes, setInternalNotes] = useState('')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (initialData) {
@@ -357,7 +358,6 @@ export function OutsourceProductModal({
       setInternalNotes('')
     }
     setActiveTab('basic')
-    setErrorMessage(null)
   }, [initialData, isOpen])
 
   // Live Gross Margin & Markup Calculation
@@ -440,19 +440,29 @@ export function OutsourceProductModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setErrorMessage('Product name is required.')
+      setFieldErrors({ name: 'Product name is required before proceeding.' })
       setActiveTab('basic')
+      dispatchToast({
+        type: 'warning',
+        title: 'Product Name Required',
+        message: 'Product name is required before proceeding.',
+      })
       return
     }
 
     if (sellingPrice === '' || Number(sellingPrice) < 0) {
-      setErrorMessage('Please enter a valid base selling price.')
+      setFieldErrors({ sellingPrice: 'Please enter a valid base selling price.' })
       setActiveTab('costing')
+      dispatchToast({
+        type: 'warning',
+        title: 'Selling Price Required',
+        message: 'Please enter a valid base selling price.',
+      })
       return
     }
 
     setIsSubmitting(true)
-    setErrorMessage(null)
+    setFieldErrors({})
 
     try {
       const sp = Number(sellingPrice) || 0
@@ -479,7 +489,7 @@ export function OutsourceProductModal({
         vendor_unit_cost: cost,
         purchase_unit: purchaseUnit || unit,
         conversion_ratio: 1,
-        markup_percent: marginMetrics.markupPercent,
+        markup_percent: Number(targetMargin) || 35.0,
         turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
         delivery_method: deliveryMethod,
         specifications: specifications.trim() || undefined,
@@ -492,9 +502,12 @@ export function OutsourceProductModal({
         name_bn: nameBn.trim() || undefined,
         sku: sku.trim() || `OUT-${Date.now().toString().slice(-5)}`,
         category: category || 'offset_printing',
+        outsource_category: category || 'offset_printing',
         product_type: 'outsource',
-        entity_type: 'outsource',
+        entity_type: 'product',
         commercial_type: 'outsource',
+        is_ready_product: false,
+        is_service: false,
         is_outsource: true,
         is_non_inventory: true,
         track_inventory: false,
@@ -510,16 +523,14 @@ export function OutsourceProductModal({
         min_allowed_margin_percent: Number(minAllowedMargin) || 15.0,
         cost_basis_type: 'direct_cost',
         price_tiers: finalPriceTiers,
+        outsource_config: outsourceConfig,
         vendor_id: preferredVendorId || undefined,
         vendor_name: vendorName.trim() || undefined,
         vendor_phone: vendorPhone.trim() || undefined,
         vendor_address: vendorAddress.trim() || undefined,
         vendor_item_code: vendorItemCode.trim() || undefined,
+        vendor_unit_cost: cost,
         turnaround_days: turnaroundDays !== '' ? Number(turnaroundDays) : 2,
-        outsource_notes: vendorNotes.trim() || undefined,
-        outsource_category: category,
-        outsource_config: outsourceConfig,
-        material_spec: specifications.trim() || undefined,
         vat_applicable: vatApplicable,
         is_tax_inclusive: isTaxInclusive,
         tax_rate: Number(taxRate) || 0,
@@ -538,7 +549,11 @@ export function OutsourceProductModal({
       } as any)
       onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save outsource product.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save outsource product.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -607,10 +622,15 @@ export function OutsourceProductModal({
                 variant="outline"
                 onClick={() => {
                   if (activeTab === 'basic' && !name.trim()) {
-                    setErrorMessage('Product name is required before proceeding.')
+                    setFieldErrors({ name: 'Product name is required before proceeding.' })
+                    dispatchToast({
+                      type: 'warning',
+                      title: 'Product Name Required',
+                      message: 'Product name is required before proceeding.',
+                    })
                     return
                   }
-                  setErrorMessage(null)
+                  setFieldErrors({})
                   setActiveTab(TABS_CONFIG[currentTabIndex + 1].id)
                 }}
                 className="h-10 px-4 rounded-xl font-bold border-purple-300 text-purple-700 dark:border-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 gap-1.5 cursor-pointer"
@@ -644,13 +664,6 @@ export function OutsourceProductModal({
       }
     >
       <div className="space-y-4 py-1">
-        {errorMessage && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2 font-medium shadow-xs animate-in fade-in-0">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* 4-Tab Stepper Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
           {TABS_CONFIG.map((tab) => {
@@ -689,11 +702,23 @@ export function OutsourceProductModal({
                   </Label>
                   <Input
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value)
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                    }}
                     placeholder="e.g. Offset Leaflet A4 120 GSM (1,000 pcs)"
-                    className="mt-1 h-9 text-xs font-medium"
+                    className={cn(
+                      'mt-1 h-9 text-xs font-medium transition-colors',
+                      fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                    )}
                     required
                   />
+                  {fieldErrors.name && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.name}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -925,11 +950,23 @@ export function OutsourceProductModal({
                     min="0"
                     step="0.01"
                     value={sellingPrice}
-                    onChange={(e) => setSellingPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                    onChange={(e) => {
+                      setSellingPrice(e.target.value === '' ? '' : Number(e.target.value))
+                      if (fieldErrors.sellingPrice) setFieldErrors((prev) => ({ ...prev, sellingPrice: '' }))
+                    }}
                     placeholder="e.g. 2800"
-                    className="mt-1 h-9 text-xs font-mono font-bold text-blue-600"
+                    className={cn(
+                      'mt-1 h-9 text-xs font-mono font-bold text-blue-600 transition-colors',
+                      fieldErrors.sellingPrice && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                    )}
                     required
                   />
+                  {fieldErrors.sellingPrice && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.sellingPrice}</span>
+                    </p>
+                  )}
                   <span className="text-[10px] text-slate-400 mt-0.5 block">Default selling price billed to clients</span>
                 </div>
               </div>

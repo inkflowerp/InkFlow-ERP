@@ -23,6 +23,8 @@ import type { SupplierRecord, SupplierMaterialPrice } from '@/types/crm.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord } from '@/types/inventory.types'
+import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 interface SupplierMaterialRateModalProps {
   open: boolean
@@ -57,19 +59,19 @@ export function SupplierMaterialRateModal({
     notes: '',
   })
 
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (open) {
-      setErrorMsg(null)
+      setFieldErrors({})
       if (priceToEdit) {
         setFormData({
           material_id: priceToEdit.material_id || '',
           material_name: priceToEdit.material_name,
           category: priceToEdit.category || supplier?.category || 'media',
           unit: priceToEdit.unit || 'sft',
-          contract_price_bdt: priceToEdit.contract_price_bdt || 0,
+          contract_price_bdt: priceToEdit.contract_price_bdt,
           moq: priceToEdit.moq || 1,
           lead_time_days: priceToEdit.lead_time_days || 2,
           effective_date: priceToEdit.effective_date || new Date().toISOString().split('T')[0],
@@ -108,15 +110,25 @@ export function SupplierMaterialRateModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMsg(null)
+    setFieldErrors({})
 
+    const errors: Record<string, string> = {}
     if (!formData.material_name.trim()) {
-      setErrorMsg(tBilingual('Material specification name is required.', 'উপাদানের নাম বা স্পেসিফিকেশন আবশ্যক।'))
-      return
+      errors.material_name = tBilingual('Material specification name is required.', 'উপাদানের নাম বা স্পেসিফিকেশন আবশ্যক।')
     }
 
     if (formData.contract_price_bdt <= 0) {
-      setErrorMsg(tBilingual('Contract rate must be greater than ৳ 0.', 'চুক্তির দর ৳ ০ এর বেশি হতে হবে।'))
+      errors.contract_price_bdt = tBilingual('Contract rate must be greater than ৳ 0.', 'চুক্তির দর ৳ ০ এর বেশি হতে হবে।')
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      const firstMsg = Object.values(errors)[0]
+      dispatchToast({
+        type: 'warning',
+        title: tBilingual('Validation Warning', 'সতর্কতা'),
+        message: firstMsg,
+      })
       return
     }
 
@@ -143,9 +155,18 @@ export function SupplierMaterialRateModal({
       }
 
       onSaveRate(payload)
+      dispatchToast({
+        type: 'success',
+        title: isEditing ? 'Rate Updated' : 'Rate Added',
+        message: `${payload.material_name} rate saved successfully.`,
+      })
       onOpenChange(false)
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to save contract price.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save contract price.',
+      })
     } finally {
       setLoading(false)
     }
@@ -185,13 +206,6 @@ export function SupplierMaterialRateModal({
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-        {errorMsg && (
-          <div className="p-3 bg-rose-50 text-rose-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800">
-            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
         {/* MATERIAL SPECIFICATION */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
           {/* Pick from existing inventory */}
@@ -223,10 +237,22 @@ export function SupplierMaterialRateModal({
               <Input
                 placeholder="e.g. Star Flex Gloss 320gsm (10ft Roll)"
                 value={formData.material_name}
-                onChange={(e) => setFormData({ ...formData, material_name: e.target.value })}
-                className="text-xs h-9 font-medium"
+                onChange={(e) => {
+                  setFormData({ ...formData, material_name: e.target.value })
+                  if (fieldErrors.material_name) setFieldErrors((prev) => ({ ...prev, material_name: '' }))
+                }}
+                className={cn(
+                  "text-xs h-9 font-medium",
+                  fieldErrors.material_name && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                )}
                 required
               />
+              {fieldErrors.material_name && (
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{fieldErrors.material_name}</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -287,11 +313,23 @@ export function SupplierMaterialRateModal({
                   step="0.01"
                   placeholder="9.50"
                   value={formData.contract_price_bdt || ''}
-                  onChange={(e) => setFormData({ ...formData, contract_price_bdt: Number(e.target.value) })}
-                  className="text-xs h-9 pl-7 font-mono font-bold"
+                  onChange={(e) => {
+                    setFormData({ ...formData, contract_price_bdt: Number(e.target.value) })
+                    if (fieldErrors.contract_price_bdt) setFieldErrors((prev) => ({ ...prev, contract_price_bdt: '' }))
+                  }}
+                  className={cn(
+                    "text-xs h-9 pl-7 font-mono font-bold",
+                    fieldErrors.contract_price_bdt && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                  )}
                   required
                 />
               </div>
+              {fieldErrors.contract_price_bdt && (
+                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>{fieldErrors.contract_price_bdt}</span>
+                </p>
+              )}
             </div>
 
             <div>

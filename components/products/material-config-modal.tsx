@@ -52,6 +52,7 @@ import type { ProductCategoryRecord } from '@/types/category.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
 import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 interface MaterialConfigModalProps {
   isOpen: boolean
@@ -452,7 +453,7 @@ export function MaterialConfigModal({
 
   // Status & Error
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // --------------------------------------------------------------------------
   // DERIVED GEOMETRY CALCULATIONS
@@ -902,7 +903,6 @@ export function MaterialConfigModal({
       setMachineSettingsNotes('')
     }
     setActiveTab('basic')
-    setErrorMessage(null)
   }, [initialData, isOpen])
 
   // Two-way interactive price syncing
@@ -1269,13 +1269,18 @@ export function MaterialConfigModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim()) {
-      setErrorMessage('Material name is required.')
+      setFieldErrors({ name: 'Material name is required before proceeding.' })
       setActiveTab('basic')
+      dispatchToast({
+        type: 'warning',
+        title: 'Material Name Required',
+        message: 'Material name is required before proceeding.',
+      })
       return
     }
 
     setIsSubmitting(true)
-    setErrorMessage(null)
+    setFieldErrors({})
 
     try {
       const pp = purchasePrice !== '' ? Number(purchasePrice) : 0
@@ -1388,7 +1393,11 @@ export function MaterialConfigModal({
       })
       onClose()
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to save raw material master.')
+      dispatchToast({
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save raw material master.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -1455,7 +1464,19 @@ export function MaterialConfigModal({
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  if (activeTab === 'basic') setActiveTab('geometry')
+                  if (activeTab === 'basic') {
+                    if (!name.trim()) {
+                      setFieldErrors({ name: 'Material name is required before proceeding.' })
+                      dispatchToast({
+                        type: 'warning',
+                        title: 'Material Name Required',
+                        message: 'Material name is required before proceeding.',
+                      })
+                      return
+                    }
+                    setFieldErrors({})
+                    setActiveTab('geometry')
+                  }
                   else if (activeTab === 'geometry') setActiveTab('costing')
                   else if (activeTab === 'costing') setActiveTab('inventory')
                   else if (activeTab === 'inventory') setActiveTab('production')
@@ -1491,13 +1512,6 @@ export function MaterialConfigModal({
       }
     >
       <div className="space-y-4 py-1">
-        {errorMessage && (
-          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-300 text-xs flex items-center gap-2.5 font-medium shadow-xs">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
         {/* 5-Tab Navigation Stepper Bar */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-700/60">
           {[
@@ -1562,11 +1576,23 @@ export function MaterialConfigModal({
                 <Input
                   placeholder="e.g. Star Frontlit Flex Banner 280 GSM, Glossy Self-Adhesive Vinyl 100 Micron..."
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => {
+                    setName(e.target.value)
+                    if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: '' }))
+                  }}
                   required
-                  className="h-9 text-xs font-medium"
+                  className={cn(
+                    'h-9 text-xs font-medium transition-colors',
+                    fieldErrors.name && 'border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20'
+                  )}
                   autoFocus
                 />
+                {fieldErrors.name && (
+                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>{fieldErrors.name}</span>
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

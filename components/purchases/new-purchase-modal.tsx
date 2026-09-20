@@ -30,6 +30,7 @@ import {
   User,
   MapPin,
   Clock,
+  AlertCircle,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -48,6 +49,7 @@ import { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.t
 import { ProductRecord, MaterialPurchaseConfig } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export interface NewPurchaseModalProps {
   open: boolean
@@ -174,8 +176,7 @@ export function NewPurchaseModal({
 
   // Submission & Feedback
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   // Load suppliers, materials, products, configurations and warehouse locations
   useEffect(() => {
@@ -192,8 +193,7 @@ export function NewPurchaseModal({
       setReadyProducts(prodList)
       setPurchaseConfigs(configList)
       setLocations(locList)
-      setErrorMessage(null)
-      setSuccessMessage(null)
+      setFieldErrors({})
       setIsSubmitting(false)
 
       if (locList.length > 0 && !targetLocationId) {
@@ -459,54 +459,60 @@ export function NewPurchaseModal({
 
   // Step Validation & Navigation
   const validateStep = (step: number): boolean => {
-    setErrorMessage(null)
+    const errors: Record<string, string> = {}
 
     if (step === 1) {
       if (supplierMode === 'existing') {
         if (!selectedSupplierId) {
-          setErrorMessage('Please select a registered supplier from the list.')
-          return false
+          errors.supplier = 'Please select a registered supplier from the list.'
         }
       } else {
         if (!customSupplierName.trim()) {
-          setErrorMessage('Supplier Name is required for one-time / spot supplier.')
-          return false
+          errors.customSupplierName = 'Supplier Name is required for one-time / spot supplier.'
         }
         if (!supplierPhone.trim()) {
-          setErrorMessage('Supplier Mobile Phone is required.')
-          return false
+          errors.supplierPhone = 'Supplier Mobile Phone is required.'
         }
       }
       if (!expectedDate) {
-        setErrorMessage('Expected Delivery Date is required.')
-        return false
+        errors.expectedDate = 'Expected Delivery Date is required.'
       }
-      return true
     }
 
     if (step === 2) {
       if (items.length === 0) {
-        setErrorMessage('Please add at least one material or item.')
-        return false
+        errors.items = 'Please add at least one material or item.'
+      } else {
+        for (let i = 0; i < items.length; i++) {
+          const it = items[i]
+          if (!it.material_name.trim()) {
+            errors[`item_${i}_name`] = `Item #${i + 1} name or material selection is required.`
+            break
+          }
+          if (Number(it.quantity) <= 0) {
+            errors[`item_${i}_qty`] = `Item #${i + 1} (${it.material_name}) quantity must be greater than 0.`
+            break
+          }
+          if (Number(it.unit_cost) < 0) {
+            errors[`item_${i}_cost`] = `Item #${i + 1} (${it.material_name}) unit rate cannot be negative.`
+            break
+          }
+        }
       }
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i]
-        if (!it.material_name.trim()) {
-          setErrorMessage(`Item #${i + 1} name or material selection is required.`)
-          return false
-        }
-        if (Number(it.quantity) <= 0) {
-          setErrorMessage(`Item #${i + 1} (${it.material_name}) quantity must be greater than 0.`)
-          return false
-        }
-        if (Number(it.unit_cost) < 0) {
-          setErrorMessage(`Item #${i + 1} (${it.material_name}) unit rate cannot be negative.`)
-          return false
-        }
-      }
-      return true
     }
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
+      const firstMsg = Object.values(errors)[0]
+      dispatchToast({
+        type: 'warning',
+        title: 'Validation Warning',
+        message: firstMsg,
+      })
+      return false
+    }
+
+    setFieldErrors({})
     return true
   }
 
@@ -519,7 +525,6 @@ export function NewPurchaseModal({
   }
 
   const handlePrevStep = () => {
-    setErrorMessage(null)
     if (activeStep > 1) {
       setActiveStep((prev) => (prev - 1) as 1 | 2)
     }
@@ -527,8 +532,7 @@ export function NewPurchaseModal({
 
   const resetForm = () => {
     setActiveStep(1)
-    setErrorMessage(null)
-    setSuccessMessage(null)
+    setFieldErrors({})
     setIsSubmitting(false)
     setSupplierMode('existing')
     setCustomSupplierName('')
@@ -569,13 +573,17 @@ export function NewPurchaseModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrorMessage(null)
+    setFieldErrors({})
 
     // Permission check
     const canCreate =
       can('create', 'purchases') || can('create', 'inventory') || can('manage', 'inventory')
     if (!canCreate) {
-      setErrorMessage('You do not have permission to create purchase orders.')
+      dispatchToast({
+        type: 'error',
+        title: 'Permission Denied',
+        message: 'You do not have permission to create purchase orders.',
+      })
       return
     }
 
@@ -682,16 +690,24 @@ export function NewPurchaseModal({
         PrintERPDataStore.addItem<PurchaseOrderRecord>(STORAGE_KEYS.PURCHASE_ORDERS, savedPO)
       }
 
-      setSuccessMessage(`Purchase Order ${savedPO.po_number} issued successfully!`)
+      dispatchToast({
+        type: 'success',
+        title: 'Purchase Order Issued',
+        message: `Purchase Order ${savedPO.po_number} issued successfully!`,
+      })
       refreshUsage()
       onPurchaseCreated?.(savedPO)
 
       setTimeout(() => {
         onOpenChange(false)
         resetForm()
-      }, 1000)
+      }, 500)
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Failed to issue purchase order.')
+      dispatchToast({
+        type: 'error',
+        title: 'Order Failed',
+        message: err?.message || 'Failed to issue purchase order.',
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -790,22 +806,6 @@ export function NewPurchaseModal({
       }
     >
       <div className="space-y-4 pt-1 pb-2">
-        {/* Success Alert */}
-        {successMessage && (
-          <div className="p-3.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span className="font-semibold">{successMessage}</span>
-          </div>
-        )}
-
-        {/* Error Alert */}
-        {errorMessage && (
-          <div className="p-3.5 bg-rose-50 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200 rounded-xl border border-rose-300 dark:border-rose-800 text-xs flex items-center gap-2 animate-in fade-in-0">
-            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
-            <span className="font-medium">{errorMessage}</span>
-          </div>
-        )}
-
         {/* STEP PROGRESS NAVIGATION TABS */}
         <div className="grid grid-cols-3 gap-2 bg-slate-100 dark:bg-slate-900/90 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
           <button
@@ -929,8 +929,14 @@ export function NewPurchaseModal({
                     </Label>
                     <select
                       value={selectedSupplierId}
-                      onChange={(e) => handleSupplierChange(e.target.value)}
-                      className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                      onChange={(e) => {
+                        handleSupplierChange(e.target.value)
+                        if (fieldErrors.supplier) setFieldErrors((prev) => ({ ...prev, supplier: '' }))
+                      }}
+                      className={cn(
+                        "w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium",
+                        fieldErrors.supplier && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                      )}
                       required
                     >
                       <option value="">-- Choose Registered Material Vendor --</option>
@@ -940,6 +946,12 @@ export function NewPurchaseModal({
                         </option>
                       ))}
                     </select>
+                    {fieldErrors.supplier && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{fieldErrors.supplier}</span>
+                      </p>
+                    )}
                   </div>
 
                   {/* Supplier Intel Quick Card */}
@@ -978,10 +990,22 @@ export function NewPurchaseModal({
                     <Input
                       placeholder="e.g. Bengal Paper & Board Mills Ltd."
                       value={customSupplierName}
-                      onChange={(e) => setCustomSupplierName(e.target.value)}
-                      className="text-xs h-9"
+                      onChange={(e) => {
+                        setCustomSupplierName(e.target.value)
+                        if (fieldErrors.customSupplierName) setFieldErrors((prev) => ({ ...prev, customSupplierName: '' }))
+                      }}
+                      className={cn(
+                        "text-xs h-9",
+                        fieldErrors.customSupplierName && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                      )}
                       required
                     />
+                    {fieldErrors.customSupplierName && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{fieldErrors.customSupplierName}</span>
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
@@ -990,10 +1014,22 @@ export function NewPurchaseModal({
                     <Input
                       placeholder="+8801700000000"
                       value={supplierPhone}
-                      onChange={(e) => setSupplierPhone(e.target.value)}
-                      className="text-xs h-9 font-mono"
+                      onChange={(e) => {
+                        setSupplierPhone(e.target.value)
+                        if (fieldErrors.supplierPhone) setFieldErrors((prev) => ({ ...prev, supplierPhone: '' }))
+                      }}
+                      className={cn(
+                        "text-xs h-9 font-mono",
+                        fieldErrors.supplierPhone && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                      )}
                       required
                     />
+                    {fieldErrors.supplierPhone && (
+                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{fieldErrors.supplierPhone}</span>
+                      </p>
+                    )}
                   </div>
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">Contact Person</Label>
@@ -1083,10 +1119,22 @@ export function NewPurchaseModal({
                   <Input
                     type="date"
                     value={expectedDate}
-                    onChange={(e) => setExpectedDate(e.target.value)}
-                    className="text-xs h-9"
+                    onChange={(e) => {
+                      setExpectedDate(e.target.value)
+                      if (fieldErrors.expectedDate) setFieldErrors((prev) => ({ ...prev, expectedDate: '' }))
+                    }}
+                    className={cn(
+                      "text-xs h-9",
+                      fieldErrors.expectedDate && "border-rose-500 focus-visible:ring-rose-400 bg-rose-50/30 dark:bg-rose-950/20"
+                    )}
                     required
                   />
+                  {fieldErrors.expectedDate && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span>{fieldErrors.expectedDate}</span>
+                    </p>
+                  )}
                 </div>
 
                 <div>
