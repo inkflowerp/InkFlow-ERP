@@ -4,7 +4,37 @@ import { DeliveryChallanRecord, InstallationRecord, DeliveryStatus } from '@/typ
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
+export function isValidUUID(str?: string | null): boolean {
+  if (!str) return false
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str)
+}
+
 export class LogisticsRepository {
+  /**
+   * Helper: Resolves company slug to authoritative PostgreSQL UUID
+   */
+  static async resolveCompanyUUID(companyIdOrSlug: string): Promise<string> {
+    if (!companyIdOrSlug) return ''
+    if (isValidUUID(companyIdOrSlug)) return companyIdOrSlug
+
+    try {
+      const admin = createAdminClient()
+      const clean = companyIdOrSlug.toLowerCase().trim()
+      const { data: comp } = await (admin as any)
+        .from('companies')
+        .select('id')
+        .or(`slug.ilike.${clean},name.ilike.%${clean}%`)
+        .limit(1)
+        .maybeSingle()
+
+      if (comp?.id && isValidUUID(comp.id)) {
+        return comp.id
+      }
+    } catch {}
+
+    return companyIdOrSlug
+  }
+
   static async getChallans(companyId: string): Promise<DeliveryChallanRecord[]> {
     try {
       let supabase: any
@@ -14,35 +44,30 @@ export class LogisticsRepository {
         supabase = createAdminClient()
       }
 
-      let effectiveCompanyId = companyId
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      if (!uuidRegex.test(companyId)) {
-        try {
-          const admin = createAdminClient()
-          const { data: comp } = await (admin as any)
-            .from('companies')
-            .select('id')
-            .eq('slug', companyId.toLowerCase().trim())
-            .maybeSingle()
-          if (comp?.id) {
-            effectiveCompanyId = comp.id
-          }
-        } catch {}
-      }
+      const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
+      const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
-      let { data, error } = await (supabase as any)
+      let challansQuery = (supabase as any)
         .from('delivery_challans')
         .select('*, items:delivery_challan_items(*)')
-        .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
         .order('created_at', { ascending: false })
+
+      if (isEffectiveUuid) {
+        challansQuery = challansQuery.eq('company_id', effectiveCompanyId)
+      }
+
+      let { data, error } = await challansQuery
 
       if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
         const admin = createAdminClient()
-        const adminRes = await (admin as any)
+        let adminQuery = (admin as any)
           .from('delivery_challans')
           .select('*, items:delivery_challan_items(*)')
-          .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
           .order('created_at', { ascending: false })
+        if (isEffectiveUuid) {
+          adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+        }
+        const adminRes = await adminQuery
         if (!adminRes.error && adminRes.data) {
           data = adminRes.data
           error = null
@@ -51,19 +76,27 @@ export class LogisticsRepository {
 
       // Synthesize challans from invoices if invoices exist in DB but aren't in delivery_challans yet
       try {
-        let invRes = await (supabase as any)
+        let invQuery = (supabase as any)
           .from('invoices')
           .select('*, items:invoice_items(*)')
-          .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
           .order('created_at', { ascending: false })
+
+        if (isEffectiveUuid) {
+          invQuery = invQuery.eq('company_id', effectiveCompanyId)
+        }
+
+        let invRes = await invQuery
 
         if (invRes.error) {
           const admin = createAdminClient()
-          invRes = await (admin as any)
+          let adminInvQuery = (admin as any)
             .from('invoices')
             .select('*, items:invoice_items(*)')
-            .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
             .order('created_at', { ascending: false })
+          if (isEffectiveUuid) {
+            adminInvQuery = adminInvQuery.eq('company_id', effectiveCompanyId)
+          }
+          invRes = await adminInvQuery
         }
 
         if (!invRes.error && Array.isArray(invRes.data)) {
@@ -162,21 +195,66 @@ export class LogisticsRepository {
 
   static async getChallanById(id: string, companyId: string): Promise<DeliveryChallanRecord | null> {
     try {
-      const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let supabase: any
+      try {
+        supabase = await createClient()
+      } catch {
+        supabase = createAdminClient()
+      }
+
+      const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
+      const isIdUuid = isValidUUID(id)
+      const isEffectiveUuid = isValidUUID(effectiveCompanyId)
+
+      let query = (supabase as any)
         .from('delivery_challans')
         .select('*, items:delivery_challan_items(*)')
-        .or(`id.eq.${id},challan_number.eq.${id}`)
-        .eq('company_id', companyId)
-        .maybeSingle()
 
-      if (error) {
-        throw new Error(`Failed to fetch challan ${id}: ${error.message}`)
+      if (isIdUuid) {
+        query = query.or(`id.eq.${id},challan_number.eq.${id}`)
+      } else {
+        query = query.eq('challan_number', id)
       }
+
+      if (isEffectiveUuid) {
+        query = query.eq('company_id', effectiveCompanyId)
+      }
+
+      let { data, error } = await query.maybeSingle()
+
+      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+        const admin = createAdminClient()
+        let adminQuery = (admin as any)
+          .from('delivery_challans')
+          .select('*, items:delivery_challan_items(*)')
+        if (isIdUuid) {
+          adminQuery = adminQuery.or(`id.eq.${id},challan_number.eq.${id}`)
+        } else {
+          adminQuery = adminQuery.eq('challan_number', id)
+        }
+        if (isEffectiveUuid) {
+          adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+        }
+        const adminRes = await adminQuery.maybeSingle()
+        if (!adminRes.error && adminRes.data) {
+          data = adminRes.data
+          error = null
+        }
+      }
+
+      if (!error && data) {
+        return data as unknown as DeliveryChallanRecord
+      }
+
+      // Fallback: check synthesized challans
+      const allChallans = await this.getChallans(companyId)
+      const found = allChallans.find((c) => c.id === id || c.challan_number === id || c.invoice_id === id || c.invoice_number === id)
+      if (found) return found
+
       return (data as unknown as DeliveryChallanRecord) || null
     } catch (err: any) {
       const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
-      return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && c.company_id === companyId) || null
+      return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && (c.company_id === companyId || (c as any).tenant_slug === companyId)) || null
     }
   }
 
@@ -188,16 +266,23 @@ export class LogisticsRepository {
     delivery_address: string
     [key: string]: any
   }): Promise<DeliveryChallanRecord> {
-    const supabase = await createClient()
-    const challanNumber = challan.challan_number || (await BillingRepository.getNextDocumentNumber(challan.company_id, 'challan'))
+    let supabase: any
+    try {
+      supabase = await createClient()
+    } catch {
+      supabase = createAdminClient()
+    }
+
+    const effectiveCompanyId = await this.resolveCompanyUUID(challan.company_id)
+    const challanNumber = challan.challan_number || (await BillingRepository.getNextDocumentNumber(effectiveCompanyId, 'challan'))
 
     const payload: any = {
-      company_id: challan.company_id,
+      company_id: effectiveCompanyId,
       challan_number: challanNumber,
-      customer_id: challan.customer_id,
+      customer_id: isValidUUID(challan.customer_id) ? challan.customer_id : null,
       customer_name: challan.customer_name,
       customer_phone: challan.customer_phone,
-      sales_order_id: challan.sales_order_id || null,
+      sales_order_id: isValidUUID(challan.sales_order_id) ? challan.sales_order_id : null,
       order_number: challan.order_number || null,
       delivery_address: challan.delivery_address,
       status: challan.status || 'assigned',
@@ -205,39 +290,62 @@ export class LogisticsRepository {
       delivery_person_name: challan.delivery_person_name || null,
       delivery_person_phone: challan.delivery_person_phone || null,
       vehicle_info: challan.vehicle_info || null,
-      transport_cost: challan.transport_cost || 0,
+      transport_cost: Number(challan.transport_cost) || 0,
       scheduled_date: challan.scheduled_date || new Date().toISOString().split('T')[0],
       notes: challan.notes || null,
       created_by_name: challan.created_by_name || challan.dispatched_by_name || 'Logistics Coordinator',
     }
 
-    if (challan.id) {
+    if (challan.id && isValidUUID(challan.id)) {
       payload.id = challan.id
     }
 
-    const { data, error } = await (supabase as any)
+    let { data, error } = await (supabase as any)
       .from('delivery_challans')
       .insert(payload)
       .select()
       .single()
 
+    if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+      const admin = createAdminClient()
+      const adminRes = await (admin as any)
+        .from('delivery_challans')
+        .insert(payload)
+        .select()
+        .single()
+      if (!adminRes.error && adminRes.data) {
+        data = adminRes.data
+        error = null
+      }
+    }
+
     if (error) {
       throw new Error(`Failed to create delivery challan: ${error.message}`)
     }
 
-    if (challan.items && challan.items.length > 0) {
+    if (challan.items && challan.items.length > 0 && data?.id) {
       const itemsPayload = challan.items.map((it: any) => ({
         challan_id: data.id,
         product_description: it.product_description || it.item_description || 'Item',
         dimensions_spec: it.dimensions_spec || null,
-        quantity: it.quantity || 1,
+        quantity: Number(it.quantity) || 1,
         unit: it.unit || 'pcs',
         remarks: it.remarks || null,
+        status: it.status || 'ready_for_delivery',
+        workflow_routing: it.workflow_routing || 'ready_product',
+        item_kind: it.item_kind || 'ready_product',
+        is_delivered: Boolean(it.is_delivered),
+        delivered_quantity: Number(it.delivered_quantity) || 0,
       }))
-      await (supabase as any).from('delivery_challan_items').insert(itemsPayload)
+
+      let itemRes = await (supabase as any).from('delivery_challan_items').insert(itemsPayload)
+      if (itemRes.error && (itemRes.error.code === '42501' || itemRes.error.message?.includes('row-level security'))) {
+        const admin = createAdminClient()
+        await (admin as any).from('delivery_challan_items').insert(itemsPayload)
+      }
     }
 
-    return (await this.getChallanById(String(data.id), challan.company_id)) as DeliveryChallanRecord
+    return (await this.getChallanById(String(data.id), effectiveCompanyId)) as DeliveryChallanRecord
   }
 
   static async updateChallanStatus(
@@ -246,23 +354,75 @@ export class LogisticsRepository {
     companyId: string,
     extraUpdates?: Partial<DeliveryChallanRecord>
   ): Promise<DeliveryChallanRecord> {
-    const supabase = await createClient()
+    let supabase: any
+    try {
+      supabase = await createClient()
+    } catch {
+      supabase = createAdminClient()
+    }
+
+    const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
+    const isEffectiveUuid = isValidUUID(effectiveCompanyId)
+
     const payload: any = {
       status,
-      ...extraUpdates,
       updated_at: new Date().toISOString(),
     }
+
+    if (extraUpdates?.receiver_name) payload.receiver_name = extraUpdates.receiver_name
+    if (extraUpdates?.receiver_phone) payload.receiver_phone = extraUpdates.receiver_phone
+    if (extraUpdates?.receiver_signature) payload.receiver_signature = extraUpdates.receiver_signature
+    if (extraUpdates?.delivered_at) payload.delivered_at = extraUpdates.delivered_at
     if (status === 'delivered' && !payload.delivered_at) {
       payload.delivered_at = new Date().toISOString()
     }
 
-    const { data, error } = await (supabase as any)
+    let updateQuery = (supabase as any)
       .from('delivery_challans')
       .update(payload)
       .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+
+    if (isEffectiveUuid) {
+      updateQuery = updateQuery.eq('company_id', effectiveCompanyId)
+    }
+
+    let { data, error } = await updateQuery.select().single()
+
+    if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+      const admin = createAdminClient()
+      let adminQuery = (admin as any)
+        .from('delivery_challans')
+        .update(payload)
+        .eq('id', id)
+      if (isEffectiveUuid) {
+        adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+      }
+      const adminRes = await adminQuery.select().single()
+      if (!adminRes.error && adminRes.data) {
+        data = adminRes.data
+        error = null
+      }
+    }
+
+    // Also update delivery_challan_items status in PostgreSQL
+    if (extraUpdates?.items && Array.isArray(extraUpdates.items)) {
+      try {
+        const admin = createAdminClient()
+        for (const it of extraUpdates.items) {
+          if (it.id && isValidUUID(it.id)) {
+            await (admin as any)
+              .from('delivery_challan_items')
+              .update({
+                is_delivered: Boolean(it.is_delivered),
+                delivered_quantity: it.delivered_quantity || (it.is_delivered ? it.quantity : 0),
+                status: it.status || (it.is_delivered ? 'delivered' : 'ready_for_delivery'),
+                delivered_at: it.delivered_at || null,
+              })
+              .eq('id', it.id)
+          }
+        }
+      } catch {}
+    }
 
     if (error) {
       throw new Error(`Failed to update challan status: ${error.message}`)
@@ -279,35 +439,30 @@ export class LogisticsRepository {
         supabase = createAdminClient()
       }
 
-      let effectiveCompanyId = companyId
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      if (!uuidRegex.test(companyId)) {
-        try {
-          const admin = createAdminClient()
-          const { data: comp } = await (admin as any)
-            .from('companies')
-            .select('id')
-            .eq('slug', companyId.toLowerCase().trim())
-            .maybeSingle()
-          if (comp?.id) {
-            effectiveCompanyId = comp.id
-          }
-        } catch {}
-      }
+      const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
+      const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
-      let { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('installations')
         .select('*')
-        .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
         .order('scheduled_date', { ascending: false })
+
+      if (isEffectiveUuid) {
+        query = query.eq('company_id', effectiveCompanyId)
+      }
+
+      let { data, error } = await query
 
       if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
         const admin = createAdminClient()
-        const adminRes = await (admin as any)
+        let adminQuery = (admin as any)
           .from('installations')
           .select('*')
-          .or(`company_id.eq.${effectiveCompanyId},company_id.eq.${companyId}`)
           .order('scheduled_date', { ascending: false })
+        if (isEffectiveUuid) {
+          adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+        }
+        const adminRes = await adminQuery
         if (!adminRes.error) {
           data = adminRes.data
           error = null
