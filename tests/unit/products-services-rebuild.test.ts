@@ -228,15 +228,41 @@ describe('Authoritative Printing & Production Service Master Test Suite', () => 
       assert.strictEqual(result.subtotalCost, 1365)
     })
 
-    test('Group B (Ink Formulation): Channel consumption ml/unit and cost', () => {
-      const inkConsumptionRateMl = 1.2 // ml per sqft
-      const avgInkPricePerLiter = 2800 // ৳2800 per 1000ml = ৳2.80/ml
-      const costPerSqft = parseFloat(((inkConsumptionRateMl * avgInkPricePerLiter) / 1000).toFixed(2))
-      assert.strictEqual(costPerSqft, 3.36)
+    test('Group B (Ink Formulation): Channel consumption ml/unit and cost divided equally across channels (4ch, 5ch, 6ch)', () => {
+      // 1. 4-Channel CMYK (e.g. Eco-Solvent Standard: 1.0 ml/sft total -> 0.25 ml/sft per channel)
+      const totalMl4C = 1.0
+      const channelCount4C = 4
+      const perChannelMl4C = parseFloat((totalMl4C / channelCount4C).toFixed(4)) // 0.25 ml/channel/sft
+      assert.strictEqual(perChannelMl4C, 0.25)
+      const inkPricePerLiter4C = 1050 // ৳1050 / 1000ml = ৳1.05/ml
+      const channelCost4C = perChannelMl4C * (inkPricePerLiter4C / 1000) // 0.25 * 1.05 = 0.2625
+      assert.strictEqual(channelCost4C, 0.2625)
+      const totalInkCost4C = parseFloat((channelCost4C * channelCount4C).toFixed(2)) // ৳1.05/sft
+      assert.strictEqual(totalInkCost4C, 1.05)
 
-      // For 100 sqft job
-      const totalInkCost = costPerSqft * 100
-      assert.strictEqual(totalInkCost, 336)
+      // 2. 5-Channel CMYK + White (e.g. UV Flatbed with White: 1.0 ml/sft total -> 0.20 ml/sft per channel)
+      const totalMl5C = 1.0
+      const channelCount5C = 5
+      const perChannelMl5C = parseFloat((totalMl5C / channelCount5C).toFixed(4)) // 0.20 ml/channel/sft
+      assert.strictEqual(perChannelMl5C, 0.20)
+      const cmykRatePerMl = 5.2 // ৳5200/L = ৳5.20/ml
+      const whiteRatePerMl = 5.8 // ৳5800/L = ৳5.80/ml
+      const totalCost5C = parseFloat(((4 * perChannelMl5C * cmykRatePerMl) + (1 * perChannelMl5C * whiteRatePerMl)).toFixed(2))
+      // 4 * 0.2 * 5.2 = 4.16, 1 * 0.2 * 5.8 = 1.16 -> 4.16 + 1.16 = 5.32
+      assert.strictEqual(totalCost5C, 5.32)
+
+      // 3. 6-Channel CMYK + Lc + Lm (e.g. Photo Print: 1.2 ml/sft total -> 0.20 ml/sft per channel)
+      const totalMl6C = 1.2
+      const channelCount6C = 6
+      const perChannelMl6C = parseFloat((totalMl6C / channelCount6C).toFixed(4)) // 0.20 ml/channel/sft
+      assert.strictEqual(perChannelMl6C, 0.20)
+      const rate6C = 2.8 // ৳2800/L = ৳2.80/ml
+      const totalCost6C = parseFloat((channelCount6C * perChannelMl6C * rate6C).toFixed(2)) // 6 * 0.20 * 2.80 = 3.36
+      assert.strictEqual(totalCost6C, 3.36)
+
+      // For 100 sqft job with 4C
+      const totalJobInkCost = totalInkCost4C * 100
+      assert.strictEqual(totalJobInkCost, 105)
     })
 
     test('Group C (Finishing Materials): Eyelets and Seaming Tape consumption', () => {

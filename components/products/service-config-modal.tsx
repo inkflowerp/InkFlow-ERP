@@ -1305,21 +1305,47 @@ export function ServiceConfigModal({
     }
   }
 
-  // Auto calculate average ink rate per ml and total ink cost per selling unit
+  // Auto calculate ink channel consumption (total ml divided equally across active channels e.g. 4ch, 5ch, 6ch) and total cost
   const autoCalculatedInkMetrics = useMemo(() => {
+    const totalMl = Number(consumePerUnitMl) > 0 ? Number(consumePerUnitMl) : 1.0
+    const channelCount = selectedInks && selectedInks.length > 0 ? selectedInks.length : 4
+    const perChannelMl = parseFloat((totalMl / channelCount).toFixed(4))
+
     if (!selectedInks || selectedInks.length === 0) {
-      return { avgRatePerMl: 0.0028, unitInkCost: 3.36, totalInksCostPerLiter: 2800 }
+      return {
+        totalConsumeMl: totalMl,
+        channelCount: 4,
+        perChannelMl: 0.25,
+        unitInkCost: 1.05,
+        totalInksCostPerLiter: 2800,
+        channelsBreakdown: [],
+      }
     }
-    let totalLiterPrice = 0
-    selectedInks.forEach((ink) => {
-      const price = Number(ink.unit_price) || 2800
-      totalLiterPrice += price
+
+    let totalInkCost = 0
+    const channelsBreakdown = selectedInks.map((ink) => {
+      const literPrice = Number(ink.unit_price) || 2800
+      const ratePerMl = literPrice / 1000 // 1 Liter = 1000 ml
+      const channelCost = parseFloat((perChannelMl * ratePerMl).toFixed(4))
+      totalInkCost += channelCost
+      return {
+        ...ink,
+        allocatedMl: perChannelMl,
+        ratePerMl,
+        channelCost,
+      }
     })
-    const avgLiterPrice = totalLiterPrice / selectedInks.length
-    const avgRatePerMl = avgLiterPrice / 1000 // 1 Liter = 1000 ml
-    const cRate = Number(consumePerUnitMl) || 1.2
-    const unitInkCost = parseFloat((cRate * avgRatePerMl).toFixed(2))
-    return { avgRatePerMl, unitInkCost, totalInksCostPerLiter: avgLiterPrice }
+
+    const unitInkCost = parseFloat(totalInkCost.toFixed(2))
+
+    return {
+      totalConsumeMl: totalMl,
+      channelCount,
+      perChannelMl,
+      unitInkCost,
+      totalInksCostPerLiter: totalMl > 0 ? (totalInkCost / totalMl) * 1000 : 2800,
+      channelsBreakdown,
+    }
   }, [selectedInks, consumePerUnitMl])
 
   // Keep inkCost in sync if auto calculate is enabled
@@ -2018,7 +2044,7 @@ export function ServiceConfigModal({
     } else {
       const { consumeUnit, costVal, isInk } = getMaterialUnitDetails(mat)
       const cost = costVal
-      const qty = isInk ? (Number(consumePerUnitMl) || 1.2) : 1
+      const qty = isInk ? autoCalculatedInkMetrics.perChannelMl : 1
       const waste = defaultWastagePercent
       const subtotal = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
 
@@ -3461,66 +3487,103 @@ export function ServiceConfigModal({
                   </div>
                 </div>
 
-                {/* Ink Channels Grid */}
+                {/* Ink Channels Grid with Distributed ml/sft Breakdown */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  {selectedInks.map((ink, idx) => (
-                    <div
-                      key={idx}
-                      className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex items-center justify-between gap-2 text-xs"
-                    >
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <span
-                          className="w-3.5 h-3.5 rounded-full shrink-0 border border-slate-300 shadow-2xs"
-                          style={{ backgroundColor: ink.color_code || '#64748b' }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-bold text-slate-800 dark:text-slate-200 block truncate">
-                            {ink.channel}
-                          </span>
-                          <select
-                            value={ink.material_id || ''}
-                            onChange={(e) => handleChannelInkChange(idx, e.target.value)}
-                            className="w-full mt-1 h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 font-medium truncate"
-                          >
-                            <option value="">-- Link Inventory Ink Bottle/Can --</option>
-                            {inkMaterials.length > 0 ? (
-                              inkMaterials.map((im) => (
-                                <option key={im.id} value={im.id}>
-                                  {im.name} (৳{(im as any).purchase_price || im.cost_per_unit || (im as any).base_cost || 2800}/L)
-                                </option>
-                              ))
-                            ) : (
-                              availableMaterials.map((im) => (
-                                <option key={im.id} value={im.id}>
-                                  {im.name}
-                                </option>
-                              ))
-                            )}
-                          </select>
+                  {selectedInks.map((ink, idx) => {
+                    const literPrice = Number(ink.unit_price) || 2800
+                    const ratePerMl = literPrice / 1000
+                    const perChannelMl = autoCalculatedInkMetrics.perChannelMl
+                    const channelCost = parseFloat((perChannelMl * ratePerMl).toFixed(3))
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/60 flex items-center justify-between gap-2 text-xs"
+                      >
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <span
+                            className="w-4 h-4 rounded-full shrink-0 border border-slate-300 dark:border-slate-700 shadow-2xs"
+                            style={{ backgroundColor: ink.color_code || '#64748b' }}
+                          />
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
+                                {ink.channel}
+                              </span>
+                              <Badge variant="outline" className="text-[10px] font-mono py-0 px-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                                {perChannelMl} ml/{sellingUnit || 'sft'}
+                              </Badge>
+                            </div>
+                            <select
+                              value={ink.material_id || ''}
+                              onChange={(e) => handleChannelInkChange(idx, e.target.value)}
+                              className="w-full mt-1 h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-1.5 font-medium truncate"
+                            >
+                              <option value="">-- Link Inventory Ink Bottle/Can --</option>
+                              {inkMaterials.length > 0 ? (
+                                inkMaterials.map((im) => {
+                                  const { costVal } = getMaterialUnitDetails(im)
+                                  const rawP = (im as any).purchase_price || im.cost_per_unit || 2800
+                                  return (
+                                    <option key={im.id} value={im.id}>
+                                      {im.name} (৳{rawP}/L • ৳{costVal}/ml)
+                                    </option>
+                                  )
+                                })
+                              ) : (
+                                availableMaterials.map((im) => (
+                                  <option key={im.id} value={im.id}>
+                                    {im.name}
+                                  </option>
+                                ))
+                              )}
+                            </select>
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="text-right shrink-0">
-                        <span className="text-[11px] font-mono font-bold text-slate-900 dark:text-white block">
-                          ৳{ink.unit_price || 2800}/L
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          (৳{((ink.unit_price || 2800) / 1000).toFixed(2)}/ml)
-                        </span>
-                      </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300 block">
+                            ৳{channelCost}/{sellingUnit || 'sft'}
+                          </span>
+                          <span className="text-[10px] text-slate-400 font-mono block">
+                            ৳{literPrice}/L (৳{ratePerMl.toFixed(2)}/ml)
+                          </span>
+                        </div>
 
-                      {selectedInks.length > 4 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveInkChannel(idx)}
-                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                          title="Remove channel"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                        {selectedInks.length > 4 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveInkChannel(idx)}
+                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer transition-colors"
+                            title="Remove channel"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Total Ink Consumption & Per-Channel Equal Distribution Formula Banner */}
+                <div className="p-3 rounded-lg border border-blue-200 dark:border-blue-800/80 bg-blue-50/60 dark:bg-blue-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Droplets className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <div>
+                      <span className="font-bold text-blue-950 dark:text-blue-200 block">
+                        Ink Formulation: {selectedInks.length} Channels ({selectedInks.map((i) => i.channel).join(', ')})
+                      </span>
+                      <span className="text-[11px] text-blue-800/80 dark:text-blue-300/80 font-mono block">
+                        Total {Number(consumePerUnitMl) || 1.0} ml/{sellingUnit || 'sft'} ÷ {selectedInks.length} Channels = <strong>{autoCalculatedInkMetrics.perChannelMl} ml/{sellingUnit || 'sft'}</strong> per channel
+                      </span>
                     </div>
-                  ))}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] text-slate-500 uppercase block font-semibold">Total Ink Cost</span>
+                    <span className="text-xs font-mono font-bold text-blue-700 dark:text-blue-300">
+                      ৳{autoCalculatedInkMetrics.unitInkCost} / {sellingUnit || 'sft'}
+                    </span>
+                  </div>
                 </div>
 
                 {/* Consumption & Inks Cost Auto-Calculation */}
