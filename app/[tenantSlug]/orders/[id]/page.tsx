@@ -68,11 +68,63 @@ export default function OrderDetailPage() {
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
   const [allJobs] = useDataStore<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, [])
   const [allTimeline] = useDataStore<OrderTimelineEventRecord[]>(STORAGE_KEYS.TIMELINE_EVENTS, [])
 
-  const order = orders.find((o) => o.id === orderId || o.order_number === orderId)
-  const jobs = allJobs.filter((j) => order && (j.order_id === order.id || j.order_id === orderId || j.order_id === order.order_number))
+  let order = orders.find((o) => o.id === orderId || o.order_number === orderId)
+  if (!order) {
+    const inv = invoices.find((i) => i.id === orderId || i.invoice_number === orderId || i.order_number === orderId || i.sales_order_id === orderId)
+    if (inv) {
+      order = {
+        id: inv.sales_order_id || inv.id,
+        company_id: inv.company_id || company?.id || 'default',
+        order_number: inv.order_number || inv.invoice_number.replace('INV-', 'ORD-'),
+        customer_id: inv.customer_id,
+        customer_name: inv.customer_name,
+        customer_phone: inv.customer_phone,
+        customer_address: inv.customer_address,
+        salesperson_name: inv.created_by_name || 'Commercial Manager',
+        order_date: inv.invoice_date || new Date().toISOString().split('T')[0],
+        delivery_date: inv.due_date || new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0],
+        priority: (inv.priority as OrderPriority) || 'normal',
+        status: inv.status === 'paid' ? 'completed' : 'confirmed',
+        payment_terms: 'cash',
+        subtotal: inv.subtotal || 0,
+        discount_amount: inv.discount_amount || 0,
+        vat_amount: inv.vat_amount || 0,
+        final_price: inv.grand_total || 0,
+        advance_amount: inv.paid_amount || 0,
+        due_amount: inv.due_amount || 0,
+        notes: `Origin: Invoice #${inv.invoice_number}`,
+        items: (inv.items || []).map((it: any, idx: number) => ({
+          id: it.id || `oi-${idx}`,
+          item_name: it.item_description || it.description || it.item_name || 'Item',
+          width: it.width || 0,
+          height: it.height || 0,
+          dimension_unit: (it.dimension_unit as any) || 'ft',
+          quantity: it.quantity || 1,
+          unit: it.unit || 'pcs',
+          unit_price: it.unit_price || 0,
+          total_price: it.total_price || 0,
+          material_spec: it.material_spec || 'Standard Media',
+        })),
+        jobs_count: inv.items?.length || 1,
+        workflow_routing: (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_required' || it.design_required))
+          ? 'design_required'
+          : (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_ok'))
+          ? 'design_ok'
+          : 'ready_production',
+        commercial_status: 'invoice_created',
+        invoice_id: inv.id,
+        invoice_number: inv.invoice_number,
+        production_gate_status: 'ready_for_production',
+        created_at: inv.created_at || new Date().toISOString(),
+        updated_at: inv.updated_at || new Date().toISOString(),
+      }
+    }
+  }
+  const jobs = allJobs.filter((j) => order && (j.order_id === order.id || j.order_id === orderId || j.order_id === order.order_number || (order.invoice_id && j.invoice_id === order.invoice_id)))
   const timeline = allTimeline.filter((t) => order && (t.order_id === order.id || t.order_id === orderId || t.order_id === order.order_number))
 
   // Modals
@@ -183,7 +235,7 @@ export default function OrderDetailPage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Sales Orders
+          Back to Orders & Job Flow
         </Link>
         <Card className="p-12 text-center border-dashed">
           <FileText className="h-10 w-10 text-slate-400 mx-auto mb-3" />
@@ -309,7 +361,7 @@ export default function OrderDetailPage() {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Back to Sales Orders
+          Back to Orders & Job Flow
         </Link>
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

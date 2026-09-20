@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   Briefcase,
@@ -12,11 +12,24 @@ import {
   Clock,
   Printer,
   Building,
-  DollarSign,
   AlertTriangle,
   Flame,
   Layers,
   Calendar,
+  Phone,
+  ArrowRight,
+  Sparkles,
+  Scissors,
+  Truck,
+  FileText,
+  Filter,
+  RefreshCw,
+  Eye,
+  SlidersHorizontal,
+  FileCheck,
+  ChevronDown,
+  Wrench,
+  Tag,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -27,9 +40,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import { SalesOrderRecord, OrderPriority, PaymentTerm, OrderStatus } from '@/types/order.types'
+import { SalesOrderRecord, OrderPriority, PaymentTerm, OrderStatus, JobOrderRecord } from '@/types/order.types'
 import { CustomerRecord } from '@/types/crm.types'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
@@ -40,6 +52,44 @@ import { Crown, ShoppingCart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
 
+export interface UnifiedWorkItem {
+  id: string
+  orderNumber: string
+  invoiceNumber?: string
+  origin: 'invoice_created' | 'sales_order' | 'work_order' | 'quotation'
+  customerId?: string
+  customerName: string
+  customerNameBn?: string | null
+  customerPhone?: string
+  customerAddress?: string
+  items: Array<{
+    id: string
+    itemName: string
+    dimensions?: string
+    width?: number
+    height?: number
+    dimensionUnit?: string
+    quantity: number
+    unit: string
+    materialSpec?: string
+    finishing?: string
+    routing?: string
+  }>
+  jobsCount: number
+  priority: OrderPriority
+  deliveryDate: string
+  orderDate: string
+  createdAt: string
+  workflowRouting?: string
+  commercialStatus: 'invoice_created' | 'invoice_requested' | 'invoice_required'
+  productionGateStatus?: string
+  stage: 'queued' | 'design_queue' | 'design_ok' | 'in_production' | 'finishing' | 'ready_for_delivery' | 'completed'
+  notes?: string
+  salespersonName?: string
+  rawOrder?: SalesOrderRecord
+  rawInvoice?: any
+}
+
 export default function OrdersPage() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
@@ -47,61 +97,374 @@ export default function OrdersPage() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
+  // Datastore hooks
   const [orders, setOrders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
+  const [jobOrders] = useDataStore<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, [])
+  const [productionJobs] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+  const [deliveryChallans] = useDataStore<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
+  const [designJobs] = useDataStore<any[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const [customerList] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
+
+  // Filters & Search
   const [search, setSearch] = useState('')
-  const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [activeStageTab, setActiveStageTab] = useState<string>('all')
   const [selectedPriority, setSelectedPriority] = useState<string>('all')
+  const [selectedRouting, setSelectedRouting] = useState<string>('all')
+  const [sortBy, setSortBy] = useState<'deadline_asc' | 'created_desc'>('deadline_asc')
 
-  const orderCheck = checkCanCreate('monthly_orders')
-
-  const handleOpenNewOrder = () => {
-    const check = checkCanCreate('monthly_orders')
-    if (!check.allowed) {
-      openLimitExceededModal('monthly_orders')
-      return
-    }
-    setIsNewOpen(true)
-  }
-
-  const handleOpenWorkOrder = () => {
-    const check = checkCanCreate('monthly_orders')
-    if (!check.allowed) {
-      openLimitExceededModal('monthly_orders')
-      return
-    }
-    setIsWorkOrderOpen(true)
-  }
-
-
-  // New Order Modal
+  // Modals
   const [isNewOpen, setIsNewOpen] = useState(false)
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState(false)
   const [isCustomerModalOpen, setIsCustomerModalOpen] = useState(false)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
+  const [selectedTicketJob, setSelectedTicketJob] = useState<UnifiedWorkItem | null>(null)
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false)
+
+  // New Order Form State (Operational Specs only - No pricing)
   const [itemDesc, setItemDesc] = useState('')
   const [itemWidth, setItemWidth] = useState<number>(0)
   const [itemHeight, setItemHeight] = useState<number>(0)
   const [itemQty, setItemQty] = useState<number>(1)
-  const [itemPrice, setItemPrice] = useState<number>(0)
-  const [advancePaid, setAdvancePaid] = useState<number>(0)
+  const [itemMaterial, setItemMaterial] = useState('Standard Flex Banner')
+  const [itemFinishing, setItemFinishing] = useState('Eyelets 4 Corners')
   const [orderPriority, setOrderPriority] = useState<OrderPriority>('normal')
-  const [paymentTerms, setPaymentTerms] = useState<PaymentTerm>('advance')
+  const [orderRouting, setOrderRouting] = useState<string>('ready_production')
+  const [orderNotes, setOrderNotes] = useState('')
   const [deliveryDate, setDeliveryDate] = useState<string>(
     new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
   )
   const [notification, setNotification] = useState<string | null>(null)
+
+  const orderCheck = checkCanCreate('monthly_orders')
 
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleCustomerCreated = (newCust: CustomerRecord) => {
-    setSelectedCustomerId(newCust.id)
-    showNotification(`Selected customer: ${newCust.name}`)
+  // Combine Orders and Invoices into a Unified List of Jobs/Works
+  const unifiedWorks: UnifiedWorkItem[] = useMemo(() => {
+    const list: UnifiedWorkItem[] = []
+    const seenOrderNumbers = new Set<string>()
+    const seenIds = new Set<string>()
+
+    // 1. Process explicit sales orders
+    for (const ord of orders) {
+      if (!ord || !ord.order_number) continue
+      seenOrderNumbers.add(ord.order_number)
+      seenIds.add(ord.id)
+
+      // Resolve linked job stage from job_orders / production_jobs / delivery_challans / design_jobs
+      const linkedJobs = jobOrders.filter(
+        (j) => j.order_id === ord.id || j.order_id === ord.order_number || (ord.invoice_id && j.invoice_id === ord.invoice_id)
+      )
+      const linkedChallan = deliveryChallans.find(
+        (c) => c.sales_order_id === ord.id || c.order_number === ord.order_number || (ord.invoice_id && c.invoice_id === ord.invoice_id)
+      )
+      const linkedDesign = designJobs.find(
+        (d) => d.sales_order_id === ord.id || d.order_number === ord.order_number || (ord.invoice_id && d.invoice_id === ord.invoice_id)
+      )
+
+      let computedStage: UnifiedWorkItem['stage'] = 'queued'
+
+      if (ord.status === 'completed' || linkedChallan?.status === 'delivered') {
+        computedStage = 'completed'
+      } else if (
+        ord.status === 'ready_for_delivery' ||
+        linkedChallan?.status === 'pending_dispatch' ||
+        linkedJobs.some((j) => (j as any).status === 'ready_for_delivery' || j.status === 'completed')
+      ) {
+        computedStage = 'ready_for_delivery'
+      } else if (
+        ord.status === 'finishing' ||
+        linkedJobs.some((j) => (j.status === 'in_progress' || (j as any).status === 'in_production') && j.assigned_department === 'finishing')
+      ) {
+        computedStage = 'finishing'
+      } else if (
+        ord.status === 'in_production' ||
+        linkedJobs.some((j) => j.status === 'in_progress' || (j as any).status === 'in_production')
+      ) {
+        computedStage = 'in_production'
+      } else if (linkedDesign && (linkedDesign.status === 'in_progress' || linkedDesign.status === 'pending_review')) {
+        computedStage = 'design_queue'
+      } else if (ord.workflow_routing === 'design_required' && (!linkedDesign || linkedDesign.status === 'pending')) {
+        computedStage = 'design_queue'
+      } else if (ord.workflow_routing === 'design_ok' || (linkedDesign && linkedDesign.status === 'approved')) {
+        computedStage = 'design_ok'
+      }
+
+      const ordCommercial: UnifiedWorkItem['commercialStatus'] =
+        ord.invoice_id || ord.commercial_status === 'invoice_created'
+          ? 'invoice_created'
+          : ord.commercial_status === 'invoice_requested'
+          ? 'invoice_requested'
+          : 'invoice_required'
+
+      list.push({
+        id: ord.id,
+        orderNumber: ord.order_number,
+        invoiceNumber: ord.invoice_number || undefined,
+        origin: ord.invoice_id ? 'invoice_created' : 'sales_order',
+        customerId: ord.customer_id || undefined,
+        customerName: ord.customer_name || 'Walk-in Customer',
+        customerNameBn: ord.customer_name_bn || undefined,
+        customerPhone: ord.customer_phone || undefined,
+        customerAddress: ord.customer_address || undefined,
+        items: (ord.items || []).map((it, idx) => ({
+          id: it.id || `oi-${idx}`,
+          itemName: it.item_name || 'Print Order Job',
+          dimensions: it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : undefined,
+          width: it.width,
+          height: it.height,
+          dimensionUnit: it.dimension_unit || 'ft',
+          quantity: it.quantity || 1,
+          unit: it.unit || 'sft',
+          materialSpec: it.material_spec || 'Standard Media',
+          finishing: (it as any).finishing || undefined,
+          routing: (it as any).workflow_routing || ord.workflow_routing,
+        })),
+        jobsCount: ord.jobs_count || (ord.items?.length || 1),
+        priority: ord.priority || 'normal',
+        deliveryDate: ord.delivery_date || new Date().toISOString().split('T')[0],
+        orderDate: ord.order_date || new Date().toISOString().split('T')[0],
+        createdAt: ord.created_at || new Date().toISOString(),
+        workflowRouting: ord.workflow_routing || 'ready_production',
+        commercialStatus: ordCommercial,
+        productionGateStatus: ord.production_gate_status || (ord.invoice_id ? 'ready_for_production' : 'blocked_commercial'),
+        stage: computedStage,
+        notes: ord.notes || undefined,
+        salespersonName: ord.salesperson_name || undefined,
+        rawOrder: ord,
+      })
+    }
+
+    // 2. Process all Invoices to ensure 100% of invoice-created works appear
+    for (const inv of invoices) {
+      if (!inv || !inv.invoice_number) continue
+      const derivedOrderNumber = inv.order_number || inv.invoice_number.replace('INV-', 'ORD-')
+      
+      // If already added via sales_orders matching id or order_number, skip to avoid duplicates
+      if (
+        (inv.sales_order_id && seenIds.has(inv.sales_order_id)) ||
+        seenOrderNumbers.has(derivedOrderNumber) ||
+        seenOrderNumbers.has(inv.invoice_number)
+      ) {
+        continue
+      }
+
+      // Check linked jobs/challans/designs for this invoice
+      const linkedJobs = jobOrders.filter((j) => j.invoice_id === inv.id || j.order_id === derivedOrderNumber)
+      const linkedChallan = deliveryChallans.find((c) => c.invoice_id === inv.id || c.challan_number === `CHL-${inv.invoice_number.replace('INV-', '')}`)
+      const linkedDesign = designJobs.find((d) => d.invoice_id === inv.id)
+
+      let computedStage: UnifiedWorkItem['stage'] = 'in_production'
+
+      if (inv.status === 'paid' && linkedChallan?.status === 'delivered') {
+        computedStage = 'completed'
+      } else if (linkedChallan?.status === 'pending_dispatch' || linkedJobs.some((j) => (j as any).status === 'ready_for_delivery')) {
+        computedStage = 'ready_for_delivery'
+      } else if (linkedJobs.some((j) => j.assigned_department === 'finishing')) {
+        computedStage = 'finishing'
+      } else if (linkedDesign && (linkedDesign.status === 'in_progress' || linkedDesign.status === 'pending_review')) {
+        computedStage = 'design_queue'
+      } else if (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_required' || it.design_required)) {
+        computedStage = 'design_queue'
+      } else if (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_ok')) {
+        computedStage = 'design_ok'
+      }
+
+      list.push({
+        id: inv.id,
+        orderNumber: derivedOrderNumber,
+        invoiceNumber: inv.invoice_number,
+        origin: 'invoice_created',
+        customerId: inv.customer_id,
+        customerName: inv.customer_name || 'Counter Customer',
+        customerPhone: inv.customer_phone,
+        customerAddress: inv.customer_address,
+        items: (inv.items || []).map((it: any, idx: number) => ({
+          id: it.id || `inv-item-${idx}`,
+          itemName: it.item_description || it.description || it.item_name || `Invoiced Work ${idx + 1}`,
+          dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+          width: it.width,
+          height: it.height,
+          dimensionUnit: it.unit || 'ft',
+          quantity: it.quantity || 1,
+          unit: it.unit || 'pcs',
+          materialSpec: it.material_spec || 'Specified Media',
+          finishing: it.finishing || it.remarks,
+          routing: it.workflow_routing,
+        })),
+        jobsCount: inv.items?.length || 1,
+        priority: (inv.priority as OrderPriority) || 'normal',
+        deliveryDate: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
+        orderDate: inv.invoice_date || new Date().toISOString().split('T')[0],
+        createdAt: inv.created_at || new Date().toISOString(),
+        workflowRouting: (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_required' || it.design_required))
+          ? 'design_required'
+          : (inv.items && inv.items.some((it: any) => it.workflow_routing === 'design_ok'))
+          ? 'design_ok'
+          : 'ready_production',
+        commercialStatus: 'invoice_created',
+        productionGateStatus: 'ready_for_production',
+        stage: computedStage,
+        notes: `Auto-linked from Invoicing (#${inv.invoice_number})`,
+        salespersonName: inv.created_by_name || 'Commercial Billing',
+        rawInvoice: inv,
+      })
+    }
+
+    return list
+  }, [orders, invoices, jobOrders, productionJobs, deliveryChallans, designJobs])
+
+  // Operational KPI Counts
+  const counts = useMemo(() => {
+    return {
+      total: unifiedWorks.length,
+      design: unifiedWorks.filter((w) => w.stage === 'design_queue' || w.stage === 'design_ok').length,
+      production: unifiedWorks.filter((w) => w.stage === 'in_production' || w.stage === 'queued').length,
+      finishing: unifiedWorks.filter((w) => w.stage === 'finishing').length,
+      ready: unifiedWorks.filter((w) => w.stage === 'ready_for_delivery').length,
+      completed: unifiedWorks.filter((w) => w.stage === 'completed').length,
+      urgent: unifiedWorks.filter((w) => w.priority === 'urgent' || w.priority === 'very_urgent').length,
+    }
+  }, [unifiedWorks])
+
+  // Filter & Search Logic
+  const filteredWorks = useMemo(() => {
+    return unifiedWorks
+      .filter((w) => {
+        // Search Filter
+        const term = search.toLowerCase().trim()
+        const matchSearch =
+          !term ||
+          w.orderNumber.toLowerCase().includes(term) ||
+          (w.invoiceNumber && w.invoiceNumber.toLowerCase().includes(term)) ||
+          w.customerName.toLowerCase().includes(term) ||
+          (w.customerPhone && w.customerPhone.toLowerCase().includes(term)) ||
+          (w.salespersonName && w.salespersonName.toLowerCase().includes(term)) ||
+          w.items.some((it) => it.itemName.toLowerCase().includes(term) || (it.materialSpec && it.materialSpec.toLowerCase().includes(term)))
+
+        // Stage Tab Filter
+        let matchStage = true
+        if (activeStageTab === 'design') {
+          matchStage = w.stage === 'design_queue' || w.stage === 'design_ok'
+        } else if (activeStageTab === 'production') {
+          matchStage = w.stage === 'in_production' || w.stage === 'queued'
+        } else if (activeStageTab === 'finishing') {
+          matchStage = w.stage === 'finishing'
+        } else if (activeStageTab === 'ready') {
+          matchStage = w.stage === 'ready_for_delivery'
+        } else if (activeStageTab === 'completed') {
+          matchStage = w.stage === 'completed'
+        } else if (activeStageTab === 'urgent') {
+          matchStage = w.priority === 'urgent' || w.priority === 'very_urgent'
+        }
+
+        // Priority Filter
+        const matchPriority = selectedPriority === 'all' || w.priority === selectedPriority
+
+        // Routing Filter
+        const matchRouting = selectedRouting === 'all' || w.workflowRouting === selectedRouting
+
+        return matchSearch && matchStage && matchPriority && matchRouting
+      })
+      .sort((a, b) => {
+        if (sortBy === 'deadline_asc') {
+          return new Date(a.deliveryDate).getTime() - new Date(b.deliveryDate).getTime()
+        }
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      })
+  }, [unifiedWorks, search, activeStageTab, selectedPriority, selectedRouting, sortBy])
+
+  // Quick Stage Update
+  const handleUpdateStage = (work: UnifiedWorkItem, newStage: UnifiedWorkItem['stage']) => {
+    // 1. Update Sales Order if present
+    if (work.rawOrder) {
+      let mappedOrderStatus: OrderStatus = 'in_production'
+      if (newStage === 'completed') mappedOrderStatus = 'completed'
+      else if (newStage === 'ready_for_delivery') mappedOrderStatus = 'ready_for_delivery'
+      else if (newStage === 'finishing') mappedOrderStatus = 'finishing'
+      else if (newStage === 'in_production') mappedOrderStatus = 'in_production'
+      else if (newStage === 'queued') mappedOrderStatus = 'confirmed'
+
+      PrintERPDataStore.updateItem<SalesOrderRecord>(STORAGE_KEYS.ORDERS, work.rawOrder.id, {
+        status: mappedOrderStatus,
+        updated_at: new Date().toISOString(),
+      })
+    }
+
+    // 2. Update linked Job Orders
+    const allJobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    let jobChanged = false
+    for (const jo of allJobOrders) {
+      if (
+        jo.order_id === work.id ||
+        jo.order_id === work.orderNumber ||
+        (work.invoiceNumber && jo.invoice_number === work.invoiceNumber)
+      ) {
+        if (newStage === 'completed') jo.status = 'completed'
+        else if (newStage === 'ready_for_delivery') jo.status = 'ready_for_delivery'
+        else if (newStage === 'finishing') {
+          jo.status = 'in_production'
+          jo.assigned_department = 'finishing'
+        } else if (newStage === 'in_production') {
+          jo.status = 'in_production'
+          jo.assigned_department = 'wide_format_print'
+        } else if (newStage === 'design_queue') {
+          jo.status = 'queued'
+          jo.assigned_department = 'design'
+        }
+        jo.updated_at = new Date().toISOString()
+        jobChanged = true
+      }
+    }
+    if (jobChanged) {
+      PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, allJobOrders)
+    }
+
+    // 3. Update linked Delivery Challans
+    if (newStage === 'ready_for_delivery' || newStage === 'completed') {
+      const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      let chlChanged = false
+      for (const chl of challans) {
+        if (
+          chl.order_number === work.orderNumber ||
+          chl.sales_order_id === work.id ||
+          (work.invoiceNumber && chl.invoice_number === work.invoiceNumber)
+        ) {
+          chl.status = newStage === 'completed' ? 'delivered' : 'pending_dispatch'
+          chl.updated_at = new Date().toISOString()
+          chlChanged = true
+        }
+      }
+      if (chlChanged) {
+        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, challans)
+      }
+    }
+
+    // Dispatch global datastore sync
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.ORDERS } }))
+      window.dispatchEvent(new CustomEvent('printerp_datastore_sync', { detail: { key: STORAGE_KEYS.JOB_ORDERS } }))
+    }
+
+    showNotification(
+      tBilingual(
+        `Work #${work.orderNumber} stage updated to: ${getStageLabel(newStage).en}`,
+        `কাজ #${work.orderNumber} এর স্ট্যাটাস পরিবর্তিত হয়েছে: ${getStageLabel(newStage).bn}`
+      )
+    )
   }
 
+  // Open Job Ticket Print Modal
+  const handleOpenTicket = (work: UnifiedWorkItem) => {
+    setSelectedTicketJob(work)
+    setIsTicketModalOpen(true)
+  }
+
+  // Handle Quick Order Creation
   const handleCreateOrder = (e: React.FormEvent) => {
     e.preventDefault()
     if (!orderCheck.allowed) {
@@ -110,49 +473,53 @@ export default function OrdersPage() {
     }
     const customer = customerList.find((c) => c.id === selectedCustomerId)
     if (!customer) {
-      showNotification('Please select or add a customer first.')
+      showNotification(tBilingual('Please select or add a customer first.', 'অনুগ্রহ করে প্রথমে একজন গ্রাহক নির্বাচন করুন।'))
       return
     }
+
     const orderNum = `ORD-${new Date().getFullYear()}-${String(orders.length + 1).padStart(4, '0')}`
-    const finalPrice = itemPrice || 0
-    const dueAmount = Math.max(0, finalPrice - (advancePaid || 0))
 
     const newOrder: SalesOrderRecord = {
       id: `ord-${Date.now()}`,
-      company_id: company?.id || '',
+      company_id: company?.id || 'default',
       order_number: orderNum,
       customer_id: customer.id,
       customer_name: customer.name,
       customer_name_bn: customer.name_bn,
       customer_phone: customer.mobile,
       customer_address: customer.address,
-      salesperson_name: 'Current Sales Rep',
+      salesperson_name: 'Current Operator',
       order_date: new Date().toISOString().split('T')[0],
       delivery_date: deliveryDate,
       priority: orderPriority,
+      workflow_routing: orderRouting as any,
       status: 'confirmed',
-      payment_terms: paymentTerms,
-      subtotal: finalPrice,
+      payment_terms: 'cash',
+      subtotal: 0,
       discount_amount: 0,
-      vat_amount: Math.round(finalPrice * 0.075),
-      final_price: finalPrice,
-      advance_amount: advancePaid,
-      due_amount: dueAmount,
-      notes: 'New job order booked directly from sales counter.',
+      vat_amount: 0,
+      final_price: 0,
+      advance_amount: 0,
+      due_amount: 0,
+      notes: orderNotes || 'Direct job intake from Orders & Job Flow.',
       items: [
         {
           id: `oi-${Date.now()}`,
-          item_name: itemDesc,
-          width: itemWidth,
-          height: itemHeight,
+          item_name: itemDesc || 'Custom Print Job',
+          width: itemWidth || 0,
+          height: itemHeight || 0,
           dimension_unit: 'ft',
-          quantity: itemQty,
+          quantity: itemQty || 1,
           unit: 'sft',
-          unit_price: itemPrice,
-          total_price: finalPrice,
-        },
+          unit_price: 0,
+          total_price: 0,
+          material_spec: itemMaterial,
+          finishing: itemFinishing,
+        } as any,
       ],
       jobs_count: 1,
+      commercial_status: 'invoice_required',
+      production_gate_status: 'ready_for_production',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     }
@@ -160,25 +527,19 @@ export default function OrdersPage() {
     PrintERPDataStore.createSalesOrderWithIntegrations(newOrder)
     refreshUsage()
     setIsNewOpen(false)
-    showNotification(`Order ${orderNum} booked! Production job tickets & invoice generated.`)
+    setItemDesc('')
+    setItemWidth(0)
+    setItemHeight(0)
+    setItemQty(1)
+    setOrderNotes('')
+
+    showNotification(
+      tBilingual(
+        `Order ${orderNum} booked & routed into Job Flow!`,
+        `অর্ডার ${orderNum} তৈরি করা হয়েছে এবং জব ফ্লো-তে যুক্ত হয়েছে!`
+      )
+    )
   }
-
-  const filtered = orders.filter((o) => {
-    const matchSearch =
-      o.order_number.toLowerCase().includes(search.toLowerCase()) ||
-      o.customer_name.toLowerCase().includes(search.toLowerCase()) ||
-      o.salesperson_name.toLowerCase().includes(search.toLowerCase())
-
-    const matchStatus = selectedStatus === 'all' || o.status === selectedStatus
-    const matchPriority = selectedPriority === 'all' || o.priority === selectedPriority
-
-    return matchSearch && matchStatus && matchPriority
-  })
-
-  // Aggregates
-  const totalBooked = orders.reduce((acc, o) => acc + o.final_price, 0)
-  const totalAdvance = orders.reduce((acc, o) => acc + o.advance_amount, 0)
-  const totalDue = orders.reduce((acc, o) => acc + o.due_amount, 0)
 
   const getPriorityBadge = (priority: OrderPriority) => {
     switch (priority) {
@@ -206,14 +567,34 @@ export default function OrdersPage() {
     }
   }
 
+  const getStageLabel = (stage: UnifiedWorkItem['stage']) => {
+    switch (stage) {
+      case 'design_queue':
+        return { en: '🎨 Design Queue', bn: '🎨 ডিজাইন কিউ', color: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300' }
+      case 'design_ok':
+        return { en: '⚡ Design Checked', bn: '⚡ ডিজাইন চেক সম্পন্ন', color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300' }
+      case 'in_production':
+        return { en: '🖨️ In Production', bn: '🖨️ প্রোডাকশন চলছে', color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300' }
+      case 'finishing':
+        return { en: '✂️ Finishing & QA', bn: '✂️ ফিনিশিং ও কোয়ালিটি', color: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300' }
+      case 'ready_for_delivery':
+        return { en: '🚚 Ready for Delivery', bn: '🚚 ডেলিভারির জন্য প্রস্তুত', color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300' }
+      case 'completed':
+        return { en: '✅ Completed', bn: '✅ সম্পন্ন', color: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300' }
+      case 'queued':
+      default:
+        return { en: '⏳ Queued / Awaiting', bn: '⏳ অপেক্ষমান', color: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300' }
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
-        titleEn="Sales Orders & Job Flow"
-        titleBn="সেলস অর্ডার ও জব ফ্লো"
-        descriptionEn="Book sales contracts, manage customer advances, and automatically dispatch discrete job tickets across machine bays."
-        descriptionBn="সেলস চুক্তি বুকিং, গ্রাহকের অগ্রিম জমা এবং প্রিন্ট জব টিকেট পরিচালনা করুন।"
+        titleEn="Orders & Job Flow"
+        titleBn="অর্ডার ও জব ফ্লো"
+        descriptionEn="Real-time visibility into all sales orders, work orders, and invoice-created jobs across design, printing, finishing, and delivery."
+        descriptionBn="ডিজাইন, প্রিন্টিং, ফিনিশিং ও ডেলিভারির সমস্ত সেলস ও ইনভয়েস ভিত্তিক কাজের রিয়েল-টাইম ট্র্যাকিং।"
         icon={Briefcase}
         iconColor="text-indigo-600"
         actions={
@@ -221,9 +602,15 @@ export default function OrdersPage() {
             <Button
               size="sm"
               variant="outline"
-              onClick={handleOpenWorkOrder}
+              onClick={() => {
+                if (!orderCheck.allowed) {
+                  openLimitExceededModal('monthly_orders')
+                  return
+                }
+                setIsWorkOrderOpen(true)
+              }}
               title={!orderCheck.allowed ? orderCheck.reason : undefined}
-              className="text-xs bangla-text"
+              className="text-xs font-semibold bangla-text"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
               {tBilingual('Add Work Order', 'ওয়ার্ক অর্ডার')}
@@ -231,12 +618,18 @@ export default function OrdersPage() {
             {can('create', 'orders') && (
               <Button
                 size="sm"
-                onClick={handleOpenNewOrder}
+                onClick={() => {
+                  if (!orderCheck.allowed) {
+                    openLimitExceededModal('monthly_orders')
+                    return
+                  }
+                  setIsNewOpen(true)
+                }}
                 title={!orderCheck.allowed ? orderCheck.reason : undefined}
-                className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white bangla-text"
+                className="bg-indigo-600 hover:bg-indigo-700 text-xs text-white font-semibold bangla-text shadow-sm"
               >
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('New Sales Order', 'নতুন সেলস অর্ডার')}
+                {tBilingual('New Order', 'নতুন অর্ডার')}
               </Button>
             )}
           </div>
@@ -246,10 +639,12 @@ export default function OrdersPage() {
       {/* Monthly Orders Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">
         <div className="flex items-center gap-2.5">
-          <div className={cn(
-            'p-1.5 rounded-lg text-white font-bold shrink-0',
-            orderCheck.exceeded ? 'bg-red-500' : orderCheck.warning ? 'bg-amber-500' : 'bg-indigo-600'
-          )}>
+          <div
+            className={cn(
+              'p-1.5 rounded-lg text-white font-bold shrink-0',
+              orderCheck.exceeded ? 'bg-red-500' : orderCheck.warning ? 'bg-amber-500' : 'bg-indigo-600'
+            )}
+          >
             <ShoppingCart className="h-4 w-4" />
           </div>
           <div>
@@ -285,14 +680,6 @@ export default function OrdersPage() {
         )}
       </div>
 
-      {/* Read-Only Notice */}
-      {isReadOnly('orders') && (
-        <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-800 dark:text-blue-300 rounded-lg text-xs font-semibold flex items-center gap-2 border border-blue-200 dark:border-blue-900 animate-in fade-in-0">
-          <AlertCircle className="h-4 w-4 text-blue-600 shrink-0" />
-          <span>{tBilingual('View-Only Mode: You have read-only access to sales and job orders.', 'শুধুমাত্র দেখার অনুমতি: সেলস বা জব অর্ডার তৈরি ও সম্পাদনার অনুমতি নেই।')}</span>
-        </div>
-      )}
-
       {/* Notification */}
       {notification && (
         <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
@@ -301,82 +688,222 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Financial KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <span className="text-xs font-semibold text-slate-500">Total Booked Order Value</span>
+      {/* OPERATIONAL JOB FLOW KPIS (Non-Monetary) */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {/* Total Works */}
+        <Card
+          onClick={() => setActiveStageTab('all')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-indigo-400',
+            activeStageTab === 'all' && 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-500">{tBilingual('Total Works', 'মোট কাজ')}</span>
+            <Layers className="h-4 w-4 text-slate-400" />
+          </div>
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-            <CurrencyDisplay amount={totalBooked} />
+            {counts.total}
           </div>
-          <span className="text-[11px] text-slate-400">{orders.length} active sales orders</span>
+          <span className="text-[10px] text-slate-400">{tBilingual('All active jobs', 'সব সক্রিয় কাজ')}</span>
         </Card>
 
-        <Card className="p-4 border-l-4 border-l-emerald-500">
-          <span className="text-xs font-semibold text-slate-500">Advance Collected (নগদ অগ্রিম)</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">
-            <CurrencyDisplay amount={totalAdvance} />
+        {/* Design Queue */}
+        <Card
+          onClick={() => setActiveStageTab('design')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-purple-400 border-l-4 border-l-purple-500',
+            activeStageTab === 'design' && 'border-purple-500 ring-2 ring-purple-500/20 bg-purple-50/20 dark:bg-purple-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-purple-700 dark:text-purple-300">{tBilingual('Design Queue', 'ডিজাইন কিউ')}</span>
+            <Sparkles className="h-4 w-4 text-purple-500" />
           </div>
-          <span className="text-[11px] text-emerald-600 font-medium">Secured customer commitments</span>
+          <div className="text-2xl font-black text-purple-700 dark:text-purple-300 mt-1">
+            {counts.design}
+          </div>
+          <span className="text-[10px] text-purple-600/80">{tBilingual('Artwork & Proofing', 'ডিজাইন ও প্রুফ')}</span>
         </Card>
 
-        <Card className="p-4 border-l-4 border-l-red-500">
-          <span className="text-xs font-semibold text-slate-500">Total Remaining Due (বাকি)</span>
-          <div className="text-2xl font-black text-red-600 mt-1">
-            <CurrencyDisplay amount={totalDue} />
+        {/* In Production */}
+        <Card
+          onClick={() => setActiveStageTab('production')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-indigo-400 border-l-4 border-l-indigo-500',
+            activeStageTab === 'production' && 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-indigo-700 dark:text-indigo-300">{tBilingual('In Production', 'প্রোডাকশনে')}</span>
+            <Printer className="h-4 w-4 text-indigo-500" />
           </div>
-          <span className="text-[11px] text-red-500 font-semibold">Payable upon delivery/fitting</span>
+          <div className="text-2xl font-black text-indigo-700 dark:text-indigo-300 mt-1">
+            {counts.production}
+          </div>
+          <span className="text-[10px] text-indigo-600/80">{tBilingual('Printing / Press', 'প্রিন্ট চলছে')}</span>
+        </Card>
+
+        {/* Finishing & QA */}
+        <Card
+          onClick={() => setActiveStageTab('finishing')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-amber-400 border-l-4 border-l-amber-500',
+            activeStageTab === 'finishing' && 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/20 dark:bg-amber-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-amber-700 dark:text-amber-300">{tBilingual('Finishing & QA', 'ফিনিশিং ও কিউএ')}</span>
+            <Scissors className="h-4 w-4 text-amber-500" />
+          </div>
+          <div className="text-2xl font-black text-amber-700 dark:text-amber-300 mt-1">
+            {counts.finishing}
+          </div>
+          <span className="text-[10px] text-amber-600/80">{tBilingual('Cutting & Fitting', 'কাটিং ও ফিটিং')}</span>
+        </Card>
+
+        {/* Ready for Delivery */}
+        <Card
+          onClick={() => setActiveStageTab('ready')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-emerald-400 border-l-4 border-l-emerald-500',
+            activeStageTab === 'ready' && 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">{tBilingual('Ready for Delivery', 'ডেলিভারি প্রস্তুত')}</span>
+            <Truck className="h-4 w-4 text-emerald-500" />
+          </div>
+          <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
+            {counts.ready}
+          </div>
+          <span className="text-[10px] text-emerald-600/80">{tBilingual('Pending dispatch', 'ডিসপ্যাচ বাকি')}</span>
+        </Card>
+
+        {/* Urgent Works */}
+        <Card
+          onClick={() => setActiveStageTab('urgent')}
+          className={cn(
+            'p-3.5 cursor-pointer transition-all hover:border-red-400 border-l-4 border-l-red-500',
+            activeStageTab === 'urgent' && 'border-red-500 ring-2 ring-red-500/20 bg-red-50/20 dark:bg-red-950/20'
+          )}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-red-700 dark:text-red-300">{tBilingual('Urgent / Priority', 'জরুরি কাজ')}</span>
+            <Flame className="h-4 w-4 text-red-500" />
+          </div>
+          <div className="text-2xl font-black text-red-700 dark:text-red-300 mt-1">
+            {counts.urgent}
+          </div>
+          <span className="text-[10px] text-red-600/80">{tBilingual('Immediate action', 'তাৎক্ষণিক প্রয়োজন')}</span>
         </Card>
       </div>
 
-      {/* Search & Filters */}
-      <Card className="p-4">
-        <div className="flex flex-col md:flex-row items-center gap-3">
+      {/* FILTER TABS & SEARCH BAR */}
+      <Card className="p-4 space-y-3">
+        {/* Stage Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
+          {[
+            { id: 'all', labelEn: 'All Works', labelBn: 'সব কাজ', count: counts.total },
+            { id: 'design', labelEn: '🎨 Design Queue', labelBn: '🎨 ডিজাইন কিউ', count: counts.design },
+            { id: 'production', labelEn: '🖨️ In Production', labelBn: '🖨️ প্রোডাকশনে', count: counts.production },
+            { id: 'finishing', labelEn: '✂️ Finishing', labelBn: '✂️ ফিনিশিং', count: counts.finishing },
+            { id: 'ready', labelEn: '🚚 Ready for Delivery', labelBn: '🚚 ডেলিভারি প্রস্তুত', count: counts.ready },
+            { id: 'completed', labelEn: '✅ Completed', labelBn: '✅ সম্পন্ন', count: counts.completed },
+            { id: 'urgent', labelEn: '🔥 Urgent Only', labelBn: '🔥 শুধু জরুরি', count: counts.urgent },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveStageTab(tab.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+                activeStageTab === tab.id
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+              )}
+            >
+              <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
+              <span
+                className={cn(
+                  'px-1.5 py-0.2 rounded-full text-[10px]',
+                  activeStageTab === tab.id
+                    ? 'bg-indigo-800 text-indigo-100'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
+                )}
+              >
+                {tab.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Search & Secondary Filters */}
+        <div className="flex flex-col md:flex-row items-center gap-3 pt-1">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
             <Input
-              placeholder="Search by order number, client company, salesperson..."
+              placeholder={tBilingual(
+                'Search by order #, invoice #, customer name, mobile, item specs...',
+                'অর্ডার #, ইনভয়েস #, গ্রাহক, ফোন বা কাজের বিবরণ দিয়ে খুঁজুন...'
+              )}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="pl-9 text-xs"
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
             {/* Priority Filter */}
             <select
               value={selectedPriority}
               onChange={(e) => setSelectedPriority(e.target.value)}
               className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
-              <option value="all">All Priorities</option>
-              <option value="normal">Normal Priority</option>
-              <option value="urgent">Urgent</option>
-              <option value="very_urgent">Very Urgent (জরুরি)</option>
+              <option value="all">{tBilingual('All Priorities', 'সকল প্রায়োরিটি')}</option>
+              <option value="normal">{tBilingual('Normal Priority', 'স্বাভাবিক')}</option>
+              <option value="urgent">{tBilingual('Urgent', 'জরুরি')}</option>
+              <option value="very_urgent">{tBilingual('Very Urgent (জরুরি)', 'খুব জরুরি')}</option>
             </select>
 
-            {/* Status Filter */}
+            {/* Workflow Routing Filter */}
             <select
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
+              value={selectedRouting}
+              onChange={(e) => setSelectedRouting(e.target.value)}
               className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
-              <option value="all">All Statuses</option>
-              <option value="confirmed">Confirmed</option>
-              <option value="in_production">In Production</option>
-              <option value="finishing">Finishing</option>
-              <option value="ready_for_delivery">Ready for Delivery</option>
-              <option value="completed">Completed</option>
+              <option value="all">{tBilingual('All Routings', 'সব রাউটিং')}</option>
+              <option value="design_required">🎨 Design Required</option>
+              <option value="design_ok">⚡ Design OK</option>
+              <option value="ready_production">🚀 Ready Production</option>
+              <option value="ready_product">📦 Ready Product</option>
+            </select>
+
+            {/* Sort Order */}
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+            >
+              <option value="deadline_asc">{tBilingual('Target Deadline (Earliest)', 'ডেলিভারি তারিখ অনুযায়ী')}</option>
+              <option value="created_desc">{tBilingual('Newest Created First', 'নতুন তৈরি অনুযায়ী')}</option>
             </select>
           </div>
         </div>
       </Card>
 
-      {/* Orders Table */}
+      {/* ORDERS & WORK DIRECTORY TABLE */}
       <Card>
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Order Directory ({filtered.length})</CardTitle>
-            <span className="text-xs text-slate-400">All booked sales contracts</span>
+            <CardTitle className="text-base flex items-center gap-2">
+              <span>{tBilingual('Orders & Job Flow Directory', 'অর্ডার ও জব ফ্লো ডিরেক্টরি')}</span>
+              <Badge variant="secondary" className="text-xs">
+                {filteredWorks.length}
+              </Badge>
+            </CardTitle>
+            <span className="text-xs text-slate-400">
+              {tBilingual('Real-time operational floor tracking (0% pricing)', 'রিয়েল-টাইম ফ্লোর ট্র্যাকিং')}
+            </span>
           </div>
         </CardHeader>
         <CardContent className="p-0">
@@ -385,284 +912,502 @@ export default function OrdersPage() {
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Order # & Priority</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Jobs Queued</th>
-                  <th className="py-3 px-4">Delivery Deadline</th>
-                  <th className="py-3 px-4">Final Price</th>
-                  <th className="py-3 px-4">Advance Paid</th>
-                  <th className="py-3 px-4">Due Balance</th>
-                  <th className="py-3 px-4">Terms</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-4">{tBilingual('Order / Work #', 'অর্ডার ও রেফারেন্স')}</th>
+                  <th className="py-3 px-4">{tBilingual('Customer', 'গ্রাহক')}</th>
+                  <th className="py-3 px-4">{tBilingual('Work & Specifications', 'কাজের বিবরণ ও সাইজ')}</th>
+                  <th className="py-3 px-4">{tBilingual('Routing & Gate', 'রাউটিং ও গেট')}</th>
+                  <th className="py-3 px-4">{tBilingual('Current Stage', 'বর্তমান পর্যায়')}</th>
+                  <th className="py-3 px-4">{tBilingual('Target Delivery', 'ডেলিভারি ডেডলাইন')}</th>
+                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Order Number & Priority */}
-                    <td className="py-3.5 px-4">
-                      <Link
-                        href={`/orders/${order.id}`}
-                        className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
-                      >
-                        <span>{order.order_number}</span>
-                        <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </Link>
-                      <div className="flex flex-wrap items-center gap-1 mt-1">
-                        {getPriorityBadge(order.priority)}
-                        {order.workflow_routing && (
-                          <Badge variant="outline" className="text-[10px] font-semibold">
-                            {order.workflow_routing === 'design_required'
-                              ? '🎨 Design Req'
-                              : order.workflow_routing === 'design_ok'
-                              ? '⚡ Design OK'
-                              : '🚀 Ready Prod'}
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="mt-1">
-                        {order.invoice_id || order.commercial_status === 'invoice_created' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                            <CheckCircle2 className="h-2.5 w-2.5" /> Invoice OK
-                          </span>
-                        ) : order.commercial_status === 'invoice_requested' ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                            <Clock className="h-2.5 w-2.5" /> Inv Requested
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
-                            <AlertTriangle className="h-2.5 w-2.5" /> Inv Required
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Customer */}
-                    <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900 dark:text-white">{order.customer_name}</div>
-                      <div className="text-[11px] font-mono text-slate-400">{order.customer_phone}</div>
-                    </td>
-
-                    {/* Jobs Queued */}
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                        <Layers className="h-3 w-3 text-indigo-600" />
-                        {order.jobs_count || order.items.length} Production Jobs
-                      </span>
-                    </td>
-
-                    {/* Delivery Deadline */}
-                    <td className="py-3.5 px-4 text-xs">
-                      <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-medium">
-                        <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                        {order.delivery_date}
-                      </div>
-                    </td>
-
-                    {/* Final Price */}
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                      <CurrencyDisplay amount={order.final_price} />
-                    </td>
-
-                    {/* Advance Paid */}
-                    <td className="py-3.5 px-4 text-xs font-medium text-emerald-600">
-                      <CurrencyDisplay amount={order.advance_amount} />
-                    </td>
-
-                    {/* Due Balance */}
-                    <td className="py-3.5 px-4">
-                      {order.due_amount > 0 ? (
-                        <span className="text-xs font-bold text-red-600">
-                          <CurrencyDisplay amount={order.due_amount} />
-                        </span>
-                      ) : (
-                        <span className="text-xs text-emerald-600 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Paid
-                        </span>
-                      )}
-                    </td>
-
-                    {/* Payment Terms */}
-                    <td className="py-3.5 px-4">
-                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                        {order.payment_terms}
-                      </span>
-                    </td>
-
-                    {/* Actions */}
-                    <td className="py-3.5 px-4 text-right">
-                      <Link
-                        href={`/orders/${order.id}`}
-                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-                      >
-                        Shop Floor Board
-                      </Link>
+                {filteredWorks.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-xs text-slate-400">
+                      <Briefcase className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                      {tBilingual('No active orders or invoice-created works found matching filters.', 'ফিল্টার অনুযায়ী কোন অর্ডার বা ইনভয়েস কাজ পাওয়া যায়নি।')}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredWorks.map((work) => {
+                    const stageInfo = getStageLabel(work.stage)
+                    const isOverdue = new Date(work.deliveryDate).getTime() < Date.now() && work.stage !== 'completed'
+
+                    return (
+                      <tr key={work.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                        {/* Order / Work # & Origin */}
+                        <td className="py-3.5 px-4">
+                          <div className="flex items-center gap-1.5">
+                            <Link
+                              href={`/orders/${work.id}`}
+                              className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
+                            >
+                              <span>{work.orderNumber}</span>
+                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </Link>
+                          </div>
+                          
+                          {/* Invoice origin reference */}
+                          {work.invoiceNumber && (
+                            <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
+                              <FileCheck className="h-3 w-3" />
+                              <span>#{work.invoiceNumber}</span>
+                            </div>
+                          )}
+
+                          <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                            {getPriorityBadge(work.priority)}
+                            <span className={cn(
+                              'text-[10px] font-semibold px-1.5 py-0.2 rounded border',
+                              work.origin === 'invoice_created'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
+                                : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300'
+                            )}>
+                              {work.origin === 'invoice_created' ? 'Invoice Origin' : 'Sales Contract'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Customer */}
+                        <td className="py-3.5 px-4">
+                          <div className="font-semibold text-slate-900 dark:text-white">
+                            {work.customerName}
+                          </div>
+                          {work.customerPhone && (
+                            <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {work.customerPhone}
+                            </div>
+                          )}
+                          {work.customerAddress && (
+                            <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
+                              {work.customerAddress}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Works & Specifications */}
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-1">
+                            {work.items.slice(0, 2).map((it, idx) => (
+                              <div key={idx} className="text-xs">
+                                <span className="font-bold text-slate-800 dark:text-slate-200">
+                                  {it.itemName}
+                                </span>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
+                                  {it.dimensions && (
+                                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">
+                                      {it.dimensions}
+                                    </span>
+                                  )}
+                                  <span className="font-semibold">
+                                    Qty: {it.quantity} {it.unit}
+                                  </span>
+                                  {it.materialSpec && (
+                                    <span className="text-slate-400">
+                                      • {it.materialSpec}
+                                    </span>
+                                  )}
+                                  {it.finishing && (
+                                    <span className="text-amber-600 dark:text-amber-400 text-[10px]">
+                                      ({it.finishing})
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                            {work.items.length > 2 && (
+                              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                                + {work.items.length - 2} more items...
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Routing & Commercial Gate */}
+                        <td className="py-3.5 px-4">
+                          <div className="space-y-1">
+                            {work.workflowRouting && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[10px] font-bold block w-fit',
+                                  work.workflowRouting === 'design_required'
+                                    ? 'bg-purple-50 text-purple-700 border-purple-300'
+                                    : work.workflowRouting === 'design_ok'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-300'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                )}
+                              >
+                                {work.workflowRouting === 'design_required'
+                                  ? '🎨 Design Req'
+                                  : work.workflowRouting === 'design_ok'
+                                  ? '⚡ Design OK'
+                                  : '🚀 Ready Prod'}
+                              </Badge>
+                            )}
+
+                            <div>
+                              {work.commercialStatus === 'invoice_created' ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                                  <CheckCircle2 className="h-2.5 w-2.5" /> Invoice OK
+                                </span>
+                              ) : work.commercialStatus === 'invoice_requested' ? (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
+                                  <Clock className="h-2.5 w-2.5" /> Inv Requested
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
+                                  <AlertTriangle className="h-2.5 w-2.5" /> Inv Required
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Current Stage & Status */}
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={cn(
+                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border',
+                              stageInfo.color
+                            )}
+                          >
+                            {tBilingual(stageInfo.en, stageInfo.bn)}
+                          </span>
+                        </td>
+
+                        {/* Target Delivery */}
+                        <td className="py-3.5 px-4 text-xs">
+                          <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
+                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                            <span>{work.deliveryDate}</span>
+                          </div>
+                          {isOverdue && (
+                            <span className="text-[10px] font-bold text-red-600 block mt-0.5">
+                              ⚠️ Overdue Delivery
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Quick Stage Progression Dropdown */}
+                            <select
+                              value={work.stage}
+                              onChange={(e) => handleUpdateStage(work, e.target.value as any)}
+                              className="h-7 px-2 text-[11px] font-semibold rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                              title="Update Work Stage"
+                            >
+                              <option value="queued">⏳ Queued</option>
+                              <option value="design_queue">🎨 Design Queue</option>
+                              <option value="in_production">🖨️ In Production</option>
+                              <option value="finishing">✂️ Finishing & QA</option>
+                              <option value="ready_for_delivery">🚚 Ready Delivery</option>
+                              <option value="completed">✅ Completed</option>
+                            </select>
+
+                            {/* Job Ticket Print Button */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleOpenTicket(work)}
+                              className="h-7 px-2 text-xs font-semibold"
+                              title="Print Technical Job Ticket"
+                            >
+                              <FileText className="h-3.5 w-3.5 mr-1 text-slate-500" />
+                              Job Ticket
+                            </Button>
+
+                            {/* Shop Floor Board Link */}
+                            <Link
+                              href={`/orders/${work.id}`}
+                              className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800"
+                            >
+                              Floor Board →
+                            </Link>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
               </tbody>
             </table>
           </div>
 
           {/* Mobile Card List View */}
           <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-            {filtered.length === 0 ? (
+            {filteredWorks.length === 0 ? (
               <div className="p-6 text-center text-xs text-slate-400">
-                {tBilingual('No orders found matching filter.', 'কোন অর্ডার পাওয়া যায়নি।')}
+                {tBilingual('No active works found matching filters.', 'কোন কাজ পাওয়া যায়নি।')}
               </div>
             ) : (
-              filtered.map((order) => (
-                <div key={order.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                  {/* Top Bar: Order # & Priority */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
-                    >
-                      <span>{order.order_number}</span>
-                      <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                    </Link>
-                    <div className="flex items-center gap-1.5">
-                      {order.workflow_routing && (
-                        <Badge variant="outline" className="text-[10px] font-semibold">
-                          {order.workflow_routing === 'design_required'
-                            ? '🎨 Design Req'
-                            : order.workflow_routing === 'design_ok'
-                            ? '⚡ Design OK'
-                            : '🚀 Ready Prod'}
-                        </Badge>
-                      )}
-                      {getPriorityBadge(order.priority)}
-                    </div>
-                  </div>
+              filteredWorks.map((work) => {
+                const stageInfo = getStageLabel(work.stage)
 
-                  {/* Customer Info & Status */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{order.customer_name}</div>
-                      {order.customer_phone && (
-                        <a href={`tel:${order.customer_phone}`} className="text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:underline">
-                          {order.customer_phone}
-                        </a>
-                      )}
+                return (
+                  <div key={work.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                    {/* Header Row: Order Number & Priority */}
+                    <div className="flex items-center justify-between gap-2">
+                      <Link
+                        href={`/orders/${work.id}`}
+                        className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                      >
+                        <span>{work.orderNumber}</span>
+                        <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                      </Link>
+                      <div className="flex items-center gap-1.5">
+                        {getPriorityBadge(work.priority)}
+                        <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold border', stageInfo.color)}>
+                          {tBilingual(stageInfo.en, stageInfo.bn)}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      {order.invoice_id || order.commercial_status === 'invoice_created' ? (
-                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200">
-                          Invoice OK
-                        </span>
-                      ) : order.commercial_status === 'invoice_requested' ? (
-                        <span className="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200">
-                          Inv Requested
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200">
-                          Inv Required
-                        </span>
-                      )}
-                      <span className="capitalize px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
-                        {order.payment_terms}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Details Grid */}
-                  <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Total Booked</span>
-                      <span className="font-bold text-slate-900 dark:text-white">
-                        <CurrencyDisplay amount={order.final_price} />
-                      </span>
+                    {/* Customer Info */}
+                    <div className="flex items-start justify-between gap-2 text-xs">
+                      <div>
+                        <div className="font-semibold text-slate-900 dark:text-white">{work.customerName}</div>
+                        {work.customerPhone && (
+                          <div className="font-mono text-slate-500">{work.customerPhone}</div>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        {work.invoiceNumber && (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 block">
+                            Invoice #{work.invoiceNumber}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Due Balance</span>
-                      {order.due_amount > 0 ? (
-                        <span className="font-bold text-red-600">
-                          <CurrencyDisplay amount={order.due_amount} />
-                        </span>
-                      ) : (
-                        <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                          <CheckCircle2 className="h-3 w-3" /> Paid
-                        </span>
-                      )}
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Advance</span>
-                      <span className="font-medium text-emerald-600">
-                        <CurrencyDisplay amount={order.advance_amount} />
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] uppercase font-semibold text-slate-400 block">Delivery</span>
-                      <span className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-slate-400" />
-                        {order.delivery_date}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Footer Actions */}
-                  <div className="flex items-center justify-between gap-2 pt-1">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                      <Layers className="h-3 w-3 text-indigo-600" />
-                      {order.jobs_count || order.items.length} Jobs
-                    </span>
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 min-h-[36px]"
-                    >
-                      Shop Floor Board →
-                    </Link>
+                    {/* Items Specs Block */}
+                    <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 space-y-1">
+                      {work.items.map((it, idx) => (
+                        <div key={idx} className="flex items-center justify-between gap-2">
+                          <span className="font-semibold text-slate-800 dark:text-slate-200">
+                            {it.itemName}
+                          </span>
+                          <span className="font-mono text-slate-500">
+                            {it.dimensions || `${it.quantity} ${it.unit}`}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[11px] text-slate-500">
+                        <span>Target: {work.deliveryDate}</span>
+                        <span className="font-semibold">{work.items.length} Job Items</span>
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenTicket(work)}
+                        className="text-xs font-semibold h-8"
+                      >
+                        <FileText className="h-3.5 w-3.5 mr-1" />
+                        Job Ticket
+                      </Button>
+
+                      <Link
+                        href={`/orders/${work.id}`}
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white min-h-[32px]"
+                      >
+                        Shop Floor Board →
+                      </Link>
+                    </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* MODAL: CREATE SALES ORDER */}
+      {/* MODAL: PRINTABLE TECHNICAL JOB TICKET (Shop Floor Job Sheet - 0% Pricing) */}
+      <ModalDialog
+        open={isTicketModalOpen}
+        onOpenChange={setIsTicketModalOpen}
+        title="Production Job Ticket / ওয়ার্ক অর্ডার টিকেট"
+        description="Technical shop floor specifications and operator workflow instructions."
+        hideFooter
+      >
+        {selectedTicketJob && (
+          <div className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1 print:p-0">
+            {/* Header Box */}
+            <div className="p-4 rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-900/60 dark:border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-black text-base text-slate-900 dark:text-white font-mono">
+                    JOB TICKET: {selectedTicketJob.orderNumber}
+                  </h3>
+                  {selectedTicketJob.invoiceNumber && (
+                    <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                      Linked Invoice: #{selectedTicketJob.invoiceNumber}
+                    </span>
+                  )}
+                </div>
+                <div>
+                  {getPriorityBadge(selectedTicketJob.priority)}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-slate-200 dark:border-slate-800 text-xs">
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-semibold">Customer</span>
+                  <span className="font-bold text-slate-900 dark:text-white">{selectedTicketJob.customerName}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-semibold">Phone</span>
+                  <span className="font-mono text-slate-700 dark:text-slate-300">{selectedTicketJob.customerPhone || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-semibold">Order Date</span>
+                  <span>{selectedTicketJob.orderDate}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block uppercase font-semibold">Target Delivery</span>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">{selectedTicketJob.deliveryDate}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Technical Works & Line Items Table */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold uppercase text-slate-500 tracking-wider">
+                Production Job Specifications ({selectedTicketJob.items.length} Items)
+              </h4>
+              <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden">
+                <table className="w-full text-xs text-left">
+                  <thead className="bg-slate-100 dark:bg-slate-800/80 font-bold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
+                    <tr>
+                      <th className="p-2.5">Item & Description</th>
+                      <th className="p-2.5">Dimensions (W × H)</th>
+                      <th className="p-2.5">Quantity</th>
+                      <th className="p-2.5">Media / Material</th>
+                      <th className="p-2.5">Finishing Requirement</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+                    {selectedTicketJob.items.map((it, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
+                        <td className="p-2.5 font-bold text-slate-900 dark:text-white">
+                          {idx + 1}. {it.itemName}
+                        </td>
+                        <td className="p-2.5 font-mono">
+                          {it.dimensions || (it.width && it.height ? `${it.width} × ${it.height} ${it.dimensionUnit || 'ft'}` : 'Standard')}
+                        </td>
+                        <td className="p-2.5 font-bold">
+                          {it.quantity} {it.unit}
+                        </td>
+                        <td className="p-2.5 text-slate-600 dark:text-slate-400">
+                          {it.materialSpec || 'Standard Media'}
+                        </td>
+                        <td className="p-2.5 text-amber-700 dark:text-amber-400 font-semibold">
+                          {it.finishing || 'None specified'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Quality & Production Checklist */}
+            <div className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+              <h5 className="text-[11px] font-bold uppercase text-slate-500">Shop Floor Production Checklist</h5>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="rounded text-indigo-600" />
+                  <span>Artwork Approved</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="rounded text-indigo-600" />
+                  <span>RIP & Print Done</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="rounded text-indigo-600" />
+                  <span>Finishing & Lamination</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" className="rounded text-indigo-600" />
+                  <span>Final QA Passed</span>
+                </label>
+              </div>
+            </div>
+
+            {/* Operator Notes */}
+            {selectedTicketJob.notes && (
+              <div className="p-3 bg-amber-50/50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-800/50 text-xs">
+                <span className="font-bold text-amber-800 dark:text-amber-300 block mb-0.5">Special Instructions:</span>
+                <p className="text-amber-900 dark:text-amber-200">{selectedTicketJob.notes}</p>
+              </div>
+            )}
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-slate-800">
+              <span className="text-[11px] text-slate-400 font-mono">
+                Operator Sign-off: ____________________
+              </span>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" onClick={() => setIsTicketModalOpen(false)}>
+                  Close
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') window.print()
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+                >
+                  <Printer className="mr-1.5 h-3.5 w-3.5" />
+                  Print Job Sheet
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </ModalDialog>
+
+      {/* MODAL: CREATE ORDER (Non-monetary shop floor intake) */}
       <ModalDialog
         open={isNewOpen}
         onOpenChange={setIsNewOpen}
-        title="Book New Sales Order"
-        description="Record customer agreement, advance payment, and generate production job tickets."
+        title="New Order Intake"
+        description="Record customer job specifications, dimensions, and dispatch to the shop floor flow."
         hideFooter
       >
         <form onSubmit={handleCreateOrder} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="soCust" required>Select Customer Profile</Label>
+              <Label htmlFor="soCust" required>Select Customer</Label>
               <button
                 type="button"
                 onClick={() => setIsCustomerModalOpen(true)}
-                className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 flex items-center gap-1"
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400 flex items-center gap-1"
               >
                 + New Customer
               </button>
             </div>
-            <div className="flex gap-2">
-              <select
-                id="soCust"
-                value={selectedCustomerId}
-                onChange={(e) => setSelectedCustomerId(e.target.value)}
-                className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
-              >
-                {customerList.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name} ({c.mobile}) - {c.area || 'Dhaka'}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsCustomerModalOpen(true)}
-                className="h-10 px-3 shrink-0 rounded-xl border-dashed border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-              >
-                + New
-              </Button>
-            </div>
+            <select
+              id="soCust"
+              value={selectedCustomerId}
+              onChange={(e) => setSelectedCustomerId(e.target.value)}
+              className="w-full h-10 px-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
+              required
+            >
+              <option value="">-- Choose Customer Profile --</option>
+              {customerList.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name} ({c.mobile}) - {c.area || 'Dhaka'}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -674,29 +1419,29 @@ export default function OrdersPage() {
                 onChange={(e) => setOrderPriority(e.target.value as OrderPriority)}
                 className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-bold"
               >
-                <option value="normal">Normal</option>
+                <option value="normal">Normal Priority</option>
                 <option value="urgent">Urgent</option>
                 <option value="very_urgent">Very Urgent (জরুরি)</option>
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="soTerms" required>Payment Terms</Label>
+              <Label htmlFor="soRouting" required>Workflow Routing</Label>
               <select
-                id="soTerms"
-                value={paymentTerms}
-                onChange={(e) => setPaymentTerms(e.target.value as PaymentTerm)}
+                id="soRouting"
+                value={orderRouting}
+                onChange={(e) => setOrderRouting(e.target.value)}
                 className="w-full h-9 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
               >
-                <option value="advance">Advance Payment</option>
-                <option value="cash">Full Cash Counter</option>
-                <option value="partial">Partial Payment</option>
-                <option value="credit">Credit (বাকি)</option>
+                <option value="ready_production">🚀 Direct to Production</option>
+                <option value="design_required">🎨 Design Required</option>
+                <option value="design_ok">⚡ Design Check (Customer File)</option>
+                <option value="ready_product">📦 Ready Product (No Press)</option>
               </select>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="soDelDate" required>Delivery Date</Label>
+              <Label htmlFor="soDelDate" required>Target Delivery Date</Label>
               <Input
                 id="soDelDate"
                 type="date"
@@ -708,24 +1453,25 @@ export default function OrdersPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="soItem" required>Item Name & Specs</Label>
+            <Label htmlFor="soItem" required>Item Name & Product Title</Label>
             <Input
               id="soItem"
-              placeholder="e.g. Star Flex Billboard Banner (40ft × 20ft with Eyelets)"
+              placeholder="e.g. Star Flex Billboard Banner, Vinyl Sticker, Acrylic Letter"
               value={itemDesc}
               onChange={(e) => setItemDesc(e.target.value)}
               required
             />
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="soW">Width (ft)</Label>
               <Input
                 id="soW"
                 type="number"
-                value={itemWidth}
+                value={itemWidth || ''}
                 onChange={(e) => setItemWidth(Number(e.target.value))}
+                placeholder="10"
               />
             </div>
             <div className="space-y-1.5">
@@ -733,56 +1479,62 @@ export default function OrdersPage() {
               <Input
                 id="soH"
                 type="number"
-                value={itemHeight}
+                value={itemHeight || ''}
                 onChange={(e) => setItemHeight(Number(e.target.value))}
+                placeholder="4"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="soQty">Qty</Label>
+              <Label htmlFor="soQty">Quantity</Label>
               <Input
                 id="soQty"
                 type="number"
+                min={1}
                 value={itemQty}
                 onChange={(e) => setItemQty(Number(e.target.value))}
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label htmlFor="soPr">Total (৳ BDT)</Label>
+              <Label htmlFor="soMat">Media / Material Spec</Label>
               <Input
-                id="soPr"
-                type="number"
-                value={itemPrice}
-                onChange={(e) => setItemPrice(Number(e.target.value))}
+                id="soMat"
+                value={itemMaterial}
+                onChange={(e) => setItemMaterial(e.target.value)}
+                placeholder="Star Flex 280gsm, 3M Vinyl, 3mm Acrylic"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="soFin">Finishing Instructions</Label>
+              <Input
+                id="soFin"
+                value={itemFinishing}
+                onChange={(e) => setItemFinishing(e.target.value)}
+                placeholder="Eyelets 4 corners, Gloss Lamination, Pipe Pocket"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="soAdv">Advance Received (৳ BDT)</Label>
-              <Input
-                id="soAdv"
-                type="number"
-                value={advancePaid}
-                onChange={(e) => setAdvancePaid(Number(e.target.value))}
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Remaining Due</Label>
-              <div className="h-10 px-3 flex items-center bg-red-50 dark:bg-red-950/40 rounded-md font-mono text-xs font-bold text-red-700 dark:text-red-400">
-                ৳ {Math.max(0, itemPrice - advancePaid)}
-              </div>
-            </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="soNotes">Operator Notes & Job Instructions</Label>
+            <Input
+              id="soNotes"
+              value={orderNotes}
+              onChange={(e) => setOrderNotes(e.target.value)}
+              placeholder="Machine bay preferences, packaging guidelines..."
+            />
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto min-h-[40px]">
+            <Button type="button" variant="outline" onClick={() => setIsNewOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button
               type="submit"
-              className="w-full sm:w-auto min-h-[40px] bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
+              className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium"
             >
               Confirm & Dispatch to Shop Floor
             </Button>
@@ -794,7 +1546,10 @@ export default function OrdersPage() {
       <NewCustomerModal
         open={isCustomerModalOpen}
         onOpenChange={setIsCustomerModalOpen}
-        onCustomerCreated={handleCustomerCreated}
+        onCustomerCreated={(newCust) => {
+          setSelectedCustomerId(newCust.id)
+          showNotification(`Selected customer: ${newCust.name}`)
+        }}
         companyId={company?.id || 'c-01'}
       />
 

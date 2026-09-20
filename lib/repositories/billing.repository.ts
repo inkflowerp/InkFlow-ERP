@@ -915,6 +915,41 @@ export class BillingRepository {
           }
           orders.unshift(ord)
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+
+          // Auto-provision job orders for each invoice line item if not already created
+          if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+            const existingJobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+            const newJobs: any[] = []
+            invoice.items.forEach((it: any, idx: number) => {
+              const jobNum = `JOB-${ord.order_number.replace('ORD-', '')}-${String.fromCharCode(65 + idx)}`
+              newJobs.push({
+                id: `job-${Date.now()}-${idx}`,
+                company_id: companyId,
+                job_number: jobNum,
+                order_id: ord.id,
+                sales_order_id: ord.id,
+                invoice_id: invoice.id,
+                invoice_number: invoice.invoice_number,
+                product_name: it.item_description || it.description || it.item_name || 'Print Order Job',
+                customer_name: ord.customer_name,
+                quantity: it.quantity || 1,
+                size_spec: it.dimensions_spec || (it.width && it.height ? `${it.width}x${it.height} ${it.unit || 'sft'}` : 'Standard'),
+                material_spec: it.material_spec || 'Standard Media',
+                artwork_status: 'approved',
+                deadline: `${ord.delivery_date} 18:00`,
+                assigned_department: 'wide_format_print',
+                assigned_employee_name: '',
+                production_instructions: it.finishing ? `Finishing: ${it.finishing}` : (it.remarks || ''),
+                status: 'queued',
+                workflow_routing: it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production'),
+                commercial_status: 'invoice_created',
+                production_gate_status: 'ready_for_production',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+            })
+            PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
+          }
         }
         effectiveSalesOrderId = ord.id
       }

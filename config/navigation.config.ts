@@ -174,8 +174,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
       items: [
         {
           key: 'orders',
-          title: 'Work Orders',
-          titleBn: 'জব অর্ডার',
+          title: 'Orders & Job Flow',
+          titleBn: 'অর্ডার ও জব ফ্লো',
           href: '/orders',
           icon: 'ShoppingBag',
           permission: { action: 'view', resource: 'orders' },
