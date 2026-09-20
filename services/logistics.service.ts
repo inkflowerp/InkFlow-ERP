@@ -1,9 +1,9 @@
-import {
+import type {
   DeliveryChallanRecord,
   InstallationRecord,
   DeliveryStatus,
-} from '@/types/logistics.types'
-import { LogisticsRepository } from '@/lib/repositories/logistics.repository'
+} from '../types/logistics.types.ts'
+import { LogisticsRepository } from '../lib/repositories/logistics.repository.ts'
 
 export class LogisticsService {
   static async getChallans(companyId?: string): Promise<DeliveryChallanRecord[]> {

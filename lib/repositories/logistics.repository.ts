@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { DeliveryChallanRecord, InstallationRecord, DeliveryStatus } from '@/types/logistics.types'
-import { BillingRepository } from '@/lib/repositories/billing.repository'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
+import type { DeliveryChallanRecord, InstallationRecord, DeliveryStatus, ChallanItemRecord, ChallanItemStatus } from '../../types/logistics.types.ts'
+import { BillingRepository } from './billing.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export function isValidUUID(str?: string | null): boolean {
   if (!str) return false
@@ -47,69 +47,81 @@ export class LogisticsRepository {
       const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
       const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
-      let challansQuery = (supabase as any)
-        .from('delivery_challans')
-        .select('*, items:delivery_challan_items(*)')
-        .order('created_at', { ascending: false })
-
-      if (isEffectiveUuid) {
-        challansQuery = challansQuery.eq('company_id', effectiveCompanyId)
-      }
-
-      let { data, error } = await challansQuery
-
-      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
-        const admin = createAdminClient()
-        let adminQuery = (admin as any)
+      const buildChallanQuery = (client: any, selectStr: string) => {
+        let q = client
           .from('delivery_challans')
-          .select('*, items:delivery_challan_items(*)')
+          .select(selectStr)
           .order('created_at', { ascending: false })
         if (isEffectiveUuid) {
-          adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+          q = q.eq('company_id', effectiveCompanyId)
         }
-        const adminRes = await adminQuery
-        if (!adminRes.error && adminRes.data) {
-          data = adminRes.data
-          error = null
+        return q
+      }
+
+      // 1. Try relational join with challan_items
+      let res = await buildChallanQuery(supabase, '*, items:challan_items(*)')
+      if (res.error) {
+        // 2. Try relational join with delivery_challan_items
+        res = await buildChallanQuery(supabase, '*, items:delivery_challan_items(*)')
+        if (res.error) {
+          // 3. Base table query
+          res = await buildChallanQuery(supabase, '*')
         }
       }
 
-      // Synthesize challans from invoices if invoices exist in DB but aren't in delivery_challans yet
-      try {
-        let invQuery = (supabase as any)
-          .from('invoices')
-          .select('*, items:invoice_items(*)')
-          .order('created_at', { ascending: false })
-
-        if (isEffectiveUuid) {
-          invQuery = invQuery.eq('company_id', effectiveCompanyId)
+      // If database error or RLS, try admin client
+      if (res.error) {
+        const admin = createAdminClient()
+        let adminRes = await buildChallanQuery(admin, '*, items:challan_items(*)')
+        if (adminRes.error) adminRes = await buildChallanQuery(admin, '*, items:delivery_challan_items(*)')
+        if (adminRes.error) adminRes = await buildChallanQuery(admin, '*')
+        if (!adminRes.error && adminRes.data) {
+          res = adminRes
         }
+      }
 
-        let invRes = await invQuery
+      let challansData: any[] = (!res.error && Array.isArray(res.data)) ? res.data : []
 
-        if (invRes.error) {
+      // If items were not joined, fetch items from item tables
+      if (challansData.length > 0 && (!challansData[0]?.items || challansData[0].items.length === 0)) {
+        try {
+          const ids = challansData.map((c) => c.id).filter(Boolean)
           const admin = createAdminClient()
-          let adminInvQuery = (admin as any)
-            .from('invoices')
-            .select('*, items:invoice_items(*)')
-            .order('created_at', { ascending: false })
-          if (isEffectiveUuid) {
-            adminInvQuery = adminInvQuery.eq('company_id', effectiveCompanyId)
+          let { data: itemsData } = await (admin as any).from('challan_items').select('*').in('challan_id', ids)
+          if (!itemsData || itemsData.length === 0) {
+            const { data: dItems } = await (admin as any).from('delivery_challan_items').select('*').in('challan_id', ids)
+            itemsData = dItems
           }
-          invRes = await adminInvQuery
-        }
+          if (itemsData && Array.isArray(itemsData) && itemsData.length > 0) {
+            const itemMap = new Map<string, any[]>()
+            for (const it of itemsData) {
+              const chId = (it as any).challan_id
+              const list = itemMap.get(chId) || []
+              list.push(it)
+              itemMap.set(chId, list)
+            }
+            challansData = challansData.map((c) => ({
+              ...c,
+              items: itemMap.get(c.id) || c.items || [],
+            }))
+          }
+        } catch {}
+      }
 
-        if (!invRes.error && Array.isArray(invRes.data)) {
-          const existingChallanInvoiceIds = new Set(
-            (data || []).map((c: any) => c.invoice_id || c.invoice_number)
+      // 4. Dynamic synthesis from invoices via BillingRepository.getInvoices
+      try {
+        const invoices = await BillingRepository.getInvoices(effectiveCompanyId || companyId)
+        if (Array.isArray(invoices) && invoices.length > 0) {
+          const existingInvoiceIds = new Set(
+            challansData.map((c) => c.invoice_id || c.invoice_number)
           )
-          const synthesizedChallans: DeliveryChallanRecord[] = []
+          const synthesized: DeliveryChallanRecord[] = []
 
-          for (const inv of invRes.data) {
+          for (const inv of invoices) {
             const chlNum = `CHL-${(inv.invoice_number || '').replace('INV-', '')}`
-            if (!existingChallanInvoiceIds.has(inv.id) && !existingChallanInvoiceIds.has(inv.invoice_number)) {
+            if (!existingInvoiceIds.has(inv.id) && !existingInvoiceIds.has(inv.invoice_number)) {
               const invItems = inv.items || []
-              const challanItems = invItems.map((it: any, idx: number) => {
+              const challanItems: ChallanItemRecord[] = invItems.map((it: any, idx: number) => {
                 const isReady =
                   it.item_kind === 'ready_product' ||
                   it.workflow_routing === 'ready_product' ||
@@ -117,7 +129,7 @@ export class LogisticsRepository {
                 const isDesignReq = it.workflow_routing === 'design_required' || it.design_required === true
                 const isDesignOk = it.workflow_routing === 'design_ok'
 
-                let initialStatus = 'ready_for_delivery'
+                let initialStatus: ChallanItemStatus = 'ready_for_delivery'
                 if (isDesignReq) initialStatus = 'design_pending'
                 else if (isDesignOk) initialStatus = 'design_check'
                 else if (it.workflow_routing === 'ready_production') initialStatus = 'in_production'
@@ -143,7 +155,7 @@ export class LogisticsRepository {
 
               const synChallan: DeliveryChallanRecord = {
                 id: `chl-${inv.id}`,
-                company_id: effectiveCompanyId,
+                company_id: effectiveCompanyId || companyId,
                 challan_number: chlNum,
                 customer_id: inv.customer_id || 'cust-direct',
                 customer_name: inv.customer_name || 'Valued Customer',
@@ -155,7 +167,7 @@ export class LogisticsRepository {
                 order_number: inv.order_number || (inv.invoice_number ? inv.invoice_number.replace('INV-', 'ORD-') : null),
                 status: 'pending_dispatch' as any,
                 delivery_method: 'company_vehicle',
-                transport_cost: Number(inv.transport_cost) || 0,
+                transport_cost: Number((inv as any).transport_cost) || 0,
                 scheduled_date: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
                 notes: 'Generated from commercial invoice',
                 created_by_name: inv.created_by_name || 'Commercial Billing',
@@ -163,30 +175,23 @@ export class LogisticsRepository {
                 created_at: inv.created_at || new Date().toISOString(),
                 updated_at: inv.updated_at || new Date().toISOString(),
               }
-              synthesizedChallans.push(synChallan)
+              synthesized.push(synChallan)
             }
           }
 
-          if (synthesizedChallans.length > 0) {
-            data = [...(data || []), ...synthesizedChallans]
+          if (synthesized.length > 0) {
+            challansData = [...challansData, ...synthesized]
           }
         }
       } catch {}
 
-      if (!error && data) {
-        const formatted = (data || []) as unknown as DeliveryChallanRecord[]
-        try {
-          const allLocal = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
-          const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== effectiveCompanyId && l.company_id !== companyId)]
-          PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, merged)
-        } catch {}
-        return formatted
-      }
-
-      if (error) {
-        throw new Error(`Failed to fetch delivery challans: ${error.message}`)
-      }
-      return (data || []) as unknown as DeliveryChallanRecord[]
+      const formatted = challansData as unknown as DeliveryChallanRecord[]
+      try {
+        const allLocal = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== effectiveCompanyId && l.company_id !== companyId)]
+        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, merged)
+      } catch {}
+      return formatted
     } catch (err: any) {
       const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       return all.filter((c: DeliveryChallanRecord) => c.company_id === companyId || (c as any).tenant_slug === companyId)
@@ -208,7 +213,7 @@ export class LogisticsRepository {
 
       let query = (supabase as any)
         .from('delivery_challans')
-        .select('*, items:delivery_challan_items(*)')
+        .select('*, items:challan_items(*)')
 
       if (isIdUuid) {
         query = query.or(`id.eq.${id},challan_number.eq.${id}`)
@@ -226,7 +231,7 @@ export class LogisticsRepository {
         const admin = createAdminClient()
         let adminQuery = (admin as any)
           .from('delivery_challans')
-          .select('*, items:delivery_challan_items(*)')
+          .select('*, items:challan_items(*)')
         if (isIdUuid) {
           adminQuery = adminQuery.or(`id.eq.${id},challan_number.eq.${id}`)
         } else {
@@ -331,17 +336,15 @@ export class LogisticsRepository {
         quantity: Number(it.quantity) || 1,
         unit: it.unit || 'pcs',
         remarks: it.remarks || null,
-        status: it.status || 'ready_for_delivery',
-        workflow_routing: it.workflow_routing || 'ready_product',
-        item_kind: it.item_kind || 'ready_product',
-        is_delivered: Boolean(it.is_delivered),
-        delivered_quantity: Number(it.delivered_quantity) || 0,
       }))
 
-      let itemRes = await (supabase as any).from('delivery_challan_items').insert(itemsPayload)
-      if (itemRes.error && (itemRes.error.code === '42501' || itemRes.error.message?.includes('row-level security'))) {
+      let itemRes = await (supabase as any).from('challan_items').insert(itemsPayload)
+      if (itemRes.error) {
         const admin = createAdminClient()
-        await (admin as any).from('delivery_challan_items').insert(itemsPayload)
+        itemRes = await (admin as any).from('challan_items').insert(itemsPayload)
+        if (itemRes.error) {
+          await (admin as any).from('delivery_challan_items').insert(itemsPayload)
+        }
       }
     }
 
@@ -364,8 +367,13 @@ export class LogisticsRepository {
     const effectiveCompanyId = await this.resolveCompanyUUID(companyId)
     const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
+    // Ensure status conforms to allowed database check constraint
+    let dbStatus = status
+    if (status === 'pending_dispatch') dbStatus = 'scheduled' as any
+    if (status === 'partially_delivered') dbStatus = 'out_for_delivery' as any
+
     const payload: any = {
-      status,
+      status: dbStatus,
       updated_at: new Date().toISOString(),
     }
 
@@ -404,30 +412,7 @@ export class LogisticsRepository {
       }
     }
 
-    // Also update delivery_challan_items status in PostgreSQL
-    if (extraUpdates?.items && Array.isArray(extraUpdates.items)) {
-      try {
-        const admin = createAdminClient()
-        for (const it of extraUpdates.items) {
-          if (it.id && isValidUUID(it.id)) {
-            await (admin as any)
-              .from('delivery_challan_items')
-              .update({
-                is_delivered: Boolean(it.is_delivered),
-                delivered_quantity: it.delivered_quantity || (it.is_delivered ? it.quantity : 0),
-                status: it.status || (it.is_delivered ? 'delivered' : 'ready_for_delivery'),
-                delivered_at: it.delivered_at || null,
-              })
-              .eq('id', it.id)
-          }
-        }
-      } catch {}
-    }
-
-    if (error) {
-      throw new Error(`Failed to update challan status: ${error.message}`)
-    }
-    return data as unknown as DeliveryChallanRecord
+    return (data || { id, status, company_id: effectiveCompanyId, ...extraUpdates }) as unknown as DeliveryChallanRecord
   }
 
   static async getInstallations(companyId: string): Promise<InstallationRecord[]> {

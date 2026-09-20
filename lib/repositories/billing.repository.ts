@@ -95,6 +95,31 @@ export class BillingRepository {
   private static memorySequences = new Map<string, number>()
 
   /**
+   * Helper: Resolves company slug to authoritative PostgreSQL UUID
+   */
+  static async resolveCompanyUUID(companyIdOrSlug?: string | null): Promise<string> {
+    if (!companyIdOrSlug) return ''
+    if (isValidUUID(companyIdOrSlug)) return companyIdOrSlug
+
+    try {
+      const admin = createAdminClient()
+      const clean = companyIdOrSlug.toLowerCase().trim()
+      const { data: comp } = await (admin as any)
+        .from('companies')
+        .select('id')
+        .or(`slug.ilike.${clean},name.ilike.%${clean}%`)
+        .limit(1)
+        .maybeSingle()
+
+      if (comp?.id && isValidUUID(comp.id)) {
+        return comp.id
+      }
+    } catch {}
+
+    return companyIdOrSlug
+  }
+
+  /**
    * Concurrency-safe, tenant-aware document number generator
    */
   static async getNextDocumentNumber(
@@ -102,12 +127,13 @@ export class BillingRepository {
     docType: 'invoice' | 'quotation' | 'order' | 'challan' | 'payment' | 'purchase'
   ): Promise<string> {
     const mode = getFinancialPersistenceMode()
+    const effectiveCompanyId = (await this.resolveCompanyUUID(companyId)) || companyId
 
-    if (isValidUUID(companyId)) {
+    if (isValidUUID(effectiveCompanyId)) {
       try {
         const supabase = await createClient()
         const { data, error } = await (supabase as any).rpc('get_next_document_number', {
-          p_company_id: companyId,
+          p_company_id: effectiveCompanyId,
           p_doc_type: docType,
         })
 
@@ -120,7 +146,7 @@ export class BillingRepository {
         const { data: seq } = await (admin as any)
           .from('document_sequences')
           .select('*')
-          .eq('company_id', companyId)
+          .eq('company_id', effectiveCompanyId)
           .eq('doc_type', docType)
           .maybeSingle()
 
@@ -136,7 +162,7 @@ export class BillingRepository {
         const nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
 
         await (admin as any).from('document_sequences').upsert({
-          company_id: companyId,
+          company_id: effectiveCompanyId,
           doc_type: docType,
           prefix,
           current_val: nextVal,
@@ -182,6 +208,8 @@ export class BillingRepository {
     }
   ): Promise<InvoiceRecord[]> {
     const mode = getFinancialPersistenceMode()
+    const effectiveCompanyId = (await this.resolveCompanyUUID(companyId)) || companyId
+    const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
     try {
       let supabase: any
@@ -195,9 +223,12 @@ export class BillingRepository {
         let q = client
           .from('invoices')
           .select(selectStr)
-          .eq('company_id', companyId)
           .order('invoice_date', { ascending: false })
           .order('created_at', { ascending: false })
+
+        if (isEffectiveUuid) {
+          q = q.eq('company_id', effectiveCompanyId)
+        }
 
         if (filters?.status && filters.status !== 'all') {
           if (filters.status === 'overdue') {
@@ -325,6 +356,8 @@ export class BillingRepository {
 
   static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
     const mode = getFinancialPersistenceMode()
+    const effectiveCompanyId = (await this.resolveCompanyUUID(companyId)) || companyId
+    const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
     try {
       let supabase: any
@@ -338,7 +371,10 @@ export class BillingRepository {
         let q = client
           .from('invoices')
           .select(selectStr)
-          .eq('company_id', companyId)
+
+        if (isEffectiveUuid) {
+          q = q.eq('company_id', effectiveCompanyId)
+        }
 
         if (isValidUUID(id)) {
           q = q.or(`id.eq.${id},invoice_number.eq.${id}`)
@@ -401,7 +437,7 @@ export class BillingRepository {
       all.find(
         (inv) =>
           (inv.id === id || inv.invoice_number === id) &&
-          (!inv.company_id || inv.company_id === companyId)
+          (!inv.company_id || inv.company_id === companyId || inv.company_id === effectiveCompanyId)
       ) || null
     )
   }
@@ -421,12 +457,15 @@ export class BillingRepository {
     idempotency_key?: string | null
   }): Promise<InvoiceRecord> {
     const mode = getFinancialPersistenceMode()
+    const effectiveCompanyId = (await this.resolveCompanyUUID(invoice.company_id)) || invoice.company_id
+    const isEffectiveUuid = isValidUUID(effectiveCompanyId)
+
     let invoiceNumber = invoice.invoice_number
     if (!invoiceNumber) {
       if (invoice.order_number && invoice.order_number.startsWith('ORD-')) {
         invoiceNumber = invoice.order_number.replace('ORD-', 'INV-')
       } else {
-        invoiceNumber = await this.getNextDocumentNumber(invoice.company_id, 'invoice')
+        invoiceNumber = await this.getNextDocumentNumber(effectiveCompanyId, 'invoice')
       }
     }
 
@@ -460,7 +499,7 @@ export class BillingRepository {
 
     const payload: any = {
       id: invoiceId,
-      company_id: invoice.company_id,
+      company_id: effectiveCompanyId,
       branch_id: validBranchId,
       invoice_number: invoiceNumber,
       invoice_type: invoice.invoice_type || 'sales_invoice',
@@ -498,7 +537,7 @@ export class BillingRepository {
       updated_at: new Date().toISOString(),
     }
 
-    if (isValidUUID(invoice.company_id)) {
+    if (isEffectiveUuid) {
       try {
         let supabase: any
         try {
@@ -512,7 +551,7 @@ export class BillingRepository {
         let { data: existing, error: existErr } = await (supabase as any)
           .from('invoices')
           .select('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-          .eq('company_id', invoice.company_id)
+          .eq('company_id', effectiveCompanyId)
           .eq('idempotency_key', payload.idempotency_key)
           .maybeSingle()
 
@@ -521,7 +560,7 @@ export class BillingRepository {
           const adminRes = await (admin as any)
             .from('invoices')
             .select('*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-            .eq('company_id', invoice.company_id)
+            .eq('company_id', effectiveCompanyId)
             .eq('idempotency_key', payload.idempotency_key)
             .maybeSingle()
           existing = adminRes.data
@@ -633,8 +672,18 @@ export class BillingRepository {
           }
 
           if (itemsRes.error) {
-            // Fail-safe retry without finishing column if schema does not have it yet
-            const fallbackItems = itemsPayload.map(({ finishing, ...rest }) => rest)
+            // Fail-safe retry with core columns only
+            const fallbackItems = itemsPayload.map((it) => ({
+              id: it.id,
+              invoice_id: it.invoice_id,
+              item_description: it.item_description,
+              dimensions_spec: it.dimensions_spec,
+              quantity: it.quantity,
+              unit: it.unit,
+              unit_price: it.unit_price,
+              vat_percentage: it.vat_percentage,
+              total_price: it.total_price,
+            }))
             let retryRes = await (supabase as any).from('invoice_items').insert(fallbackItems)
             if (retryRes.error && (retryRes.error.code === '42501' || retryRes.error.message?.includes('row-level security'))) {
               const admin = createAdminClient()
@@ -673,7 +722,7 @@ export class BillingRepository {
           }
         }
 
-        const retrieved = await this.getInvoiceById(data.id, invoice.company_id)
+        const retrieved = await this.getInvoiceById(data.id, effectiveCompanyId)
         const finalInvoice = {
           ...(retrieved || payload),
           id: data.id,
@@ -691,7 +740,7 @@ export class BillingRepository {
 
         // Commercial workflow synchronization
         try {
-          await this.syncCommercialWorkflowOnInvoiceCreated(finalInvoice as InvoiceRecord, invoice.company_id)
+          await this.syncCommercialWorkflowOnInvoiceCreated(finalInvoice as InvoiceRecord, effectiveCompanyId)
         } catch {}
 
         return finalInvoice as InvoiceRecord
