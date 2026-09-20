@@ -120,17 +120,64 @@ export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
 
 export const getMaterialCost = (mat: MaterialRecord | ProductRecord | any | null | undefined): number => {
   if (!mat) return 0
-  const cost =
+
+  // 1. Explicit per-SFT cost if specified
+  const explicitSftCost =
     (mat as any).purchase_price_per_sft ??
-    (mat as any).base_cost ??
+    (mat as any).material_config?.purchase_price_per_sft ??
+    (mat as any).cost_per_sqft ??
+    (mat as any).unit_cost_sft
+
+  if (explicitSftCost !== undefined && explicitSftCost !== null && Number(explicitSftCost) > 0) {
+    return Number(explicitSftCost)
+  }
+
+  const rawStockUnit = ((mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || '').toLowerCase()
+  const rawPrice = Number(
     (mat as any).purchase_price ??
+    (mat as any).base_cost ??
     (mat as any).cost_per_unit ??
     (mat as any).last_purchase_price ??
     (mat as any).manual_cost ??
     (mat as any).effective_unit_cost ??
-    (mat as any).material_config?.purchase_price_per_sft ??
     0
-  return Number(cost) || 0
+  )
+
+  if (rawPrice <= 0) return 0
+
+  const cat = (mat.category || '').toLowerCase()
+  const name = (mat.name || '').toLowerCase()
+
+  const isRollMedia =
+    rawStockUnit === 'roll' ||
+    Boolean(mat.is_roll) ||
+    cat.includes('roll') ||
+    cat.includes('vinyl') ||
+    cat.includes('flex') ||
+    cat.includes('banner') ||
+    cat.includes('media') ||
+    cat.includes('substrate') ||
+    name.includes('flex') ||
+    name.includes('vinyl') ||
+    name.includes('banner') ||
+    name.includes('sticker') ||
+    name.includes('backlit') ||
+    name.includes('canvas') ||
+    name.includes('mesh') ||
+    name.includes('one way')
+
+  // If it's a roll of media and rawPrice is a whole roll price (> 100 BDT for roll media),
+  // calculate unit cost per sft by dividing by the roll square footage!
+  if (isRollMedia && rawPrice > 100) {
+    const rollWidth = Number(mat.width || (mat.available_widths_ft && mat.available_widths_ft[0]) || 10) || 10
+    const rollLength = Number(mat.length || mat.standard_roll_length_ft || 164) || 164
+    const rollArea = Number(mat.roll_area_sqft) || (rollWidth * rollLength)
+    if (rollArea > 0) {
+      return parseFloat((rawPrice / rollArea).toFixed(2)) // e.g. 12054 / 1640 = 7.35 ৳/sft
+    }
+  }
+
+  return rawPrice
 }
 
 export interface MaterialUnitDetails {
@@ -1193,14 +1240,70 @@ export function ServiceConfigModal({
     })
   }, [availableMaterials])
 
-  // Filter substrate materials from inventory - strictly raw materials
+  // Helper check for ink/liquid chemistry
+  const isInkMaterial = (m: MaterialRecord) => {
+    const cat = (m.category || '').toLowerCase()
+    const n = (m.name || '').toLowerCase()
+    const s = (m.sku || '').toLowerCase()
+    const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+    return (
+      cat.includes('ink') ||
+      cat.includes('liquid') ||
+      cat.includes('chemistry') ||
+      cat === 'inks' ||
+      cat === 'ink_chemistry' ||
+      n.includes('ink') ||
+      n.includes('ইঙ্ক') ||
+      n.includes('কালি') ||
+      n.includes('cyan') ||
+      n.includes('magenta') ||
+      n.includes('meganta') ||
+      n.includes('yellow') ||
+      n.includes('black ink') ||
+      s.includes('ink') ||
+      u === 'liter' ||
+      u === 'litre' ||
+      u === 'ml' ||
+      u === 'bottle' ||
+      u === 'can'
+    )
+  }
+
+  // Helper check for fasteners & finishing hardware
+  const isFastenerOrFinishingHardware = (m: MaterialRecord) => {
+    const cat = (m.category || '').toLowerCase()
+    const n = (m.name || '').toLowerCase()
+    const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
+    return (
+      cat.includes('fastener') ||
+      cat.includes('hardware') ||
+      cat.includes('screw') ||
+      cat.includes('eyelet') ||
+      cat.includes('grommet') ||
+      n.includes('eyelet') ||
+      n.includes('আইলেট') ||
+      n.includes('grommet') ||
+      n.includes('screw') ||
+      n.includes('স্ক্রু') ||
+      n.includes('rivet') ||
+      n.includes('bolt') ||
+      n.includes('nut') ||
+      n.includes('নাট') ||
+      n.includes('tape') ||
+      n.includes('টেপ') ||
+      n.includes('glue') ||
+      n.includes('আঠা') ||
+      n.includes('seaming')
+    )
+  }
+
+  // Filter substrate materials from inventory - strictly printable media substrates
   const substrateMaterials = useMemo(() => {
     return availableMaterials.filter((m) => {
       if (!isRawMaterial(m)) return false
-      const cat = (m.category || '').toLowerCase()
-      const u = (m.unit || (m as any).purchase_unit || '').toLowerCase()
-      const isExplicitInkOnly = (cat === 'ink' || cat === 'inks' || cat === 'ink_chemistry') && (u === 'liter' || u === 'ml' || u === 'bottle')
-      return !isExplicitInkOnly
+      if (isInkMaterial(m)) return false
+      if (isFastenerOrFinishingHardware(m)) return false
+      return true
     })
   }, [availableMaterials])
 
@@ -3798,10 +3901,11 @@ export function ServiceConfigModal({
                     >
                       <option value="">-- Select Inventory Raw Material Substrate / Media --</option>
                       {substrateMaterials.map((mat) => {
-                        const costStr = (mat as any).purchase_price_per_sft || (mat as any).purchase_price || (mat as any).cost_per_unit
+                        const unitCost = getMaterialCost(mat)
+                        const { consumeUnit } = getMaterialUnitDetails(mat)
                         return (
                           <option key={mat.id} value={mat.id}>
-                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'unit'}){costStr ? ` — ৳${costStr}/sft` : ''}
+                            {mat.name} ({mat.unit || (mat as any).purchase_unit || 'roll'}) — ৳{unitCost}/{consumeUnit}
                           </option>
                         )
                       })}
@@ -4073,11 +4177,14 @@ export function ServiceConfigModal({
                               className="w-full h-7 text-[11px] rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-1.5 font-medium"
                             >
                               <option value="">-- Generic ৳{ink.unit_price || 2800}/L --</option>
-                              {inkMaterials.map((im) => (
-                                <option key={im.id} value={im.id}>
-                                  {im.name} (৳{im.cost_per_unit || 2800}/L)
-                                </option>
-                              ))}
+                              {inkMaterials.map((im) => {
+                                const literPrice = Number((im as any).purchase_price || (im as any).cost_per_unit || (im as any).base_cost || 2800)
+                                return (
+                                  <option key={im.id} value={im.id}>
+                                    {im.name} (৳{literPrice}/L)
+                                  </option>
+                                )
+                              })}
                             </select>
 
                             <div className="flex items-center justify-between text-[10px] text-slate-500 font-mono pt-0.5 border-t border-slate-100 dark:border-slate-800">
