@@ -1446,7 +1446,8 @@ export function NewInvoiceModal({
           </div>
 
           {/* Customer Search & Inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
             <div className="relative" ref={searchContainerRef}>
               <Label className="text-xs font-semibold mb-1 block">
                 Customer Name <span className="text-rose-500">*</span>
@@ -1502,21 +1503,8 @@ export function NewInvoiceModal({
               />
             </div>
 
+            {/* Row 2: [Billing Address] [Email] [Customer Type] */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Customer Type</Label>
-              <select
-                value={customerType}
-                onChange={(e) => setCustomerType(e.target.value as any)}
-                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-              >
-                <option value="retail">Retail / Walk-in (খুচরা)</option>
-                <option value="corporate">Corporate (কর্পোরেট)</option>
-                <option value="reseller">Reseller / Dealer (রিসেলার)</option>
-                <option value="government">Government / Org (সরকারি)</option>
-              </select>
-            </div>
-
-            <div className="sm:col-span-2 md:col-span-2 lg:col-span-3">
               <Label className="text-xs font-semibold mb-1 block">
                 Billing Address <span className="text-rose-500">*</span>
               </Label>
@@ -1538,6 +1526,20 @@ export function NewInvoiceModal({
                 onChange={(e) => setEmailAddress(e.target.value)}
                 className="text-xs h-9"
               />
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">Customer Type</Label>
+              <select
+                value={customerType}
+                onChange={(e) => setCustomerType(e.target.value as any)}
+                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+              >
+                <option value="retail">Retail / Walk-in (খুচরা)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="reseller">Reseller / Dealer (রিসেলার)</option>
+                <option value="government">Government / Org (সরকারি)</option>
+              </select>
             </div>
           </div>
 
