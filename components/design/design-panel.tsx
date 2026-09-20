@@ -101,6 +101,7 @@ import { getInvoicesAction } from '@/actions/billing.actions'
 import { cn } from '@/lib/utils'
 
 export type DesignPanelTab =
+  | 'all'
   | 'pipeline'
   | 'design_requests'
   | 'design_checks'
@@ -127,7 +128,7 @@ export interface DesignPanelProps {
   defaultTab?: DesignPanelTab
 }
 
-function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
+function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -163,6 +164,7 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
   const initialTab: DesignPanelTab =
     tabParam &&
     [
+      'all',
       'pipeline',
       'design_requests',
       'design_checks',
@@ -1106,16 +1108,6 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Direct Customer Work Order', 'গ্রাহক ওয়ার্ক অর্ডার')}
             </Button>
-
-            {/* New Standalone Design Job */}
-            <Button
-              size="sm"
-              onClick={() => setIsNewJobOpen(true)}
-              className="bg-pink-600 hover:bg-pink-700 text-xs text-white font-bold bangla-text shadow-xs"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('New Design Job', 'নতুন ডিজাইন জব')}
-            </Button>
           </div>
         }
       />
@@ -1148,11 +1140,11 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
         <Card
           onClick={() => {
-            handleTabChange('pipeline')
+            handleTabChange('all')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'pipeline' ? 'ring-1 ring-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20' : ''
+            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1165,11 +1157,11 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
 
         <Card
           onClick={() => {
-            handleTabChange('pipeline')
+            handleTabChange('all')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'pipeline' ? 'ring-1 ring-indigo-500/50 bg-indigo-50/30 dark:bg-indigo-950/20' : ''
+            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-indigo-500/50 bg-indigo-50/30 dark:bg-indigo-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1216,11 +1208,11 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
 
         <Card
           onClick={() => {
-            handleTabChange('pipeline')
+            handleTabChange('all')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'pipeline' ? 'ring-1 ring-amber-500/50 bg-amber-50/30 dark:bg-amber-950/20' : ''
+            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-amber-500/50 bg-amber-50/30 dark:bg-amber-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1233,11 +1225,11 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
 
         <Card
           onClick={() => {
-            handleTabChange('pipeline')
+            handleTabChange('all')
           }}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'pipeline' ? 'ring-1 ring-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/20' : ''
+            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1287,18 +1279,18 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
           <button
-            onClick={() => handleTabChange('pipeline')}
+            onClick={() => handleTabChange('all')}
             className={cn(
               'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
-              activeTab === 'pipeline'
+              activeTab === 'all' || activeTab === 'pipeline'
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
-            <Layers className="h-4 w-4" />
-            <span>Designer Queue</span>
+            <LayoutGrid className="h-4 w-4" />
+            <span>{tBilingual('All', 'সকল')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-              {kpiStats.designingCount + kpiStats.newCount}
+              {tenantJobs.length}
             </Badge>
           </button>
 
@@ -1331,22 +1323,6 @@ function DesignPanelInner({ defaultTab = 'pipeline' }: DesignPanelProps) {
             <span>{tBilingual('Design Check', 'ডিজাইন চেক')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300">
               {kpiStats.designCheckCount}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('pipeline')}
-            className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
-              activeTab === 'pipeline'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            )}
-          >
-            <Layers className="h-4 w-4" />
-            <span>{tBilingual('Design Pipeline', 'ডিজাইন পাইপলাইন')}</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
-              {kpiStats.designingCount + kpiStats.newCount}
             </Badge>
           </button>
 
