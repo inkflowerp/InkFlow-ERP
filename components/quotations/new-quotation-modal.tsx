@@ -28,6 +28,7 @@ import {
   UserCheck,
   Sparkles,
   Layers,
+  Search,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -60,6 +61,421 @@ import { normalizeBdPhone, formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { calculateCommercialPricing, isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
+import {
+  STANDARD_FINISHING_OPTIONS,
+  STANDARD_ADD_ON_OPTIONS,
+  getFinishingRate,
+  getAddOnRate,
+} from '@/lib/finishing-addons'
+
+interface CatalogComboboxProps {
+  products: ProductRecord[]
+  selectedProductId?: string | null
+  onSelectProduct: (productId: string) => void
+  onCustomSelect?: () => void
+}
+
+function CatalogItemCombobox({
+  products,
+  selectedProductId,
+  onSelectProduct,
+  onCustomSelect,
+}: CatalogComboboxProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [keyword, setKeyword] = useState('')
+  const [highlightedIndex, setHighlightedIndex] = useState(0)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  const selectedProduct = useMemo(() => {
+    return products.find((p) => p.id === selectedProductId)
+  }, [products, selectedProductId])
+
+  // Close when clicked outside
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleDocClick)
+    return () => document.removeEventListener('mousedown', handleDocClick)
+  }, [])
+
+  const filteredProducts = useMemo(() => {
+    const term = keyword.toLowerCase().trim()
+    if (!term) return products
+    return products.filter((p) => {
+      return (
+        p.name.toLowerCase().includes(term) ||
+        (p.sku && p.sku.toLowerCase().includes(term)) ||
+        ((p as any).code && (p as any).code.toLowerCase().includes(term)) ||
+        ((p as any).name_bn && (p as any).name_bn.toLowerCase().includes(term)) ||
+        (p.category && p.category.toLowerCase().includes(term)) ||
+        (p.product_type && p.product_type.toLowerCase().includes(term))
+      )
+    })
+  }, [products, keyword])
+
+  const services = useMemo(() => filteredProducts.filter((p) => isServiceProduct(p)), [filteredProducts])
+  const readyProducts = useMemo(() => filteredProducts.filter((p) => isReadyProduct(p)), [filteredProducts])
+  const materials = useMemo(() => filteredProducts.filter((p) => isMaterialProduct(p)), [filteredProducts])
+
+  // Flat list of selectable items for arrow key navigation
+  const flatSelectableItems = useMemo(() => {
+    const list: Array<{ id: string; type: 'custom' | 'product'; product?: ProductRecord }> = [
+      { id: '', type: 'custom' }
+    ]
+    services.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    readyProducts.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    materials.forEach((p) => list.push({ id: p.id, type: 'product', product: p }))
+    return list
+  }, [services, readyProducts, materials])
+
+  // Reset highlightedIndex when keyword changes or menu opens
+  useEffect(() => {
+    setHighlightedIndex(0)
+  }, [keyword, isOpen])
+
+  // Scroll active item into view
+  useEffect(() => {
+    if (isOpen && itemRefs.current.has(highlightedIndex)) {
+      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedIndex, isOpen])
+
+  const handleSelect = (item: { id: string; type: 'custom' | 'product'; product?: ProductRecord }) => {
+    if (item.type === 'custom' || !item.id) {
+      onSelectProduct('')
+      if (onCustomSelect) onCustomSelect()
+    } else {
+      onSelectProduct(item.id)
+    }
+    setIsOpen(false)
+    setKeyword('')
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isOpen) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+        setIsOpen(true)
+        e.preventDefault()
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setHighlightedIndex((prev) => (prev + 1) % flatSelectableItems.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setHighlightedIndex((prev) => (prev - 1 + flatSelectableItems.length) % flatSelectableItems.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (flatSelectableItems[highlightedIndex]) {
+        handleSelect(flatSelectableItems[highlightedIndex])
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div className="relative w-full" ref={dropdownRef}>
+      <div className="relative">
+        <Input
+          placeholder="Type keyword to search catalog (e.g. flex, vinyl, 3D)..."
+          value={isOpen ? keyword : selectedProduct ? selectedProduct.name : keyword}
+          onFocus={() => {
+            setIsOpen(true)
+            setKeyword('')
+          }}
+          onChange={(e) => {
+            setKeyword(e.target.value)
+            if (!isOpen) setIsOpen(true)
+          }}
+          onKeyDown={handleKeyDown}
+          className="text-xs h-9 pr-14 font-medium"
+        />
+        <div className="absolute right-1.5 top-1.5 flex items-center gap-1">
+          {selectedProductId && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onSelectProduct('')
+                setKeyword('')
+                if (onCustomSelect) onCustomSelect()
+              }}
+              className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+              title="Clear to Custom Item"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded cursor-pointer"
+          >
+            <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", isOpen && "rotate-180")} />
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-60 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800 text-xs">
+          {/* Custom Item option (Index 0) */}
+          <div
+            ref={(el) => {
+              if (el) itemRefs.current.set(0, el)
+              else itemRefs.current.delete(0)
+            }}
+            onMouseEnter={() => setHighlightedIndex(0)}
+            onClick={() => handleSelect({ id: '', type: 'custom' })}
+            className={cn(
+              "p-2.5 cursor-pointer font-semibold flex items-center justify-between transition-colors",
+              highlightedIndex === 0
+                ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                : !selectedProductId
+                ? "bg-blue-50/80 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                : "hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400"
+            )}
+          >
+            <span>✨ -- Custom Item (No Catalog) --</span>
+            <div className="flex items-center gap-1.5">
+              {highlightedIndex === 0 && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+              {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
+            </div>
+          </div>
+
+          {/* Printing Services */}
+          {services.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider">
+                🖨️ Printing & Services ({services.length})
+              </div>
+              {services.map((p, sIdx) => {
+                const globalIdx = 1 + sIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-blue-50 font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300"
+                        : "hover:bg-blue-50/70 dark:hover:bg-blue-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'sft'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Ready Products */}
+          {readyProducts.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider">
+                📦 Ready Products ({readyProducts.length})
+              </div>
+              {readyProducts.map((p, rIdx) => {
+                const globalIdx = 1 + services.length + rIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-emerald-50 font-bold text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                        : "hover:bg-emerald-50/70 dark:hover:bg-emerald-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'pcs'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {/* Raw Materials */}
+          {materials.length > 0 && (
+            <div>
+              <div className="px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider">
+                🧵 Raw Materials ({materials.length})
+              </div>
+              {materials.map((p, mIdx) => {
+                const globalIdx = 1 + services.length + readyProducts.length + mIdx
+                const isHighlighted = highlightedIndex === globalIdx
+                return (
+                  <div
+                    key={p.id}
+                    ref={(el) => {
+                      if (el) itemRefs.current.set(globalIdx, el)
+                      else itemRefs.current.delete(globalIdx)
+                    }}
+                    onMouseEnter={() => setHighlightedIndex(globalIdx)}
+                    onClick={() => handleSelect({ id: p.id, type: 'product', product: p })}
+                    className={cn(
+                      "p-2.5 cursor-pointer flex items-center justify-between gap-2 transition-colors",
+                      isHighlighted
+                        ? "bg-blue-100/90 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100"
+                        : selectedProductId === p.id
+                        ? "bg-purple-50 font-bold text-purple-700 dark:bg-purple-950/50 dark:text-purple-300"
+                        : "hover:bg-purple-50/70 dark:hover:bg-purple-950/40"
+                    )}
+                  >
+                    <div>
+                      <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
+                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                        {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
+                        <span>Unit: {p.unit || 'roll'}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
+                        ৳{p.selling_price}
+                      </span>
+                      {isHighlighted && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {filteredProducts.length === 0 && (
+            <div className="p-4 text-center text-slate-400">
+              No catalog items match &quot;{keyword}&quot;. You can use it as a custom item description.
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+interface CustomerSuggestionsDropdownProps {
+  results: CustomerRecord[]
+  highlightedIndex: number
+  onSelect: (cust: CustomerRecord) => void
+  onHover: (idx: number) => void
+}
+
+function CustomerSuggestionsDropdown({
+  results,
+  highlightedIndex,
+  onSelect,
+  onHover,
+}: CustomerSuggestionsDropdownProps) {
+  const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+
+  useEffect(() => {
+    if (itemRefs.current.has(highlightedIndex)) {
+      itemRefs.current.get(highlightedIndex)?.scrollIntoView({ block: 'nearest' })
+    }
+  }, [highlightedIndex])
+
+  return (
+    <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl divide-y divide-slate-100 dark:divide-slate-800 text-xs animate-in fade-in-0">
+      {results.map((cust, idx) => {
+        const isHighlighted = idx === highlightedIndex
+        return (
+          <div
+            key={cust.id}
+            ref={(el) => {
+              if (el) itemRefs.current.set(idx, el)
+              else itemRefs.current.delete(idx)
+            }}
+            onMouseEnter={() => onHover(idx)}
+            onClick={() => onSelect(cust)}
+            className={cn(
+              'p-2.5 cursor-pointer transition-colors flex items-center justify-between gap-2',
+              isHighlighted
+                ? 'bg-blue-50 dark:bg-blue-950/70 border-l-4 border-blue-600 text-blue-900 dark:text-blue-100'
+                : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-800 dark:text-slate-200'
+            )}
+          >
+            <div className="min-w-0">
+              <div className="font-bold flex items-center gap-1.5 truncate">
+                <span>{cust.name}</span>
+                {cust.name_bn && (
+                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                    ({cust.name_bn})
+                  </span>
+                )}
+                {cust.company_name && (
+                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 truncate">
+                    • {cust.company_name}
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
+                <span>📞 {cust.mobile}</span>
+                {cust.email && <span className="truncate">✉️ {cust.email}</span>}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                {cust.customer_type || cust.customer_category || 'Retail'}
+              </span>
+              {isHighlighted && (
+                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                  ↵ Enter
+                </span>
+              )}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
 
 export interface NewQuotationModalProps {
   open: boolean
@@ -74,6 +490,11 @@ interface ItemFormState extends CreateQuotationItemInput {
   isSignageProduct?: boolean
   showAdvanced?: boolean
   pcs_per_carton?: number | null
+  base_rate?: number
+  finishing_rate?: number
+  add_on?: string
+  add_on_rate?: number
+  isManualRate?: boolean
   available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
   available_finishing_options?: Array<{ id: string; name: string; pricing_method?: string; unit_price?: number; unit_cost?: number }>
   printable_material_name?: string
@@ -84,18 +505,22 @@ const DEFAULT_ITEM = (tempId: string): ItemFormState => ({
   tempId,
   product_id: null,
   item_kind: 'service',
-  description: '',
+  description: 'Pana Flex Banner Print',
   description_bn: '',
   material_spec: '',
   dimensions_spec: '',
-  width: 4,
-  height: 6,
+  width: '' as any,
+  height: '' as any,
   dimension_unit: 'ft',
   quantity: 1,
   unit: 'sft',
-  unit_rate: 0,
-  rate_source: 'default',
+  base_rate: 22,
+  unit_rate: 22,
   finishing: 'None',
+  finishing_rate: 0,
+  add_on: 'None',
+  add_on_rate: 0,
+  rate_source: 'default',
   color_spec: '',
   artwork_required: false,
   installation_required: false,
@@ -117,12 +542,13 @@ export function NewQuotationModal({
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
 
   // -------------------------------------------------------------
-  // CUSTOMER STATE
+  // CUSTOMER STATE (Multi-field keyword search)
   // -------------------------------------------------------------
-  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
+  const [activeCustomerSearchField, setActiveCustomerSearchField] = useState<'name' | 'phone' | 'company' | 'email' | null>(null)
   const [searchResults, setSearchResults] = useState<CustomerRecord[]>([])
   const [isSearchingCustomers, setIsSearchingCustomers] = useState(false)
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+  const [customerHighlightedIndex, setCustomerHighlightedIndex] = useState(0)
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRecord | null>(null)
 
   // Customer Form Fields
@@ -199,7 +625,11 @@ export function NewQuotationModal({
   const [isSavingQuickProduct, setIsSavingQuickProduct] = useState(false)
   const [quickProductError, setQuickProductError] = useState<string | null>(null)
 
-  const customerSearchRef = useRef<HTMLDivElement>(null)
+  // Customer Search Container Refs
+  const nameSearchRef = useRef<HTMLDivElement>(null)
+  const phoneSearchRef = useRef<HTMLDivElement>(null)
+  const companySearchRef = useRef<HTMLDivElement>(null)
+  const emailSearchRef = useRef<HTMLDivElement>(null)
   const sendDropdownRef = useRef<HTMLDivElement>(null)
   const effectiveCompanyId = company?.id || companyId
 
@@ -278,8 +708,15 @@ export function NewQuotationModal({
   // Click outside listener for dropdowns
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (customerSearchRef.current && !customerSearchRef.current.contains(e.target as Node)) {
+      const clickedInsideCustomerField =
+        (nameSearchRef.current && nameSearchRef.current.contains(e.target as Node)) ||
+        (phoneSearchRef.current && phoneSearchRef.current.contains(e.target as Node)) ||
+        (companySearchRef.current && companySearchRef.current.contains(e.target as Node)) ||
+        (emailSearchRef.current && emailSearchRef.current.contains(e.target as Node))
+
+      if (!clickedInsideCustomerField) {
         setShowCustomerDropdown(false)
+        setActiveCustomerSearchField(null)
       }
       if (sendDropdownRef.current && !sendDropdownRef.current.contains(e.target as Node)) {
         setSendDropdownOpen(false)
@@ -301,27 +738,57 @@ export function NewQuotationModal({
   }, [open])
 
   // -------------------------------------------------------------
-  // DEBOUNCED CUSTOMER SEARCH
+  // DEBOUNCED MULTI-FIELD CUSTOMER SEARCH
   // -------------------------------------------------------------
   useEffect(() => {
-    if (selectedCustomer) return
-    if (!customerSearchQuery.trim()) {
+    if (!activeCustomerSearchField || selectedCustomer) {
       setSearchResults([])
+      setShowCustomerDropdown(false)
+      return
+    }
+
+    let query = ''
+    if (activeCustomerSearchField === 'name') query = customerName
+    else if (activeCustomerSearchField === 'phone') query = customerPhone
+    else if (activeCustomerSearchField === 'company') query = customerCompany
+    else if (activeCustomerSearchField === 'email') query = customerEmail
+
+    const trimmed = query.trim()
+    if (!trimmed) {
+      setSearchResults([])
+      setShowCustomerDropdown(false)
       return
     }
 
     const timer = setTimeout(async () => {
       setIsSearchingCustomers(true)
-      const res = await searchQuotationCustomersAction(customerSearchQuery, effectiveCompanyId)
-      setIsSearchingCustomers(false)
-      if (res.success && res.data) {
-        setSearchResults(res.data)
-        setShowCustomerDropdown(true)
+      try {
+        const res = await searchQuotationCustomersAction(trimmed, effectiveCompanyId)
+        if (res.success && res.data && res.data.length > 0) {
+          setSearchResults(res.data)
+          setShowCustomerDropdown(true)
+          setCustomerHighlightedIndex(0)
+        } else {
+          setSearchResults([])
+          setShowCustomerDropdown(false)
+        }
+      } catch (err) {
+        console.error('Customer search error:', err)
+      } finally {
+        setIsSearchingCustomers(false)
       }
-    }, 250)
+    }, 200)
 
     return () => clearTimeout(timer)
-  }, [customerSearchQuery, selectedCustomer, effectiveCompanyId])
+  }, [
+    activeCustomerSearchField,
+    customerName,
+    customerPhone,
+    customerCompany,
+    customerEmail,
+    selectedCustomer,
+    effectiveCompanyId,
+  ])
 
   // Handle Customer Selection
   const handleSelectCustomer = async (cust: CustomerRecord) => {
@@ -333,8 +800,13 @@ export function NewQuotationModal({
     setCustomerWhatsapp(cust.whatsapp || cust.mobile || '')
     setCustomerEmail(cust.email || '')
     setCustomerAddress(cust.address || '')
-    setCustomerType(cust.customer_type || cust.customer_category || 'retail')
+    const typeMapping = ['retail', 'reseller', 'corporate', 'government'].includes(cust.customer_type || '')
+      ? (cust.customer_type as any)
+      : 'retail'
+    setCustomerType(typeMapping)
     setShowCustomerDropdown(false)
+    setActiveCustomerSearchField(null)
+    setCustomerHighlightedIndex(0)
     setDuplicateWarning(null)
 
     // Resolve 3-tier rates for this customer
@@ -349,21 +821,28 @@ export function NewQuotationModal({
       // Update existing item rates if products are selected
       setItems((prev) =>
         prev.map((it) => {
-          if (it.product_id && map.has(it.product_id)) {
+          if (it.product_id && map.has(it.product_id) && !it.isManualRate) {
             const resolved = map.get(it.product_id)!
-            const newRate = resolved.effectiveRate
+            const baseRate = resolved.effectiveRate
+            const fRate = getFinishingRate(it.finishing, it.available_finishing_options)
+            const aRate = getAddOnRate(it.add_on)
+            const effectiveRate = baseRate + fRate + aRate
+
             const prod = productsCatalog.find((p) => p.id === it.product_id)
             const lineMath = calculateLineTotal(
-              it.width || 0,
-              it.height || 0,
+              Number(it.width) || 0,
+              Number(it.height) || 0,
               it.quantity || 1,
-              newRate,
+              effectiveRate,
               prod,
               it.dimension_unit
             )
             return {
               ...it,
-              unit_rate: newRate,
+              base_rate: baseRate,
+              finishing_rate: fRate,
+              add_on_rate: aRate,
+              unit_rate: effectiveRate,
               rate_source: resolved.source,
               area_sft: lineMath.area,
               item_total: lineMath.total,
@@ -375,9 +854,56 @@ export function NewQuotationModal({
     }
   }
 
+  const handleCustomerFieldChange = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    val: string
+  ) => {
+    if (field === 'name') setCustomerName(val)
+    else if (field === 'phone') setCustomerPhone(val)
+    else if (field === 'company') setCustomerCompany(val)
+    else if (field === 'email') setCustomerEmail(val)
+
+    setActiveCustomerSearchField(field)
+    setCustomerHighlightedIndex(0)
+
+    if (selectedCustomer) {
+      setSelectedCustomer(null)
+      setResolvedRatesMap(new Map())
+    }
+  }
+
+  const handleCustomerKeyDown = (
+    field: 'name' | 'phone' | 'company' | 'email',
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
+    if (!showCustomerDropdown || searchResults.length === 0) {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        setActiveCustomerSearchField(field)
+      }
+      return
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev + 1) % searchResults.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      if (searchResults[customerHighlightedIndex]) {
+        handleSelectCustomer(searchResults[customerHighlightedIndex])
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault()
+      setShowCustomerDropdown(false)
+      setActiveCustomerSearchField(null)
+    }
+  }
+
   const handleClearCustomer = () => {
     setSelectedCustomer(null)
-    setCustomerSearchQuery('')
+    setActiveCustomerSearchField(null)
     setCustomerName('')
     setCustomerNameBn('')
     setCustomerCompany('')
@@ -507,26 +1033,9 @@ export function NewQuotationModal({
     let tierApplied: string | null = null
 
     // Detect item kind
-    const isService =
-      prod.is_service ||
-      prod.entity_type === 'service' ||
-      prod.product_type === 'service' ||
-      prod.product_type === 'print_service' ||
-      prod.product_type === 'fabrication_service' ||
-      prod.product_type === 'installation_service' ||
-      prod.pricing_method?.startsWith('per_') ||
-      prod.unit === 'sft' ||
-      prod.unit === 'sqft' ||
-      prod.unit === 'rft'
-
-    const isReadyProd =
-      prod.is_ready_product ||
-      prod.entity_type === 'product' ||
-      prod.commercial_type === 'ready_product' ||
-      prod.product_type === 'ready_product' ||
-      prod.product_type === 'finished_product'
-
-    const isMat = prod.entity_type === 'material' || prod.product_type === 'material'
+    const isService = isServiceProduct(prod)
+    const isReadyProd = isReadyProduct(prod)
+    const isMat = isMaterialProduct(prod)
 
     const itemKind: 'service' | 'ready_product' | 'material' | 'custom' = isService
       ? 'service'
@@ -581,27 +1090,23 @@ export function NewQuotationModal({
     setItems((prev) => {
       const copy = [...prev]
       const current = copy[index]
-      
-      let w = current.width
-      let h = current.height
+
+      let w = isReadyProd || isMat ? 0 : (current.width || '')
+      let h = isReadyProd || isMat ? 0 : (current.height || '')
       let dimUnit = current.dimension_unit || (prod.service_config?.default_unit as any) || 'ft'
 
-      if (isService && (!w || w === 0) && (!h || h === 0)) {
-        if (dimensionPresets.length > 0) {
-          w = dimensionPresets[0].width || 4
-          h = dimensionPresets[0].length || 6
-          dimUnit = (dimensionPresets[0].unit as any) || 'ft'
-        } else {
-          w = 4
-          h = 6
-        }
-      }
+      const baseRate = rate
+      const finishing = 'None'
+      const finishingRate = 0
+      const addOn = 'None'
+      const addOnRate = 0
+      const effectiveRate = baseRate + finishingRate + addOnRate
 
       const lineMath = calculateLineTotal(
-        isReadyProd ? 0 : (w || 0),
-        isReadyProd ? 0 : (h || 0),
+        Number(w) || 0,
+        Number(h) || 0,
         current.quantity || prod.min_order_quantity || 1,
-        rate,
+        effectiveRate,
         prod,
         dimUnit
       )
@@ -615,11 +1120,16 @@ export function NewQuotationModal({
         description_bn: prod.name_bn || '',
         material_spec: printableMaterial || prod.material_spec || current.material_spec || '',
         dimensions_spec: prod.dimensions_spec || (isReadyProd ? (prod as any).size_spec : null),
-        width: isReadyProd ? 0 : (w || 0),
-        height: isReadyProd ? 0 : (h || 0),
+        width: w as any,
+        height: h as any,
         dimension_unit: dimUnit,
-        unit: isReadyProd ? prod.selling_unit || prod.unit || 'pcs' : (prod.selling_unit || prod.unit || 'sft'),
-        unit_rate: rate,
+        unit: isReadyProd ? prod.selling_unit || prod.unit || 'pcs' : isMat ? 'roll' : (prod.selling_unit || prod.unit || 'sft'),
+        base_rate: baseRate,
+        finishing: finishing,
+        finishing_rate: finishingRate,
+        add_on: addOn,
+        add_on_rate: addOnRate,
+        unit_rate: effectiveRate,
         unit_cost: Number(prod.effective_unit_cost ?? prod.base_cost) || 0,
         rate_source: source,
         tier_applied: tierApplied,
@@ -632,6 +1142,7 @@ export function NewQuotationModal({
         available_dimension_presets: dimensionPresets,
         available_finishing_options: finishingOptions,
         printable_material_name: printableMaterial || undefined,
+        isManualRate: false,
       }
       return copy
     })
@@ -641,15 +1152,15 @@ export function NewQuotationModal({
     setItems((prev) => {
       const copy = [...prev]
       const current = copy[index]
-      const w = newKind === 'service' ? (current.width || 4) : 0
-      const h = newKind === 'service' ? (current.height || 6) : 0
+      const w = newKind === 'service' ? (current.width || '') : 0
+      const h = newKind === 'service' ? (current.height || '') : 0
       const unit = newKind === 'service' ? 'sft' : 'pcs'
-      const lineMath = calculateLineTotal(w, h, current.quantity || 1, current.unit_rate || 0, null, current.dimension_unit)
+      const lineMath = calculateLineTotal(Number(w) || 0, Number(h) || 0, current.quantity || 1, current.unit_rate || 0, null, current.dimension_unit)
       copy[index] = {
         ...current,
         item_kind: newKind,
-        width: w,
-        height: h,
+        width: w as any,
+        height: h as any,
         unit,
         area_sft: lineMath.area,
         item_total: lineMath.total,
@@ -669,8 +1180,8 @@ export function NewQuotationModal({
       const lineMath = calculateLineTotal(w, h, current.quantity || 1, current.unit_rate || 0, prod, dimUnit)
       copy[index] = {
         ...current,
-        width: w,
-        height: h,
+        width: w as any,
+        height: h as any,
         dimension_unit: dimUnit,
         area_sft: lineMath.area,
         item_total: lineMath.total,
@@ -690,18 +1201,38 @@ export function NewQuotationModal({
   const handleItemChange = (index: number, field: keyof ItemFormState, value: any) => {
     setItems((prev) => {
       const copy = [...prev]
-      const item = { ...copy[index], [field]: value }
+      const item = { ...copy[index] }
 
-      if (field === 'unit_rate') {
+      if (field === 'finishing') {
+        const fRate = getFinishingRate(value, item.available_finishing_options)
+        const base = item.base_rate !== undefined ? item.base_rate : (Number(item.unit_rate) || 0)
+        const aRate = item.add_on_rate || 0
+        item.finishing = value
+        item.finishing_rate = fRate
+        item.unit_rate = base + fRate + aRate
+      } else if (field === 'add_on') {
+        const aRate = getAddOnRate(value)
+        const base = item.base_rate !== undefined ? item.base_rate : (Number(item.unit_rate) || 0)
+        const fRate = item.finishing_rate || 0
+        item.add_on = value
+        item.add_on_rate = aRate
+        item.unit_rate = base + fRate + aRate
+      } else if (field === 'unit_rate') {
+        const typedRate = parseFloat(value) || 0
+        item.unit_rate = typedRate
+        item.isManualRate = true
         item.rate_source = 'override'
+        item.base_rate = Math.max(0, typedRate - (item.finishing_rate || 0) - (item.add_on_rate || 0))
+      } else {
+        (item as any)[field] = value
       }
 
       const isReady = item.item_kind === 'ready_product'
       const w = isReady ? 0 : (Number(field === 'width' ? value : item.width) || 0)
       const h = isReady ? 0 : (Number(field === 'height' ? value : item.height) || 0)
       const qty = Number(field === 'quantity' ? value : item.quantity) || 1
-      const rate = Number(field === 'unit_rate' ? value : item.unit_rate) || 0
-      const dimUnit = field === 'dimension_unit' ? value : item.dimension_unit
+      const rate = Number(item.unit_rate) || 0
+      const dimUnit = (field === 'dimension_unit' ? value : item.dimension_unit) || 'ft'
 
       const prod = item.product_id ? productsCatalog.find((p) => p.id === item.product_id) : null
 
@@ -1124,198 +1655,228 @@ export function NewQuotationModal({
           </div>
 
           {/* Unified Customer Search & Autocomplete */}
-          <div className="relative" ref={customerSearchRef}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {/* Customer Name & Instant Lookup */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {/* Row 1: [Customer Name] [Phone Number] [Company Name] */}
+            <div className="relative" ref={nameSearchRef}>
+              <Label htmlFor="custNameInput" className="text-xs font-semibold mb-1 block">
+                Customer Name <span className="text-rose-500">*</span>
+              </Label>
               <div className="relative">
-                <Label htmlFor="custNameInput" className="text-xs font-semibold mb-1 block">
-                  Customer Name <span className="text-rose-500">*</span>
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="custNameInput"
-                    placeholder="Search or enter customer name..."
-                    value={customerName}
-                    onChange={(e) => {
-                      const val = e.target.value
-                      setCustomerName(val)
-                      if (!selectedCustomer) {
-                        setCustomerSearchQuery(val)
-                        setShowCustomerDropdown(true)
-                      }
-                    }}
-                    onFocus={() => {
-                      if (!selectedCustomer && searchResults.length > 0) {
-                        setShowCustomerDropdown(true)
-                      }
-                    }}
-                    className="text-xs h-9 pr-8 font-medium"
-                  />
-                  {isSearchingCustomers && (
-                    <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  )}
-                </div>
-
-                {/* Search Results Dropdown */}
-                {showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
-                  <div className="absolute z-50 left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
-                    {searchResults.map((cust) => (
-                      <div
-                        key={cust.id}
-                        onClick={() => handleSelectCustomer(cust)}
-                        className="p-3 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 cursor-pointer transition-colors flex items-center justify-between text-xs"
-                      >
-                        <div>
-                          <div className="font-bold text-slate-900 dark:text-slate-100">
-                            {cust.name} {cust.name_bn && <span className="font-normal text-slate-500">({cust.name_bn})</span>}
-                          </div>
-                          {cust.company_name && (
-                            <div className="text-[11px] text-slate-500 font-medium">🏢 {cust.company_name}</div>
-                          )}
-                          <div className="text-[11px] font-numeric tabular-nums text-blue-600 dark:text-blue-400">
-                            📞 {cust.mobile}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-[10px] capitalize">
-                          {cust.customer_type || cust.customer_category || 'Retail'}
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
+                <Input
+                  id="custNameInput"
+                  placeholder="Search or enter customer name..."
+                  value={customerName}
+                  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('name')
+                    if (customerName.trim().length > 0 && !selectedCustomer) {
+                      setShowCustomerDropdown(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('name', e)}
+                  className="text-xs h-9 pr-8 font-medium"
+                />
+                {isSearchingCustomers && activeCustomerSearchField === 'name' ? (
+                  <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                ) : (
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                 )}
               </div>
 
-              {/* Company Name */}
-              <div>
-                <Label htmlFor="custCompanyInput" className="text-xs font-semibold mb-1 block">
-                  Company Name
-                </Label>
-                <Input
-                  id="custCompanyInput"
-                  placeholder="e.g. Acme Advertising Ltd."
-                  value={customerCompany}
-                  onChange={(e) => setCustomerCompany(e.target.value)}
-                  className="text-xs h-9"
+              {/* Suggestions Dropdown */}
+              {activeCustomerSearchField === 'name' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
                 />
-              </div>
+              )}
+            </div>
 
-              {/* Phone Number */}
-              <div>
-                <Label htmlFor="custPhoneInput" className="text-xs font-semibold mb-1 block">
-                  Phone Number <span className="text-rose-500">*</span>
-                </Label>
+            <div className="relative" ref={phoneSearchRef}>
+              <Label htmlFor="custPhoneInput" className="text-xs font-semibold mb-1 block">
+                Phone Number <span className="text-rose-500">*</span>
+              </Label>
+              <div className="relative">
                 <Input
                   id="custPhoneInput"
                   placeholder="017XXXXXXXX"
                   value={customerPhone}
-                  onChange={(e) => setCustomerPhone(e.target.value)}
-                  className="text-xs h-9 font-numeric tabular-nums"
+                  onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('phone')
+                    if (customerPhone.trim().length > 0 && !selectedCustomer) {
+                      setShowCustomerDropdown(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
+                  className="text-xs h-9 pr-8 font-numeric tabular-nums"
                 />
+                {isSearchingCustomers && activeCustomerSearchField === 'phone' ? (
+                  <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                ) : (
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                )}
               </div>
 
-              {/* WhatsApp Number */}
-              <div>
-                <Label htmlFor="custWAInput" className="text-xs font-semibold mb-1 block">
-                  WhatsApp Number
-                </Label>
+              {/* Suggestions Dropdown */}
+              {activeCustomerSearchField === 'phone' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
+              )}
+            </div>
+
+            <div className="relative" ref={companySearchRef}>
+              <Label htmlFor="custCompanyInput" className="text-xs font-semibold mb-1 block">
+                Company Name
+              </Label>
+              <div className="relative">
                 <Input
-                  id="custWAInput"
-                  placeholder="018XXXXXXXX"
-                  value={customerWhatsapp}
-                  onChange={(e) => setCustomerWhatsapp(e.target.value)}
-                  className="text-xs h-9 font-numeric tabular-nums"
+                  id="custCompanyInput"
+                  placeholder="e.g. Acme Advertising Ltd."
+                  value={customerCompany}
+                  onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('company')
+                    if (customerCompany.trim().length > 0 && !selectedCustomer) {
+                      setShowCustomerDropdown(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('company', e)}
+                  className="text-xs h-9 pr-8"
                 />
+                {isSearchingCustomers && activeCustomerSearchField === 'company' ? (
+                  <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                ) : (
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                )}
               </div>
 
-              {/* Customer Type */}
-              <div>
-                <Label htmlFor="custTypeSelect" className="text-xs font-semibold mb-1 block">
-                  Customer Type <span className="text-rose-500">*</span>
-                </Label>
-                <select
-                  id="custTypeSelect"
-                  value={customerType}
-                  onChange={(e) => setCustomerType(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
-                >
-                  <option value="retail">Retail (খুচরা)</option>
-                  <option value="reseller">Reseller (রিসেলার)</option>
-                  <option value="corporate">Corporate (কর্পোরেট)</option>
-                  <option value="government">Government (সরকারি)</option>
-                </select>
-              </div>
+              {/* Suggestions Dropdown */}
+              {activeCustomerSearchField === 'company' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
+              )}
+            </div>
 
-              {/* Email Address */}
-              <div>
-                <Label htmlFor="custEmailInput" className="text-xs font-semibold mb-1 block">
-                  Email Address
-                </Label>
+            {/* Row 2: [Billing Address] [Email] [Customer Type] */}
+            <div>
+              <Label htmlFor="custAddressInput" className="text-xs font-semibold mb-1 block">
+                Address / Delivery Address
+              </Label>
+              <Input
+                id="custAddressInput"
+                placeholder="e.g. 14 Motijheel C/A, Dhaka"
+                value={customerAddress}
+                onChange={(e) => setCustomerAddress(e.target.value)}
+                className="text-xs h-9"
+              />
+            </div>
+
+            <div className="relative" ref={emailSearchRef}>
+              <Label htmlFor="custEmailInput" className="text-xs font-semibold mb-1 block">
+                Email Address
+              </Label>
+              <div className="relative">
                 <Input
                   id="custEmailInput"
                   type="email"
                   placeholder="client@domain.com"
                   value={customerEmail}
-                  onChange={(e) => setCustomerEmail(e.target.value)}
-                  className="text-xs h-9"
+                  onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+                  onFocus={() => {
+                    setActiveCustomerSearchField('email')
+                    if (customerEmail.trim().length > 0 && !selectedCustomer) {
+                      setShowCustomerDropdown(true)
+                    }
+                  }}
+                  onKeyDown={(e) => handleCustomerKeyDown('email', e)}
+                  className="text-xs h-9 pr-8"
                 />
-              </div>
-            </div>
-
-            {/* Address & Save Customer Checkbox */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3 pt-1">
-              <div className="sm:col-span-2">
-                <Label htmlFor="custAddressInput" className="text-xs font-semibold mb-1 block">
-                  Address
-                </Label>
-                <Input
-                  id="custAddressInput"
-                  placeholder="e.g. 14 Motijheel C/A, Dhaka"
-                  value={customerAddress}
-                  onChange={(e) => setCustomerAddress(e.target.value)}
-                  className="text-xs h-9"
-                />
+                {isSearchingCustomers && activeCustomerSearchField === 'email' ? (
+                  <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
+                ) : (
+                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
+                )}
               </div>
 
-              {!selectedCustomer && (
-                <div className="flex items-center gap-2 pt-6">
-                  <input
-                    type="checkbox"
-                    id="saveCustCheck"
-                    checked={saveCustomer}
-                    onChange={(e) => setSaveCustomer(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <Label htmlFor="saveCustCheck" className="text-xs font-semibold cursor-pointer">
-                    Save customer to database
-                  </Label>
-                </div>
+              {/* Suggestions Dropdown */}
+              {activeCustomerSearchField === 'email' && showCustomerDropdown && !selectedCustomer && searchResults.length > 0 && (
+                <CustomerSuggestionsDropdown
+                  results={searchResults}
+                  highlightedIndex={customerHighlightedIndex}
+                  onSelect={handleSelectCustomer}
+                  onHover={setCustomerHighlightedIndex}
+                />
               )}
             </div>
 
-            {/* Duplicate Detection Alert */}
-            {duplicateWarning && duplicateWarning.matches.length > 0 && !selectedCustomer && (
-              <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
-                <div className="flex items-center gap-1.5 font-bold">
-                  <AlertTriangle className="h-4 w-4 text-amber-600" />
-                  <span>Existing Customer Found</span>
-                </div>
-                <p className="text-[11px] text-amber-800 dark:text-amber-300">
-                  Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
-                  {duplicateWarning.matches[0].customer.mobile}
-                  {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
-                </p>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
-                  className="h-7 text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
-                >
-                  Use Existing Customer
-                </Button>
-              </div>
-            )}
+            <div>
+              <Label htmlFor="custTypeSelect" className="text-xs font-semibold mb-1 block">
+                Customer Type <span className="text-rose-500">*</span>
+              </Label>
+              <select
+                id="custTypeSelect"
+                value={customerType}
+                onChange={(e) => setCustomerType(e.target.value)}
+                className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
+              >
+                <option value="retail">Retail / Walk-in (খুচরা)</option>
+                <option value="reseller">Reseller / Dealer (রিসেলার)</option>
+                <option value="corporate">Corporate (কর্পোরেট)</option>
+                <option value="government">Government / Org (সরকারি)</option>
+              </select>
+            </div>
           </div>
+
+          {/* Save Customer Checkbox */}
+          {!selectedCustomer && (
+            <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-slate-800/80">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-medium text-slate-700 dark:text-slate-300">
+                <input
+                  type="checkbox"
+                  id="saveCustCheck"
+                  checked={saveCustomer}
+                  onChange={(e) => setSaveCustomer(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span>Save customer details to directory for future quotations</span>
+              </label>
+            </div>
+          )}
+
+          {/* Duplicate Detection Alert */}
+          {duplicateWarning && duplicateWarning.matches.length > 0 && !selectedCustomer && (
+            <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 border border-amber-300 dark:border-amber-800 rounded-xl text-xs space-y-2">
+              <div className="flex items-center gap-1.5 font-bold">
+                <AlertTriangle className="h-4 w-4 text-amber-600" />
+                <span>Existing Customer Found</span>
+              </div>
+              <p className="text-[11px] text-amber-800 dark:text-amber-300">
+                Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
+                {duplicateWarning.matches[0].customer.mobile}
+                {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => handleSelectCustomer(duplicateWarning.matches[0].customer)}
+                className="h-7 text-xs bg-white text-amber-900 border-amber-300 hover:bg-amber-100"
+              >
+                Use Existing Customer
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* =========================================================================
@@ -1550,43 +2111,12 @@ export function NewQuotationModal({
                           <Plus className="h-3 w-3" /> Quick Add
                         </button>
                       </div>
-                      <select
-                        value={item.product_id || ''}
-                        onChange={(e) => handleProductSelect(index, e.target.value)}
-                        className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
-                      >
-                        <option value="">-- Custom Item (No Catalog) --</option>
-
-                        {servicesCatalogList.length > 0 && (
-                          <optgroup label="🖨️ Printing & Fabrication Services">
-                            {servicesCatalogList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'sft'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-
-                        {readyProductsCatalogList.length > 0 && (
-                          <optgroup label="📦 Ready Products & Display Hardware">
-                            {readyProductsCatalogList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'pcs'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-
-                        {materialsCatalogList.length > 0 && (
-                          <optgroup label="🧵 Raw Materials">
-                            {materialsCatalogList.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name} ({p.unit || 'roll'}) - ৳{p.selling_price}
-                              </option>
-                            ))}
-                          </optgroup>
-                        )}
-                      </select>
+                      <CatalogItemCombobox
+                        products={productsCatalog}
+                        selectedProductId={item.product_id}
+                        onSelectProduct={(pId) => handleProductSelect(index, pId)}
+                        onCustomSelect={() => handleProductSelect(index, '')}
+                      />
                     </div>
 
                     <div className="sm:col-span-7">
@@ -1651,17 +2181,17 @@ export function NewQuotationModal({
                     </div>
                   )}
 
-                  {/* SERVICE CONTROLS (Width × Height + Unit + Qty + Rate + Finishing) */}
+                  {/* SERVICE CONTROLS: [Width] [Height] [Dim. Unit] [Qty] [Finishing] [Add on] [Rate] */}
                   {isService && (
-                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-7 gap-2.5">
                       <div>
                         <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
                         <Input
                           type="number"
                           step="0.1"
                           placeholder="0"
-                          value={item.width || ''}
-                          onChange={(e) => handleItemChange(index, 'width', parseFloat(e.target.value) || 0)}
+                          value={item.width ?? ''}
+                          onChange={(e) => handleItemChange(index, 'width', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                           className="text-xs h-9 font-mono"
                         />
                       </div>
@@ -1672,8 +2202,8 @@ export function NewQuotationModal({
                           type="number"
                           step="0.1"
                           placeholder="0"
-                          value={item.height || ''}
-                          onChange={(e) => handleItemChange(index, 'height', parseFloat(e.target.value) || 0)}
+                          value={item.height ?? ''}
+                          onChange={(e) => handleItemChange(index, 'height', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
                           className="text-xs h-9 font-mono"
                         />
                       </div>
@@ -1681,7 +2211,7 @@ export function NewQuotationModal({
                       <div>
                         <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
                         <select
-                          value={item.dimension_unit}
+                          value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
@@ -1703,41 +2233,62 @@ export function NewQuotationModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Rate / sft (৳)</Label>
-                        <Input
-                          type="number"
-                          step="0.5"
-                          value={item.unit_rate || ''}
-                          onChange={(e) => handleItemChange(index, 'unit_rate', parseFloat(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
-                        />
-                      </div>
-
-                      <div>
                         <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
                         <select
                           value={item.finishing || 'None'}
                           onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="None">None</option>
                           {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
-                            item.available_finishing_options.map((f) => (
+                            <>
+                              <option value="None">None</option>
+                              {item.available_finishing_options.map((f) => (
+                                <option key={f.id} value={f.name}>
+                                  {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
+                                </option>
+                              ))}
+                            </>
+                          ) : (
+                            STANDARD_FINISHING_OPTIONS.map((f) => (
                               <option key={f.id} value={f.name}>
-                                {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
+                                {f.name} {f.rate > 0 ? `(+৳${f.rate})` : ''}
                               </option>
                             ))
-                          ) : (
-                            <>
-                              <option value="Eyelets / Grommets">Eyelets / রিং</option>
-                              <option value="Gloss Lamination">Gloss Lamination</option>
-                              <option value="Matte Lamination">Matte Lamination</option>
-                              <option value="Board Mount">PVC Board Mount</option>
-                              <option value="Pocket & Pipe">Pocket & Pipe</option>
-                              <option value="Hemming / Seaming">Hemming Border</option>
-                            </>
                           )}
                         </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Add on</Label>
+                        <select
+                          value={item.add_on || 'None'}
+                          onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          {STANDARD_ADD_ON_OPTIONS.map((a) => (
+                            <option key={a.id} value={a.name}>
+                              {a.name} {a.rate > 0 ? `(+৳${a.rate})` : ''}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <Label className="text-[11px] font-semibold block">Rate / sft (৳)</Label>
+                          {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
+                            <span className="text-[9px] text-emerald-600 font-bold">
+                              +৳{(item.finishing_rate ?? 0) + (item.add_on_rate ?? 0)}
+                            </span>
+                          )}
+                        </div>
+                        <Input
+                          type="number"
+                          step="0.5"
+                          value={item.unit_rate ?? ''}
+                          onChange={(e) => handleItemChange(index, 'unit_rate', e.target.value)}
+                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                        />
                       </div>
                     </div>
                   )}

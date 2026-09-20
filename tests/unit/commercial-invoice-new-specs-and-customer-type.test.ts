@@ -5,7 +5,7 @@ import {
   STANDARD_ADD_ON_OPTIONS,
   getFinishingRate,
   getAddOnRate,
-} from '../../components/billing/new-invoice-modal.js'
+} from '../../lib/finishing-addons.ts'
 
 describe('Commercial Invoice Modal — Specs, Add-ons, Finishing & Customer Type', () => {
   it('1. Calculates finishing rate and add-on rate correctly from standard options', () => {
