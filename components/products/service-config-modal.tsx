@@ -117,6 +117,130 @@ export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
   { value: 'job', label: 'job (Job / Flat — এককালীন)' },
 ]
 
+
+export const getMaterialCost = (mat: MaterialRecord | null | undefined): number => {
+  if (!mat) return 0
+  const cost =
+    (mat as any).purchase_price_per_sft ??
+    (mat as any).base_cost ??
+    (mat as any).purchase_price ??
+    (mat as any).cost_per_unit ??
+    (mat as any).last_purchase_price ??
+    (mat as any).manual_cost ??
+    (mat as any).effective_unit_cost ??
+    (mat as any).material_config?.purchase_price_per_sft ??
+    0
+  return Number(cost) || 0
+}
+
+export interface MaterialUnitDetails {
+  stockUnit: string
+  consumeUnit: string
+  isRollMedia: boolean
+  isSheet: boolean
+  costVal: number
+  rateDisplay: string
+  stockSubtitle: string
+}
+
+export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): MaterialUnitDetails => {
+  if (!mat) {
+    return {
+      stockUnit: 'unit',
+      consumeUnit: 'sft',
+      isRollMedia: false,
+      isSheet: false,
+      costVal: 0,
+      rateDisplay: 'Raw Consumable',
+      stockSubtitle: 'unit',
+    }
+  }
+
+  const rawStockUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || 'unit'
+  const rawConsumeUnit = (mat as any).usage_unit || (mat as any).consumption_unit || ''
+  const cat = (mat.category || '').toLowerCase()
+  const name = (mat.name || '').toLowerCase()
+  const pUnitLower = rawStockUnit.toLowerCase()
+
+  const isRollMedia =
+    pUnitLower === 'roll' ||
+    Boolean(mat.is_roll) ||
+    cat.includes('roll') ||
+    cat.includes('vinyl') ||
+    cat.includes('flex') ||
+    cat.includes('banner') ||
+    cat.includes('media') ||
+    cat.includes('substrate') ||
+    name.includes('flex') ||
+    name.includes('vinyl') ||
+    name.includes('banner') ||
+    name.includes('sticker') ||
+    name.includes('backlit') ||
+    name.includes('canvas') ||
+    name.includes('mesh') ||
+    name.includes('one way')
+
+  const isSheet =
+    pUnitLower === 'sheet' ||
+    cat.includes('sheet') ||
+    cat.includes('board') ||
+    cat.includes('acrylic') ||
+    cat.includes('foam') ||
+    cat.includes('pvc board') ||
+    name.includes('board') ||
+    name.includes('sheet') ||
+    name.includes('acrylic')
+
+  let consumeUnit = rawConsumeUnit
+  if (!consumeUnit) {
+    if (isRollMedia) {
+      consumeUnit = 'sft'
+    } else if (isSheet) {
+      consumeUnit = 'sft'
+    } else if (pUnitLower === 'box' || pUnitLower === 'pack' || pUnitLower === 'packet') {
+      if (
+        cat.includes('eyelet') ||
+        name.includes('eyelet') ||
+        name.includes('screw') ||
+        name.includes('grommet') ||
+        cat.includes('fastener') ||
+        cat.includes('rivet')
+      ) {
+        consumeUnit = 'pcs'
+      } else {
+        consumeUnit = rawStockUnit
+      }
+    } else {
+      consumeUnit = rawStockUnit
+    }
+  }
+
+  const costVal = getMaterialCost(mat)
+  const normalizedConsumeUnit = consumeUnit.toLowerCase()
+  const normalizedStockUnit = rawStockUnit.toLowerCase()
+
+  const rateDisplay = costVal > 0 ? `৳${costVal}/${normalizedConsumeUnit}` : 'Raw Consumable'
+
+  let stockSubtitle = rawStockUnit
+  if (costVal > 0) {
+    if (normalizedConsumeUnit !== normalizedStockUnit) {
+      stockSubtitle += ` • ৳${costVal}/${normalizedConsumeUnit}`
+    } else {
+      stockSubtitle += ` • ৳${costVal}/${normalizedStockUnit}`
+    }
+  }
+
+  return {
+    stockUnit: rawStockUnit,
+    consumeUnit: normalizedConsumeUnit,
+    isRollMedia,
+    isSheet,
+    costVal,
+    rateDisplay,
+    stockSubtitle,
+  }
+}
+
 export const PRINT_TECHNOLOGIES = [
   'Eco-Solvent',
   'Solvent Heavy Duty',
@@ -1423,18 +1547,7 @@ export function ServiceConfigModal({
     setErrorMessage(null)
   }, [initialData, isOpen])
 
-  // Helper to extract purchase price/cost from material
-  const getMaterialCost = (mat: MaterialRecord): number => {
-    const cost =
-      (mat as any).purchase_price_per_sft ??
-      (mat as any).base_cost ??
-      (mat as any).purchase_price ??
-      (mat as any).cost_per_unit ??
-      (mat as any).last_purchase_price ??
-      (mat as any).material_config?.purchase_price_per_sft ??
-      0
-    return Number(cost) || 0
-  }
+  // Material Cost and Unit helpers defined at module level
 
   // Handle selecting fleet machine and auto-syncing speed, hourly cost and machine unit rate
   const handleFleetMachineSelect = (mId: string) => {
@@ -1843,13 +1956,13 @@ export function ServiceConfigModal({
     if (exists) {
       setRequiredMaterials(requiredMaterials.filter((m) => m.material_id !== mat.id))
     } else {
-      const cost = getMaterialCost(mat)
+      const { consumeUnit, costVal } = getMaterialUnitDetails(mat)
+      const cost = costVal
       const qty = 1
       const waste = defaultWastagePercent
       const subtotal = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
 
-      const rawUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || (mat as any).selling_unit || 'sft'
-      const defaultBomUnit = rawUnit === 'roll' ? 'sft' : rawUnit
+      const defaultBomUnit = consumeUnit || 'sft'
 
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
@@ -2375,6 +2488,30 @@ export function ServiceConfigModal({
         },
         bom: {
           required_materials: requiredMaterials,
+          consumption_groups: {
+            print_media: selectedMat ? {
+              material_id: selectedMat.id,
+              material_name: selectedMat.name,
+              consumption_method: 'area_print',
+              waste_percent: defaultWastagePercent,
+              unit_cost: getMaterialCost(selectedMat),
+              subtotal_cost: getMaterialCost(selectedMat) * (1 + defaultWastagePercent / 100),
+            } : undefined,
+            ink: {
+              profile: selectedInkProfile,
+              channels: selectedInks,
+              consume_per_unit_ml: Number(consumePerUnitMl) || 1.2,
+              total_ml_per_sqft: Number(consumePerUnitMl) || 1.2,
+              unit_cost: inkCostNum,
+              auto_calculate_cost: autoCalculateInkCost,
+            },
+            finishing_materials: requiredMaterials.filter((m) =>
+              (m.category || '').toLowerCase().includes('finish') || (m.material_name || '').toLowerCase().includes('laminat')
+            ),
+            additional_consumables: requiredMaterials.filter((m) =>
+              !(m.category || '').toLowerCase().includes('finish') && !(m.material_name || '').toLowerCase().includes('laminat') && !m.is_primary
+            ),
+          },
           default_wastage_percent: defaultWastagePercent,
           total_bom_cost: totalBOMCost,
         },
@@ -3057,7 +3194,7 @@ export function ServiceConfigModal({
                   <div>
                     <span className="text-[10px] text-slate-500 uppercase block font-medium">Average Cost</span>
                     <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
-                      ৳{getMaterialCost(selectedMaterialRecord)} / {purchaseUnit === 'roll' ? 'sft' : purchaseUnit}
+                      ৳{getMaterialCost(selectedMaterialRecord)} / {getMaterialUnitDetails(selectedMaterialRecord).consumeUnit}
                     </span>
                   </div>
                 </div>
@@ -3813,8 +3950,7 @@ export function ServiceConfigModal({
                     const reqItem = requiredMaterials.find((m) => m.material_id === mat.id)
                     const isSelected = Boolean(reqItem)
                     const isPrimary = Boolean(reqItem?.is_primary)
-                    const costVal = getMaterialCost(mat)
-                    const pUnit = (mat as any).purchase_unit || mat.unit || 'unit'
+                    const { stockUnit, consumeUnit, costVal, rateDisplay, stockSubtitle } = getMaterialUnitDetails(mat)
 
                     return (
                       <div
@@ -3843,13 +3979,13 @@ export function ServiceConfigModal({
                           )}
 
                           <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
-                            {mat.sku} • {pUnit} {costVal > 0 ? `• ৳${costVal}/${pUnit}` : ''}
+                            {mat.sku} • {stockSubtitle}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between pt-1.5 border-t border-slate-100 dark:border-slate-800/60">
                           <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-300">
-                            {costVal > 0 ? `৳${costVal}/${pUnit}` : 'Raw Consumable'}
+                            {rateDisplay}
                           </span>
 
                           <button
@@ -4006,9 +4142,9 @@ export function ServiceConfigModal({
                       const isLinked = finishingOptions.some(
                         (f) => f.material_id === mat.id || f.name.toLowerCase() === mat.name.toLowerCase()
                       )
-                      const costVal = Number((mat as any).purchase_price_per_sft || (mat as any).purchase_price || mat.cost_per_unit || (mat as any).base_cost || 0)
-                      const sellVal = Number((mat as any).selling_price || (mat as any).price || (mat as any).material_config?.selling_price || (mat as any).price_tiers?.retail || 0)
-                      const pUnit = (mat as any).purchase_unit || mat.unit || 'unit'
+                      const { stockUnit, consumeUnit, costVal, rateDisplay, stockSubtitle } = getMaterialUnitDetails(mat)
+                      const rawSellVal = Number((mat as any).selling_price || (mat as any).price || (mat as any).material_config?.selling_price || (mat as any).price_tiers?.retail || 0)
+                      const sellVal = rawSellVal > 0 ? rawSellVal : 0
 
                       return (
                         <div
@@ -4030,14 +4166,14 @@ export function ServiceConfigModal({
                               </Badge>
                             </div>
                             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono block mt-0.5">
-                              {mat.sku} • {pUnit}{costVal > 0 ? ` • ৳${costVal}/${pUnit}` : ''}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${pUnit}` : ''}
+                              {mat.sku} • {stockSubtitle}{sellVal > 0 ? ` • Sell: ৳${sellVal}/${consumeUnit}` : ''}
                             </span>
                           </div>
 
                           <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
                             <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold">
                               <span className="text-purple-700 dark:text-purple-300">
-                                {costVal > 0 ? `Cost: ৳${costVal}` : 'Raw Item'}
+                                {costVal > 0 ? `Cost: ৳${costVal}/${consumeUnit}` : 'Raw Item'}
                               </span>
                               {sellVal > 0 && (
                                 <span className="text-emerald-600 dark:text-emerald-400 text-[10px]">

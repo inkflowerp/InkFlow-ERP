@@ -928,6 +928,7 @@ export interface ServiceConfiguration {
   }
   bom?: {
     required_materials?: ServiceRequiredMaterial[]
+    consumption_groups?: ServiceBOMConsumptionGroups
     default_wastage_percent?: number
     total_bom_cost?: number
   }
@@ -956,6 +957,82 @@ export interface ServiceConfiguration {
   general_category?: string
   deliverable_format?: string
   turnaround_hours?: number
+}
+
+export interface ServiceBOMConsumptionGroups {
+  print_media?: {
+    material_id?: string
+    material_name?: string
+    consumption_method?: string
+    waste_percent?: number
+    unit_cost?: number
+    subtotal_cost?: number
+  }
+  ink?: {
+    profile?: string
+    channels?: LinkedInkChannel[]
+    consume_per_unit_ml?: number
+    total_ml_per_sqft?: number
+    unit_cost?: number
+    auto_calculate_cost?: boolean
+  }
+  finishing_materials?: ServiceRequiredMaterial[]
+  additional_consumables?: ServiceRequiredMaterial[]
+}
+
+export interface ServiceCostingSnapshot {
+  snapshot_version: number
+  snapshot_created_at: string
+  service_id?: string
+  service_name: string
+  service_sku?: string
+  service_type: string
+  category?: string
+  sub_category?: string
+  technology?: string
+  production_method?: string
+  department?: string
+  
+  // 4-Group Material Consumption Snapshot
+  consumption_groups: ServiceBOMConsumptionGroups
+  
+  // Dimensions & Quantities
+  customer_dimensions: { width: number; length: number; unit: string; total_area_sqft: number }
+  production_dimensions: { width: number; length: number; formatted_spec: string; total_area_sqft: number }
+  order_quantity: number
+  billable_quantity: number
+  
+  // Selected Options
+  selected_finishing: Array<{ name: string; requirement_type?: string; pricing_method: string; unit_cost: number; price: number }>
+  selected_additionals: Array<{ name: string; pricing_method: string; unit_cost: number; price: number }>
+  installation_config?: { required: boolean; category?: string; crew_size?: number; unit_cost: number; price: number }
+  delivery_config?: { required: boolean; vehicle_type?: string; distance_zone?: string; unit_cost: number; price: number }
+  
+  // Financial Snapshot
+  pricing: {
+    unit: string
+    base_selling_rate: number
+    minimum_job_charge?: number
+    price_tier_applied?: string
+    discount_amount?: number
+    subtotal: number
+    tax_rate_percent?: number
+    grand_total: number
+  }
+  
+  cost_assumptions: {
+    estimated_media_cost: number
+    estimated_ink_cost: number
+    estimated_machine_cost: number
+    estimated_labor_cost: number
+    estimated_finishing_cost: number
+    estimated_additional_cost: number
+    estimated_installation_cost: number
+    estimated_delivery_cost: number
+    total_estimated_direct_cost: number
+    gross_profit: number
+    gross_margin_percent: number
+  }
 }
 
 export interface MaterialRollSizeConfig {

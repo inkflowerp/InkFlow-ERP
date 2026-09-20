@@ -425,13 +425,15 @@ export function evaluateBOMConsumption(
   subtotalCost: number
   wasteQuantity: number
 } {
-  const method = item.consumption_method || item.consumption_rule || 'per_sqft'
-  const qtyPerUnit = Number(item.quantity_per_unit ?? item.quantity_required) || 1
-  const wastePercent = Number(item.waste_percent) || 0
-  const unitCost = Number(item.unit_cost) || 0
-  const orderQty = Math.max(1, Number(context.orderQuantity) || 1)
-  const areaSqft = Number(context.productionAreaSqft ?? context.customerAreaSqft) || 1
-  const perimeterFt = Number(context.perimeterFt) || (2 * ((context.customerWidthFt || 1) + (context.customerLengthFt || 1)))
+  const method = (item.consumption_method || item.consumption_rule || 'per_sqft').toLowerCase()
+  const qtyPerUnit = Math.max(0, Number(item.quantity_per_unit ?? item.quantity_required) || 1)
+  const wastePercent = Math.max(0, Number(item.waste_percent) || 0)
+  const unitCost = Math.max(0, Number(item.unit_cost) || 0)
+  const orderQty = Math.max(0, Number(context.orderQuantity ?? 1))
+  const widthFt = Math.max(0, Number(context.customerWidthFt) || 0)
+  const lengthFt = Math.max(0, Number(context.customerLengthFt) || 0)
+  const areaSqft = Math.max(0, Number(context.productionAreaSqft ?? context.customerAreaSqft ?? (widthFt * lengthFt)))
+  const perimeterFt = Math.max(0, Number(context.perimeterFt ?? (2 * (widthFt + lengthFt))))
 
   let baseQty = qtyPerUnit
 
@@ -463,21 +465,31 @@ export function evaluateBOMConsumption(
       baseQty = qtyPerUnit
       break
     case 'formula':
-      if (item.consumption_formula) {
+      if (item.consumption_formula && item.consumption_formula.trim() !== '') {
         try {
           const formula = item.consumption_formula
-            .replace(/width/gi, String(context.customerWidthFt || 1))
-            .replace(/height|length/gi, String(context.customerLengthFt || 1))
-            .replace(/area/gi, String(areaSqft))
-            .replace(/qty|quantity/gi, String(orderQty))
-            .replace(/perimeter/gi, String(perimeterFt))
-          const calculated = Function(`"use strict"; return (${formula})`)()
-          if (!isNaN(calculated) && calculated > 0) {
-            baseQty = Number(calculated)
+            .replace(/width/gi, String(widthFt || 1))
+            .replace(/height|length/gi, String(lengthFt || 1))
+            .replace(/area/gi, String(areaSqft || 1))
+            .replace(/qty|quantity/gi, String(orderQty || 1))
+            .replace(/perimeter/gi, String(perimeterFt || 1))
+          
+          // Guard against division by zero in formula string (e.g. / 0)
+          if (/\/(\s*)0+(\.0+)?(\s*[\+\-\*\/\)\,]|$)/.test(formula)) {
+            baseQty = qtyPerUnit
+          } else {
+            const calculated = Function(`"use strict"; return (${formula})`)()
+            if (!isNaN(calculated) && isFinite(calculated) && Number(calculated) >= 0) {
+              baseQty = Number(calculated)
+            } else {
+              baseQty = qtyPerUnit
+            }
           }
         } catch {
           baseQty = qtyPerUnit
         }
+      } else {
+        baseQty = qtyPerUnit
       }
       break
     default:
@@ -494,5 +506,132 @@ export function evaluateBOMConsumption(
     unitCost,
     subtotalCost,
     wasteQuantity: parseFloat(wasteQty.toFixed(4)),
+  }
+}
+
+/**
+ * Creates an authoritative, immutable recipe snapshot when a Quotation or Job Order is created.
+ * Guarantees that future edits to the Service Master, raw material inventory prices,
+ * or BOM specifications never alter historical quotes, invoices, or completed jobs.
+ */
+export function createServiceJobSnapshot(
+  service: any,
+  input: any = {},
+  costingResult: any = {}
+): any {
+  const srvCfg = service?.service_config || {}
+  const geom = costingResult.dimensions || calculateProductionGeometry(
+    { width: input.customer_width || input.width || 0, length: input.customer_length || input.height || 0, unit: input.dimension_unit || 'ft' },
+    input.allowanceRule,
+    Math.max(1, Number(input.quantity) || 1)
+  )
+
+  const printMedia = srvCfg.substrate || srvCfg.bom?.consumption_groups?.print_media || {
+    material_id: service?.printable_material_id,
+    material_name: service?.printable_material_name,
+    consumption_method: 'area_print',
+    waste_percent: srvCfg.default_wastage_percent ?? service?.default_wastage_percentage ?? 5,
+    unit_cost: costingResult.plannedMaterialCost && geom.totalProductionAreaSqft > 0 ? costingResult.plannedMaterialCost / geom.totalProductionAreaSqft : Number(service?.base_cost) || 0,
+    subtotal_cost: costingResult.plannedMaterialCost || 0,
+  }
+
+  const ink = srvCfg.ink || srvCfg.bom?.consumption_groups?.ink || {
+    profile: srvCfg.ink_profile || 'cmyk_standard',
+    channels: srvCfg.selected_inks || [],
+    consume_per_unit_ml: srvCfg.consume_per_unit_ml || 1.2,
+    unit_cost: costingResult.plannedInkCost && geom.totalCustomerAreaSqft > 0 ? costingResult.plannedInkCost / geom.totalCustomerAreaSqft : Number(srvCfg.ink_cost) || 0,
+  }
+
+  const finishingMaterials = (srvCfg.required_materials || []).filter((m: any) =>
+    (m.category || '').toLowerCase().includes('finish') || (m.material_name || '').toLowerCase().includes('laminat')
+  )
+
+  const additionalConsumables = (srvCfg.required_materials || []).filter((m: any) =>
+    !(m.category || '').toLowerCase().includes('finish') && !(m.material_name || '').toLowerCase().includes('laminat') && !m.is_primary
+  )
+
+  const consumptionGroups = {
+    print_media: printMedia,
+    ink,
+    finishing_materials: finishingMaterials,
+    additional_consumables: additionalConsumables,
+  }
+
+  return {
+    snapshot_version: 1,
+    snapshot_created_at: new Date().toISOString(),
+    service_id: service?.id,
+    service_name: service?.name || 'Printing Service',
+    service_sku: service?.sku,
+    service_type: service?.service_type || srvCfg.service_type || 'printing',
+    category: service?.category || srvCfg.category,
+    sub_category: service?.sub_category || srvCfg.sub_category,
+    technology: service?.print_technology || srvCfg.print_technology || srvCfg.classification?.technology,
+    production_method: service?.production_method || srvCfg.production_method || srvCfg.classification?.production_method,
+    department: service?.default_department || srvCfg.default_department || srvCfg.classification?.department,
+
+    consumption_groups: consumptionGroups,
+
+    customer_dimensions: {
+      width: geom.singleCustomerWidthFt || Number(input.customer_width) || 0,
+      length: geom.singleCustomerLengthFt || Number(input.customer_length) || 0,
+      unit: input.dimension_unit || 'ft',
+      total_area_sqft: geom.totalCustomerAreaSqft || 0,
+    },
+    production_dimensions: {
+      width: geom.singleProductionWidthFt || 0,
+      length: geom.singleProductionLengthFt || 0,
+      formatted_spec: geom.formattedProductionDimension || '',
+      total_area_sqft: geom.totalProductionAreaSqft || 0,
+    },
+    order_quantity: Math.max(1, Number(input.quantity) || 1),
+    billable_quantity: costingResult.billableQuantity || costingResult.total_customer_area_sqft || 0,
+
+    selected_finishing: (costingResult.finishingBreakdown || []).map((f: any) => ({
+      name: f.name,
+      pricing_method: f.pricing_method || 'per_sqft',
+      unit_cost: f.cost || 0,
+      price: f.price || 0,
+    })),
+    selected_additionals: (costingResult.additionalBreakdown || []).map((a: any) => ({
+      name: a.name,
+      pricing_method: a.pricing_method || 'per_piece',
+      unit_cost: a.cost || 0,
+      price: a.price || 0,
+    })),
+    installation_config: costingResult.installationBreakdown ? {
+      required: true,
+      unit_cost: costingResult.installationBreakdown.cost || 0,
+      price: costingResult.installationBreakdown.price || 0,
+    } : undefined,
+    delivery_config: costingResult.deliveryBreakdown ? {
+      required: true,
+      unit_cost: costingResult.deliveryBreakdown.cost || 0,
+      price: costingResult.deliveryBreakdown.price || 0,
+    } : undefined,
+
+    pricing: {
+      unit: service?.selling_unit || srvCfg.billing?.selling_unit || 'sft',
+      base_selling_rate: costingResult.baseServiceRate || service?.selling_price || 0,
+      minimum_job_charge: costingResult.minimumCharge || service?.minimum_charge,
+      discount_amount: costingResult.discountAmount || 0,
+      subtotal: costingResult.finalSubtotal || costingResult.final_selling_price || 0,
+      tax_rate_percent: costingResult.vatRatePercent || service?.tax_rate || 0,
+      grand_total: costingResult.grandTotalBDT || costingResult.finalSubtotal || 0,
+    },
+
+    cost_assumptions: {
+      estimated_media_cost: costingResult.plannedMaterialCost || 0,
+      estimated_ink_cost: costingResult.plannedInkCost || 0,
+      estimated_machine_cost: Number(service?.machine_hourly_rate) || 0,
+      estimated_labor_cost: costingResult.plannedLaborCost || 0,
+      estimated_finishing_cost: costingResult.plannedFinishingCost || 0,
+      estimated_additional_cost: costingResult.plannedAdditionalCost || 0,
+      estimated_installation_cost: costingResult.plannedInstallationCost || 0,
+      estimated_delivery_cost: 0,
+      total_estimated_direct_cost: costingResult.totalPlannedCost || 0,
+      gross_profit: costingResult.grossProfitBDT || 0,
+      gross_margin_percent: costingResult.grossMarginPercent || 0,
+    },
   }
 }
