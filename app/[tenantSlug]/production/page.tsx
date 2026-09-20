@@ -227,6 +227,63 @@ export default function AdvancedProductionPage() {
     { id: 'completed', title: 'COMPLETED', titleBn: 'সম্পন্ন', statuses: ['completed'] },
   ]
 
+  // Auto-Generate Tasks Modal
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
+  const [selectedOrderForGen, setSelectedOrderForGen] = useState<string>('')
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const activeOrders = React.useMemo(() => {
+    try {
+      const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      return [...orders, ...jobOrders]
+    } catch {
+      return []
+    }
+  }, [tasks])
+
+  const handleGenerateTasksFromOrder = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedOrderForGen) return
+
+    const order = activeOrders.find((o) => o.id === selectedOrderForGen || o.order_number === selectedOrderForGen || o.job_number === selectedOrderForGen)
+    if (!order) return
+
+    setIsGenerating(true)
+    try {
+      const { generateProductionTasksFromOrderAction } = await import('@/actions/production-planning.actions')
+      const lineItem = (order.items && order.items[0]) || {}
+
+      const res = await generateProductionTasksFromOrderAction({
+        job_order_id: order.id,
+        production_job_id: order.id,
+        product_name: lineItem.item_name || order.product_name || 'Commercial Print Job',
+        customer_name: order.customer_name || 'Direct Client',
+        quantity: lineItem.quantity || order.quantity || 1,
+        unit: lineItem.unit || order.unit || 'pcs',
+        width: lineItem.width || order.width || 48,
+        height: lineItem.height || order.height || 36,
+        dimension_unit: lineItem.dimension_unit || 'inch',
+        material_spec: lineItem.media_type || order.material_spec || 'Vinyl Sticker with Gloss Finish',
+        printing_method: 'Eco-Solvent',
+        finishing_tasks: ['Lamination', 'Edge Trimming'],
+      })
+
+      if (res.success) {
+        showNotification(`Auto-generated ${res.data?.length || 0} sequential production tasks for ${order.order_number || order.job_number || 'Order'}!`)
+        setIsGenerateModalOpen(false)
+        setSelectedOrderForGen('')
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    } finally {
+      setIsGenerating(false)
+    }
+  }
+
   return (
     <FeatureGate feature="production">
       <div className="space-y-6 max-w-7xl">
@@ -239,22 +296,90 @@ export default function AdvancedProductionPage() {
           icon={Printer}
           iconColor="text-blue-600"
           actions={
-            <div className="flex items-center gap-2">
-              <Link href={`/production/machineries`}>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsGenerateModalOpen(true)}
+                className="text-xs bangla-text flex items-center gap-1.5 border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-800 dark:text-blue-300"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-blue-600" />
+                {tBilingual('Auto-Generate Tasks from Order', 'অর্ডার থেকে টাস্ক জেনারেট')}
+              </Button>
+              <Link href={`/${slug}/production/machineries`}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}
                 </Button>
               </Link>
-              <Link href="/operator">
+              <Link href={`/${slug}/operator`}>
                 <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
                   <Printer className="h-3.5 w-3.5" />
-                  {tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}
+                  {tBilingual('Floor Terminal', 'ফ্লোর টার্মিনাল')}
                 </Button>
               </Link>
             </div>
           }
         />
+
+        {/* Generate Tasks Modal */}
+        <ModalDialog
+          open={isGenerateModalOpen}
+          onOpenChange={(open) => !open && setIsGenerateModalOpen(false)}
+          title={tBilingual('Auto-Generate Sequential Production Tasks', 'অটো-টাস্ক জেনারেটর')}
+          hideFooter={true}
+        >
+          <form onSubmit={handleGenerateTasksFromOrder} className="space-y-4">
+            <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg text-xs text-blue-900 dark:text-blue-200 space-y-1">
+              <p className="font-bold">Automated Multi-Stage Production Routing</p>
+              <p className="text-[11px] opacity-90">
+                Select an active order or job. The engine will inspect item specifications (dimensions, media substrate, printing method, finishing) and auto-create Prepress, Primary Print on Fleet Machine, Finishing, and QC tasks with sequential dependencies.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold">
+                {tBilingual('Select Sales Order / Job Order', 'অর্ডার বা জব নির্বাচন করুন')}
+              </Label>
+              <select
+                required
+                value={selectedOrderForGen}
+                onChange={(e) => setSelectedOrderForGen(e.target.value)}
+                className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+              >
+                <option value="">-- Choose Order / Job --</option>
+                {activeOrders.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    #{o.order_number || o.job_number || o.id} — {o.customer_name || 'Client'} ({o.items?.[0]?.item_name || o.product_name || 'Print Order'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setIsGenerateModalOpen(false)}
+                disabled={isGenerating}
+                className="text-xs"
+              >
+                {tBilingual('Cancel', 'বাতিল')}
+              </Button>
+              <Button
+                type="submit"
+                variant="default"
+                size="sm"
+                disabled={isGenerating || !selectedOrderForGen}
+                className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-1.5"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                {isGenerating ? tBilingual('Generating Tasks...', 'জেনারেট হচ্ছে...') : tBilingual('Generate Tasks Now', 'টাস্ক তৈরি করুন')}
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
 
         {/* Notifications Toast */}
         {notification && (

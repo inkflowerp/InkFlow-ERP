@@ -44,6 +44,7 @@ import {
   Truck,
   Layers,
   Zap,
+  Cpu,
 } from 'lucide-react'
 import type {
   ProductRecord,
@@ -61,6 +62,7 @@ import type {
 } from '@/types/product.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import type { MaterialRecord } from '@/types/inventory.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
@@ -72,6 +74,7 @@ interface ServiceConfigModalProps {
   initialData?: ProductRecord | null
   categories?: ProductCategoryRecord[]
   availableMaterials?: MaterialRecord[]
+  machineries?: MachineryRecord[]
   printingMethods?: Array<{ id: string; name: string; name_bn?: string | null }>
   finishingMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
   additionalMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
@@ -366,6 +369,7 @@ export function ServiceConfigModal({
   initialData,
   categories = [],
   availableMaterials = [],
+  machineries = [],
   printingMethods = [],
   finishingMasterOptions = [],
   additionalMasterOptions = [],
@@ -383,9 +387,13 @@ export function ServiceConfigModal({
   const [description, setDescription] = useState('')
   const [isActive, setIsActive] = useState(true)
 
-  // 1.1 Printing Configuration
+  // 1.1 Printing Configuration & Fleet Machine Routing
   const [printCategory, setPrintCategory] = useState<string>('Large Format Eco-Solvent Print')
   const [selectedPrintingMethods, setSelectedPrintingMethods] = useState<string[]>(['Eco-Solvent Print'])
+  const [selectedMachineId, setSelectedMachineId] = useState<string>('')
+  const [machineHourlyRate, setMachineHourlyRate] = useState<number | ''>('')
+  const [estimatedSpeed, setEstimatedSpeed] = useState<number | ''>('')
+  const [speedUnit, setSpeedUnit] = useState<string>('sqft_per_hr')
   const [printableMaterialId, setPrintableMaterialId] = useState<string>('')
   const [inkType, setInkType] = useState<string>('Eco-Solvent High Pigment Ink')
   const [selectedInks, setSelectedInks] = useState<LinkedInkChannel[]>(INK_CHANNEL_PRESETS.cmyk)
@@ -999,6 +1007,15 @@ export function ServiceConfigModal({
         (cfg.printing_method ? [cfg.printing_method] : ['Eco-Solvent Print'])
       setSelectedPrintingMethods(loadedMethods)
 
+      // Fleet Machine linkage
+      const loadedMachId = (initialData as any).machine_id || cfg.machine_id || ''
+      setSelectedMachineId(loadedMachId)
+      const loadedMachRate = (initialData as any).machine_hourly_rate ?? cfg.machine_hourly_rate
+      setMachineHourlyRate(loadedMachRate !== undefined && loadedMachRate !== null && loadedMachRate !== '' ? Number(loadedMachRate) : '')
+      const loadedSpeed = (initialData as any).estimated_speed ?? cfg.estimated_speed
+      setEstimatedSpeed(loadedSpeed !== undefined && loadedSpeed !== null && loadedSpeed !== '' ? Number(loadedSpeed) : '')
+      setSpeedUnit((initialData as any).speed_unit || cfg.speed_unit || 'sqft_per_hr')
+
       // Printable material
       const primaryReq = (cfg.required_materials || []).find((m) => m.is_primary)
       const initialMatId = (initialData as any).printable_material_id || cfg.printable_material_id || primaryReq?.material_id || ''
@@ -1100,6 +1117,10 @@ export function ServiceConfigModal({
       setTurnaroundHours(24)
 
       setSelectedPrintingMethods(['Eco-Solvent Print'])
+      setSelectedMachineId('')
+      setMachineHourlyRate('')
+      setEstimatedSpeed('')
+      setSpeedUnit('sqft_per_hr')
       setPrintableMaterialId('')
       setInkType('Eco-Solvent High Pigment Ink')
       setSelectedInks(INK_CHANNEL_PRESETS.cmyk)
@@ -1168,6 +1189,27 @@ export function ServiceConfigModal({
       (mat as any).material_config?.purchase_price_per_sft ??
       0
     return Number(cost) || 0
+  }
+
+  // Handle selecting fleet machine and auto-syncing speed, hourly cost and machine unit rate
+  const handleFleetMachineSelect = (mId: string) => {
+    setSelectedMachineId(mId)
+    if (!mId) return
+    const m = machineries.find((item) => item.id === mId)
+    if (!m) return
+    if (m.hourly_rate_bdt) {
+      setMachineHourlyRate(m.hourly_rate_bdt)
+    }
+    const spd = m.speed_sqft_per_hour || m.speed_sheets_per_hour
+    if (spd) {
+      setEstimatedSpeed(spd)
+      setSpeedUnit(m.speed_sheets_per_hour ? 'sheet_per_hr' : 'sqft_per_hr')
+    }
+    // Auto-compute unit machine & power cost: hourly_rate / speed_sqft_per_hour
+    if (m.hourly_rate_bdt && m.speed_sqft_per_hour && m.speed_sqft_per_hour > 0) {
+      const unitMachCost = Math.round((m.hourly_rate_bdt / m.speed_sqft_per_hour) * 100) / 100
+      setMachineCost(unitMachCost)
+    }
   }
 
   // Handle selecting Printable Material (Inventory Item) and Auto-Syncing its configured sizes and cost
@@ -2012,12 +2054,17 @@ export function ServiceConfigModal({
         ink_cost: inkCostNum,
         ink_cost_per_unit: inkCostNum,
         cost_breakdown: costBreakdown,
+        machine_id: selectedMachineId || undefined,
+        machine_hourly_rate: Number(machineHourlyRate) || undefined,
+        estimated_speed: Number(estimatedSpeed) || undefined,
+        speed_unit: speedUnit || undefined,
       }
 
       const selectedFinishingMat = availableMaterials.find((m) => m.id === finishingMaterialId)
       const selectedProductionMat = availableMaterials.find((m) => m.id === productionMaterialId)
       const selectedInstallationHardwareMat = availableMaterials.find((m) => m.id === installationHardwareId)
       const selectedPackagingMat = availableMaterials.find((m) => m.id === packagingMaterialId)
+      const selectedFleetMach = machineries.find((m) => m.id === selectedMachineId)
 
       await onSave({
         name: name.trim(),
@@ -2029,6 +2076,12 @@ export function ServiceConfigModal({
         commercial_type: 'service',
         is_service: true,
         service_type: serviceType,
+        machine_id: selectedMachineId || undefined,
+        machine_name: selectedFleetMach?.name || undefined,
+        machine_code: selectedFleetMach?.code || undefined,
+        machine_hourly_rate: Number(machineHourlyRate) || undefined,
+        estimated_speed: Number(estimatedSpeed) || undefined,
+        speed_unit: speedUnit || undefined,
         print_category: serviceType === 'printing' ? printCategory : undefined,
         finishing_category: serviceType === 'finishing' ? finishingCategory : undefined,
         finishing_material_id: serviceType === 'finishing' ? (finishingMaterialId || undefined) : undefined,
@@ -2444,6 +2497,39 @@ export function ServiceConfigModal({
                     </select>
                   </div>
                 </div>
+
+                {/* Fleet Machinery Pre-selection */}
+                {machineries.length > 0 && (
+                  <div className="p-3 bg-white dark:bg-slate-900/80 rounded-xl border border-blue-200/80 dark:border-blue-900/60 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                        <Cpu className="w-3.5 h-3.5 text-blue-600" />
+                        Assigned Production Machinery / Fleet Equipment
+                      </Label>
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">Auto-populates speed & machine cost</span>
+                    </div>
+                    <select
+                      value={selectedMachineId}
+                      onChange={(e) => handleFleetMachineSelect(e.target.value)}
+                      className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 font-medium"
+                    >
+                      <option value="">-- Auto-Match Best Available Machine --</option>
+                      {machineries.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.code || 'NO-CODE'}) — {m.category} {m.max_print_width_inches ? `[Max Width: ${m.max_print_width_inches}"]` : ''} • Rate: ৳{m.hourly_rate_bdt || 0}/hr • Speed: {m.speed_sqft_per_hour || m.speed_sheets_per_hour || 'N/A'} {m.speed_sheets_per_hour ? 'sheets/hr' : 'sqft/hr'}
+                        </option>
+                      ))}
+                    </select>
+
+                    {selectedMachineId && (
+                      <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-slate-400 pt-1">
+                        <span>Hourly Rate: <strong className="text-slate-900 dark:text-white font-mono">৳{machineHourlyRate || 0}/hr</strong></span>
+                        <span>Speed: <strong className="text-blue-600 dark:text-blue-400 font-mono">{estimatedSpeed || 'Auto'} {speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'}</strong></span>
+                        <span>Unit Machine Cost: <strong className="text-emerald-600 dark:text-emerald-400 font-mono">৳{machineCost || 0}/sft</strong></span>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Print size available: all size that configured and selected from Printable Material */}
                 <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 space-y-2">

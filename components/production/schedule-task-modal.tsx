@@ -11,6 +11,9 @@ import {
   X,
   Layers,
   Wrench,
+  Sparkles,
+  Check,
+  ShieldAlert,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { ModalDialog } from '@/components/shared/modal-dialog'
@@ -25,6 +28,7 @@ import {
 import { MachineryRecord } from '@/types/machinery.types'
 import { getMachineriesAction } from '@/actions/machinery.actions'
 import { scheduleProductionTaskAction } from '@/actions/production-planning.actions'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 interface ScheduleTaskModalProps {
   isOpen: boolean
@@ -43,6 +47,7 @@ export function ScheduleTaskModal({
 
   const [machineries, setMachineries] = useState<MachineryRecord[]>([])
   const [selectedMachineId, setSelectedMachineId] = useState<string>('')
+  const [selectedOperatorId, setSelectedOperatorId] = useState<string>('')
   const [scheduledStart, setScheduledStart] = useState<string>('')
   const [durationMinutes, setDurationMinutes] = useState<number>(60)
   const [notes, setNotes] = useState<string>('')
@@ -51,21 +56,30 @@ export function ScheduleTaskModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  // Fetch registered users / operators from local data store or fallback
+  const operators = React.useMemo(() => {
+    try {
+      const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
+      return users.filter((u) => u.role === 'operator' || u.role === 'worker' || u.role === 'designer' || u.role === 'manager' || !u.role)
+    } catch {
+      return []
+    }
+  }, [])
+
   // Initialize form when modal opens with task
   useEffect(() => {
     if (isOpen && task) {
       setSelectedMachineId(task.assigned_machine_id || '')
+      setSelectedOperatorId(task.assigned_operator_id || '')
       setDurationMinutes(task.estimated_duration_minutes || 60)
       setNotes(task.notes || '')
       setErrorMessage(null)
 
       if (task.scheduled_start) {
-        // Format for datetime-local input (YYYY-MM-DDTHH:mm)
         const d = new Date(task.scheduled_start)
         const formatted = d.toISOString().slice(0, 16)
         setScheduledStart(formatted)
       } else {
-        // Default to current time rounded up to next 15 min
         const now = new Date()
         now.setMinutes(Math.ceil(now.getMinutes() / 15) * 15, 0, 0)
         setScheduledStart(now.toISOString().slice(0, 16))
@@ -88,6 +102,39 @@ export function ScheduleTaskModal({
     }
   }
 
+  const selectedMachine = machineries.find((m) => m.id === selectedMachineId)
+
+  // Auto-calculate suggested duration if machine has speed spec
+  const handleAutoEstimateDuration = () => {
+    if (!task || !selectedMachine) return
+    const widthIn = task.width || 0
+    const heightIn = task.height || 0
+    const areaSqFt = ((widthIn * heightIn) / 144) || 1
+    const totalArea = areaSqFt * (task.quantity || 1)
+    const speed = selectedMachine.estimated_speed || 80
+    const setup = selectedMachine.setup_time_mins || 10
+    const calculated = Math.max(10, Math.ceil((totalArea / speed) * 60) + setup)
+    setDurationMinutes(calculated)
+  }
+
+  // Capability check
+  const machineCompatibility = React.useMemo(() => {
+    if (!task || !selectedMachine) return null
+    const issues: string[] = []
+    if (selectedMachine.status === 'breakdown') issues.push('Machine is broken down')
+    if (selectedMachine.status === 'maintenance') issues.push('Under maintenance')
+    if (task.width && selectedMachine.max_width && task.width > selectedMachine.max_width) {
+      issues.push(`Task width (${task.width}) > Max width (${selectedMachine.max_width} ${selectedMachine.dimension_unit || 'in'})`)
+    }
+    if (task.height && selectedMachine.max_height && task.height > selectedMachine.max_height) {
+      issues.push(`Task height (${task.height}) > Max height (${selectedMachine.max_height} ${selectedMachine.dimension_unit || 'in'})`)
+    }
+    return {
+      isCompatible: issues.length === 0,
+      issues,
+    }
+  }, [task, selectedMachine])
+
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!task) return
@@ -99,6 +146,7 @@ export function ScheduleTaskModal({
       const input: ScheduleTaskInput = {
         task_id: task.id,
         assigned_machine_id: selectedMachineId || null,
+        assigned_operator_id: selectedOperatorId || null,
         scheduled_start: new Date(scheduledStart).toISOString(),
         estimated_duration_minutes: durationMinutes,
         notes: notes.trim() || undefined,
@@ -121,13 +169,6 @@ export function ScheduleTaskModal({
 
   if (!task) return null
 
-  const selectedMachine = machineries.find((m) => m.id === selectedMachineId)
-  const isMachineUnavailable =
-    selectedMachine &&
-    (selectedMachine.status === 'breakdown' ||
-      selectedMachine.status === 'maintenance' ||
-      selectedMachine.status === 'retired')
-
   return (
     <ModalDialog
       open={isOpen}
@@ -146,10 +187,16 @@ export function ScheduleTaskModal({
               {task.task_number}
             </Badge>
           </div>
-          <div className="text-[11px] text-slate-500 flex items-center gap-3">
+          <div className="text-[11px] text-slate-500 flex items-center gap-3 flex-wrap">
             <span>Job #{task.job_number || 'N/A'}</span>
             <span>•</span>
             <span>Qty: {task.quantity} {task.unit}</span>
+            {task.width && task.height && (
+              <>
+                <span>•</span>
+                <span>Size: {task.width} × {task.height} in</span>
+              </>
+            )}
             <span>•</span>
             <span className="capitalize">{task.department}</span>
           </div>
@@ -170,10 +217,15 @@ export function ScheduleTaskModal({
               <Cpu className="h-3.5 w-3.5 text-blue-600" />
               {tBilingual('Target Machinery', 'বরাদ্দকৃত মেশিন')}
             </Label>
-            {machineries.length === 0 && !loadingMachines && (
-              <span className="text-[11px] text-amber-600 font-medium">
-                (0 Machines - Manual Mode)
-              </span>
+            {selectedMachine && selectedMachine.estimated_speed && (
+              <button
+                type="button"
+                onClick={handleAutoEstimateDuration}
+                className="text-[11px] text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium flex items-center gap-1"
+              >
+                <Sparkles className="h-3 w-3" />
+                {tBilingual('Auto-calc Duration from Speed', 'গতি থেকে সময় হিসাব')}
+              </button>
             )}
           </div>
 
@@ -184,22 +236,65 @@ export function ScheduleTaskModal({
             className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           >
             <option value="">-- No Machine Required (Manual / Hand Work) --</option>
-            {machineries.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name} ({m.code}) - {m.machine_type.replace('_', ' ')} [{m.status.toUpperCase()}]
+            {machineries.map((m) => {
+              const isCompatible = (!task.width || !m.max_width || task.width <= m.max_width) && m.status !== 'breakdown'
+              return (
+                <option key={m.id} value={m.id}>
+                  {isCompatible ? '✓' : '⚠'} {m.name} ({m.code}) - {m.machine_type.replace('_', ' ')} [{m.status.toUpperCase()}] {m.max_width ? `(Max ${m.max_width} in)` : ''}
+                </option>
+              )
+            })}
+          </select>
+
+          {/* Machine Compatibility Banner */}
+          {machineCompatibility && (
+            <div className={`p-2.5 rounded text-[11px] flex items-start gap-2 border ${
+              machineCompatibility.isCompatible
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'
+            }`}>
+              {machineCompatibility.isCompatible ? (
+                <>
+                  <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>
+                    Machine is compatible with task specifications. Speed: {selectedMachine?.estimated_speed || 80} {selectedMachine?.speed_unit || 'sqft/hr'}.
+                  </span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold">Compatibility Notice:</span>
+                    <ul className="list-disc list-inside mt-0.5 space-y-0.5">
+                      {machineCompatibility.issues.map((iss, i) => (
+                        <li key={i}>{iss}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Assigned Operator */}
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold flex items-center gap-1.5">
+            <User className="h-3.5 w-3.5 text-slate-600" />
+            {tBilingual('Assigned Operator / Worker', 'দায়িত্বপ্রাপ্ত অপারেটর')}
+          </Label>
+          <select
+            value={selectedOperatorId}
+            onChange={(e) => setSelectedOperatorId(e.target.value)}
+            className="w-full text-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-xs focus:border-blue-500 focus:outline-hidden dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+          >
+            <option value="">-- Unassigned (Available for Any Floor Operator) --</option>
+            {operators.map((op) => (
+              <option key={op.id} value={op.id}>
+                {op.name || op.full_name || op.email} ({op.role || 'Operator'})
               </option>
             ))}
           </select>
-
-          {/* Machine Warning Banner if broken or maintenance */}
-          {isMachineUnavailable && (
-            <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded text-[11px] text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-              <span>
-                Warning: {selectedMachine?.name} is currently {selectedMachine?.status}. Scheduling may be blocked.
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Schedule Time & Duration */}
@@ -279,3 +374,4 @@ export function ScheduleTaskModal({
     </ModalDialog>
   )
 }
+

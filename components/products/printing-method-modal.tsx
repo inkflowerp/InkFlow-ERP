@@ -6,14 +6,16 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Palette, AlertCircle, RefreshCw, Sparkles, Zap, Droplets, Layers } from 'lucide-react'
+import { Palette, AlertCircle, RefreshCw, Sparkles, Zap, Droplets, Layers, Cpu } from 'lucide-react'
 import type { PrintingMethod } from '@/types/product.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import { cn } from '@/lib/utils'
 
 interface PrintingMethodModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   method?: PrintingMethod | null
+  machineries?: MachineryRecord[]
   onSave: (data: Partial<PrintingMethod>) => Promise<void>
 }
 
@@ -60,6 +62,7 @@ export function PrintingMethodModal({
   open,
   onOpenChange,
   method,
+  machineries = [],
   onSave,
 }: PrintingMethodModalProps) {
   const [name, setName] = useState('')
@@ -69,6 +72,10 @@ export function PrintingMethodModal({
   const [costPerSqft, setCostPerSqft] = useState('0')
   const [defaultInkType, setDefaultInkType] = useState('')
   const [compatibleTypes, setCompatibleTypes] = useState<string[]>(['roll'])
+  const [defaultMachineId, setDefaultMachineId] = useState('')
+  const [estimatedSpeed, setEstimatedSpeed] = useState('')
+  const [speedUnit, setSpeedUnit] = useState('sqft_per_hr')
+  const [machineHourlyRate, setMachineHourlyRate] = useState('')
   const [isActive, setIsActive] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -82,6 +89,10 @@ export function PrintingMethodModal({
       setCostPerSqft(String(method.cost_per_sqft || 0))
       setDefaultInkType(method.default_ink_type || '')
       setCompatibleTypes(method.compatible_material_types || ['roll'])
+      setDefaultMachineId(method.default_machine_id || '')
+      setEstimatedSpeed(method.estimated_speed ? String(method.estimated_speed) : '')
+      setSpeedUnit(method.speed_unit || 'sqft_per_hr')
+      setMachineHourlyRate(method.machine_hourly_rate ? String(method.machine_hourly_rate) : '')
       setIsActive(method.is_active !== undefined ? method.is_active : true)
     } else {
       setName('')
@@ -91,6 +102,10 @@ export function PrintingMethodModal({
       setCostPerSqft('0')
       setDefaultInkType('')
       setCompatibleTypes(['roll'])
+      setDefaultMachineId('')
+      setEstimatedSpeed('')
+      setSpeedUnit('sqft_per_hr')
+      setMachineHourlyRate('')
       setIsActive(true)
     }
     setError(null)
@@ -100,6 +115,21 @@ export function PrintingMethodModal({
     setCompatibleTypes((prev) =>
       prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
     )
+  }
+
+  const handleMachineSelect = (mId: string) => {
+    setDefaultMachineId(mId)
+    const m = machineries.find((item) => item.id === mId)
+    if (m) {
+      if (m.hourly_rate_bdt) setMachineHourlyRate(String(m.hourly_rate_bdt))
+      if (m.speed_sqft_per_hour) {
+        setEstimatedSpeed(String(m.speed_sqft_per_hour))
+        setSpeedUnit('sqft_per_hr')
+      } else if (m.speed_sheets_per_hour) {
+        setEstimatedSpeed(String(m.speed_sheets_per_hour))
+        setSpeedUnit('sheet_per_hr')
+      }
+    }
   }
 
   const handleApplyPreset = (preset: typeof COMMON_PRINT_TECH_PRESETS[0]) => {
@@ -122,6 +152,7 @@ export function PrintingMethodModal({
     try {
       setIsSubmitting(true)
       setError(null)
+      const selectedMachine = machineries.find((m) => m.id === defaultMachineId)
       await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
@@ -130,6 +161,12 @@ export function PrintingMethodModal({
         cost_per_sqft: Number(costPerSqft) || 0,
         default_ink_type: defaultInkType.trim() || undefined,
         compatible_material_types: compatibleTypes,
+        default_machine_id: defaultMachineId || undefined,
+        default_machine_name: selectedMachine?.name || undefined,
+        default_machine_code: selectedMachine?.code || undefined,
+        machine_hourly_rate: Number(machineHourlyRate) || undefined,
+        estimated_speed: Number(estimatedSpeed) || undefined,
+        speed_unit: speedUnit || undefined,
         is_active: isActive,
       })
       onOpenChange(false)
@@ -278,6 +315,58 @@ export function PrintingMethodModal({
               className="h-9 text-xs"
             />
           </div>
+
+          {/* Fleet Machinery Linkage */}
+          {machineries.length > 0 && (
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-blue-600" />
+                  Primary Fleet Machine / Equipment
+                </Label>
+                <span className="text-[10px] text-slate-500 font-medium">Auto-fills speed & hourly cost</span>
+              </div>
+              <select
+                value={defaultMachineId}
+                onChange={(e) => handleMachineSelect(e.target.value)}
+                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+              >
+                <option value="">-- Standalone (No Default Fleet Machine) --</option>
+                {machineries.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.code || 'NO-CODE'}) — {m.category} {m.max_print_width_inches ? `[Max ${m.max_print_width_inches}"]` : ''} • Rate: ৳{m.hourly_rate_bdt || 0}/hr
+                  </option>
+                ))}
+              </select>
+
+              {defaultMachineId && (
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div>
+                    <Label className="text-[11px] text-slate-500 mb-1 block">Machine Hourly Rate (৳/hr)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={machineHourlyRate}
+                      onChange={(e) => setMachineHourlyRate(e.target.value)}
+                      placeholder="e.g. 500"
+                      className="h-8 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-[11px] text-slate-500 mb-1 block">Speed ({speedUnit === 'sheet_per_hr' ? 'Sheets/hr' : 'Sqft/hr'})</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={estimatedSpeed}
+                      onChange={(e) => setEstimatedSpeed(e.target.value)}
+                      placeholder="e.g. 120"
+                      className="h-8 text-xs font-mono font-bold text-blue-600"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           <div>
             <Label className="text-xs font-semibold mb-2 block">

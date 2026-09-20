@@ -523,6 +523,8 @@ export class ProductionPlanningService {
     completionData?: {
       good_quantity?: number
       rejected_quantity?: number
+      defect_reason?: string | null
+      scrap_notes?: string | null
       notes?: string
     },
     taskPayload?: Partial<ProductionTaskRecord>
@@ -538,10 +540,20 @@ export class ProductionPlanningService {
       throw new Error(`Invalid status transition from ${task.status} to completed`)
     }
 
+    const now = new Date()
+    let actualDuration: number | null = null
+    if (task.actual_start) {
+      const startMs = new Date(task.actual_start).getTime()
+      actualDuration = Math.max(1, Math.round((now.getTime() - startMs) / 60000))
+    }
+
     const completed = await ProductionTaskRepository.updateTaskStatus(taskId, companyId, 'completed', {
-      actual_end: new Date().toISOString(),
+      actual_end: now.toISOString(),
+      actual_duration_minutes: actualDuration,
       good_quantity: completionData?.good_quantity ?? task.quantity,
       rejected_quantity: completionData?.rejected_quantity ?? 0,
+      defect_reason: completionData?.defect_reason || null,
+      scrap_notes: completionData?.scrap_notes || null,
       notes: completionData?.notes || task.notes,
     })
 
@@ -564,6 +576,296 @@ export class ProductionPlanningService {
     )
 
     return { completedTask: completed, nextReadyTask }
+  }
+
+  /**
+   * Generates tailored sequential Production Tasks from a Product Master or Sales Order line item.
+   * Connects Product BOM, Machine Routing & Finishing options into floor execution tasks.
+   */
+  static async generateTasksFromOrderOrProduct(
+    input: {
+      job_order_id: string
+      production_job_id?: string | null
+      product_id?: string | null
+      product_name?: string
+      customer_name?: string
+      quantity: number
+      unit?: string
+      width?: number | null
+      height?: number | null
+      dimension_unit?: string | null
+      material_spec?: string | null
+      printing_method?: string | null
+      finishing_tasks?: string[] | null
+      fabrication_tasks?: string[] | null
+      notes?: string | null
+      branch_id?: string | null
+    },
+    companyId: string
+  ): Promise<ProductionTaskRecord[]> {
+    if (!companyId) throw new Error('Company ID is required')
+    if (!input.job_order_id) throw new Error('Job Order ID is required')
+
+    const createdTasks: ProductionTaskRecord[] = []
+    let sequenceOrder = 1
+
+    // 1. Fetch machineries fleet to auto-match primary and finishing machines
+    const fleetMachines = await MachineryRepository.getMachineries(companyId)
+
+    // Calculate dimensions in SqFt for duration estimations
+    let widthIn = input.width || 0
+    let heightIn = input.height || 0
+    if (input.dimension_unit === 'ft') {
+      widthIn *= 12
+      heightIn *= 12
+    } else if (input.dimension_unit === 'mm') {
+      widthIn /= 25.4
+      heightIn /= 25.4
+    }
+    const areaSqFt = (widthIn * heightIn) / 144 || 1
+    const totalAreaSqFt = areaSqFt * (input.quantity || 1)
+
+    // Task 1: Prepress & File Preparation (Design / Prepress)
+    const prepressTask = await this.createTask(
+      {
+        job_order_id: input.job_order_id,
+        production_job_id: input.production_job_id,
+        task_name: `Pre-press & Artwork RIP Setup`,
+        task_type: 'prepress',
+        department: 'design',
+        sequence_order: sequenceOrder++,
+        quantity: input.quantity || 1,
+        unit: input.unit || 'job',
+        width: input.width,
+        height: input.height,
+        estimated_duration_minutes: 15,
+        priority: 'normal',
+        branch_id: input.branch_id,
+        description: `RIP color separation, bleed verification and nesting for ${input.product_name || 'Item'}`,
+      },
+      companyId
+    )
+    createdTasks.push(prepressTask)
+
+    // Task 2: Primary Printing / Fabrication Task
+    const matchedPrintMachine = fleetMachines.find((m) => {
+      if (m.status === 'retired' || m.status === 'breakdown') return false
+      if (input.printing_method && m.machine_type?.toLowerCase().includes(input.printing_method.toLowerCase())) return true
+      if (m.department === 'printing' || m.category === 'printing') return true
+      return false
+    })
+
+    const printSpeedSqFtPerHour = matchedPrintMachine?.estimated_speed || 80 // default 80 sqft/hr
+    const printDurationMinutes = Math.max(15, Math.ceil((totalAreaSqFt / printSpeedSqFtPerHour) * 60) + (matchedPrintMachine?.setup_time_mins || 5))
+
+    const printingTask = await this.createTask(
+      {
+        job_order_id: input.job_order_id,
+        production_job_id: input.production_job_id,
+        task_name: `Print: ${input.product_name || 'Wide Format Print'}`,
+        task_type: 'printing',
+        department: 'printing',
+        sequence_order: sequenceOrder++,
+        quantity: input.quantity || 1,
+        unit: input.unit || 'pcs',
+        width: input.width,
+        height: input.height,
+        required_material: input.material_spec || 'Standard Substrate',
+        required_machine_type: matchedPrintMachine?.machine_type || 'digital_printing',
+        assigned_machine_id: matchedPrintMachine?.id || null,
+        assigned_machine_name: matchedPrintMachine?.name || null,
+        estimated_duration_minutes: printDurationMinutes,
+        priority: 'normal',
+        branch_id: input.branch_id,
+        description: `High-resolution production on ${matchedPrintMachine?.name || 'Wide Format Press'}. Material: ${input.material_spec || 'Vinyl/Banner'}`,
+      },
+      companyId
+    )
+    createdTasks.push(printingTask)
+
+    // Task 3: Finishing Operations (Lamination, Cutting, Eyelets, Binding)
+    const finishingList = input.finishing_tasks || []
+    if (finishingList.length > 0 || (input.notes && input.notes.toLowerCase().includes('lamination'))) {
+      const matchedFinishingMachine = fleetMachines.find(
+        (m) => m.department === 'finishing' || m.category === 'finishing' || m.machine_type === 'laminating' || m.machine_type === 'cutting_plotter'
+      )
+
+      const finishingTask = await this.createTask(
+        {
+          job_order_id: input.job_order_id,
+          production_job_id: input.production_job_id,
+          task_name: `Finishing: ${finishingList.join(', ') || 'Lamination & Trimming'}`,
+          task_type: 'finishing',
+          department: 'finishing',
+          sequence_order: sequenceOrder++,
+          quantity: input.quantity || 1,
+          unit: input.unit || 'pcs',
+          width: input.width,
+          height: input.height,
+          assigned_machine_id: matchedFinishingMachine?.id || null,
+          assigned_machine_name: matchedFinishingMachine?.name || null,
+          estimated_duration_minutes: Math.max(15, Math.ceil(totalAreaSqFt / 150 * 60)),
+          priority: 'normal',
+          branch_id: input.branch_id,
+          description: `Post-press finishing operations: ${finishingList.join(', ') || 'Thermal/Cold Lamination and Precision Edge Trimming'}.`,
+        },
+        companyId
+      )
+      createdTasks.push(finishingTask)
+    }
+
+    // Task 4: Fabrication Operations (Welding, Acrylic Frame, LED Wiring) if applicable
+    const fabList = input.fabrication_tasks || []
+    if (fabList.length > 0) {
+      const matchedFabMachine = fleetMachines.find(
+        (m) => m.department === 'fabrication' || m.category === 'fabrication' || m.machine_type === 'laser_cutting' || m.machine_type === 'cnc_router'
+      )
+
+      const fabTask = await this.createTask(
+        {
+          job_order_id: input.job_order_id,
+          production_job_id: input.production_job_id,
+          task_name: `Fabrication: ${fabList.join(', ')}`,
+          task_type: 'fabrication',
+          department: 'fabrication',
+          sequence_order: sequenceOrder++,
+          quantity: input.quantity || 1,
+          unit: input.unit || 'pcs',
+          assigned_machine_id: matchedFabMachine?.id || null,
+          assigned_machine_name: matchedFabMachine?.name || null,
+          estimated_duration_minutes: 60,
+          priority: 'normal',
+          branch_id: input.branch_id,
+          description: `Structural metal/acrylic fabrication: ${fabList.join(', ')}.`,
+        },
+        companyId
+      )
+      createdTasks.push(fabTask)
+    }
+
+    // Task 5: Final Quality Inspection & Packing
+    const qcTask = await this.createTask(
+      {
+        job_order_id: input.job_order_id,
+        production_job_id: input.production_job_id,
+        task_name: `Quality Inspection & Packaging`,
+        task_type: 'other',
+        department: 'finishing',
+        sequence_order: sequenceOrder++,
+        quantity: input.quantity || 1,
+        unit: input.unit || 'pcs',
+        estimated_duration_minutes: 10,
+        priority: 'normal',
+        branch_id: input.branch_id,
+        description: `100% defect inspection against approved proof, counting, protective bubble wrapping and labeling.`,
+      },
+      companyId
+    )
+    createdTasks.push(qcTask)
+
+    return createdTasks
+  }
+
+  /**
+   * Evaluates compatibility of all Fleet Machineries for a given Production Task.
+   */
+  static async getCompatibleMachinesForTask(
+    taskId: string,
+    companyId: string
+  ): Promise<Array<{ machine: any; isCompatible: boolean; incompatibilityReasons: string[]; currentLoadMinutes: number }>> {
+    const task = await this.getTaskById(taskId, companyId)
+    if (!task) throw new Error('Task not found')
+
+    const fleet = await MachineryRepository.getMachineries(companyId)
+    const existingTasks = await ProductionTaskRepository.getTasks(companyId)
+
+    return fleet.map((machine) => {
+      const reasons: string[] = []
+
+      // Status check
+      if (machine.status === 'breakdown') reasons.push('Machine is currently broken down')
+      if (machine.status === 'maintenance') reasons.push('Machine is under scheduled maintenance')
+      if (machine.status === 'retired') reasons.push('Machine is retired from active fleet')
+
+      // Dimension check
+      if (task.width && machine.max_width && task.width > machine.max_width) {
+        reasons.push(`Task width (${task.width}) exceeds max width (${machine.max_width} ${machine.dimension_unit || 'in'})`)
+      }
+      if (task.height && machine.max_height && task.height > machine.max_height) {
+        reasons.push(`Task height (${task.height}) exceeds max height (${machine.max_height} ${machine.dimension_unit || 'in'})`)
+      }
+
+      // Department/Type match
+      if (
+        machine.supported_production_types &&
+        machine.supported_production_types.length > 0 &&
+        task.task_type &&
+        !machine.supported_production_types.includes(task.task_type) &&
+        !machine.supported_production_types.includes('all') &&
+        machine.department !== task.department
+      ) {
+        reasons.push(`Machine type does not support ${task.task_type}`)
+      }
+
+      // Current scheduled load
+      const machineScheduledMinutes = existingTasks
+        .filter((t) => t.assigned_machine_id === machine.id && t.status !== 'completed' && t.status !== 'cancelled')
+        .reduce((sum, t) => sum + (t.estimated_duration_minutes || 60), 0)
+
+      return {
+        machine,
+        isCompatible: reasons.length === 0,
+        incompatibilityReasons: reasons,
+        currentLoadMinutes: machineScheduledMinutes,
+      }
+    })
+  }
+
+  /**
+   * Reassigns all held or scheduled tasks from a failed machine to an eligible replacement machine.
+   */
+  static async reassignHeldTasks(
+    param1: string,
+    param2: string,
+    param3: string
+  ): Promise<{ reassignedCount: number; tasks: ProductionTaskRecord[] }> {
+    let companyId = param1
+    let sourceMachineId = param2
+    let targetMachineId = param3
+
+    // Allow (sourceMachineId, targetMachineId, companyId) or (companyId, sourceMachineId, targetMachineId)
+    if (param1.startsWith('mach-') || (!param3.startsWith('mach-') && param1.startsWith('mach-'))) {
+      sourceMachineId = param1
+      targetMachineId = param2
+      companyId = param3
+    }
+
+    const targetMachine = await MachineryRepository.getMachineryById(targetMachineId, companyId)
+    if (!targetMachine) throw new Error('Target machine not found')
+    if (targetMachine.status === 'breakdown' || targetMachine.status === 'retired') {
+      throw new Error(`Target machine ${targetMachine.name} is not available (Status: ${targetMachine.status})`)
+    }
+
+    const tasks = await ProductionTaskRepository.getTasks(companyId, {
+      assigned_machine_id: sourceMachineId,
+    })
+
+    const reassignedTasks: ProductionTaskRecord[] = []
+    for (const t of tasks) {
+      if (t.status === 'on_hold' || t.status === 'scheduled' || t.status === 'ready' || t.status === 'queued') {
+        const updated = await ProductionTaskRepository.updateTask(t.id, companyId, {
+          assigned_machine_id: targetMachine.id,
+          assigned_machine_name: targetMachine.name,
+          hold_reason: null,
+          hold_notes: null,
+          status: 'scheduled',
+          notes: `${t.notes || ''} [Reassigned from broken machine to ${targetMachine.name}]`.trim(),
+        })
+        reassignedTasks.push(updated)
+      }
+    }
+
+    return { reassignedCount: reassignedTasks.length, tasks: reassignedTasks }
   }
 
   /**

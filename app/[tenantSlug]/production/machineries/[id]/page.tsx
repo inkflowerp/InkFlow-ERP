@@ -117,7 +117,7 @@ export default function MachineryDetailPage() {
     try {
       const res = await archiveMachineryAction(machine.id)
       if (res.success) {
-        router.push(`/production/machineries`)
+        router.push(`/${tenantSlug}/production/machineries`)
       } else {
         alert(res.error || 'Failed to archive.')
       }
@@ -158,7 +158,7 @@ export default function MachineryDetailPage() {
     return (
       <div className="space-y-4 pb-12">
         <Link
-          href={`/production/machineries`}
+          href={`/${tenantSlug}/production/machineries`}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />
@@ -178,7 +178,7 @@ export default function MachineryDetailPage() {
       {/* Top Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
-          href={`/production/machineries`}
+          href={`/${tenantSlug}/production/machineries`}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />

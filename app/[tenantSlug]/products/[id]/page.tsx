@@ -64,6 +64,7 @@ import {
   getProductSupplierPricesAction,
   getPriceOverridesAction,
 } from '@/actions/product.actions'
+import { getMachineriesAction } from '@/actions/machinery.actions'
 import type {
   ProductRecord,
   ProductVariantRecord,
@@ -73,6 +74,7 @@ import type {
   ProductSupplierPriceRecord,
   PriceOverrideRecord,
 } from '@/types/product.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import {
   calculateEffectiveUnitCost,
   calculateGrossMargin,
@@ -128,6 +130,7 @@ export default function ProductDetailPage() {
   const [isMaterialModalOpen, setIsMaterialModalOpen] = useState(false)
   const [isReadyProductModalOpen, setIsReadyProductModalOpen] = useState(false)
   const [isOutsourceModalOpen, setIsOutsourceModalOpen] = useState(false)
+  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
   const [newPrice, setNewPrice] = useState<number>(0)
   const [newPurchasePrice, setNewPurchasePrice] = useState<number>(0)
   const [newTargetMargin, setNewTargetMargin] = useState<number>(35)
@@ -185,13 +188,18 @@ export default function ProductDetailPage() {
     setFetchError(null)
 
     try {
-      const [prodRes, histRes, statsRes, suppRes, overrideRes] = await Promise.all([
+      const [prodRes, histRes, statsRes, suppRes, overrideRes, machRes] = await Promise.all([
         getProductByIdAction(productId, companyId),
         getProductPriceHistoryAction(productId, companyId),
         getProductUsageStatsAction(productId, companyId),
         getProductSupplierPricesAction(productId, companyId),
         getPriceOverridesAction(productId, 50, companyId),
+        getMachineriesAction(),
       ])
+
+      if (machRes.success && machRes.data) {
+        setMachineries(machRes.data)
+      }
 
       if (prodRes.success && prodRes.data) {
         setProduct(prodRes.data)
@@ -1706,6 +1714,7 @@ export default function ProductDetailPage() {
         onClose={() => setIsServiceModalOpen(false)}
         onSave={handleSaveProductConfig}
         initialData={product}
+        machineries={machineries}
       />
 
       <ReadyProductModal

@@ -232,6 +232,8 @@ export async function completeProductionTaskAction(
   completionData?: {
     good_quantity?: number
     rejected_quantity?: number
+    defect_reason?: string | null
+    scrap_notes?: string | null
     notes?: string
   },
   requestedCompanyId?: string,
@@ -272,6 +274,90 @@ export async function completeProductionTaskAction(
     return { success: true, data: result }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to complete production task.' }
+  }
+}
+
+/**
+ * Server Action: Generate automated Production Tasks from Product / Order specifications
+ */
+export async function generateProductionTasksFromOrderAction(
+  input: {
+    job_order_id: string
+    production_job_id?: string | null
+    product_id?: string | null
+    product_name?: string
+    customer_name?: string
+    quantity: number
+    unit?: string
+    width?: number | null
+    height?: number | null
+    dimension_unit?: string | null
+    material_spec?: string | null
+    printing_method?: string | null
+    finishing_tasks?: string[] | null
+    fabrication_tasks?: string[] | null
+    notes?: string | null
+    branch_id?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<ProductionTaskRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const tasks = await ProductionPlanningService.generateTasksFromOrderOrProduct(input, companyId)
+    revalidatePath('/[tenantSlug]/production', 'layout')
+    return { success: true, data: tasks }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to generate production tasks.' }
+  }
+}
+
+/**
+ * Server Action: Get compatible machineries for a given task
+ */
+export async function getCompatibleMachineriesForTaskAction(
+  taskId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<Array<{ machine: any; isCompatible: boolean; incompatibilityReasons: string[]; currentLoadMinutes: number }>>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const data = await ProductionPlanningService.getCompatibleMachinesForTask(taskId, companyId)
+    return { success: true, data }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to check machine compatibility.' }
+  }
+}
+
+/**
+ * Server Action: Reassign all tasks from a broken machine to a target machine
+ */
+export async function reassignHeldTasksAction(
+  sourceMachineId: string,
+  targetMachineId: string,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ reassignedCount: number; tasks: ProductionTaskRecord[] }>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await ProductionPlanningService.reassignHeldTasks(companyId, sourceMachineId, targetMachineId)
+    revalidatePath('/[tenantSlug]/production', 'layout')
+    revalidatePath('/[tenantSlug]/operator', 'layout')
+    return { success: true, data: result }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to reassign tasks.' }
   }
 }
 

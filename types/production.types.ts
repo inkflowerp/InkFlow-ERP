@@ -131,6 +131,31 @@ export const HOLD_REASON_LABELS: Record<HoldReason, { labelEn: string; labelBn: 
   other: { labelEn: 'Other Operational Reason', labelBn: 'অন্যান্য কারণ' },
 }
 
+export type DefectReasonCode =
+  | 'head_strike'
+  | 'banding'
+  | 'media_wrinkle'
+  | 'color_mismatch'
+  | 'cutting_misalignment'
+  | 'lamination_bubble'
+  | 'operator_error'
+  | 'material_defect'
+  | 'machine_malfunction'
+  | 'other'
+
+export const DEFECT_REASON_LABELS: Record<DefectReasonCode, { labelEn: string; labelBn: string }> = {
+  head_strike: { labelEn: 'Printhead Strike / Scratch', labelBn: 'হেড স্ট্রাইক / দাগ' },
+  banding: { labelEn: 'Color Banding / Nozzle Clog', labelBn: 'কালার ব্যান্ডিং / নজেল জ্যাম' },
+  media_wrinkle: { labelEn: 'Media Wrinkle / Feeding Error', labelBn: 'মিডিয়া ভাঁজ / ফিডিং ত্রুটি' },
+  color_mismatch: { labelEn: 'Color Profile / ICC Mismatch', labelBn: 'কালার অমিল / প্রফাইল ত্রুটি' },
+  cutting_misalignment: { labelEn: 'Cutting / Contour Misaligned', labelBn: 'কাটিং ও কনট্যুর বিচ্যুতি' },
+  lamination_bubble: { labelEn: 'Lamination Bubble / Crease', labelBn: 'লেমিনেশন বাবল / বলিরেখা' },
+  operator_error: { labelEn: 'Operator Handling Mistake', labelBn: 'অপারেটর পরিচালনা ভুল' },
+  material_defect: { labelEn: 'Defective Raw Substrate', labelBn: 'কাঁচামালে ত্রুটি' },
+  machine_malfunction: { labelEn: 'Mechanical / Motor Issue', labelBn: 'যন্ত্রাংশের ত্রুটি' },
+  other: { labelEn: 'Other Scrap Reason', labelBn: 'অন্যান্য কারণ' },
+}
+
 export interface ProductionTaskRecord {
   id: string
   company_id: string
@@ -159,6 +184,7 @@ export interface ProductionTaskRecord {
   scheduled_end?: string | null
   actual_start?: string | null
   actual_end?: string | null
+  actual_duration_minutes?: number | null
   status: ProductionTaskStatus
   hold_reason?: HoldReason | null
   hold_notes?: string | null
@@ -166,6 +192,8 @@ export interface ProductionTaskRecord {
   rework_parent_task_id?: string | null
   good_quantity?: number
   rejected_quantity?: number
+  defect_reason?: DefectReasonCode | string | null
+  scrap_notes?: string | null
   notes?: string | null
   created_at: string
   updated_at: string
@@ -239,6 +267,33 @@ export interface ScheduleTaskInput {
   scheduled_start: string
   estimated_duration_minutes: number
   notes?: string | null
+}
+
+export interface CompleteTaskInput {
+  good_quantity: number
+  rejected_quantity?: number
+  defect_reason?: DefectReasonCode | string | null
+  scrap_notes?: string | null
+  notes?: string | null
+}
+
+export interface GenerateProductionTasksInput {
+  job_order_id: string
+  production_job_id?: string | null
+  product_id?: string | null
+  product_name?: string
+  customer_name?: string
+  quantity: number
+  unit?: string
+  width?: number | null
+  height?: number | null
+  dimension_unit?: string | null
+  material_spec?: string | null
+  printing_method?: string | null
+  finishing_tasks?: string[] | null
+  fabrication_tasks?: string[] | null
+  notes?: string | null
+  branch_id?: string | null
 }
 
 export interface HoldTaskInput {

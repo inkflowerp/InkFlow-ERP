@@ -118,10 +118,16 @@ export interface FormulaMaterialRequirement {
 
 export interface FormulaMachineOperation {
   machine_id?: string | null
+  machine_code?: string | null
   machine_type?: string | null
   machine_name?: string | null
   duration_formula_minutes: string // e.g. "area_sft / 2.5 + 5"
   hourly_rate?: number
+  speed_unit?: string | null
+  estimated_speed?: number | null
+  setup_time_mins?: number | null
+  department?: string | null
+  sequence_order?: number | null
 }
 
 export interface FormulaLaborOperation {
@@ -808,6 +814,20 @@ export interface ServiceConfiguration {
   packaging_material_id?: string | null
   packaging_material_name?: string | null
   delivery_distance_zone?: string
+  // Machine Fleet & Routing Integration
+  assigned_machine_id?: string | null
+  assigned_machine_name?: string | null
+  required_machine_type?: string | null
+  machine_operations?: FormulaMachineOperation[]
+  machine_routing?: Array<{
+    stage_name: string
+    department: string
+    machine_type?: string
+    machine_id?: string
+    machine_name?: string
+    sequence_order: number
+    estimated_duration_minutes?: number
+  }>
   // General fields
   general_category?: string
   deliverable_format?: string
@@ -912,6 +932,12 @@ export interface PrintingMethod {
   compatible_material_types?: string[]
   cost_per_sqft?: number
   default_ink_type?: string | null
+  default_machine_id?: string | null
+  default_machine_name?: string | null
+  default_machine_code?: string | null
+  machine_hourly_rate?: number | null
+  estimated_speed?: number | null
+  speed_unit?: string | null
   is_active: boolean
   created_at?: string
   updated_at?: string
@@ -945,6 +971,10 @@ export interface FinishingOptionRecord {
   selling_price: number
   cost: number
   material_id?: string | null
+  default_machine_id?: string | null
+  default_machine_name?: string | null
+  default_machine_code?: string | null
+  machine_hourly_rate?: number | null
   is_active: boolean
   created_at?: string
   updated_at?: string

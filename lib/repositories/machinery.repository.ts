@@ -243,17 +243,32 @@ export class MachineryRepository {
       other_operating_cost_per_hour: input.other_operating_cost_per_hour || 0,
     }
 
-    const { data, error } = await (supabase as any)
-      .from('machineries')
-      .insert(payload)
-      .select('*, branch:branches(id, name, code)')
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machineries')
+        .insert(payload)
+        .select('*, branch:branches(id, name, code)')
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to create machinery: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to create machinery: ${error.message}`)
+      }
+
+      return data as unknown as MachineryRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const newRec: MachineryRecord = {
+        ...payload,
+        id: payload.id || `mach-${Date.now()}`,
+        is_active: payload.is_active !== false,
+      } as MachineryRecord
+      PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [
+        ...all.filter((m) => m.id !== newRec.id),
+        newRec,
+      ])
+      return newRec
     }
-
-    return data as unknown as MachineryRecord
   }
 
   /**
@@ -264,7 +279,6 @@ export class MachineryRepository {
     companyId: string,
     updates: UpdateMachineryInput
   ): Promise<MachineryRecord> {
-    const supabase = await createClient()
     const payload: Record<string, any> = {
       ...updates,
       updated_at: new Date().toISOString(),
@@ -277,19 +291,38 @@ export class MachineryRepository {
       payload.status_updated_at = new Date().toISOString()
     }
 
-    const { data, error } = await (supabase as any)
-      .from('machineries')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select('*, branch:branches(id, name, code)')
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machineries')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select('*, branch:branches(id, name, code)')
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to update machinery ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to update machinery ${id}: ${error.message}`)
+      }
+
+      return data as unknown as MachineryRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const existing = all.find((m) => m.id === id && m.company_id === companyId) || (all.find((m) => m.id === id) as MachineryRecord)
+      if (!existing) {
+        throw new Error(`Machinery ${id} not found`)
+      }
+      const updated: MachineryRecord = {
+        ...existing,
+        ...payload,
+        updated_at: new Date().toISOString(),
+      }
+      PrintERPDataStore.set(
+        STORAGE_KEYS.MACHINERIES,
+        all.map((m) => (m.id === id ? updated : m))
+      )
+      return updated
     }
-
-    return data as unknown as MachineryRecord
   }
 
   /**
@@ -539,36 +572,51 @@ export class MachineryRepository {
       scheduled_date: string
     }
   ): Promise<MachineryMaintenanceRecord> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('machinery_maintenances')
-      .insert({
-        company_id: input.company_id,
-        machine_id: input.machine_id,
-        maintenance_type: input.maintenance_type,
-        status: input.status || 'scheduled',
-        scheduled_date: input.scheduled_date,
-        start_time: input.start_time || null,
-        end_time: input.end_time || null,
-        technician_name: input.technician_name || null,
-        vendor_name: input.vendor_name || null,
-        problem_description: input.problem_description || null,
-        work_performed: input.work_performed || null,
-        parts_used: input.parts_used || null,
-        cost: input.cost || 0,
-        notes: input.notes || null,
-        attachment_url: input.attachment_url || null,
-        next_maintenance_date: input.next_maintenance_date || null,
-        created_by: input.created_by || null,
-      })
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to create maintenance record: ${error.message}`)
+    const payload = {
+      id: input.id || `maint-${Date.now()}`,
+      company_id: input.company_id,
+      machine_id: input.machine_id,
+      maintenance_type: input.maintenance_type,
+      status: input.status || 'scheduled',
+      scheduled_date: input.scheduled_date,
+      start_time: input.start_time || null,
+      end_time: input.end_time || null,
+      technician_name: input.technician_name || null,
+      vendor_name: input.vendor_name || null,
+      problem_description: input.problem_description || null,
+      work_performed: input.work_performed || null,
+      parts_used: input.parts_used || null,
+      cost: input.cost || 0,
+      notes: input.notes || null,
+      attachment_url: input.attachment_url || null,
+      next_maintenance_date: input.next_maintenance_date || null,
+      created_by: input.created_by || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
 
-    return data as unknown as MachineryMaintenanceRecord
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_maintenances')
+        .insert(payload)
+        .select()
+        .single()
+
+      if (error) {
+        throw new Error(`Failed to create maintenance record: ${error.message}`)
+      }
+
+      return data as unknown as MachineryMaintenanceRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
+      const newRec = payload as unknown as MachineryMaintenanceRecord
+      PrintERPDataStore.set(STORAGE_KEYS.MACHINERY_MAINTENANCES, [
+        ...all.filter((m) => m.id !== newRec.id),
+        newRec,
+      ])
+      return newRec
+    }
   }
 
   static async updateMaintenance(
@@ -576,25 +624,42 @@ export class MachineryRepository {
     companyId: string,
     updates: Partial<MachineryMaintenanceRecord>
   ): Promise<MachineryMaintenanceRecord> {
-    const supabase = await createClient()
     const payload = {
       ...updates,
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (supabase as any)
-      .from('machinery_maintenances')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select()
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_maintenances')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select()
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to update maintenance record: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to update maintenance record: ${error.message}`)
+      }
+
+      return data as unknown as MachineryMaintenanceRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryMaintenanceRecord[]>(STORAGE_KEYS.MACHINERY_MAINTENANCES) || []
+      const existing = all.find((m) => m.id === id && m.company_id === companyId)
+      if (!existing) {
+        throw new Error(`Maintenance record ${id} not found`)
+      }
+      const updated = {
+        ...existing,
+        ...payload,
+      } as MachineryMaintenanceRecord
+      PrintERPDataStore.set(
+        STORAGE_KEYS.MACHINERY_MAINTENANCES,
+        all.map((m) => (m.id === id ? updated : m))
+      )
+      return updated
     }
-
-    return data as unknown as MachineryMaintenanceRecord
   }
 
   // ============================================================================
@@ -605,38 +670,48 @@ export class MachineryRepository {
     machineId: string,
     companyId: string
   ): Promise<MachineryBreakdownRecord[]> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('machinery_breakdowns')
-      .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
-      .eq('machine_id', machineId)
-      .eq('company_id', companyId)
-      .order('reported_at', { ascending: false })
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_breakdowns')
+        .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
+        .eq('machine_id', machineId)
+        .eq('company_id', companyId)
+        .order('reported_at', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch breakdowns for machine ${machineId}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch breakdowns for machine ${machineId}: ${error.message}`)
+      }
+
+      return (data || []) as unknown as MachineryBreakdownRecord[]
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      return all.filter((b) => b.machine_id === machineId && b.company_id === companyId)
     }
-
-    return (data || []) as unknown as MachineryBreakdownRecord[]
   }
 
   static async getBreakdownById(
     id: string,
     companyId: string
   ): Promise<MachineryBreakdownRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('machinery_breakdowns')
-      .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_breakdowns')
+        .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch breakdown ${id}: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to fetch breakdown ${id}: ${error.message}`)
+      }
+
+      return (data as unknown as MachineryBreakdownRecord) || null
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      return all.find((b) => b.id === id && b.company_id === companyId) || null
     }
-
-    return (data as unknown as MachineryBreakdownRecord) || null
   }
 
   static async createBreakdown(
@@ -648,32 +723,47 @@ export class MachineryRepository {
       problem_description: string
     }
   ): Promise<MachineryBreakdownRecord> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('machinery_breakdowns')
-      .insert({
-        company_id: input.company_id,
-        machine_id: input.machine_id,
-        reported_by_id: input.reported_by_id || null,
-        reported_by_name: input.reported_by_name,
-        reported_at: input.reported_at || new Date().toISOString(),
-        problem_title: input.problem_title.trim(),
-        problem_description: input.problem_description.trim(),
-        severity: input.severity || 'medium',
-        production_impact: input.production_impact || 'minor_delay',
-        affected_job_order_id: input.affected_job_order_id || null,
-        affected_production_job_id: input.affected_production_job_id || null,
-        attachment_url: input.attachment_url || null,
-        status: 'reported',
-      })
-      .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to report breakdown: ${error.message}`)
+    const payload = {
+      id: input.id || `bd-${Date.now()}`,
+      company_id: input.company_id,
+      machine_id: input.machine_id,
+      reported_by_id: input.reported_by_id || null,
+      reported_by_name: input.reported_by_name,
+      reported_at: input.reported_at || new Date().toISOString(),
+      problem_title: input.problem_title.trim(),
+      problem_description: input.problem_description.trim(),
+      severity: input.severity || 'medium',
+      production_impact: input.production_impact || 'minor_delay',
+      affected_job_order_id: input.affected_job_order_id || null,
+      affected_production_job_id: input.affected_production_job_id || null,
+      attachment_url: input.attachment_url || null,
+      status: 'reported' as BreakdownStatus,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     }
 
-    return data as unknown as MachineryBreakdownRecord
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_breakdowns')
+        .insert(payload)
+        .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
+        .single()
+
+      if (error) {
+        throw new Error(`Failed to report breakdown: ${error.message}`)
+      }
+
+      return data as unknown as MachineryBreakdownRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const newRec = payload as unknown as MachineryBreakdownRecord
+      PrintERPDataStore.set(STORAGE_KEYS.MACHINERY_BREAKDOWNS, [
+        ...all.filter((b) => b.id !== newRec.id),
+        newRec,
+      ])
+      return newRec
+    }
   }
 
   static async resolveBreakdown(
@@ -691,7 +781,6 @@ export class MachineryRepository {
       status?: BreakdownStatus
     }
   ): Promise<MachineryBreakdownRecord> {
-    const supabase = await createClient()
     const payload = {
       diagnosis: resolution.diagnosis || null,
       repair_action: resolution.repair_action || null,
@@ -706,18 +795,36 @@ export class MachineryRepository {
       updated_at: new Date().toISOString(),
     }
 
-    const { data, error } = await (supabase as any)
-      .from('machinery_breakdowns')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
-      .single()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('machinery_breakdowns')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .select('*, affected_job_order:job_orders(id, job_number, product_name, customer_name)')
+        .single()
 
-    if (error) {
-      throw new Error(`Failed to resolve breakdown: ${error.message}`)
+      if (error) {
+        throw new Error(`Failed to resolve breakdown: ${error.message}`)
+      }
+
+      return data as unknown as MachineryBreakdownRecord
+    } catch (err: any) {
+      const all = PrintERPDataStore.get<MachineryBreakdownRecord[]>(STORAGE_KEYS.MACHINERY_BREAKDOWNS) || []
+      const existing = all.find((b) => b.id === id && b.company_id === companyId)
+      if (!existing) {
+        throw new Error(`Breakdown ${id} not found`)
+      }
+      const updated = {
+        ...existing,
+        ...payload,
+      } as MachineryBreakdownRecord
+      PrintERPDataStore.set(
+        STORAGE_KEYS.MACHINERY_BREAKDOWNS,
+        all.map((b) => (b.id === id ? updated : b))
+      )
+      return updated
     }
-
-    return data as unknown as MachineryBreakdownRecord
   }
 }

@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, AlertCircle, RefreshCw, Scissors, TrendingUp, Layers, CheckCircle2, Zap } from 'lucide-react'
+import { Sparkles, AlertCircle, RefreshCw, Scissors, TrendingUp, Layers, CheckCircle2, Zap, Cpu } from 'lucide-react'
 import type { FinishingOptionRecord, ProductRecord } from '@/types/product.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import { calculateGrossMargin } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -16,6 +17,7 @@ interface FinishingOptionModalProps {
   onOpenChange: (open: boolean) => void
   finishing?: FinishingOptionRecord | null
   materials?: ProductRecord[]
+  machineries?: MachineryRecord[]
   onSave: (data: Partial<FinishingOptionRecord>) => Promise<void>
 }
 
@@ -33,12 +35,15 @@ export function FinishingOptionModal({
   onOpenChange,
   finishing,
   materials = [],
+  machineries = [],
   onSave,
 }: FinishingOptionModalProps) {
   const [name, setName] = useState('')
   const [nameBn, setNameBn] = useState('')
   const [category, setCategory] = useState('lamination')
   const [materialId, setMaterialId] = useState('')
+  const [defaultMachineId, setDefaultMachineId] = useState('')
+  const [machineHourlyRate, setMachineHourlyRate] = useState('')
   const [pricingMethod, setPricingMethod] = useState('sqft')
   const [sellingPrice, setSellingPrice] = useState('0')
   const [cost, setCost] = useState('0')
@@ -52,6 +57,8 @@ export function FinishingOptionModal({
       setNameBn(finishing.name_bn || '')
       setCategory(finishing.category || 'general')
       setMaterialId(finishing.material_id || '')
+      setDefaultMachineId(finishing.default_machine_id || '')
+      setMachineHourlyRate(finishing.machine_hourly_rate ? String(finishing.machine_hourly_rate) : '')
       setPricingMethod(finishing.pricing_method || 'sqft')
       setSellingPrice(String(finishing.selling_price || 0))
       setCost(String(finishing.cost || 0))
@@ -61,6 +68,8 @@ export function FinishingOptionModal({
       setNameBn('')
       setCategory('lamination')
       setMaterialId('')
+      setDefaultMachineId('')
+      setMachineHourlyRate('')
       setPricingMethod('sqft')
       setSellingPrice('0')
       setCost('0')
@@ -87,6 +96,14 @@ export function FinishingOptionModal({
     }
   }
 
+  const handleMachineSelect = (mId: string) => {
+    setDefaultMachineId(mId)
+    const m = machineries.find((item) => item.id === mId)
+    if (m && m.hourly_rate_bdt) {
+      setMachineHourlyRate(String(m.hourly_rate_bdt))
+    }
+  }
+
   const handleApplyPreset = (preset: typeof COMMON_FINISHING_PRESETS[0]) => {
     setName(preset.name)
     setNameBn(preset.name_bn)
@@ -106,11 +123,16 @@ export function FinishingOptionModal({
     try {
       setIsSubmitting(true)
       setError(null)
+      const selectedMachine = machineries.find((m) => m.id === defaultMachineId)
       await onSave({
         name: name.trim(),
         name_bn: nameBn.trim() || undefined,
         category: category.trim() || 'general',
         material_id: materialId || undefined,
+        default_machine_id: defaultMachineId || undefined,
+        default_machine_name: selectedMachine?.name || undefined,
+        default_machine_code: selectedMachine?.code || undefined,
+        machine_hourly_rate: Number(machineHourlyRate) || undefined,
         pricing_method: pricingMethod,
         selling_price: Number(sellingPrice) || 0,
         cost: Number(cost) || 0,
@@ -269,6 +291,45 @@ export function FinishingOptionModal({
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* Fleet Machinery Linkage */}
+          {machineries.length > 0 && (
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700/60 space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Cpu className="w-3.5 h-3.5 text-purple-600" />
+                  Fleet Finishing Equipment / Machine
+                </Label>
+                <span className="text-[10px] text-slate-500 font-medium">Auto-fills hourly rate</span>
+              </div>
+              <select
+                value={defaultMachineId}
+                onChange={(e) => handleMachineSelect(e.target.value)}
+                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+              >
+                <option value="">-- Manual / Hand Finishing (No Machine) --</option>
+                {machineries.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.code || 'NO-CODE'}) — {m.category} • Rate: ৳{m.hourly_rate_bdt || 0}/hr
+                  </option>
+                ))}
+              </select>
+
+              {defaultMachineId && (
+                <div className="pt-1">
+                  <Label className="text-[11px] text-slate-500 mb-1 block">Machine Hourly Rate (৳/hr)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={machineHourlyRate}
+                    onChange={(e) => setMachineHourlyRate(e.target.value)}
+                    placeholder="e.g. 400"
+                    className="h-8 text-xs font-mono font-bold text-purple-600 dark:text-purple-400"
+                  />
+                </div>
+              )}
             </div>
           )}
 

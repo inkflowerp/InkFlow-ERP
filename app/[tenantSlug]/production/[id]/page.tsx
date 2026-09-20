@@ -55,7 +55,30 @@ export default function ProductionJobDetailPage() {
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
-  const job = jobs.find((j) => j.id === jobId || j.production_job_number === jobId)
+  const [tasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
+  const [jobOrders] = useDataStore<any[]>(STORAGE_KEYS.JOB_ORDERS, [])
+
+  const job = jobs.find((j) => j.id === jobId || j.production_job_number === jobId) ||
+    tasks.find((t) => t.id === jobId || t.task_number === jobId || t.job_number === jobId) ? {
+      id: jobId,
+      production_job_number: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.task_number || jobId,
+      customer_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.customer_name || 'Customer',
+      product_name: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.product_name || 'Print Production',
+      department: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.department || 'printing') as any,
+      status: (tasks.find((t) => t.id === jobId || t.task_number === jobId)?.status || 'queued') as any,
+      deadline: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.job_deadline || 'Today',
+      dimensions_spec: `${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.width || 48} × ${tasks.find((t) => t.id === jobId || t.task_number === jobId)?.height || 36} in`,
+      quantity: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.quantity || 1,
+      material_spec: tasks.find((t) => t.id === jobId || t.task_number === jobId)?.required_material || 'Vinyl / Media',
+      assigned_workers: [tasks.find((t) => t.id === jobId || t.task_number === jobId)?.assigned_operator_name || 'Unassigned'],
+      has_rework: false,
+      rework_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      stage: 'Printing',
+      company_id: company?.id || '',
+    } as ProductionJobRecord : null
+
   const [completedTasks, setCompletedTasks] = useState<string[]>([])
 
   const toggleTask = (task: string) => {
@@ -70,7 +93,7 @@ export default function ProductionJobDetailPage() {
     return (
       <div className="space-y-6 max-w-6xl">
         <Link
-          href="/production"
+          href={`/${slug}/production`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -83,7 +106,7 @@ export default function ProductionJobDetailPage() {
             The production job record you are looking for does not exist in your queue.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href="/production">View All Production Jobs</Link>
+            <Link href={`/${slug}/production`}>View All Production Jobs</Link>
           </Button>
         </Card>
       </div>
@@ -95,7 +118,7 @@ export default function ProductionJobDetailPage() {
       {/* Header & Back Link */}
       <div>
         <Link
-          href="/production"
+          href={`/${slug}/production`}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

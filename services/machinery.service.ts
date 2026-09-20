@@ -811,6 +811,22 @@ export class MachineryService {
       `Breakdown: ${input.problem_title}`
     )
 
+    // Automatically put active and scheduled tasks on this machine on hold
+    try {
+      const { ProductionTaskRepository } = await import('../lib/repositories/production-task.repository.ts')
+      const affectedTasks = await ProductionTaskRepository.getTasks(input.company_id, {
+        assigned_machine_id: input.machine_id,
+      })
+      for (const t of affectedTasks) {
+        if (t.status !== 'completed' && t.status !== 'cancelled') {
+          await ProductionTaskRepository.updateTaskStatus(t.id, input.company_id, 'on_hold', {
+            hold_reason: 'machine_breakdown',
+            hold_notes: `Auto-hold: Machine breakdown (${input.problem_title}). Reassignment needed.`,
+          })
+        }
+      }
+    } catch (_) {}
+
     return breakdown
   }
 

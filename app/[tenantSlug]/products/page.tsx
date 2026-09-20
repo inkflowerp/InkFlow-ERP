@@ -115,12 +115,14 @@ import {
   saveInstallationOptionAction,
   deleteInstallationOptionAction,
 } from '@/actions/configuration-masters.actions'
+import { getMachineriesAction } from '@/actions/machinery.actions'
 import type {
   PrintingMethod,
   FinishingOptionRecord,
   AdditionalOptionRecord,
   InstallationOptionRecord,
 } from '@/types/product.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import type { ProductCategoryRecord } from '@/types/category.types'
 import { createQuotationAction } from '@/actions/quotation.actions'
 import { convertToFeet } from '@/lib/pricing-engine'
@@ -176,6 +178,7 @@ export default function ProductsCatalogPage() {
   const [finishingOptions, setFinishingOptions] = useState<FinishingOptionRecord[]>([])
   const [additionalOptions, setAdditionalOptions] = useState<AdditionalOptionRecord[]>([])
   const [installationOptions, setInstallationOptions] = useState<InstallationOptionRecord[]>([])
+  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
 
   // Rebuilt V3 Modals State
   const [isTypeSelectorOpen, setIsTypeSelectorOpen] = useState(false)
@@ -409,6 +412,17 @@ export default function ProductsCatalogPage() {
     }
   }
 
+  const loadMachineries = async () => {
+    try {
+      const res = await getMachineriesAction()
+      if (res.success && res.data) {
+        setMachineries(res.data)
+      }
+    } catch (err) {
+      console.error('Failed to load machineries', err)
+    }
+  }
+
   useEffect(() => {
     loadProducts()
     loadCategories()
@@ -416,6 +430,7 @@ export default function ProductsCatalogPage() {
     loadFinishingOptions()
     loadAdditionalOptions()
     loadInstallationOptions()
+    loadMachineries()
   }, [companyId])
 
   // Handlers for Configuration Masters
@@ -5198,6 +5213,7 @@ export default function ProductsCatalogPage() {
         initialData={editingProduct}
         categories={categories}
         availableMaterials={products.filter((p) => p.entity_type === 'material' || p.product_type === 'material') as any}
+        machineries={machineries}
         printingMethods={printingMethods}
         finishingMasterOptions={finishingOptions}
         additionalMasterOptions={additionalOptions}
@@ -5232,6 +5248,7 @@ export default function ProductsCatalogPage() {
         open={isPrintingMethodModalOpen}
         onOpenChange={setIsPrintingMethodModalOpen}
         method={editingPrintingMethod}
+        machineries={machineries}
         onSave={handleSavePrintingMethod}
       />
 
@@ -5240,6 +5257,7 @@ export default function ProductsCatalogPage() {
         onOpenChange={setIsFinishingModalOpen}
         finishing={editingFinishing}
         materials={products.filter((p) => p.product_type === 'material' || (p as any).entity_type === 'material')}
+        machineries={machineries}
         onSave={handleSaveFinishingOption}
       />
 

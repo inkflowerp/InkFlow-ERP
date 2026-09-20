@@ -71,7 +71,7 @@ export function MachineQueueView({
           )}
         </p>
         <div className="mt-4">
-          <Link href={`/production/machineries`}>
+          <Link href={`/${tenantSlug}/production/machineries`}>
             <Button size="sm" variant="outline" className="text-xs">
               {tBilingual('Manage Machineries Fleet', 'মেশিনারি বহর পরিচালনা')}
             </Button>
@@ -96,9 +96,12 @@ export function MachineQueueView({
             <CardHeader className="p-4 pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-slate-900 dark:text-slate-100">
+                  <Link
+                    href={`/${tenantSlug}/production/machineries/${group.machine_id}`}
+                    className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:text-blue-600 transition-colors"
+                  >
                     {group.machine_name}
-                  </span>
+                  </Link>
                   <Badge variant="outline" className="text-[10px] uppercase font-mono">
                     {group.machine_code}
                   </Badge>
@@ -108,6 +111,13 @@ export function MachineQueueView({
                   <span className="capitalize">{group.machine_type.replace('_', ' ')}</span>
                   <span>•</span>
                   <span className="capitalize">{group.department}</span>
+                  <span>•</span>
+                  <Link
+                    href={`/${tenantSlug}/operator?machine=${group.machine_id}`}
+                    className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+                  >
+                    Floor Terminal
+                  </Link>
                 </div>
               </div>
 
