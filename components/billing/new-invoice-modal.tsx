@@ -2143,33 +2143,39 @@ export function NewInvoiceModal({
 
                   {/* SERVICE CONTROLS ([ Width ] [ Height ] [ Dim. Unit ] [ Qty ] [ Finishing ] [ Add on ] [ Rate ]) */}
                   {isService && (
-                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-start">
                       <div className="sm:col-span-1">
-                        <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Width</Label>
+                        </div>
                         <Input
                           type="number"
                           step="0.1"
                           placeholder="0"
                           value={item.width}
                           onChange={(e) => handleItemChange(index, 'width', e.target.value)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 font-mono w-full"
                         />
                       </div>
 
                       <div className="sm:col-span-1">
-                        <Label className="text-[11px] font-semibold mb-1 block">Height</Label>
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Height</Label>
+                        </div>
                         <Input
                           type="number"
                           step="0.1"
                           placeholder="0"
                           value={item.height}
                           onChange={(e) => handleItemChange(index, 'height', e.target.value)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 font-mono w-full"
                         />
                       </div>
 
                       <div className="sm:col-span-1">
-                        <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Dim. Unit</Label>
+                        </div>
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
@@ -2182,22 +2188,24 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-1">
-                        <Label className="text-[11px] font-semibold mb-1 block">Qty</Label>
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Qty</Label>
+                        </div>
                         <Input
                           type="number"
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', Number(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 font-mono font-bold w-full"
                           required
                         />
                       </div>
 
                       <div className="sm:col-span-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-[11px] font-semibold block">Finishing</Label>
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Finishing</Label>
                           {(item.finishing_rate ?? 0) > 0 && (
-                            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-bold">
+                            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-bold whitespace-nowrap shrink-0">
                               +৳{item.finishing_rate}
                             </span>
                           )}
@@ -2225,10 +2233,10 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-3">
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-[11px] font-semibold block">Add on</Label>
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Add on</Label>
                           {(item.add_on_rate ?? 0) > 0 && (
-                            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-bold">
+                            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-bold whitespace-nowrap shrink-0">
                               +৳{item.add_on_rate}
                             </span>
                           )}
@@ -2256,11 +2264,13 @@ export function NewInvoiceModal({
                       </div>
 
                       <div className="sm:col-span-2">
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-[11px] font-semibold block">Rate / sft (৳)</Label>
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap" title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
+                            Rate ({item.dimension_unit || 'sft'})
+                          </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-[10px] text-slate-400 font-mono" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
-                              (Base ৳{item.base_rate ?? 0})
+                            <span className="text-[9px] text-slate-400 font-mono whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                              Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
                         </div>
@@ -2269,7 +2279,7 @@ export function NewInvoiceModal({
                           step="0.5"
                           value={item.rate}
                           onChange={(e) => handleItemChange(index, 'rate', Number(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400 w-full"
                           required
                         />
                       </div>

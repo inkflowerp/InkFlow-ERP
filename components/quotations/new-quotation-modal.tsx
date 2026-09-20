@@ -2183,37 +2183,43 @@ export function NewQuotationModal({
 
                   {/* SERVICE CONTROLS: [Width] [Height] [Dim. Unit] [Qty] [Finishing] [Add on] [Rate] */}
                   {isService && (
-                    <div className="grid grid-cols-2 sm:grid-cols-7 gap-2.5">
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
+                    <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-start">
+                      <div className="sm:col-span-1">
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Width</Label>
+                        </div>
                         <Input
                           type="number"
                           step="0.1"
                           placeholder="0"
                           value={item.width ?? ''}
                           onChange={(e) => handleItemChange(index, 'width', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 font-mono w-full"
                         />
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Height</Label>
+                      <div className="sm:col-span-1">
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Height</Label>
+                        </div>
                         <Input
                           type="number"
                           step="0.1"
                           placeholder="0"
                           value={item.height ?? ''}
                           onChange={(e) => handleItemChange(index, 'height', e.target.value === '' ? '' : parseFloat(e.target.value) || 0)}
-                          className="text-xs h-9 font-mono"
+                          className="text-xs h-9 font-mono w-full"
                         />
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
+                      <div className="sm:col-span-1">
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Dim. Unit</Label>
+                        </div>
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
-                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                          className="w-full h-9 px-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
                           <option value="ft">ft (ফুট)</option>
                           <option value="inch">inch (ইঞ্চি)</option>
@@ -2221,19 +2227,28 @@ export function NewQuotationModal({
                         </select>
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Qty (Prints)</Label>
+                      <div className="sm:col-span-1">
+                        <div className="h-5 flex items-center mb-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Qty</Label>
+                        </div>
                         <Input
                           type="number"
                           min="1"
                           value={item.quantity}
                           onChange={(e) => handleItemChange(index, 'quantity', parseInt(e.target.value) || 1)}
-                          className="text-xs h-9 font-mono font-bold"
+                          className="text-xs h-9 font-mono font-bold w-full"
                         />
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
+                      <div className="sm:col-span-3">
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Finishing</Label>
+                          {(item.finishing_rate ?? 0) > 0 && (
+                            <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-mono font-bold whitespace-nowrap shrink-0">
+                              +৳{item.finishing_rate}
+                            </span>
+                          )}
+                        </div>
                         <select
                           value={item.finishing || 'None'}
                           onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
@@ -2241,7 +2256,7 @@ export function NewQuotationModal({
                         >
                           {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
                             <>
-                              <option value="None">None</option>
+                              <option value="None">None (+৳0)</option>
                               {item.available_finishing_options.map((f) => (
                                 <option key={f.id} value={f.name}>
                                   {f.name} {f.unit_price ? `(+৳${f.unit_price})` : ''}
@@ -2251,15 +2266,22 @@ export function NewQuotationModal({
                           ) : (
                             STANDARD_FINISHING_OPTIONS.map((f) => (
                               <option key={f.id} value={f.name}>
-                                {f.name} {f.rate > 0 ? `(+৳${f.rate})` : ''}
+                                {f.name} {f.rate > 0 ? `(+৳${f.rate})` : '(+৳0)'}
                               </option>
                             ))
                           )}
                         </select>
                       </div>
 
-                      <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Add on</Label>
+                      <div className="sm:col-span-3">
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap">Add on</Label>
+                          {(item.add_on_rate ?? 0) > 0 && (
+                            <span className="text-[10px] text-purple-600 dark:text-purple-400 font-mono font-bold whitespace-nowrap shrink-0">
+                              +৳{item.add_on_rate}
+                            </span>
+                          )}
+                        </div>
                         <select
                           value={item.add_on || 'None'}
                           onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
@@ -2267,18 +2289,20 @@ export function NewQuotationModal({
                         >
                           {STANDARD_ADD_ON_OPTIONS.map((a) => (
                             <option key={a.id} value={a.name}>
-                              {a.name} {a.rate > 0 ? `(+৳${a.rate})` : ''}
+                              {a.name} {a.rate > 0 ? `(+৳${a.rate})` : '(+৳0)'}
                             </option>
                           ))}
                         </select>
                       </div>
 
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <Label className="text-[11px] font-semibold block">Rate / sft (৳)</Label>
+                      <div className="sm:col-span-2">
+                        <div className="h-5 flex items-center justify-between mb-1 gap-1">
+                          <Label className="text-[11px] font-semibold truncate whitespace-nowrap" title={`Rate per ${item.dimension_unit || 'sft'} (৳)`}>
+                            Rate ({item.dimension_unit || 'sft'})
+                          </Label>
                           {((item.finishing_rate ?? 0) > 0 || (item.add_on_rate ?? 0) > 0) && (
-                            <span className="text-[9px] text-emerald-600 font-bold">
-                              +৳{(item.finishing_rate ?? 0) + (item.add_on_rate ?? 0)}
+                            <span className="text-[9px] text-slate-400 font-mono whitespace-nowrap shrink-0" title={`Base: ৳${item.base_rate ?? 0} + Finishing: ৳${item.finishing_rate ?? 0} + Add-on: ৳${item.add_on_rate ?? 0}`}>
+                              Base ৳{item.base_rate ?? 0}
                             </span>
                           )}
                         </div>
@@ -2287,7 +2311,7 @@ export function NewQuotationModal({
                           step="0.5"
                           value={item.unit_rate ?? ''}
                           onChange={(e) => handleItemChange(index, 'unit_rate', e.target.value)}
-                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400"
+                          className="text-xs h-9 font-mono font-bold text-blue-600 dark:text-blue-400 w-full"
                         />
                       </div>
                     </div>
