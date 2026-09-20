@@ -94,6 +94,29 @@ const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: Prici
   { value: 'hour', label: 'Hour — ঘণ্টা', defaultMethod: 'per_hour' },
 ]
 
+export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
+  { value: 'sft', label: 'sft (Square Feet — বর্গফুট)' },
+  { value: 'sqft', label: 'sqft (Square Feet)' },
+  { value: 'sheet', label: 'sheet (Sheet — সম্পূর্ণ শীট)' },
+  { value: 'pcs', label: 'pcs (Pieces — পিস)' },
+  { value: 'piece', label: 'piece (Piece — পিস)' },
+  { value: 'rft', label: 'rft (Running Feet — রানিং ফিট)' },
+  { value: 'meter', label: 'meter (Meter — মিটার)' },
+  { value: 'inch', label: 'inch (Inch — ইঞ্চি)' },
+  { value: 'roll', label: 'roll (Roll — রোল)' },
+  { value: 'kg', label: 'kg (Kilogram — কেজি)' },
+  { value: 'gm', label: 'gm (Gram — গ্রাম)' },
+  { value: 'liter', label: 'liter (Liter — লিটার)' },
+  { value: 'ml', label: 'ml (Milliliter — মিলি)' },
+  { value: 'bottle', label: 'bottle (Bottle — বোতল)' },
+  { value: 'can', label: 'can (Can — ক্যান)' },
+  { value: 'box', label: 'box (Box — বক্স)' },
+  { value: 'pack', label: 'pack (Pack — প্যাকেট)' },
+  { value: 'set', label: 'set (Set — সেট)' },
+  { value: 'sqm', label: 'sqm (Square Meter — বর্গমিটার)' },
+  { value: 'job', label: 'job (Job / Flat — এককালীন)' },
+]
+
 export const SERVICE_TYPE_CATEGORIES: Record<
   'printing' | 'production' | 'finishing' | 'installation' | 'delivery' | 'general',
   Array<{ id: string; name: string; name_bn?: string; defaultUnit?: string; defaultMethod?: PricingMethod }>
@@ -1266,6 +1289,8 @@ export function ServiceConfigModal({
           subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
         }))
       }
+      const rawUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || 'sft'
+      const defaultBomUnit = rawUnit === 'roll' ? 'sft' : rawUnit
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1276,7 +1301,7 @@ export function ServiceConfigModal({
         is_primary: true,
         quantity_per_unit: 1,
         quantity_required: 1,
-        unit: (mat as any).purchase_unit || mat.unit || 'sft',
+        unit: defaultBomUnit,
         unit_cost: matCostVal,
         waste_percent: defaultWastagePercent,
         subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
@@ -1334,6 +1359,8 @@ export function ServiceConfigModal({
           subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
         }))
       }
+      const rawUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || 'sft'
+      const defaultBomUnit = rawUnit === 'roll' ? 'sft' : rawUnit
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1344,7 +1371,7 @@ export function ServiceConfigModal({
         is_primary: true,
         quantity_per_unit: 1,
         quantity_required: 1,
-        unit: (mat as any).purchase_unit || mat.unit || 'sft',
+        unit: defaultBomUnit,
         unit_cost: matCostVal,
         waste_percent: defaultWastagePercent,
         subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
@@ -1377,6 +1404,8 @@ export function ServiceConfigModal({
           subtotal_cost: parseFloat(((Number(m.quantity_per_unit) || 1) * (m.unit_cost || matCostVal) * (1 + (Number(m.waste_percent) || 0) / 100)).toFixed(2)),
         }))
       }
+      const rawUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || 'sheet'
+      const defaultBomUnit = rawUnit === 'roll' ? 'sft' : rawUnit
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1387,7 +1416,7 @@ export function ServiceConfigModal({
         is_primary: true,
         quantity_per_unit: 1,
         quantity_required: 1,
-        unit: (mat as any).purchase_unit || mat.unit || 'sheet',
+        unit: defaultBomUnit,
         unit_cost: matCostVal,
         waste_percent: defaultWastagePercent,
         subtotal_cost: parseFloat((1 * matCostVal * (1 + defaultWastagePercent / 100)).toFixed(2)),
@@ -1407,6 +1436,7 @@ export function ServiceConfigModal({
     // Auto-add to requiredMaterials
     setRequiredMaterials((prev) => {
       if (prev.some((m) => m.material_id === mat.id)) return prev
+      const rawUnit = (mat as any).purchase_unit || mat.unit || 'pcs'
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1417,7 +1447,7 @@ export function ServiceConfigModal({
         is_primary: false,
         quantity_per_unit: 1,
         quantity_required: 1,
-        unit: (mat as any).purchase_unit || mat.unit || 'piece',
+        unit: rawUnit,
         unit_cost: matCostVal,
         waste_percent: 0,
         subtotal_cost: matCostVal,
@@ -1437,6 +1467,7 @@ export function ServiceConfigModal({
     // Auto-add to requiredMaterials
     setRequiredMaterials((prev) => {
       if (prev.some((m) => m.material_id === mat.id)) return prev
+      const rawUnit = (mat as any).purchase_unit || mat.unit || 'pcs'
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1447,7 +1478,7 @@ export function ServiceConfigModal({
         is_primary: false,
         quantity_per_unit: 1,
         quantity_required: 1,
-        unit: (mat as any).purchase_unit || mat.unit || 'piece',
+        unit: rawUnit,
         unit_cost: matCostVal,
         waste_percent: 0,
         subtotal_cost: matCostVal,
@@ -1583,6 +1614,9 @@ export function ServiceConfigModal({
       const waste = defaultWastagePercent
       const subtotal = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
 
+      const rawUnit = (mat as any).purchase_unit || mat.unit || (mat as any).stock_unit || (mat as any).selling_unit || 'sft'
+      const defaultBomUnit = rawUnit === 'roll' ? 'sft' : rawUnit
+
       const newItem: ServiceRequiredMaterial & { is_primary?: boolean } = {
         id: `req-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
         material_id: mat.id,
@@ -1593,7 +1627,7 @@ export function ServiceConfigModal({
         is_primary: requiredMaterials.length === 0,
         quantity_per_unit: qty,
         quantity_required: qty,
-        unit: (mat as any).purchase_unit || mat.unit || 'unit',
+        unit: defaultBomUnit,
         unit_cost: cost,
         waste_percent: waste,
         subtotal_cost: subtotal,
@@ -3706,9 +3740,9 @@ export function ServiceConfigModal({
                       <tr className="border-b border-amber-100 dark:border-slate-800 bg-amber-50/60 dark:bg-slate-800/50 text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400">
                         <th className="py-2 px-2 text-center w-10">Primary</th>
                         <th className="py-2 px-3">Raw Material / Substrate</th>
-                        <th className="py-2 px-2 w-24">Qty / Unit</th>
-                        <th className="py-2 px-2 w-20">Unit</th>
-                        <th className="py-2 px-2 w-24">Unit Cost (৳)</th>
+                        <th className="py-2 px-2 w-28">Qty / {sellingUnit || 'Unit'}</th>
+                        <th className="py-2 px-2 w-28">Material Unit</th>
+                        <th className="py-2 px-2 w-28">Unit Cost (৳)</th>
                         <th className="py-2 px-2 w-20">Wastage %</th>
                         <th className="py-2 px-3 text-right w-28">Subtotal (৳)</th>
                         <th className="py-2 px-2 text-center w-10">Action</th>
@@ -3771,18 +3805,31 @@ export function ServiceConfigModal({
                               <Input
                                 type="number"
                                 step="any"
-                                min="0.01"
+                                min="0.0001"
                                 value={item.quantity_per_unit ?? 1}
                                 onChange={(e) => handleUpdateBOMItem(idx, 'quantity_per_unit', parseFloat(e.target.value) || 0)}
                                 className="h-7 text-xs font-mono font-bold px-1.5 text-center"
                               />
                             </td>
 
-                            {/* Unit */}
+                            {/* Material Unit (Editable Dropdown) */}
                             <td className="py-2 px-2">
-                              <span className="text-[11px] font-mono text-slate-600 dark:text-slate-300 font-medium block uppercase truncate">
-                                {item.unit || 'sft'}
-                              </span>
+                              <select
+                                value={item.unit || 'sft'}
+                                onChange={(e) => handleUpdateBOMItem(idx, 'unit', e.target.value)}
+                                className="h-7 w-full text-[11px] font-mono font-semibold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-1 text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-1 focus:ring-amber-500 uppercase cursor-pointer"
+                              >
+                                {COMMON_BOM_UNITS.map((u) => (
+                                  <option key={u.value} value={u.value}>
+                                    {u.label}
+                                  </option>
+                                ))}
+                                {item.unit && !COMMON_BOM_UNITS.some((u) => u.value.toLowerCase() === item.unit?.toLowerCase()) && (
+                                  <option value={item.unit}>
+                                    {item.unit}
+                                  </option>
+                                )}
+                              </select>
                             </td>
 
                             {/* Unit Cost */}
