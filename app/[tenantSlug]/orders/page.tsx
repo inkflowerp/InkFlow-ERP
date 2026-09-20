@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import {
   Briefcase,
@@ -48,6 +48,8 @@ import { WorkOrderModal } from '@/components/shared/work-order-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { usePermissions } from '@/hooks/use-permissions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getOrdersAction } from '@/actions/order.actions'
+import { getInvoicesAction } from '@/actions/billing.actions'
 import { Crown, ShoppingCart } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
@@ -142,6 +144,56 @@ export default function OrdersPage() {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
+
+  // Authoritative Server Data Synchronization on mount
+  useEffect(() => {
+    let isMounted = true
+    async function syncOrdersAndInvoices() {
+      if (!company?.id) return
+      try {
+        const [ordersRes, invoicesRes] = await Promise.all([
+          getOrdersAction(company.id),
+          getInvoicesAction(undefined, company.id),
+        ])
+        if (!isMounted) return
+
+        if (ordersRes.success && ordersRes.data) {
+          const serverOrders = ordersRes.data
+          const allStored = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+          const orderMap = new Map<string, SalesOrderRecord>()
+          for (const o of allStored) {
+            if (o?.id) orderMap.set(o.id, o)
+          }
+          for (const o of serverOrders) {
+            if (o?.id) orderMap.set(o.id, o)
+          }
+          const merged = Array.from(orderMap.values())
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, merged)
+          setOrders(merged)
+        }
+
+        if (invoicesRes.success && invoicesRes.data) {
+          const serverInvoices = invoicesRes.data
+          const allStored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+          const invMap = new Map<string, any>()
+          for (const i of allStored) {
+            if (i?.id) invMap.set(i.id, i)
+          }
+          for (const i of serverInvoices) {
+            if (i?.id) invMap.set(i.id, i)
+          }
+          const merged = Array.from(invMap.values())
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, merged)
+        }
+      } catch (err) {
+        console.error('Failed to sync orders page server data:', err)
+      }
+    }
+    syncOrdersAndInvoices()
+    return () => {
+      isMounted = false
+    }
+  }, [company?.id, slug])
 
   // Combine Orders and Invoices into a Unified List of Jobs/Works
   const unifiedWorks: UnifiedWorkItem[] = useMemo(() => {

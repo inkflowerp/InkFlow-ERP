@@ -53,22 +53,79 @@ export class CustomerRepository {
     return measureAsync(`CustomerRepository.getCustomers(${companyId})`, async () => {
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          return (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
+          const list = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter((c: CustomerRecord) => c.company_id === companyId)
+          const allInvs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.company_id === companyId && i.status !== 'cancelled')
+          const dueMap = new Map<string, number>()
+          const billedMap = new Map<string, number>()
+          const paidMap = new Map<string, number>()
+          const countMap = new Map<string, number>()
+          for (const inv of allInvs) {
+            if (inv.customer_id) {
+              const due = Number(inv.due_amount) || 0
+              const total = Number(inv.grand_total) || 0
+              const paid = Number(inv.paid_amount) || 0
+              dueMap.set(inv.customer_id, (dueMap.get(inv.customer_id) || 0) + due)
+              billedMap.set(inv.customer_id, (billedMap.get(inv.customer_id) || 0) + total)
+              paidMap.set(inv.customer_id, (paidMap.get(inv.customer_id) || 0) + paid)
+              countMap.set(inv.customer_id, (countMap.get(inv.customer_id) || 0) + 1)
+            }
+          }
+          return list.map((c) => ({
+            ...c,
+            total_due_balance: dueMap.has(c.id) ? dueMap.get(c.id)! : (Number(c.total_due_balance) || 0),
+            total_invoiced_amount: billedMap.has(c.id) ? billedMap.get(c.id)! : (Number(c.total_invoiced_amount) || 0),
+            total_paid_amount: paidMap.has(c.id) ? paidMap.get(c.id)! : (Number(c.total_paid_amount) || 0),
+            total_invoices_count: countMap.has(c.id) ? countMap.get(c.id)! : (Number(c.total_invoices_count) || 0),
+          }))
         }
         throw new Error('Authoritative database connection is required to fetch customers.')
       }
 
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
-        .from('customers')
-        .select('*')
-        .eq('company_id', companyId)
-        .order('created_at', { ascending: false })
+      const [custResult, invResult] = await Promise.all([
+        (supabase as any)
+          .from('customers')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false }),
+        (supabase as any)
+          .from('invoices')
+          .select('customer_id, grand_total, paid_amount, due_amount')
+          .eq('company_id', companyId)
+          .neq('status', 'cancelled'),
+      ])
 
-      if (error) {
-        throw new Error(`Failed to fetch customers from database: ${error.message}`)
+      if (custResult.error) {
+        throw new Error(`Failed to fetch customers from database: ${custResult.error.message}`)
       }
-      return (data || []) as unknown as CustomerRecord[]
+
+      const rawCustomers = (custResult.data || []) as CustomerRecord[]
+      const invoices = invResult.data || []
+
+      const dueMap = new Map<string, number>()
+      const billedMap = new Map<string, number>()
+      const paidMap = new Map<string, number>()
+      const countMap = new Map<string, number>()
+
+      for (const inv of invoices) {
+        if (inv.customer_id) {
+          const due = Number(inv.due_amount) || 0
+          const total = Number(inv.grand_total) || 0
+          const paid = Number(inv.paid_amount) || 0
+          dueMap.set(inv.customer_id, (dueMap.get(inv.customer_id) || 0) + due)
+          billedMap.set(inv.customer_id, (billedMap.get(inv.customer_id) || 0) + total)
+          paidMap.set(inv.customer_id, (paidMap.get(inv.customer_id) || 0) + paid)
+          countMap.set(inv.customer_id, (countMap.get(inv.customer_id) || 0) + 1)
+        }
+      }
+
+      return rawCustomers.map((c) => ({
+        ...c,
+        total_due_balance: dueMap.has(c.id) ? dueMap.get(c.id)! : (Number(c.total_due_balance) || 0),
+        total_invoiced_amount: billedMap.has(c.id) ? billedMap.get(c.id)! : (Number(c.total_invoiced_amount) || 0),
+        total_paid_amount: paidMap.has(c.id) ? paidMap.get(c.id)! : (Number(c.total_paid_amount) || 0),
+        total_invoices_count: countMap.has(c.id) ? countMap.get(c.id)! : (Number(c.total_invoices_count) || 0),
+      }))
     })
   }
 
@@ -410,7 +467,16 @@ export class CustomerRepository {
     }
 
     if (isTestMode()) {
-      return (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).find((c: CustomerRecord) => c.id === id && c.company_id === companyId) || null
+      const cust = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).find((c: CustomerRecord) => c.id === id && c.company_id === companyId) || null
+      if (cust) {
+        const allInvs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.customer_id === id && i.status !== 'cancelled')
+        const due = allInvs.reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
+        return {
+          ...cust,
+          total_due_balance: due || Number(cust.total_due_balance) || 0,
+        }
+      }
+      return null
     }
 
     throw new Error('Authoritative database connection is required to fetch customer profile.')

@@ -47,6 +47,7 @@ import {
   getInvoiceProductsAction,
   CreateInvoiceItemInput,
 } from '@/actions/billing.actions'
+import { getCustomerFinancialSummaryAction } from '@/actions/customer.actions'
 import { evaluateStockAvailability, StockAvailabilityResult } from '@/lib/domain/stock-availability'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
@@ -944,6 +945,24 @@ export function NewInvoiceModal({
     setCustomerHighlightedIndex(0)
     setErrorMessage(null)
 
+    // Real-time authoritative customer financial summary fetch
+    getCustomerFinancialSummaryAction(cust.id, company?.id)
+      .then((finRes) => {
+        if (finRes.success && finRes.data) {
+          const finData = finRes.data
+          setSelectedCustomer((prev) =>
+            prev && prev.id === cust.id
+              ? {
+                  ...prev,
+                  total_due_balance: finData.totalDue,
+                  credit_limit: finData.creditLimit ?? prev.credit_limit,
+                }
+              : prev
+          )
+        }
+      })
+      .catch(() => {})
+
     // Resolve 3-tier customer pricing
     try {
       const rateRes = await resolveCustomerPricingAction(cust.id, company?.id)
@@ -1448,6 +1467,11 @@ export function NewInvoiceModal({
       }
 
       setSavedInvoice(result.data)
+      try {
+        const allInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+        const filtered = allInvs.filter((i) => i.id !== result.data!.id)
+        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [result.data, ...filtered])
+      } catch {}
       if (onInvoiceCreated) {
         onInvoiceCreated(result.data)
       }

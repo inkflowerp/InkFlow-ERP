@@ -99,6 +99,7 @@ import {
   purgeAllNotificationsAction,
 } from '@/actions/notification.actions'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
+import { getInvoicesAction } from '@/actions/billing.actions'
 import { cn } from '@/lib/utils'
 
 export type DesignPanelTab =
@@ -356,13 +357,28 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
     async function syncServerData() {
       if (!company?.id) return
       try {
-        const [jobsRes, ordersRes, notifsRes] = await Promise.all([
+        const [jobsRes, ordersRes, notifsRes, invoicesRes] = await Promise.all([
           getDesignJobsAction(company.id),
           getOrdersAction(company.id),
           getInAppNotificationsAction(company.id),
+          getInvoicesAction(undefined, company.id),
         ])
 
         if (!isMounted) return
+
+        if (invoicesRes.success && invoicesRes.data) {
+          const serverInvoices = invoicesRes.data
+          const allStoredInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          const invMap = new Map<string, InvoiceRecord>()
+          for (const i of allStoredInvoices) {
+            if (i && i.id) invMap.set(i.id, i)
+          }
+          for (const i of serverInvoices) {
+            if (i && i.id) invMap.set(i.id, i)
+          }
+          const mergedInvoices = Array.from(invMap.values())
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, mergedInvoices)
+        }
 
         if (jobsRes.success && jobsRes.data) {
           const serverJobs = jobsRes.data || []

@@ -850,6 +850,7 @@ export class BillingRepository {
       // 2. Synchronize / Auto-create Matching Sales Order (Ensuring ORD-YYYY-XXXXXX === INV-YYYY-XXXXXX)
       let effectiveSalesOrderId = invoice.sales_order_id
       const effectiveOrderNumber = invoice.order_number || invoice.invoice_number.replace('INV-', 'ORD-')
+      let provisionedOrder: any = null
 
       if (effectiveSalesOrderId) {
         try {
@@ -876,6 +877,7 @@ export class BillingRepository {
             ord.production_gate_status = 'ready_for_production'
           }
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          provisionedOrder = ord
         }
       } else {
         const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
@@ -951,6 +953,7 @@ export class BillingRepository {
             PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
           }
         }
+        provisionedOrder = ord
         effectiveSalesOrderId = ord.id
       }
 
@@ -978,8 +981,40 @@ export class BillingRepository {
         PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, jobOrders)
       }
 
-      // 3. Update Existing Design Jobs
+      // 2.2 Persist auto-provisioned sales order to PostgreSQL if database connection exists
+      if (provisionedOrder && !invoice.sales_order_id) {
+        try {
+          const supabase = await createClient()
+          await (supabase as any).from('sales_orders').insert({
+            id: provisionedOrder.id,
+            company_id: provisionedOrder.company_id,
+            order_number: provisionedOrder.order_number,
+            customer_id: provisionedOrder.customer_id,
+            customer_name: provisionedOrder.customer_name,
+            customer_phone: provisionedOrder.customer_phone,
+            customer_address: provisionedOrder.customer_address,
+            salesperson_name: provisionedOrder.salesperson_name,
+            order_date: provisionedOrder.order_date,
+            delivery_date: provisionedOrder.delivery_date,
+            priority: provisionedOrder.priority,
+            status: provisionedOrder.status,
+            commercial_status: provisionedOrder.commercial_status,
+            production_gate_status: provisionedOrder.production_gate_status,
+            invoice_id: provisionedOrder.invoice_id,
+            invoice_number: provisionedOrder.invoice_number,
+            final_price: provisionedOrder.final_price,
+            advance_amount: provisionedOrder.advance_amount,
+            due_amount: provisionedOrder.due_amount,
+            created_at: provisionedOrder.created_at,
+            updated_at: provisionedOrder.updated_at,
+          })
+        } catch {}
+      }
+
+      // 3. Update Existing Design Jobs & Auto-provision Design Jobs for Design Required / Design OK items
       const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const newDesignJobs: any[] = []
+
       for (const dj of designJobs) {
         const itemMatch = invoice.items?.some((it: any) => it.design_job_id === dj.id)
         if (
@@ -991,6 +1026,106 @@ export class BillingRepository {
           dj.invoice_number = invoice.invoice_number
         }
       }
+
+      if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+        invoice.items.forEach((it: any, idx: number) => {
+          const isDesignReq = Boolean(it.design_required || it.workflow_routing === 'design_required')
+          const isDesignOk = it.workflow_routing === 'design_ok'
+          if (!isDesignReq && !isDesignOk) return
+
+          const existingDj = designJobs.find(
+            (d) =>
+              d.company_id === companyId &&
+              (d.invoice_id === invoice.id || (d.sales_order_id && d.sales_order_id === effectiveSalesOrderId)) &&
+              (d.invoice_item_id === it.id || d.id === it.design_job_id)
+          )
+
+          if (!existingDj) {
+            const dsnId = it.design_job_id || crypto.randomUUID()
+            const dsnNum = `DSN-${invoice.invoice_number.replace('INV-', '')}-${String.fromCharCode(65 + idx)}`
+            const newDj = {
+              id: dsnId,
+              company_id: companyId,
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+              invoice_item_id: it.id || null,
+              sales_order_id: effectiveSalesOrderId,
+              order_number: effectiveOrderNumber,
+              customer_id: invoice.customer_id,
+              customer_name: invoice.customer_name,
+              design_number: dsnNum,
+              title: it.item_description || it.description || it.item_name || 'Design Artwork',
+              product_name: it.item_name || null,
+              dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+              quantity: Number(it.quantity) || 1,
+              unit: it.unit || 'pcs',
+              designer_name: 'Design Team',
+              priority: ((invoice as any).priority as any) || 'normal',
+              deadline: invoice.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+              status: isDesignOk ? 'approved' : 'received',
+              workflow_routing: isDesignOk ? 'design_ok' : 'design_required',
+              commercial_status: 'invoice_created',
+              intake_source: 'manager_billing',
+              customer_approval_required: isDesignReq,
+              is_locked: isDesignOk,
+              current_version: 1,
+              versions: [
+                {
+                  id: `dv-${Date.now()}-${idx}`,
+                  design_job_id: dsnId,
+                  version_number: 1,
+                  version_label: isDesignOk ? 'Version 1 (Customer Artwork)' : 'Version 1 (Initial Brief)',
+                  proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'artwork_brief.png',
+                  proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                  file_format: 'png',
+                  uploaded_by_name: invoice.created_by_name || 'Billing / Commercial',
+                  is_approved: isDesignOk,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+            newDesignJobs.push(newDj)
+          }
+        })
+      }
+
+      if (newDesignJobs.length > 0) {
+        designJobs.unshift(...newDesignJobs)
+        try {
+          const supabase = await createClient()
+          for (const dj of newDesignJobs) {
+            await (supabase as any).from('design_jobs').insert({
+              id: dj.id,
+              company_id: dj.company_id,
+              invoice_id: dj.invoice_id,
+              invoice_number: dj.invoice_number,
+              customer_id: dj.customer_id,
+              customer_name: dj.customer_name,
+              design_number: dj.design_number,
+              title: dj.title,
+              product_name: dj.product_name,
+              dimensions_spec: dj.dimensions_spec,
+              quantity: dj.quantity,
+              unit: dj.unit,
+              designer_name: dj.designer_name,
+              priority: dj.priority,
+              deadline: dj.deadline,
+              status: dj.status,
+              workflow_routing: dj.workflow_routing,
+              commercial_status: dj.commercial_status,
+              intake_source: dj.intake_source,
+              customer_approval_required: dj.customer_approval_required,
+              is_locked: dj.is_locked,
+              current_version: dj.current_version,
+              created_at: dj.created_at,
+              updated_at: dj.updated_at,
+            })
+          }
+        } catch {}
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designJobs)
 
       // 4. Delivery Panel Integration: Unified Challan with ALL products and their workflow statuses
       if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
