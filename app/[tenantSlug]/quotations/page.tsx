@@ -52,7 +52,14 @@ export default function QuotationsPage() {
   // Authoritative server state + local store cache
   const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, undefined, slug)
   const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)
+      return !cached || cached.length === 0
+    } catch {
+      return true
+    }
+  })
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [localTick, setLocalTick] = useState(0)
@@ -76,7 +83,9 @@ export default function QuotationsPage() {
 
   // Fetch authoritative quotations from server with tenant slug context
   const loadQuotations = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true)
+    if (!isSilent && !serverQuotations && (!localQuotations || localQuotations.length === 0)) {
+      setIsLoading(true)
+    }
     setIsRefreshing(true)
     setError(null)
 
@@ -93,7 +102,7 @@ export default function QuotationsPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [companyId, slug])
+  }, [companyId, slug, serverQuotations, localQuotations])
 
   useEffect(() => {
     // Purge test quotations QUO-000001 to QUO-000008 from all local storage partitions
@@ -101,18 +110,29 @@ export default function QuotationsPage() {
       PrintERPDataStore.purgeQuotationsByNumbers()
     }
 
-    loadQuotations()
+    loadQuotations(false)
 
     // Listen for storage, sync, or offline draft updates
-    const handleSync = () => setLocalTick((t) => t + 1)
+    const handleSync = () => {
+      setLocalTick((t) => t + 1)
+      loadQuotations(true)
+    }
+
     if (typeof window !== 'undefined') {
       window.addEventListener('storage', handleSync)
       window.addEventListener('printerp_datastore_sync', handleSync)
       window.addEventListener('printerp_drafts_updated', handleSync)
+      window.addEventListener('printerp_table_synced:quotations', handleSync)
+      window.addEventListener('printerp_table_synced', handleSync)
+      window.addEventListener('printerp_data_sync', handleSync)
+
       return () => {
         window.removeEventListener('storage', handleSync)
         window.removeEventListener('printerp_datastore_sync', handleSync)
         window.removeEventListener('printerp_drafts_updated', handleSync)
+        window.removeEventListener('printerp_table_synced:quotations', handleSync)
+        window.removeEventListener('printerp_table_synced', handleSync)
+        window.removeEventListener('printerp_data_sync', handleSync)
       }
     }
   }, [loadQuotations])

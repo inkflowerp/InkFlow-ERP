@@ -67,9 +67,11 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
 
   // Orders & Quotations
   sales_orders: STORAGE_KEYS.ORDERS,
+  sales_order_items: STORAGE_KEYS.ORDERS,
   job_orders: STORAGE_KEYS.JOB_ORDERS,
   order_timeline_events: STORAGE_KEYS.TIMELINE_EVENTS,
   quotations: STORAGE_KEYS.QUOTATIONS,
+  quotation_items: STORAGE_KEYS.QUOTATIONS,
   quotation_activities: STORAGE_KEYS.QUOTATION_ACTIVITIES,
 
   // Products & Pricing
@@ -80,13 +82,18 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   materials: STORAGE_KEYS.MATERIALS,
   inventory_rolls: STORAGE_KEYS.MOUNTED_ROLLS,
   stock_ledger: STORAGE_KEYS.STOCK_LEDGER,
+  inventory_locations: STORAGE_KEYS.LOCATIONS,
+  inventory_remnants: STORAGE_KEYS.REMNANTS,
 
   // Production & Shop Floor
   production_jobs: STORAGE_KEYS.PRODUCTION_JOBS,
+  production_tasks: STORAGE_KEYS.PRODUCTION_TASKS,
   production_reworks: STORAGE_KEYS.REWORKS,
 
   // Billing & Accounting
   invoices: STORAGE_KEYS.INVOICES,
+  invoice_items: STORAGE_KEYS.INVOICES,
+  invoice_requests: STORAGE_KEYS.INVOICE_REQUESTS,
   payments: STORAGE_KEYS.PAYMENTS,
   expenses: STORAGE_KEYS.EXPENSES,
   bank_accounts: STORAGE_KEYS.BANK_ACCOUNTS,
@@ -99,6 +106,7 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
 
   // Design & Pre-Press
   design_jobs: STORAGE_KEYS.DESIGN_JOBS,
+  design_versions: STORAGE_KEYS.DESIGN_JOBS,
   job_costings: STORAGE_KEYS.JOB_COSTINGS,
 
   // HR & Payroll
@@ -147,9 +155,12 @@ class RealtimeSubscriptionManager {
   private currentStatus: RealtimeConnectionStatus = 'disconnected'
   private localBroadcastChannel: BroadcastChannel | null = null
   private currentTenantCompanyId: string | null = null
+  private reconnectTimers = new Map<string, NodeJS.Timeout>()
+  private reconnectAttempts = new Map<string, number>()
 
   constructor() {
     this.initLocalBroadcast()
+    this.initBrowserLifecycleListeners()
   }
 
   /**
@@ -185,6 +196,46 @@ class RealtimeSubscriptionManager {
       } catch (err) {
         console.warn('[RealtimeManager] BroadcastChannel init warning:', err)
       }
+    }
+  }
+
+  /**
+   * Handles browser network reconnection & tab visibility switches
+   */
+  private initBrowserLifecycleListeners() {
+    if (typeof window === 'undefined') return
+
+    // Auto-reconnect when device comes back online
+    window.addEventListener('online', () => {
+      console.log('[RealtimeManager] Network online restored. Re-verifying active channels...')
+      this.reconnectAllChannels()
+    })
+
+    // Re-verify when user switches back to this tab
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        if (this.currentStatus === 'disconnected' || this.currentStatus === 'error') {
+          console.log('[RealtimeManager] Tab focused. Restoring realtime connections...')
+          this.reconnectAllChannels()
+        }
+      }
+    })
+  }
+
+  /**
+   * Reconnects all currently registered active channels
+   */
+  public reconnectAllChannels() {
+    if (!this.currentTenantCompanyId || !isSupabaseConfigured()) return
+    const companyId = this.currentTenantCompanyId
+    const channelName = `company:${companyId}:realtime`
+    const channelRef = this.activeChannels.get(channelName)
+    if (channelRef) {
+      this.activeChannels.delete(channelName)
+      try {
+        channelRef.channel.unsubscribe()
+      } catch {}
+      this.subscribeToTenantSync(companyId)
     }
   }
 
@@ -317,6 +368,14 @@ class RealtimeSubscriptionManager {
           }
         }
       }
+
+      // Also handle child table updates
+      if (storageKey === STORAGE_KEYS.ORDERS && (newRecord?.sales_order_id || oldRecord?.sales_order_id)) {
+        const orderId = newRecord?.sales_order_id || oldRecord?.sales_order_id
+        if (orderId && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_order_items_updated', { detail: { orderId } }))
+        }
+      }
     } catch (err) {
       console.error(`[RealtimeManager] Reconciliation error on ${storageKey}:`, err)
     }
@@ -353,15 +412,59 @@ class RealtimeSubscriptionManager {
             actionUrl: `/orders`,
           }
         }
-      } else if (table === 'production_jobs') {
-        if (eventType === 'UPDATE' && record.stage) {
+      } else if (table === 'invoices') {
+        if (eventType === 'INSERT') {
+          popup = {
+            id: `inv-${record.id}-${Date.now()}`,
+            type: 'billing',
+            title: `Invoice Created #${record.invoice_number || 'New'}`,
+            titleBn: `নতুন ইনভয়েস #${record.invoice_number || ''} তৈরি হয়েছে`,
+            message: `${record.customer_name || 'Customer'} • Total: ৳ ${(record.grand_total || 0).toLocaleString()}`,
+            messageBn: `${record.customer_name || 'গ্রাহক'} • মোট: ৳ ${(record.grand_total || 0).toLocaleString()}`,
+            actionUrl: `/billing`,
+          }
+        } else if (eventType === 'UPDATE' && record.status === 'paid') {
+          popup = {
+            id: `inv-paid-${record.id}-${Date.now()}`,
+            type: 'payment',
+            title: `Invoice #${record.invoice_number} Paid in Full`,
+            titleBn: `ইনভয়েস #${record.invoice_number} সম্পূর্ণ পরিশোধ হয়েছে`,
+            message: `${record.customer_name || 'Customer'} • ৳ ${(record.grand_total || 0).toLocaleString()}`,
+            messageBn: `${record.customer_name || 'গ্রাহক'} • ৳ ${(record.grand_total || 0).toLocaleString()}`,
+            actionUrl: `/billing`,
+          }
+        }
+      } else if (table === 'design_jobs') {
+        if (eventType === 'INSERT') {
+          popup = {
+            id: `dsn-${record.id}-${Date.now()}`,
+            type: 'design',
+            title: `New Design Job #${record.design_number || 'New'}`,
+            titleBn: `নতুন ডিজাইন জব #${record.design_number || ''} রিকুয়েস্ট`,
+            message: `${record.title || 'Artwork'} for ${record.customer_name || 'Customer'}`,
+            messageBn: `${record.title || 'আর্টওয়ার্ক'} — ${record.customer_name || 'গ্রাহক'}`,
+            actionUrl: `/design`,
+          }
+        } else if (eventType === 'UPDATE' && (record.status === 'approved' || record.workflow_routing === 'design_ok')) {
+          popup = {
+            id: `dsn-app-${record.id}-${Date.now()}`,
+            type: 'design',
+            title: `Design #${record.design_number} Approved & Ready`,
+            titleBn: `ডিজাইন #${record.design_number} অনুমোদিত ও রেডি`,
+            message: `Ready for Print Operator / Production`,
+            messageBn: `প্রিন্টিং প্রোডাকশনের জন্য প্রস্তুত`,
+            actionUrl: `/design`,
+          }
+        }
+      } else if (table === 'production_jobs' || table === 'production_tasks') {
+        if (eventType === 'UPDATE' && (record.stage || record.status)) {
           popup = {
             id: `prd-${record.id}-${Date.now()}`,
             type: 'job',
-            title: `Shop Floor: ${record.product_name || 'Job'} Update`,
-            titleBn: `প্রোডাকশন জব: ${record.product_name || 'জব'} আপডেট`,
-            message: `Stage: ${record.stage.toUpperCase()} (${record.status || 'Active'})`,
-            messageBn: `ধাপ: ${record.stage} (${record.status || 'চলমান'})`,
+            title: `Shop Floor: ${record.product_name || record.task_name || 'Job'} Update`,
+            titleBn: `প্রোডাকশন জব: ${record.product_name || record.task_name || 'জব'} আপডেট`,
+            message: `Stage: ${(record.stage || record.status || '').toUpperCase()}`,
+            messageBn: `ধাপ: ${record.stage || record.status || 'চলমান'}`,
             actionUrl: `/production`,
           }
         }
@@ -375,6 +478,18 @@ class RealtimeSubscriptionManager {
             message: `Receipt #${record.receipt_number || ''} • ${record.payment_method || 'Cash'}`,
             messageBn: `মানি রিসিট #${record.receipt_number || ''} • ${record.payment_method || 'ক্যাশ'}`,
             actionUrl: `/billing`,
+          }
+        }
+      } else if (table === 'quotations') {
+        if (eventType === 'INSERT') {
+          popup = {
+            id: `quo-${record.id}-${Date.now()}`,
+            type: 'quotation',
+            title: `Quotation #${record.quotation_number || 'New'} Generated`,
+            titleBn: `কোটেশন #${record.quotation_number || ''} তৈরি হয়েছে`,
+            message: `${record.customer_name || 'Client'} • ৳ ${(record.grand_total || record.estimated_total || 0).toLocaleString()}`,
+            messageBn: `${record.customer_name || 'ক্লায়েন্ট'} • ৳ ${(record.grand_total || record.estimated_total || 0).toLocaleString()}`,
+            actionUrl: `/quotations`,
           }
         }
       } else if (table === 'delivery_challans') {
@@ -409,6 +524,36 @@ class RealtimeSubscriptionManager {
     } catch (err) {
       console.warn('[RealtimeManager] Notification parsing error:', err)
     }
+  }
+
+  /**
+   * Schedules an automatic backoff reconnection attempt for a channel
+   */
+  private scheduleReconnect(companyId: string, channelName: string) {
+    if (this.reconnectTimers.has(channelName)) return
+    const attempts = this.reconnectAttempts.get(channelName) || 0
+    if (attempts > 5) {
+      console.warn(`[RealtimeManager] Max reconnect attempts reached for ${channelName}. Waiting for next window event.`)
+      return
+    }
+
+    const backoffMs = Math.min(1000 * Math.pow(2, attempts), 10000)
+    this.reconnectAttempts.set(channelName, attempts + 1)
+    console.log(`[RealtimeManager] Scheduling reconnect in ${backoffMs}ms (attempt ${attempts + 1}) for ${channelName}...`)
+
+    const timer = setTimeout(() => {
+      this.reconnectTimers.delete(channelName)
+      const existing = this.activeChannels.get(channelName)
+      if (existing) {
+        try {
+          existing.channel.unsubscribe()
+        } catch {}
+        this.activeChannels.delete(channelName)
+      }
+      this.subscribeToTenantSync(companyId)
+    }, backoffMs)
+
+    this.reconnectTimers.set(channelName, timer)
   }
 
   /**
@@ -537,11 +682,13 @@ class RealtimeSubscriptionManager {
       channel.subscribe((status) => {
         if (status === 'SUBSCRIBED') {
           this.setStatus('connected')
+          this.reconnectAttempts.delete(channelName)
           if (channelRef) channelRef.status = 'connected'
           console.log(`[RealtimeManager] Unified Realtime Active: ${channelName}`)
         } else if (status === 'TIMED_OUT' || status === 'CHANNEL_ERROR') {
           this.setStatus('reconnecting')
           if (channelRef) channelRef.status = 'error'
+          this.scheduleReconnect(companyId, channelName)
         } else if (status === 'CLOSED') {
           this.setStatus('disconnected')
           if (channelRef) channelRef.status = 'disconnected'
@@ -705,6 +852,13 @@ class RealtimeSubscriptionManager {
    * Decrements reference count and closes WebSocket channel when refCount drops to 0.
    */
   private unsubscribe(channelName: string) {
+    const timer = this.reconnectTimers.get(channelName)
+    if (timer) {
+      clearTimeout(timer)
+      this.reconnectTimers.delete(channelName)
+    }
+    this.reconnectAttempts.delete(channelName)
+
     const channelRef = this.activeChannels.get(channelName)
     if (!channelRef) return
 

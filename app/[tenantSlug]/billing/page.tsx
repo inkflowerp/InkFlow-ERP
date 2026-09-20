@@ -222,7 +222,9 @@ export default function BillingPage() {
   // Load authoritative data from PostgreSQL
   const loadBillingData = useCallback(async () => {
     if (!company?.id) return
-    setIsLoading(true)
+    if (invoices.length === 0 && payments.length === 0) {
+      setIsLoading(true)
+    }
 
     try {
       const customRange =
@@ -351,7 +353,7 @@ export default function BillingPage() {
         })
       } catch {}
 
-      // Also check design jobs marked commercial_status: invoice_requested (e.g. from Designer Panel / Prepress direct customer intake)
+      // Also check design jobs marked commercial_status: invoice_requested to guarantee visibility
       try {
         const designJobs = [
           ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.DESIGN_JOBS, slug) || []),
@@ -418,10 +420,28 @@ export default function BillingPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [company, slug, selectedPeriod, customStartDate, customEndDate])
+  }, [company, slug, selectedPeriod, customStartDate, customEndDate, invoices.length, payments.length])
 
   useEffect(() => {
     loadBillingData()
+  }, [loadBillingData])
+
+  // Realtime multi-user and cross-tab auto-sync
+  useEffect(() => {
+    const handleRealtimeBillingSync = () => {
+      loadBillingData()
+    }
+    window.addEventListener('printerp_table_synced:invoices', handleRealtimeBillingSync)
+    window.addEventListener('printerp_table_synced:payments', handleRealtimeBillingSync)
+    window.addEventListener('printerp_table_synced:invoice_requests', handleRealtimeBillingSync)
+    window.addEventListener('printerp_data_sync', handleRealtimeBillingSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:invoices', handleRealtimeBillingSync)
+      window.removeEventListener('printerp_table_synced:payments', handleRealtimeBillingSync)
+      window.removeEventListener('printerp_table_synced:invoice_requests', handleRealtimeBillingSync)
+      window.removeEventListener('printerp_data_sync', handleRealtimeBillingSync)
+    }
   }, [loadBillingData])
 
   // Handle auto-open of modal from searchParams (e.g. ?create=true or ?receive=true)

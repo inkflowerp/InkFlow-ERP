@@ -106,8 +106,8 @@ export default function AdvancedProductionPage() {
     setTimeout(() => setNotification(null), 4000)
   }
 
-  const loadData = async () => {
-    if (tasks.length === 0) {
+  const loadData = async (isBackground = false) => {
+    if (!isBackground && tasks.length === 0) {
       setLoading(true)
     }
     try {
@@ -118,6 +118,9 @@ export default function AdvancedProductionPage() {
 
       if (taskRes.success && taskRes.data) {
         setTasks(taskRes.data)
+        try {
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, taskRes.data, false)
+        } catch {}
       }
       if (queueRes.success && queueRes.data) {
         setMachineQueues(queueRes.data)
@@ -129,7 +132,29 @@ export default function AdvancedProductionPage() {
   }
 
   useEffect(() => {
-    loadData()
+    loadData(false)
+
+    const handleRealtimeSync = () => {
+      loadData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:production_jobs', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [selectedDept])
 
   // Filter Tasks

@@ -49,6 +49,7 @@ import {
   CustomerCategory,
 } from '@/types/crm.types'
 import { cn } from '@/lib/utils'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function CustomersPage() {
   const params = useParams()
@@ -60,15 +61,28 @@ export default function CustomersPage() {
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id
 
-  // State
-  const [customers, setCustomers] = useState<CustomerRecord[]>([])
+  // State with Zero-Latency SWR Cache Hydration
+  const [customers, setCustomers] = useState<CustomerRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    } catch {
+      return []
+    }
+  })
   const [summary, setSummary] = useState<CustomerSummaryStatistics>({
     totalCustomers: 0,
     activeCustomers: 0,
     customersWithDue: 0,
     totalOutstandingDue: 0,
   })
-  const [totalRecords, setTotalRecords] = useState(0)
+  const [totalRecords, setTotalRecords] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
+      return cached ? cached.length : 0
+    } catch {
+      return 0
+    }
+  })
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -77,7 +91,14 @@ export default function CustomersPage() {
   const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>('all')
   const [sortPreset, setSortPreset] = useState<'newest' | 'highest_billed' | 'highest_due' | 'latest_order' | 'alphabetical'>('newest')
 
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
+      return !cached || cached.length === 0
+    } catch {
+      return true
+    }
+  })
   const [isError, setIsError] = useState(false)
   const [errorText, setErrorText] = useState('')
 
@@ -110,9 +131,11 @@ export default function CustomersPage() {
   }
 
   // Fetch summary and customers list
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (isBackground = false) => {
     if (!companyId) return
-    setIsLoading(true)
+    if (!isBackground && customers.length === 0) {
+      setIsLoading(true)
+    }
     setIsError(false)
     try {
       const { sortBy, sortOrder } = getSortParams()
@@ -139,20 +162,51 @@ export default function CustomersPage() {
       if (listRes.success && listRes.data) {
         setCustomers(listRes.data.data)
         setTotalRecords(listRes.data.meta?.totalCount ?? listRes.data.data.length)
+        try {
+          if (page === 1 && !search && selectedType === 'all' && selectedDueFilter === 'all') {
+            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, listRes.data.data, false)
+          }
+        } catch {}
       } else {
-        setIsError(true)
-        setErrorText(listRes.error || 'Failed to fetch customer directory.')
+        if (!isBackground && customers.length === 0) {
+          setIsError(true)
+          setErrorText(listRes.error || 'Failed to fetch customer directory.')
+        }
       }
     } catch {
-      setIsError(true)
-      setErrorText('Network error while connecting to customer database.')
+      if (!isBackground && customers.length === 0) {
+        setIsError(true)
+        setErrorText('Network error while connecting to customer database.')
+      }
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter, sortPreset])
+  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter, sortPreset, customers.length])
 
   useEffect(() => {
-    loadData()
+    loadData(false)
+
+    const handleRealtimeSync = () => {
+      loadData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:customers', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:payments', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:invoices', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:customers', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:payments', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:invoices', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [loadData])
 
   const handleOpenAddCustomer = () => {
@@ -406,7 +460,7 @@ export default function CustomersPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={loadData}
+            onClick={() => loadData()}
             disabled={isLoading}
             className="h-9 px-2.5 text-xs text-slate-500"
             title="Refresh List"
@@ -434,7 +488,7 @@ export default function CustomersPage() {
             {errorText}
           </div>
           <div>
-            <Button size="sm" onClick={loadData} className="text-xs bg-rose-600 hover:bg-rose-700">
+            <Button size="sm" onClick={() => loadData()} className="text-xs bg-rose-600 hover:bg-rose-700">
               Retry Data Load
             </Button>
           </div>

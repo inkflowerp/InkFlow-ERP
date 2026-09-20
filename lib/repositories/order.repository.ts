@@ -10,27 +10,30 @@ import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse } from '../api/pagination-helper.ts'
 import type { PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 
 export class OrderRepository {
   static async getOrders(companyId: string): Promise<SalesOrderRecord[]> {
-    return measureAsync(`OrderRepository.getOrders(${companyId})`, async () => {
-      try {
-        const supabase = await createClient()
-        const { data, error } = await (supabase as any)
-          .from('sales_orders')
-          .select('*, items:sales_order_items(*)')
-          .eq('company_id', companyId)
-          .order('created_at', { ascending: false })
+    return coalesceQuery(`orders:${companyId}`, async () => {
+      return measureAsync(`OrderRepository.getOrders(${companyId})`, async () => {
+        try {
+          const supabase = await createClient()
+          const { data, error } = await (supabase as any)
+            .from('sales_orders')
+            .select('*, items:sales_order_items(*)')
+            .eq('company_id', companyId)
+            .order('created_at', { ascending: false })
 
-        if (error) {
-          throw new Error(`Failed to fetch orders: ${error.message}`)
+          if (error) {
+            throw new Error(`Failed to fetch orders: ${error.message}`)
+          }
+          return (data || []) as unknown as SalesOrderRecord[]
+        } catch (err: any) {
+          const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+          return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
         }
-        return (data || []) as unknown as SalesOrderRecord[]
-      } catch (err: any) {
-        const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-        return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
-      }
-    })
+      })
+    }, 1500)
   }
 
   /**

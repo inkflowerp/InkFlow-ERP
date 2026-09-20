@@ -136,7 +136,25 @@ export function useDataStore<T = any>(
       } catch {}
     }
 
+    const handleTableSync = (e: Event) => {
+      const customEvent = e as CustomEvent
+      const payload = customEvent.detail
+      if (!payload) {
+        reloadRef.current()
+        return
+      }
+      if (
+        payload.storageKey === key ||
+        payload.key === key ||
+        payload.effectiveKey === effectiveKey ||
+        payload.all === true
+      ) {
+        reloadRef.current()
+      }
+    }
+
     window.addEventListener('printerp_data_sync', handleCustomSync)
+    window.addEventListener('printerp_table_synced', handleTableSync)
     window.addEventListener(`${key}_updated`, handleKeyUpdate)
     window.addEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
     window.addEventListener('storage', handleStorageChange)
@@ -148,6 +166,7 @@ export function useDataStore<T = any>(
         } catch {}
       }
       window.removeEventListener('printerp_data_sync', handleCustomSync)
+      window.removeEventListener('printerp_table_synced', handleTableSync)
       window.removeEventListener(`${key}_updated`, handleKeyUpdate)
       window.removeEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
       window.removeEventListener('storage', handleStorageChange)

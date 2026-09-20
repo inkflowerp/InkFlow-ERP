@@ -11,9 +11,7 @@
 //  - AuditRepository (PostgreSQL: audit_logs)
 //  - TenantRepository (PostgreSQL: companies, company_users, roles, permissions)
 //
-// This module is retained exclusively for transient local client UI state.
-// ==============================================================================
-
+import { invalidateQueryCache } from '../performance/query-coalesce.ts'
 import type {
   CustomerRecord,
   CustomerCommunication,
@@ -657,6 +655,9 @@ export class PrintERPDataStore {
 
     const effectiveKey = this.getEffectiveKey(key, actualTenantSlug)
     inMemoryStore[effectiveKey] = actualData
+    try {
+      invalidateQueryCache()
+    } catch {}
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(effectiveKey, JSON.stringify(actualData))

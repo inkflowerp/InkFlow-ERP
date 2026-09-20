@@ -73,6 +73,7 @@ import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purch
 import type { ProductRecord } from '@/types/product.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   approveMaterialRequestAction,
   rejectMaterialRequestAction,
@@ -137,16 +138,34 @@ export default function UnifiedInventoryPage() {
     router.replace(`${pathname}${queryString ? `?${queryString}` : ''}`, { scroll: false })
   }
 
-  // Core Data States
-  const [materials, setMaterials] = useState<MaterialRecord[]>([])
+  // Core Data States with Zero-Latency SWR Initial Cache Hydration
+  const [materials, setMaterials] = useState<MaterialRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+    } catch {
+      return []
+    }
+  })
   const [readyProducts, setReadyProducts] = useState<ProductRecord[]>([])
-  const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
+  const [locations, setLocations] = useState<InventoryLocationRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
+    } catch {
+      return []
+    }
+  })
   const [balances, setBalances] = useState<InventoryStockBalanceRecord[]>([])
   const [requests, setRequests] = useState<MaterialRequestRecord[]>([])
   const [issues, setIssues] = useState<MaterialIssueRecord[]>([])
   const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
   const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
-  const [rolls, setRolls] = useState<InventoryRollRecord[]>([])
+  const [rolls, setRolls] = useState<InventoryRollRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+    } catch {
+      return []
+    }
+  })
   const [orders, setOrders] = useState<PurchaseOrderRecord[]>([])
   const [goodsReceivedNotes, setGoodsReceivedNotes] = useState<GoodsReceivedNoteRecord[]>([])
   const [summary, setSummary] = useState<InventorySummaryStats>({
@@ -158,7 +177,14 @@ export default function UnifiedInventoryPage() {
     totalWastageRecordsCount: 0,
   })
 
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS)
+      return !cached || cached.length === 0
+    } catch {
+      return true
+    }
+  })
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedRollStatus, setSelectedRollStatus] = useState('all')
@@ -187,8 +213,10 @@ export default function UnifiedInventoryPage() {
     setTimeout(() => setNotification(null), 4000)
   }
 
-  const loadAllData = async () => {
-    setLoading(true)
+  const loadAllData = async (isBackground = false) => {
+    if (!isBackground && materials.length === 0) {
+      setLoading(true)
+    }
     try {
       const res = await getInventoryDashboardDataAction(companyId)
       if (res.success && res.data) {
@@ -206,6 +234,11 @@ export default function UnifiedInventoryPage() {
         if (res.data.summary) {
           setSummary(res.data.summary)
         }
+        try {
+          if (res.data.materials) PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
+          if (res.data.rolls) PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
+          if (res.data.locations) PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
+        } catch {}
       }
     } catch (err: any) {
       console.error('Failed to load inventory data:', err)
@@ -215,7 +248,35 @@ export default function UnifiedInventoryPage() {
   }
 
   useEffect(() => {
-    loadAllData()
+    loadAllData(false)
+
+    const handleRealtimeSync = () => {
+      loadAllData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:materials', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [companyId])
 
   // Filtered Materials
@@ -522,7 +583,7 @@ export default function UnifiedInventoryPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={loadAllData}
+                onClick={() => loadAllData()}
                 disabled={loading}
                 className="text-xs h-9 cursor-pointer"
                 title="Refresh all inventory data"

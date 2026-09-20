@@ -231,13 +231,34 @@ export function DashboardView() {
   }, [isOwner, company?.id, currentBranch?.id])
 
   useEffect(() => {
-    if (isOwner && lastEventTime) {
-      const timer = setTimeout(() => {
+    if (!isOwner) return
+
+    let timer: NodeJS.Timeout | null = null
+    const scheduleRefresh = () => {
+      if (timer) clearTimeout(timer)
+      timer = setTimeout(() => {
         fetchOwnerSnapshot(true)
-      }, 500)
-      return () => clearTimeout(timer)
+      }, 400)
     }
-  }, [isOwner, lastEventTime])
+
+    if (lastEventTime) {
+      scheduleRefresh()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced', scheduleRefresh)
+      window.addEventListener('printerp_data_sync', scheduleRefresh)
+      return () => {
+        if (timer) clearTimeout(timer)
+        window.removeEventListener('printerp_table_synced', scheduleRefresh)
+        window.removeEventListener('printerp_data_sync', scheduleRefresh)
+      }
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer)
+    }
+  }, [isOwner, lastEventTime, fetchOwnerSnapshot])
 
   // Quick Action Forms State
   const [customerName, setCustomerName] = useState('')

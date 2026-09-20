@@ -71,10 +71,12 @@ export default function DeliveryLogisticsPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   // Load authoritative logistics data from PostgreSQL / Supabase
-  const loadLogisticsData = React.useCallback(async () => {
+  const loadLogisticsData = React.useCallback(async (isBackground = false) => {
     const targetCompanyId = routeSlug || company?.slug || company?.id || slug
     if (!targetCompanyId) return
-    setIsLoading(true)
+    if (!isBackground && (!challans || challans.length === 0)) {
+      setIsLoading(true)
+    }
     try {
       const [challansRes, insRes] = await Promise.all([
         getChallansAction(targetCompanyId),
@@ -92,10 +94,30 @@ export default function DeliveryLogisticsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [routeSlug, company?.id, company?.slug, slug, setChallans, setInstallations])
+  }, [routeSlug, company?.id, company?.slug, slug, setChallans, setInstallations, challans?.length])
 
   React.useEffect(() => {
-    loadLogisticsData()
+    loadLogisticsData(false)
+
+    const handleRealtimeSync = () => {
+      loadLogisticsData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:installations', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:delivery_challans', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:installations', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [loadLogisticsData])
 
   // Modals

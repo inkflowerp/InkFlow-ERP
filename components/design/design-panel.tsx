@@ -417,10 +417,25 @@ function DesignPanelInner({ defaultTab = 'kanban' }: DesignPanelProps) {
       }
     }
     syncServerData()
+
+    const handleRealtimeDesignSync = () => {
+      syncServerData()
+    }
+    window.addEventListener('printerp_table_synced:design_jobs', handleRealtimeDesignSync)
+    window.addEventListener('printerp_table_synced:design_versions', handleRealtimeDesignSync)
+    window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeDesignSync)
+    window.addEventListener('printerp_table_synced:invoices', handleRealtimeDesignSync)
+    window.addEventListener('printerp_data_sync', handleRealtimeDesignSync)
+
     return () => {
       isMounted = false
+      window.removeEventListener('printerp_table_synced:design_jobs', handleRealtimeDesignSync)
+      window.removeEventListener('printerp_table_synced:design_versions', handleRealtimeDesignSync)
+      window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeDesignSync)
+      window.removeEventListener('printerp_table_synced:invoices', handleRealtimeDesignSync)
+      window.removeEventListener('printerp_data_sync', handleRealtimeDesignSync)
     }
-  }, [company?.id, slug])
+  }, [company?.id, slug, setJobs, setOrders, setNotifications])
 
   // Delete Job handler
   const handleDeleteJob = async (jobId: string) => {

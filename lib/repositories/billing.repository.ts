@@ -1,6 +1,7 @@
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
 import type {
   InvoiceRecord,
   InvoiceItemRecord,
@@ -207,151 +208,154 @@ export class BillingRepository {
       offset?: number
     }
   ): Promise<InvoiceRecord[]> {
-    const mode = getFinancialPersistenceMode()
-    const effectiveCompanyId = (await this.resolveCompanyUUID(companyId)) || companyId
-    const isEffectiveUuid = isValidUUID(effectiveCompanyId)
+    const cacheKey = `invoices:${companyId}:${JSON.stringify(filters || {})}`
+    return coalesceQuery(cacheKey, async () => {
+      const mode = getFinancialPersistenceMode()
+      const effectiveCompanyId = (await this.resolveCompanyUUID(companyId)) || companyId
+      const isEffectiveUuid = isValidUUID(effectiveCompanyId)
 
-    try {
-      let supabase: any
       try {
-        supabase = await createClient()
-      } catch {
-        supabase = createAdminClient()
-      }
-      
-      const buildQuery = (client: any, selectStr: string) => {
-        let q = client
-          .from('invoices')
-          .select(selectStr)
-          .order('invoice_date', { ascending: false })
-          .order('created_at', { ascending: false })
+        let supabase: any
+        try {
+          supabase = await createClient()
+        } catch {
+          supabase = createAdminClient()
+        }
+        
+        const buildQuery = (client: any, selectStr: string) => {
+          let q = client
+            .from('invoices')
+            .select(selectStr)
+            .order('invoice_date', { ascending: false })
+            .order('created_at', { ascending: false })
 
-        if (isEffectiveUuid) {
-          q = q.eq('company_id', effectiveCompanyId)
+          if (isEffectiveUuid) {
+            q = q.eq('company_id', effectiveCompanyId)
+          }
+
+          if (filters?.status && filters.status !== 'all') {
+            if (filters.status === 'overdue') {
+              q = q.gt('due_amount', 0).lt('due_date', getTodayDateString())
+            } else if (filters.status === 'unpaid') {
+              q = q.in('status', ['unpaid', 'partially_paid']).gt('due_amount', 0)
+            } else if (filters.status === 'vat') {
+              q = q.eq('invoice_type', 'vat_invoice')
+            } else {
+              q = q.eq('status', filters.status)
+            }
+          }
+
+          if (filters?.customerId) {
+            q = q.eq('customer_id', filters.customerId)
+          }
+
+          if (filters?.startDate) {
+            q = q.gte('invoice_date', filters.startDate)
+          }
+          if (filters?.endDate) {
+            q = q.lte('invoice_date', filters.endDate)
+          }
+
+          if (filters?.limit) {
+            q = q.limit(filters.limit)
+          }
+          if (filters?.offset) {
+            q = q.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
+          }
+
+          return q
         }
 
-        if (filters?.status && filters.status !== 'all') {
-          if (filters.status === 'overdue') {
-            q = q.gt('due_amount', 0).lt('due_date', getTodayDateString())
-          } else if (filters.status === 'unpaid') {
-            q = q.in('status', ['unpaid', 'partially_paid']).gt('due_amount', 0)
-          } else if (filters.status === 'vat') {
-            q = q.eq('invoice_type', 'vat_invoice')
-          } else {
-            q = q.eq('status', filters.status)
+        // 1. Try full relational join query
+        let res = await buildQuery(supabase, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
+        if (res.error) {
+          // 2. Resilient fallback query with items only
+          res = await buildQuery(supabase, '*, items:invoice_items(*)')
+          if (res.error) {
+            // 3. Resilient fallback query with base table
+            res = await buildQuery(supabase, '*')
           }
         }
 
-        if (filters?.customerId) {
-          q = q.eq('customer_id', filters.customerId)
-        }
-
-        if (filters?.startDate) {
-          q = q.gte('invoice_date', filters.startDate)
-        }
-        if (filters?.endDate) {
-          q = q.lte('invoice_date', filters.endDate)
-        }
-
-        if (filters?.limit) {
-          q = q.limit(filters.limit)
-        }
-        if (filters?.offset) {
-          q = q.range(filters.offset, filters.offset + (filters.limit || 50) - 1)
-        }
-
-        return q
-      }
-
-      // 1. Try full relational join query
-      let res = await buildQuery(supabase, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-      if (res.error) {
-        // 2. Resilient fallback query with items only
-        res = await buildQuery(supabase, '*, items:invoice_items(*)')
+        // If database returned an error (e.g. RLS failure with standard user client), attempt admin query once
         if (res.error) {
-          // 3. Resilient fallback query with base table
-          res = await buildQuery(supabase, '*')
+          const admin = createAdminClient()
+          let adminRes = await buildQuery(admin, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
+          if (adminRes.error) adminRes = await buildQuery(admin, '*, items:invoice_items(*)')
+          if (adminRes.error) adminRes = await buildQuery(admin, '*')
+          if (!adminRes.error && adminRes.data) {
+            res = adminRes
+          }
+        }
+
+        if (!res.error && res.data) {
+          const dbInvoices = (res.data || []) as unknown as InvoiceRecord[]
+          // Ensure items, payments, write_offs defaults
+          const formatted = dbInvoices.map((inv) => ({
+            ...inv,
+            items: inv.items || [],
+            payments: inv.payments || [],
+            write_offs: inv.write_offs || [],
+          }))
+
+          // Sync into client-side store for instant search
+          try {
+            const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+            const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== companyId)]
+            PrintERPDataStore.set(STORAGE_KEYS.INVOICES, merged)
+          } catch {}
+
+          return formatted
+        }
+
+        if (res.error && mode === 'production') {
+          throw new Error(`Failed to query invoices from database: ${res.error.message}`)
+        }
+      } catch (err: any) {
+        if (mode === 'production') {
+          throw new Error(`Failed to retrieve invoices: ${err.message}`)
         }
       }
 
-      // If database returned an error (e.g. RLS failure with standard user client), attempt admin query once
-      if (res.error) {
-        const admin = createAdminClient()
-        let adminRes = await buildQuery(admin, '*, items:invoice_items(*), payments:payment_allocations(*), write_offs:financial_write_offs(*)')
-        if (adminRes.error) adminRes = await buildQuery(admin, '*, items:invoice_items(*)')
-        if (adminRes.error) adminRes = await buildQuery(admin, '*')
-        if (!adminRes.error && adminRes.data) {
-          res = adminRes
+      const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      let list = all.filter((inv) => !inv.company_id || inv.company_id === companyId)
+
+      if (filters?.status && filters.status !== 'all') {
+        if (filters.status === 'overdue') {
+          list = list.filter((i) => i.due_amount > 0 && calculateDaysOverdue(i.due_date) > 0)
+        } else if (filters.status === 'unpaid') {
+          list = list.filter((i) => (i.status === 'unpaid' || i.status === 'partially_paid') && i.due_amount > 0)
+        } else if (filters.status === 'vat') {
+          list = list.filter((i) => i.invoice_type === 'vat_invoice')
+        } else {
+          list = list.filter((i) => i.status === filters.status)
         }
       }
 
-      if (!res.error && res.data) {
-        const dbInvoices = (res.data || []) as unknown as InvoiceRecord[]
-        // Ensure items, payments, write_offs defaults
-        const formatted = dbInvoices.map((inv) => ({
-          ...inv,
-          items: inv.items || [],
-          payments: inv.payments || [],
-          write_offs: inv.write_offs || [],
-        }))
-
-        // Sync into client-side store for instant search
-        try {
-          const allLocal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-          const merged = [...formatted, ...allLocal.filter((l) => l.company_id && l.company_id !== companyId)]
-          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, merged)
-        } catch {}
-
-        return formatted
+      if (filters?.customerId) {
+        list = list.filter((i) => i.customer_id === filters.customerId)
       }
 
-      if (res.error && mode === 'production') {
-        throw new Error(`Failed to query invoices from database: ${res.error.message}`)
+      if (filters?.startDate) {
+        list = list.filter((i) => i.invoice_date >= filters.startDate!)
       }
-    } catch (err: any) {
-      if (mode === 'production') {
-        throw new Error(`Failed to retrieve invoices: ${err.message}`)
+      if (filters?.endDate) {
+        list = list.filter((i) => i.invoice_date <= filters.endDate!)
       }
-    }
 
-    const all = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    let list = all.filter((inv) => !inv.company_id || inv.company_id === companyId)
-
-    if (filters?.status && filters.status !== 'all') {
-      if (filters.status === 'overdue') {
-        list = list.filter((i) => i.due_amount > 0 && calculateDaysOverdue(i.due_date) > 0)
-      } else if (filters.status === 'unpaid') {
-        list = list.filter((i) => (i.status === 'unpaid' || i.status === 'partially_paid') && i.due_amount > 0)
-      } else if (filters.status === 'vat') {
-        list = list.filter((i) => i.invoice_type === 'vat_invoice')
-      } else {
-        list = list.filter((i) => i.status === filters.status)
+      if (filters?.search) {
+        const q = filters.search.toLowerCase()
+        list = list.filter(
+          (i) =>
+            i.invoice_number.toLowerCase().includes(q) ||
+            i.customer_name.toLowerCase().includes(q) ||
+            (i.customer_phone && i.customer_phone.includes(q)) ||
+            (i.customer_bin && i.customer_bin.includes(q))
+        )
       }
-    }
 
-    if (filters?.customerId) {
-      list = list.filter((i) => i.customer_id === filters.customerId)
-    }
-
-    if (filters?.startDate) {
-      list = list.filter((i) => i.invoice_date >= filters.startDate!)
-    }
-    if (filters?.endDate) {
-      list = list.filter((i) => i.invoice_date <= filters.endDate!)
-    }
-
-    if (filters?.search) {
-      const q = filters.search.toLowerCase()
-      list = list.filter(
-        (i) =>
-          i.invoice_number.toLowerCase().includes(q) ||
-          i.customer_name.toLowerCase().includes(q) ||
-          (i.customer_phone && i.customer_phone.includes(q)) ||
-          (i.customer_bin && i.customer_bin.includes(q))
-      )
-    }
-
-    return list.sort((a, b) => new Date(b.created_at || b.invoice_date).getTime() - new Date(a.created_at || a.invoice_date).getTime())
+      return list.sort((a, b) => new Date(b.created_at || b.invoice_date).getTime() - new Date(a.created_at || a.invoice_date).getTime())
+    }, 1500)
   }
 
   static async getInvoiceById(id: string, companyId: string): Promise<InvoiceRecord | null> {
@@ -1568,54 +1572,57 @@ export class BillingRepository {
   }
 
   static async getPayments(companyId: string, customerId?: string): Promise<PaymentRecord[]> {
-    const mode = getFinancialPersistenceMode()
+    const cacheKey = `payments:${companyId}:${customerId || 'all'}`
+    return coalesceQuery(cacheKey, async () => {
+      const mode = getFinancialPersistenceMode()
 
-    try {
-      let supabase: any
       try {
-        supabase = await createClient()
-      } catch {
-        supabase = createAdminClient()
-      }
-      let query = (supabase as any)
-        .from('payments')
-        .select('*, allocations:payment_allocations(*)')
-        .eq('company_id', companyId)
-        .order('payment_date', { ascending: false })
-
-      if (customerId) {
-        query = query.eq('customer_id', customerId)
-      }
-
-      let { data, error } = await query
-      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
-        const admin = createAdminClient()
-        let adminQuery = (admin as any)
+        let supabase: any
+        try {
+          supabase = await createClient()
+        } catch {
+          supabase = createAdminClient()
+        }
+        let query = (supabase as any)
           .from('payments')
           .select('*, allocations:payment_allocations(*)')
           .eq('company_id', companyId)
           .order('payment_date', { ascending: false })
-        if (customerId) adminQuery = adminQuery.eq('customer_id', customerId)
-        const adminRes = await adminQuery
-        data = adminRes.data
-        error = adminRes.error
-      }
-      if (!error && data) {
-        return (data || []) as unknown as PaymentRecord[]
-      }
-      if (error && mode === 'production') {
-        throw new Error(`Failed to query payments: ${error.message}`)
-      }
-    } catch (err: any) {
-      if (mode === 'production') {
-        throw new Error(`Payments query failed: ${err.message}`)
-      }
-    }
 
-    const all = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
-    return all
-      .filter((p) => (!p.company_id || p.company_id === companyId) && (!customerId || p.customer_id === customerId))
-      .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
+        if (customerId) {
+          query = query.eq('customer_id', customerId)
+        }
+
+        let { data, error } = await query
+        if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+          const admin = createAdminClient()
+          let adminQuery = (admin as any)
+            .from('payments')
+            .select('*, allocations:payment_allocations(*)')
+            .eq('company_id', companyId)
+            .order('payment_date', { ascending: false })
+          if (customerId) adminQuery = adminQuery.eq('customer_id', customerId)
+          const adminRes = await adminQuery
+          data = adminRes.data
+          error = adminRes.error
+        }
+        if (!error && data) {
+          return (data || []) as unknown as PaymentRecord[]
+        }
+        if (error && mode === 'production') {
+          throw new Error(`Failed to query payments: ${error.message}`)
+        }
+      } catch (err: any) {
+        if (mode === 'production') {
+          throw new Error(`Payments query failed: ${err.message}`)
+        }
+      }
+
+      const all = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+      return all
+        .filter((p) => (!p.company_id || p.company_id === companyId) && (!customerId || p.customer_id === customerId))
+        .sort((a, b) => new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime())
+    }, 1500)
   }
 
   /**

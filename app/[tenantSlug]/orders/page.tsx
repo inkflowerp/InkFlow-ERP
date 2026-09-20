@@ -145,7 +145,7 @@ export default function OrdersPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  // Authoritative Server Data Synchronization on mount
+  // Authoritative Server Data Synchronization on mount & realtime events
   useEffect(() => {
     let isMounted = true
     async function syncOrdersAndInvoices() {
@@ -190,10 +190,23 @@ export default function OrdersPage() {
       }
     }
     syncOrdersAndInvoices()
+
+    const handleRealtimeOrderSync = () => {
+      syncOrdersAndInvoices()
+    }
+    window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeOrderSync)
+    window.addEventListener('printerp_table_synced:job_orders', handleRealtimeOrderSync)
+    window.addEventListener('printerp_table_synced:invoices', handleRealtimeOrderSync)
+    window.addEventListener('printerp_data_sync', handleRealtimeOrderSync)
+
     return () => {
       isMounted = false
+      window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeOrderSync)
+      window.removeEventListener('printerp_table_synced:job_orders', handleRealtimeOrderSync)
+      window.removeEventListener('printerp_table_synced:invoices', handleRealtimeOrderSync)
+      window.removeEventListener('printerp_data_sync', handleRealtimeOrderSync)
     }
-  }, [company?.id, slug])
+  }, [company?.id, slug, setOrders])
 
   // Combine Orders and Invoices into a Unified List of Jobs/Works
   const unifiedWorks: UnifiedWorkItem[] = useMemo(() => {
