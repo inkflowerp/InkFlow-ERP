@@ -1475,23 +1475,25 @@ export function MaterialConfigModal({
               </Button>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving Material...</span>
-                </>
-              ) : (
-                <>
-                  <Boxes className="h-4 w-4" />
-                  <span>{initialData ? 'Update Raw Material' : 'Save Raw Material Master'}</span>
-                </>
-              )}
-            </Button>
+            {activeTab === 'production' && (
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span>Saving Material...</span>
+                  </>
+                ) : (
+                  <>
+                    <Boxes className="h-4 w-4" />
+                    <span>{initialData ? 'Update Raw Material' : 'Save Raw Material Master'}</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       }

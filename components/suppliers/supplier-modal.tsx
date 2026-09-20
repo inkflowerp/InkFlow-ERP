@@ -20,6 +20,7 @@ import {
   Copy,
   Layers,
   ChevronRight,
+  ChevronLeft,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -947,6 +948,21 @@ export function SupplierModal({
           </Button>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
+            {activeTab !== 'identity' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const tabs: TabKey[] = ['identity', 'contact', 'location', 'terms', 'banking']
+                  const prevIdx = tabs.indexOf(activeTab) - 1
+                  if (prevIdx >= 0) setActiveTab(tabs[prevIdx])
+                }}
+                className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
+              >
+                <ChevronLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পূর্ববর্তী')}
+              </Button>
+            )}
+
             {activeTab !== 'banking' && (
               <Button
                 type="button"
@@ -962,17 +978,19 @@ export function SupplierModal({
               </Button>
             )}
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6"
-            >
-              {loading
-                ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
-                : isEditing
-                ? tBilingual('Update Supplier Profile', 'সাপ্লায়ার আপডেট করুন')
-                : tBilingual('Register Supplier', 'সাপ্লায়ার সংরক্ষণ করুন')}
-            </Button>
+            {activeTab === 'banking' && (
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto min-h-[40px] text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-sm px-6"
+              >
+                {loading
+                  ? tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')
+                  : isEditing
+                  ? tBilingual('Update Supplier Profile', 'সাপ্লায়ার আপডেট করুন')
+                  : tBilingual('Register Supplier', 'সাপ্লায়ার সংরক্ষণ করুন')}
+              </Button>
+            )}
           </div>
         </div>
       </form>

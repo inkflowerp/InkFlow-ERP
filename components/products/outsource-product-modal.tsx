@@ -628,23 +628,25 @@ export function OutsourceProductModal({
               </Button>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving Product...</span>
-                </>
-              ) : (
-                <>
-                  <Share2 className="h-4 w-4" />
-                  <span>{initialData ? 'Update Outsource Product' : 'Save Outsource Product'}</span>
-                </>
-              )}
-            </Button>
+            {currentTabIndex === TABS_CONFIG.length - 1 && (
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span>Saving Product...</span>
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="h-4 w-4" />
+                    <span>{initialData ? 'Update Outsource Product' : 'Save Outsource Product'}</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       }

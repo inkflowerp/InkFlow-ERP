@@ -755,23 +755,25 @@ export function ReadyProductModal({
               </Button>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span>Saving Product...</span>
-                </>
-              ) : (
-                <>
-                  <Package className="h-4 w-4" />
-                  <span>{initialData ? 'Update Ready Product' : 'Save Ready Product'}</span>
-                </>
-              )}
-            </Button>
+            {currentTabIndex === TABS_CONFIG.length - 1 && (
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span>Saving Product...</span>
+                  </>
+                ) : (
+                  <>
+                    <Package className="h-4 w-4" />
+                    <span>{initialData ? 'Update Ready Product' : 'Save Ready Product'}</span>
+                  </>
+                )}
+              </Button>
+            )}
           </div>
         </div>
       }

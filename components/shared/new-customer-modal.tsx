@@ -339,20 +339,22 @@ export function NewCustomerModal({
               </Button>
             )}
 
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer rounded-xl"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  Saving Customer...
-                </>
-              ) : (
-                'Save Customer'
-              )}
-            </Button>
+            {activeTab === 'rates' && (
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 shadow-sm cursor-pointer rounded-xl"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    Saving Customer...
+                  </>
+                ) : (
+                  'Save Customer'
+                )}
+              </Button>
+            )}
           </div>
         </div>
       }

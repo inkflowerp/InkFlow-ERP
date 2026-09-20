@@ -3125,21 +3125,23 @@ export default function EmployeeListPage() {
                   </Button>
                 )}
 
-                <Button
-                  size="sm"
-                  onClick={() => handleSaveEmployee(isEditModalOpen)}
-                  disabled={isPending}
-                  className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-xs font-semibold px-4"
-                >
-                  {isPending ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  )}
-                  {isEditModalOpen
-                    ? tBilingual('Update Employee Profile', 'প্রোফাইল আপডেট করুন')
-                    : tBilingual('Save & Enroll Employee', 'কর্মী সংরক্ষণ করুন')}
-                </Button>
+                {modalTab === 'access_docs' && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleSaveEmployee(isEditModalOpen)}
+                    disabled={isPending}
+                    className="text-xs h-9 bg-blue-600 hover:bg-blue-700 text-white gap-1.5 shadow-xs font-semibold px-4"
+                  >
+                    {isPending ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    {isEditModalOpen
+                      ? tBilingual('Update Employee Profile', 'প্রোফাইল আপডেট করুন')
+                      : tBilingual('Save & Enroll Employee', 'কর্মী সংরক্ষণ করুন')}
+                  </Button>
+                )}
               </div>
             </div>
           </div>
