@@ -3059,23 +3059,10 @@ export default function EmployeeListPage() {
 
             {/* Stepper Navigation Footer Actions */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-200/80 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setIsAddModalOpen(false)
-                    setIsEditModalOpen(false)
-                  }}
-                  disabled={isPending}
-                  className="text-xs h-9"
-                >
-                  {tBilingual('Cancel', 'বাতিল')}
-                </Button>
-
+              <div>
                 {modalTab !== 'personal' && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       const tabs: ('personal' | 'role' | 'duty' | 'salary' | 'banking' | 'access_docs')[] = [
@@ -3089,7 +3076,7 @@ export default function EmployeeListPage() {
                       const currentIndex = tabs.indexOf(modalTab)
                       if (currentIndex > 0) setModalTab(tabs[currentIndex - 1])
                     }}
-                    className="text-xs h-9 gap-1 text-slate-600 dark:text-slate-400"
+                    className="text-xs h-9 gap-1"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     {tBilingual('Previous', 'পূর্ববর্তী')}

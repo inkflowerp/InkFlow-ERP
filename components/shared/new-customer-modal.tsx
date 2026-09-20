@@ -306,18 +306,23 @@ export function NewCustomerModal({
       }
       onSubmit={handleSubmit}
       footer={
-        <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3 w-full">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto text-xs min-h-[40px] cursor-pointer"
-          >
-            Cancel
-          </Button>
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div>
+            {activeTab === 'rates' && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setActiveTab('info')}
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer text-xs"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Back to Info</span>
+              </Button>
+            )}
+          </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            {activeTab === 'info' ? (
+          <div className="flex items-center gap-2">
+            {activeTab === 'info' && (
               <Button
                 type="button"
                 variant="outline"
@@ -326,16 +331,6 @@ export function NewCustomerModal({
               >
                 <span>Next: Custom Rates</span>
                 <ChevronRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setActiveTab('info')}
-                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer text-xs"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                <span>Back to Info</span>
               </Button>
             )}
 

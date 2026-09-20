@@ -585,30 +585,22 @@ export function OutsourceProductModal({
         </div>
       }
       footer={
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div>
             {currentTabIndex > 0 && (
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setActiveTab(TABS_CONFIG[currentTabIndex - 1].id)}
-                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
               </Button>
             )}
+          </div>
 
+          <div className="flex items-center gap-2">
             {currentTabIndex < TABS_CONFIG.length - 1 && (
               <Button
                 type="button"
@@ -632,7 +624,7 @@ export function OutsourceProductModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                className="h-10 px-5 rounded-xl font-bold bg-purple-600 hover:bg-purple-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>

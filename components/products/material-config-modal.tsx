@@ -1429,18 +1429,8 @@ export function MaterialConfigModal({
         </div>
       }
       footer={
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-          >
-            Cancel
-          </Button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div>
             {activeTab !== 'basic' && (
               <Button
                 type="button"
@@ -1451,13 +1441,15 @@ export function MaterialConfigModal({
                   else if (activeTab === 'inventory') setActiveTab('costing')
                   else if (activeTab === 'production') setActiveTab('inventory')
                 }}
-                className="h-10 px-3.5 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Back</span>
               </Button>
             )}
+          </div>
 
+          <div className="flex items-center gap-2">
             {activeTab !== 'production' && (
               <Button
                 type="button"
@@ -1479,7 +1471,7 @@ export function MaterialConfigModal({
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto h-10 px-5 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                className="h-10 px-5 rounded-xl font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmitting ? (
                   <>

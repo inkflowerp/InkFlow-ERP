@@ -937,17 +937,8 @@ export function SupplierModal({
         </div>
 
         {/* Action Footer */}
-        <div className="pt-3 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            className="w-full sm:w-auto min-h-[40px] text-xs font-semibold"
-          >
-            {tBilingual('Cancel', 'বাতিল')}
-          </Button>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
+          <div>
             {activeTab !== 'identity' && (
               <Button
                 type="button"
@@ -962,7 +953,9 @@ export function SupplierModal({
                 <ChevronLeft className="h-3.5 w-3.5 mr-1" /> {tBilingual('Back', 'পূর্ববর্তী')}
               </Button>
             )}
+          </div>
 
+          <div className="flex items-center gap-2">
             {activeTab !== 'banking' && (
               <Button
                 type="button"
