@@ -24,6 +24,7 @@ import {
   Download,
   Edit2,
   Receipt,
+  Trash2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -41,6 +42,7 @@ import {
   getPaginatedCustomersAction,
   getCustomersSummaryAction,
 } from '@/actions/customer.actions'
+import { moveToTrashAction } from '@/actions/trash.actions'
 import {
   CustomerRecord,
   CustomerSummaryStatistics,
@@ -168,6 +170,23 @@ export default function CustomersPage() {
     loadData()
   }
 
+  const handleTrashCustomer = async (cust: CustomerRecord) => {
+    if (!confirm(`Move customer "${cust.name}" to Trash / Recycle Bin?`)) {
+      return
+    }
+    try {
+      const res = await moveToTrashAction('customers', cust, companyId)
+      if (res.success) {
+        showNotification(`Customer "${cust.name}" moved to Trash.`)
+        loadData()
+      } else {
+        showNotification(res.error || 'Failed to move customer to trash.')
+      }
+    } catch (err: any) {
+      showNotification(err.message || 'Error moving customer to trash.')
+    }
+  }
+
   // UTF-8 CSV Export for Excel
   const handleExportCSV = () => {
     const headers = ['ID', 'Customer Name', 'Bangla Name', 'Type', 'Company', 'Mobile', 'WhatsApp', 'Email', 'Area', 'Due Balance BDT', 'Credit Limit BDT']
@@ -177,9 +196,9 @@ export default function CustomersPage() {
       `"${c.name_bn || ''}"`,
       c.customer_type || c.customer_category || 'regular',
       `"${c.company_name || ''}"`,
-      `"${c.mobile}"`,
-      `"${c.whatsapp || ''}"`,
-      `"${c.email || ''}"`,
+      c.mobile || (c as any).phone || '',
+      c.whatsapp || '',
+      c.email || '',
       `"${c.area || ''}"`,
       c.total_due_balance || 0,
       c.credit_limit || 0,
@@ -190,34 +209,38 @@ export default function CustomersPage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', `InkFlow_Customers_${new Date().toISOString().split('T')[0]}.csv`)
-    document.body.appendChild(link)
+    link.download = `customers-directory-${new Date().toISOString().slice(0, 10)}.csv`
     link.click()
-    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
     showNotification('Customer directory exported to CSV.')
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 max-w-7xl pb-16">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-600 text-white font-bold shrink-0">
-              <Users className="h-5 w-5" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                {tBilingual('Customers', 'গ্রাহক ও ক্লায়েন্ট তালিকা')}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-                Manage customers, rates, invoices, payments and customer history.
-              </p>
-            </div>
-          </div>
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+            <Users className="h-6 w-6 text-blue-600" />
+            <span>Customers & Accounts</span>
+          </h1>
+          <p className="text-xs text-slate-500 mt-1">
+            Complete client directory with individualized price tiers, credit management, and 360° analytics.
+          </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
+          <Link href="/trash?tab=customers">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs font-semibold h-9 text-slate-600 dark:text-slate-300"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Trash Bin</span>
+            </Button>
+          </Link>
+
           {can('export', 'customers') && (
             <Button
               variant="outline"
@@ -614,6 +637,17 @@ export default function CustomersPage() {
                               <span>360</span>
                               <ArrowRight className="h-3 w-3" />
                             </Link>
+
+                            {/* Trash / Move to Recycle Bin */}
+                            {can('delete', 'customers') && (
+                              <button
+                                onClick={() => handleTrashCustomer(c)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                                title="Move to Trash"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -736,6 +770,15 @@ export default function CustomersPage() {
                         className="flex-1 text-center py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50"
                       >
                         Pay
+                      </button>
+                    )}
+                    {can('delete', 'customers') && (
+                      <button
+                        onClick={() => handleTrashCustomer(c)}
+                        className="p-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-rose-600 hover:bg-rose-50"
+                        title="Move to Trash"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </div>

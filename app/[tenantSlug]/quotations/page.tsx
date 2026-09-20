@@ -13,6 +13,7 @@ import {
   SlidersHorizontal,
   Calculator,
   Loader2,
+  Trash2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -32,6 +33,7 @@ import {
 } from '@/types/quotation.types'
 import { QuotationService } from '@/services/quotation.service'
 import { getQuotationsAction } from '@/actions/quotation.actions'
+import { moveToTrashAction } from '@/actions/trash.actions'
 import { QuotationKpiBar } from '@/components/quotations/quotation-kpi-bar'
 import { NeedsAttentionPanel } from '@/components/quotations/needs-attention-panel'
 import { QuotationTable } from '@/components/quotations/quotation-table'
@@ -262,6 +264,26 @@ export default function QuotationsPage() {
     loadQuotations(true)
   }
 
+  const handleTrashQuotation = async (quote: QuotationRecord) => {
+    if (!confirm(`Move quotation #${quote.quotation_number} to Trash / Recycle Bin?`)) {
+      return
+    }
+    try {
+      const res = await moveToTrashAction('quotations', quote, company?.id)
+      if (res.success) {
+        showNotification(`Quotation #${quote.quotation_number} moved to Trash.`)
+        setServerQuotations((prev) =>
+          prev ? prev.filter((q) => q.id !== quote.id && q.quotation_number !== quote.quotation_number) : []
+        )
+        loadQuotations(true)
+      } else {
+        showNotification(res.error || 'Failed to move quotation to trash.')
+      }
+    } catch (err: any) {
+      showNotification(err.message || 'Error moving quotation to trash.')
+    }
+  }
+
   const filterTabs = [
     { id: 'all', label: 'All', count: quotations.length },
     { id: 'active', label: 'Active Pipeline', count: kpiMetrics.activeCount },
@@ -300,6 +322,13 @@ export default function QuotationsPage() {
                 <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
+
+              <Link href="/trash?tab=quotations">
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium text-slate-600 dark:text-slate-300">
+                  <Trash2 className="h-3.5 w-3.5 text-slate-500" />
+                  <span className="hidden sm:inline">Trash Bin</span>
+                </Button>
+              </Link>
 
               <Link href="/pricing">
                 <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
@@ -473,6 +502,7 @@ export default function QuotationsPage() {
                 tenantSlug={slug}
                 companyName={company?.name || 'InkFlow'}
                 onOpenFollowUp={handleOpenFollowUp}
+                onTrash={handleTrashQuotation}
               />
             )}
           </CardContent>

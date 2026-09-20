@@ -138,6 +138,7 @@ export const STORAGE_KEYS = {
   PAYROLL_PERIODS: 'printerp_tenant_payroll_periods',
   IN_APP_NOTIFICATIONS: 'printerp_tenant_in_app_notifications',
   COMMUNICATION_LOGS: 'printerp_tenant_comm_logs',
+  TRASH_ITEMS: 'printerp_tenant_trash_items',
   MESSAGE_TEMPLATES: 'printerp_tenant_msg_templates',
   CHANNEL_CONFIGS: 'printerp_tenant_channel_configs',
   TAX_SETTINGS: 'printerp_tenant_tax_settings',

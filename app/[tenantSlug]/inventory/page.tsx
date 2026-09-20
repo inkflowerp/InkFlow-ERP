@@ -44,6 +44,7 @@ import {
   FileSpreadsheet,
   CheckCircle,
   XCircle,
+  Trash2,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -78,6 +79,7 @@ import {
   updateRemnantStatusAction,
   getInventoryDashboardDataAction,
 } from '@/actions/inventory.actions'
+import { moveToTrashAction } from '@/actions/trash.actions'
 
 // Modals
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
@@ -389,6 +391,23 @@ export default function UnifiedInventoryPage() {
     }
   }
 
+  const handleTrashMaterial = async (mat: MaterialRecord) => {
+    if (!confirm(`Move material "${mat.name}" to Trash / Recycle Bin?`)) {
+      return
+    }
+    try {
+      const res = await moveToTrashAction('materials', mat, companyId)
+      if (res.success) {
+        showNotification(`Material "${mat.name}" moved to Trash.`)
+        loadAllData()
+      } else {
+        showNotification(res.error || 'Failed to move material to trash.')
+      }
+    } catch (err: any) {
+      showNotification(err.message || 'Error moving material to trash.')
+    }
+  }
+
   const getLedgerTxBadge = (type?: string) => {
     const t = (type || '').toLowerCase()
     if (t.includes('purchase') || t.includes('grn')) {
@@ -398,44 +417,30 @@ export default function UnifiedInventoryPage() {
         </span>
       )
     }
-    if (t.includes('issue')) {
+    if (t.includes('consumption') || t.includes('issue')) {
       return (
         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-800 border border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800">
-          <Send className="h-3 w-3" /> Issued to Floor
-        </span>
-      )
-    }
-    if (t.includes('consumption')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
-          <Scissors className="h-3 w-3" /> Actual Consumption
-        </span>
-      )
-    }
-    if (t.includes('remnant') || t.includes('return')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
-          <Sparkles className="h-3 w-3" /> Remnant Restock
-        </span>
-      )
-    }
-    if (t.includes('waste') || t.includes('scrap')) {
-      return (
-        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-800 border border-red-300 dark:bg-red-950/40 dark:text-red-300 dark:border-red-800">
-          <RotateCcw className="h-3 w-3" /> Waste / Scrap
+          <ArrowUpRight className="h-3 w-3" /> Production Issue
         </span>
       )
     }
     if (t.includes('adjustment')) {
       return (
-        <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
-          Audit Adjustment
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+          <RotateCcw className="h-3 w-3" /> Stock Audit Adjustment
+        </span>
+      )
+    }
+    if (t.includes('transfer')) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+          <ArrowRightLeft className="h-3 w-3" /> Inter-Store Transfer
         </span>
       )
     }
     return (
-      <span className="capitalize px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-        {type || 'Movement'}
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-300">
+        {type || 'General Transaction'}
       </span>
     )
   }
@@ -444,54 +449,51 @@ export default function UnifiedInventoryPage() {
     <FeatureGate feature="inventory">
       <div className="space-y-6 max-w-7xl pb-16">
         {/* ========================================================= */}
-        {/* UNIFIED PAGE HEADER & PRIMARY WORKSPACE ACTIONS */}
+        {/* TOP LEVEL PAGE HEADER & FAST TRANSACTION SHORTCUTS */}
         {/* ========================================================= */}
         <PageHeader
-          titleEn="Inventory & Store Workspace"
-          titleBn="ইনভেন্টরি ও স্টোর হাব"
-          descriptionEn="Consolidated control center for raw materials, physical rolls, procurement, goods receiving (GRN), and stock audit."
-          descriptionBn="কাঁচামাল, রোল ইনভেন্টরি, কেনাকাটা (PO), রিসিভিং (GRN) এবং স্টক লেজারের একীভূত কর্মক্ষেত্র।"
-          icon={Boxes}
+          titleEn="Inventory & Warehouse Operations"
+          titleBn="ইনভেন্টরি ও ওয়্যারহাউস কন্ট্রোল"
+          descriptionEn="Real-time media rolls, raw stock valuation, store transfers, and live ledger accounting"
+          descriptionBn="লাইভ রোল ম্যানেজমেন্ট, কাঁচামাল স্টক হিসাব, স্টোর ট্রান্সফার ও স্বয়ংক্রিয় খতিয়ান"
+          icon={Package}
           iconColor="text-emerald-600"
           actions={
             <div className="flex flex-wrap items-center gap-2">
               <Button
-                variant="outline"
                 size="sm"
+                variant="outline"
+                onClick={() => setIsAdjustmentOpen(true)}
+                className="text-xs h-9 cursor-pointer"
+                title="Audit and adjust stock"
+              >
+                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                Audit / Adjust
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
                 onClick={() => setIsTransferOpen(true)}
                 className="text-xs h-9 cursor-pointer"
+                title="Transfer stock between locations"
               >
-                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
                 Transfer
               </Button>
 
               <Button
+                size="sm"
                 variant="outline"
-                size="sm"
-                onClick={() => setIsAdjustmentOpen(true)}
+                onClick={() => {
+                  setSelectedMaterialForAction(null)
+                  setIsIssueOpen(true)
+                }}
                 className="text-xs h-9 cursor-pointer"
+                title="Issue material to production floor"
               >
-                <SlidersHorizontal className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
-                Adjust Stock
-              </Button>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsIssueOpen(true)}
-                className="text-xs h-9 cursor-pointer"
-              >
-                <Send className="mr-1.5 h-3.5 w-3.5 text-indigo-600" />
-                Issue to Floor
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => setIsNewPurchaseOpen(true)}
-                className="bg-violet-600 hover:bg-violet-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer"
-              >
-                <ShoppingBag className="mr-1.5 h-3.5 w-3.5" />
-                + New Purchase Order
+                <Scissors className="mr-1.5 h-3.5 w-3.5" />
+                Floor Issue
               </Button>
 
               <Button
@@ -505,6 +507,17 @@ export default function UnifiedInventoryPage() {
                 <Plus className="mr-1.5 h-3.5 w-3.5" />
                 + Receive Stock (GRN)
               </Button>
+
+              <Link href="/trash?tab=materials">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-9 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
+                >
+                  <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                  <span className="hidden sm:inline">Trash Bin</span>
+                </Button>
+              </Link>
 
               <Button
                 variant="outline"
@@ -783,6 +796,15 @@ export default function UnifiedInventoryPage() {
                                   className="h-7 px-2 text-[11px] text-amber-600 hover:bg-amber-50"
                                 >
                                   Adjust
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleTrashMaterial(mat)}
+                                  className="h-7 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                                  title="Move to Trash"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
                             </td>

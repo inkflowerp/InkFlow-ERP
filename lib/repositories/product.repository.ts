@@ -18,6 +18,7 @@ import type {
 } from '../../types/product.types.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { TrashRepository } from './trash.repository.ts'
 import {
   calculateEffectiveUnitCost,
   calculateGrossMargin,
@@ -1020,13 +1021,16 @@ export class ProductRepository {
           const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
           const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, prods.filter((p) => p.id !== id))
-          return { deleted: true, archived: false, message: 'Product permanently deleted.' }
+          await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
+          return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
         throw new Error('Authoritative database connection is required to delete a product.')
       }
 
       try {
+        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+        const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+
         const supabase = await createClient()
         const { error } = await (supabase as any)
           .from('products')
@@ -1038,21 +1042,20 @@ export class ProductRepository {
           throw new Error(`Database error during deletion: ${error.message}`)
         }
 
-        if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-          const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
-          if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
+        if (existing) {
+          await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
+        } else if (isTestMode()) {
           PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, prods.filter((p) => p.id !== id))
         }
 
-        return { deleted: true, archived: false, message: 'Product permanently deleted from catalog.' }
+        return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
       } catch (err: any) {
         if (isTestMode()) {
           const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
           const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, prods.filter((p) => p.id !== id))
-          return { deleted: true, archived: false, message: 'Product permanently deleted.' }
+          await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
+          return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
         throw err
       }

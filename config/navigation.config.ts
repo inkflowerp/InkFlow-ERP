@@ -299,6 +299,14 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           permission: { action: 'view', resource: 'settings' },
         },
         {
+          key: 'trash',
+          title: 'Trash / Recycle Bin',
+          titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
+          href: '/trash',
+          icon: 'Trash2',
+          permission: { action: 'view', resource: 'settings' },
+        },
+        {
           key: 'company_settings',
           title: 'Company Settings',
           titleBn: 'কোম্পানি সেটিংস',

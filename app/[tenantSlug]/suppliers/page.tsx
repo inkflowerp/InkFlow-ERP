@@ -53,6 +53,7 @@ import { SupplierModal } from '@/components/suppliers/supplier-modal'
 import { PaySupplierVoucherModal } from '@/components/suppliers/pay-supplier-voucher-modal'
 import { SupplierMaterialRateModal } from '@/components/suppliers/supplier-material-rate-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
+import { moveToTrashAction } from '@/actions/trash.actions'
 import type { CashBookEntryRecord } from '@/types/accounting.types'
 
 export default function SuppliersPage() {
@@ -97,6 +98,24 @@ export default function SuppliersPage() {
     } else {
       PrintERPDataStore.addItem<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, saved)
       showNotification(`Supplier '${saved.supplier_name}' registered successfully.`)
+    }
+  }
+
+  // Handle Trash Supplier
+  const handleTrashSupplier = async (sup: SupplierRecord) => {
+    if (!confirm(`Move supplier "${sup.supplier_name}" to Trash / Recycle Bin?`)) {
+      return
+    }
+    try {
+      const res = await moveToTrashAction('suppliers', sup, company?.id)
+      if (res.success) {
+        showNotification(`Supplier "${sup.supplier_name}" moved to Trash.`)
+        setSuppliers(suppliers.filter((s) => s.id !== sup.id))
+      } else {
+        showNotification(res.error || 'Failed to move supplier to trash.', 'info')
+      }
+    } catch (err: any) {
+      showNotification(err.message || 'Error moving supplier to trash.', 'info')
     }
   }
 
@@ -272,6 +291,17 @@ export default function SuppliersPage() {
               <Package className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
               {tBilingual('New PO', 'নতুন ক্রয়াদেশ')}
             </Button>
+
+            <Link href="/trash?tab=suppliers">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-9 font-semibold text-slate-600 dark:text-slate-300"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Trash Bin</span>
+              </Button>
+            </Link>
 
             <Button
               size="sm"
@@ -732,6 +762,16 @@ export default function SuppliersPage() {
                                 {tBilingual('Profile & Rates', 'রেটশিট ও লেজার')}
                               </Button>
                             </Link>
+
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleTrashSupplier(supplier)}
+                              className="h-8 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                              title="Move to Trash"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -876,27 +916,37 @@ export default function SuppliersPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    {hasDue && (
+                    <div className="flex items-center gap-1.5">
+                      {hasDue && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setPayTargetSupplier(supplier)
+                            setIsPayModalOpen(true)
+                          }}
+                          className="h-8 px-2.5 text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xs"
+                        >
+                          <Receipt className="h-3.5 w-3.5 mr-1" />
+                          {tBilingual('Pay', 'পরিশোধ')}
+                        </Button>
+                      )}
+
+                      <Link href={`/suppliers/${supplier.id}`}>
+                        <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs font-bold">
+                          {tBilingual('Profile', 'প্রোফাইল')} <ArrowRight className="h-3 w-3 ml-1" />
+                        </Button>
+                      </Link>
+
                       <Button
                         size="sm"
-                        onClick={() => {
-                          setPayTargetSupplier(supplier)
-                          setIsPayModalOpen(true)
-                        }}
-                        className="h-8 px-2.5 text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xs"
+                        variant="ghost"
+                        onClick={() => handleTrashSupplier(supplier)}
+                        className="h-8 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                        title="Move to Trash"
                       >
-                        <Receipt className="h-3.5 w-3.5 mr-1" />
-                        {tBilingual('Pay', 'পরিশোধ')}
+                        <Trash2 className="h-3.5 w-3.5" />
                       </Button>
-                    )}
-
-                    <Link href={`/suppliers/${supplier.id}`}>
-                      <Button size="sm" variant="outline" className="h-8 px-2.5 text-xs font-bold">
-                        {tBilingual('Profile', 'প্রোফাইল')} <ArrowRight className="h-3 w-3 ml-1" />
-                      </Button>
-                    </Link>
-                  </div>
+                    </div>
                 </div>
               </Card>
             )

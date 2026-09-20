@@ -19,6 +19,8 @@ import type {
   CreditLimitWarningInfo,
 } from '../types/billing.types.ts'
 import { BillingRepository } from '../lib/repositories/billing.repository.ts'
+import { TrashRepository } from '../lib/repositories/trash.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import { PdfGeneratorService } from './pdf-generator.service.ts'
 import { CommunicationTemplateService } from './communication-templates.service.ts'
 import { BusinessEmailService } from './business-email.service.ts'
@@ -114,7 +116,25 @@ export class BillingService {
 
   static async deleteInvoice(id: string, companyId: string, actorName: string = 'User', actorUserId?: string): Promise<boolean> {
     if (!id || !companyId) return false
-    return await BillingRepository.cancelInvoice(id, 'Deleted by user', actorName, companyId, actorUserId)
+    const existing = await BillingRepository.getInvoiceById(id, companyId)
+    const success = await BillingRepository.cancelInvoice(id, 'Deleted by user', actorName, companyId, actorUserId)
+    if (existing) {
+      const trashRecord = {
+        id: `trash-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        company_id: companyId || existing.company_id || 'default',
+        category: 'invoices' as const,
+        original_id: existing.id,
+        title: existing.customer_name ? `Invoice: ${existing.customer_name}` : `Invoice #${existing.invoice_number || existing.id}`,
+        subtitle: existing.grand_total ? `৳ ${existing.grand_total} (${existing.status})` : '',
+        reference_number: existing.invoice_number || '',
+        deleted_at: new Date().toISOString(),
+        deleted_by_name: actorName,
+        payload: existing,
+      }
+      const trashList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.TRASH_ITEMS) || []
+      PrintERPDataStore.set(STORAGE_KEYS.TRASH_ITEMS, [trashRecord, ...trashList])
+    }
+    return success
   }
 
   static async cancelInvoice(id: string, reason: string, actorName: string, companyId: string, actorUserId?: string): Promise<boolean> {

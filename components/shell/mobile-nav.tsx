@@ -39,6 +39,7 @@ import {
   Zap,
   Layers,
   Disc,
+  Trash2,
   LogOut,
   Shield,
   ChevronDown,
@@ -91,6 +92,7 @@ const iconMap: Record<string, React.ElementType> = {
   Zap,
   Layers,
   Disc,
+  Trash2,
 }
 
 export function MobileNav() {
