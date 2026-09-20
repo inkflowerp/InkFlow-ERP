@@ -143,6 +143,19 @@ export interface MaterialUnitDetails {
   stockSubtitle: string
 }
 
+export interface MaterialUnitDetails {
+  stockUnit: string
+  consumeUnit: string
+  isRollMedia: boolean
+  isSheet: boolean
+  isInk: boolean
+  isFastener: boolean
+  costVal: number
+  rawCost: number
+  rateDisplay: string
+  stockSubtitle: string
+}
+
 export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): MaterialUnitDetails => {
   if (!mat) {
     return {
@@ -150,7 +163,10 @@ export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): 
       consumeUnit: 'sft',
       isRollMedia: false,
       isSheet: false,
+      isInk: false,
+      isFastener: false,
       costVal: 0,
+      rawCost: 0,
       rateDisplay: 'Raw Consumable',
       stockSubtitle: 'unit',
     }
@@ -161,6 +177,27 @@ export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): 
   const cat = (mat.category || '').toLowerCase()
   const name = (mat.name || '').toLowerCase()
   const pUnitLower = rawStockUnit.toLowerCase()
+
+  const isInk =
+    pUnitLower === 'bottle' ||
+    pUnitLower === 'liter' ||
+    pUnitLower === 'litre' ||
+    pUnitLower === 'can' ||
+    pUnitLower === 'drum' ||
+    pUnitLower === 'gallon' ||
+    cat.includes('ink') ||
+    cat.includes('solvent') ||
+    cat.includes('chemistry') ||
+    cat.includes('varnish') ||
+    cat.includes('chemical') ||
+    name.includes('ink') ||
+    name.includes('solvent') ||
+    name.includes('cyan') ||
+    name.includes('magenta') ||
+    name.includes('meganta') ||
+    name.includes('yellow') ||
+    name.includes('black ink') ||
+    name.includes('flush')
 
   const isRollMedia =
     pUnitLower === 'roll' ||
@@ -191,31 +228,51 @@ export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): 
     name.includes('sheet') ||
     name.includes('acrylic')
 
+  const isFastener =
+    pUnitLower === 'box' ||
+    pUnitLower === 'pack' ||
+    pUnitLower === 'packet' ||
+    cat.includes('eyelet') ||
+    cat.includes('grommet') ||
+    cat.includes('screw') ||
+    cat.includes('fastener') ||
+    cat.includes('rivet') ||
+    name.includes('eyelet') ||
+    name.includes('grommet') ||
+    name.includes('screw') ||
+    name.includes('rivet')
+
   let consumeUnit = rawConsumeUnit
   if (!consumeUnit) {
-    if (isRollMedia) {
+    if (isInk) {
+      consumeUnit = 'ml'
+    } else if (isRollMedia) {
       consumeUnit = 'sft'
     } else if (isSheet) {
       consumeUnit = 'sft'
-    } else if (pUnitLower === 'box' || pUnitLower === 'pack' || pUnitLower === 'packet') {
-      if (
-        cat.includes('eyelet') ||
-        name.includes('eyelet') ||
-        name.includes('screw') ||
-        name.includes('grommet') ||
-        cat.includes('fastener') ||
-        cat.includes('rivet')
-      ) {
-        consumeUnit = 'pcs'
-      } else {
-        consumeUnit = rawStockUnit
-      }
+    } else if (isFastener) {
+      consumeUnit = 'pcs'
     } else {
       consumeUnit = rawStockUnit
     }
   }
 
-  const costVal = getMaterialCost(mat)
+  const rawCost = getMaterialCost(mat)
+  let costVal = rawCost
+
+  // Normalize costVal to the consumption unit rate:
+  // For ink purchased by bottle/liter (1000ml) where cost is total bottle rate (e.g. 1050),
+  // convert to cost per ml (1050 / 1000 = 1.05 ৳/ml)
+  if (isInk && consumeUnit.toLowerCase() === 'ml') {
+    if (pUnitLower === 'bottle' || pUnitLower === 'liter' || pUnitLower === 'litre' || pUnitLower === 'can' || pUnitLower === 'drum' || rawCost >= 50) {
+      costVal = parseFloat((rawCost / 1000).toFixed(4))
+    }
+  } else if (isFastener && consumeUnit.toLowerCase() === 'pcs') {
+    if ((pUnitLower === 'box' || pUnitLower === 'pack') && rawCost >= 50) {
+      costVal = parseFloat((rawCost / 1000).toFixed(4))
+    }
+  }
+
   const normalizedConsumeUnit = consumeUnit.toLowerCase()
   const normalizedStockUnit = rawStockUnit.toLowerCase()
 
@@ -235,7 +292,10 @@ export const getMaterialUnitDetails = (mat: MaterialRecord | null | undefined): 
     consumeUnit: normalizedConsumeUnit,
     isRollMedia,
     isSheet,
+    isInk,
+    isFastener,
     costVal,
+    rawCost,
     rateDisplay,
     stockSubtitle,
   }
@@ -1956,9 +2016,9 @@ export function ServiceConfigModal({
     if (exists) {
       setRequiredMaterials(requiredMaterials.filter((m) => m.material_id !== mat.id))
     } else {
-      const { consumeUnit, costVal } = getMaterialUnitDetails(mat)
+      const { consumeUnit, costVal, isInk } = getMaterialUnitDetails(mat)
       const cost = costVal
-      const qty = 1
+      const qty = isInk ? (Number(consumePerUnitMl) || 1.2) : 1
       const waste = defaultWastagePercent
       const subtotal = parseFloat((qty * cost * (1 + waste / 100)).toFixed(2))
 
