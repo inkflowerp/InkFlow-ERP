@@ -631,4 +631,224 @@ describe('Authoritative Printing & Production Service Master Test Suite', () => 
       assert.strictEqual(quote.final_selling_price, 40 * 180) // ৳7,200
     })
   })
+
+  // =========================================================================
+  // 6. Service Type -> Category -> Sub-Category Hierarchy & Multi-Service Engine
+  // =========================================================================
+  describe('6. Service Type -> Category -> Sub-Category Multi-Service Engine', () => {
+    test('validates printing service type hierarchy and sft area costing', () => {
+      const flexService: ProductRecord = {
+        ...baseFlexService,
+        selling_price: 30.0,
+      }
+      const quote = calculateServiceCosting({
+        service: flexService,
+        customer_width: 5,
+        customer_length: 10,
+        dimension_unit: 'ft',
+        quantity: 2,
+      })
+      // 5ft x 10ft = 50 sqft x 2 qty = 100 sqft @ ৳30 = ৳3,000
+      assert.strictEqual(quote.total_customer_area_sqft, 100)
+      assert.strictEqual(quote.final_selling_price, 3000)
+    })
+
+    test('validates production fabrication service type hierarchy (3D letter inch length costing)', () => {
+      const letterService: ProductRecord = {
+        id: 'srv-3d-acrylic-letter',
+        company_id: 'c-01',
+        name: '3D Frontlit Acrylic Letter',
+        sku: 'SRV-LTR-001',
+        category: 'acrylic_3d_letters',
+        entity_type: 'service',
+        product_type: 'fabrication',
+        commercial_type: 'service',
+        measurement_type: 'unit',
+        pricing_method: 'per_piece',
+        unit: 'inch',
+        selling_unit: 'inch',
+        selling_price: 85.0, // ৳85 per inch height
+        base_cost: 42.0,
+        is_active: true,
+        is_service: true,
+        requires_production: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        service_config: {
+          classification: {
+            service_type: 'production',
+            category: 'acrylic_3d_letters',
+            sub_category: 'Frontlit 3D Acrylic Letter with LED',
+            technology: 'CNC / Laser & Acrylic Bending',
+            production_method: '3D Fabrication',
+            department: 'Signage & Acrylic Workshop',
+          },
+        },
+      }
+      const quote = calculateServiceCosting({
+        service: letterService,
+        quantity: 120, // 120 total inches of lettering
+      })
+      // 120 inches @ ৳85 = ৳10,200
+      assert.strictEqual(quote.final_selling_price, 10200)
+    })
+
+    test('validates finishing service type hierarchy (lamination / mounting per sft)', () => {
+      const lamService: ProductRecord = {
+        id: 'srv-matte-lam',
+        company_id: 'c-01',
+        name: 'Matte Thermal Lamination',
+        sku: 'SRV-LAM-001',
+        category: 'thermal_lamination',
+        entity_type: 'service',
+        product_type: 'finishing',
+        commercial_type: 'service',
+        measurement_type: 'area',
+        pricing_method: 'per_area',
+        unit: 'sft',
+        selling_unit: 'sft',
+        selling_price: 6.0, // ৳6 per sft
+        base_cost: 2.8,
+        is_active: true,
+        is_service: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        service_config: {
+          classification: {
+            service_type: 'finishing',
+            category: 'thermal_lamination',
+            sub_category: 'Matte Thermal Lamination (Non-Reflective)',
+            technology: 'Thermal Heat Press',
+            production_method: 'Roll-to-Roll Laminator',
+            department: 'Finishing & Lamination Dept',
+          },
+        },
+      }
+      const quote = calculateServiceCosting({
+        service: lamService,
+        customer_width: 4,
+        customer_length: 6,
+        dimension_unit: 'ft',
+        quantity: 10,
+      })
+      // 4 x 6 = 24 sqft x 10 = 240 sqft @ ৳6 = ৳1,440
+      assert.strictEqual(quote.total_customer_area_sqft, 240)
+      assert.strictEqual(quote.final_selling_price, 1440)
+    })
+
+    test('validates installation service type hierarchy with fixed or per area pricing', () => {
+      const installService: ProductRecord = {
+        id: 'srv-glass-pasting',
+        company_id: 'c-01',
+        name: 'Frosted Glass Sticker Site Pasting',
+        sku: 'SRV-INST-001',
+        category: 'site_pasting',
+        entity_type: 'service',
+        product_type: 'installation',
+        commercial_type: 'service',
+        measurement_type: 'area',
+        pricing_method: 'per_area',
+        unit: 'sft',
+        selling_unit: 'sft',
+        selling_price: 15.0, // ৳15 per sft fitting charge
+        base_cost: 7.0,
+        is_active: true,
+        is_service: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        service_config: {
+          classification: {
+            service_type: 'installation',
+            category: 'site_pasting',
+            sub_category: 'Shop Glass Frosted & Clear Sticker Pasting',
+            department: 'Site Installation Dept',
+          },
+        },
+      }
+      const quote = calculateServiceCosting({
+        service: installService,
+        customer_width: 8,
+        customer_length: 12,
+        dimension_unit: 'ft',
+        quantity: 1,
+      })
+      // 8 x 12 = 96 sqft @ ৳15 = ৳1,440
+      assert.strictEqual(quote.total_customer_area_sqft, 96)
+      assert.strictEqual(quote.final_selling_price, 1440)
+    })
+
+    test('validates delivery service type hierarchy with per job / trip pricing', () => {
+      const deliveryService: ProductRecord = {
+        id: 'srv-van-delivery',
+        company_id: 'c-01',
+        name: 'Inside Dhaka Pickup Van Delivery',
+        sku: 'SRV-DEL-001',
+        category: 'local_city_delivery',
+        entity_type: 'service',
+        product_type: 'delivery',
+        commercial_type: 'service',
+        measurement_type: 'unit',
+        pricing_method: 'per_piece',
+        unit: 'trip',
+        selling_unit: 'trip',
+        selling_price: 1200.0, // ৳1200 per trip
+        base_cost: 800.0,
+        is_active: true,
+        is_service: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        service_config: {
+          classification: {
+            service_type: 'delivery',
+            category: 'local_city_delivery',
+            sub_category: 'Pickup Van / Tata Ace (Large Banners & Signs)',
+            department: 'Logistics & Dispatch Dept',
+          },
+        },
+      }
+      const quote = calculateServiceCosting({
+        service: deliveryService,
+        quantity: 2, // 2 trips
+      })
+      // 2 trips @ ৳1200 = ৳2,400
+      assert.strictEqual(quote.final_selling_price, 2400)
+    })
+
+    test('validates general service type hierarchy (graphic design per job)', () => {
+      const designService: ProductRecord = {
+        id: 'srv-brand-design',
+        company_id: 'c-01',
+        name: 'Vector Brand Identity & Billboard Design',
+        sku: 'SRV-DSG-001',
+        category: 'graphic_design',
+        entity_type: 'service',
+        product_type: 'service',
+        commercial_type: 'service',
+        measurement_type: 'unit',
+        pricing_method: 'per_piece',
+        unit: 'job',
+        selling_unit: 'job',
+        selling_price: 3500.0, // ৳3500 per job
+        base_cost: 1000.0,
+        is_active: true,
+        is_service: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        service_config: {
+          classification: {
+            service_type: 'general',
+            category: 'graphic_design',
+            sub_category: 'Vector Logo & Brand Identity Design',
+            department: 'Creative Design Studio',
+          },
+        },
+      }
+      const quote = calculateServiceCosting({
+        service: designService,
+        quantity: 1,
+      })
+      assert.strictEqual(quote.final_selling_price, 3500)
+    })
+  })
 })
+
