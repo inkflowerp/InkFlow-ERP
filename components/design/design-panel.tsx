@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
+import { useTenant } from '@/hooks/use-tenant'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import type { DesignJobRecord } from '@/types/design.types'
@@ -42,9 +43,10 @@ export interface DesignPanelProps {
 
 export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const params = useParams()
-  const tenantSlug = (params?.tenantSlug as string) || 'default'
+  const { company } = useTenant()
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const { user } = useAuth()
-  const companyId = tenantSlug
+  const companyId = company?.id || tenantSlug
 
   // Data States
   const [jobs, setJobs] = useState<DesignJobRecord[]>([])
@@ -134,6 +136,25 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
   useEffect(() => {
     loadData()
+
+    const handleDataChange = () => {
+      loadData()
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_data_sync', handleDataChange)
+      window.addEventListener('storage', handleDataChange)
+      window.addEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
+      window.addEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_data_sync', handleDataChange)
+        window.removeEventListener('storage', handleDataChange)
+        window.removeEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
+        window.removeEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)
+      }
+    }
   }, [loadData])
 
   const handleRefresh = useCallback(() => {

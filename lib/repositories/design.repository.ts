@@ -22,10 +22,14 @@ export class DesignRepository {
         // Database offline or uninitialized
       }
 
+      const isMatchingTenant = (itemCompId?: string | null) => {
+        if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default') return true
+        if (itemCompId === companyId) return true
+        return false
+      }
+
       const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      const localJobs = all.filter(
-        (d: DesignJobRecord) => !d.company_id || d.company_id === companyId || companyId === 'default'
-      )
+      const localJobs = all.filter((d: DesignJobRecord) => isMatchingTenant(d.company_id))
 
       const jobMap = new Map<string, DesignJobRecord>()
       for (const j of localJobs) {
@@ -37,22 +41,34 @@ export class DesignRepository {
 
       // Ingest invoiced items that require design or design check
       const allInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-      const tenantInvoices = allInvoices.filter(
-        (i: any) => !i.company_id || i.company_id === companyId || companyId === 'default'
-      )
+      const tenantInvoices = allInvoices.filter((i: any) => isMatchingTenant(i.company_id))
+
       for (const inv of tenantInvoices) {
         if (!inv || !inv.items || !Array.isArray(inv.items)) continue
         inv.items.forEach((it: any, idx: number) => {
-          const isDesignRequired = Boolean(it.design_required || it.workflow_routing === 'design_required')
-          const isDesignOk = it.workflow_routing === 'design_ok'
+          const routing = it.workflow_routing || (it.design_required ? 'design_required' : undefined)
+          const isDesignRequired = Boolean(
+            it.design_required === true ||
+            it.design_required === 'true' ||
+            routing === 'design_required'
+          )
+          const isDesignOk = Boolean(
+            routing === 'design_ok' ||
+            (it.design_required === false && routing !== 'ready_product' && routing !== 'ready_production')
+          )
           if (!isDesignRequired && !isDesignOk) return
 
+          const synthId = it.design_job_id || `dsn-inv-${inv.id}-${idx}`
+          const synthNum = `DSN-${inv.invoice_number ? inv.invoice_number.replace('INV-', '') : '001'}-${String.fromCharCode(65 + idx)}`
+
           const existing = Array.from(jobMap.values()).find(
-            (j) => j.invoice_id === inv.id && (j.invoice_item_id === it.id || j.id === it.design_job_id || j.design_number.includes(inv.invoice_number?.replace('INV-', '') || ''))
+            (j) =>
+              j.id === synthId ||
+              (j.invoice_id === inv.id && j.invoice_item_id === it.id) ||
+              (it.design_job_id && j.id === it.design_job_id) ||
+              j.design_number === synthNum
           )
           if (!existing) {
-            const synthId = it.design_job_id || `dsn-inv-${inv.id}-${idx}`
-            const synthNum = `DSN-${inv.invoice_number ? inv.invoice_number.replace('INV-', '') : '001'}-${String.fromCharCode(65 + idx)}`
             const synthJob: DesignJobRecord = {
               id: synthId,
               company_id: inv.company_id || companyId,
@@ -61,16 +77,23 @@ export class DesignRepository {
               invoice_item_id: it.id || null,
               customer_id: inv.customer_id,
               customer_name: inv.customer_name || 'Walk-in Customer',
+              customer_phone: inv.customer_phone || (inv as any).customer_mobile || (inv as any).mobile || null,
+              customer_address: inv.customer_address || null,
+              customer_company_name: (inv as any).company_name || null,
               design_number: synthNum,
-              title: it.item_description || it.item_name || 'Design Artwork',
+              title: it.item_description || it.item_name || (isDesignOk ? 'Design Check' : 'Design Required'),
               product_name: it.item_name || null,
-              dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+              dimensions_spec:
+                it.dimensions_spec ||
+                (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+              material: it.material || it.material_spec || it.item_name || null,
+              finishing: it.finishing || null,
               quantity: Number(it.quantity) || 1,
               unit: it.unit || 'pcs',
               designer_name: 'Design Team',
               priority: (inv.priority as any) || 'normal',
               deadline: inv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-              status: isDesignOk ? 'approved' : 'received',
+              status: 'received', // Always begins in Tab 1 (New Tasks & Pre-Press Check)
               workflow_routing: isDesignOk ? 'design_ok' : 'design_required',
               commercial_status: 'invoice_created',
               intake_source: 'manager_billing',
@@ -82,12 +105,14 @@ export class DesignRepository {
                   id: `dv-${Date.now()}-${idx}`,
                   design_job_id: synthId,
                   version_number: 1,
-                  version_label: isDesignOk ? 'Version 1 (Customer Artwork)' : 'Version 1 (Initial Brief)',
+                  version_label: isDesignOk ? 'Version 1 (Customer Artwork Check)' : 'Version 1 (Initial Brief)',
                   proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'artwork_brief.png',
-                  proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                  proof_file_url:
+                    it.attachment_url ||
+                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
                   file_format: 'png',
                   uploaded_by_name: inv.created_by_name || 'Billing / Commercial',
-                  is_approved: isDesignOk,
+                  is_approved: false,
                   created_at: inv.created_at || new Date().toISOString(),
                 },
               ],
@@ -208,7 +233,7 @@ export class DesignRepository {
         area_sft: matchingItem?.area_sft || (matchingItem?.width && matchingItem?.height ? Number((matchingItem.width * matchingItem.height).toFixed(2)) : null),
         item_kind: matchingItem?.item_kind || null,
         instructions: matchingItem?.remarks || matchingItem?.notes || targetInv.notes || null,
-        status: matchingItem?.workflow_routing === 'design_ok' ? 'approved' : 'received',
+        status: 'received',
         workflow_routing: matchingItem?.workflow_routing || 'design_required',
         commercial_status: 'invoice_created',
         intake_source: 'manager_billing',
