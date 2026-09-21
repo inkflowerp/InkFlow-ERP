@@ -631,6 +631,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           const synthJob: DesignJobRecord = {
             id: synthId,
             company_id: inv.company_id || companyId,
+            design_number: synthNum,
             invoice_id: inv.id,
             invoice_number: inv.invoice_number,
             invoice_item_id: it.id || null,
@@ -644,7 +645,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
             quantity: Number(it.quantity) || 1,
             unit: it.unit || 'pcs',
             designer_name: 'Design Team',
-            priority: (inv.priority as any) || 'normal',
+            priority: ((inv as any).priority as any) || 'normal',
             deadline: inv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
             status: isDesignOk ? 'approved' : 'received',
             workflow_routing: isDesignOk ? 'design_ok' : 'design_required',

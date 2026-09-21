@@ -266,17 +266,7 @@ export default function OrdersPage() {
           ? 'invoice_requested'
           : 'invoice_required'
 
-      list.push({
-        id: ord.id,
-        orderNumber: ord.order_number,
-        invoiceNumber: ord.invoice_number || undefined,
-        origin: ord.invoice_id ? 'invoice_created' : 'sales_order',
-        customerId: ord.customer_id || undefined,
-        customerName: ord.customer_name || 'Walk-in Customer',
-        customerNameBn: ord.customer_name_bn || undefined,
-        customerPhone: ord.customer_phone || undefined,
-        customerAddress: ord.customer_address || undefined,
-      let orderItems = (ord.items || []).map((it, idx) => ({
+      let orderItems: UnifiedWorkItem['items'] = (ord.items || []).map((it, idx) => ({
         id: it.id || `oi-${idx}`,
         itemName: it.item_name || (it as any).description || (it as any).title || (it as any).name || (it as any).product_name || 'Print Order Job',
         dimensions: it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : ((it as any).dimensions || (it as any).size || undefined),
