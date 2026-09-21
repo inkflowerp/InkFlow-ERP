@@ -417,7 +417,7 @@ function DesignDetailContent() {
               return [res.data!, ...prev]
             })
           } else {
-            getInvoicesAction(effCompany)
+            getInvoicesAction(undefined, effCompany)
               .then((invRes) => {
                 if (invRes?.success && Array.isArray(invRes.data) && invRes.data.length > 0) {
                   setInvoices(invRes.data)
