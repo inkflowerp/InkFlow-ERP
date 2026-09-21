@@ -7,7 +7,7 @@
 
 import { RealtimeChannel } from '@supabase/supabase-js'
 import { createClient, isSupabaseConfigured } from '../supabase/client.ts'
-import { PrintERPDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID } from '../db/data-store.ts'
+import { PrintERPDataStore, STORAGE_KEYS, type StorageKey, CLIENT_TAB_ID, getInitialSeedData } from '../db/data-store.ts'
 
 function triggerPopupNotification(notification: any) {
   if (typeof window === 'undefined') return
@@ -57,13 +57,71 @@ export interface PostgresChangeEvent<T = any> {
   old: T
 }
 
+export interface ChildParentRelation {
+  parentTable: string
+  parentKey: StorageKey
+  fkField: string
+  itemsArrayField: string
+}
+
+// Child entity to parent entity relationship mapping for nested array reconciliation
+export const CHILD_PARENT_TABLE_MAP: Record<string, ChildParentRelation> = {
+  sales_order_items: {
+    parentTable: 'sales_orders',
+    parentKey: STORAGE_KEYS.ORDERS,
+    fkField: 'order_id',
+    itemsArrayField: 'items',
+  },
+  quotation_items: {
+    parentTable: 'quotations',
+    parentKey: STORAGE_KEYS.QUOTATIONS,
+    fkField: 'quotation_id',
+    itemsArrayField: 'items',
+  },
+  invoice_items: {
+    parentTable: 'invoices',
+    parentKey: STORAGE_KEYS.INVOICES,
+    fkField: 'invoice_id',
+    itemsArrayField: 'items',
+  },
+  design_versions: {
+    parentTable: 'design_jobs',
+    parentKey: STORAGE_KEYS.DESIGN_JOBS,
+    fkField: 'design_job_id',
+    itemsArrayField: 'versions',
+  },
+  purchase_request_items: {
+    parentTable: 'purchase_requests',
+    parentKey: STORAGE_KEYS.PURCHASE_REQUESTS,
+    fkField: 'request_id',
+    itemsArrayField: 'items',
+  },
+  goods_received_note_items: {
+    parentTable: 'goods_received_notes',
+    parentKey: STORAGE_KEYS.GOODS_RECEIVED_NOTES,
+    fkField: 'grn_id',
+    itemsArrayField: 'items',
+  },
+  supplier_return_items: {
+    parentTable: 'supplier_returns',
+    parentKey: STORAGE_KEYS.SUPPLIER_RETURNS,
+    fkField: 'return_id',
+    itemsArrayField: 'items',
+  },
+}
+
 // Complete Table to StorageKey mapping for universal automatic reconciliation
 export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   // CRM & Contacts
   customers: STORAGE_KEYS.CUSTOMERS,
   customer_communications: STORAGE_KEYS.COMMUNICATIONS,
+  customer_rates: STORAGE_KEYS.CUSTOMER_RATES,
   suppliers: STORAGE_KEYS.SUPPLIERS,
+  supplier_items: STORAGE_KEYS.SUPPLIER_ITEMS,
   supplier_material_prices: STORAGE_KEYS.SUPPLIER_PRICES,
+  supplier_returns: STORAGE_KEYS.SUPPLIER_RETURNS,
+  supplier_return_items: STORAGE_KEYS.SUPPLIER_RETURNS,
+  supplier_ledger_entries: STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES,
 
   // Orders & Quotations
   sales_orders: STORAGE_KEYS.ORDERS,
@@ -76,19 +134,37 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
 
   // Products & Pricing
   products: STORAGE_KEYS.PRODUCTS,
+  product_variants: STORAGE_KEYS.PRODUCT_VARIANTS,
+  product_formulas: STORAGE_KEYS.PRODUCT_FORMULAS,
+  product_categories: STORAGE_KEYS.PRODUCT_CATEGORIES,
+  price_lists: STORAGE_KEYS.PRICE_LISTS,
+  price_list_items: STORAGE_KEYS.PRICE_LIST_ITEMS,
+  pricing_rules: STORAGE_KEYS.PRICING_RULES,
   product_price_history: STORAGE_KEYS.PRICE_HISTORY,
+  product_supplier_prices: STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES,
 
   // Inventory & Materials
   materials: STORAGE_KEYS.MATERIALS,
   inventory_rolls: STORAGE_KEYS.MOUNTED_ROLLS,
   stock_ledger: STORAGE_KEYS.STOCK_LEDGER,
   inventory_locations: STORAGE_KEYS.LOCATIONS,
+  locations_master: STORAGE_KEYS.LOCATIONS_MASTER,
   inventory_remnants: STORAGE_KEYS.REMNANTS,
+  inventory_stock_balances: STORAGE_KEYS.INVENTORY_STOCK_BALANCES,
+  inventory_transfers: STORAGE_KEYS.INVENTORY_TRANSFERS,
+  inventory_adjustments: STORAGE_KEYS.INVENTORY_ADJUSTMENTS,
+  material_requests: STORAGE_KEYS.MATERIAL_REQUESTS,
+  material_issues: STORAGE_KEYS.MATERIAL_ISSUES,
 
   // Production & Shop Floor
   production_jobs: STORAGE_KEYS.PRODUCTION_JOBS,
   production_tasks: STORAGE_KEYS.PRODUCTION_TASKS,
   production_reworks: STORAGE_KEYS.REWORKS,
+  operator_jobs: STORAGE_KEYS.OPERATOR_JOBS,
+  machineries: STORAGE_KEYS.MACHINERIES,
+  machinery_assignments: STORAGE_KEYS.MACHINERY_ASSIGNMENTS,
+  machinery_maintenances: STORAGE_KEYS.MACHINERY_MAINTENANCES,
+  machinery_breakdowns: STORAGE_KEYS.MACHINERY_BREAKDOWNS,
 
   // Billing & Accounting
   invoices: STORAGE_KEYS.INVOICES,
@@ -98,7 +174,18 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   expenses: STORAGE_KEYS.EXPENSES,
   bank_accounts: STORAGE_KEYS.BANK_ACCOUNTS,
   cash_book_entries: STORAGE_KEYS.CASH_BOOK,
+  accounts: STORAGE_KEYS.ACCOUNTS,
+  financial_transactions: STORAGE_KEYS.FINANCIAL_TRANSACTIONS,
+  journal_entry_lines: STORAGE_KEYS.JOURNAL_ENTRY_LINES,
+  account_transfers: STORAGE_KEYS.ACCOUNT_TRANSFERS,
+  cash_closings: STORAGE_KEYS.CASH_CLOSINGS,
+  financial_periods: STORAGE_KEYS.FINANCIAL_PERIODS,
+  bank_statements: STORAGE_KEYS.BANK_STATEMENTS,
   purchase_orders: STORAGE_KEYS.PURCHASE_ORDERS,
+  purchase_requests: STORAGE_KEYS.PURCHASE_REQUESTS,
+  purchase_request_items: STORAGE_KEYS.PURCHASE_REQUESTS,
+  goods_received_notes: STORAGE_KEYS.GOODS_RECEIVED_NOTES,
+  goods_received_note_items: STORAGE_KEYS.GOODS_RECEIVED_NOTES,
 
   // Logistics & Installations
   delivery_challans: STORAGE_KEYS.DELIVERY_CHALLANS,
@@ -112,6 +199,8 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   // HR & Payroll
   employees: STORAGE_KEYS.EMPLOYEES,
   attendance: STORAGE_KEYS.ATTENDANCE,
+  shifts: STORAGE_KEYS.SHIFTS,
+  employee_shifts: STORAGE_KEYS.EMPLOYEE_SHIFTS,
   salary_advances: STORAGE_KEYS.SALARY_ADVANCES,
   daily_labor_logs: STORAGE_KEYS.DAILY_LABOR_LOGS,
   payroll_periods: STORAGE_KEYS.PAYROLL_PERIODS,
@@ -120,6 +209,8 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   // Communications & Notifications
   in_app_notifications: STORAGE_KEYS.IN_APP_NOTIFICATIONS,
   communication_logs: STORAGE_KEYS.COMMUNICATION_LOGS,
+  communication_messages: STORAGE_KEYS.COMMUNICATION_MESSAGES,
+  communication_templates: STORAGE_KEYS.COMMUNICATION_TEMPLATES,
   message_templates: STORAGE_KEYS.MESSAGE_TEMPLATES,
   channel_configs: STORAGE_KEYS.CHANNEL_CONFIGS,
 
@@ -132,10 +223,20 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   company_users: STORAGE_KEYS.COMPANY_USERS,
   company_subscriptions: STORAGE_KEYS.COMPANY_SUBSCRIPTIONS,
   roles: STORAGE_KEYS.ROLES,
+  role_matrices: STORAGE_KEYS.ROLE_MATRICES,
   branches: STORAGE_KEYS.BRANCHES,
+  branch_transfers: STORAGE_KEYS.BRANCH_TRANSFERS,
+  inter_branch_financial_transfers: STORAGE_KEYS.INTER_BRANCH_FINANCIAL_TRANSFERS,
+  employee_branch_assignments: STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS,
+  user_branch_access: STORAGE_KEYS.USER_BRANCH_ACCESS,
+  workflow_configurations: STORAGE_KEYS.WORKFLOW_CONFIGURATIONS,
+  saved_views: STORAGE_KEYS.SAVED_VIEWS,
   company_tax_settings: STORAGE_KEYS.TAX_SETTINGS,
+  tax_profiles: STORAGE_KEYS.TAX_PROFILES,
+  tax_transaction_lines: STORAGE_KEYS.TAX_TRANSACTION_LINES,
   document_numbering: STORAGE_KEYS.DOCUMENT_NUMBERING,
   document_templates: STORAGE_KEYS.DOCUMENT_TEMPLATES,
+  branding_settings: STORAGE_KEYS.BRANDING_SETTINGS,
   notification_settings: STORAGE_KEYS.NOTIFICATION_SETTINGS,
   automation_rules: STORAGE_KEYS.AUTOMATION_RULES,
   audit_logs: STORAGE_KEYS.AUDIT_LOGS,
@@ -147,6 +248,19 @@ export const TABLE_STORAGE_KEY_MAP: Record<string, StorageKey> = {
   platform_users: STORAGE_KEYS.PLATFORM_USERS,
   platform_incidents: STORAGE_KEYS.PLATFORM_INCIDENTS,
   platform_system_settings: STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS,
+}
+
+export function isSingleObjectStorageKey(key: StorageKey): boolean {
+  return (
+    key === STORAGE_KEYS.COMPANY_PROFILE ||
+    key === STORAGE_KEYS.BRANDING_SETTINGS ||
+    key === STORAGE_KEYS.TAX_SETTINGS ||
+    key === STORAGE_KEYS.DOCUMENT_NUMBERING ||
+    key === STORAGE_KEYS.DOCUMENT_TEMPLATES ||
+    key === STORAGE_KEYS.NOTIFICATION_SETTINGS ||
+    key === STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS ||
+    key === STORAGE_KEYS.ROLE_MATRICES
+  )
 }
 
 class RealtimeSubscriptionManager {
@@ -342,11 +456,96 @@ class RealtimeSubscriptionManager {
     storageKey: StorageKey,
     eventType: 'INSERT' | 'UPDATE' | 'DELETE',
     newRecord: any,
-    oldRecord?: any
+    oldRecord?: any,
+    tableName?: string
   ) {
     if (!storageKey) return
 
     try {
+      // 1. Check if table is a child entity that lives inside a parent record's array
+      const childRelation = tableName ? CHILD_PARENT_TABLE_MAP[tableName] : null
+      if (childRelation) {
+        const record = newRecord || oldRecord
+        const parentId =
+          record?.[childRelation.fkField] ||
+          record?.sales_order_id ||
+          record?.order_id ||
+          record?.invoice_id ||
+          record?.quotation_id ||
+          record?.design_job_id ||
+          record?.request_id ||
+          record?.grn_id ||
+          record?.return_id
+
+        if (parentId) {
+          const parent = PrintERPDataStore.findItem<any>(childRelation.parentKey, parentId)
+          if (parent) {
+            const rawArray = parent[childRelation.itemsArrayField]
+            const itemsList = Array.isArray(rawArray) ? [...rawArray] : []
+            const childId = record?.id
+
+            if (eventType === 'DELETE') {
+              const filtered = itemsList.filter((item) => item.id !== childId)
+              PrintERPDataStore.updateItem(childRelation.parentKey, parentId, {
+                [childRelation.itemsArrayField]: filtered,
+              } as any)
+            } else if (eventType === 'INSERT' || eventType === 'UPDATE') {
+              const idx = itemsList.findIndex((item) => item.id === childId)
+              if (idx >= 0) {
+                itemsList[idx] = { ...itemsList[idx], ...record }
+              } else {
+                itemsList.push(record)
+              }
+              PrintERPDataStore.updateItem(childRelation.parentKey, parentId, {
+                [childRelation.itemsArrayField]: itemsList,
+              } as any)
+            }
+
+            // Emit fine-grained child events
+            if (typeof window !== 'undefined') {
+              if (tableName === 'sales_order_items') {
+                window.dispatchEvent(
+                  new CustomEvent('printerp_order_items_updated', {
+                    detail: { orderId: parentId, item: record, eventType },
+                  })
+                )
+              } else if (tableName === 'invoice_items') {
+                window.dispatchEvent(
+                  new CustomEvent('printerp_invoice_items_updated', {
+                    detail: { invoiceId: parentId, item: record, eventType },
+                  })
+                )
+              } else if (tableName === 'quotation_items') {
+                window.dispatchEvent(
+                  new CustomEvent('printerp_quotation_items_updated', {
+                    detail: { quotationId: parentId, item: record, eventType },
+                  })
+                )
+              } else if (tableName === 'design_versions') {
+                window.dispatchEvent(
+                  new CustomEvent('printerp_design_versions_updated', {
+                    detail: { designJobId: parentId, version: record, eventType },
+                  })
+                )
+              }
+            }
+            return
+          }
+        }
+      }
+
+      // 2. Check if storage key is a singleton configuration/profile object
+      if (isSingleObjectStorageKey(storageKey)) {
+        if (eventType === 'DELETE') {
+          PrintERPDataStore.set(storageKey, getInitialSeedData(storageKey))
+        } else if (newRecord) {
+          const existing = PrintERPDataStore.get(storageKey) || {}
+          PrintERPDataStore.set(storageKey, { ...existing, ...newRecord })
+        }
+        return
+      }
+
+      // 3. Standard collection array reconciliation
       if (eventType === 'DELETE') {
         const idToRemove = oldRecord?.id || newRecord?.id
         if (idToRemove) {
@@ -364,20 +563,32 @@ class RealtimeSubscriptionManager {
           const incomingUpdated = newRecord?.updated_at ? new Date(newRecord.updated_at).getTime() : Date.now()
 
           if (incomingUpdated >= existingUpdated) {
-            PrintERPDataStore.updateItem(storageKey, newRecord.id, newRecord)
+            // Preserve nested relations if incoming record doesn't include them
+            const updatedRecord = { ...existing, ...newRecord }
+            if (existing.items && !newRecord.items) {
+              updatedRecord.items = existing.items
+            }
+            if (existing.versions && !newRecord.versions) {
+              updatedRecord.versions = existing.versions
+            }
+            PrintERPDataStore.updateItem(storageKey, newRecord.id, updatedRecord)
           }
         }
       }
 
-      // Also handle child table updates
-      if (storageKey === STORAGE_KEYS.ORDERS && (newRecord?.sales_order_id || oldRecord?.sales_order_id)) {
-        const orderId = newRecord?.sales_order_id || oldRecord?.sales_order_id
+      // 4. Also handle specific timeline events notification
+      if (storageKey === STORAGE_KEYS.TIMELINE_EVENTS && (newRecord?.order_id || oldRecord?.order_id)) {
+        const orderId = newRecord?.order_id || oldRecord?.order_id
         if (orderId && typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('printerp_order_items_updated', { detail: { orderId } }))
+          window.dispatchEvent(
+            new CustomEvent('printerp_timeline_updated', {
+              detail: { orderId, record: newRecord || oldRecord, eventType },
+            })
+          )
         }
       }
     } catch (err) {
-      console.error(`[RealtimeManager] Reconciliation error on ${storageKey}:`, err)
+      console.error(`[RealtimeManager] Reconciliation error on ${storageKey}${tableName ? ` (${tableName})` : ''}:`, err)
     }
   }
 
@@ -578,31 +789,50 @@ class RealtimeSubscriptionManager {
       // 1. Listen to broadcast live-sync events (peer-to-peer fast path)
       channel.on('broadcast', { event: 'tenant_sync_event' }, (response: any) => {
         const payload = response.payload
-        if (payload?.table && TABLE_STORAGE_KEY_MAP[payload.table]) {
+        const table = payload?.table
+        const storageKey = table ? TABLE_STORAGE_KEY_MAP[table] : payload?.storageKey
+        if (storageKey || (table && CHILD_PARENT_TABLE_MAP[table])) {
           this.reconcileRecord(
-            TABLE_STORAGE_KEY_MAP[payload.table],
+            storageKey || CHILD_PARENT_TABLE_MAP[table].parentKey,
             payload.eventType || 'UPDATE',
             payload.record,
-            payload.oldRecord
+            payload.oldRecord,
+            table
           )
         }
         if (typeof window !== 'undefined') {
+          const enrichedDetail = {
+            ...payload,
+            table,
+            storageKey: payload?.storageKey || storageKey,
+            eventType: payload?.eventType || 'SYNC',
+            record: payload?.record,
+            oldRecord: payload?.oldRecord,
+            timestamp: Date.now(),
+          }
           window.dispatchEvent(
             new CustomEvent('printerp_table_synced', {
-              detail: payload,
+              detail: enrichedDetail,
             })
           )
-          if (payload?.table) {
+          if (table) {
             window.dispatchEvent(
-              new CustomEvent(`printerp_table_synced:${payload.table}`, {
-                detail: payload,
+              new CustomEvent(`printerp_table_synced:${table}`, {
+                detail: enrichedDetail,
+              })
+            )
+          }
+          if (storageKey) {
+            window.dispatchEvent(
+              new CustomEvent(`printerp_table_synced:${storageKey}`, {
+                detail: enrichedDetail,
               })
             )
           }
         }
         if (onSyncEvent) {
           onSyncEvent({
-            topic: payload?.table || payload?.topic || 'general',
+            topic: table || payload?.topic || 'general',
             eventType: payload?.eventType || 'SYNC',
             record: payload?.record,
           })
@@ -627,22 +857,43 @@ class RealtimeSubscriptionManager {
         (payload: any) => {
           const table = payload.table
           const storageKey = TABLE_STORAGE_KEY_MAP[table]
-          if (storageKey) {
-            this.reconcileRecord(storageKey, payload.eventType, payload.new, payload.old)
+          if (storageKey || CHILD_PARENT_TABLE_MAP[table]) {
+            this.reconcileRecord(
+              storageKey || CHILD_PARENT_TABLE_MAP[table].parentKey,
+              payload.eventType,
+              payload.new,
+              payload.old,
+              table
+            )
           }
 
-          // Dispatch window events so non-data-store pages (e.g. settings/users) update in place
+          // Dispatch window events so non-data-store pages (e.g. settings/users) and useDataStore update in place
           if (typeof window !== 'undefined') {
+            const detail = {
+              table,
+              storageKey: storageKey || (CHILD_PARENT_TABLE_MAP[table] ? CHILD_PARENT_TABLE_MAP[table].parentKey : undefined),
+              eventType: payload.eventType,
+              record: payload.new || payload.old,
+              oldRecord: payload.old,
+              timestamp: Date.now(),
+            }
             window.dispatchEvent(
               new CustomEvent('printerp_table_synced', {
-                detail: { table, eventType: payload.eventType, record: payload.new || payload.old },
+                detail,
               })
             )
             window.dispatchEvent(
               new CustomEvent(`printerp_table_synced:${table}`, {
-                detail: { eventType: payload.eventType, record: payload.new || payload.old },
+                detail,
               })
             )
+            if (storageKey) {
+              window.dispatchEvent(
+                new CustomEvent(`printerp_table_synced:${storageKey}`, {
+                  detail,
+                })
+              )
+            }
           }
 
           this.handleIncomingNotification(table, payload.eventType, payload.new)
@@ -667,11 +918,29 @@ class RealtimeSubscriptionManager {
           filter: `id=eq.${companyId}`,
         },
         (payload: any) => {
-          this.reconcileRecord(STORAGE_KEYS.COMPANY_PROFILE, payload.eventType, payload.new, payload.old)
+          this.reconcileRecord(STORAGE_KEYS.COMPANY_PROFILE, payload.eventType, payload.new, payload.old, 'companies')
           if (typeof window !== 'undefined') {
+            const detail = {
+              table: 'companies',
+              storageKey: STORAGE_KEYS.COMPANY_PROFILE,
+              eventType: payload.eventType,
+              record: payload.new || payload.old,
+              oldRecord: payload.old,
+              timestamp: Date.now(),
+            }
+            window.dispatchEvent(
+              new CustomEvent('printerp_table_synced', {
+                detail,
+              })
+            )
             window.dispatchEvent(
               new CustomEvent('printerp_table_synced:companies', {
-                detail: payload,
+                detail,
+              })
+            )
+            window.dispatchEvent(
+              new CustomEvent(`printerp_table_synced:${STORAGE_KEYS.COMPANY_PROFILE}`, {
+                detail,
               })
             )
           }

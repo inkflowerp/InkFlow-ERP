@@ -4,9 +4,14 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import {
   PrintERPDataStore,
   StorageKey,
+  STORAGE_KEYS,
   getInitialSeedData,
   isTransactionalKey,
 } from '@/lib/db/data-store'
+import {
+  TABLE_STORAGE_KEY_MAP,
+  CHILD_PARENT_TABLE_MAP,
+} from '@/lib/realtime/subscription-manager'
 
 export type DataStoreHelpers = {
   addItem: <I extends { id?: string }>(item: I) => I[]
@@ -143,10 +148,18 @@ export function useDataStore<T = any>(
         reloadRef.current()
         return
       }
+
+      const tableStorageKey = payload.table ? TABLE_STORAGE_KEY_MAP[payload.table] : undefined
+      const parentRelation = payload.table ? CHILD_PARENT_TABLE_MAP[payload.table] : undefined
+      const parentStorageKey = parentRelation ? parentRelation.parentKey : undefined
+
       if (
         payload.storageKey === key ||
         payload.key === key ||
         payload.effectiveKey === effectiveKey ||
+        tableStorageKey === key ||
+        parentStorageKey === key ||
+        payload.table === key ||
         payload.all === true
       ) {
         reloadRef.current()
@@ -155,9 +168,23 @@ export function useDataStore<T = any>(
 
     window.addEventListener('printerp_data_sync', handleCustomSync)
     window.addEventListener('printerp_table_synced', handleTableSync)
+    window.addEventListener(`printerp_table_synced:${key}`, handleTableSync)
     window.addEventListener(`${key}_updated`, handleKeyUpdate)
     window.addEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
     window.addEventListener('storage', handleStorageChange)
+
+    // Specific granular child entity updates
+    if (key === STORAGE_KEYS.ORDERS) {
+      window.addEventListener('printerp_order_items_updated', handleKeyUpdate)
+    } else if (key === STORAGE_KEYS.INVOICES) {
+      window.addEventListener('printerp_invoice_items_updated', handleKeyUpdate)
+    } else if (key === STORAGE_KEYS.QUOTATIONS) {
+      window.addEventListener('printerp_quotation_items_updated', handleKeyUpdate)
+    } else if (key === STORAGE_KEYS.DESIGN_JOBS) {
+      window.addEventListener('printerp_design_versions_updated', handleKeyUpdate)
+    } else if (key === STORAGE_KEYS.TIMELINE_EVENTS) {
+      window.addEventListener('printerp_timeline_updated', handleKeyUpdate)
+    }
 
     return () => {
       if (localBc) {
@@ -167,9 +194,22 @@ export function useDataStore<T = any>(
       }
       window.removeEventListener('printerp_data_sync', handleCustomSync)
       window.removeEventListener('printerp_table_synced', handleTableSync)
+      window.removeEventListener(`printerp_table_synced:${key}`, handleTableSync)
       window.removeEventListener(`${key}_updated`, handleKeyUpdate)
       window.removeEventListener(`${effectiveKey}_updated`, handleKeyUpdate)
       window.removeEventListener('storage', handleStorageChange)
+
+      if (key === STORAGE_KEYS.ORDERS) {
+        window.removeEventListener('printerp_order_items_updated', handleKeyUpdate)
+      } else if (key === STORAGE_KEYS.INVOICES) {
+        window.removeEventListener('printerp_invoice_items_updated', handleKeyUpdate)
+      } else if (key === STORAGE_KEYS.QUOTATIONS) {
+        window.removeEventListener('printerp_quotation_items_updated', handleKeyUpdate)
+      } else if (key === STORAGE_KEYS.DESIGN_JOBS) {
+        window.removeEventListener('printerp_design_versions_updated', handleKeyUpdate)
+      } else if (key === STORAGE_KEYS.TIMELINE_EVENTS) {
+        window.removeEventListener('printerp_timeline_updated', handleKeyUpdate)
+      }
     }
   }, [key, customTenantSlug])
 
