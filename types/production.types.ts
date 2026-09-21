@@ -191,9 +191,17 @@ export interface ProductionTaskRecord {
   is_rework?: boolean
   rework_parent_task_id?: string | null
   good_quantity?: number
+  completed_quantity?: number | null
   rejected_quantity?: number
   defect_reason?: DefectReasonCode | string | null
   scrap_notes?: string | null
+  scrap_area_sft?: number
+  mounted_roll_id?: string | null
+  mounted_roll_tag?: string | null
+  consumed_material_qty?: number
+  consumed_material_unit?: string
+  machine_meter_after?: number
+  shift_name?: 'morning' | 'evening' | 'night' | string | null
   notes?: string | null
   created_at: string
   updated_at: string
@@ -278,6 +286,10 @@ export interface CompleteTaskInput {
   rejected_quantity?: number
   defect_reason?: DefectReasonCode | string | null
   scrap_notes?: string | null
+  scrap_area_sft?: number
+  mounted_roll_id?: string | null
+  consumed_material_qty?: number
+  machine_meter_after?: number
   notes?: string | null
 }
 

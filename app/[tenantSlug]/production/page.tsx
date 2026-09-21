@@ -60,6 +60,7 @@ import { MachineQueueView } from '@/components/production/machine-queue-view'
 import { ScheduleTaskModal } from '@/components/production/schedule-task-modal'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
 import { ReworkTaskModal } from '@/components/production/rework-task-modal'
+import { CompleteTaskModal } from '@/components/production/complete-task-modal'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 const DEPARTMENTS = [
@@ -75,7 +76,7 @@ export default function AdvancedProductionPage() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
 
-  const [activeTab, setActiveTab] = useState<'board' | 'machine_queues' | 'table'>('board')
+  const [activeTab, setActiveTab] = useState<'board' | 'terminal' | 'machine_queues' | 'table'>('board')
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
     try {
       return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
@@ -85,6 +86,7 @@ export default function AdvancedProductionPage() {
   })
   const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
   const [selectedDept, setSelectedDept] = useState<string>('all')
+  const [selectedMachineFilter, setSelectedMachineFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(() => {
     try {
@@ -100,6 +102,7 @@ export default function AdvancedProductionPage() {
   const [scheduleTaskTarget, setScheduleTaskTarget] = useState<ProductionTaskRecord | null>(null)
   const [holdTaskTarget, setHoldTaskTarget] = useState<ProductionTaskRecord | null>(null)
   const [reworkTaskTarget, setReworkTaskTarget] = useState<ProductionTaskRecord | null>(null)
+  const [completeTaskTarget, setCompleteTaskTarget] = useState<ProductionTaskRecord | null>(null)
 
   const showNotification = (msg: string) => {
     setNotification(msg)
@@ -210,18 +213,19 @@ export default function AdvancedProductionPage() {
   }
 
   const handleCompleteTask = async (task: ProductionTaskRecord) => {
+    setCompleteTaskTarget(task)
+  }
+
+  const handleCompleteModalSubmit = async (taskId: string, completionData: any) => {
     try {
       const res = await completeProductionTaskAction(
-        task.id,
-        {
-          good_quantity: task.quantity,
-          rejected_quantity: 0,
-        },
+        taskId,
+        completionData,
         undefined,
-        task
+        completeTaskTarget || undefined
       )
       if (res.success) {
-        showNotification(`Task completed! ${res.data?.nextReadyTask ? `Next task (${res.data.nextReadyTask.task_name}) is now READY.` : ''}`)
+        showNotification(`Task completed! Material deducted & workflow advanced. ${res.data?.nextReadyTask ? `Next: ${res.data.nextReadyTask.task_name}` : ''}`)
         loadData()
       } else {
         showNotification(`Error: ${res.error}`)
@@ -311,6 +315,10 @@ export default function AdvancedProductionPage() {
     }
   }
 
+  // Active Running and Scheduled Tasks for Terminal
+  const terminalRunningTasks = filteredTasks.filter((t) => t.status === 'in_progress' || t.status === 'paused')
+  const terminalQueueTasks = filteredTasks.filter((t) => t.status === 'scheduled' || t.status === 'ready' || t.status === 'queued')
+
   return (
     <FeatureGate feature="production">
       <div className="space-y-6 max-w-7xl">
@@ -337,12 +345,6 @@ export default function AdvancedProductionPage() {
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}
-                </Button>
-              </Link>
-              <Link href={`/${slug}/operator`}>
-                <Button variant="default" size="sm" className="text-xs bangla-text bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 shadow-xs">
-                  <Printer className="h-3.5 w-3.5" />
-                  {tBilingual('Floor Terminal', 'ফ্লোর টার্মিনাল')}
                 </Button>
               </Link>
             </div>
@@ -491,6 +493,17 @@ export default function AdvancedProductionPage() {
               {tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}
             </button>
             <button
+              onClick={() => setActiveTab('terminal')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
+                activeTab === 'terminal'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              }`}
+            >
+              <Printer className="h-3.5 w-3.5" />
+              {tBilingual('Shop Floor Terminal', 'শপ ফ্লোর টার্মিনাল')}
+            </button>
+            <button
               onClick={() => setActiveTab('machine_queues')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1.5 ${
                 activeTab === 'machine_queues'
@@ -576,13 +589,166 @@ export default function AdvancedProductionPage() {
           </div>
         )}
 
-        {/* Tab 2: MACHINE QUEUES TIMELINE */}
+        {/* Tab 2: SHOP FLOOR OPERATOR TERMINAL */}
+        {activeTab === 'terminal' && (
+          <div className="space-y-6">
+            {/* Active Floor Overview & In-Progress Tasks */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping" />
+                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                    Live Floor Operations • Active Machine Tasks ({terminalRunningTasks.length})
+                  </h3>
+                </div>
+                <span className="text-xs text-slate-500 font-mono">
+                  Touch cards to start, pause, or complete with automated roll deduction & scrap logging
+                </span>
+              </div>
+
+              {terminalRunningTasks.length === 0 ? (
+                <Card className="p-8 text-center border-dashed border-slate-200 dark:border-slate-800">
+                  <Printer className="h-8 w-8 text-slate-400 mx-auto mb-2" />
+                  <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    No active running jobs on floor right now.
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Start a job from the scheduled queue below to allocate machine and mount media.
+                  </p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {terminalRunningTasks.map((task) => (
+                    <Card
+                      key={task.id}
+                      className="p-4 bg-white dark:bg-slate-900 border-2 border-blue-500 dark:border-blue-600 shadow-md space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <Badge className="bg-blue-600 text-white font-mono text-[10px]">
+                          {task.task_number}
+                        </Badge>
+                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold">
+                          ● RUNNING
+                        </Badge>
+                      </div>
+
+                      <div>
+                        <h4 className="font-black text-sm text-slate-900 dark:text-white">
+                          {task.task_name}
+                        </h4>
+                        <div className="text-xs text-slate-500 font-mono mt-0.5">
+                          Job: <strong>{task.job_number}</strong> • Client: {task.customer_name}
+                        </div>
+                      </div>
+
+                      {/* Specs & Machine */}
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-950 rounded-lg text-xs space-y-1 font-mono">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Machine:</span>
+                          <span className="font-bold text-blue-600 dark:text-blue-400">
+                            {task.assigned_machine_name || 'Floor Bench'}
+                          </span>
+                        </div>
+                        {task.width && task.height && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Dimensions:</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200">
+                              {task.width} × {task.height} {task.unit || 'ft'} ({task.width * task.height * task.quantity} SFT)
+                            </span>
+                          </div>
+                        )}
+                        {task.required_material && (
+                          <div className="flex justify-between">
+                            <span className="text-slate-500">Substrate:</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[160px]">
+                              {task.required_material}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Large Touch Actions */}
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePauseTask(task)}
+                          className="h-10 text-xs font-bold border-amber-300 text-amber-800 dark:text-amber-300 hover:bg-amber-50 cursor-pointer gap-1.5"
+                        >
+                          <Pause className="h-4 w-4" />
+                          <span>Pause</span>
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleCompleteTask(task)}
+                          className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer gap-1.5"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          <span>Complete & Deduct</span>
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Scheduled Queue Ready for Start */}
+            <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+              <h3 className="text-sm font-black uppercase tracking-wider text-slate-900 dark:text-white">
+                Queue Ready to Dispatch ({terminalQueueTasks.length})
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                {terminalQueueTasks.map((task) => (
+                  <Card
+                    key={task.id}
+                    className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-bold text-slate-500">
+                        {task.task_number}
+                      </span>
+                      <Badge variant="outline" className="text-[10px]">
+                        {task.department}
+                      </Badge>
+                    </div>
+
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-900 dark:text-white">
+                        {task.task_name}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 font-mono">
+                        {task.customer_name} • Qty: {task.quantity} {task.unit}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        {task.assigned_machine_name || 'Unassigned Machine'}
+                      </span>
+                      <Button
+                        size="sm"
+                        onClick={() => handleStartTask(task)}
+                        className="h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-3 cursor-pointer gap-1"
+                      >
+                        <Play className="h-3.5 w-3.5" />
+                        <span>Start Floor Job</span>
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: MACHINE QUEUES TIMELINE */}
         {activeTab === 'machine_queues' && (
           <MachineQueueView
             queues={machineQueues}
             tenantSlug={slug}
             onScheduleClick={(mId) => {
-              // Open scheduler for first queued task or prompt
               if (tasks.length > 0) {
                 setScheduleTaskTarget(tasks[0])
               }
@@ -590,15 +756,12 @@ export default function AdvancedProductionPage() {
           />
         )}
 
-        {/* Modals */}
-        <ScheduleTaskModal
-          isOpen={!!scheduleTaskTarget}
-          onClose={() => setScheduleTaskTarget(null)}
-          task={scheduleTaskTarget}
-          onSuccess={() => {
-            showNotification('Task scheduled successfully!')
-            loadData()
-          }}
+        {/* Complete Task Modal */}
+        <CompleteTaskModal
+          isOpen={!!completeTaskTarget}
+          onClose={() => setCompleteTaskTarget(null)}
+          task={completeTaskTarget}
+          onComplete={handleCompleteModalSubmit}
         />
 
         <HoldTaskModal

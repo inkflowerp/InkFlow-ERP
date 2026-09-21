@@ -26,9 +26,9 @@ import {
   SlidersHorizontal,
   ChevronRight,
   MoreVertical,
-  Activity,
   Printer,
   ShieldAlert,
+  Disc,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -430,6 +430,29 @@ export default function MachineriesListPage() {
                   </div>
                 </div>
 
+                {/* Active Mounted Roll Banner */}
+                {m.active_mounted_roll_tag && (
+                  <div className="p-2 rounded bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-xs flex items-center justify-between">
+                    <span className="text-indigo-800 dark:text-indigo-300 font-bold flex items-center gap-1.5 truncate">
+                      <Disc className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
+                      Roll: {m.active_mounted_roll_tag}
+                    </span>
+                    <Badge variant="outline" className="text-[10px] bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
+                      Mounted
+                    </Badge>
+                  </div>
+                )}
+
+                {/* Lifetime Production Meters */}
+                {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
+                  <div className="flex items-center justify-between text-[11px] px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 font-mono text-slate-600 dark:text-slate-400">
+                    <span>Meter:</span>
+                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                      {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
+                    </span>
+                  </div>
+                )}
+
                 {/* Current Active Assignment or Location */}
                 {m.status === 'in_use' && m.current_assignment ? (
                   <div className="p-2 rounded bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs space-y-0.5">
@@ -558,6 +581,12 @@ export default function MachineriesListPage() {
                       {m.name}
                     </Link>
                     <span className="block font-mono text-[11px] text-slate-500">{m.code}</span>
+                    {m.active_mounted_roll_tag && (
+                      <span className="inline-flex items-center gap-1 text-[10px] text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
+                        <Disc className="h-3 w-3" />
+                        {m.active_mounted_roll_tag}
+                      </span>
+                    )}
                   </td>
                   <td className="p-3 capitalize">{m.machine_type.replace(/_/g, ' ')}</td>
                   <td className="p-3 capitalize">{m.department}</td>

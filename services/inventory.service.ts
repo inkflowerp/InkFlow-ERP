@@ -648,6 +648,24 @@ export class InventoryService {
     return await InventoryRepository.getInventoryRolls(companyId)
   }
 
+  static async mountRollToMachine(params: {
+    company_id: string
+    roll_id: string
+    machine_id: string
+    machine_name: string
+    operator_name?: string
+  }): Promise<InventoryRollRecord> {
+    return await InventoryRepository.mountRollToMachine(params)
+  }
+
+  static async unmountRollFromMachine(params: {
+    company_id: string
+    roll_id: string
+    machine_id?: string
+  }): Promise<InventoryRollRecord> {
+    return await InventoryRepository.unmountRollFromMachine(params)
+  }
+
   static async recordStockAdjustment(params: {
     company_id: string
     branch_id?: string | null

@@ -109,6 +109,13 @@ export interface MachineryRecord {
   max_print_width_inches?: number
   is_active?: boolean
 
+  // Production Meters & Active Mounted Media
+  active_mounted_roll_id?: string | null
+  active_mounted_roll_tag?: string | null
+  total_sft_produced?: number
+  total_impressions?: number
+  total_operating_hours?: number
+
   // Joined/Aggregated relationships
   current_assignment?: MachineryAssignmentRecord | null
   latest_breakdown?: MachineryBreakdownRecord | null
@@ -330,6 +337,11 @@ export interface UpdateMachineryInput extends Partial<CreateMachineryInput> {
   status?: MachineryStatus
   status_notes?: string | null
   is_archived?: boolean
+  active_mounted_roll_id?: string | null
+  active_mounted_roll_tag?: string | null
+  total_sft_produced?: number
+  total_impressions?: number
+  total_operating_hours?: number
 }
 
 export interface CreateMachineryAssignmentInput {

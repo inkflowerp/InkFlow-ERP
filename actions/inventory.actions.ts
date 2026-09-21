@@ -609,6 +609,71 @@ export async function removeTaskRequirementAction(
   }
 }
 
+// ==========================================
+// PHYSICAL ROLL MOUNT / UNMOUNT ACTIONS
+// ==========================================
+
+export async function mountRollToMachineAction(
+  params: {
+    roll_id: string
+    machine_id: string
+    machine_name: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InventoryRollRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const roll = await InventoryService.mountRollToMachine({
+      company_id: companyId,
+      roll_id: params.roll_id,
+      machine_id: params.machine_id,
+      machine_name: params.machine_name,
+      operator_name: tenant.fullName || tenant.userEmail || 'Operator',
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+    return { success: true, data: roll }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to mount roll to machine' }
+  }
+}
+
+export async function unmountRollFromMachineAction(
+  params: {
+    roll_id: string
+    machine_id?: string
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InventoryRollRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const roll = await InventoryService.unmountRollFromMachine({
+      company_id: companyId,
+      roll_id: params.roll_id,
+      machine_id: params.machine_id,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+    return { success: true, data: roll }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to unmount roll from machine' }
+  }
+}
+
 export interface InventoryDashboardData {
   materials: MaterialRecord[]
   locations: InventoryLocationRecord[]

@@ -45,6 +45,7 @@ import {
   CheckCircle,
   XCircle,
   Trash2,
+  Cpu,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -71,6 +72,7 @@ import {
 } from '@/types/inventory.types'
 import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
 import type { ProductRecord } from '@/types/product.types'
+import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -79,6 +81,8 @@ import {
   rejectMaterialRequestAction,
   updateRemnantStatusAction,
   getInventoryDashboardDataAction,
+  mountRollToMachineAction,
+  unmountRollFromMachineAction,
 } from '@/actions/inventory.actions'
 import { moveToTrashAction } from '@/actions/trash.actions'
 
@@ -208,9 +212,70 @@ function UnifiedInventoryContent() {
   const [selectedPoForReceive, setSelectedPoForReceive] = useState<PurchaseOrderRecord | null>(null)
   const [selectedRequestForIssue, setSelectedRequestForIssue] = useState<MaterialRequestRecord | null>(null)
 
+  // Machinery fleet integration for physical rolls
+  const [machines, setMachines] = useState<MachineryRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    } catch {
+      return []
+    }
+  })
+  const [rollToMount, setRollToMount] = useState<InventoryRollRecord | null>(null)
+  const [selectedMachineForMount, setSelectedMachineForMount] = useState<string>('')
+  const [isMountModalOpen, setIsMountModalOpen] = useState(false)
+  const [isMounting, setIsMounting] = useState(false)
+
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 4000)
+  }
+
+  const handleMountRoll = async () => {
+    if (!rollToMount || !selectedMachineForMount) return
+    const targetMach = machines.find((m) => m.id === selectedMachineForMount)
+    setIsMounting(true)
+    try {
+      const res = await mountRollToMachineAction(
+        {
+          roll_id: rollToMount.id,
+          machine_id: selectedMachineForMount,
+          machine_name: targetMach?.name || 'Press Machine',
+        },
+        companyId
+      )
+      if (res.success) {
+        showNotification(`Mounted roll onto ${targetMach?.name || 'machine'} successfully!`)
+        setIsMountModalOpen(false)
+        setRollToMount(null)
+        loadAllData(true)
+      } else {
+        showNotification(`Failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    } finally {
+      setIsMounting(false)
+    }
+  }
+
+  const handleUnmountRoll = async (roll: InventoryRollRecord) => {
+    try {
+      const res = await unmountRollFromMachineAction(
+        {
+          roll_id: roll.id,
+          machine_id: roll.mounted_machine_id || undefined,
+        },
+        companyId
+      )
+      if (res.success) {
+        showNotification('Unmounted roll successfully! It is now returned to warehouse stock.')
+        loadAllData(true)
+      } else {
+        showNotification(`Failed: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    }
   }
 
   const loadAllData = async (isBackground = false) => {
@@ -238,6 +303,8 @@ function UnifiedInventoryContent() {
           if (res.data.materials) PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
           if (res.data.rolls) PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
           if (res.data.locations) PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
+          const mList = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+          setMachines(mList)
         } catch {}
       }
     } catch (err: any) {
@@ -1083,8 +1150,17 @@ function UnifiedInventoryContent() {
                             <td className="p-3 text-right font-mono text-emerald-600 font-black">
                               {area.toFixed(1)} SFT
                             </td>
-                            <td className="p-3 text-slate-500">
-                              {roll.location_name || roll.mounted_press_name || 'Main Warehouse'}
+                            <td className="p-3">
+                              {roll.mounted_machine_name || roll.mounted_press_name ? (
+                                <span className="inline-flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                                  <Cpu className="h-3 w-3 text-blue-600" />
+                                  {roll.mounted_machine_name || roll.mounted_press_name}
+                                </span>
+                              ) : (
+                                <span className="text-slate-600 dark:text-slate-400">
+                                  {roll.location_name || 'Main Warehouse'}
+                                </span>
+                              )}
                             </td>
                             <td className="p-3">
                               <span
@@ -1101,18 +1177,46 @@ function UnifiedInventoryContent() {
                               </span>
                             </td>
                             <td className="p-3 text-right">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setSelectedRollForAction(roll)
-                                  setIsConsumptionOpen(true)
-                                }}
-                                className="h-7 px-2.5 text-[11px] text-purple-600 hover:bg-purple-50"
-                              >
-                                <Scissors className="h-3 w-3 mr-1" />
-                                Cut / Sign-Off
-                              </Button>
+                              <div className="flex items-center justify-end gap-1.5">
+                                {roll.status === 'mounted' || roll.mounted_machine_id ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleUnmountRoll(roll)}
+                                    className="h-7 px-2 text-[11px] text-amber-700 dark:text-amber-300 hover:bg-amber-50 border-amber-300 dark:border-amber-700 cursor-pointer"
+                                    title="Unmount from machine back to warehouse"
+                                  >
+                                    Unmount
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      setRollToMount(roll)
+                                      setSelectedMachineForMount(machines[0]?.id || '')
+                                      setIsMountModalOpen(true)
+                                    }}
+                                    className="h-7 px-2 text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 border-blue-300 dark:border-blue-700 cursor-pointer"
+                                    title="Mount onto printing or fabrication machine"
+                                  >
+                                    <Cpu className="h-3 w-3 mr-1" />
+                                    Mount
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedRollForAction(roll)
+                                    setIsConsumptionOpen(true)
+                                  }}
+                                  className="h-7 px-2 text-[11px] text-purple-600 hover:bg-purple-50 border-purple-200"
+                                >
+                                  <Scissors className="h-3 w-3 mr-1" />
+                                  Cut / Sign-Off
+                                </Button>
+                              </div>
                             </td>
                           </tr>
                         )
@@ -1943,6 +2047,101 @@ function UnifiedInventoryContent() {
           }}
           companyId={companyId}
         />
+
+        {/* Mount Physical Roll to Machine Modal */}
+        {isMountModalOpen && rollToMount && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <Card className="w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800">
+              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="h-5 w-5 text-blue-600" />
+                    <div>
+                      <CardTitle className="text-base font-bold">Mount Roll to Press Fleet</CardTitle>
+                      <CardDescription className="text-xs">
+                        Assign roll to active printing or fabrication machine
+                      </CardDescription>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setIsMountModalOpen(false)
+                      setRollToMount(null)
+                    }}
+                    className="h-7 w-7 p-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-4">
+                {/* Roll Specs Summary */}
+                <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-lg border border-slate-200 dark:border-slate-700 text-xs space-y-1">
+                  <div className="font-bold text-slate-900 dark:text-white flex justify-between">
+                    <span>{rollToMount.roll_code || rollToMount.roll_tag || `Roll #${rollToMount.id.slice(0, 8)}`}</span>
+                    <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-300">
+                      {rollToMount.width_ft} ft Width
+                    </Badge>
+                  </div>
+                  <div className="text-slate-600 dark:text-slate-400 font-medium">
+                    {rollToMount.material?.name || 'Roll Media'}
+                  </div>
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    Remaining: {Number(rollToMount.remaining_area_sft || 0).toFixed(1)} SFT ({Number(rollToMount.current_length_ft || (rollToMount.remaining_area_sft / (rollToMount.width_ft || 1))).toFixed(1)} LF)
+                  </div>
+                </div>
+
+                {/* Machine Fleet Selection */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold">Select Destination Machine / Press *</Label>
+                  {machines.length === 0 ? (
+                    <div className="text-xs text-amber-600 p-2.5 bg-amber-50 rounded border border-amber-200">
+                      No machines found in fleet. Add machines in the Machineries section first.
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedMachineForMount}
+                      onChange={(e) => setSelectedMachineForMount(e.target.value)}
+                      className="w-full text-xs h-9 px-3 bg-white dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-md focus:ring-1 focus:ring-blue-500"
+                    >
+                      <option value="">-- Choose Machine / Press --</option>
+                      {machines.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.code}) — {m.machine_type || m.category || 'Press'} {m.status !== 'available' ? `[${m.status}]` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setIsMountModalOpen(false)
+                      setRollToMount(null)
+                    }}
+                    className="text-xs"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    disabled={!selectedMachineForMount || isMounting}
+                    onClick={handleMountRoll}
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                  >
+                    {isMounting ? 'Mounting...' : 'Confirm & Mount Roll'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
     </FeatureGate>
   )

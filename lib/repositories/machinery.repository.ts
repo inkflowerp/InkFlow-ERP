@@ -829,4 +829,17 @@ export class MachineryRepository {
       return updated
     }
   }
+
+  static async updateActiveMountedRoll(
+    machineId: string,
+    companyId: string,
+    mountedRoll: { id: string | null; tag?: string | null } | null
+  ): Promise<MachineryRecord | null> {
+    const payload: Partial<UpdateMachineryInput> = {
+      active_mounted_roll_id: mountedRoll?.id || null,
+      active_mounted_roll_tag: mountedRoll?.tag || null,
+    }
+    return await this.updateMachinery(machineId, companyId, payload)
+  }
 }
+

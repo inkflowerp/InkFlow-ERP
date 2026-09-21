@@ -19,6 +19,7 @@ import type {
 } from '../../types/inventory.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
+import { MachineryRepository } from './machinery.repository.ts'
 
 export class InventoryRepository {
   // ==========================================
@@ -1259,6 +1260,7 @@ export class InventoryRepository {
     location_id?: string | null
     material_id: string
     roll_code?: string
+    roll_tag?: string
     width_ft: number
     initial_length_ft: number
     unit_cost?: number
@@ -1270,7 +1272,8 @@ export class InventoryRepository {
     notes?: string | null
   }): Promise<InventoryRollRecord> {
     const rollId = params.id || crypto.randomUUID()
-    const rollCode = params.roll_code || `ROLL-${Date.now().toString().slice(-6)}`
+    const rollCode = params.roll_code || params.roll_tag || `ROLL-${Date.now().toString().slice(-6)}`
+    const rollTag = params.roll_tag || params.roll_code || rollCode
     const initialArea = Math.round(params.width_ft * params.initial_length_ft * 100) / 100
     const unitCost = Number(params.unit_cost) || 0
     const totalCost = unitCost > 0 ? unitCost : 0
@@ -1282,7 +1285,7 @@ export class InventoryRepository {
       location_id: params.location_id || null,
       material_id: params.material_id,
       roll_code: rollCode,
-      roll_tag: rollCode,
+      roll_tag: rollTag,
       width_ft: params.width_ft,
       initial_length_ft: params.initial_length_ft,
       current_length_ft: params.initial_length_ft,
@@ -1427,6 +1430,101 @@ export class InventoryRepository {
     }
 
     return { roll: updatedRoll, remnant }
+  }
+
+  static async mountRollToMachine(params: {
+    company_id: string
+    roll_id: string
+    machine_id: string
+    machine_name: string
+    operator_name?: string
+  }): Promise<InventoryRollRecord> {
+    const roll = await this.getInventoryRollById(params.roll_id, params.company_id)
+    if (!roll) {
+      throw new Error(`Physical Roll ${params.roll_id} not found.`)
+    }
+
+    const payload: Partial<InventoryRollRecord> = {
+      status: 'mounted',
+      mounted_machine_id: params.machine_id,
+      mounted_machine_name: params.machine_name,
+      mounted_press_name: params.machine_name,
+      mounted_at: new Date().toISOString(),
+      mounted_by_name: params.operator_name || 'Operator',
+      updated_at: new Date().toISOString(),
+    }
+
+    let updated: InventoryRollRecord = { ...roll, ...payload }
+
+    try {
+      const supabase = await createClient()
+      const { data } = await (supabase as any)
+        .from('inventory_rolls')
+        .update(payload)
+        .eq('id', roll.id)
+        .select()
+        .single()
+      if (data) updated = data as unknown as InventoryRollRecord
+    } catch {}
+
+    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
+
+    // Synchronize Machinery active mounted roll
+    try {
+      await MachineryRepository.updateActiveMountedRoll(params.machine_id, params.company_id, {
+        id: roll.id,
+        tag: roll.roll_code || roll.roll_tag || `Roll #${roll.id.slice(0, 8)}`,
+      })
+    } catch {}
+
+    return updated
+  }
+
+  static async unmountRollFromMachine(params: {
+    company_id: string
+    roll_id: string
+    machine_id?: string
+  }): Promise<InventoryRollRecord> {
+    const roll = await this.getInventoryRollById(params.roll_id, params.company_id)
+    if (!roll) {
+      throw new Error(`Physical Roll ${params.roll_id} not found.`)
+    }
+
+    const machineId = params.machine_id || roll.mounted_machine_id
+
+    const payload: Partial<InventoryRollRecord> = {
+      status: 'available',
+      mounted_machine_id: null,
+      mounted_machine_name: null,
+      mounted_press_name: null,
+      mounted_at: null,
+      mounted_by_name: null,
+      updated_at: new Date().toISOString(),
+    }
+
+    let updated: InventoryRollRecord = { ...roll, ...payload }
+
+    try {
+      const supabase = await createClient()
+      const { data } = await (supabase as any)
+        .from('inventory_rolls')
+        .update(payload)
+        .eq('id', roll.id)
+        .select()
+        .single()
+      if (data) updated = data as unknown as InventoryRollRecord
+    } catch {}
+
+    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
+
+    // Synchronize Machinery unmount
+    if (machineId) {
+      try {
+        await MachineryRepository.updateActiveMountedRoll(machineId, params.company_id, null)
+      } catch {}
+    }
+
+    return updated
   }
 
   static async findCompatibleRemnants(

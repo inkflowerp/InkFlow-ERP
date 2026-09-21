@@ -11,6 +11,7 @@ import type {
 } from '../types/production.types.ts'
 import { ProductionTaskRepository, type TaskFilterOptions } from '../lib/repositories/production-task.repository.ts'
 import { MachineryRepository } from '../lib/repositories/machinery.repository.ts'
+import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { MachineryService } from './machinery.service.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
@@ -550,15 +551,90 @@ export class ProductionPlanningService {
     const completed = await ProductionTaskRepository.updateTaskStatus(taskId, companyId, 'completed', {
       actual_end: now.toISOString(),
       actual_duration_minutes: actualDuration,
-      good_quantity: completionData?.good_quantity ?? task.quantity,
-      rejected_quantity: completionData?.rejected_quantity ?? 0,
+      good_quantity: completionData?.good_quantity ?? (completionData as any)?.completed_quantity ?? task.quantity,
+      completed_quantity: completionData?.good_quantity ?? (completionData as any)?.completed_quantity ?? task.quantity,
+      rejected_quantity: completionData?.rejected_quantity ?? (completionData as any)?.scrap_quantity ?? 0,
+      scrap_area_sft: (completionData as any)?.scrap_area_sft ?? null,
       defect_reason: completionData?.defect_reason || null,
       scrap_notes: completionData?.scrap_notes || null,
+      consumed_material_qty: (completionData as any)?.consumed_material_qty || null,
+      consumed_material_unit: (completionData as any)?.consumed_material_unit || null,
+      mounted_roll_id: (completionData as any)?.mounted_roll_id || task.mounted_roll_id || null,
+      mounted_roll_tag: (completionData as any)?.mounted_roll_tag || task.mounted_roll_tag || null,
       notes: completionData?.notes || task.notes,
     })
 
-    // If machine was used, check if there are other in_progress tasks, else set back to available
+    // 1. Automatic Roll / Substrate Inventory Deduction
+    const targetRollId = (completionData as any)?.mounted_roll_id || task.mounted_roll_id
+    const consumedQty = (completionData as any)?.consumed_material_qty || task.consumed_material_qty || (task.width && task.height && (task.unit === 'sft' || task.unit === 'sqft') ? task.width * task.height * (task.quantity || 1) : task.quantity)
+
+    if (targetRollId && consumedQty > 0) {
+      try {
+        const roll = await InventoryRepository.getInventoryRollById(targetRollId, companyId)
+        if (roll) {
+          const widthFt = Number(roll.width_ft) || 1
+          const linearFt = Math.round((consumedQty / widthFt) * 100) / 100
+          await InventoryRepository.consumeFromPhysicalRoll({
+            company_id: companyId,
+            roll_id: targetRollId,
+            linear_length_consumed_ft: linearFt,
+            production_task_id: task.id,
+            job_order_id: task.job_order_id,
+            operator_name: task.assigned_operator_name || 'Operator',
+            notes: `Auto-deducted from ${task.task_name} (${task.task_number})`,
+          })
+        }
+      } catch (_) {}
+    }
+
+    // 2. Scrap & Wastage Recording
+    const rejectedQty = completionData?.rejected_quantity ?? (completionData as any)?.scrap_quantity ?? 0
+    const scrapAreaSft = (completionData as any)?.scrap_area_sft || 0
+    if ((rejectedQty > 0 || scrapAreaSft > 0) && completionData?.defect_reason) {
+      try {
+        let matId = task.required_material
+        if (!matId && targetRollId) {
+          const r = await InventoryRepository.getInventoryRollById(targetRollId, companyId)
+          if (r?.material_id) matId = r.material_id
+        }
+        if (!matId) {
+          const allMats = await InventoryRepository.getMaterials(companyId)
+          if (allMats.length > 0) matId = allMats[0].id
+        }
+
+        if (matId) {
+          await InventoryRepository.recordWastage({
+            company_id: companyId,
+            material_id: matId,
+            material_name: task.product_name || 'Production Substrate',
+            job_order_id: task.job_order_id,
+            production_task_id: task.id,
+            wastage_quantity: scrapAreaSft > 0 ? scrapAreaSft : rejectedQty,
+            unit: scrapAreaSft > 0 ? 'sft' : task.unit || 'pcs',
+            wastage_reason: `${completionData.defect_reason}: ${completionData.scrap_notes || 'Floor scrap logged on completion'}`,
+            operator_name: (completionData as any)?.operator_name || task.assigned_operator_name || 'Operator',
+          })
+        }
+      } catch (_) {}
+    }
+
+    // 3. Machine Production Meter Increment
     if (task.assigned_machine_id) {
+      try {
+        const machine = await MachineryRepository.getMachineryById(task.assigned_machine_id, companyId)
+        if (machine) {
+          const sftIncrement = (consumedQty && consumedQty > 0) ? consumedQty : (task.width && task.height && (task.unit === 'sft' || task.unit === 'sqft')) ? (task.width * task.height * (completionData?.good_quantity ?? task.quantity)) : 0
+          const impressionIncrement = task.department === 'printing' ? (completionData?.good_quantity ?? (completionData as any)?.completed_quantity ?? task.quantity) : 0
+          const hoursIncrement = actualDuration ? Math.round((actualDuration / 60) * 100) / 100 : 0
+
+          await MachineryRepository.updateMachinery(task.assigned_machine_id, companyId, {
+            total_sft_produced: (Number(machine.total_sft_produced) || 0) + sftIncrement,
+            total_impressions: (Number(machine.total_impressions) || 0) + impressionIncrement,
+            total_operating_hours: (Number(machine.total_operating_hours) || 0) + hoursIncrement,
+          })
+        }
+      } catch (_) {}
+
       const activeOnMachine = await ProductionTaskRepository.getTasks(companyId, {
         assigned_machine_id: task.assigned_machine_id,
         status: 'in_progress',
