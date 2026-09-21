@@ -2257,60 +2257,61 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                             </div>
                           </div>
 
-                          {/* Artwork Preview Card with Lightbox Trigger */}
-                          <div
-                            onClick={() => {
-                              ensureJobRecord(activeWork)
-                              handleOpenLightbox(activeWork.jobRecord)
-                            }}
-                            className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer group shadow-inner"
-                          >
-                            <img
-                              src={activeWork.proof_url}
-                              alt={activeWork.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
-                              <Eye className="h-4 w-4" />
-                              <span>Inspect Artwork (জুম ও ইনস্পেক্ট)</span>
+                          {/* Active Work Main Content: Information Left, Picture Right */}
+                          <div className="grid grid-cols-2 gap-2.5 sm:gap-3 items-stretch">
+                            {/* Left: Active Item Specs & Details */}
+                            <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs flex flex-col justify-center space-y-1.5 min-w-0">
+                              <div className="flex justify-between items-center gap-1">
+                                <span className="text-slate-500 shrink-0 text-[11px]">Dimensions:</span>
+                                <span className="font-mono text-slate-800 dark:text-slate-200 font-bold text-right truncate">
+                                  {activeWork.dimensions_spec || 'Standard'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center gap-1">
+                                <span className="text-slate-500 shrink-0 text-[11px]">Material & Finish:</span>
+                                <span className="text-slate-700 dark:text-slate-300 font-semibold text-right truncate">
+                                  {[activeWork.material, activeWork.finishing].filter(Boolean).join(' • ') || 'None'}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center gap-1">
+                                <span className="text-slate-500 shrink-0 text-[11px]">Designer:</span>
+                                <span className="text-slate-700 dark:text-slate-300 font-medium text-right truncate">
+                                  {activeWork.designer_name || 'Design Team'}
+                                </span>
+                              </div>
                             </div>
-                            {activeWork.is_locked && (
-                              <div className="absolute bottom-2 right-2">
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
-                                  <Lock className="h-3 w-3" /> Locked & Approved
-                                </span>
-                              </div>
-                            )}
-                            {activeWork.dimensions_spec && (
-                              <div className="absolute bottom-2 left-2">
-                                <span className="inline-flex items-center font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white border border-white/20">
-                                  {activeWork.dimensions_spec}
-                                </span>
-                              </div>
-                            )}
-                          </div>
 
-                          {/* Active Item Specs & Details */}
-                          <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs space-y-1">
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Dimensions:</span>
-                              <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">
-                                {activeWork.dimensions_spec || 'Standard'}
-                              </span>
-                            </div>
-                            {(activeWork.material || activeWork.finishing) && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-slate-500">Material & Finish:</span>
-                                <span className="text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[200px]">
-                                  {[activeWork.material, activeWork.finishing].filter(Boolean).join(' • ')}
-                                </span>
+                            {/* Right: Artwork Preview Card with Lightbox Trigger */}
+                            <div
+                              onClick={() => {
+                                ensureJobRecord(activeWork)
+                                handleOpenLightbox(activeWork.jobRecord)
+                              }}
+                              className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer group shadow-inner flex items-center justify-center min-h-[90px]"
+                            >
+                              <img
+                                src={activeWork.proof_url}
+                                alt={activeWork.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold gap-1 text-center p-1">
+                                <Eye className="h-3.5 w-3.5 shrink-0" />
+                                <span>Inspect</span>
                               </div>
-                            )}
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-500">Designer:</span>
-                              <span className="text-slate-700 dark:text-slate-300 font-medium">
-                                {activeWork.designer_name}
-                              </span>
+                              {activeWork.is_locked && (
+                                <div className="absolute bottom-1.5 right-1.5">
+                                  <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-600 text-white shadow">
+                                    <Lock className="h-2.5 w-2.5" /> Locked
+                                  </span>
+                                </div>
+                              )}
+                              {activeWork.dimensions_spec && (
+                                <div className="absolute bottom-1.5 left-1.5">
+                                  <span className="inline-flex items-center font-mono text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white border border-white/20">
+                                    {activeWork.dimensions_spec}
+                                  </span>
+                                </div>
+                              )}
                             </div>
                           </div>
 
