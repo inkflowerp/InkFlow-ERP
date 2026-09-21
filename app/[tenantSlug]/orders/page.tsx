@@ -137,6 +137,11 @@ export default function OrdersPage() {
     new Date(Date.now() + 3 * 86400000).toISOString().split('T')[0]
   )
   const [notification, setNotification] = useState<string | null>(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const orderCheck = checkCanCreate('monthly_orders')
 
@@ -714,6 +719,17 @@ export default function OrdersPage() {
           color: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
         }
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+        <div className="h-10 w-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center animate-pulse">
+          <Briefcase className="h-5 w-5 animate-spin" />
+        </div>
+        <p className="text-sm font-semibold text-slate-500">Loading Orders & Job Flow Directory...</p>
+      </div>
+    )
   }
 
   return (

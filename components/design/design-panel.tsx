@@ -3448,6 +3448,23 @@ class DesignErrorBoundary extends React.Component<
 }
 
 export function DesignPanel(props: DesignPanelProps) {
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+        <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
+          <Palette className="h-5 w-5 animate-spin" />
+        </div>
+        <p className="text-sm font-semibold text-slate-500">Loading Design Panel...</p>
+      </div>
+    )
+  }
+
   return (
     <DesignErrorBoundary>
       <React.Suspense

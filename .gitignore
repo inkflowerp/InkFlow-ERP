@@ -45,4 +45,5 @@ next-env.d.ts
 # local ide / mcp
 .mcp.json
 .agents/
+.agent/
 supabase/.temp/
