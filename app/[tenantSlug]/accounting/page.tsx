@@ -176,6 +176,30 @@ export default function AccountingPage() {
 
   useEffect(() => {
     loadAllData()
+
+    const handleRealtimeSync = () => {
+      loadAllData()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:payments', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:invoices', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:expenses', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:payments', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:invoices', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:expenses', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [selectedLedgerAccountId])
 
   // Handlers for Modals

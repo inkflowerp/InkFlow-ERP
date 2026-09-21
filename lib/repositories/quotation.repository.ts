@@ -675,6 +675,8 @@ export class QuotationRepository {
     options?: {
       createdByName?: string
       dueDate?: string
+      paidAmount?: number
+      advanceAmount?: number
     }
   ): Promise<InvoiceRecord> {
     const quote = await this.getQuotationById(quotationId, companyId)
@@ -692,7 +694,11 @@ export class QuotationRepository {
     const invNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
     const invoiceId = `inv-${Date.now()}`
 
-    const advancePaid = quote.advance_amount && quote.advance_amount > 0 ? quote.advance_amount : 0
+    const advancePaid = options?.paidAmount !== undefined
+      ? Math.max(0, Number(options.paidAmount) || 0)
+      : options?.advanceAmount !== undefined
+        ? Math.max(0, Number(options.advanceAmount) || 0)
+        : 0
     const dueAmount = Math.max(0, quote.grand_total - advancePaid)
 
     const invoice: InvoiceRecord = {

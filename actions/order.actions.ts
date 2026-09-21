@@ -310,6 +310,9 @@ export async function createNewWorkIntakeAction(
       production_job_id: prodJob.id,
       task_name: `Print: ${input.jobTitle} (${input.width}x${input.height} ${input.unit})`,
       stage_name: 'printing',
+      department: 'printing',
+      task_type: 'printing',
+      sequence_order: 1,
       quantity: input.quantity,
       unit: input.unit,
       status: 'queued',
@@ -319,6 +322,26 @@ export async function createNewWorkIntakeAction(
       assigned_machine_name: input.assignedMachine || 'Large Format Eco-Solvent #1',
       estimated_duration_minutes: Math.max(15, Math.round(totalSqft * 0.5)),
     })
+
+    if (finishings.length > 0) {
+      await ProductionTaskRepository.createTask({
+        company_id: companyId,
+        production_job_id: prodJob.id,
+        task_name: `Finishing: ${finishings.join(', ')} - ${input.jobTitle}`,
+        stage_name: 'finishing',
+        department: 'finishing',
+        task_type: 'finishing',
+        sequence_order: 2,
+        quantity: input.quantity,
+        unit: input.unit,
+        status: 'queued',
+        customer_name: input.customerName,
+        product_name: input.jobTitle,
+        job_number: jobNumber,
+        assigned_machine_name: 'Manual Finishing Bench',
+        estimated_duration_minutes: Math.max(10, Math.round(input.quantity * 2)),
+      })
+    }
 
     // Audit Logging
     try {

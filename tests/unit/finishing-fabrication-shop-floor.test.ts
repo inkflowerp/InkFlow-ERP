@@ -1,11 +1,11 @@
 import { describe, it, beforeEach } from 'node:test'
 import assert from 'node:assert/strict'
-import { getNavigationConfig } from '@/config/navigation.config'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { ProductionPlanningService } from '@/services/production-planning.service'
-import { ProductionRepository } from '@/lib/repositories/production.repository'
-import { LogisticsRepository } from '@/lib/repositories/logistics.repository'
-import type { ProductionTaskRecord } from '@/types/production.types'
+import { getNavigationConfig } from '../../config/navigation.config.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { ProductionPlanningService } from '../../services/production-planning.service.ts'
+import { ProductionRepository } from '../../lib/repositories/production.repository.ts'
+import { LogisticsRepository } from '../../lib/repositories/logistics.repository.ts'
+import type { ProductionTaskRecord } from '../../types/production.types.ts'
 
 describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests', () => {
   const testCompanyId = 'comp_test_finishing_001'

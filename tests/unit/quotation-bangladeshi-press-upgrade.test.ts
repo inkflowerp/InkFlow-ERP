@@ -1,10 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { BANGLADESHI_PRINT_PRESETS, getPresetsByCategory } from '../../lib/quotation-presets'
-import { QuotationRepository } from '../../lib/repositories/quotation.repository'
-import { QuotationService } from '../../services/quotation.service'
-import { formatBDT, numberToWordsBangla, numberToWordsBDT } from '../../lib/formatters'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
+import { BANGLADESHI_PRINT_PRESETS, getPresetsByCategory } from '../../lib/quotation-presets.ts'
+import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
+import { QuotationService } from '../../services/quotation.service.ts'
+import { formatBDT, numberToWordsBangla, numberToWordsBDT } from '../../lib/formatters.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 test('Quotation Bangladeshi Press Upgrade - Presets Catalog', () => {
   // Test presets availability

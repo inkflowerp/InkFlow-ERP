@@ -1253,6 +1253,10 @@ export class InventoryRepository {
     return all.find((r) => r.id === id || r.roll_code === id || r.roll_tag === id) || null
   }
 
+  static async getPhysicalRollById(id: string, companyId: string): Promise<InventoryRollRecord | null> {
+    return this.getInventoryRollById(id, companyId)
+  }
+
   static async createPhysicalRoll(params: {
     id?: string
     company_id: string

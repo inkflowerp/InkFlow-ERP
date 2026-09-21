@@ -1,9 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { BANGLADESHI_PRINT_PRESETS, getPresetsByCategory } from '../../lib/quotation-presets'
-import { BillingRepository } from '../../lib/repositories/billing.repository'
-import { formatBDT, numberToWordsBangla, numberToWordsBDT } from '../../lib/formatters'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
+import { BANGLADESHI_PRINT_PRESETS, getPresetsByCategory } from '../../lib/quotation-presets.ts'
+import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
+import { formatBDT, numberToWordsBangla, numberToWordsBDT } from '../../lib/formatters.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 test('Invoice Bangladeshi Press Upgrade - Presets Catalog & Domain Specs', () => {
   // Test presets availability for Invoices

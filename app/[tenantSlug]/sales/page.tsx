@@ -59,6 +59,28 @@ export default function SalesManagerPage() {
       } catch {}
     }
     load()
+
+    const handleRealtimeSync = () => {
+      load()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:quotations', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:quotations', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [companyId, slug])
 
   // Resiliently merge all quotation sources
