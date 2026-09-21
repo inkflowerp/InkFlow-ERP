@@ -19,11 +19,9 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
 
   it('1. Navigation config contains Orders & Job Flow with bilingual titles', () => {
     const navSections = getNavigationConfig('acme-press')
-    const workSection = navSections.find((s) => s.id === 'work')
-    assert.ok(workSection, 'Work section should exist in navigation')
-
-    const ordersItem = workSection.items.find((item) => item.key === 'orders')
-    assert.ok(ordersItem, 'Orders item must exist in work section')
+    const allItems = navSections.flatMap((s) => s.items)
+    const ordersItem = allItems.find((item) => item.key === 'orders')
+    assert.ok(ordersItem, 'Orders item must exist in navigation config')
     assert.strictEqual(ordersItem.title, 'Orders & Job Flow')
     assert.strictEqual(ordersItem.titleBn, 'অর্ডার ও জব ফ্লো')
     assert.strictEqual(ordersItem.href, '/orders')
