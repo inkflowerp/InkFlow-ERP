@@ -103,8 +103,11 @@ export interface SalesOrderRecord {
   customer_id?: string | null
   customer_name: string
   customer_name_bn?: string | null
+  customer_type?: 'retail' | 'reseller' | 'corporate' | 'government' | string | null
   customer_phone: string
+  customer_email?: string | null
   customer_address?: string | null
+  company_name?: string | null
   salesperson_name: string
   order_date: string
   delivery_date: string

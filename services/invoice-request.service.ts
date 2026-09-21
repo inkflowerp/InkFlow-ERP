@@ -11,8 +11,12 @@ export interface CreateInvoiceRequestInput {
   customer_id?: string | null
   customerName?: string
   customer_name?: string
+  customerType?: 'retail' | 'reseller' | 'corporate' | 'government' | string | null
+  customer_type?: 'retail' | 'reseller' | 'corporate' | 'government' | string | null
   customerPhone?: string | null
   customer_phone?: string | null
+  whatsappNumber?: string | null
+  whatsapp_number?: string | null
   customerEmail?: string | null
   customer_email?: string | null
   customerAddress?: string | null
@@ -95,7 +99,9 @@ export class InvoiceRequestService {
 
     let resolvedCustomerId = input.customerId || input.customer_id || null
     let resolvedCustomerName = customerName
+    let resolvedCustomerType = input.customerType || input.customer_type || 'retail'
     let resolvedCustomerPhone = input.customerPhone || input.customer_phone || null
+    let resolvedWhatsappNumber = input.whatsappNumber || input.whatsapp_number || null
     let resolvedCustomerEmail = input.customerEmail || input.customer_email || null
     let resolvedCustomerAddress = input.customerAddress || input.customer_address || null
     let resolvedCompanyName = input.companyName || input.company_name || null
@@ -115,7 +121,9 @@ export class InvoiceRequestService {
           if (!resolvedOrderNumber && linkedOrder.order_number) resolvedOrderNumber = linkedOrder.order_number
           if (!resolvedCustomerId && linkedOrder.customer_id) resolvedCustomerId = linkedOrder.customer_id
           if (!resolvedCustomerName && linkedOrder.customer_name) resolvedCustomerName = linkedOrder.customer_name
+          if (linkedOrder.customer_type) resolvedCustomerType = linkedOrder.customer_type
           if (!resolvedCustomerPhone && linkedOrder.customer_phone) resolvedCustomerPhone = linkedOrder.customer_phone
+          if (!resolvedWhatsappNumber && linkedOrder.whatsapp_number) resolvedWhatsappNumber = linkedOrder.whatsapp_number
           if (!resolvedCustomerEmail && (linkedOrder.customer_email || linkedOrder.email)) {
             resolvedCustomerEmail = linkedOrder.customer_email || linkedOrder.email
           }
@@ -144,6 +152,8 @@ export class InvoiceRequestService {
               unit_price: Number(it.unit_price ?? it.rate ?? 0),
               total_price: Number(it.total_price ?? 0),
               finishing: it.finishing || 'None',
+              add_on: it.add_on || 'None',
+              workflow_routing: it.workflow_routing || 'ready_production',
               design_required: Boolean(it.design_required),
             }))
           }
@@ -160,12 +170,16 @@ export class InvoiceRequestService {
     }
 
     // Smart backfill from linked Customer record
-    if (resolvedCustomerId && (!resolvedCustomerPhone || !resolvedCustomerAddress || !resolvedCompanyName || !resolvedCustomerEmail)) {
+    if (resolvedCustomerId && (!resolvedCustomerPhone || !resolvedCustomerAddress || !resolvedCompanyName || !resolvedCustomerEmail || !resolvedCustomerType)) {
       try {
         const customers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
         const linkedCust = customers.find((c) => c.id === resolvedCustomerId)
         if (linkedCust) {
+          if (linkedCust.customer_type) resolvedCustomerType = linkedCust.customer_type
           if (!resolvedCustomerPhone && linkedCust.mobile) resolvedCustomerPhone = linkedCust.mobile
+          if (!resolvedWhatsappNumber && (linkedCust.whatsapp_number || linkedCust.whatsapp)) {
+            resolvedWhatsappNumber = linkedCust.whatsapp_number || linkedCust.whatsapp
+          }
           if (!resolvedCustomerEmail && linkedCust.email) resolvedCustomerEmail = linkedCust.email
           if (!resolvedCustomerAddress && linkedCust.address) resolvedCustomerAddress = linkedCust.address
           if (!resolvedCompanyName && linkedCust.company_name) resolvedCompanyName = linkedCust.company_name
@@ -199,7 +213,9 @@ export class InvoiceRequestService {
       company_id: companyId,
       customer_id: resolvedCustomerId,
       customer_name: resolvedCustomerName,
+      customer_type: resolvedCustomerType,
       customer_phone: resolvedCustomerPhone,
+      whatsapp_number: resolvedWhatsappNumber,
       customer_email: resolvedCustomerEmail,
       customer_address: resolvedCustomerAddress,
       company_name: resolvedCompanyName,

@@ -205,7 +205,9 @@ export class InvoiceRequestRepository {
         }
         if (data.customer_id) mergedUpdates.customer_id = data.customer_id
         if (data.customer_name) mergedUpdates.customer_name = data.customer_name
+        if (data.customer_type) mergedUpdates.customer_type = data.customer_type
         if (data.customer_phone) mergedUpdates.customer_phone = data.customer_phone
+        if (data.whatsapp_number) mergedUpdates.whatsapp_number = data.whatsapp_number
         if (data.customer_email) mergedUpdates.customer_email = data.customer_email
         if (data.customer_address) mergedUpdates.customer_address = data.customer_address
         if (data.company_name) mergedUpdates.company_name = data.company_name
@@ -257,7 +259,9 @@ export class InvoiceRequestRepository {
       request_number: requestNumber,
       customer_id: data.customer_id || null,
       customer_name: data.customer_name,
+      customer_type: data.customer_type || 'retail',
       customer_phone: data.customer_phone || null,
+      whatsapp_number: data.whatsapp_number || null,
       customer_email: data.customer_email || null,
       customer_address: data.customer_address || null,
       company_name: data.company_name || null,

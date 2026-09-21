@@ -228,7 +228,9 @@ export interface InvoiceRequestRecord {
   request_number: string
   customer_id?: string | null
   customer_name: string
+  customer_type?: 'retail' | 'reseller' | 'corporate' | 'government' | string | null
   customer_phone?: string | null
+  whatsapp_number?: string | null
   customer_email?: string | null
   customer_address?: string | null
   company_name?: string | null
@@ -250,4 +252,5 @@ export interface InvoiceRequestRecord {
   created_at: string
   updated_at: string
 }
+
 

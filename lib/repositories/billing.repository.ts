@@ -922,11 +922,15 @@ export class BillingRepository {
           orders.unshift(ord)
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
 
-          // Auto-provision job orders for each invoice line item if not already created
+          // Auto-provision job orders for custom manufacturing / print items if not already created
           if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
             const existingJobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
             const newJobs: any[] = []
             invoice.items.forEach((it: any, idx: number) => {
+              const isReady = it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product'
+              if (isReady) return // Ready-made products bypass factory shop floor and go straight to Delivery
+
+              const isDesignReq = Boolean(it.design_required || it.workflow_routing === 'design_required')
               const jobNum = `JOB-${ord.order_number.replace('ORD-', '')}-${String.fromCharCode(65 + idx)}`
               newJobs.push({
                 id: `job-${Date.now()}-${idx}`,
@@ -941,7 +945,7 @@ export class BillingRepository {
                 quantity: it.quantity || 1,
                 size_spec: it.dimensions_spec || (it.width && it.height ? `${it.width}x${it.height} ${it.unit || 'sft'}` : 'Standard'),
                 material_spec: it.material_spec || 'Standard Media',
-                artwork_status: 'approved',
+                artwork_status: isDesignReq ? 'pending' : 'approved',
                 deadline: `${ord.delivery_date} 18:00`,
                 assigned_department: 'wide_format_print',
                 assigned_employee_name: '',
@@ -950,11 +954,15 @@ export class BillingRepository {
                 workflow_routing: it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production'),
                 commercial_status: 'invoice_created',
                 production_gate_status: 'ready_for_production',
+                is_blocked_by_commercial_gate: false,
+                is_blocked_by_design_gate: isDesignReq,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               })
             })
-            PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
+            if (newJobs.length > 0) {
+              PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
+            }
           }
         }
         provisionedOrder = ord

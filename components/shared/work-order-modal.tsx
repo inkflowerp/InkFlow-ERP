@@ -23,6 +23,8 @@ import {
   Palette,
   AlertTriangle,
   UserCheck,
+  Smartphone,
+  MessageSquare,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -41,6 +43,12 @@ import { DesignJobRecord } from '@/types/design.types'
 import { ProductRecord } from '@/types/product.types'
 import { getInvoiceProductsAction } from '@/actions/billing.actions'
 import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
+import {
+  STANDARD_FINISHING_OPTIONS,
+  STANDARD_ADD_ON_OPTIONS,
+  type FinishingOptionItem,
+  type AddOnOptionItem,
+} from '@/lib/finishing-addons'
 
 interface WorkOrderModalProps {
   isOpen: boolean
@@ -62,27 +70,14 @@ export interface WorkOrderItemState {
   quantity: number
   unit: string
   finishing: string
+  add_on?: string
   available_dimension_presets?: Array<{ label?: string; width: number; length: number; unit?: string }>
   available_finishing_options?: Array<{ id: string; name: string; unit_price?: number }>
   printable_material_name?: string
   showAdvanced?: boolean
   design_required?: boolean
+  notes?: string
 }
-
-const FINISHING_OPTIONS = [
-  'None',
-  'Eyelets / Grommets (চারপাশে রিং)',
-  'Pocket / Pole Seaming (পাইপ পকেট)',
-  'Gloss Cold Lamination (গ্লস লেমিনেশন)',
-  'Matt Cold Lamination (ম্যাট লেমিনেশন)',
-  'Laser Cut to Shape (লেজার কাটিং)',
-  'Mounted on Foam Board (ফোম বোর্ডে পেস্টিং)',
-  'LED Module & Power Supply (লাইট সেটআপ)',
-  'Double Tape on Back (ডাবল টেপ)',
-  'Cutting',
-  'Die Cutting',
-  'Stitching',
-]
 
 export function WorkOrderModal({
   isOpen,
@@ -103,36 +98,46 @@ export function WorkOrderModal({
   // Products catalog
   const [products, setProducts] = useState<ProductRecord[]>([])
 
-  // Customer search & autofill state (Matching Reference Image 1)
+  // Customer Form Fields & Type Selector (matching Invoice form)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null)
   const [customerName, setCustomerName] = useState('')
+  const [customerType, setCustomerType] = useState<'retail' | 'reseller' | 'corporate' | 'government'>('retail')
   const [customerPhone, setCustomerPhone] = useState('')
+  const [whatsappNumber, setWhatsappNumber] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [customerAddress, setCustomerAddress] = useState('')
   const [customerEmail, setCustomerEmail] = useState('')
+
+  // Customer search suggestions dropdown state
+  const [activeCustomerSearchField, setActiveCustomerSearchField] = useState<'name' | 'phone' | 'company' | 'email' | null>(null)
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+  const [customerHighlightedIndex, setCustomerHighlightedIndex] = useState(0)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const phoneSearchRef = useRef<HTMLDivElement>(null)
+  const companySearchRef = useRef<HTMLDivElement>(null)
+  const emailSearchRef = useRef<HTMLDivElement>(null)
 
   // Work Order Routing & Notes (.JPG / .PNG only with paste support)
-  const [workflowRouting, setWorkflowRouting] = useState<'design_required' | 'design_ok' | 'ready_production'>('design_required')
+  const [workflowRouting, setWorkflowRouting] = useState<'design_required' | 'design_ok' | 'ready_production'>('ready_production')
   const [notes, setNotes] = useState('')
   const [referenceFileName, setReferenceFileName] = useState<string | null>(null)
   const [referenceProofUrl, setReferenceProofUrl] = useState<string | null>(null)
   const [isRefDragging, setIsRefDragging] = useState(false)
 
-  // Work Order Items State (Matching Reference Image 2 without pricing)
+  // Work Order Items State (Matching Invoice structure without pricing)
   const [items, setItems] = useState<WorkOrderItemState[]>([
     {
       id: `item-${Date.now()}-1`,
       productId: '',
       item_kind: 'service',
-      itemName: 'Eco Solvent Ink (Black)',
+      itemName: 'Pana Flex Banner Print',
       width: '4',
       height: '6',
       dimension_unit: 'ft',
       quantity: 1,
       unit: 'sft',
       finishing: 'None',
+      add_on: 'None',
       design_required: false,
       showAdvanced: false,
     },
@@ -171,11 +176,11 @@ export function WorkOrderModal({
     if (!isOpen) return
 
     const handlePaste = (e: ClipboardEvent) => {
-      const items = e.clipboardData?.items
-      if (!items) return
+      const itemsList = e.clipboardData?.items
+      if (!itemsList) return
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i]
+      for (let i = 0; i < itemsList.length; i++) {
+        const item = itemsList[i]
         if (item.type.indexOf('image') !== -1) {
           e.preventDefault()
           const file = item.getAsFile()
@@ -225,8 +230,15 @@ export function WorkOrderModal({
   // Close dropdown on outside click
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+      const clickedInsideCustomerField =
+        (searchContainerRef.current && searchContainerRef.current.contains(e.target as Node)) ||
+        (phoneSearchRef.current && phoneSearchRef.current.contains(e.target as Node)) ||
+        (companySearchRef.current && companySearchRef.current.contains(e.target as Node)) ||
+        (emailSearchRef.current && emailSearchRef.current.contains(e.target as Node))
+
+      if (!clickedInsideCustomerField) {
         setShowCustomerDropdown(false)
+        setActiveCustomerSearchField(null)
       }
     }
     document.addEventListener('mousedown', handleOutsideClick)
@@ -249,46 +261,83 @@ export function WorkOrderModal({
     [products]
   )
 
-  // Filtered customer matches
-  const customerMatches = useMemo(() => {
-    if (!customerName.trim() || selectedCustomerId) return []
-    const q = customerName.toLowerCase()
+  // Multi-field search results across name, phone, company, and email
+  const customerSearchResults = useMemo(() => {
+    let query = ''
+    if (activeCustomerSearchField === 'name') query = customerName.trim().toLowerCase()
+    else if (activeCustomerSearchField === 'phone') query = customerPhone.trim().toLowerCase()
+    else if (activeCustomerSearchField === 'company') query = companyName.trim().toLowerCase()
+    else if (activeCustomerSearchField === 'email') query = customerEmail.trim().toLowerCase()
+    else query = customerName.trim().toLowerCase()
+
+    if (!query || selectedCustomerId) return []
+
     return (Array.isArray(customers) ? customers : []).filter((c) => {
       return (
-        c.name.toLowerCase().includes(q) ||
-        (c.company_name && c.company_name.toLowerCase().includes(q)) ||
-        (c.mobile && c.mobile.includes(q)) ||
-        (c.email && c.email.toLowerCase().includes(q))
+        c.name.toLowerCase().includes(query) ||
+        (c.company_name && c.company_name.toLowerCase().includes(query)) ||
+        (c.mobile && c.mobile.includes(query)) ||
+        (c.email && c.email.toLowerCase().includes(query))
       )
     })
-  }, [customerName, selectedCustomerId, customers])
+  }, [customerName, customerPhone, companyName, customerEmail, activeCustomerSearchField, selectedCustomerId, customers])
 
   const handleSelectCustomer = (c: CustomerRecord) => {
     setSelectedCustomerId(c.id)
     setCustomerName(c.name)
+    setCustomerType((c.customer_type as any) || 'retail')
     setCustomerPhone(c.mobile || '')
+    setWhatsappNumber((c as any).whatsapp_number || c.mobile || '')
     setCompanyName(c.company_name || '')
     setCustomerAddress(c.address || c.area || '')
     setCustomerEmail(c.email || '')
     setShowCustomerDropdown(false)
+    setActiveCustomerSearchField(null)
   }
 
-  const handleCustomerNameChange = (val: string) => {
-    setCustomerName(val)
+  const handleCustomerFieldChange = (field: 'name' | 'phone' | 'company' | 'email', val: string) => {
+    if (field === 'name') setCustomerName(val)
+    else if (field === 'phone') setCustomerPhone(val)
+    else if (field === 'company') setCompanyName(val)
+    else if (field === 'email') setCustomerEmail(val)
+
     if (selectedCustomerId) {
       setSelectedCustomerId(null)
     }
+    setActiveCustomerSearchField(field)
     setShowCustomerDropdown(Boolean(val.trim()))
+    setCustomerHighlightedIndex(0)
+  }
+
+  const handleCustomerKeyDown = (e: React.KeyboardEvent) => {
+    if (!showCustomerDropdown || customerSearchResults.length === 0) return
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev + 1) % customerSearchResults.length)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      setCustomerHighlightedIndex((prev) => (prev - 1 + customerSearchResults.length) % customerSearchResults.length)
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      const cust = customerSearchResults[customerHighlightedIndex]
+      if (cust) handleSelectCustomer(cust)
+    } else if (e.key === 'Escape') {
+      setShowCustomerDropdown(false)
+    }
   }
 
   const handleClearCustomer = () => {
     setCustomerName('')
     setSelectedCustomerId(null)
+    setCustomerType('retail')
     setCustomerPhone('')
+    setWhatsappNumber('')
     setCompanyName('')
     setCustomerAddress('')
     setCustomerEmail('')
     setShowCustomerDropdown(false)
+    setActiveCustomerSearchField(null)
   }
 
   // Item management methods
@@ -319,6 +368,7 @@ export function WorkOrderModal({
           quantity: 1,
           unit: defaultProduct?.unit || 'sft',
           finishing: 'None',
+          add_on: 'None',
           available_dimension_presets: dimensionPresets,
           available_finishing_options: finishingOptions,
           printable_material_name: defaultProduct?.service_config?.printable_material_name || undefined,
@@ -343,6 +393,7 @@ export function WorkOrderModal({
           quantity: 1,
           unit: defaultProduct?.unit || 'pcs',
           finishing: 'None',
+          add_on: 'None',
           design_required: false,
           showAdvanced: false,
         },
@@ -361,7 +412,8 @@ export function WorkOrderModal({
           quantity: 1,
           unit: 'sft',
           finishing: 'None',
-          design_required: true,
+          add_on: 'None',
+          design_required: false,
           showAdvanced: false,
         },
       ])
@@ -590,11 +642,15 @@ export function WorkOrderModal({
       const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
       const orderId = `ord-${Date.now()}`
 
-      // Build Order Items
+      // Build Order Items with full specs, finishing, and add-on
       const orderItems = items.map((it, idx) => ({
         id: `oi-${Date.now()}-${idx + 1}`,
         item_name: it.itemName,
+        itemName: it.itemName,
         product_id: it.productId || undefined,
+        productId: it.productId || undefined,
+        item_kind: it.item_kind || 'service',
+        product_type: it.product_type || undefined,
         width: Number(it.width) || 0,
         height: Number(it.height) || 0,
         dimension_unit: (it.dimension_unit === 'mm' ? 'inch' : it.dimension_unit || 'ft') as 'ft' | 'inch' | 'm',
@@ -602,12 +658,28 @@ export function WorkOrderModal({
         unit: it.unit || 'sft',
         unit_price: 0,
         total_price: 0,
-        material_spec: it.dimensions_spec || null,
+        rate: 0,
+        finishing: it.finishing || 'None',
+        add_on: it.add_on || 'None',
+        dimensions_spec:
+          it.dimensions_spec ||
+          (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
+        material_spec: it.printable_material_name || (it as any).material_spec || undefined,
+        printable_material_name: it.printable_material_name || undefined,
+        workflow_routing: it.item_kind === 'ready_product' ? 'ready_product' : 'ready_production',
+        design_required: false,
       }))
 
       // Summary string for all items
       const itemsSummary = items
-        .map((it) => `${it.itemName}${it.width && it.height && it.item_kind !== 'ready_product' ? ` (${it.width}×${it.height} ${it.dimension_unit || 'ft'})` : ''} × ${it.quantity} ${it.unit}`)
+        .map(
+          (it) =>
+            `${it.itemName}${
+              it.width && it.height && it.item_kind !== 'ready_product'
+                ? ` (${it.width}×${it.height} ${it.dimension_unit || 'ft'})`
+                : ''
+            } × ${it.quantity} ${it.unit}`
+        )
         .join('; ')
 
       // 2. Build Sales Order record
@@ -617,8 +689,11 @@ export function WorkOrderModal({
         order_number: orderNumber,
         customer_id: selectedCustomerId || `cust-${Date.now()}`,
         customer_name: finalName,
+        customer_type: customerType,
         customer_phone: customerPhone.trim(),
+        customer_email: customerEmail.trim() || undefined,
         customer_address: customerAddress.trim(),
+        company_name: companyName.trim() || undefined,
         salesperson_name: currentUser?.profile?.full_name || 'Designer / Pre-Press',
         order_date: new Date().toISOString().split('T')[0],
         delivery_date: new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
@@ -645,10 +720,10 @@ export function WorkOrderModal({
       PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, newOrder)
       refreshUsage()
 
-      // 3. Create Pre-Press Design Job Ticket for Design Required or Design Check
+      // 3. Create Pre-Press Design Job Ticket
       let designJobId: string | null = null
       const isDesignReq = workflowRouting === 'design_required' || items.some((i) => i.design_required)
-      const isDesignOk = workflowRouting === 'design_ok' && !isDesignReq
+      const isDesignOk = workflowRouting === 'design_ok' || (!isDesignReq && workflowRouting !== 'ready_production')
 
       if (isDesignReq || isDesignOk) {
         designJobId = `dsn-${Date.now()}`
@@ -670,7 +745,9 @@ export function WorkOrderModal({
           customer_approval_required: !isDesignOk,
           deadline: `${newOrder.delivery_date} 18:00`,
           instructions: `Items: ${itemsSummary}. Routing: ${routingMode}. Notes: ${notes}`,
-          dimensions_spec: items[0] ? `${items[0].width}×${items[0].height} ${items[0].dimension_unit || 'ft'} (Qty: ${items[0].quantity})` : 'Custom Specs',
+          dimensions_spec: items[0]
+            ? `${items[0].width}×${items[0].height} ${items[0].dimension_unit || 'ft'} (Qty: ${items[0].quantity})`
+            : 'Custom Specs',
           current_version: 1,
           revision_count: 0,
           is_locked: false,
@@ -699,14 +776,16 @@ export function WorkOrderModal({
         PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
       }
 
-      // 4. If Send Invoice Request is selected, dispatch Manager notification & create invoice_requests record
+      // 4. Dispatch Invoice Request with complete specifications and customer info
       if (sendInvoiceRequest) {
         const { createInvoiceRequestAction } = await import('@/actions/invoice-request.actions')
         await createInvoiceRequestAction({
           companyId: effectiveCompanyId,
           customerId: newOrder.customer_id,
           customerName: finalName,
+          customerType: customerType,
           customerPhone: customerPhone.trim(),
+          whatsappNumber: whatsappNumber.trim() || null,
           customerEmail: customerEmail.trim() || null,
           customerAddress: customerAddress.trim() || null,
           companyName: companyName.trim() || null,
@@ -717,7 +796,8 @@ export function WorkOrderModal({
             product_type: it.product_type || undefined,
             itemName: it.itemName,
             item_name: it.itemName,
-            material_spec: (it as any).material_spec || undefined,
+            material_spec: it.printable_material_name || (it as any).material_spec || undefined,
+            printable_material_name: it.printable_material_name || undefined,
             dimensions_spec:
               it.dimensions_spec ||
               (it.width && it.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : undefined),
@@ -726,11 +806,13 @@ export function WorkOrderModal({
             dimension_unit: it.dimension_unit || 'ft',
             quantity: Number(it.quantity) || 1,
             unit: it.unit || 'sft',
-            rate: Number((it as any).rate ?? (it as any).unit_price ?? 0),
-            unit_price: Number((it as any).unit_price ?? (it as any).rate ?? 0),
-            total_price: Number((it as any).total_price ?? 0),
+            rate: 0,
+            unit_price: 0,
+            total_price: 0,
             finishing: it.finishing || 'None',
-            design_required: Boolean(it.design_required),
+            add_on: it.add_on || 'None',
+            workflow_routing: it.item_kind === 'ready_product' ? 'ready_product' : 'ready_production',
+            design_required: false,
           })),
           salesOrderId: newOrder.id,
           orderNumber: orderNumber,
@@ -783,7 +865,10 @@ export function WorkOrderModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার যোগ করুন')}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <Badge
+                variant="outline"
+                className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+              >
                 Pre-Press Flow
               </Badge>
             </div>
@@ -826,31 +911,29 @@ export function WorkOrderModal({
             <span className="text-[11px] text-indigo-700 dark:text-indigo-400 font-medium">
               {workflowRouting === 'design_required' && '🎨 Designer ➔ Proof ➔ Customer Approval ➔ Print'}
               {workflowRouting === 'design_ok' && '⚡ Artwork Verified ➔ Direct Machine Queue'}
-              {workflowRouting === 'ready_production' && '🚀 Fast-Track ➔ Direct Delivery Dispatch'}
+              {workflowRouting === 'ready_production' && '🚀 Fast-Track ➔ Direct Production & Delivery Dispatch'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <button
               type="button"
-              onClick={() => setWorkflowRouting('design_required')}
+              onClick={() => setWorkflowRouting('ready_production')}
               className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
-                workflowRouting === 'design_required'
-                  ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-indigo-500/20'
+                workflowRouting === 'ready_production'
+                  ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-blue-500/20'
                   : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
               )}
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                  🎨 Design Required
+                  🚀 Ready Production
                 </span>
-                {workflowRouting === 'design_required' && (
-                  <CheckCircle2 className="h-4 w-4 text-indigo-600" />
-                )}
+                {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Creates Designer task. Requires customer proof approval before printing.
+                Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.
               </p>
             </button>
 
@@ -868,45 +951,41 @@ export function WorkOrderModal({
                 <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
                   ⚡ Design OK (Print Ready)
                 </span>
-                {workflowRouting === 'design_ok' && (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                )}
+                {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Print-ready file verified. Skips design step & routes to print floor.
+                Print-ready file verified. Routes straight to prepress flightcheck & print floor.
               </p>
             </button>
 
             <button
               type="button"
-              onClick={() => setWorkflowRouting('ready_production')}
+              onClick={() => setWorkflowRouting('design_required')}
               className={cn(
                 'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between',
-                workflowRouting === 'ready_production'
-                  ? 'border-blue-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-blue-500/20'
+                workflowRouting === 'design_required'
+                  ? 'border-indigo-600 bg-white dark:bg-slate-900 shadow-xs ring-2 ring-indigo-500/20'
                   : 'border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/50 opacity-70 hover:opacity-100'
               )}
             >
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-slate-900 dark:text-white flex items-center gap-1.5">
-                  🚀 Ready Production
+                  🎨 Design Required
                 </span>
-                {workflowRouting === 'ready_production' && (
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                )}
+                {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-indigo-600" />}
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                Operational fast-track. Readymade goods dispatched directly to delivery.
+                Creates Designer task. Requires customer proof approval before printing.
               </p>
             </button>
           </div>
         </div>
 
         {/* =========================================================================
-            SECTION 1: CUSTOMER INFORMATION (Exact Layout Matching Reference Image 1)
+            SECTION 1: CUSTOMER INFORMATION (Exact Structure Matching Invoice Form)
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
@@ -915,15 +994,61 @@ export function WorkOrderModal({
                 CUSTOMER INFORMATION
               </h3>
             </div>
-            {selectedCustomerId && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
-                <UserCheck className="h-3.5 w-3.5" />
-                Existing Customer Linked
-              </span>
-            )}
+
+            {/* Customer Type Selector (matching Invoice form) */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
+              <button
+                type="button"
+                onClick={() => setCustomerType('retail')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  customerType === 'retail'
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                )}
+              >
+                Retail (খুচরা)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomerType('corporate')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  customerType === 'corporate'
+                    ? 'bg-white dark:bg-slate-900 text-purple-600 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                )}
+              >
+                Corporate (কর্পোরেট)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomerType('reseller')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  customerType === 'reseller'
+                    ? 'bg-white dark:bg-slate-900 text-emerald-600 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                )}
+              >
+                Reseller (রিসেলার)
+              </button>
+              <button
+                type="button"
+                onClick={() => setCustomerType('government')}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  customerType === 'government'
+                    ? 'bg-white dark:bg-slate-900 text-amber-600 shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                )}
+              >
+                Govt (সরকারি)
+              </button>
+            </div>
           </div>
 
-          {/* Grid Layout strictly matching Image 1: Row 1 (Name, Phone, Company), Row 2 (Address span 2, Email) */}
+          {/* Grid Layout strictly matching Invoice form */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {/* Customer Name * */}
             <div className="relative" ref={searchContainerRef}>
@@ -934,9 +1059,11 @@ export function WorkOrderModal({
                 <Input
                   placeholder="Type name to search or enter new..."
                   value={customerName}
-                  onChange={(e) => handleCustomerNameChange(e.target.value)}
+                  onChange={(e) => handleCustomerFieldChange('name', e.target.value)}
+                  onKeyDown={handleCustomerKeyDown}
                   onFocus={() => {
                     if (customerName.trim() && !selectedCustomerId) {
+                      setActiveCustomerSearchField('name')
                       setShowCustomerDropdown(true)
                     }
                   }}
@@ -957,18 +1084,28 @@ export function WorkOrderModal({
               </div>
 
               {/* Suggestions dropdown */}
-              {showCustomerDropdown && customerMatches.length > 0 && (
+              {showCustomerDropdown && customerSearchResults.length > 0 && (
                 <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl divide-y divide-slate-100 dark:divide-slate-800">
-                  {customerMatches.map((c) => (
+                  {customerSearchResults.map((c, idx) => (
                     <div
                       key={c.id}
                       onClick={() => handleSelectCustomer(c)}
-                      className="p-2.5 hover:bg-blue-50/70 dark:hover:bg-blue-950/40 cursor-pointer text-xs transition-colors"
+                      className={cn(
+                        'p-2.5 cursor-pointer text-xs transition-colors flex items-center justify-between',
+                        idx === customerHighlightedIndex
+                          ? 'bg-blue-50 dark:bg-blue-950/70 text-blue-900 dark:text-blue-100 font-bold'
+                          : 'hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200'
+                      )}
                     >
-                      <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">
-                        {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
+                      <div>
+                        <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
+                        <div className="text-[11px] text-slate-500 font-mono">
+                          {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
+                        </div>
                       </div>
+                      <Badge variant="outline" className="text-[9px] uppercase font-mono">
+                        {c.customer_type || 'Retail'}
+                      </Badge>
                     </div>
                   ))}
                 </div>
@@ -976,34 +1113,47 @@ export function WorkOrderModal({
             </div>
 
             {/* Phone Number * */}
-            <div>
+            <div ref={phoneSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">
                 Phone Number <span className="text-rose-500">*</span>
               </Label>
               <Input
                 placeholder="01XXXXXXXXX"
                 value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
+                onChange={(e) => handleCustomerFieldChange('phone', e.target.value)}
+                onKeyDown={handleCustomerKeyDown}
                 className="text-xs h-9 font-mono"
                 required
               />
             </div>
 
-            {/* Company Name (Optional) */}
+            {/* WhatsApp Number (Optional) */}
             <div>
+              <Label className="text-xs font-semibold mb-1 block">WhatsApp Number (Optional)</Label>
+              <Input
+                placeholder="01XXXXXXXXX"
+                value={whatsappNumber}
+                onChange={(e) => setWhatsappNumber(e.target.value)}
+                className="text-xs h-9 font-mono"
+              />
+            </div>
+
+            {/* Company Name (Optional) */}
+            <div ref={companySearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Company Name (Optional)</Label>
               <Input
                 placeholder="Business / Organization"
                 value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
+                onChange={(e) => handleCustomerFieldChange('company', e.target.value)}
+                onKeyDown={handleCustomerKeyDown}
                 className="text-xs h-9"
               />
             </div>
 
-            {/* Billing Address * */}
+            {/* Billing / Delivery Address * */}
             <div className="sm:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
-                Billing Address <span className="text-rose-500">*</span>
+                Billing / Delivery Address <span className="text-rose-500">*</span>
               </Label>
               <Input
                 placeholder="Full address for delivery & invoice"
@@ -1015,13 +1165,14 @@ export function WorkOrderModal({
             </div>
 
             {/* Email (for PDF Invoice) */}
-            <div>
+            <div ref={emailSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
               <Input
                 type="email"
                 placeholder="client@domain.com"
                 value={customerEmail}
-                onChange={(e) => setCustomerEmail(e.target.value)}
+                onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
+                onKeyDown={handleCustomerKeyDown}
                 className="text-xs h-9"
               />
             </div>
@@ -1029,7 +1180,7 @@ export function WorkOrderModal({
         </div>
 
         {/* =========================================================================
-            SECTION 2: WORK ORDER ITEMS & SPECS (Matching Reference Image 2 without pricing)
+            SECTION 2: WORK ORDER ITEMS & SPECS (Matching Invoice without pricing)
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-1 border-b border-slate-200 dark:border-slate-800">
@@ -1041,7 +1192,10 @@ export function WorkOrderModal({
                 {tBilingual('Work Order Items & Specs', 'আইটেম ও স্পেসিফিকেশন')}
               </h3>
               {totalSft > 0 && (
-                <Badge variant="outline" className="text-xs font-mono bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 ml-1">
+                <Badge
+                  variant="outline"
+                  className="text-xs font-mono bg-blue-50/50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800 ml-1"
+                >
                   Total Area: {totalSft.toFixed(1)} SFT
                 </Badge>
               )}
@@ -1084,7 +1238,11 @@ export function WorkOrderModal({
 
           <div className="space-y-4">
             {items.map((item, index) => {
-              const isService = item.item_kind === 'service' || (item.item_kind !== 'ready_product' && item.item_kind !== 'material' && Boolean(Number(item.width) > 0 && Number(item.height) > 0))
+              const isService =
+                item.item_kind === 'service' ||
+                (item.item_kind !== 'ready_product' &&
+                  item.item_kind !== 'material' &&
+                  Boolean(Number(item.width) > 0 && Number(item.height) > 0))
               const isReadyProduct = item.item_kind === 'ready_product'
               const isMaterial = item.item_kind === 'material'
               const isCustom = !item.productId
@@ -1094,7 +1252,7 @@ export function WorkOrderModal({
                   key={item.id}
                   className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xs space-y-3.5 transition-all"
                 >
-                  {/* Item Header & Badges (Matching Reference Image 2) */}
+                  {/* Item Header & Badges */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/70 dark:border-slate-800 pb-2.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs font-bold text-slate-600 bg-slate-200/80 dark:bg-slate-800 dark:text-slate-300 px-2 py-0.5 rounded">
@@ -1103,22 +1261,34 @@ export function WorkOrderModal({
 
                       {/* Item Kind Badge */}
                       {isService && (
-                        <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] font-bold">
+                        <Badge
+                          variant="outline"
+                          className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] font-bold"
+                        >
                           🖨️ Printing & Service
                         </Badge>
                       )}
                       {isReadyProduct && (
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold">
+                        <Badge
+                          variant="outline"
+                          className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold"
+                        >
                           📦 Ready Product
                         </Badge>
                       )}
                       {isMaterial && (
-                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-[10px] font-bold">
+                        <Badge
+                          variant="outline"
+                          className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-[10px] font-bold"
+                        >
                           🧵 Raw Material
                         </Badge>
                       )}
                       {isCustom && (
-                        <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold">
+                        <Badge
+                          variant="outline"
+                          className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold"
+                        >
                           Manual
                         </Badge>
                       )}
@@ -1225,7 +1395,7 @@ export function WorkOrderModal({
                         )}
                       </div>
                       <Input
-                        placeholder="e.g. Eco Solvent Ink (Black) or Pana Flex Banner 40ft × 20ft"
+                        placeholder="e.g. Pana Flex Banner Print 10ft × 4ft"
                         value={item.itemName}
                         onChange={(e) => handleItemChange(index, 'itemName', e.target.value)}
                         className="text-xs h-9 font-medium"
@@ -1256,9 +1426,9 @@ export function WorkOrderModal({
                     </div>
                   )}
 
-                  {/* Line 2: Service Controls (Width, Height, Dim Unit, Qty, Finishing) - Pricing OMITTED */}
+                  {/* Line 2: Service Controls (Width, Height, Dim Unit, Qty, Finishing, Add-on) - Pricing OMITTED */}
                   {isService && (
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+                    <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
                       <div>
                         <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
                         <Input
@@ -1317,19 +1487,33 @@ export function WorkOrderModal({
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
                           <option value="None">None</option>
-                          {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
-                            item.available_finishing_options.map((f) => (
-                              <option key={f.id} value={f.name}>
-                                {f.name}
-                              </option>
-                            ))
-                          ) : (
-                            FINISHING_OPTIONS.map((f) => (
-                              <option key={f} value={f}>
-                                {f}
-                              </option>
-                            ))
-                          )}
+                          {item.available_finishing_options && item.available_finishing_options.length > 0
+                            ? item.available_finishing_options.map((f) => (
+                                <option key={f.id} value={f.name}>
+                                  {f.name}
+                                </option>
+                              ))
+                            : STANDARD_FINISHING_OPTIONS.map((f) => (
+                                <option key={f.id} value={f.name}>
+                                  {f.name} ({f.name_bn})
+                                </option>
+                              ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <Label className="text-[11px] font-semibold mb-1 block">Add-ons</Label>
+                        <select
+                          value={item.add_on || 'None'}
+                          onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
+                          className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                        >
+                          <option value="None">None</option>
+                          {STANDARD_ADD_ON_OPTIONS.map((a) => (
+                            <option key={a.id} value={a.name}>
+                              {a.name} ({a.name_bn})
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>
@@ -1339,7 +1523,9 @@ export function WorkOrderModal({
                   {isReadyProduct && (
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                       <div className="sm:col-span-6 flex flex-col justify-center">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                          Physical Specs & Packaging
+                        </span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                           {item.dimensions_spec ? (
                             <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[11px]">
@@ -1430,35 +1616,11 @@ export function WorkOrderModal({
                   {isService && item.printable_material_name && (
                     <div className="flex items-center gap-2 text-[11px] text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
                       <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                      <span>Linked Substrate: <strong>{item.printable_material_name}</strong></span>
+                      <span>
+                        Linked Substrate: <strong>{item.printable_material_name}</strong>
+                      </span>
                     </div>
                   )}
-
-                  {/* Line 3: Workflow Gating / Design Required per item (Matching Reference Image 2) */}
-                  <div className="flex flex-wrap items-center justify-between gap-3 p-2.5 bg-slate-100/70 dark:bg-slate-900/80 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-                    <label className="flex items-center gap-1.5 font-semibold text-slate-800 dark:text-slate-200 cursor-pointer select-none">
-                      <input
-                        type="checkbox"
-                        checked={Boolean(item.design_required)}
-                        onChange={(e) => handleItemChange(index, 'design_required', e.target.checked)}
-                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4 cursor-pointer"
-                      />
-                      <span className="flex items-center gap-1">
-                        <Palette className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        Design Required (ডিজাইন প্রয়োজন)
-                      </span>
-                    </label>
-
-                    {item.design_required ? (
-                      <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-200 text-[10px] font-bold">
-                        🎨 Design Required
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-bold">
-                        ✨ Direct Production Ready
-                      </Badge>
-                    )}
-                  </div>
 
                   {/* Advanced Specs Drawer */}
                   {item.showAdvanced && (
@@ -1480,8 +1642,8 @@ export function WorkOrderModal({
                           <Label className="text-[11px] font-semibold mb-1 block">Item Special Instructions</Label>
                           <Input
                             placeholder="e.g. 1-inch extra margin for framing..."
-                            value={item.dimensions_spec ? '' : ''}
-                            onChange={(e) => {}}
+                            value={item.notes || ''}
+                            onChange={(e) => handleItemChange(index, 'notes', e.target.value)}
                             className="text-xs h-9"
                           />
                         </div>
@@ -1521,10 +1683,10 @@ export function WorkOrderModal({
             }}
             onClick={() => document.getElementById('woRefFileInput')?.click()}
             className={cn(
-              "p-3.5 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center",
+              'p-3.5 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center',
               isRefDragging
-                ? "border-blue-500 bg-blue-50/60 dark:bg-blue-950/40"
-                : "border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900"
+                ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40'
+                : 'border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-950/50 hover:bg-slate-100 dark:hover:bg-slate-900'
             )}
           >
             <input
