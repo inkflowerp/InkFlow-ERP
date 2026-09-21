@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Cpu,
   Plus,
@@ -59,6 +60,7 @@ import { StatusChangeModal } from '@/components/machinery/status-change-modal'
 
 export default function MachineriesListPage() {
   const params = useParams()
+  const pathname = usePathname()
   const tenantSlug = (params?.tenantSlug as string) || 'app'
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
@@ -152,7 +154,7 @@ export default function MachineriesListPage() {
         icon={Cpu}
         actions={
           <div className="flex items-center gap-2">
-            <Link href={`/${tenantSlug}/operator`}>
+            <Link href={getTenantNavHref('/operator', pathname, tenantSlug)}>
               <Button
                 variant="outline"
                 size="sm"
@@ -392,7 +394,7 @@ export default function MachineriesListPage() {
                 <div className="flex items-start justify-between gap-2">
                   <div className="space-y-0.5">
                     <Link
-                      href={`/${tenantSlug}/production/machineries/${m.id}`}
+                      href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
                       className="font-black text-sm text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors line-clamp-1"
                     >
                       {m.name}
@@ -483,7 +485,7 @@ export default function MachineriesListPage() {
               <div className="px-4 py-2.5 bg-slate-50/80 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/${tenantSlug}/production/machineries/${m.id}`}
+                    href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
                     className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
                   >
                     <Eye className="h-3.5 w-3.5" />
@@ -491,7 +493,7 @@ export default function MachineriesListPage() {
                   </Link>
 
                   <Link
-                    href={`/${tenantSlug}/operator?machine=${m.id}`}
+                    href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
                     className="text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 min-h-[36px] py-1"
                     title="Launch Workstation Terminal"
                   >
@@ -575,7 +577,7 @@ export default function MachineriesListPage() {
                 <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="p-3">
                     <Link
-                      href={`/${tenantSlug}/production/machineries/${m.id}`}
+                      href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
                       className="font-bold text-slate-900 dark:text-white hover:text-blue-600"
                     >
                       {m.name}
@@ -600,7 +602,7 @@ export default function MachineriesListPage() {
                   <td className="p-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       <Link
-                        href={`/${tenantSlug}/production/machineries/${m.id}`}
+                        href={getTenantNavHref(`/production/machineries/${m.id}`, pathname, tenantSlug)}
                         className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-blue-600 font-bold"
                         title="View Details"
                       >
@@ -608,7 +610,7 @@ export default function MachineriesListPage() {
                       </Link>
 
                       <Link
-                        href={`/${tenantSlug}/operator?machine=${m.id}`}
+                        href={getTenantNavHref(`/operator?machine=${m.id}`, pathname, tenantSlug)}
                         className="p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-blue-600 font-bold"
                         title="Launch Workstation Terminal"
                       >

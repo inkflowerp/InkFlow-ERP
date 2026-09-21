@@ -97,6 +97,16 @@ export function formatWhatsAppShareLink(
  * - Subdomain tenant routing (e.g., vision.inkflow.com.bd/dashboard -> /orders)
  * - Client-side Next.js Link and router navigation
  */
+/**
+ * Resolves an internal navigation href (e.g. '/orders', '/quotations', '/sales/new-work', '/finishing')
+ * to the proper tenant-scoped route based on current URL context.
+ * 
+ * Symmetrically handles:
+ * 1. Subdomain tenant routing (e.g. rangao.inkflow-erp.vercel.app/production or vision.inkflow.com.bd/dashboard):
+ *    -> Hrefs remain clean relative paths: '/sales/new-work', '/orders', '/finishing'
+ * 2. Path-based tenant routing (e.g. localhost:3000/rangao/dashboard or inkflow.com.bd/vision/orders):
+ *    -> Hrefs are prefixed with tenant slug: '/rangao/sales/new-work', '/vision/orders'
+ */
 export function getTenantNavHref(
   href: string,
   pathname?: string | null,
@@ -106,48 +116,47 @@ export function getTenantNavHref(
   if (href.startsWith('http://') || href.startsWith('https://')) return href
 
   const cleanHref = href.startsWith('/') ? href : `/${href}`
+  const cleanSlug = (tenantSlug || '').toLowerCase().trim()
 
-  // 1. Detect if currently on a path-based tenant route (e.g. pathname = "/demo/dashboard" or "/vision/orders")
-  if (pathname) {
-    const segments = pathname.split('/').filter(Boolean)
-    const firstSegment = segments[0]
-    const isSpecialRoot =
-      firstSegment === 'platform' ||
-      firstSegment === 'platform-admin' ||
-      firstSegment === 'login' ||
-      firstSegment === 'register' ||
-      firstSegment === 'onboarding' ||
-      firstSegment === 'about' ||
-      firstSegment === 'contact' ||
-      firstSegment === 'pricing' ||
-      firstSegment === 'features' ||
-      firstSegment === 'solutions' ||
-      firstSegment === 'faq' ||
-      firstSegment === 'terms' ||
-      firstSegment === 'privacy'
+  // 1. Client-Side Resolution (Browser context with window.location)
+  if (typeof window !== 'undefined') {
+    const host = window.location.host.toLowerCase().trim()
+    const browserPathname = window.location.pathname
 
-    if (firstSegment && !isSpecialRoot) {
-      if (cleanHref.startsWith(`/${firstSegment}/`) || cleanHref === `/${firstSegment}`) {
-        return cleanHref
+    // Check if host is a tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.localhost:3000)
+    const isSubdomain =
+      (cleanSlug && host.startsWith(`${cleanSlug}.`)) ||
+      (host.endsWith('.vercel.app') && host.split('.').length === 4) ||
+      (host.endsWith('.inkflow.com.bd') && host.split('.').length >= 4) ||
+      (host.endsWith('.localhost') && host !== 'localhost')
+
+    if (isSubdomain) {
+      // On subdomain routing, NEVER prefix with slug in browser pathname
+      // If href already has /slug/xyz, strip it
+      if (cleanSlug && cleanHref.startsWith(`/${cleanSlug}/`)) {
+        return cleanHref.slice(`/${cleanSlug}`.length) || '/'
       }
-      return `/${firstSegment}${cleanHref}`
+      if (cleanSlug && cleanHref === `/${cleanSlug}`) {
+        return '/dashboard'
+      }
+      return cleanHref
     }
-  }
 
-  // 2. If tenantSlug is provided and we are on a path-based environment (or client-side check)
-  if (tenantSlug) {
-    const cleanSlug = tenantSlug.toLowerCase().trim()
-    if (typeof window !== 'undefined') {
-      const host = window.location.host
-      // If host is NOT already a subdomain matching this tenant (e.g. host is localhost:3000 or app.inkflow.com.bd)
-      if (!host.startsWith(`${cleanSlug}.`)) {
+    // On root host (e.g. localhost:3000 or inkflow.com.bd), check if browserPathname is path-based
+    const pathToCheck = pathname || browserPathname
+    if (cleanSlug) {
+      if (pathToCheck.startsWith(`/${cleanSlug}/`) || pathToCheck === `/${cleanSlug}`) {
         if (cleanHref.startsWith(`/${cleanSlug}/`) || cleanHref === `/${cleanSlug}`) {
           return cleanHref
         }
         return `/${cleanSlug}${cleanHref}`
       }
-    } else {
-      // Default server-side resolution
+    }
+  }
+
+  // 2. Server-Side SSR Resolution
+  if (pathname && cleanSlug) {
+    if (pathname.startsWith(`/${cleanSlug}/`) || pathname === `/${cleanSlug}`) {
       if (cleanHref.startsWith(`/${cleanSlug}/`) || cleanHref === `/${cleanSlug}`) {
         return cleanHref
       }
@@ -155,6 +164,15 @@ export function getTenantNavHref(
     }
   }
 
+  // If on subdomain or non-prefixed path, strip any redundant tenant slug from href
+  if (cleanSlug && cleanHref.startsWith(`/${cleanSlug}/`)) {
+    return cleanHref.slice(`/${cleanSlug}`.length) || '/'
+  }
+  if (cleanSlug && cleanHref === `/${cleanSlug}`) {
+    return '/dashboard'
+  }
+
   return cleanHref
 }
+
 

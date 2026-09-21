@@ -14,6 +14,7 @@ import {
   getTenantLink,
   formatDocumentUrl,
   formatWhatsAppShareLink,
+  getTenantNavHref,
 } from '../../lib/tenant/tenant-url.ts'
 
 describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
@@ -184,5 +185,20 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     const opts = getAuthCookieOptions('inkflow-erp.vercel.app')
     assert.equal(opts.domain, undefined, 'PSL domain must omit wildcard domain to prevent browser cookie drop')
     assert.equal(opts.sameSite, 'lax')
+  })
+
+  test('20. getTenantNavHref resolves symmetrical clean hrefs on subdomains and path-based routing', () => {
+    // Subdomain routing (pathname is /production or /dashboard, without slug prefix)
+    assert.equal(getTenantNavHref('/sales/new-work', '/production', 'rangao'), '/sales/new-work')
+    assert.equal(getTenantNavHref('/orders', '/dashboard', 'vision'), '/orders')
+    assert.equal(getTenantNavHref('/finishing', '/production', 'abc'), '/finishing')
+    assert.equal(getTenantNavHref('/support', '/settings', 'rangao'), '/support')
+
+    // Redundant slug in href is stripped on subdomain
+    assert.equal(getTenantNavHref('/rangao/sales/new-work', '/production', 'rangao'), '/sales/new-work')
+
+    // Path-based routing (pathname starts with /rangao/...)
+    assert.equal(getTenantNavHref('/sales/new-work', '/rangao/production', 'rangao'), '/rangao/sales/new-work')
+    assert.equal(getTenantNavHref('/orders', '/vision/dashboard', 'vision'), '/vision/orders')
   })
 })
