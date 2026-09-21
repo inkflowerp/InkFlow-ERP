@@ -44,7 +44,7 @@ import {
 } from '@/types/trash.types'
 import { cn } from '@/lib/utils'
 
-export default function TrashPage() {
+function TrashContent() {
   const searchParams = useSearchParams()
   const tabParam = searchParams?.get('tab')
   const { company } = useTenant()
@@ -722,3 +722,19 @@ export default function TrashPage() {
     </div>
   )
 }
+
+export default function TrashPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Trash2 className="h-6 w-6 text-slate-400 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Trash Bin...</p>
+        </div>
+      }
+    >
+      <TrashContent />
+    </React.Suspense>
+  )
+}
+

@@ -92,7 +92,7 @@ export interface UnifiedWorkItem {
   rawInvoice?: any
 }
 
-export default function OrdersPage() {
+function OrdersContent() {
   const { company } = useTenant()
   const { can, isReadOnly } = usePermissions()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, usage, refreshUsage } = useSubscription()
@@ -1749,3 +1749,19 @@ export default function OrdersPage() {
     </div>
   )
 }
+
+export default function OrdersPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Orders & Job Directory...</p>
+        </div>
+      }
+    >
+      <OrdersContent />
+    </React.Suspense>
+  )
+}
+

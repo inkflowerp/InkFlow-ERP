@@ -68,7 +68,7 @@ import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
-export default function QuotationDetailPage() {
+function QuotationDetailContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -972,3 +972,19 @@ export default function QuotationDetailPage() {
     </FeatureGate>
   )
 }
+
+export default function QuotationDetailPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Quotation...</p>
+        </div>
+      }
+    >
+      <QuotationDetailContent />
+    </React.Suspense>
+  )
+}
+

@@ -64,7 +64,7 @@ import {
   disburseSalaryAdvanceAction,
 } from '@/actions/workforce.actions'
 
-export default function PayrollPage() {
+function PayrollContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -1124,3 +1124,19 @@ export default function PayrollPage() {
     </div>
   )
 }
+
+export default function PayrollPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Wallet className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Payroll Processing...</p>
+        </div>
+      }
+    >
+      <PayrollContent />
+    </React.Suspense>
+  )
+}
+

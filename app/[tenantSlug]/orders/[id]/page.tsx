@@ -60,7 +60,7 @@ const LIFECYCLE_STAGES = [
   { id: 'completion', label: 'Completion' },
 ]
 
-export default function OrderDetailPage() {
+function OrderDetailContent() {
   const params = useParams()
   const orderId = (params?.id as string) || ''
   const { company } = useTenant()
@@ -984,3 +984,19 @@ export default function OrderDetailPage() {
     </div>
   )
 }
+
+export default function OrderDetailPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Order Details...</p>
+        </div>
+      }
+    >
+      <OrderDetailContent />
+    </React.Suspense>
+  )
+}
+

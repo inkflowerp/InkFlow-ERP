@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { Receipt, Loader2 } from 'lucide-react'
 
-export default function InvoicesRedirectPage() {
+function InvoicesRedirectContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -37,3 +37,22 @@ export default function InvoicesRedirectPage() {
     </div>
   )
 }
+
+export default function InvoicesRedirectPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">
+          <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-950/50 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <Receipt className="h-6 w-6 animate-pulse" />
+          </div>
+          <p className="text-xs text-slate-500">Redirecting to Billing...</p>
+          <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+        </div>
+      }
+    >
+      <InvoicesRedirectContent />
+    </React.Suspense>
+  )
+}
+

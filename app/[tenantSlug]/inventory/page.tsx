@@ -103,7 +103,7 @@ export type InventoryViewTab =
   | 'receiving'
   | 'ledger'
 
-export default function UnifiedInventoryPage() {
+function UnifiedInventoryContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -1947,3 +1947,19 @@ export default function UnifiedInventoryPage() {
     </FeatureGate>
   )
 }
+
+export default function UnifiedInventoryPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Package className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Inventory...</p>
+        </div>
+      }
+    >
+      <UnifiedInventoryContent />
+    </React.Suspense>
+  )
+}
+

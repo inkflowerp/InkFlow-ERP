@@ -89,7 +89,7 @@ import { cn } from '@/lib/utils'
 
 export type BillingTab = 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
 
-export default function BillingPage() {
+function BillingContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -2101,3 +2101,19 @@ export default function BillingPage() {
     </div>
   )
 }
+
+export default function BillingPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Receipt className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Billing Workspace...</p>
+        </div>
+      }
+    >
+      <BillingContent />
+    </React.Suspense>
+  )
+}
+

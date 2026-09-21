@@ -228,7 +228,7 @@ const POPULAR_BANKS = [
   'United Commercial Bank (UCB)',
 ]
 
-export default function EmployeeListPage() {
+function EmployeeListContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -4251,3 +4251,19 @@ export default function EmployeeListPage() {
     </div>
   )
 }
+
+export default function EmployeeListPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <Users className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Employee Directory...</p>
+        </div>
+      }
+    >
+      <EmployeeListContent />
+    </React.Suspense>
+  )
+}
+

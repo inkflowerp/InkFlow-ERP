@@ -92,6 +92,9 @@ import {
   getDesignJobByIdAction,
 } from '@/actions/design.actions'
 
+import { getInvoicesAction } from '@/actions/billing.actions'
+import { getOrdersAction } from '@/actions/order.actions'
+
 export interface SiblingWorkItem {
   index: number
   id: string
@@ -113,7 +116,79 @@ export interface SiblingWorkItem {
   attachments?: Array<{ name: string; url: string; size?: string; type?: string }>
 }
 
-export default function DesignDetailPage() {
+function DesignDetailPageLoading() {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+      <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
+        <Palette className="h-5 w-5 animate-spin" />
+      </div>
+      <p className="text-sm font-semibold text-slate-500">Loading Design Workbench...</p>
+    </div>
+  )
+}
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+  error: Error | null
+}
+
+class DesignDetailErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[DesignDetailPage] Caught render error:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 text-center space-y-4 max-w-lg mx-auto my-12 bg-white dark:bg-slate-900 rounded-2xl border border-red-200 dark:border-red-900/50 shadow-lg">
+          <div className="h-12 w-12 rounded-xl bg-red-100 dark:bg-red-950/50 text-red-600 dark:text-red-400 flex items-center justify-center mx-auto">
+            <AlertTriangle className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
+              Workbench Temporarily Unavailable
+            </h3>
+            <p className="text-xs text-slate-500">
+              An unexpected display issue occurred while loading this artwork. You can reload or return to the studio.
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-3 pt-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                this.setState({ hasError: false, error: null })
+                window.location.reload()
+              }}
+            >
+              Reload Workbench
+            </Button>
+            <Button size="sm" asChild>
+              <Link href="/design">Back to Design Studio</Link>
+            </Button>
+          </div>
+        </div>
+      )
+    }
+
+    return this.props.children
+  }
+}
+
+function DesignDetailContent() {
   const params = useParams()
   const router = useRouter()
   const pathname = usePathname() || ''
@@ -126,9 +201,9 @@ export default function DesignDetailPage() {
   const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [jobs, setJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
-  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
+  const [invoices, setInvoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const [invoiceRequests] = useDataStore<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS, [])
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [orders, setOrders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
   const [jobOrders] = useDataStore<any[]>(STORAGE_KEYS.JOB_ORDERS, [])
 
@@ -193,10 +268,23 @@ export default function DesignDetailPage() {
         (i) =>
           (i.id === invIdPart ||
             i.invoice_number === invIdPart ||
-            i.id?.includes(invIdPart) ||
-            invIdPart.includes(i.id)) &&
+            (typeof i.id === 'string' && i.id.includes(invIdPart)) ||
+            (typeof i.id === 'string' && typeof invIdPart === 'string' && invIdPart.includes(i.id))) &&
           isMatchingCompany(i.company_id)
       )
+    }
+
+    if (!targetInv && invoices.length > 0) {
+      targetInv = invoices.find((i) => {
+        if (!i.id) return false
+        if (
+          jobId.toLowerCase().includes(i.id.toLowerCase()) ||
+          (i.invoice_number && jobId.toLowerCase().includes(i.invoice_number.toLowerCase()))
+        ) {
+          return true
+        }
+        return false
+      })
     }
 
     if (targetInv) {
@@ -316,6 +404,38 @@ export default function DesignDetailPage() {
 
     return null
   }, [jobId, jobs, invoices, orders, companyId, slug])
+
+  // Hydrate from server if not found in local datastore
+  useEffect(() => {
+    if (!resolvedJob && jobId) {
+      const effCompany = companyId || 'default'
+      getDesignJobByIdAction(jobId, effCompany)
+        .then((res) => {
+          if (res?.success && res.data) {
+            setJobs((prev) => {
+              if (prev.some((j) => j.id === res.data!.id)) return prev
+              return [res.data!, ...prev]
+            })
+          } else {
+            getInvoicesAction(effCompany)
+              .then((invRes) => {
+                if (invRes?.success && Array.isArray(invRes.data) && invRes.data.length > 0) {
+                  setInvoices(invRes.data)
+                }
+              })
+              .catch(() => {})
+            getOrdersAction(effCompany)
+              .then((ordRes) => {
+                if (ordRes?.success && Array.isArray(ordRes.data) && ordRes.data.length > 0) {
+                  setOrders(ordRes.data)
+                }
+              })
+              .catch(() => {})
+          }
+        })
+        .catch(() => {})
+    }
+  }, [resolvedJob, jobId, companyId, setJobs, setInvoices, setOrders])
 
   // Persist synthesized job into datastore if not already stored
   useEffect(() => {
@@ -1987,3 +2107,14 @@ export default function DesignDetailPage() {
     </div>
   )
 }
+
+export default function DesignDetailPage() {
+  return (
+    <DesignDetailErrorBoundary>
+      <React.Suspense fallback={<DesignDetailPageLoading />}>
+        <DesignDetailContent />
+      </React.Suspense>
+    </DesignDetailErrorBoundary>
+  )
+}
+

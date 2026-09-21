@@ -135,7 +135,7 @@ function format12Hour(timeStr?: string | null): string {
   return minutesToTimeString(mins)
 }
 
-export default function AttendancePage() {
+function AttendanceContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -3358,3 +3358,19 @@ export default function AttendancePage() {
     </div>
   )
 }
+
+export default function AttendancePage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+          <UserCheck className="h-6 w-6 text-indigo-500 animate-pulse" />
+          <p className="text-xs text-slate-500">Loading Attendance Hub...</p>
+        </div>
+      }
+    >
+      <AttendanceContent />
+    </React.Suspense>
+  )
+}
+
