@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { ChevronRight, Home } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function Breadcrumbs() {
   const pathname = usePathname()
@@ -26,7 +27,7 @@ export function Breadcrumbs() {
   return (
     <nav aria-label="Breadcrumbs" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap shrink-0 max-w-[280px] overflow-hidden">
       <Link
-        href="/dashboard"
+        href={getTenantNavHref('/dashboard', pathname, company?.slug)}
         className="flex items-center gap-1 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0"
         title="Dashboard"
       >
@@ -35,11 +36,12 @@ export function Breadcrumbs() {
 
       {segments.map((seg, idx) => {
         const isLast = idx === segments.length - 1
-        const href = `/${segments.slice(0, idx + 1).join('/')}`
+        const rawSubPath = `/${segments.slice(0, idx + 1).join('/')}`
+        const href = getTenantNavHref(rawSubPath, pathname, company?.slug)
         const label = t(`nav.${seg}`) || seg.replace(/-/g, ' ')
 
         return (
-          <React.Fragment key={href}>
+          <React.Fragment key={rawSubPath}>
             <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
             {isLast ? (
               <span className="font-semibold text-slate-900 dark:text-white capitalize truncate">

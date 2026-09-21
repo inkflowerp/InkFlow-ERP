@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   TrendingUp,
   DollarSign,
@@ -47,6 +47,7 @@ import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
 import { QuickActionsBar } from '@/components/dashboard/quick-actions-bar'
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
 import type { EvaluatedJobRisk, NeedsAttentionItem } from '@/lib/dashboard/job-risk-engine'
 import type { OverdueReceivableSummary } from '@/lib/finance/canonical-finance'
@@ -80,6 +81,7 @@ export function OwnerDashboard({
   const { tBilingual, locale } = useI18n()
   const { company, currentBranch, currentUser } = useTenant()
   const router = useRouter()
+  const pathname = usePathname()
   const num = (v: number | string) => (typeof v === 'number' ? v.toLocaleString() : v)
 
   const [isMounted, setIsMounted] = useState(false)
@@ -375,8 +377,7 @@ export function OwnerDashboard({
                         size="sm"
                         onClick={() => {
                           if (item.actionType === 'route') {
-                            const fullRoute = item.actionTarget.startsWith('/') ? item.actionTarget : `/${item.actionTarget}`
-                            router.push(fullRoute)
+                            router.push(getTenantNavHref(item.actionTarget, pathname, company?.slug))
                           }
                         }}
                         className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
@@ -536,7 +537,7 @@ export function OwnerDashboard({
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => router.push('/costing')}
+                    onClick={() => router.push(getTenantNavHref('/costing', pathname, company?.slug))}
                     className="h-7 text-[11px] font-bold text-blue-600 border-blue-200"
                   >
                     {tBilingual('View Costing', 'কস্টিং দেখুন')}
@@ -603,7 +604,7 @@ export function OwnerDashboard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => router.push('/production')}
+                onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
                 className="text-xs font-bold"
               >
                 {tBilingual('Open Production Board', 'প্রোডাকশন বোর্ড দেখুন')}
@@ -667,7 +668,7 @@ export function OwnerDashboard({
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => router.push('/production')}
+                        onClick={() => router.push(getTenantNavHref('/production', pathname, company?.slug))}
                         className="h-7 text-xs font-bold text-blue-600 hover:text-blue-700 p-0"
                       >
                         {tBilingual('Open Job', 'বিস্তারিত')} <ArrowRight className="h-3 w-3 ml-0.5" />
@@ -733,7 +734,7 @@ export function OwnerDashboard({
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => router.push('/delivery')}
+                      onClick={() => router.push(getTenantNavHref('/delivery', pathname, company?.slug))}
                       className="h-8 text-xs font-semibold shrink-0"
                     >
                       {tBilingual('Details', 'বিস্তারিত')}
@@ -758,7 +759,7 @@ export function OwnerDashboard({
               <Button
                 size="sm"
                 variant="ghost"
-                onClick={() => router.push('/billing?tab=due')}
+                onClick={() => router.push(getTenantNavHref('/billing?tab=due', pathname, company?.slug))}
                 className="text-xs font-bold text-blue-600 h-7"
               >
                 {tBilingual('View All Dues', 'সকল বাকি')} <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
@@ -857,7 +858,7 @@ export function OwnerDashboard({
             ].map((stage, idx) => (
               <div
                 key={stage.labelEn}
-                onClick={() => router.push(stage.route)}
+                onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
                 className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-center cursor-pointer hover:border-blue-400 hover:shadow-xs transition-all space-y-1"
               >
                 <div className="text-[11px] text-slate-500 font-semibold bangla-text">

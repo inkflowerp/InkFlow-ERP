@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   Search,
   X,
@@ -35,6 +35,7 @@ import { useShortcuts } from '@/hooks/use-shortcuts'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 const ENTITY_CONFIG: Record<
   SearchEntity,
@@ -136,6 +137,7 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: CommandPaletteProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { tBilingual } = useI18n()
   const tenantSlug = company?.slug || 'app'
@@ -152,27 +154,33 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
     onClose: () => onClose(),
   })
 
-  // Autofocus input when opened
+  // Sync viewMode when initialMode changes or modal opens
+  useEffect(() => {
+    setViewMode(initialMode)
+  }, [initialMode, isOpen])
+
+  // Focus search input on open
   useEffect(() => {
     if (isOpen) {
-      setViewMode(initialMode)
-      setQuery('')
-      setSelectedIndex(0)
-      setShowSettings(false)
       setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus()
           inputRef.current.select()
         }
       }, 60)
+    } else {
+      setQuery('')
+      setSelectedEntity('all')
+      setSelectedIndex(0)
+      setShowSettings(false)
     }
   }, [isOpen, initialMode])
 
-  // Perform search across entities
+  // Execute Search via SearchService
   const groupedResults: GroupedSearchResults = useMemo(() => {
-    if (!isOpen) return {}
-    return SearchService.search(company?.id || 'c-01', query)
-  }, [isOpen, company?.id, query])
+    if (!company?.id || !query.trim()) return {}
+    return SearchService.search(company.id, query)
+  }, [company?.id, query])
 
   const quickCommands = useMemo(() => {
     return SearchService.getQuickCommands()
@@ -203,12 +211,12 @@ export function CommandPalette({ isOpen, onClose, initialMode = 'search' }: Comm
 
   const handleSelectCommand = (cmd: QuickCommand) => {
     onClose()
-    router.push(`/${tenantSlug}${cmd.href}`)
+    router.push(getTenantNavHref(cmd.href, pathname, tenantSlug))
   }
 
   const handleSelectResult = (item: SearchResultItem) => {
     onClose()
-    router.push(`/${tenantSlug}${item.href}`)
+    router.push(getTenantNavHref(item.href, pathname, tenantSlug))
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

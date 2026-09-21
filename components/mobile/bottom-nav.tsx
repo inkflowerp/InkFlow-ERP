@@ -19,6 +19,7 @@ import { OfflineSyncDrawer } from './offline-sync-drawer'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { NewWorkWizard } from '@/components/orders/new-work-wizard'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function MobileBottomNav() {
   const pathname = usePathname()
@@ -33,7 +34,7 @@ export function MobileBottomNav() {
   const [newWorkOpen, setNewWorkOpen] = useState(false)
   const [syncOpen, setSyncOpen] = useState(false)
 
-  const isDashboardActive = pathname === '/dashboard' || pathname === '/'
+  const isDashboardActive = pathname === '/dashboard' || pathname === `/${tenantSlug}/dashboard` || pathname === `/${tenantSlug}` || pathname === '/'
   const isOperatorActive = pathname?.includes('/operator')
   const isMessagesActive = pathname?.includes('/communications')
 
@@ -50,7 +51,7 @@ export function MobileBottomNav() {
         <div className="grid grid-cols-5 h-16 items-center px-1">
           {/* 1. Dashboard */}
           <Link
-            href="/dashboard"
+            href={getTenantNavHref('/dashboard', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isDashboardActive
                 ? 'text-blue-400 font-bold'
@@ -65,7 +66,7 @@ export function MobileBottomNav() {
 
           {/* 2. My Work / Operator Terminal */}
           <Link
-            href="/operator"
+            href={getTenantNavHref('/operator', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isOperatorActive
                 ? 'text-blue-400 font-bold'
@@ -95,7 +96,7 @@ export function MobileBottomNav() {
 
           {/* 4. Messages / Notifications */}
           <Link
-            href="/communications"
+            href={getTenantNavHref('/communications', pathname, tenantSlug)}
             className={`flex flex-col items-center justify-center h-full min-h-[48px] py-1 transition-colors bangla-text ${
               isMessagesActive
                 ? 'text-blue-400 font-bold'

@@ -2,6 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Lock,
   Sparkles,
@@ -54,6 +56,7 @@ export function UpgradePrompt({
   } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const pathname = usePathname()
   const slug = company?.slug || 'app'
 
   const meta = FEATURE_METADATA[feature] || {
@@ -130,7 +133,7 @@ export function UpgradePrompt({
           </div>
         </div>
 
-        <Link href="/settings/subscription">
+        <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
           <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold bangla-text">
             {tBilingual(isExpiredState ? 'Renew' : 'Upgrade', isExpiredState ? 'নবায়ন' : 'আপগ্রেড')}
             <ArrowRight className="ml-1 h-3 w-3" />
@@ -237,14 +240,14 @@ export function UpgradePrompt({
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row items-center justify-center gap-3 pb-8">
-        <Link href="/settings/subscription" className="w-full sm:w-auto">
+        <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-6 shadow-md shadow-indigo-500/20 bangla-text">
             <Zap className="mr-2 h-4 w-4" />
             {tBilingual(ctaTextEn, ctaTextBn)}
           </Button>
         </Link>
 
-        <Link href="/settings/subscription" className="w-full sm:w-auto">
+        <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="w-full sm:w-auto">
           <Button variant="outline" className="w-full sm:w-auto text-xs bangla-text">
             {tBilingual('Compare All Plans', 'প্ল্যান তুলনা দেখুন')}
           </Button>

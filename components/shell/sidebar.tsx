@@ -47,6 +47,7 @@ import {
   X,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -222,7 +223,7 @@ export function Sidebar() {
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-4 dark:border-slate-800">
         {!collapsed ? (
           <Link
-            href="/dashboard"
+            href={getTenantNavHref('/dashboard', pathname, company?.slug)}
             className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-0.5"
           >
             {/* CMYK Symbol: 4 distinct printing dots */}
@@ -243,7 +244,7 @@ export function Sidebar() {
           </Link>
         ) : (
           <Link
-            href="/dashboard"
+            href={getTenantNavHref('/dashboard', pathname, company?.slug)}
             className="mx-auto grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 dark:bg-slate-800 hover:scale-105 transition-transform cursor-pointer"
             title="InkFlow ERP Dashboard"
           >
@@ -334,7 +335,7 @@ export function Sidebar() {
                     return (
                       <div key={item.key} className="relative group/nav">
                         <Link
-                          href={item.href}
+                          href={getTenantNavHref(item.href, pathname, company?.slug)}
                           aria-label={`${item.title} - ${item.titleBn}`}
                           className={cn(
                             'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
@@ -485,7 +486,7 @@ export function Sidebar() {
 
           {/* Support Desk Link */}
           <Link
-            href="/support"
+            href={getTenantNavHref('/support', pathname, company?.slug)}
             className="flex items-center justify-between rounded-xl bg-slate-50 px-2.5 py-2 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800 hover:border-blue-300 dark:hover:border-slate-700 hover:bg-slate-100/80 dark:hover:bg-slate-800/90 transition-all group cursor-pointer"
           >
             <div className="flex items-center gap-2 min-w-0">

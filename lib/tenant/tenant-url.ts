@@ -87,3 +87,74 @@ export function formatWhatsAppShareLink(
   const formattedPhone = cleanPhone.startsWith('88') ? cleanPhone : `88${cleanPhone}`
   return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`
 }
+
+/**
+ * Resolves an internal navigation href (e.g. '/orders', '/quotations', '/sales/new-work', '/finishing')
+ * to the proper tenant-scoped route based on current URL path context and tenant slug.
+ * 
+ * Works symmetrically across:
+ * - Path-based tenant routing (e.g., localhost:3000/vision/dashboard -> /vision/orders)
+ * - Subdomain tenant routing (e.g., vision.inkflow.com.bd/dashboard -> /orders)
+ * - Client-side Next.js Link and router navigation
+ */
+export function getTenantNavHref(
+  href: string,
+  pathname?: string | null,
+  tenantSlug?: string | null
+): string {
+  if (!href) return '/'
+  if (href.startsWith('http://') || href.startsWith('https://')) return href
+
+  const cleanHref = href.startsWith('/') ? href : `/${href}`
+
+  // 1. Detect if currently on a path-based tenant route (e.g. pathname = "/demo/dashboard" or "/vision/orders")
+  if (pathname) {
+    const segments = pathname.split('/').filter(Boolean)
+    const firstSegment = segments[0]
+    const isSpecialRoot =
+      firstSegment === 'platform' ||
+      firstSegment === 'platform-admin' ||
+      firstSegment === 'login' ||
+      firstSegment === 'register' ||
+      firstSegment === 'onboarding' ||
+      firstSegment === 'about' ||
+      firstSegment === 'contact' ||
+      firstSegment === 'pricing' ||
+      firstSegment === 'features' ||
+      firstSegment === 'solutions' ||
+      firstSegment === 'faq' ||
+      firstSegment === 'terms' ||
+      firstSegment === 'privacy'
+
+    if (firstSegment && !isSpecialRoot) {
+      if (cleanHref.startsWith(`/${firstSegment}/`) || cleanHref === `/${firstSegment}`) {
+        return cleanHref
+      }
+      return `/${firstSegment}${cleanHref}`
+    }
+  }
+
+  // 2. If tenantSlug is provided and we are on a path-based environment (or client-side check)
+  if (tenantSlug) {
+    const cleanSlug = tenantSlug.toLowerCase().trim()
+    if (typeof window !== 'undefined') {
+      const host = window.location.host
+      // If host is NOT already a subdomain matching this tenant (e.g. host is localhost:3000 or app.inkflow.com.bd)
+      if (!host.startsWith(`${cleanSlug}.`)) {
+        if (cleanHref.startsWith(`/${cleanSlug}/`) || cleanHref === `/${cleanSlug}`) {
+          return cleanHref
+        }
+        return `/${cleanSlug}${cleanHref}`
+      }
+    } else {
+      // Default server-side resolution
+      if (cleanHref.startsWith(`/${cleanSlug}/`) || cleanHref === `/${cleanSlug}`) {
+        return cleanHref
+      }
+      return `/${cleanSlug}${cleanHref}`
+    }
+  }
+
+  return cleanHref
+}
+

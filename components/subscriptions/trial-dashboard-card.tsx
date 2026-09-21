@@ -2,6 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Clock,
   Crown,
@@ -43,6 +45,7 @@ export function TrialDashboardCard() {
   } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const pathname = usePathname()
   const slug = company?.slug || 'app'
 
   if (!mounted || isLoading || !isTrial) return null
@@ -172,7 +175,7 @@ export function TrialDashboardCard() {
               <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
             </Button>
 
-            <Link href="/settings/subscription" className="hidden sm:inline-block">
+            <Link href={getTenantNavHref('/settings/subscription', pathname, slug)} className="hidden sm:inline-block">
               <Button size="sm" variant="outline" className="text-xs bangla-text">
                 {tBilingual('Compare Plans', 'প্ল্যান দেখুন')}
               </Button>

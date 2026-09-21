@@ -1,6 +1,9 @@
 'use client'
 
 import React, { useState, useMemo } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Calculator,
   Sliders,
@@ -42,6 +45,7 @@ export function PricingCalculatorSimulator({
   tenantSlug,
 }: PricingCalculatorSimulatorProps) {
   const { tBilingual } = useI18n()
+  const pathname = usePathname()
 
   const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || '')
   const [customerType, setCustomerType] = useState<PricingCustomerType>('retail')
@@ -431,10 +435,10 @@ export function PricingCalculatorSimulator({
               asChild
               className="w-full h-10 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md text-xs cursor-pointer"
             >
-              <a href="/quotations?new=true">
+              <Link href={getTenantNavHref('/quotations?new=true', pathname, tenantSlug)}>
                 <span>{tBilingual('Create Quotation with this Tariff', 'এই দর দিয়ে কোটেশন তৈরি করুন')}</span>
                 <ArrowRight className="h-4 w-4 ml-1.5" />
-              </a>
+              </Link>
             </Button>
           </div>
         </Card>

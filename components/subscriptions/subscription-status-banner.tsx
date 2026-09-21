@@ -2,6 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   AlertTriangle,
   Clock,
@@ -39,6 +41,7 @@ export function SubscriptionStatusBanner() {
   } = useSubscription()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const pathname = usePathname()
   const slug = company?.slug || 'app'
 
   if (!mounted || isLoading) {
@@ -63,7 +66,7 @@ export function SubscriptionStatusBanner() {
             </span>
           </div>
 
-          <Link href="/settings/subscription">
+          <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
               size="sm"
               variant="outline"
@@ -91,7 +94,7 @@ export function SubscriptionStatusBanner() {
             </span>
           </div>
 
-          <Link href="/settings/subscription">
+          <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button
               size="sm"
               className="h-7 text-xs bg-white text-amber-900 hover:bg-amber-50 font-black bangla-text shadow-sm"

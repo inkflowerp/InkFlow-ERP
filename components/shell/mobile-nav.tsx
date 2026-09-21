@@ -48,6 +48,7 @@ import {
   Headphones,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useTenant } from '@/hooks/use-tenant'
 import { useAuth } from '@/hooks/use-auth'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -199,7 +200,7 @@ export function MobileNav() {
           <div className="flex items-center justify-between">
             {/* Logo and Brand */}
             <Link
-              href="/dashboard"
+              href={getTenantNavHref('/dashboard', pathname, company?.slug)}
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 group cursor-pointer"
             >
@@ -283,7 +284,7 @@ export function MobileNav() {
             {/* Quick Actions Shortcuts Chips */}
             <div className="grid grid-cols-3 gap-1.5">
               <Link
-                href="/quotations"
+                href={getTenantNavHref('/quotations', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -291,7 +292,7 @@ export function MobileNav() {
                 <span>{tBilingual('Quotes', 'কোটেশন')}</span>
               </Link>
               <Link
-                href="/sales/new-work"
+                href={getTenantNavHref('/sales/new-work', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/70 dark:border-indigo-900/60 text-indigo-700 dark:text-indigo-300 text-xs font-semibold hover:bg-indigo-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -299,7 +300,7 @@ export function MobileNav() {
                 <span>{tBilingual('New Work', 'নতুন কাজ')}</span>
               </Link>
               <Link
-                href="/production"
+                href={getTenantNavHref('/production', pathname, company?.slug)}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
               >
@@ -369,7 +370,7 @@ export function MobileNav() {
                           return (
                             <React.Fragment key={item.key}>
                               <Link
-                                href={item.href}
+                                href={getTenantNavHref(item.href, pathname, company?.slug)}
                                 onClick={() => setOpen(false)}
                                 className={cn(
                                   'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
@@ -455,7 +456,7 @@ export function MobileNav() {
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
             <Link
-              href="/support"
+              href={getTenantNavHref('/support', pathname, company?.slug)}
               onClick={() => setOpen(false)}
               className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold hover:underline"
             >

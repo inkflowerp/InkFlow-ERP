@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { useOutsideClick } from '@/hooks/use-outside-click'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
@@ -78,7 +79,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push('/settings/users')
+                router.push(getTenantNavHref('/settings/users', pathname, slug))
               }}
             >
               <UserIcon className="h-3.5 w-3.5 text-slate-400" />
@@ -89,7 +90,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push('/settings/company')
+                router.push(getTenantNavHref('/settings/company', pathname, slug))
               }}
             >
               <Settings className="h-3.5 w-3.5 text-slate-400" />
@@ -100,7 +101,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push('/settings/subscription')
+                router.push(getTenantNavHref('/settings/subscription', pathname, slug))
               }}
             >
               <Shield className="h-3.5 w-3.5 text-amber-500" />
@@ -111,7 +112,7 @@ export function UserMenu() {
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 cursor-pointer bangla-text"
               onClick={() => {
                 setIsOpen(false)
-                router.push('/support')
+                router.push(getTenantNavHref('/support', pathname, slug))
               }}
             >
               <Headphones className="h-3.5 w-3.5 text-indigo-500" />
