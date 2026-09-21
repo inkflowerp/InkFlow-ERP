@@ -90,6 +90,15 @@ export interface DesignJobRecord {
   items_summary?: string | null
   work_order_id?: string | null
   is_invoice_created?: boolean
+  selected_finishing?: Array<{ id?: string; name: string; rate?: number; cost?: number }> | null
+  selected_add_ons?: Array<{ id?: string; name: string; rate?: number; cost?: number }> | null
+  customer_phone?: string | null
+  customer_address?: string | null
+  customer_company_name?: string | null
+  unit_price?: number | null
+  total_price?: number | null
+  area_sft?: number | null
+  item_kind?: string | null
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
   created_at: string

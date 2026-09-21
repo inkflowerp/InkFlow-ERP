@@ -124,4 +124,75 @@ describe('Design Workbench - Multi-Work Invoices, Customer Info, Briefs & Attach
     assert.ok(job, 'Should synthesize job')
     assert.equal(job?.customer_name, 'Alpha Agency')
   })
+
+  it('3. Accurately synthesizes multi-work item 1 with selected_finishing, selected_add_ons, area, and prices', async () => {
+    const invoice = {
+      id: 'ef26fbed-b982-4276-8dba-578dd4e70c69',
+      company_id: companyId,
+      invoice_number: 'INV-2026-0088',
+      customer_id: 'cust-rangao-brand',
+      customer_name: 'Rangao Brand Ltd',
+      customer_phone: '01700112233',
+      customer_address: 'Banani, Dhaka',
+      status: 'confirmed',
+      total_amount: 45000,
+      paid_amount: 30000,
+      due_amount: 15000,
+      items: [
+        {
+          id: 'item-0',
+          item_name: 'PVC Banner',
+          dimensions_spec: '10 × 5 ft',
+          width: 10,
+          height: 5,
+          quantity: 1,
+          unit: 'pcs',
+          area_sft: 50,
+          workflow_routing: 'design_ok',
+        },
+        {
+          id: 'item-1',
+          item_name: 'Matt Black Foil Box',
+          item_description: 'Luxury Matt Black Foil Box (Custom Die Cut)',
+          dimensions_spec: '8 × 6 × 2.5 inch',
+          width: 8,
+          height: 6,
+          quantity: 250,
+          unit: 'pcs',
+          unit_price: 120,
+          total_price: 30000,
+          material: '350gsm Matte Black Board',
+          item_kind: 'Packaging',
+          selected_finishing: [
+            { id: 'fin-1', name: 'Gold Foil Stamping', cost: 1500 },
+            { id: 'fin-2', name: 'Die-Cut & Creasing', cost: 1200 },
+            { id: 'fin-3', name: 'Thermal Matt Lamination', cost: 800 },
+          ],
+          selected_add_ons: [
+            { id: 'addon-1', name: 'Velvet Inner Foam Pad', cost: 500 },
+          ],
+          workflow_routing: 'design_required',
+          remarks: 'Ensure 3mm bleed margin for die cut folds. CMYK high contrast.',
+          attachment_url: 'https://example.com/die_line_template.pdf',
+        },
+      ],
+      created_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+
+    // Lookup item 1: dsn-inv-ef26fbed-b982-4276-8dba-578dd4e70c69-1
+    const job1 = await DesignRepository.getDesignJobById('dsn-inv-ef26fbed-b982-4276-8dba-578dd4e70c69-1', companyId)
+    assert.ok(job1, 'Should find item 1')
+    assert.equal(job1?.design_number, 'DSN-2026-0088-B')
+    assert.equal(job1?.title, 'Luxury Matt Black Foil Box (Custom Die Cut)')
+    assert.equal(job1?.quantity, 250)
+    assert.equal(job1?.unit_price, 120)
+    assert.equal(job1?.total_price, 30000)
+    assert.equal(job1?.material, '350gsm Matte Black Board')
+    assert.equal(job1?.item_kind, 'Packaging')
+    assert.equal(job1?.selected_finishing?.length, 3)
+    assert.equal(job1?.selected_add_ons?.length, 1)
+    assert.equal(job1?.instructions, 'Ensure 3mm bleed margin for die cut folds. CMYK high contrast.')
+    assert.equal(job1?.workflow_routing, 'design_required')
+  })
 })

@@ -44,6 +44,8 @@ import {
   Split,
   FileText,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   RefreshCw,
   Printer,
   Calendar,
@@ -52,6 +54,10 @@ import {
   Tag,
   Paperclip,
   CheckSquare,
+  Square,
+  Package,
+  Box,
+  Ruler,
   Maximize,
   SlidersHorizontal,
   Flame,
@@ -92,7 +98,7 @@ import {
   getDesignJobByIdAction,
 } from '@/actions/design.actions'
 
-import { getInvoicesAction } from '@/actions/billing.actions'
+import { getInvoicesAction, getInvoiceByIdAction } from '@/actions/billing.actions'
 import { getOrdersAction } from '@/actions/order.actions'
 
 export interface SiblingWorkItem {
@@ -102,11 +108,22 @@ export interface SiblingWorkItem {
   designNumber: string
   title: string
   productName?: string | null
+  itemDescription?: string | null
+  itemKind?: string | null
+  productType?: string | null
   dimensions: string
+  width?: number
+  height?: number
+  dimensionUnit?: string
+  areaSft?: number | null
   material: string
   finishing?: string | null
+  selectedFinishing?: Array<{ id?: string; name: string; rate?: number; cost?: number }> | null
+  selectedAddOns?: Array<{ id?: string; name: string; rate?: number; cost?: number }> | null
   quantity: number
   unit: string
+  unitPrice?: number | null
+  totalPrice?: number | null
   routing: string
   status: DesignStatus
   isLocked: boolean
@@ -303,16 +320,25 @@ function DesignDetailContent() {
         invoice_item_id: it?.id || null,
         customer_id: targetInv.customer_id,
         customer_name: targetInv.customer_name || 'Walk-in Customer',
+        customer_phone: targetInv.customer_phone || (targetInv as any)?.mobile || (targetInv as any)?.whatsapp || null,
+        customer_address: targetInv.customer_address || (targetInv as any)?.address || null,
+        customer_company_name: (targetInv as any)?.company_name || null,
         design_number: synthNum,
         title: it?.item_description || it?.item_name || 'Design Artwork',
         product_name: it?.item_name || null,
         dimensions_spec:
           it?.dimensions_spec ||
-          (it?.width && it?.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+          (it?.width && it?.height ? `${it.width} × ${it.height} ${it.dimension_unit || it.unit || 'ft'}` : null),
         material: (it as any)?.material || (it as any)?.material_spec || null,
-        finishing: it?.finishing || null,
+        finishing: it?.finishing || (Array.isArray((it as any)?.selected_finishing) ? (it as any).selected_finishing.map((f: any) => f.name || f).join(', ') : null),
+        selected_finishing: (it as any)?.selected_finishing || null,
+        selected_add_ons: (it as any)?.selected_add_ons || null,
         quantity: Number(it?.quantity) || 1,
         unit: it?.unit || 'pcs',
+        unit_price: it?.unit_price || null,
+        total_price: it?.total_price || null,
+        area_sft: it?.area_sft || (it?.width && it?.height ? Number((it.width * it.height).toFixed(2)) : null),
+        item_kind: it?.item_kind || null,
         designer_name: 'Design Team',
         priority: ((targetInv as any).priority as any) || 'normal',
         deadline: targetInv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
@@ -323,7 +349,7 @@ function DesignDetailContent() {
         customer_approval_required: !isDesignOk,
         is_locked: isDesignOk,
         current_version: 1,
-        instructions: (it as any)?.remarks || targetInv.notes || null,
+        instructions: (it as any)?.remarks || (it as any)?.notes || targetInv.notes || null,
         versions: [
           {
             id: `dv-${targetInv.id}-${targetItemIdx}`,
@@ -407,8 +433,10 @@ function DesignDetailContent() {
 
   // Hydrate from server if not found in local datastore
   useEffect(() => {
-    if (!resolvedJob && jobId) {
+    if (jobId) {
       const effCompany = companyId || 'default'
+
+      // A. Fetch design job by ID
       getDesignJobByIdAction(jobId, effCompany)
         .then((res) => {
           if (res?.success && res.data) {
@@ -416,26 +444,53 @@ function DesignDetailContent() {
               if (prev.some((j) => j.id === res.data!.id)) return prev
               return [res.data!, ...prev]
             })
-          } else {
-            getInvoicesAction(undefined, effCompany)
-              .then((invRes) => {
-                if (invRes?.success && Array.isArray(invRes.data) && invRes.data.length > 0) {
-                  setInvoices(invRes.data)
+          }
+        })
+        .catch(() => {})
+
+      // B. If synthesized from invoice (dsn-inv-...), fetch invoice by ID directly
+      if (jobId.startsWith('dsn-inv-')) {
+        const raw = jobId.replace('dsn-inv-', '')
+        const lastDash = raw.lastIndexOf('-')
+        const invIdPart = lastDash !== -1 ? raw.substring(0, lastDash) : raw
+        getInvoiceByIdAction(invIdPart, effCompany)
+          .then((invRes) => {
+            if (invRes?.success && invRes.data) {
+              const loadedInv = invRes.data as InvoiceRecord
+              setInvoices((prev) => {
+                const idx = prev.findIndex(
+                  (i) => i.id === loadedInv.id || i.invoice_number === loadedInv.invoice_number
+                )
+                if (idx >= 0) {
+                  const updated = [...prev]
+                  updated[idx] = loadedInv
+                  return updated
                 }
+                return [loadedInv, ...prev]
               })
-              .catch(() => {})
-            getOrdersAction(effCompany)
-              .then((ordRes) => {
-                if (ordRes?.success && Array.isArray(ordRes.data) && ordRes.data.length > 0) {
-                  setOrders(ordRes.data)
-                }
-              })
-              .catch(() => {})
+            }
+          })
+          .catch(() => {})
+      }
+
+      // C. Also load invoices and orders list for background context
+      getInvoicesAction(undefined, effCompany)
+        .then((invRes) => {
+          if (invRes?.success && Array.isArray(invRes.data) && invRes.data.length > 0) {
+            setInvoices(invRes.data)
+          }
+        })
+        .catch(() => {})
+
+      getOrdersAction(effCompany)
+        .then((ordRes) => {
+          if (ordRes?.success && Array.isArray(ordRes.data) && ordRes.data.length > 0) {
+            setOrders(ordRes.data)
           }
         })
         .catch(() => {})
     }
-  }, [resolvedJob, jobId, companyId, setJobs, setInvoices, setOrders])
+  }, [jobId, companyId, setJobs, setInvoices, setOrders])
 
   // Persist synthesized job into datastore if not already stored
   useEffect(() => {
@@ -540,21 +595,22 @@ function DesignDetailContent() {
         const isCurrent =
           job.id === synthId ||
           job.id === existingJob?.id ||
+          jobId === synthId ||
+          (jobId.startsWith('dsn-inv-') && jobId.endsWith(`-${idx}`)) ||
           job.design_number === synthNum ||
-          (job.invoice_item_id && job.invoice_item_id === it.id) ||
-          (job.title === (it.item_description || it.item_name) && idx === 0)
+          (Boolean(job.invoice_item_id) && job.invoice_item_id === it.id)
 
         const dims =
           it.dimensions_spec ||
-          (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : 'Standard Specs')
+          (it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || it.unit || 'ft'}` : 'Standard Specs')
 
         const briefAttachments: Array<{ name: string; url: string; size?: string; type?: string }> = []
         if (it.attachment_url) {
           briefAttachments.push({
             name: it.attachment_name || `${it.item_name || 'Item'}_reference.pdf`,
             url: it.attachment_url,
-            size: '2.4 MB',
-            type: 'pdf',
+            size: 'Reference File',
+            type: 'file',
           })
         }
         if (it.attachments && Array.isArray(it.attachments)) {
@@ -568,16 +624,27 @@ function DesignDetailContent() {
           designNumber: existingJob?.design_number || synthNum,
           title: it.item_description || it.item_name || `Work Item #${idx + 1}`,
           productName: it.item_name || null,
+          itemDescription: it.item_description || null,
+          itemKind: it.item_kind || null,
+          productType: it.product_type || null,
           dimensions: dims,
+          width: it.width,
+          height: it.height,
+          dimensionUnit: it.dimension_unit || it.unit || 'ft',
+          areaSft: it.area_sft || (it.width && it.height ? Number((it.width * it.height).toFixed(2)) : null),
           material: it.material || it.material_spec || 'Standard Flex / Media',
-          finishing: it.finishing || it.remarks || null,
+          finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : null),
+          selectedFinishing: it.selected_finishing || null,
+          selectedAddOns: it.selected_add_ons || null,
           quantity: Number(it.quantity) || 1,
           unit: it.unit || 'pcs',
+          unitPrice: it.unit_price || null,
+          totalPrice: it.total_price || null,
           routing: it.workflow_routing || 'design_required',
           status: existingJob?.status || (it.workflow_routing === 'design_ok' ? 'approved' : 'received'),
           isLocked: existingJob?.is_locked ?? it.workflow_routing === 'design_ok',
           isCurrent,
-          brief: it.remarks || linkedInvoice.notes || null,
+          brief: it.remarks || it.notes || linkedInvoice.notes || null,
           proofUrl: existingJob?.versions?.[existingJob.versions.length - 1]?.proof_file_url || it.attachment_url,
           attachments: briefAttachments,
         }
@@ -600,7 +667,7 @@ function DesignDetailContent() {
           job.id === synthId ||
           job.id === existingJob?.id ||
           job.design_number === synthNum ||
-          job.title === it.item_name
+          (Boolean(job.sales_order_id) && job.title === it.item_name)
 
         const dims =
           it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : 'Standard Specs'
@@ -612,11 +679,22 @@ function DesignDetailContent() {
           designNumber: existingJob?.design_number || synthNum,
           title: it.item_name || `Work Item #${idx + 1}`,
           productName: it.item_name || null,
+          itemDescription: it.item_description || null,
+          itemKind: it.item_kind || null,
+          productType: null,
           dimensions: dims,
+          width: it.width,
+          height: it.height,
+          dimensionUnit: it.dimension_unit || 'ft',
+          areaSft: it.width && it.height ? Number((it.width * it.height).toFixed(2)) : null,
           material: it.material_spec || 'Standard Flex / Media',
           finishing: it.finishing || null,
+          selectedFinishing: null,
+          selectedAddOns: null,
           quantity: Number(it.quantity) || 1,
           unit: it.unit || 'pcs',
+          unitPrice: it.unit_price || null,
+          totalPrice: it.total_price || null,
           routing: it.workflow_routing || 'ready_production',
           status: existingJob?.status || 'received',
           isLocked: existingJob?.is_locked ?? false,
@@ -637,11 +715,19 @@ function DesignDetailContent() {
         designNumber: job.design_number,
         title: job.title,
         productName: job.product_name,
+        itemDescription: (job as any).item_description || null,
+        itemKind: (job as any).item_kind || null,
+        productType: null,
         dimensions: job.dimensions_spec || 'Standard Specs',
+        areaSft: (job as any).area_sft || null,
         material: job.material || 'Standard Media',
         finishing: job.finishing || null,
+        selectedFinishing: (job as any).selected_finishing || null,
+        selectedAddOns: (job as any).selected_add_ons || null,
         quantity: job.quantity || 1,
         unit: job.unit || 'pcs',
+        unitPrice: (job as any).unit_price || null,
+        totalPrice: (job as any).total_price || null,
         routing: job.workflow_routing || 'design_required',
         status: job.status,
         isLocked: Boolean(job.is_locked),
@@ -680,6 +766,96 @@ function DesignDetailContent() {
   const [whatsAppPhone, setWhatsAppPhone] = useState(customerPhone || '')
   const [copiedPhone, setCopiedPhone] = useState(false)
   const [notification, setNotification] = useState<{ type: 'success' | 'warning' | 'info'; text: string } | null>(null)
+
+  // Interactive Prepress Checklist State
+  const [prepressChecks, setPrepressChecks] = useState<{
+    dimensions: boolean
+    colorProfile: boolean
+    bleedMargin: boolean
+    outlines: boolean
+    proofApproved: boolean
+  }>({
+    dimensions: true,
+    colorProfile: true,
+    bleedMargin: true,
+    outlines: false,
+    proofApproved: false,
+  })
+
+  // All Invoice Works Matrix collapsible state
+  const [isInvoiceMatrixOpen, setIsInvoiceMatrixOpen] = useState(false)
+
+  // Sync proof approved check when job status changes
+  useEffect(() => {
+    if (job?.status === 'approved' || job?.is_locked) {
+      setPrepressChecks({
+        dimensions: true,
+        colorProfile: true,
+        bleedMargin: true,
+        outlines: true,
+        proofApproved: true,
+      })
+    }
+  }, [job?.status, job?.is_locked, job?.id])
+
+  const togglePrepressCheck = (key: keyof typeof prepressChecks) => {
+    setPrepressChecks((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const prepressPassedCount = Object.values(prepressChecks).filter(Boolean).length
+  const isAllPrepressPassed = prepressPassedCount === 5
+
+  // Derive structured finishing items
+  const finishingItems = useMemo<Array<{ name: string; rate?: number; cost?: number }>>(() => {
+    if (currentWork?.selectedFinishing && Array.isArray(currentWork.selectedFinishing) && currentWork.selectedFinishing.length > 0) {
+      return currentWork.selectedFinishing.map((f: any) =>
+        typeof f === 'string' ? { name: f } : { name: f.name || String(f), rate: f.rate, cost: f.cost }
+      )
+    }
+    if ((job as any)?.selected_finishing && Array.isArray((job as any).selected_finishing) && (job as any).selected_finishing.length > 0) {
+      return (job as any).selected_finishing.map((f: any) =>
+        typeof f === 'string' ? { name: f } : { name: f.name || String(f), rate: f.rate, cost: f.cost }
+      )
+    }
+    const finishingStr = currentWork?.finishing || job?.finishing
+    if (
+      finishingStr &&
+      typeof finishingStr === 'string' &&
+      finishingStr.trim().length > 0 &&
+      finishingStr.toLowerCase() !== 'standard' &&
+      finishingStr.toLowerCase() !== 'none'
+    ) {
+      return finishingStr.split(/[,+;/]/).map((s) => s.trim()).filter(Boolean).map((name) => ({ name }))
+    }
+    return []
+  }, [currentWork, job])
+
+  // Derive structured add-on items
+  const addOnItems = useMemo<Array<{ name: string; cost?: number }>>(() => {
+    if (currentWork?.selectedAddOns && Array.isArray(currentWork.selectedAddOns) && currentWork.selectedAddOns.length > 0) {
+      return currentWork.selectedAddOns.map((a: any) =>
+        typeof a === 'string' ? { name: a } : { name: a.name || String(a), cost: a.cost }
+      )
+    }
+    if ((job as any)?.selected_add_ons && Array.isArray((job as any).selected_add_ons) && (job as any).selected_add_ons.length > 0) {
+      return (job as any).selected_add_ons.map((a: any) =>
+        typeof a === 'string' ? { name: a } : { name: a.name || String(a), cost: a.cost }
+      )
+    }
+    return []
+  }, [currentWork, job])
+
+  const getFinishingBadgeEmoji = (name: string) => {
+    const lower = (name || '').toLowerCase()
+    if (lower.includes('eyelet') || lower.includes('grommet') || lower.includes('punch') || lower.includes('ring')) return '✂️'
+    if (lower.includes('hem') || lower.includes('sew') || lower.includes('pocket') || lower.includes('fold')) return '🪡'
+    if (lower.includes('lam') || lower.includes('gloss') || lower.includes('matt') || lower.includes('matte') || lower.includes('uv') || lower.includes('varnish')) return '✨'
+    if (lower.includes('foil') || lower.includes('gold') || lower.includes('silver') || lower.includes('emboss') || lower.includes('deboss')) return '🟨'
+    if (lower.includes('die') || lower.includes('cut') || lower.includes('crease') || lower.includes('creasing') || lower.includes('shape') || lower.includes('perforat')) return '📐'
+    if (lower.includes('stand') || lower.includes('frame') || lower.includes('base') || lower.includes('rollup') || lower.includes('structure')) return '🔘'
+    if (lower.includes('bind') || lower.includes('spiral') || lower.includes('book') || lower.includes('staple') || lower.includes('saddle')) return '📚'
+    return '⚙️'
+  }
 
   // Attachments form
   const [isAddAttachmentOpen, setIsAddAttachmentOpen] = useState(false)
@@ -1246,7 +1422,7 @@ function DesignDetailContent() {
           </div>
 
           {/* Sibling Tabs / Pills */}
-          <div className="p-3 flex flex-wrap gap-2.5">
+          <div className="p-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {siblingWorks.map((work) => {
               const isActive = work.isCurrent
               return (
@@ -1258,41 +1434,67 @@ function DesignDetailContent() {
                     }
                   }}
                   className={cn(
-                    'flex-1 min-w-[220px] max-w-[340px] text-left p-3 rounded-xl border transition-all relative group',
+                    'text-left p-3 rounded-xl border transition-all relative group flex flex-col justify-between space-y-2',
                     isActive
                       ? 'bg-white dark:bg-slate-900 border-indigo-500 dark:border-indigo-400 shadow-md ring-2 ring-indigo-500/20'
-                      : 'bg-white/60 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-indigo-300 hover:bg-white dark:hover:bg-slate-900'
+                      : 'bg-white/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:border-indigo-300 hover:bg-white dark:hover:bg-slate-900 shadow-2xs'
                   )}
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
-                      {work.designNumber}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-[10px] px-1.5 py-0 capitalize',
-                        work.status === 'approved'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                          : 'bg-slate-100 text-slate-700 border-slate-200'
+                  <div>
+                    <div className="flex items-center justify-between gap-1.5 mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="h-5 w-5 rounded bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 flex items-center justify-center text-[10px] font-black">
+                          #{work.index + 1}
+                        </span>
+                        <span className="font-mono text-[11px] font-bold text-indigo-600 dark:text-indigo-400 truncate">
+                          {work.designNumber}
+                        </span>
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-[9px] px-1.5 py-0 capitalize shrink-0',
+                          work.status === 'approved'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                        )}
+                      >
+                        {work.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+
+                    <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
+                      {work.title}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                      <span className="truncate font-medium">{work.dimensions}</span>
+                      {work.areaSft && (
+                        <>
+                          <span>•</span>
+                          <span className="font-mono font-semibold text-indigo-600 dark:text-indigo-400">{work.areaSft} SFT</span>
+                        </>
                       )}
-                    >
-                      {work.status.replace('_', ' ')}
-                    </Badge>
+                    </div>
+
+                    <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate mt-0.5">
+                      {work.material}
+                    </div>
                   </div>
 
-                  <div className="font-bold text-xs text-slate-900 dark:text-white truncate mt-1">
-                    {work.title}
-                  </div>
-
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 mt-1">
-                    <span className="truncate">{work.dimensions}</span>
-                    <span>•</span>
-                    <span className="truncate">{work.quantity} {work.unit}</span>
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800 text-[10px]">
+                    <span className="font-semibold text-slate-600 dark:text-slate-300">
+                      Qty: {work.quantity} {work.unit}
+                    </span>
+                    {work.totalPrice && (
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">
+                        ৳{formatBDT(work.totalPrice)}
+                      </span>
+                    )}
                   </div>
 
                   {isActive && (
-                    <div className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px]">
+                    <div className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] shadow-sm">
                       <Check className="h-2.5 w-2.5 stroke-[3]" />
                     </div>
                   )}
@@ -1639,20 +1841,179 @@ function DesignDetailContent() {
             </CardContent>
           </Card>
 
-          {/* 7. DESIGN BRIEFS & OPERATIONAL TECHNICAL SPECIFICATIONS */}
-          <Card className="shadow-sm">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-sm font-bold flex items-center gap-2">
-                <FileText className="h-4 w-4 text-purple-600" />
-                <span>{tBilingual('Design Brief & Specifications', 'ডিজাইন ব্রিফ ও টেকনিক্যাল স্পেসিফিকেশন')}</span>
-              </CardTitle>
+          {/* 7. ITEM INFORMATION, BRIEFS & TECHNICAL SPECIFICATIONS */}
+          <Card className="shadow-sm border border-slate-200 dark:border-slate-800">
+            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-sm font-bold flex items-center gap-2">
+                  <FileText className="h-4 w-4 text-purple-600" />
+                  <span>{tBilingual('Item Specs & Requirements', 'আইটেমের তথ্য ও টেকনিক্যাল স্পেসিফিকেশন')}</span>
+                </CardTitle>
+                <div className="flex items-center gap-1.5">
+                  {totalWorksCount > 1 && (
+                    <Badge variant="outline" className="text-[10px] font-bold bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300">
+                      Item #{((currentWork?.index ?? 0) + 1)} of {totalWorksCount}
+                    </Badge>
+                  )}
+                  {currentWork?.itemKind && (
+                    <Badge variant="outline" className="text-[10px] uppercase font-bold text-slate-700 dark:text-slate-300">
+                      {currentWork.itemKind}
+                    </Badge>
+                  )}
+                </div>
+              </div>
             </CardHeader>
 
-            <CardContent className="p-4 space-y-3.5">
-              {/* Instructions / Brief Text */}
-              <div className="p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/60 space-y-1">
+            <CardContent className="p-4 space-y-4">
+              {/* Item Title & Classification Header */}
+              <div className="p-3 rounded-xl bg-gradient-to-r from-purple-50/80 to-indigo-50/80 dark:from-purple-950/20 dark:to-indigo-950/20 border border-purple-200/80 dark:border-purple-900/50">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300">
+                      Current Work Item
+                    </span>
+                    <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-0.5">
+                      {currentWork?.title || job.title}
+                    </h4>
+                    {currentWork?.productName && currentWork.productName !== currentWork.title && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                        Product: <span className="font-medium text-slate-700 dark:text-slate-300">{currentWork.productName}</span>
+                      </p>
+                    )}
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'text-[10px] font-bold capitalize shrink-0',
+                      currentWork?.routing === 'design_ok'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                        : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+                    )}
+                  >
+                    {currentWork?.routing === 'design_ok' ? 'Design OK' : 'Design Required'}
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Core Physical & Commercial Specs Grid */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {/* Dimensions & Area */}
+                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                    <Ruler className="h-3 w-3 text-slate-400" />
+                    Target Dimensions
+                  </span>
+                  <div className="mt-1">
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
+                    </p>
+                    {(currentWork?.areaSft || (job as any).area_sft) && (
+                      <span className="inline-block mt-0.5 text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900">
+                        Area: {currentWork?.areaSft || (job as any).area_sft} SFT
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quantity & Unit */}
+                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                    <Box className="h-3 w-3 text-slate-400" />
+                    Quantity & Unit
+                  </span>
+                  <div className="mt-1">
+                    <p className="font-bold text-slate-900 dark:text-white">
+                      {currentWork?.quantity || job.quantity || 1} {currentWork?.unit || job.unit || 'pcs'}
+                    </p>
+                    {(currentWork?.unitPrice || (job as any).unit_price) && (
+                      <span className="inline-block mt-0.5 text-[10px] text-slate-500 font-medium">
+                        Rate: ৳{formatBDT(currentWork?.unitPrice || (job as any).unit_price)} / {currentWork?.unit || job.unit || 'pcs'}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Material / Substrate */}
+                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 col-span-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1">
+                    <Layers className="h-3 w-3 text-slate-400" />
+                    Media / Substrate Material
+                  </span>
+                  <p className="font-bold text-slate-900 dark:text-white mt-1">
+                    {currentWork?.material || job.material || 'Standard Media / Substrate'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Finishing Breakdown (Styled Pills with Icons) */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Scissors className="h-3.5 w-3.5 text-pink-600" />
+                    Finishing & Post-Press Requirements:
+                  </span>
+                  {finishingItems.length > 0 && (
+                    <span className="text-[10px] font-bold text-slate-400">
+                      {finishingItems.length} selected
+                    </span>
+                  )}
+                </div>
+
+                {finishingItems.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {finishingItems.map((fin, fIdx) => (
+                      <span
+                        key={fIdx}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-pink-50 text-pink-900 border border-pink-200 dark:bg-pink-950/40 dark:text-pink-200 dark:border-pink-800/60 shadow-2xs"
+                      >
+                        <span>{getFinishingBadgeEmoji(fin.name)}</span>
+                        <span>{fin.name}</span>
+                        {fin.cost && fin.cost > 0 && (
+                          <span className="font-mono text-[10px] text-pink-700 dark:text-pink-300 font-bold">
+                            (+৳{formatBDT(fin.cost)})
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 font-medium flex items-center gap-1.5">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                    <span>Standard finishing (No extra post-press required).</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Add-ons & Accessories (if any) */}
+              {addOnItems.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Package className="h-3.5 w-3.5 text-amber-600" />
+                    Add-ons & Hardware Accessories:
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {addOnItems.map((addon, aIdx) => (
+                      <span
+                        key={aIdx}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-900 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800/60"
+                      >
+                        <span>📦</span>
+                        <span>{addon.name}</span>
+                        {addon.cost && addon.cost > 0 && (
+                          <span className="font-mono text-[10px] text-amber-700 dark:text-amber-300 font-bold">
+                            (+৳{formatBDT(addon.cost)})
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Customer Brief / Special Remarks Callout */}
+              <div className="p-3.5 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-900/60 space-y-1.5">
                 <div className="font-bold text-xs text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-purple-600" />
+                  <Sparkles className="h-3.5 w-3.5 text-purple-600 shrink-0" />
                   <span>Customer Brief & Special Remarks:</span>
                 </div>
                 <p className="text-xs text-purple-950 dark:text-purple-300 leading-relaxed font-medium">
@@ -1660,36 +2021,215 @@ function DesignDetailContent() {
                 </p>
               </div>
 
-              {/* Technical Specs Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Target Dimensions</span>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5">
-                    {currentWork?.dimensions || job.dimensions_spec || 'Standard'}
-                  </p>
+              {/* Prepress & Technical Quality Checklist (Interactive In-Place) */}
+              <div className="p-3.5 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/30 dark:bg-indigo-950/20 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
+                    <ShieldCheck className="h-4 w-4 text-indigo-600" />
+                    Prepress & Machine Readiness:
+                  </span>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      'text-[10px] font-bold px-1.5 py-0',
+                      isAllPrepressPassed
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-indigo-100 text-indigo-800 border-indigo-300'
+                    )}
+                  >
+                    {prepressPassedCount} / 5 Passed
+                  </Badge>
                 </div>
 
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Quantity / Unit</span>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5">
-                    {currentWork?.quantity || job.quantity || 1} {currentWork?.unit || job.unit || 'pcs'}
-                  </p>
+                <div className="space-y-1.5 pt-1 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => togglePrepressCheck('dimensions')}
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {prepressChecks.dimensions ? (
+                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Dimensions Match ({currentWork?.dimensions || job.dimensions_spec || 'Standard'})
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      {prepressChecks.dimensions ? 'Verified' : 'Pending'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePrepressCheck('colorProfile')}
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {prepressChecks.colorProfile ? (
+                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        High-Res CMYK 300 DPI Profile
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      {prepressChecks.colorProfile ? 'Verified' : 'Pending'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePrepressCheck('bleedMargin')}
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {prepressChecks.bleedMargin ? (
+                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Bleed / Hemming Margins Reserved
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      {prepressChecks.bleedMargin ? 'Verified' : 'Pending'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePrepressCheck('outlines')}
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {prepressChecks.outlines ? (
+                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Vector Curves & Fonts Outlined
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      {prepressChecks.outlines ? 'Verified' : 'Check'}
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => togglePrepressCheck('proofApproved')}
+                    className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 transition-colors text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      {prepressChecks.proofApproved ? (
+                        <CheckSquare className="h-4 w-4 text-emerald-600 shrink-0" />
+                      ) : (
+                        <Square className="h-4 w-4 text-slate-400 shrink-0" />
+                      )}
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        Client Proof Approval Gate
+                      </span>
+                    </div>
+                    <span className={`text-[10px] font-bold ${prepressChecks.proofApproved ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {prepressChecks.proofApproved ? 'Approved' : 'Pending Gate'}
+                    </span>
+                  </button>
                 </div>
 
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Media / Material</span>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {currentWork?.material || job.material || 'Standard Media'}
-                  </p>
-                </div>
-
-                <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Finishing & Add-ons</span>
-                  <p className="font-bold text-slate-900 dark:text-white mt-0.5 truncate">
-                    {currentWork?.finishing || job.finishing || 'Standard'}
-                  </p>
-                </div>
+                {isAllPrepressPassed && (
+                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5 animate-in fade-in-0">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>All Prepress Checks Passed • Ready for Print Floor</span>
+                  </div>
+                )}
               </div>
+
+              {/* Multi-Work Group Summary Toggle */}
+              {totalWorksCount > 1 && (
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setIsInvoiceMatrixOpen((prev) => !prev)}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Layers className="h-3.5 w-3.5 text-indigo-600" />
+                      View All {totalWorksCount} Invoice Items Matrix
+                    </span>
+                    {isInvoiceMatrixOpen ? (
+                      <ChevronUp className="h-4 w-4 text-slate-400" />
+                    ) : (
+                      <ChevronDown className="h-4 w-4 text-slate-400" />
+                    )}
+                  </button>
+
+                  {isInvoiceMatrixOpen && (
+                    <div className="mt-2 space-y-2 p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-xs animate-in fade-in-0">
+                      {siblingWorks.map((sw) => (
+                        <div
+                          key={sw.id}
+                          onClick={() => {
+                            if (!sw.isCurrent) {
+                              router.push(`/${slug}/design/${sw.id}`)
+                            }
+                          }}
+                          className={cn(
+                            'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
+                            sw.isCurrent
+                              ? 'bg-indigo-50/60 border-indigo-300 dark:bg-indigo-950/40 dark:border-indigo-800'
+                              : 'bg-slate-50/50 border-slate-200 hover:bg-slate-100 dark:bg-slate-900/50 dark:border-slate-800'
+                          )}
+                        >
+                          <div className="truncate">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[11px] font-bold text-indigo-600">
+                                #{sw.index + 1} • {sw.designNumber}
+                              </span>
+                              {sw.isCurrent && (
+                                <Badge className="bg-indigo-600 text-white text-[9px] px-1 py-0 h-3.5">
+                                  Current
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                              {sw.title}
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              {sw.dimensions} • {sw.quantity} {sw.unit} • {sw.material}
+                            </div>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[9px] px-1 py-0 capitalize',
+                                sw.status === 'approved'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                  : 'bg-slate-100 text-slate-600 border-slate-200'
+                              )}
+                            >
+                              {sw.status.replace('_', ' ')}
+                            </Badge>
+                            {sw.totalPrice && (
+                              <div className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 mt-0.5">
+                                ৳{formatBDT(sw.totalPrice)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
 

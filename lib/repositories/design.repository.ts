@@ -161,6 +161,20 @@ export class DesignRepository {
           (!i.company_id || !companyId || companyId === 'default' || i.company_id === companyId) &&
           (i.id === invIdPart || i.invoice_number === invIdPart || i.id?.includes(invIdPart) || invIdPart.includes(i.id))
       )
+
+      if (!targetInv) {
+        try {
+          const supabase = await createClient()
+          const { data: invDb } = await (supabase as any)
+            .from('invoices')
+            .select('*, items:invoice_items(*)')
+            .or(`id.eq.${invIdPart},invoice_number.eq.${invIdPart}`)
+            .maybeSingle()
+          if (invDb) {
+            targetInv = invDb
+          }
+        } catch {}
+      }
     }
 
     if (targetInv) {
@@ -173,18 +187,27 @@ export class DesignRepository {
         invoice_item_id: matchingItem?.id || null,
         customer_id: targetInv.customer_id,
         customer_name: targetInv.customer_name || 'Walk-in Customer',
+        customer_phone: targetInv.customer_phone || (targetInv as any)?.mobile || (targetInv as any)?.whatsapp || null,
+        customer_address: targetInv.customer_address || (targetInv as any)?.address || null,
+        customer_company_name: (targetInv as any)?.company_name || null,
         design_number: id.startsWith('DSN-') ? id : `DSN-${targetInv.invoice_number?.replace('INV-', '') || '001'}-${String.fromCharCode(65 + targetItemIdx)}`,
         title: matchingItem?.item_description || matchingItem?.item_name || 'Design Artwork',
         designer_name: 'Design Team',
         priority: ((targetInv as any).priority as any) || 'normal',
         deadline: targetInv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-        dimensions_spec: matchingItem?.dimensions_spec || (matchingItem?.width && matchingItem?.height ? `${matchingItem.width} × ${matchingItem.height} ${matchingItem.unit || 'ft'}` : null),
+        dimensions_spec: matchingItem?.dimensions_spec || (matchingItem?.width && matchingItem?.height ? `${matchingItem.width} × ${matchingItem.height} ${matchingItem.dimension_unit || matchingItem.unit || 'ft'}` : null),
         product_name: matchingItem?.item_name || null,
         material: matchingItem?.material || matchingItem?.material_spec || null,
-        finishing: matchingItem?.finishing || null,
+        finishing: matchingItem?.finishing || (Array.isArray(matchingItem?.selected_finishing) ? matchingItem.selected_finishing.map((f: any) => f.name || f).join(', ') : null),
+        selected_finishing: matchingItem?.selected_finishing || null,
+        selected_add_ons: matchingItem?.selected_add_ons || null,
         quantity: Number(matchingItem?.quantity) || 1,
         unit: matchingItem?.unit || 'pcs',
-        instructions: matchingItem?.remarks || targetInv.notes || null,
+        unit_price: matchingItem?.unit_price || null,
+        total_price: matchingItem?.total_price || null,
+        area_sft: matchingItem?.area_sft || (matchingItem?.width && matchingItem?.height ? Number((matchingItem.width * matchingItem.height).toFixed(2)) : null),
+        item_kind: matchingItem?.item_kind || null,
+        instructions: matchingItem?.remarks || matchingItem?.notes || targetInv.notes || null,
         status: matchingItem?.workflow_routing === 'design_ok' ? 'approved' : 'received',
         workflow_routing: matchingItem?.workflow_routing || 'design_required',
         commercial_status: 'invoice_created',
