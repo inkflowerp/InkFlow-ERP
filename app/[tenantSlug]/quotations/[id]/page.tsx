@@ -329,7 +329,11 @@ function QuotationDetailContent() {
   const handleConvertToOrder = async () => {
     setIsConvertingOrder(true)
     try {
-      const res = await convertQuotationToJobOrderAction(quote.id, {}, company?.id)
+      const res = await convertQuotationToJobOrderAction(
+        quote.id,
+        { advanceAmount: quote.advance_amount ?? undefined },
+        company?.id
+      )
       setIsConvertingOrder(false)
       if (res.success && res.data) {
         showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
@@ -389,10 +393,38 @@ function QuotationDetailContent() {
       ? `88${cleanPhone}`
       : `880${cleanPhone}`
 
-    const text = encodeURIComponent(
-      `Hello ${quote.customer_name},\nHere is your official quotation #${quote.quotation_number} from ${company?.name || 'InkFlow'}.\nGrand Total: ${formatBDT(quote.grand_total)} (Valid until ${quote.valid_until}).\nPlease review and let us know your confirmation.`
-    )
-    window.open(`https://wa.me/${formattedPhone}?text=${text}`, '_blank')
+    const itemsSummary = (quote.items || [])
+      .map((it, idx) => {
+        const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
+        return `${idx + 1}. ${it.description}${dim} - ৳${Number(it.item_total).toLocaleString('en-BD')}`
+      })
+      .slice(0, 4)
+      .join('\n')
+
+    const moreItems = quote.items && quote.items.length > 4 ? `\n...এবং আরও ${quote.items.length - 4} টি আইটেম` : ''
+    const advReq = quote.advance_amount ? `\n*অগ্রিম জমা (Advance Required - ${quote.advance_percentage || 50}%): ৳${Number(quote.advance_amount).toLocaleString('en-BD')}*` : ''
+
+    const messageText = `*উদ্ধৃতিপত্র / Quotation #${quote.quotation_number}*
+প্রতিষ্ঠান: *${company?.name || 'InkFlow Printing & Signage'}*
+সম্মানিত গ্রাহক: *${quote.customer_name}*${quote.customer_company ? ` (${quote.customer_company})` : ''}
+তারিখ: ${quote.quotation_date}
+মেয়াদ (Valid Until): ${quote.valid_until}
+
+*পণ্যের বিবরণ:*
+${itemsSummary}${moreItems}
+
+উপমোট: ৳${Number(quote.subtotal).toLocaleString('en-BD')}
+${quote.discount_amount > 0 ? `বিশেষ ছাড়: -৳${Number(quote.discount_amount).toLocaleString('en-BD')}\n` : ''}ভ্যাট (${quote.vat_rate}%): ৳${Number(quote.vat_amount).toLocaleString('en-BD')}
+*সর্বমোট প্রাক্কলন: ৳${Number(quote.grand_total).toLocaleString('en-BD')} BDT*${advReq}
+বাকি টাকা ডেলিভারির সময় প্রদেয়।
+
+*পেমেন্ট মাধ্যম (Payment Accounts):*
+• bKash/Nagad (Merchant): 01711-000000
+• Bank: City Bank / Dutch-Bangla Bank, A/C: 1102938471001
+
+উদ্ধৃতিটি পর্যালোচনা করে অনুগ্রহপূর্বক অর্ডারটি কনফার্ম করুন। ধন্যবাদ!`
+
+    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`, '_blank')
 
     await sendQuotationAction(
       {
@@ -437,6 +469,10 @@ function QuotationDetailContent() {
 
   const nextAction = QuotationService.calculateNextAction(quote)
   const expiryUrgency = QuotationService.calculateExpiryUrgency(quote.valid_until)
+
+  const advancePct = quote.advance_percentage !== undefined && quote.advance_percentage !== null ? quote.advance_percentage : 50
+  const advanceAmt = quote.advance_amount !== undefined && quote.advance_amount !== null ? quote.advance_amount : Math.round((quote.grand_total * advancePct) / 100)
+  const dueOnDeliv = quote.due_on_delivery !== undefined && quote.due_on_delivery !== null ? quote.due_on_delivery : Math.max(0, quote.grand_total - advanceAmt)
 
   return (
     <FeatureGate feature="quotation_pdf">
@@ -520,6 +556,30 @@ function QuotationDetailContent() {
                   <option value="expired" className="text-black">Expired</option>
                   <option value="converted" className="text-black">Converted</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Commercial Advance Terms HUD Banner */}
+            <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Quoted Value</span>
+                <span className="text-sm font-black font-mono text-white">{formatBDT(quote.grand_total)}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-amber-300 block">
+                  Advance Required ({advancePct}%)
+                </span>
+                <span className="text-sm font-black font-mono text-amber-400">{formatBDT(advanceAmt)}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Balance on Delivery</span>
+                <span className="text-sm font-black font-mono text-slate-200">{formatBDT(dueOnDeliv)}</span>
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
+                <span className={`text-sm font-black font-mono ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                  {quote.margin_percent || 40}% (৳{formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
+                </span>
               </div>
             </div>
 
@@ -690,7 +750,7 @@ function QuotationDetailContent() {
               <div className="text-xs text-slate-600 dark:text-slate-400 print:text-slate-600 flex flex-wrap gap-3 pt-0.5">
                 <span>Phone: +880 1711-000000</span>
                 <span>•</span>
-                <span>BIN: 004819284-0101</span>
+                <span>BIN / মূসক: 004819284-0101</span>
                 <span>•</span>
                 <span>TIN: 8492049182</span>
               </div>
@@ -741,14 +801,14 @@ function QuotationDetailContent() {
 
             <div className="space-y-1 text-right sm:text-left">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
-                {languageMode === 'bn' ? 'প্রকল্প বিবরণ' : 'Quotation Specifics'}
+                {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
               </span>
               <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
                 Sales Representative: <strong>{quote.salesperson_name}</strong>
               </div>
               {quote.delivery_date && (
                 <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
-                  Delivery Date: <strong>{quote.delivery_date}</strong>
+                  Target Delivery: <strong>{quote.delivery_date}</strong>
                 </div>
               )}
               {quote.delivery_method && (
@@ -782,7 +842,7 @@ function QuotationDetailContent() {
                     {languageMode === 'bn' ? 'পরিমাপ (W × H)' : 'Dimensions'}
                   </th>
                   <th className="py-2.5 px-3 font-bold text-center">
-                    {languageMode === 'bn' ? 'ক্ষেত্রফল (SFT)' : 'Area / Qty'}
+                    {languageMode === 'bn' ? 'ক্ষেত্রফল / সংখ্যা' : 'Area / Qty'}
                   </th>
                   <th className="py-2.5 px-3 font-bold text-right">
                     {languageMode === 'bn' ? 'একক দর (৳)' : 'Unit Rate (৳)'}
@@ -793,60 +853,121 @@ function QuotationDetailContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 dark:divide-slate-800 border-b border-slate-200 dark:border-slate-800 print:divide-slate-200 print:border-slate-200">
-                {quote.items.map((item, idx) => (
-                  <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 print:hover:bg-transparent">
-                    <td className="py-3 px-3 text-center font-mono font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
-                      {idx + 1}
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">
-                        {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
-                      </div>
-                      {item.material_spec && (
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">{item.material_spec}</div>
-                      )}
-                      {item.finishing && item.finishing !== 'None' && (
-                        <div className="text-[10px] text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium">Finishing: {item.finishing}</div>
-                      )}
-                    </td>
-                    <td className="py-3 px-3 text-center font-mono">
-                      {item.width > 0 && item.height > 0 ? `${item.width} × ${item.height} ${item.dimension_unit}` : '-'}
-                    </td>
-                    <td className="py-3 px-3 text-center font-mono font-semibold">
-                      {item.area_sft > 0 ? `${item.area_sft} sft` : `${item.quantity} ${item.unit}`}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-medium">
-                      {formatBDT(item.unit_rate)}
-                    </td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
-                      {formatBDT(item.item_total)}
-                    </td>
-                  </tr>
-                ))}
+                {quote.items.map((item, idx) => {
+                  const catPreset = (item as any).category_preset
+                  const offsetSpecs = (item as any).offset_specs
+                  const signageSpecs = (item as any).signage_specs
+
+                  return (
+                    <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 print:hover:bg-transparent">
+                      <td className="py-3 px-3 text-center font-mono font-bold text-slate-500 dark:text-slate-400 print:text-slate-500">
+                        {idx + 1}
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900 dark:text-white print:text-slate-900">
+                            {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
+                          </span>
+                          {catPreset && (
+                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-slate-300">
+                              {catPreset === 'digital'
+                                ? 'Digital Flex/Vinyl'
+                                : catPreset === 'offset'
+                                ? 'Offset Press'
+                                : catPreset === 'signage'
+                                ? '3D Signage'
+                                : catPreset === 'ready'
+                                ? 'Merchandise'
+                                : catPreset}
+                            </span>
+                          )}
+                        </div>
+
+                        {item.material_spec && (
+                          <div className="text-[11px] text-slate-600 dark:text-slate-400 print:text-slate-600">
+                            <strong>Material:</strong> {item.material_spec}
+                          </div>
+                        )}
+
+                        {/* Specialized Offset Specs */}
+                        {offsetSpecs && (
+                          <div className="text-[10px] text-indigo-700 dark:text-indigo-300 print:text-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/40 p-1.5 rounded mt-1">
+                            <span>Offset Specs: </span>
+                            {offsetSpecs.paper_gsm && <strong>{offsetSpecs.paper_gsm} GSM Paper • </strong>}
+                            {offsetSpecs.print_mode && <span>{offsetSpecs.print_mode} • </span>}
+                            {offsetSpecs.binding && <span>Binding: {offsetSpecs.binding} • </span>}
+                            {offsetSpecs.pages && <span>Pages: {offsetSpecs.pages}</span>}
+                          </div>
+                        )}
+
+                        {/* Specialized Signage Specs */}
+                        {signageSpecs && (
+                          <div className="text-[10px] text-amber-800 dark:text-amber-300 print:text-amber-900 bg-amber-50/80 dark:bg-amber-950/40 p-1.5 rounded mt-1">
+                            <span>Signage Specs: </span>
+                            {signageSpecs.lighting && <strong>Lighting: {signageSpecs.lighting} • </strong>}
+                            {signageSpecs.structure && <span>Structure: {signageSpecs.structure} • </span>}
+                            {signageSpecs.frame && <span>Frame: {signageSpecs.frame}</span>}
+                          </div>
+                        )}
+
+                        {item.finishing && item.finishing !== 'None' && (
+                          <div className="text-[10px] text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium mt-0.5">
+                            Finishing: {item.finishing}
+                          </div>
+                        )}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono">
+                        {item.width > 0 && item.height > 0 ? `${item.width} × ${item.height} ${item.dimension_unit}` : '-'}
+                      </td>
+                      <td className="py-3 px-3 text-center font-mono font-semibold">
+                        {item.area_sft > 0 ? `${item.area_sft} sft` : `${item.quantity} ${item.unit}`}
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono font-medium">
+                        {formatBDT(item.unit_rate)}
+                      </td>
+                      <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
+                        {formatBDT(item.item_total)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
 
           {/* Financial Summary & Terms */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 my-6 items-start">
-            {/* Terms and Notes */}
+            {/* Terms, Notes & Bank Accounts */}
             <div className="space-y-3 text-xs">
               <div>
                 <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] print:text-slate-900">
-                  {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Terms & Conditions:'}
+                  {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
                 <pre className="font-sans whitespace-pre-line text-slate-600 dark:text-slate-400 print:text-slate-600 text-[11px] leading-relaxed mt-1">
                   {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
+
+              {/* Payment Remittance Details */}
+              <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700 space-y-1">
+                <span className="font-bold block text-[11px] uppercase text-slate-900 dark:text-white print:text-slate-900">
+                  {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
+                </span>
+                <div className="text-[11px] space-y-0.5">
+                  <div>• <strong>bKash / Nagad (Merchant):</strong> 01711-000000 (Counter 1)</div>
+                  <div>• <strong>Bank:</strong> City Bank Ltd, Motijheel Branch, A/C: 1102938471001</div>
+                  <div>• <strong>Account Name:</strong> {company?.name || 'InkFlow Solutions'}</div>
+                </div>
+              </div>
+
               {quote.notes && (
-                <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700">
-                  <strong>Note:</strong> {quote.notes}
+                <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-slate-900 border border-amber-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700">
+                  <strong>Special Note:</strong> {quote.notes}
                 </div>
               )}
             </div>
 
-            {/* Subtotal, Discount, VAT & Grand Total */}
+            {/* Subtotal, Discount, VAT, Grand Total & Advance Breakdown */}
             <div className="space-y-2 text-xs border border-slate-200 dark:border-slate-800 rounded-xl p-4 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 print:border-slate-200">
               <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
                 <span>{languageMode === 'bn' ? 'উপমোট (Subtotal):' : 'Subtotal:'}</span>
@@ -861,16 +982,28 @@ function QuotationDetailContent() {
               )}
 
               <div className="flex justify-between py-1 text-slate-600 dark:text-slate-400 print:text-slate-600">
-                <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}%):` : `NBR VAT (${quote.vat_rate}%):`}</span>
+                <span>{languageMode === 'bn' ? `ভ্যাট / মূসক (${quote.vat_rate}% - Mushak 6.3):` : `NBR VAT (${quote.vat_rate}%):`}</span>
                 <span className="font-mono">+ {formatBDT(quote.vat_amount)}</span>
               </div>
 
               <div className="flex justify-between py-2 border-t-2 border-slate-900 dark:border-slate-700 print:border-slate-900 font-black text-sm text-slate-900 dark:text-white print:text-slate-900">
-                <span>{languageMode === 'bn' ? 'সর্বমোট মূল্য (Grand Total):' : 'Grand Total (BDT):'}</span>
+                <span>{languageMode === 'bn' ? 'সর্বমোট প্রাক্কলন (Grand Total):' : 'Grand Total (BDT):'}</span>
                 <span className="font-mono text-base text-blue-700 dark:text-blue-400 print:text-blue-700">{formatBDT(quote.grand_total)}</span>
               </div>
 
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1 italic">
+              {/* Advance & Due Breakdown */}
+              <div className="border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 pt-2 space-y-1">
+                <div className="flex justify-between py-0.5 text-amber-700 dark:text-amber-400 font-bold print:text-amber-800">
+                  <span>{languageMode === 'bn' ? `প্রয়োজনীয় অগ্রিম (${advancePct}% Advance Required):` : `Advance Required (${advancePct}%):`}</span>
+                  <span className="font-mono">{formatBDT(advanceAmt)}</span>
+                </div>
+                <div className="flex justify-between py-0.5 text-slate-600 dark:text-slate-400 font-semibold print:text-slate-600">
+                  <span>{languageMode === 'bn' ? 'ডেলিভারির সময় প্রদেয় (Balance on Delivery):' : 'Balance on Delivery:'}</span>
+                  <span className="font-mono">{formatBDT(dueOnDeliv)}</span>
+                </div>
+              </div>
+
+              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1.5 italic border-t border-slate-200 dark:border-slate-800">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -987,4 +1120,5 @@ export default function QuotationDetailPage() {
     </React.Suspense>
   )
 }
+
 

@@ -18,8 +18,9 @@ export interface QuotationItemRecord {
   id: string
   quotation_id?: string
   product_id?: string | null
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string | null
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
   description: string
   description_bn?: string | null
   material_spec?: string | null
@@ -41,6 +42,23 @@ export interface QuotationItemRecord {
   color_spec?: string | null
   artwork_required?: boolean
   installation_required?: boolean
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
   unit_cost?: number
   material_cost?: number
   labor_cost?: number
@@ -75,6 +93,10 @@ export interface QuotationRecord {
   vat_rate: number
   vat_amount: number
   grand_total: number
+  advance_percentage?: number | null
+  advance_amount?: number | null
+  due_on_delivery?: number | null
+  payment_method_note?: string | null
   total_cost: number // Internal only - strictly shielded from client PDF
   margin_percent: number // Internal only
   language_mode: LanguageMode
@@ -149,8 +171,9 @@ export interface ApplyNegotiationPayload {
 export interface CreateQuotationItemInput {
   id?: string
   product_id?: string | null
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string | null
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
   description: string
   description_bn?: string | null
   material_spec?: string | null
@@ -172,6 +195,23 @@ export interface CreateQuotationItemInput {
   color_spec?: string | null
   artwork_required?: boolean
   installation_required?: boolean
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
   unit_cost?: number
   material_cost?: number
   labor_cost?: number
@@ -209,6 +249,10 @@ export interface CreateQuotationPayload {
   items: CreateQuotationItemInput[]
   discount_amount?: number
   vat_rate?: number
+  advance_percentage?: number | null
+  advance_amount?: number | null
+  due_on_delivery?: number | null
+  payment_method_note?: string | null
   delivery_date?: string | null
   delivery_location?: string | null
   delivery_method?: QuotationDeliveryMethod | string | null
@@ -311,9 +355,12 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
       quotation_id: id,
       product_id: it.product_id || null,
       item_kind: it.item_kind || null,
+      product_type: it.product_type || null,
+      category_preset: it.category_preset || null,
       description: String(it.description || it.product_name || it.name || it.title || 'Print Item'),
       description_bn: it.description_bn || null,
       material_spec: it.material_spec || it.spec || null,
+      dimensions_spec: it.dimensions_spec || null,
       width: w,
       height: h,
       dimension_unit: dimUnit,
@@ -322,6 +369,8 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
       unit: it.unit || (areaSft > 0 ? 'sft' : 'pcs'),
       unit_rate: rate,
       rate_source: it.rate_source || 'default',
+      tier_applied: it.tier_applied || null,
+      moq: it.moq || null,
       finishing: it.finishing || null,
       selected_finishing: it.selected_finishing || null,
       selected_add_ons: it.selected_add_ons || null,
@@ -329,6 +378,9 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
       color_spec: it.color_spec || null,
       artwork_required: Boolean(it.artwork_required),
       installation_required: Boolean(it.installation_required),
+      offset_specs: it.offset_specs || null,
+      signage_specs: it.signage_specs || null,
+      unit_cost: Number(it.unit_cost) || 0,
       material_cost: Number(it.material_cost) || 0,
       labor_cost: Number(it.labor_cost) || 0,
       finishing_cost: Number(it.finishing_cost) || 0,
@@ -352,6 +404,11 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
     (subAfterDiscount + vatAmount)
   const totalCost = Number(raw.total_cost || raw.cost) || Math.round(subtotal * 0.55)
   const marginPercent = Number(raw.margin_percent) || (grandTotal > 0 ? Math.round(((grandTotal - totalCost) / grandTotal) * 100) : 40)
+
+  // Advance calculation (standard 50% default in BD printing)
+  const advancePercent = raw.advance_percentage !== undefined && raw.advance_percentage !== null ? Number(raw.advance_percentage) : 50
+  const advanceAmount = raw.advance_amount !== undefined && raw.advance_amount !== null ? Number(raw.advance_amount) : Math.round((grandTotal * advancePercent) / 100)
+  const dueOnDelivery = raw.due_on_delivery !== undefined && raw.due_on_delivery !== null ? Number(raw.due_on_delivery) : Math.max(0, grandTotal - advanceAmount)
 
   // Normalize dates
   const createdAt = String(raw.created_at || raw.createdAt || raw.date || new Date().toISOString())
@@ -390,6 +447,10 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
     vat_rate: vatRate,
     vat_amount: vatAmount,
     grand_total: grandTotal,
+    advance_percentage: advancePercent,
+    advance_amount: advanceAmount,
+    due_on_delivery: dueOnDelivery,
+    payment_method_note: raw.payment_method_note || null,
     total_cost: totalCost,
     margin_percent: marginPercent,
     language_mode: (raw.language_mode as LanguageMode) || 'bn',

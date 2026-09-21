@@ -148,8 +148,13 @@ export function QuotationTable({
 
                   {/* Primary Item */}
                   <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300 max-w-[220px]">
-                    <div className="truncate font-medium">
-                      {primaryItem?.description || 'Custom Print Job'}
+                    <div className="flex items-center gap-1.5 truncate font-medium">
+                      {primaryItem?.category_preset && (
+                        <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 shrink-0">
+                          {primaryItem.category_preset}
+                        </span>
+                      )}
+                      <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
                     <div className="text-[11px] text-slate-400">
                       {primaryItem && primaryItem.width > 0 && primaryItem.height > 0 ? (
@@ -172,11 +177,15 @@ export function QuotationTable({
                     <div className="font-mono font-bold text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
-                    {q.discount_amount > 0 && (
+                    {q.advance_amount ? (
+                      <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                        Adv: ৳{Number(q.advance_amount).toLocaleString()} ({q.advance_percentage || 50}%)
+                      </div>
+                    ) : q.discount_amount > 0 ? (
                       <div className="text-[10px] text-rose-600">
                         -{formatBDT(q.discount_amount)} disc
                       </div>
-                    )}
+                    ) : null}
                   </td>
 
                   {/* Status */}

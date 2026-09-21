@@ -426,9 +426,13 @@ export class QuotationRepository {
       return {
         id: it.id || `qi-${Date.now()}-${idx + 1}`,
         product_id: it.product_id || null,
+        item_kind: it.item_kind || (w > 0 && h > 0 ? 'service' : 'ready_product'),
+        product_type: it.product_type || null,
+        category_preset: (it as any).category_preset || null,
         description: it.description || 'Print Item',
         description_bn: it.description_bn || null,
         material_spec: it.material_spec || null,
+        dimensions_spec: (it as any).dimensions_spec || (w > 0 && h > 0 ? `${w} × ${h} ${dimUnit}` : null),
         width: w,
         height: h,
         dimension_unit: dimUnit,
@@ -437,10 +441,17 @@ export class QuotationRepository {
         unit: it.unit || (areaSft > 0 ? 'sft' : 'pcs'),
         unit_rate: rate,
         rate_source: it.rate_source || 'default',
+        tier_applied: (it as any).tier_applied || null,
+        moq: (it as any).moq || null,
         finishing: it.finishing || null,
+        selected_finishing: (it as any).selected_finishing || null,
+        selected_add_ons: (it as any).selected_add_ons || null,
+        selected_installation: (it as any).selected_installation || null,
         color_spec: it.color_spec || null,
         artwork_required: it.artwork_required || false,
         installation_required: it.installation_required || false,
+        offset_specs: (it as any).offset_specs || null,
+        signage_specs: (it as any).signage_specs || null,
         material_cost: it.material_cost || Math.round(estimatedItemCost * 0.7),
         labor_cost: it.labor_cost || Math.round(estimatedItemCost * 0.3),
         finishing_cost: it.finishing_cost || 0,
@@ -456,6 +467,10 @@ export class QuotationRepository {
     const vatAmount = quotation.vat_amount !== undefined ? Number(quotation.vat_amount) : Math.round((subtotalAfterDiscount * vatRate) / 100)
     const grandTotal = quotation.grand_total !== undefined ? Number(quotation.grand_total) : (subtotalAfterDiscount + vatAmount)
     const marginPercent = grandTotal > 0 ? Math.round(((grandTotal - totalCost) / grandTotal) * 100) : 40
+
+    const advancePercent = quotation.advance_percentage !== undefined && quotation.advance_percentage !== null ? Number(quotation.advance_percentage) : 50
+    const advanceAmount = quotation.advance_amount !== undefined && quotation.advance_amount !== null ? Number(quotation.advance_amount) : Math.round((grandTotal * advancePercent) / 100)
+    const dueOnDelivery = quotation.due_on_delivery !== undefined && quotation.due_on_delivery !== null ? Number(quotation.due_on_delivery) : Math.max(0, grandTotal - advanceAmount)
 
     const quoteId = quotation.id || `quo-${Date.now()}`
 
@@ -485,6 +500,10 @@ export class QuotationRepository {
       vat_rate: vatRate,
       vat_amount: vatAmount,
       grand_total: grandTotal,
+      advance_percentage: advancePercent,
+      advance_amount: advanceAmount,
+      due_on_delivery: dueOnDelivery,
+      payment_method_note: quotation.payment_method_note || null,
       total_cost: totalCost,
       margin_percent: marginPercent,
       language_mode: quotation.language_mode || 'bn',
@@ -708,6 +727,9 @@ export class QuotationRepository {
           invoice_id: invoiceId,
           product_id: it.product_id || null,
           item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+          category_preset: (it as any).category_preset || null,
+          offset_specs: (it as any).offset_specs || null,
+          signage_specs: (it as any).signage_specs || null,
           item_description: it.description,
           description: it.description,
           dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : (it.dimensions_spec || null),
@@ -782,7 +804,11 @@ export class QuotationRepository {
     const orderNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'order')
     const orderId = `ord-${Date.now()}`
 
-    const advance = Math.max(0, Number(options?.advanceAmount) || 0)
+    const advance = options?.advanceAmount !== undefined
+      ? Math.max(0, Number(options.advanceAmount) || 0)
+      : (quote.advance_amount !== undefined && quote.advance_amount !== null
+          ? quote.advance_amount
+          : Math.round((quote.grand_total * (quote.advance_percentage || 50)) / 100))
     const dueAmount = Math.max(0, quote.grand_total - advance)
 
     const salesOrder = {
@@ -818,6 +844,9 @@ export class QuotationRepository {
           order_id: orderId,
           product_id: it.product_id || null,
           item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+          category_preset: (it as any).category_preset || null,
+          offset_specs: (it as any).offset_specs || null,
+          signage_specs: (it as any).signage_specs || null,
           item_name: it.description,
           dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit}` : (it.dimensions_spec || null),
           width: it.width || 0,
@@ -830,6 +859,9 @@ export class QuotationRepository {
           total_price: it.item_total,
           media_type: it.material_spec || null,
           finishing: it.finishing || (it.selected_finishing?.map((f: any) => f.name).join(', ')) || null,
+          selected_finishing: it.selected_finishing || null,
+          selected_add_ons: it.selected_add_ons || null,
+          selected_installation: it.selected_installation || null,
           installation_required: it.installation_required || false,
           workflow_routing: routing,
           design_required: isDesignReq,
