@@ -19,37 +19,37 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const sectionIds = navSections.map((s) => s.id)
     assert.deepEqual(sectionIds, ['today', 'work', 'management', 'settings'])
 
-    // Verify inventory, suppliers, pricing, and HRM suite items are positioned in today section
-    const todayItems = navSections.find((s) => s.id === 'today')!.items.map((i) => i.key)
-    const productsIndex = todayItems.indexOf('products')
-    const inventoryIndex = todayItems.indexOf('inventory')
-    const suppliersIndex = todayItems.indexOf('suppliers')
-    const pricingIndex = todayItems.indexOf('pricing')
-    const hrmDashboardIndex = todayItems.indexOf('hrm_dashboard')
-    const hrmEmployeesIndex = todayItems.indexOf('hrm_employees')
-    const hrmAttendanceIndex = todayItems.indexOf('hrm_attendance')
-    const hrmPayrollIndex = todayItems.indexOf('hrm_payroll')
-    const hrmSalaryReportIndex = todayItems.indexOf('hrm_salary_report')
+    // Section 1: Commercial & Sales
+    const todaySection = navSections.find((s) => s.id === 'today')!
+    assert.ok(todaySection, 'Today section must exist')
+    assert.equal(todaySection.title, 'Sales & Commercial')
+    assert.equal(todaySection.titleBn, 'সেলস ও বাণিজ্যিক')
+    const todayItems = todaySection.items.map((i) => i.key)
+    assert.deepEqual(todayItems, ['new-work', 'dashboard', 'quotations', 'orders', 'billing', 'customers'])
 
-    assert.ok(productsIndex !== -1, 'products must exist in today section')
-    assert.equal(inventoryIndex, productsIndex + 1, 'inventory must immediately follow products')
-    assert.equal(suppliersIndex, productsIndex + 2, 'suppliers must immediately follow inventory')
-    assert.equal(pricingIndex, productsIndex + 3, 'pricing must immediately follow suppliers')
-    assert.equal(hrmDashboardIndex, productsIndex + 4, 'hrm_dashboard must immediately follow pricing')
-    assert.equal(hrmEmployeesIndex, hrmDashboardIndex + 1, 'hrm_employees must follow hrm_dashboard')
-    assert.equal(hrmAttendanceIndex, hrmEmployeesIndex + 1, 'hrm_attendance must follow hrm_employees')
-    assert.equal(hrmPayrollIndex, hrmAttendanceIndex + 1, 'hrm_payroll must follow hrm_attendance')
-    assert.equal(hrmSalaryReportIndex, hrmPayrollIndex + 1, 'hrm_salary_report must follow hrm_payroll')
+    // Section 2: Factory & Floor
+    const workSection = navSections.find((s) => s.id === 'work')!
+    assert.ok(workSection, 'Work section must exist')
+    assert.equal(workSection.title, 'Factory & Floor')
+    assert.equal(workSection.titleBn, 'কারখানা ও প্রোডাকশন')
+    const workItems = workSection.items.map((i) => i.key)
+    assert.deepEqual(workItems, ['design', 'production', 'finishing', 'operator', 'machineries', 'delivery'])
 
-    const hrmDashItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hrm_dashboard')
-    assert.equal(hrmDashItem?.title, 'HRM Dashboard', 'hrm_dashboard item must be titled HRM Dashboard')
-    assert.equal(hrmDashItem?.titleBn, 'এইচআরএম ড্যাশবোর্ড', 'hrm_dashboard item must have correct Bengali title')
+    // Section 3: Materials & Finance
+    const mgmtSection = navSections.find((s) => s.id === 'management')!
+    assert.ok(mgmtSection, 'Management section must exist')
+    assert.equal(mgmtSection.title, 'Materials & Finance')
+    assert.equal(mgmtSection.titleBn, 'মালামাল ও হিসাব')
+    const mgmtItems = mgmtSection.items.map((i) => i.key)
+    assert.deepEqual(mgmtItems, ['inventory', 'products', 'suppliers', 'accounting', 'costing', 'hr', 'reports'])
 
-    const salaryReportItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'hrm_salary_report')
-    assert.equal(salaryReportItem?.hasDividerBelow, true, 'hrm_salary_report item must have hasDividerBelow flag set to true')
-
-    const pricingItem = navSections.find((s) => s.id === 'today')!.items.find((i) => i.key === 'pricing')
-    assert.equal(pricingItem?.hasDividerBelow, true, 'pricing item must have hasDividerBelow flag set to true')
+    // Section 4: System & Settings
+    const settingsSection = navSections.find((s) => s.id === 'settings')!
+    assert.ok(settingsSection, 'Settings section must exist')
+    assert.equal(settingsSection.title, 'System & Settings')
+    assert.equal(settingsSection.titleBn, 'সেটিংস ও প্রশাসন')
+    const settingsItems = settingsSection.items.map((i) => i.key)
+    assert.deepEqual(settingsItems, ['company_settings', 'users', 'branches', 'tax', 'trash'])
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
@@ -134,14 +134,15 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       assert.equal(isAllowedForRole(item, 'business_owner'), true, `Owner must have access to ${item.key}`)
     }
 
-    // B. Sales Manager: can access customers, sales, billing, but not settings/roles
+    // B. Sales Manager: can access customers, quotations, orders, billing, but not settings/roles
     const salesAllowed = allItems.filter((i) => isAllowedForRole(i, 'sales_manager')).map((i) => i.key)
     assert.ok(salesAllowed.includes('customers'), 'Sales Manager must see Customers')
-    assert.ok(salesAllowed.includes('sales'), 'Sales Manager must see Sales & Quotes')
+    assert.ok(salesAllowed.includes('quotations'), 'Sales Manager must see Quotations')
+    assert.ok(salesAllowed.includes('orders'), 'Sales Manager must see Orders')
     assert.ok(salesAllowed.includes('billing'), 'Sales Manager must see Invoices & Payments')
     assert.ok(!salesAllowed.includes('users'), 'Sales Manager cannot see Users & Permissions')
 
-    // C. Designer: can access design Kanban and work orders
+    // C. Designer: can access design Kanban
     const designerAllowed = allItems.filter((i) => isAllowedForRole(i, 'designer')).map((i) => i.key)
     assert.ok(designerAllowed.includes('design'), 'Designer must see Design')
     assert.ok(!designerAllowed.includes('accounting'), 'Designer cannot see Finance')
@@ -153,7 +154,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.ok(!operatorAllowed.includes('accounting'), 'Operator cannot see Finance')
     assert.ok(!operatorAllowed.includes('reports'), 'Operator cannot see Reports')
 
-    // E. Store Manager: can access inventory and suppliers (with purchases unified inside inventory workspace)
+    // E. Store Manager: can access inventory and suppliers
     const storeAllowed = allItems.filter((i) => isAllowedForRole(i, 'store_manager')).map((i) => i.key)
     assert.ok(storeAllowed.includes('inventory'), 'Store Manager must see Inventory')
     assert.ok(storeAllowed.includes('suppliers'), 'Store Manager must see Suppliers')

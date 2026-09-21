@@ -283,7 +283,7 @@ export function MobileNav() {
             {/* Quick Actions Shortcuts Chips */}
             <div className="grid grid-cols-3 gap-1.5">
               <Link
-                href="/sales"
+                href="/quotations"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200/70 dark:border-blue-900/60 text-blue-700 dark:text-blue-300 text-xs font-semibold hover:bg-blue-100 transition-colors min-h-[38px] bangla-text"
               >

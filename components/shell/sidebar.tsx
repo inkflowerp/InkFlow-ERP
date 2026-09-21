@@ -43,6 +43,8 @@ import {
   Tag,
   Trash2,
   Scissors,
+  Search,
+  X,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { useTenant } from '@/hooks/use-tenant'
@@ -100,6 +102,8 @@ export function Sidebar() {
   const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
 
+  const [filterQuery, setFilterQuery] = useState('')
+
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
     try {
@@ -109,10 +113,10 @@ export function Sidebar() {
     }
   })
 
-  // State of expanded group IDs (e.g. ['today', 'work', 'materials', 'management', 'settings'])
+  // State of expanded group IDs
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') {
-      return { today: true, work: true, materials: true, management: true, settings: true }
+      return { today: true, work: true, management: true, settings: true }
     }
     try {
       const saved = localStorage.getItem(EXPANDED_GROUPS_STORAGE_KEY)
@@ -120,7 +124,7 @@ export function Sidebar() {
         return JSON.parse(saved)
       }
     } catch {}
-    return { today: true, work: true, materials: true, management: true, settings: true }
+    return { today: true, work: true, management: true, settings: true }
   })
 
   const navSections = useMemo(() => getNavigationConfig(), [])
@@ -134,15 +138,24 @@ export function Sidebar() {
     return can(item.permission.action, item.permission.resource)
   }, [hasFeature, isOwner, can])
 
-  // Filter sections by permissions
+  // Filter sections by permissions and search query
   const processedSections = useMemo(() => {
+    const q = filterQuery.trim().toLowerCase()
+
     return navSections
       .map((section) => {
-        const allowedItems = section.items.filter(isNavItemAllowed)
+        const allowedItems = section.items.filter((item) => {
+          if (!isNavItemAllowed(item)) return false
+          if (!q) return true
+          const matchTitle = item.title.toLowerCase().includes(q)
+          const matchTitleBn = item.titleBn.toLowerCase().includes(q)
+          const matchKey = item.key.toLowerCase().includes(q)
+          return matchTitle || matchTitleBn || matchKey
+        })
         return { ...section, items: allowedItems }
       })
       .filter((section) => section.items.length > 0)
-  }, [navSections, isNavItemAllowed])
+  }, [navSections, isNavItemAllowed, filterQuery])
 
   // Persist sidebar collapsed state
   const handleToggleCollapsed = useCallback(() => {
@@ -201,7 +214,7 @@ export function Sidebar() {
     <aside
       aria-label="Tenant Navigation Sidebar"
       className={cn(
-        'relative hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 select-none z-30 h-full max-h-full shrink-0 overflow-hidden',
+        'relative hidden lg:flex flex-col border-r border-slate-200/80 bg-white transition-all duration-300 dark:border-slate-800 dark:bg-slate-900 select-none z-30 h-full max-h-full shrink-0 overflow-hidden shadow-xs',
         collapsed ? 'w-18' : 'w-64'
       )}
     >
@@ -223,8 +236,8 @@ export function Sidebar() {
               <span className="font-black tracking-tight text-base text-slate-900 dark:text-white leading-tight">
                 Ink<span className="text-blue-600">Flow</span>
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                Print ERP
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">
+                Print ERP • বাংলা
               </span>
             </div>
           </Link>
@@ -252,10 +265,36 @@ export function Sidebar() {
         </button>
       </div>
 
+      {/* Quick Menu Filter (Only in Expanded Sidebar) */}
+      {!collapsed && (
+        <div className="px-3 pt-2.5 pb-1">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={filterQuery}
+              onChange={(e) => setFilterQuery(e.target.value)}
+              placeholder="মেনু খুঁজুন... / Quick filter"
+              className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-200/80 bg-slate-50 text-slate-800 placeholder-slate-400 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bangla-text"
+            />
+            {filterQuery && (
+              <button
+                type="button"
+                onClick={() => setFilterQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Clear filter"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Navigation Sections */}
       <nav
         aria-label="Sidebar Menu"
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-3 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-3 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
       >
         {processedSections.map((section) => {
           const isExpanded = expandedGroups[section.id] ?? true
@@ -269,7 +308,7 @@ export function Sidebar() {
                   type="button"
                   onClick={() => toggleGroup(section.id)}
                   aria-expanded={isExpanded}
-                  className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 cursor-pointer bangla-text group"
+                  className="w-full flex items-center justify-between px-3 py-1.5 text-2xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500 cursor-pointer bangla-text group"
                 >
                   <span className="truncate">{sectionTitle}</span>
                   {isExpanded ? (
@@ -283,7 +322,7 @@ export function Sidebar() {
                 <div className="h-px bg-slate-100 dark:bg-slate-800/80 my-1.5 mx-2" />
               )}
 
-              {/* Items List (Toggled in expanded sidebar, always accessible via icons in collapsed sidebar) */}
+              {/* Items List */}
               {(!collapsed ? isExpanded : true) && (
                 <div className="space-y-0.5 transition-all">
                   {section.items.map((item) => {
@@ -302,7 +341,7 @@ export function Sidebar() {
                             isPrimary
                               ? isActive
                                 ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
+                                : 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
                               : isActive
                               ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
                               : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
@@ -383,6 +422,14 @@ export function Sidebar() {
             </div>
           )
         })}
+
+        {/* Empty filter search indicator */}
+        {processedSections.length === 0 && filterQuery && (
+          <div className="text-center py-6 px-3">
+            <p className="text-xs text-slate-400 bangla-text">কোনো মেনু পাওয়া যায়নি</p>
+            <p className="text-2xs text-slate-400 mt-0.5">No matching menu item</p>
+          </div>
+        )}
       </nav>
 
       {/* Footer / Support Desk & Subscription Upgrade Area */}
