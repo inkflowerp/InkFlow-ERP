@@ -142,6 +142,10 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     }
     if (typeof window !== 'undefined') {
       window.addEventListener('printerp_data_sync', handleDataChange)
+      window.addEventListener('printerp_table_synced', handleDataChange)
+      window.addEventListener('printerp_table_synced:design_jobs', handleDataChange)
+      window.addEventListener('printerp_table_synced:invoices', handleDataChange)
+      window.addEventListener('printerp_table_synced:sales_orders', handleDataChange)
       window.addEventListener('storage', handleDataChange)
       window.addEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
       window.addEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)
@@ -150,6 +154,10 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('printerp_data_sync', handleDataChange)
+        window.removeEventListener('printerp_table_synced', handleDataChange)
+        window.removeEventListener('printerp_table_synced:design_jobs', handleDataChange)
+        window.removeEventListener('printerp_table_synced:invoices', handleDataChange)
+        window.removeEventListener('printerp_table_synced:sales_orders', handleDataChange)
         window.removeEventListener('storage', handleDataChange)
         window.removeEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
         window.removeEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)

@@ -117,6 +117,32 @@ export default function HrmDashboardPage() {
 
   useEffect(() => {
     loadData()
+
+    const handleRealtimeSync = () => {
+      loadData()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:employees', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:attendance', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:salary_advances', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:payroll_periods', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:employees', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:attendance', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:salary_advances', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:payroll_periods', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [])
 
   const handleQuickReviewOt = async (id: string, status: 'approved' | 'rejected') => {
