@@ -26,7 +26,7 @@ export interface InvoiceItemRecord {
   id?: string
   invoice_id?: string
   product_id?: string | null
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string | null
   item_name?: string | null
   item_description?: string | null
@@ -48,7 +48,7 @@ export interface InvoiceItemRecord {
   selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
   design_required?: boolean
   customer_approval_required?: boolean
-  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | string | null
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'outsource' | 'custom' | string | null
   design_job_id?: string | null
 }
 

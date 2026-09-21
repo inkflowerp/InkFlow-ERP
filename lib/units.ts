@@ -1478,23 +1478,25 @@ export function validateCircularBOM(
  * Authoritative Entity Type Classification
  * Standardizes categorization across Catalog, Detail Pages, Quoting, Invoicing, and Order Processing.
  */
-export function isOutsourceProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+export function isOutsourceProduct(p: Partial<ProductRecord> | any): boolean {
   if (!p) return false
-  const cat = (p.category || '').toLowerCase()
-  const sku = (p.sku || '').toUpperCase()
+  const raw = p as any
+  if (raw.workflow_routing === 'outsource' || raw.item_kind === 'outsource') return true
+  const cat = (raw.category || '').toLowerCase()
+  const sku = (raw.sku || '').toUpperCase()
 
   return Boolean(
-    p.is_outsource === true ||
-    p.is_non_inventory === true ||
-    p.entity_type === 'outsource' ||
-    p.commercial_type === 'outsource' ||
-    p.product_type === 'outsource' ||
-    p.product_type === 'outsource_product' ||
+    raw.is_outsource === true ||
+    raw.is_non_inventory === true ||
+    raw.entity_type === 'outsource' ||
+    raw.commercial_type === 'outsource' ||
+    raw.product_type === 'outsource' ||
+    raw.product_type === 'outsource_product' ||
     sku.startsWith('OUT-') ||
     cat === 'outsource' ||
     cat.startsWith('outsource_') ||
     cat === 'subcontract' ||
-    (p.outsource_config && typeof p.outsource_config === 'object' && Object.keys(p.outsource_config).length > 0)
+    (raw.outsource_config && typeof raw.outsource_config === 'object' && Object.keys(raw.outsource_config).length > 0)
   )
 }
 
@@ -1608,7 +1610,7 @@ export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): 
   return false
 }
 
-export function isReadyProduct(p: Partial<ProductRecord> | null | undefined): boolean {
+export function isReadyProduct(p: Partial<ProductRecord> | any | null | undefined): boolean {
   if (!p) return false
   if (isOutsourceProduct(p)) return false
 

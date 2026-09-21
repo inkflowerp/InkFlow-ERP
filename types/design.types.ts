@@ -74,7 +74,7 @@ export interface DesignJobRecord {
   approval_timestamp?: string | null
   approval_note?: string | null
   is_locked?: boolean // Prevents accidental replacement once approved
-  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom' | 'ready_product' | 'outsource' | string | null
   commercial_status?: 'invoice_required' | 'invoice_requested' | 'invoice_created' | 'unpaid' | 'partially_paid' | 'paid'
   invoice_id?: string | null
   invoice_number?: string | null
