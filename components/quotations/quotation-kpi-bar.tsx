@@ -18,6 +18,7 @@ export interface QuotationKpiMetrics {
   activeCount: number
   followUpToday: number
   expiringSoon: number
+  negotiatingCount?: number
   wonCount: number
   wonValue: number
   totalQuotes: number
@@ -34,6 +35,7 @@ export function QuotationKpiBar({
   selectedFilter,
   onSelectFilter,
 }: QuotationKpiBarProps) {
+  const negotiatingVal = metrics.negotiatingCount ?? 0
   const cards = [
     {
       id: 'active',
@@ -80,8 +82,8 @@ export function QuotationKpiBar({
       id: 'negotiation',
       label: 'Negotiating',
       labelBn: 'দরকষাকষি চলছে',
-      value: metrics.activeCount > 0 ? (
-        <span className="text-xl">{metrics.activeCount} <span className="text-xs font-normal text-slate-400">Quotes</span></span>
+      value: negotiatingVal > 0 ? (
+        <span className="text-xl">{negotiatingVal} <span className="text-xs font-normal text-slate-400">Quotes</span></span>
       ) : (
         0
       ),

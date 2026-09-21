@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   AlertCircle,
   MessageSquare,
@@ -20,6 +21,7 @@ import { QuotationRecord } from '@/types/quotation.types'
 import { QuotationService } from '@/services/quotation.service'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export interface NeedsAttentionPanelProps {
   quotations: QuotationRecord[]
@@ -34,6 +36,7 @@ export function NeedsAttentionPanel({
   companyName = 'InkFlow',
   onOpenFollowUp,
 }: NeedsAttentionPanelProps) {
+  const pathname = usePathname()
   const urgentQuotes = QuotationService.getNeedsAttentionQuotes(quotations)
 
   if (urgentQuotes.length === 0) {
@@ -133,7 +136,7 @@ export function NeedsAttentionPanel({
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-1">
                     <Link
-                      href={`/quotations/${q.id}`}
+                      href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                       className="font-mono font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
                     >
                       <span>{q.quotation_number}</span>

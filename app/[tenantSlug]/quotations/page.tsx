@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   FileSpreadsheet,
   Plus,
@@ -41,25 +41,22 @@ import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function QuotationsPage() {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal } = useSubscription()
   const { tBilingual, locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'classic-printer'
 
+  const [isMounted, setIsMounted] = useState(false)
+
   // Authoritative server state + local store cache
   const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, undefined, slug)
   const [serverQuotations, setServerQuotations] = useState<QuotationRecord[] | null>(null)
-  const [isLoading, setIsLoading] = useState(() => {
-    try {
-      const cached = PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS)
-      return !cached || cached.length === 0
-    } catch {
-      return true
-    }
-  })
+  const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [localTick, setLocalTick] = useState(0)
@@ -105,6 +102,7 @@ export default function QuotationsPage() {
   }, [companyId, slug, serverQuotations, localQuotations])
 
   useEffect(() => {
+    setIsMounted(true)
     // Purge test quotations QUO-000001 to QUO-000008 from all local storage partitions
     if (typeof window !== 'undefined') {
       PrintERPDataStore.purgeQuotationsByNumbers()
@@ -139,6 +137,7 @@ export default function QuotationsPage() {
 
   // Active quotation dataset: Resilient extraction and deduplication of Server + Local DataStore + Drafts
   const quotations = useMemo(() => {
+    if (!isMounted) return []
     const rawList: any[] = []
 
     // 1. Deep scan ALL browser localStorage keys
@@ -343,14 +342,14 @@ export default function QuotationsPage() {
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
 
-              <Link href="/trash?tab=quotations">
+              <Link href={getTenantNavHref('/trash?tab=quotations', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium text-slate-600 dark:text-slate-300">
                   <Trash2 className="h-3.5 w-3.5 text-slate-500" />
                   <span className="hidden sm:inline">Trash Bin</span>
                 </Button>
               </Link>
 
-              <Link href="/pricing">
+              <Link href={getTenantNavHref('/pricing', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
                   <Calculator className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}

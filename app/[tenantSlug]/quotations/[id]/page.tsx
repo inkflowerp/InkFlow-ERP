@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useParams, useSearchParams, useRouter, usePathname } from 'next/navigation'
 import {
   FileSpreadsheet,
   ArrowLeft,
@@ -67,11 +67,13 @@ import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 function QuotationDetailContent() {
   const params = useParams()
   const searchParams = useSearchParams()
   const router = useRouter()
+  const pathname = usePathname()
   const quoteId = (params?.id as string) || ''
   const shouldAutoPrint = searchParams?.get('print') === 'true'
 
@@ -83,53 +85,9 @@ function QuotationDetailContent() {
   const [localQuotations] = useDataStore<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, [])
   const [localActivities] = useDataStore<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES, [])
 
-  const [quote, setQuote] = useState<QuotationRecord | null>(() => {
-    if (typeof window !== 'undefined' && quoteId) {
-      const allLocal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
-      const found = allLocal.find((q) => q && (q.id === quoteId || q.quotation_number === quoteId))
-      if (found) return normalizeQuotationRecord(found)
-
-      try {
-        for (let i = 0; i < window.localStorage.length; i++) {
-          const k = window.localStorage.key(i)
-          if (!k) continue
-          if (
-            k.startsWith('printerp_tenant_quotations') ||
-            k.startsWith('printerp_quotations') ||
-            k.includes('quotation') ||
-            k.includes('quotes')
-          ) {
-            const raw = window.localStorage.getItem(k)
-            if (raw) {
-              const parsed = JSON.parse(raw)
-              if (Array.isArray(parsed)) {
-                const f = parsed.find(
-                  (item: any) =>
-                    item &&
-                    (item.id === quoteId ||
-                      item.quotation_number === quoteId ||
-                      String(item.id).toLowerCase() === quoteId.toLowerCase() ||
-                      String(item.quotation_number).toLowerCase() === quoteId.toLowerCase())
-                )
-                if (f) return normalizeQuotationRecord(f)
-              } else if (
-                parsed &&
-                (parsed.id === quoteId ||
-                  parsed.quotation_number === quoteId ||
-                  String(parsed.id).toLowerCase() === quoteId.toLowerCase() ||
-                  String(parsed.quotation_number).toLowerCase() === quoteId.toLowerCase())
-              ) {
-                return normalizeQuotationRecord(parsed)
-              }
-            }
-          }
-        }
-      } catch {}
-    }
-    return null
-  })
+  const [quote, setQuote] = useState<QuotationRecord | null>(null)
   const [activities, setActivities] = useState<QuotationActivityRecord[]>([])
-  const [isLoading, setIsLoading] = useState(!quote)
+  const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -288,7 +246,7 @@ function QuotationDetailContent() {
       <FeatureGate feature="quotation_pdf">
         <div className="space-y-6 max-w-6xl">
           <Link
-            href="/quotations"
+            href={getTenantNavHref('/quotations', pathname, slug)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -301,7 +259,7 @@ function QuotationDetailContent() {
               The quotation you are trying to view does not exist or has been removed.
             </p>
             <Button asChild className="mt-4" size="sm">
-              <Link href="/quotations">Return to Directory</Link>
+              <Link href={getTenantNavHref('/quotations', pathname, slug)}>Return to Directory</Link>
             </Button>
           </Card>
         </div>
@@ -380,7 +338,7 @@ function QuotationDetailContent() {
     }
     PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, duplicated)
     showNotification(`Quotation cloned into new Draft ${dupNumber}.`)
-    router.push(`/quotations/${duplicated.id}`)
+    router.push(getTenantNavHref(`/quotations/${duplicated.id}`, pathname, slug))
   }
 
   // Send WhatsApp Action
@@ -483,7 +441,7 @@ ${quote.discount_amount > 0 ? `বিশেষ ছাড়: -৳${Number(quote.dis
         <div className="print:hidden space-y-3">
           <div className="flex items-center justify-between">
             <Link
-              href="/quotations"
+              href={getTenantNavHref('/quotations', pathname, slug)}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
             >
               <ArrowLeft className="h-3.5 w-3.5" />

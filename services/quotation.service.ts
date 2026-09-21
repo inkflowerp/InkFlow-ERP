@@ -293,7 +293,10 @@ export class QuotationService {
       return exp.urgency === 'critical' || exp.urgency === 'warning'
     }).length
 
-    // 5. CONVERTED / WON VALUE
+    // 5. NEGOTIATING COUNT
+    const negotiatingCount = quotes.filter((q) => q.status === 'negotiation').length
+
+    // 6. CONVERTED / WON VALUE
     const wonQuotes = quotes.filter((q) => q.status === 'converted' || q.status === 'approved')
     const wonCount = wonQuotes.length
     const wonValue = wonQuotes.reduce((sum, q) => sum + (Number(q.grand_total) || 0), 0)
@@ -303,6 +306,7 @@ export class QuotationService {
       activeCount,
       followUpToday,
       expiringSoon,
+      negotiatingCount,
       wonCount,
       wonValue,
       totalQuotes: quotes.length,

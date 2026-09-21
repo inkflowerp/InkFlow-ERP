@@ -239,7 +239,10 @@ export function OwnerDashboard({
             </div>
 
             {/* Main Greeting */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white bangla-text leading-tight drop-shadow-2xs">
+            <h1
+              className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white bangla-text leading-tight drop-shadow-2xs"
+              suppressHydrationWarning
+            >
               {tBilingual(`${greeting.en}, ${userFirstName}`, `${greeting.bn}, ${userFirstName}`)}
             </h1>
 

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   ExternalLink,
   Phone,
@@ -22,6 +23,7 @@ import { QuotationRecord, QuotationStatus } from '@/types/quotation.types'
 import { QuotationService } from '@/services/quotation.service'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export interface QuotationTableProps {
   quotations: QuotationRecord[]
@@ -38,6 +40,7 @@ export function QuotationTable({
   onOpenFollowUp,
   onTrash,
 }: QuotationTableProps) {
+  const pathname = usePathname()
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
       case 'draft':
@@ -125,7 +128,7 @@ export function QuotationTable({
                   {/* Quote Number */}
                   <td className="py-3.5 px-4 font-mono font-bold text-blue-600">
                     <Link
-                      href={`/quotations/${q.id}`}
+                      href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                       className="hover:underline flex items-center gap-1 group"
                     >
                       <span>{q.quotation_number}</span>
@@ -221,7 +224,7 @@ export function QuotationTable({
                         Follow
                       </Button>
                       <Link
-                        href={`/quotations/${q.id}`}
+                        href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                         className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         Cockpit →
@@ -262,7 +265,7 @@ export function QuotationTable({
               {/* Header: Quote #, Status & Expiry */}
               <div className="flex items-center justify-between gap-2">
                 <Link
-                  href={`/quotations/${q.id}`}
+                  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                   className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
                 >
                   <span>{q.quotation_number}</span>
@@ -343,7 +346,7 @@ export function QuotationTable({
                 </Button>
 
                 <Link
-                  href={`/quotations/${q.id}`}
+                  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
                   className="inline-flex items-center justify-center h-9 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   Cockpit

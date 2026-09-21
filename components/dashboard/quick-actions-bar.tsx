@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   FileText,
   Receipt,
@@ -20,6 +20,7 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { notify } from '@/lib/notifications/notification-bus'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import type { AccountRecord } from '@/types/finance.types'
 import { getAccountsAction, recordExpenseAction } from '@/actions/finance.actions'
 
@@ -99,6 +100,7 @@ export function QuickActionsBar({
   className,
 }: QuickActionsBarProps) {
   const router = useRouter()
+  const pathname = usePathname()
   const { tBilingual } = useI18n()
   const { company } = useTenant()
   const { can } = usePermissions()
@@ -235,7 +237,7 @@ export function QuickActionsBar({
         if (onOpenNewWork) {
           onOpenNewWork()
         } else {
-          router.push(`/${company?.slug || 'app'}/sales/new-work`)
+          router.push(getTenantNavHref('/sales/new-work', pathname, company?.slug))
         }
       },
     },

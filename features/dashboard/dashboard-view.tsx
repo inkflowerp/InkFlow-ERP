@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { getOwnerDashboardDataAction } from '@/actions/dashboard.actions'
 import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
 import { useRealtimeSync } from '@/hooks/use-realtime-sync'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   TrendingUp,
   Printer,
@@ -135,14 +136,22 @@ interface TableOrderRecord extends Record<string, unknown> {
   date: string
 }
 
-export function DashboardView() {
+export interface DashboardViewProps {
+  initialSnapshot?: OwnerDashboardSnapshot | null
+  tenantSlug?: string
+}
+
+export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardViewProps = {}) {
   const router = useRouter()
+  const pathname = usePathname()
   const { company, currentUser, currentRole, currentBranch } = useTenant()
-  const { userCtx, can, isOwner, isSales, isDesigner, isOperator, isAccountant, isDelivery } = usePermissions()
+  const { userCtx, can, isOwner, isSales, isDesigner, isOperator, isAccountant, isDelivery, activeRole } = usePermissions()
   const { locale, tBilingual } = useI18n()
 
-  const slug = company?.slug || 'my-company'
+  const slug = company?.slug || tenantSlug || 'my-company'
   const canSeeFinancials = isOwner || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
+  const isStore = (userCtx.responsibilities as string[] || []).includes('store_manager') || (currentUser?.roles?.[0]?.slug as string) === 'store_keeper' || can('manage', 'inventory')
+
 
   // Live Data Stores
   const [orders, , orderHelpers] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
@@ -163,36 +172,27 @@ export function DashboardView() {
   const [errorState, setErrorState] = useState<string | null>(null)
   const [activeWorkItem, setActiveWorkItem] = useState<MyWorkItem | null>(null)
 
-  // Owner Snapshot & Realtime State with Stale-While-Revalidate Instant Hydration
-  const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(() => {
-    if (typeof window === 'undefined') return null
-    try {
-      const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
-      if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
-        return cached
-      }
-      return null
-    } catch {
-      return null
-    }
-  })
-  const [isLoadingOwner, setIsLoadingOwner] = useState(() => {
-    if (typeof window === 'undefined') return true
-    try {
-      const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
-      if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
-        return false
-      }
-      return true
-    } catch {
-      return true
-    }
-  })
+  // Owner Snapshot & Realtime State with Zero Hydration Mismatch
+  const [ownerSnapshot, setOwnerSnapshot] = useState<OwnerDashboardSnapshot | null>(initialSnapshot)
+  const [isLoadingOwner, setIsLoadingOwner] = useState(!initialSnapshot)
   const [isUpdatingOwner, setIsUpdatingOwner] = useState(false)
   const [ownerError, setOwnerError] = useState<string | null>(null)
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | undefined>(undefined)
 
   const { lastEventTime } = useRealtimeSync(company?.id)
+
+  // Hydrate from localStorage cache on client if initialSnapshot was null on SSR
+  useEffect(() => {
+    if (!ownerSnapshot && typeof window !== 'undefined') {
+      try {
+        const cached = PrintERPDataStore.get<OwnerDashboardSnapshot | null>('printerp_dashboard_snapshot_cache' as any)
+        if (cached && cached.companyId && company?.id && cached.companyId === company.id) {
+          setOwnerSnapshot(cached)
+          setIsLoadingOwner(false)
+        }
+      } catch {}
+    }
+  }, [company?.id, ownerSnapshot])
 
   const fetchOwnerSnapshot = useCallback(async (isBackground = false) => {
     if (!isOwner) return
@@ -226,7 +226,7 @@ export function DashboardView() {
 
   useEffect(() => {
     if (isOwner) {
-      fetchOwnerSnapshot(false)
+      fetchOwnerSnapshot(!ownerSnapshot ? false : true)
     }
   }, [isOwner, company?.id, currentBranch?.id])
 
@@ -324,7 +324,7 @@ export function DashboardView() {
     if (qa.actionType === 'modal') {
       setActiveModal(qa.target)
     } else if (qa.actionType === 'route') {
-      const fullRoute = qa.target.startsWith('/') ? qa.target : `/${qa.target}`
+      const fullRoute = getTenantNavHref(qa.target, pathname, slug)
       router.push(fullRoute)
     }
   }
@@ -347,7 +347,7 @@ export function DashboardView() {
       setActiveWorkItem(item)
       setActiveModal('report_problem')
     } else if (actionType === 'open_design') {
-      router.push('/design')
+      router.push(getTenantNavHref('/design', pathname, slug))
     } else if (actionType === 'send_proof') {
       showNotification(`WhatsApp proof preview sent to ${item.customerName}.`)
     } else if (actionType === 'dispatch_delivery') {
@@ -822,7 +822,25 @@ export function DashboardView() {
         </div>
       )
     }
+
+    if (isStore) {
+      const lowStock = (materials || []).filter((m) => (m.current_stock || 0) <= (m.min_stock_level || 10)).length
+      return (
+        <div className="space-y-6">
+          <StoreDashboard
+            metrics={{
+              lowStockCount: lowStock,
+              pendingRequisitionsCount: 0,
+              todayIssuesCount: (productionJobs || []).filter((p) => p.status === 'in_progress').length,
+              todayReceivedCount: 0,
+            }}
+            onRefresh={orderHelpers.reload}
+          />
+        </div>
+      )
+    }
   }
+
 
   return (
     <div className="space-y-6 pb-12">
@@ -1016,7 +1034,7 @@ export function DashboardView() {
                   variant="outline"
                   onClick={() => {
                     if (item.actionType === 'route') {
-                      const fullRoute = item.actionTarget.startsWith('/') ? item.actionTarget : `/${item.actionTarget}`
+                      const fullRoute = getTenantNavHref(item.actionTarget, pathname, slug)
                       router.push(fullRoute)
                     } else if (item.actionType === 'modal') {
                       setActiveModal(item.actionTarget)
@@ -1199,7 +1217,7 @@ export function DashboardView() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => router.push('/orders')}
+              onClick={() => router.push(getTenantNavHref('/orders', pathname, slug))}
               className="text-xs bangla-text min-h-[36px] cursor-pointer"
             >
               {tBilingual('View All Orders', 'সকল অর্ডার দেখুন')}
@@ -1212,7 +1230,7 @@ export function DashboardView() {
               columns={columns}
               data={recentOrdersData}
               keyExtractor={(row) => row.id}
-              onRowClick={(row) => router.push(`/orders/${row.id}`)}
+              onRowClick={(row) => router.push(getTenantNavHref(`/orders/${row.id}`, pathname, slug))}
             />
           ) : (
             <div className="p-8 text-center space-y-2">
