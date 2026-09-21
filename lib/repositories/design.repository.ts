@@ -688,6 +688,13 @@ export class DesignRepository {
       all[idx] = { ...all[idx], ...updates, updated_at: now }
       PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, all)
       return all[idx]
+    } else {
+      const synth = await this.getDesignJobById(id, companyId)
+      if (synth) {
+        const merged: DesignJobRecord = { ...synth, ...updates, updated_at: now }
+        PrintERPDataStore.addItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, merged)
+        return merged
+      }
     }
     return null
   }

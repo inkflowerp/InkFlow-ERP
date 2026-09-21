@@ -250,8 +250,9 @@ export default function OrdersPage() {
 
           let calculatedStage: OrderStage = 'new_orders'
           const allReady = mappedItems.length > 0 && mappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
+          const isDelivered = (inv as any).delivery_status === 'delivered' || (inv as any).status === 'delivered'
 
-          if (inv.status === 'paid' && due <= 0) {
+          if (isDelivered) {
             calculatedStage = 'delivered'
           } else if (allReady) {
             calculatedStage = 'ready_delivery'

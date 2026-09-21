@@ -6,6 +6,7 @@ import type {
 } from '../../types/production.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
+import { DesignRepository } from './design.repository.ts'
 import { isReadyProduct } from '../units.ts'
 
 export interface TaskFilterOptions {
@@ -130,9 +131,13 @@ export class ProductionTaskRepository {
     }
 
     // Auto-provision & unblock tasks for approved design jobs
-    const localDesignJobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-    const matchingLocalDesignJobs = localDesignJobs.filter((d) => this.isMatchingCompany(d.company_id, companyId))
-    const allDesignJobs = [...matchingLocalDesignJobs]
+    let allDesignJobs: DesignJobRecord[] = []
+    try {
+      allDesignJobs = await DesignRepository.getDesignJobs(companyId)
+    } catch {
+      const localDesignJobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      allDesignJobs = localDesignJobs.filter((d) => this.isMatchingCompany(d.company_id, companyId))
+    }
     for (const dj of dbApprovedJobs) {
       if (!allDesignJobs.some((j) => j.id === dj.id)) {
         allDesignJobs.push(dj)

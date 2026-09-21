@@ -179,6 +179,10 @@ export class LogisticsRepository {
                 scheduled_date: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
                 notes: 'Generated from commercial invoice',
                 created_by_name: inv.created_by_name || 'Commercial Billing',
+                grand_total: Number(inv.grand_total) || 0,
+                paid_amount: Number(inv.paid_amount) || 0,
+                due_amount: Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0)),
+                payment_status: (Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0)) <= 0) ? 'paid' : (Number(inv.paid_amount) > 0 ? 'partial' : 'unpaid'),
                 items: challanItems,
                 created_at: inv.created_at || new Date().toISOString(),
                 updated_at: inv.updated_at || new Date().toISOString(),
@@ -190,6 +194,29 @@ export class LogisticsRepository {
           if (synthesized.length > 0) {
             challansData = [...challansData, ...synthesized]
           }
+
+          // Enrich all existing challans with invoice financial data
+          challansData = challansData.map((c) => {
+            const matchedInv = invoices.find(
+              (inv) =>
+                (c.invoice_id && (inv.id === c.invoice_id || inv.invoice_number === c.invoice_id)) ||
+                (c.invoice_number && inv.invoice_number === c.invoice_number)
+            )
+            if (matchedInv) {
+              const gt = Number(matchedInv.grand_total) || c.grand_total || 0
+              const pd = Number(matchedInv.paid_amount) || c.paid_amount || 0
+              const due = Math.max(0, gt - pd)
+              const payStat = due <= 0 ? 'paid' : pd > 0 ? 'partial' : 'unpaid'
+              return {
+                ...c,
+                grand_total: gt,
+                paid_amount: pd,
+                due_amount: due,
+                payment_status: payStat,
+              }
+            }
+            return c
+          })
         }
       } catch {}
 

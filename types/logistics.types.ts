@@ -76,6 +76,10 @@ export interface DeliveryChallanRecord {
   received_by?: string | null
   received_date?: string | null
   notes?: string | null
+  grand_total?: number
+  paid_amount?: number
+  due_amount?: number
+  payment_status?: 'paid' | 'partial' | 'unpaid'
   created_by_name: string
   items: ChallanItemRecord[]
   created_at: string

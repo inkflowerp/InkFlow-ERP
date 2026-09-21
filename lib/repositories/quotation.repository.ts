@@ -698,25 +698,40 @@ export class QuotationRepository {
       created_by_name: options?.createdByName || quote.salesperson_name || 'Commercial Executive',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      items: (quote.items || []).map((it, idx) => ({
-        id: `inv-item-${Date.now()}-${idx + 1}`,
-        invoice_id: invoiceId,
-        product_id: it.product_id || null,
-        item_description: it.description,
-        description: it.description,
-        dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : null,
-        width: it.width,
-        height: it.height,
-        dimension_unit: it.dimension_unit,
-        area_sft: it.area_sft,
-        quantity: it.quantity,
-        unit: it.unit,
-        unit_price: it.unit_rate, // PRESERVED QUOTED RATE
-        unit_rate: it.unit_rate,
-        vat_percentage: quote.vat_rate || 0,
-        total_price: it.item_total,
-        item_total: it.item_total,
-      })),
+      items: (quote.items || []).map((it, idx) => {
+        const isReady = it.item_kind === 'ready_product'
+        const isDesignReq = it.artwork_required === true
+        const routing = isReady ? 'ready_product' : isDesignReq ? 'design_required' : 'design_ok'
+
+        return {
+          id: `inv-item-${Date.now()}-${idx + 1}`,
+          invoice_id: invoiceId,
+          product_id: it.product_id || null,
+          item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+          item_description: it.description,
+          description: it.description,
+          dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : (it.dimensions_spec || null),
+          width: it.width,
+          height: it.height,
+          dimension_unit: it.dimension_unit,
+          area_sft: it.area_sft,
+          quantity: it.quantity,
+          unit: it.unit,
+          unit_price: it.unit_rate, // PRESERVED QUOTED RATE
+          unit_rate: it.unit_rate,
+          vat_percentage: quote.vat_rate || 0,
+          total_price: it.item_total,
+          item_total: it.item_total,
+          material: it.material_spec || null,
+          material_spec: it.material_spec || null,
+          finishing: it.finishing || (it.selected_finishing?.map((f: any) => f.name).join(', ')) || null,
+          selected_finishing: it.selected_finishing || null,
+          selected_add_ons: it.selected_add_ons || null,
+          selected_installation: it.selected_installation || null,
+          workflow_routing: routing,
+          design_required: isDesignReq,
+        }
+      }),
     }
 
     // Persist to DataStore
@@ -793,24 +808,33 @@ export class QuotationRepository {
       salesperson_name: options?.createdByName || quote.salesperson_name || 'Sales Staff',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      items: (quote.items || []).map((it, idx) => ({
-        id: `item-${Date.now()}-${idx + 1}`,
-        order_id: orderId,
-        product_id: it.product_id || null,
-        item_name: it.description,
-        dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit}` : null,
-        width: it.width || 0,
-        height: it.height || 0,
-        dimension_unit: it.dimension_unit || 'ft',
-        area_sft: it.area_sft || 0,
-        quantity: it.quantity,
-        unit: it.unit,
-        unit_price: it.unit_rate, // PRESERVED QUOTED RATE
-        total_price: it.item_total,
-        media_type: it.material_spec || null,
-        finishing: it.finishing || null,
-        installation_required: it.installation_required || false,
-      })),
+      items: (quote.items || []).map((it, idx) => {
+        const isReady = it.item_kind === 'ready_product'
+        const isDesignReq = it.artwork_required === true
+        const routing = isReady ? 'ready_product' : isDesignReq ? 'design_required' : 'design_ok'
+
+        return {
+          id: `item-${Date.now()}-${idx + 1}`,
+          order_id: orderId,
+          product_id: it.product_id || null,
+          item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+          item_name: it.description,
+          dimensions_spec: it.width > 0 && it.height > 0 ? `${it.width} × ${it.height} ${it.dimension_unit}` : (it.dimensions_spec || null),
+          width: it.width || 0,
+          height: it.height || 0,
+          dimension_unit: it.dimension_unit || 'ft',
+          area_sft: it.area_sft || 0,
+          quantity: it.quantity,
+          unit: it.unit,
+          unit_price: it.unit_rate, // PRESERVED QUOTED RATE
+          total_price: it.item_total,
+          media_type: it.material_spec || null,
+          finishing: it.finishing || (it.selected_finishing?.map((f: any) => f.name).join(', ')) || null,
+          installation_required: it.installation_required || false,
+          workflow_routing: routing,
+          design_required: isDesignReq,
+        }
+      }),
     }
 
     // Persist to DataStore with all integrated downstream records (job order, prod tasks, mat reqs, costing)

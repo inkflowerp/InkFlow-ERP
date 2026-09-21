@@ -757,6 +757,15 @@ export default function DeliveryLogisticsPage() {
                             {ch.order_number && (
                               <span className="text-[10px] text-slate-400">({ch.order_number})</span>
                             )}
+                            {ch.due_amount !== undefined && ch.due_amount > 0 ? (
+                              <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
+                                বকেয়া: {formatBDT(ch.due_amount)}
+                              </Badge>
+                            ) : ch.grand_total ? (
+                              <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
+                                পরিশোধিত
+                              </Badge>
+                            ) : null}
                           </div>
                         </td>
 
@@ -880,13 +889,22 @@ export default function DeliveryLogisticsPage() {
                         {getDeliveryStatusBadge(ch.status)}
                       </div>
 
-                      <div className="flex items-center gap-2 font-mono">
+                      <div className="flex items-center gap-2 font-mono flex-wrap">
                         <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                           {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                         </Badge>
                         {ch.order_number && (
                           <span className="text-[10px] text-slate-400">({ch.order_number})</span>
                         )}
+                        {ch.due_amount !== undefined && ch.due_amount > 0 ? (
+                          <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
+                            বকেয়া: {formatBDT(ch.due_amount)}
+                          </Badge>
+                        ) : ch.grand_total ? (
+                          <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
+                            পরিশোধিত
+                          </Badge>
+                        ) : null}
                       </div>
 
                       {/* Customer & Address */}
@@ -1290,6 +1308,45 @@ export default function DeliveryLogisticsPage() {
                       📅 Scheduled: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Commercial Due Alert Banner */}
+              <div className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 shadow-xs ${
+                (selectedChallanForDelivery.due_amount || 0) > 0
+                  ? 'bg-rose-50/90 border-rose-200 text-rose-900 dark:bg-rose-950/40 dark:border-rose-800 dark:text-rose-200'
+                  : 'bg-emerald-50/90 border-emerald-200 text-emerald-900 dark:bg-emerald-950/40 dark:border-emerald-800 dark:text-emerald-200'
+              }`}>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <AlertTriangle className={`h-5 w-5 shrink-0 ${
+                    (selectedChallanForDelivery.due_amount || 0) > 0 ? 'text-rose-600' : 'text-emerald-600'
+                  }`} />
+                  <div>
+                    <div className="font-bold flex items-center gap-1.5 flex-wrap">
+                      <span>
+                        {(selectedChallanForDelivery.due_amount || 0) > 0
+                          ? '⚠️ বকেয়া বিল আদায় সতর্কবার্তা (Commercial Due Alert)'
+                          : '✅ সম্পূর্ণ পরিশোধিত বিল (Fully Paid Invoice)'}
+                      </span>
+                    </div>
+                    <p className="text-[11px] opacity-85 mt-0.5">
+                      {(selectedChallanForDelivery.due_amount || 0) > 0
+                        ? `ডেলিভারি হস্তান্তরের পূর্বে অনুগ্রহ করে বকেয়া ${formatBDT(selectedChallanForDelivery.due_amount || 0)} আদায় নিশ্চিত করুন।`
+                        : 'গ্রাহকের কোন বকেয়া নেই। পণ্য ডেলিভারি সম্পন্ন করতে পারেন।'}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right shrink-0 font-mono">
+                  <div className="text-[10px] text-slate-500">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
+                  {(selectedChallanForDelivery.due_amount || 0) > 0 ? (
+                    <div className="font-black text-rose-600 dark:text-rose-400 text-sm">
+                      বকেয়া: {formatBDT(selectedChallanForDelivery.due_amount || 0)}
+                    </div>
+                  ) : (
+                    <div className="font-bold text-emerald-600 dark:text-emerald-400 text-xs">
+                      পরিশোধিত: {formatBDT(selectedChallanForDelivery.paid_amount || selectedChallanForDelivery.grand_total || 0)}
+                    </div>
+                  )}
                 </div>
               </div>
 
