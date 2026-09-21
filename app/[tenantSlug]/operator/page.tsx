@@ -52,6 +52,7 @@ import {
   reportBreakdownAction,
 } from '@/actions/machinery.actions'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function MobileOperatorPanelContent() {
   const { tBilingual } = useI18n()
@@ -59,13 +60,33 @@ function MobileOperatorPanelContent() {
   const searchParams = useSearchParams()
   const slug = company?.slug || 'my-company'
 
-  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
-  const [machineries, setMachineries] = useState<MachineryRecord[]>([])
+  const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    } catch {
+      return []
+    }
+  })
+  const [machineries, setMachineries] = useState<MachineryRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    } catch {
+      return []
+    }
+  })
   const [selectedStationMachineId, setSelectedStationMachineId] = useState<string>(
     searchParams?.get('machine') || 'all'
   )
+  const [selectedDepartment, setSelectedDepartment] = useState<'all' | 'printing' | 'finishing' | 'fabrication'>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => {
+    try {
+      const cached = PrintERPDataStore.get(STORAGE_KEYS.PRODUCTION_TASKS)
+      return !cached || (cached as any[]).length === 0
+    } catch {
+      return true
+    }
+  })
   const [notification, setNotification] = useState<string | null>(null)
   const [actionInProgressTaskId, setActionInProgressTaskId] = useState<string | null>(null)
 
@@ -101,8 +122,10 @@ function MobileOperatorPanelContent() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const loadData = async () => {
-    setLoading(true)
+  const loadData = async (isBackground = false) => {
+    if (!isBackground && tasks.length === 0) {
+      setLoading(true)
+    }
     try {
       const [taskRes, machRes] = await Promise.all([
         getProductionTasksAction(),
@@ -110,9 +133,15 @@ function MobileOperatorPanelContent() {
       ])
       if (taskRes.success && taskRes.data) {
         setTasks(taskRes.data)
+        try {
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, taskRes.data, false)
+        } catch {}
       }
       if (machRes.success && machRes.data) {
         setMachineries(machRes.data)
+        try {
+          PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, machRes.data, false)
+        } catch {}
       }
     } catch (_) {
     } finally {
@@ -121,7 +150,31 @@ function MobileOperatorPanelContent() {
   }
 
   useEffect(() => {
-    loadData()
+    loadData(false)
+
+    const handleRealtimeSync = () => {
+      loadData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:production_tasks', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [])
 
   const handleStartTask = async (task: ProductionTaskRecord) => {
@@ -240,6 +293,13 @@ function MobileOperatorPanelContent() {
 
   // Filter tasks based on selected station & search query
   const filteredTasks = tasks.filter((task) => {
+    const matchDept =
+      selectedDepartment === 'all' ||
+      task.department === selectedDepartment ||
+      (selectedDepartment === 'finishing' && (task.department === 'finishing' || task.task_type === 'lamination' || task.task_type === 'cutting' || task.task_type === 'finishing')) ||
+      (selectedDepartment === 'fabrication' && (task.department === 'fabrication' || task.task_type === 'fabrication' || task.task_type === 'mounting')) ||
+      (selectedDepartment === 'printing' && (task.department === 'printing' || task.task_type === 'printing'))
+
     const matchStation =
       selectedStationMachineId === 'all' ||
       task.assigned_machine_id === selectedStationMachineId ||
@@ -252,7 +312,7 @@ function MobileOperatorPanelContent() {
       (task.customer_name && task.customer_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (task.job_number && task.job_number.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    return matchStation && matchSearch
+    return matchDept && matchStation && matchSearch
   })
 
   const activeTasks = filteredTasks.filter((t) => t.status === 'in_progress' || t.status === 'paused')
@@ -300,6 +360,38 @@ function MobileOperatorPanelContent() {
           <span>{notification}</span>
         </div>
       )}
+
+      {/* DEPARTMENT / STATION TABS & QUICK SHORTCUTS */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg overflow-x-auto">
+          {[
+            { id: 'all', label: 'All Operations', labelBn: 'সকল কাজ' },
+            { id: 'printing', label: 'Printing Floor', labelBn: 'প্রিন্টিং' },
+            { id: 'finishing', label: 'Finishing Floor', labelBn: 'ফিনিশিং' },
+            { id: 'fabrication', label: 'Signage Fabrication', labelBn: 'ফেব্রিকেশন' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedDepartment(tab.id as any)}
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+                selectedDepartment === tab.id
+                  ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              {tBilingual(tab.label, tab.labelBn)}
+            </button>
+          ))}
+        </div>
+
+        <Link
+          href={`/finishing`}
+          className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition-colors"
+        >
+          <Scissors className="h-3.5 w-3.5" />
+          <span>{tBilingual('Finishing & Fabrication Floor ➔', 'ফিনিশিং ও ফেব্রিকেশন ফ্লোর ➔')}</span>
+        </Link>
+      </div>
 
       {/* MACHINE STATION SELECTOR & SEARCH */}
       <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">

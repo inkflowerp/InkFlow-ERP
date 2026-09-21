@@ -692,10 +692,15 @@ export class QuotationRepository {
     const invNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
     const invoiceId = `inv-${Date.now()}`
 
+    const advancePaid = quote.advance_amount && quote.advance_amount > 0 ? quote.advance_amount : 0
+    const dueAmount = Math.max(0, quote.grand_total - advancePaid)
+
     const invoice: InvoiceRecord = {
       id: invoiceId,
       company_id: effectiveCompanyId,
       invoice_number: invNumber,
+      quotation_id: quote.id,
+      quotation_number: quote.quotation_number,
       customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
       customer_name: quote.customer_name,
       customer_phone: quote.customer_phone,
@@ -709,10 +714,10 @@ export class QuotationRepository {
       vat_percentage: quote.vat_rate,
       vat_amount: quote.vat_amount,
       grand_total: quote.grand_total,
-      paid_amount: 0,
-      due_amount: quote.grand_total,
+      paid_amount: advancePaid,
+      due_amount: dueAmount,
       write_off_amount: 0,
-      status: 'unpaid',
+      status: dueAmount === 0 ? 'paid' : advancePaid > 0 ? 'partially_paid' : 'unpaid',
       notes: `Converted from Quotation ${quote.quotation_number}.${quote.notes ? ` Notes: ${quote.notes}` : ''}`,
       created_by_name: options?.createdByName || quote.salesperson_name || 'Commercial Executive',
       created_at: new Date().toISOString(),
@@ -815,6 +820,8 @@ export class QuotationRepository {
       id: orderId,
       company_id: effectiveCompanyId,
       order_number: orderNumber,
+      quotation_id: quote.id,
+      quotation_number: quote.quotation_number,
       customer_id: quote.customer_id || '00000000-0000-0000-0000-000000000000',
       customer_name: quote.customer_name,
       customer_phone: quote.customer_phone,

@@ -402,11 +402,13 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       const updatedProd = allProdJobs.map((pj) => {
         if (
           pj.id === (job as any).production_job_id ||
-          (pj.customer_name === job.customer_name && pj.product_name === job.title)
+          (pj.customer_name === job.customer_name && pj.product_name === job.title) ||
+          (job.invoice_number && pj.production_job_number && pj.production_job_number.includes(job.invoice_number.replace('INV-', '')))
         ) {
           return {
             ...pj,
             stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
+            status: 'queued' as const,
             updated_at: new Date().toISOString(),
           }
         }
@@ -414,6 +416,44 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       })
       PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, updatedProd)
       setProductionJobs(updatedProd)
+
+      // Unblock linked production tasks in queue
+      try {
+        const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const updatedTasks = allTasks.map((t) => {
+          if (
+            t.job_order_id === (job as any).job_order_id ||
+            (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
+          ) {
+            return {
+              ...t,
+              is_blocked_by_design_gate: false,
+              assigned_machine_name: machineObj?.name || t.assigned_machine_name || 'Press Floor',
+              status: t.status === 'on_hold' ? 'queued' : t.status,
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return t
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, updatedTasks)
+      } catch {}
+
+      // Update linked sales order stage to in_production
+      try {
+        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const matchedOrder = allOrders.find(
+          (o) =>
+            o.id === (job as any).sales_order_id ||
+            (job.invoice_number && (o.invoice_number === job.invoice_number || o.order_number?.includes(job.invoice_number.replace('INV-', '')))) ||
+            (o.customer_name === job.customer_name && o.items?.some((it: any) => it.item_name?.includes(job.title) || job.title?.includes(it.item_name)))
+        )
+        if (matchedOrder && matchedOrder.stage !== 'delivered') {
+          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+            stage: 'in_production',
+            updated_at: new Date().toISOString(),
+          })
+        }
+      } catch {}
 
       // Mark all preflight checks green
       setPreflightState((prev) => ({

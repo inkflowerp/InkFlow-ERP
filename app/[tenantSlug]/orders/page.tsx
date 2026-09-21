@@ -316,6 +316,16 @@ export default function OrdersPage() {
     }
     if (typeof window !== 'undefined') {
       window.addEventListener('printerp_data_sync', handleSync)
+      window.addEventListener('printerp_table_synced', handleSync)
+      window.addEventListener('printerp_table_synced:sales_orders', handleSync)
+      window.addEventListener('printerp_table_synced:invoices', handleSync)
+      window.addEventListener('printerp_table_synced:production_jobs', handleSync)
+      window.addEventListener('printerp_table_synced:production_tasks', handleSync)
+      window.addEventListener('printerp_table_synced:delivery_challans', handleSync)
+      window.addEventListener('printerp_table_synced:payments', handleSync)
+      window.addEventListener('printerp_order_items_updated', handleSync)
+      window.addEventListener('printerp_invoice_items_updated', handleSync)
+      window.addEventListener('printerp_timeline_updated', handleSync)
       window.addEventListener('storage', handleSync)
       window.addEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
       window.addEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleSync)
@@ -324,6 +334,16 @@ export default function OrdersPage() {
     return () => {
       if (typeof window !== 'undefined') {
         window.removeEventListener('printerp_data_sync', handleSync)
+        window.removeEventListener('printerp_table_synced', handleSync)
+        window.removeEventListener('printerp_table_synced:sales_orders', handleSync)
+        window.removeEventListener('printerp_table_synced:invoices', handleSync)
+        window.removeEventListener('printerp_table_synced:production_jobs', handleSync)
+        window.removeEventListener('printerp_table_synced:production_tasks', handleSync)
+        window.removeEventListener('printerp_table_synced:delivery_challans', handleSync)
+        window.removeEventListener('printerp_table_synced:payments', handleSync)
+        window.removeEventListener('printerp_order_items_updated', handleSync)
+        window.removeEventListener('printerp_invoice_items_updated', handleSync)
+        window.removeEventListener('printerp_timeline_updated', handleSync)
         window.removeEventListener('storage', handleSync)
         window.removeEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
         window.removeEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleSync)

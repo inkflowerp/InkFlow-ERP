@@ -40,6 +40,7 @@ import {
   Layers,
   Disc,
   Trash2,
+  Scissors,
   LogOut,
   Shield,
   ChevronDown,
@@ -93,6 +94,7 @@ const iconMap: Record<string, React.ElementType> = {
   Layers,
   Disc,
   Trash2,
+  Scissors,
 }
 
 export function MobileNav() {

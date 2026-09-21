@@ -215,6 +215,28 @@ export default function PricingManagementPage() {
 
   useEffect(() => {
     loadData()
+
+    const handleRealtimeSync = () => {
+      loadData()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:pricing_rules', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:pricing_rules', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [loadData])
 
   // Selected product in Add/Edit Rule modal

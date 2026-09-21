@@ -585,6 +585,42 @@ export class ProductionPlanningService {
           })
         }
       } catch (_) {}
+    } else if (!targetRollId && consumedQty > 0) {
+      // 1b. Direct Master Material Stock Deduction (Sheet/Plate/Acrylic/Ink/Standard Substrate)
+      try {
+        let matId = task.required_material || (task as any).material_id
+        if (!matId) {
+          const reqs = await InventoryRepository.getTaskRequirements(task.id, companyId)
+          if (reqs && reqs.length > 0) {
+            matId = reqs[0].material_id
+          }
+        }
+        if (!matId && task.product_name) {
+          const prodName = task.product_name.toLowerCase()
+          const allMats = await InventoryRepository.getMaterials(companyId)
+          const matched = allMats.find((m) =>
+            m.name.toLowerCase().includes(prodName) ||
+            prodName.includes(m.name.toLowerCase())
+          )
+          if (matched) matId = matched.id
+        }
+
+        if (matId) {
+          await InventoryRepository.recordStockAdjustment({
+            company_id: companyId,
+            branch_id: task.branch_id || null,
+            material_id: matId,
+            quantity_change: -Math.abs(consumedQty),
+            transaction_type: 'CONSUMPTION',
+            reference_type: 'PRODUCTION_TASK',
+            reference_id: task.id,
+            production_task_id: task.id,
+            notes: `Floor consumption for task ${task.task_number} (${task.task_name})`,
+            performed_by_id: task.assigned_operator_id || null,
+            performed_by_name: task.assigned_operator_name || 'Operator',
+          })
+        }
+      } catch (_) {}
     }
 
     // 2. Scrap & Wastage Recording
@@ -650,6 +686,41 @@ export class ProductionPlanningService {
       task.sequence_order,
       companyId
     )
+
+    // 4. If all tasks for this Job Order / Production Job are completed, advance downstream stage
+    if (!nextReadyTask) {
+      try {
+        const { ProductionRepository } = await import('../lib/repositories/production.repository.ts')
+        const allProdJobs = await ProductionRepository.getProductionJobs(companyId)
+        const matchedProd = allProdJobs.find(
+          (pj) =>
+            pj.id === task.production_job_id ||
+            pj.production_job_number === task.job_number ||
+            (task.job_number && pj.production_job_number && task.job_number.includes(pj.production_job_number))
+        )
+        if (matchedProd) {
+          await ProductionRepository.updateProductionJob(matchedProd.id, {
+            stage: 'ready_delivery',
+            status: 'completed',
+          }, companyId)
+        }
+
+        // Update Sales Order to ready_delivery
+        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const matchedOrder = allOrders.find(
+          (o) =>
+            o.id === task.job_order_id ||
+            o.order_number === task.job_number ||
+            (task.job_number && o.order_number && task.job_number.includes(o.order_number))
+        )
+        if (matchedOrder && matchedOrder.status !== 'delivered' && matchedOrder.status !== 'cancelled') {
+          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+            status: 'completed',
+            stage: 'ready_delivery',
+          })
+        }
+      } catch (_) {}
+    }
 
     return { completedTask: completed, nextReadyTask }
   }

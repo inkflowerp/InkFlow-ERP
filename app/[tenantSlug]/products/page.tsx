@@ -431,6 +431,36 @@ export default function ProductsCatalogPage() {
     loadAdditionalOptions()
     loadInstallationOptions()
     loadMachineries()
+
+    const handleRealtimeSync = () => {
+      loadProducts()
+      loadCategories()
+      loadPrintingMethods()
+      loadFinishingOptions()
+      loadAdditionalOptions()
+      loadInstallationOptions()
+      loadMachineries()
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:product_categories', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [companyId])
 
   // Handlers for Configuration Masters

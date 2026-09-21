@@ -714,6 +714,28 @@ class RealtimeSubscriptionManager {
             messageBn: `গ্রাহক: ${record.customer_name || 'ক্লায়েন্ট'}`,
             actionUrl: `/delivery`,
           }
+        } else if (eventType === 'UPDATE' && record.status === 'delivered') {
+          popup = {
+            id: `del-ok-${record.id}-${Date.now()}`,
+            type: 'delivery',
+            title: `Challan #${record.challan_number} Delivered`,
+            titleBn: `চালান #${record.challan_number} সফলভাবে ডেলিভার্ড হয়েছে`,
+            message: `Received by: ${record.receiver_name || record.customer_name || 'Customer'}`,
+            messageBn: `গ্রহণ করেছেন: ${record.receiver_name || record.customer_name || 'গ্রাহক'}`,
+            actionUrl: `/delivery`,
+          }
+        }
+      } else if (table === 'materials') {
+        if (eventType === 'UPDATE' && record.current_stock !== undefined && record.reorder_level !== undefined && Number(record.current_stock) <= Number(record.reorder_level)) {
+          popup = {
+            id: `mat-low-${record.id}-${Date.now()}`,
+            type: 'inventory',
+            title: `Low Stock Alert: ${record.name}`,
+            titleBn: `স্টক সতর্কতা: ${record.name} রিয়র্ডার লেভেলে`,
+            message: `Current Stock: ${record.current_stock} ${record.unit || 'units'} (Reorder Level: ${record.reorder_level})`,
+            messageBn: `বর্তমান স্টক: ${record.current_stock} ${record.unit || ''} (রিয়র্ডার লেভেল: ${record.reorder_level})`,
+            actionUrl: `/inventory?view=materials`,
+          }
         }
       } else if (table === 'in_app_notifications') {
         if (eventType === 'INSERT') {

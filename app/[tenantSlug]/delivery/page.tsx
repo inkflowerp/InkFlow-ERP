@@ -256,6 +256,41 @@ export default function DeliveryLogisticsPage() {
       updated_at: now,
     })
 
+    // Update matching Sales Orders to delivered / partially_delivered
+    try {
+      const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+      const matchedOrder = orders.find(
+        (o) =>
+          (selectedChallanForDelivery.sales_order_id && o.id === selectedChallanForDelivery.sales_order_id) ||
+          (selectedChallanForDelivery.order_number && o.order_number === selectedChallanForDelivery.order_number) ||
+          (selectedChallanForDelivery.invoice_number && o.invoice_number === selectedChallanForDelivery.invoice_number)
+      )
+      if (matchedOrder) {
+        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+          status: isAllDelivered ? 'delivered' : 'in_production',
+          delivery_status: isAllDelivered ? 'delivered' : 'partially_delivered',
+          delivered_at: isAllDelivered ? now : undefined,
+          updated_at: now,
+        })
+      }
+
+      // Update matching Invoices delivery_status
+      const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+      const matchedInv = invoices.find(
+        (i) =>
+          (selectedChallanForDelivery.invoice_id && i.id === selectedChallanForDelivery.invoice_id) ||
+          (selectedChallanForDelivery.invoice_number && i.invoice_number === selectedChallanForDelivery.invoice_number) ||
+          (selectedChallanForDelivery.order_number && i.order_number === selectedChallanForDelivery.order_number)
+      )
+      if (matchedInv) {
+        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.INVOICES, matchedInv.id, {
+          delivery_status: isAllDelivered ? 'delivered' : 'partially_delivered',
+          delivered_at: isAllDelivered ? now : undefined,
+          updated_at: now,
+        })
+      }
+    } catch {}
+
     try {
       await updateChallanStatusAction(selectedChallanForDelivery.id, nextChallanStatus, company?.id || company?.slug || slug, {
         delivered_at: isAllDelivered ? now : (selectedChallanForDelivery.delivered_at || null),

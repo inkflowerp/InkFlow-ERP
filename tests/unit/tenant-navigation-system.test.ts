@@ -197,6 +197,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'Disc',
       'Tag',
       'Trash2',
+      'Scissors',
     ]
 
     for (const section of navSections) {

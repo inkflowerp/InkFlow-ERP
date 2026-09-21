@@ -205,6 +205,16 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           permission: { action: 'view', resource: 'production' },
         },
         {
+          key: 'finishing',
+          title: 'Finishing & Fabrication',
+          titleBn: 'ফিনিশিং ও ফেব্রিকেশন',
+          href: '/finishing',
+          icon: 'Scissors',
+          permission: { action: 'view', resource: 'production' },
+          badge: 'Floor',
+          badgeVariant: 'fast',
+        },
+        {
           key: 'delivery',
           title: 'Delivery',
           titleBn: 'ডেলিভারি',

@@ -341,6 +341,12 @@ export default function AdvancedProductionPage() {
                 <Sparkles className="h-3.5 w-3.5 text-blue-600" />
                 {tBilingual('Auto-Generate Tasks from Order', 'অর্ডার থেকে টাস্ক জেনারেট')}
               </Button>
+              <Link href={`/${slug}/finishing`}>
+                <Button variant="default" size="sm" className="text-xs bangla-text flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs">
+                  <Scissors className="h-3.5 w-3.5 text-white" />
+                  {tBilingual('Finishing & Fabrication Floor', 'ফিনিশিং ও ফেব্রিকেশন')}
+                </Button>
+              </Link>
               <Link href={`/${slug}/production/machineries`}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-blue-600" />
