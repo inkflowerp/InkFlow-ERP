@@ -171,13 +171,13 @@ export interface GroupedDesignCard {
 }
 
 const PRINT_MACHINERY_LIST = [
-  { id: 'roland_eco', name: 'Roland SolJet Pro-4 Eco-Solvent (10ft Outdoor)', type: 'Roll-to-Roll' },
-  { id: 'konica_c4070', name: 'Konica Minolta AccurioPress C4070 (Digital Offset)', type: 'Cut-Sheet' },
-  { id: 'uv_flatbed_8x4', name: 'UV Flatbed 8×4ft (Acrylic/Foam/Wood)', type: 'Flatbed UV' },
-  { id: 'cnc_router', name: 'CNC Router 3D Cutting Bed (ACP/Acrylic)', type: 'Fabrication' },
-  { id: 'laser_bed', name: 'High-Precision Laser Engraver & Cutter', type: 'Cutting' },
-  { id: 'dtf_textile', name: 'DTF 24-inch Industrial Textile Apparel Printer', type: 'Textile' },
-  { id: 'offset_speedmaster', name: 'Heidelberg Speedmaster 4-Color Commercial Offset', type: 'Offset' },
+  { id: 'roland_eco', name: 'Roland SolJet Pro-4 Eco-Solvent (10ft Outdoor / ব্যানার ও পিভিসি)', type: 'Roll-to-Roll' },
+  { id: 'konica_c4070', name: 'Konica Minolta AccurioPress C4070 (Digital Offset / ডিজিটাল শিট)', type: 'Cut-Sheet' },
+  { id: 'offset_speedmaster', name: 'Heidelberg Speedmaster 4-Color (Commercial Offset / অফসেট প্রেস)', type: 'Offset' },
+  { id: 'uv_flatbed_8x4', name: 'UV Flatbed 8×4ft (Acrylic/Foam/Wood / ইউভি প্রিন্ট)', type: 'Flatbed UV' },
+  { id: 'cnc_router', name: 'CNC Router 3D Cutting Bed (ACP/Acrylic / এক্রিলিক রাউটার)', type: 'Fabrication' },
+  { id: 'laser_bed', name: 'High-Precision Laser Engraver & Cutter (লেজার কাটিং)', type: 'Cutting' },
+  { id: 'dtf_textile', name: 'DTF 24-inch Industrial Textile (ডিটিএফ ফেব্রিক)', type: 'Textile' },
 ]
 
 export interface DesignPanelProps {
@@ -291,23 +291,55 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false)
   const [isRequestInvoiceModalOpen, setIsRequestInvoiceModalOpen] = useState(false)
   
-  // Power Upgrade Modals
+  // Power Upgrade Modals & Tools
   const [lightboxJob, setLightboxJob] = useState<DesignJobRecord | null>(null)
   const [lightboxVersionIdx, setLightboxVersionIdx] = useState<number>(0)
   const [lightboxZoom, setLightboxZoom] = useState<number>(1)
   const [whatsAppJob, setWhatsAppJob] = useState<DesignJobRecord | null>(null)
   const [whatsAppPhone, setWhatsAppPhone] = useState<string>('')
   const [whatsAppCopied, setWhatsAppCopied] = useState<boolean>(false)
+  const [whatsAppTemplate, setWhatsAppTemplate] = useState<'proof' | 'reminder' | 'production' | 'revision'>('proof')
+  const [whatsAppEditableText, setWhatsAppEditableText] = useState<string>('')
   const [prepressJob, setPrepressJob] = useState<DesignJobRecord | null>(null)
   const [selectedMachine, setSelectedMachine] = useState<string>('roland_eco')
   const [compareJob, setCompareJob] = useState<DesignJobRecord | null>(null)
   const [compareVerA, setCompareVerA] = useState<number>(1)
   const [compareVerB, setCompareVerB] = useState<number>(1)
 
+  // Pre-press Flightcheck state per work item (CMYK, 300 DPI, Bleed, Curves)
+  const [preflightState, setPreflightState] = useState<Record<string, { cmyk: boolean; dpi300: boolean; bleed: boolean; curves: boolean }>>({})
+
   // Interactive work selection per grouped invoice/order card
   const [selectedWorkIdByGroup, setSelectedWorkIdByGroup] = useState<Record<string, string>>({})
 
   const [notificationMsg, setNotificationMsg] = useState<{ text: string; type: 'success' | 'warning' | 'info' } | null>(null)
+
+  // Preflight status helper & toggler
+  const getPreflightStatus = (jobId: string, status?: DesignStatus) => {
+    if (preflightState[jobId]) return preflightState[jobId]
+    const isApprovedOrProd = status === 'approved'
+    return {
+      cmyk: isApprovedOrProd,
+      dpi300: isApprovedOrProd,
+      bleed: isApprovedOrProd,
+      curves: isApprovedOrProd,
+    }
+  }
+
+  const handleTogglePreflight = (jobId: string, checkKey: 'cmyk' | 'dpi300' | 'bleed' | 'curves', jobNum?: string) => {
+    setPreflightState((prev) => {
+      const current = prev[jobId] || { cmyk: false, dpi300: false, bleed: false, curves: false }
+      const updated = { ...current, [checkKey]: !current[checkKey] }
+      const labels = {
+        cmyk: 'CMYK Color Separation',
+        dpi300: '300 DPI Resolution',
+        bleed: 'Bleed Margins (3mm / 2")',
+        curves: 'Fonts Outlined / Curves',
+      }
+      showNotification(`${labels[checkKey]} ${updated[checkKey] ? '✅ VERIFIED' : '❌ UNCHECKED'} for #${jobNum || jobId}`)
+      return { ...prev, [jobId]: updated }
+    })
+  }
 
   // Standalone new job creation form (.JPG / .PNG only)
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('')
@@ -1637,6 +1669,12 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           return
         }
 
+        // Set all preflight checks verified on release
+        setPreflightState((prev) => ({
+          ...prev,
+          [prepressJob.id]: { cmyk: true, dpi300: true, bleed: true, curves: true },
+        }))
+
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, prepressJob.id, {
           status: 'approved',
           workflow_routing: 'ready_production',
@@ -1644,8 +1682,26 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           updated_at: new Date().toISOString(),
         })
 
+        // Also ensure production job has target machine stage
+        const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+        const updatedProd = allProdJobs.map((pj) => {
+          if (
+            pj.id === (prepressJob as any).production_job_id ||
+            (pj.customer_name === prepressJob.customer_name && pj.product_name === prepressJob.title)
+          ) {
+            return {
+              ...pj,
+              stage: `Pre-Press Approved (${machineObj?.name})`,
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return pj
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, updatedProd)
+        setProductionJobs(updatedProd)
+
         setPrepressJob(null)
-        showNotification(`Job #${prepressJob.design_number} authorized & routed to ${machineObj?.name}!`)
+        showNotification(`Job #${prepressJob.design_number} authorized & routed to ${machineObj?.name}!`, 'success')
       } catch (err: any) {
         showNotification(err.message || 'Print dispatch error', 'warning')
       }
@@ -1660,6 +1716,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           showNotification(res.error || 'Failed to dispatch to print operator', 'warning')
           return
         }
+        setPreflightState((prev) => ({
+          ...prev,
+          [job.id]: { cmyk: true, dpi300: true, bleed: true, curves: true },
+        }))
         const updatedJob: DesignJobRecord = {
           ...job,
           status: 'approved',
@@ -1675,21 +1735,52 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     })
   }
 
-  const handleOpenWhatsApp = (job: DesignJobRecord) => {
+  const handleOpenWhatsApp = (job: DesignJobRecord, defaultTpl: 'proof' | 'reminder' | 'production' | 'revision' = 'proof') => {
     const cust = customers.find((c) => c.id === job.customer_id || c.name === job.customer_name)
     setWhatsAppJob(job)
-    setWhatsAppPhone(cust?.mobile || (job as any).customer_phone || '01711000000')
+    const rawPhone = cust?.mobile || (job as any).customer_phone || '01711000000'
+    setWhatsAppPhone(rawPhone)
+    setWhatsAppTemplate(defaultTpl)
     setWhatsAppCopied(false)
+    const generated = handleGenerateWhatsAppText(job, defaultTpl, rawPhone)
+    setWhatsAppEditableText(generated)
   }
 
-  const handleGenerateWhatsAppText = (job: DesignJobRecord) => {
+  const handleGenerateWhatsAppText = (
+    job: DesignJobRecord,
+    tpl: 'proof' | 'reminder' | 'production' | 'revision' = whatsAppTemplate,
+    phoneStr?: string
+  ) => {
     const latestVersion = job.versions?.[job.versions.length - 1]
     const proofUrl = latestVersion?.proof_file_url || 'https://inkflow-erp.vercel.app/proof'
-    return `Assalamu Alaikum / Hello ${job.customer_name},\n\nYour artwork digital proof for *${job.title}* (Job #${job.design_number}) is ready for review:\n\n📐 Size/Specs: ${job.dimensions_spec || 'Custom'}\n📄 Version: v${job.current_version || 1}\n🖼️ View Digital Proof: ${proofUrl}\n\nPlease reply with *APPROVED* to lock for production printing, or reply with your revision notes.\n\nThank you,\n${company?.name || 'Classic Print & Signage'}`
+    const companyName = company?.name || 'Classic Print & Signage'
+    const custName = job.customer_name || 'Valued Customer'
+    const jobNum = job.design_number
+    const jobTitle = job.title
+    const dims = job.dimensions_spec || 'Standard Spec'
+    const verNum = job.current_version || 1
+    const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === selectedMachine)
+    const machineName = machineObj?.name || 'High-Speed Commercial Press'
+    const invNum = job.invoice_number ? `#${job.invoice_number}` : `(Job #${jobNum})`
+
+    if (tpl === 'reminder') {
+      return `আসসালামু আলাইকুম / নমস্কার ${custName},\n\nআপনার *${jobTitle}* (জব নং: #${jobNum}) এর ডিজাইন প্রুফটি পূর্বে পাঠানো হয়েছিল।\n\n⏰ সময়মতো প্রিন্ট ও ডেলিভারি সম্পন্ন করার জন্য অনুগ্রহ করে ডিজাইনটি দ্রুত দেখে অনুমোদন (Approve) করুন অথবা কোনো পরিবর্তন থাকলে জানান।\n\n🖼️ প্রুফ লিংক: ${proofUrl}\n\nধন্যবাদ,\n${companyName}`
+    }
+
+    if (tpl === 'production') {
+      return `আসসালামু আলাইকুম / নমস্কার ${custName},\n\nখুশির সংবাদ! আপনার *${jobTitle}* (জব নং: #${jobNum}, ইনভয়েস: ${invNum}) এর অনুমোদিত ডিজাইনটি সফলভাবে প্রিন্ট প্রোডাকশন ফ্লোরে পাঠানো হয়েছে।\n\n🖨️ মেশিন ডিপার্টমেন্ট: ${machineName}\n📐 সাইজ: ${dims}\n\nকাজটি প্রস্তুত হওয়া মাত্রই ডেলিভারি নোটিফিকেশন পাবেন ইনশাআল্লাহ।\n\nধন্যবাদ,\n${companyName}`
+    }
+
+    if (tpl === 'revision') {
+      return `আসসালামু আলাইকুম / নমস্কার ${custName},\n\nআপনার নির্দেশনা মোতাবেক *${jobTitle}* (জব নং: #${jobNum}) এর ডিজাইন সংশোধন করে নতুন ভার্সন (v${verNum}) প্রস্তুত করা হয়েছে।\n\n📐 সাইজ: ${dims}\n🖼️ সংশোধিত প্রুফ লিংক: ${proofUrl}\n\nদয়া করে বানান, নম্বর ও সাইজ চেক করে দ্রুত কনফার্ম করুন।\n\nধন্যবাদ,\n${companyName}`
+    }
+
+    // Default: 'proof' (with standard BD Printing legal disclaimer clause)
+    return `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n${companyName}-এর পক্ষ থেকে আপনার *${jobTitle}* (জব নং: #${jobNum}) এর ডিজিটাল আর্টওয়ার্ক প্রুফ তৈরি হয়েছে।\n\n📐 সাইজ: ${dims}\n📄 ভার্সন: v${verNum}\n🖼️ ডিজিটাল প্রুফ দেখুন: ${proofUrl}\n\n⚠️ *বিশেষ সতর্কবার্তা / দায়িত্ব:* \nদয়া করে বানান (Spelling), মোবাইল নম্বর, সাইজ এবং কালার ভালো করে দেখে নিশ্চিত করুন। অনুমোদনের পর কোনো ভুল থাকলে তার দায়ভার সম্পূর্ণ গ্রাহকের।\n\nসব ঠিক থাকলে *APPROVED* লিখে রিপ্লাই দিন অথবা কোনো পরিবর্তন প্রয়োজন হলে জানান।\n\nধন্যবাদ,\n${companyName}`
   }
 
   const handleCopyWhatsApp = (job: DesignJobRecord) => {
-    const text = handleGenerateWhatsAppText(job)
+    const text = whatsAppEditableText || handleGenerateWhatsAppText(job, whatsAppTemplate)
     navigator.clipboard.writeText(text)
     setWhatsAppCopied(true)
     setTimeout(() => setWhatsAppCopied(false), 3000)
@@ -1697,10 +1788,14 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   }
 
   const handleSendWhatsAppWeb = (job: DesignJobRecord) => {
-    const text = encodeURIComponent(handleGenerateWhatsAppText(job))
-    const cleanPhone = whatsAppPhone.replace(/[^0-9]/g, '')
-    const fullPhone = cleanPhone.startsWith('88') ? cleanPhone : `88${cleanPhone}`
-    window.open(`https://wa.me/${fullPhone}?text=${text}`, '_blank')
+    const text = encodeURIComponent(whatsAppEditableText || handleGenerateWhatsAppText(job, whatsAppTemplate))
+    let cleanPhone = whatsAppPhone.replace(/[^0-9]/g, '')
+    if (cleanPhone.startsWith('0')) {
+      cleanPhone = `88${cleanPhone}`
+    } else if (!cleanPhone.startsWith('88')) {
+      cleanPhone = `880${cleanPhone}`
+    }
+    window.open(`https://wa.me/${cleanPhone}?text=${text}`, '_blank')
   }
 
   const handleOpenLightbox = (job: DesignJobRecord, versionIndex = -1) => {
@@ -2246,6 +2341,15 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                         const hasInvoice = card.hasInvoice
                         const isInvoicePending = card.isInvoicePending
                         const prodInfo = getLinkedProductionInfo(activeWork, card)
+                        const isWalkIn = Boolean(
+                          card.customer_name.toLowerCase().includes('walk-in') ||
+                          card.customer_name.toLowerCase().includes('দোকান') ||
+                          activeWork.jobRecord.intake_source === 'direct_customer'
+                        )
+                        const isDueToday = Boolean(
+                          card.deadline && card.deadline.startsWith(new Date().toISOString().split('T')[0])
+                        )
+                        const pf = getPreflightStatus(activeWork.id, activeWork.status)
 
                         return (
                           <tr key={card.groupId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
@@ -2271,10 +2375,22 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                     WO: #{card.order_number}
                                   </div>
                                 )}
+                                {isDueToday && (
+                                  <Badge className="bg-rose-600 text-white text-[8px] font-bold px-1 py-0 animate-pulse">
+                                    আজকের ডেলিভারি
+                                  </Badge>
+                                )}
                               </div>
                             </td>
                             <td className="py-3 px-4">
-                              <div className="font-bold text-slate-800 dark:text-slate-200">{card.customer_name}</div>
+                              <div className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                                <span>{card.customer_name}</span>
+                                {isWalkIn && (
+                                  <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-800 font-bold">
+                                    দোকানে বসা
+                                  </span>
+                                )}
+                              </div>
                               {card.customer_phone && (
                                 <div className="text-[10px] font-mono text-slate-400">{card.customer_phone}</div>
                               )}
@@ -2287,7 +2403,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                       ensureJobRecord(activeWork)
                                       handleOpenLightbox(activeWork.jobRecord)
                                     }}
-                                    className="h-8 w-8 rounded-md overflow-hidden bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-800 cursor-pointer group"
+                                    className="h-9 w-9 rounded-md overflow-hidden bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-800 cursor-pointer group"
                                   >
                                     <img
                                       src={activeWork.proof_url}
@@ -2295,7 +2411,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                       className="w-full h-full object-cover group-hover:scale-110 transition-transform"
                                     />
                                   </div>
-                                  <div className="truncate">
+                                  <div className="truncate flex-1">
                                     <div className="font-bold text-slate-900 dark:text-slate-100 line-clamp-1 flex items-center gap-1">
                                       <span>{activeWork.title}</span>
                                       <span className={`uppercase text-[8px] font-black px-1 rounded border ${getFormatBadgeColor(format)}`}>
@@ -2305,6 +2421,50 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                     </div>
                                     <div className="text-[10px] text-slate-500 font-mono">{activeWork.dimensions_spec || 'Standard Specs'}</div>
                                   </div>
+                                </div>
+
+                                {/* Pre-Press Quality Mini Strip */}
+                                <div className="flex items-center gap-1 text-[9px] pt-0.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTogglePreflight(activeWork.id, 'cmyk', activeWork.design_number)}
+                                    className={cn(
+                                      "px-1 py-0.2 rounded font-mono font-bold border transition-colors",
+                                      pf.cmyk ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-slate-100 text-slate-400 border-slate-200"
+                                    )}
+                                  >
+                                    {pf.cmyk ? '✓' : '✗'} CMYK
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTogglePreflight(activeWork.id, 'dpi300', activeWork.design_number)}
+                                    className={cn(
+                                      "px-1 py-0.2 rounded font-mono font-bold border transition-colors",
+                                      pf.dpi300 ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-slate-100 text-slate-400 border-slate-200"
+                                    )}
+                                  >
+                                    {pf.dpi300 ? '✓' : '✗'} 300DPI
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTogglePreflight(activeWork.id, 'bleed', activeWork.design_number)}
+                                    className={cn(
+                                      "px-1 py-0.2 rounded font-mono font-bold border transition-colors",
+                                      pf.bleed ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-slate-100 text-slate-400 border-slate-200"
+                                    )}
+                                  >
+                                    {pf.bleed ? '✓' : '✗'} Bleed
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleTogglePreflight(activeWork.id, 'curves', activeWork.design_number)}
+                                    className={cn(
+                                      "px-1 py-0.2 rounded font-mono font-bold border transition-colors",
+                                      pf.curves ? "bg-emerald-50 text-emerald-700 border-emerald-300" : "bg-slate-100 text-slate-400 border-slate-200"
+                                    )}
+                                  >
+                                    {pf.curves ? '✓' : '✗'} Curves
+                                  </button>
                                 </div>
 
                                 {card.works.length > 1 && (
@@ -2502,10 +2662,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                   variant="ghost"
                                   onClick={() => {
                                     const j = ensureJobRecord(activeWork)
-                                    handleOpenWhatsApp(j)
+                                    handleOpenWhatsApp(j, activeWork.status === 'revision' ? 'revision' : activeWork.status === 'customer_approval' ? 'reminder' : 'proof')
                                   }}
                                   className="h-7 w-7 p-0 text-emerald-600 hover:bg-emerald-50"
-                                  title="WhatsApp"
+                                  title="WhatsApp Dispatcher"
                                 >
                                   <Phone className="h-3.5 w-3.5" />
                                 </Button>
@@ -2604,6 +2764,25 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                 {card.works.length}{' '}
                                 {card.works.length > 1 ? tBilingual('Works (কাজ)', 'কাজ') : tBilingual('Work (কাজ)', 'কাজ')}
                               </Badge>
+
+                              {/* Bangladeshi Context: Walk-in Client & Due Today badges */}
+                              {Boolean(
+                                card.customer_name.toLowerCase().includes('walk-in') ||
+                                card.customer_name.toLowerCase().includes('দোকান') ||
+                                activeWork.jobRecord.intake_source === 'direct_customer'
+                              ) && (
+                                <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[9px] font-bold py-0">
+                                  দোকানে বসা কাস্টমার
+                                </Badge>
+                              )}
+
+                              {Boolean(
+                                card.deadline && card.deadline.startsWith(new Date().toISOString().split('T')[0])
+                              ) && (
+                                <Badge className="bg-rose-600 text-white text-[9px] font-black py-0 px-1.5 animate-pulse">
+                                  আজকের ডেলিভারি
+                                </Badge>
+                              )}
                             </div>
 
                             <div className="flex items-center gap-2 pt-0.5">
@@ -2822,6 +3001,110 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                   </span>
                                 </div>
                               )}
+                            </div>
+                          </div>
+
+                          {/* Pre-Press Flightcheck & Quality Health Strip */}
+                          <div className="flex flex-wrap items-center justify-between gap-1.5 p-2 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-100 dark:border-slate-800 text-[10px]">
+                            <span className="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                              <CheckSquare className="h-3 w-3 text-indigo-500" />
+                              <span>Pre-Press Quality:</span>
+                            </span>
+                            <div className="flex flex-wrap items-center gap-1">
+                              {(() => {
+                                const pf = getPreflightStatus(activeWork.id, activeWork.status)
+                                return (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleTogglePreflight(activeWork.id, 'cmyk', activeWork.design_number)
+                                      }}
+                                      title="CMYK Color Separations (Click to toggle)"
+                                      className={cn(
+                                        "px-1.5 py-0.5 rounded font-bold font-mono transition-all flex items-center gap-0.5 cursor-pointer border",
+                                        pf.cmyk
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                          : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:border-slate-400"
+                                      )}
+                                    >
+                                      {pf.cmyk ? <Check className="h-2.5 w-2.5 text-emerald-600" /> : <X className="h-2.5 w-2.5 text-slate-400" />}
+                                      <span>CMYK</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleTogglePreflight(activeWork.id, 'dpi300', activeWork.design_number)
+                                      }}
+                                      title="300 DPI High Resolution (Click to toggle)"
+                                      className={cn(
+                                        "px-1.5 py-0.5 rounded font-bold font-mono transition-all flex items-center gap-0.5 cursor-pointer border",
+                                        pf.dpi300
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                          : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:border-slate-400"
+                                      )}
+                                    >
+                                      {pf.dpi300 ? <Check className="h-2.5 w-2.5 text-emerald-600" /> : <X className="h-2.5 w-2.5 text-slate-400" />}
+                                      <span>300 DPI</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleTogglePreflight(activeWork.id, 'bleed', activeWork.design_number)
+                                      }}
+                                      title="Bleed Margin (3mm / 2.0 inch frame allowance)"
+                                      className={cn(
+                                        "px-1.5 py-0.5 rounded font-bold font-mono transition-all flex items-center gap-0.5 cursor-pointer border",
+                                        pf.bleed
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                          : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:border-slate-400"
+                                      )}
+                                    >
+                                      {pf.bleed ? <Check className="h-2.5 w-2.5 text-emerald-600" /> : <X className="h-2.5 w-2.5 text-slate-400" />}
+                                      <span>Bleed</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        handleTogglePreflight(activeWork.id, 'curves', activeWork.design_number)
+                                      }}
+                                      title="Fonts Outlined / Curves (Click to toggle)"
+                                      className={cn(
+                                        "px-1.5 py-0.5 rounded font-bold font-mono transition-all flex items-center gap-0.5 cursor-pointer border",
+                                        pf.curves
+                                          ? "bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300"
+                                          : "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 hover:border-slate-400"
+                                      )}
+                                    >
+                                      {pf.curves ? <Check className="h-2.5 w-2.5 text-emerald-600" /> : <X className="h-2.5 w-2.5 text-slate-400" />}
+                                      <span>Curves</span>
+                                    </button>
+                                  </>
+                                )
+                              })()}
+
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  const j = ensureJobRecord(activeWork)
+                                  handleOpenPrepress(j)
+                                }}
+                                className="h-5 px-1.5 text-[10px] text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
+                                title="Open Pre-Press Flightcheck Inspector"
+                              >
+                                <Printer className="h-2.5 w-2.5 mr-0.5" />
+                                <span>Flightcheck</span>
+                              </Button>
                             </div>
                           </div>
 
@@ -3065,9 +3348,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               variant="outline"
                               onClick={() => {
                                 const j = ensureJobRecord(activeWork)
-                                handleOpenWhatsApp(j)
+                                handleOpenWhatsApp(j, activeWork.status === 'revision' ? 'revision' : activeWork.status === 'customer_approval' ? 'reminder' : 'proof')
                               }}
-                              className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100"
+                              className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 font-medium"
                             >
                               <Phone className="h-3.5 w-3.5 mr-1" />
                               <span>WhatsApp</span>
@@ -3406,7 +3689,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       )}
 
       {/* =========================================================================
-          POWER UPGRADE MODAL 2: WHATSAPP DIGITAL PROOF DISPATCHER
+          POWER UPGRADE MODAL 2: WHATSAPP DIGITAL PROOF DISPATCHER (BANGLADESHI PRESS TAILORED)
          ========================================================================= */}
       {whatsAppJob && (
         <ModalDialog
@@ -3422,23 +3705,112 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           }
         >
           <div className="space-y-4 pt-1 text-xs">
+            {/* Template Selector Tabs */}
             <div className="space-y-1.5">
-              <Label className="font-bold">Customer Mobile (WhatsApp Number)</Label>
-              <Input
-                value={whatsAppPhone}
-                onChange={(e) => setWhatsAppPhone(e.target.value)}
-                placeholder="e.g. 01712345678"
-                className="h-9 font-mono font-bold"
-              />
+              <Label className="font-bold text-slate-700 dark:text-slate-300">Select Press Message Template (মেসেজ টেমপ্লেট):</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWhatsAppTemplate('proof')
+                    setWhatsAppEditableText(handleGenerateWhatsAppText(whatsAppJob, 'proof', whatsAppPhone))
+                  }}
+                  className={cn(
+                    "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                    whatsAppTemplate === 'proof'
+                      ? "bg-emerald-50 border-emerald-500 text-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200 font-bold shadow-2xs"
+                      : "bg-slate-50 border-slate-200 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <CheckSquare className="h-3 w-3 text-emerald-600 shrink-0" />
+                    <span>১. ড্রাফট প্রুফ</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 mt-0.5 font-normal">আর্টওয়ার্ক ও ভুলের দায়ভার ক্লজ</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWhatsAppTemplate('reminder')
+                    setWhatsAppEditableText(handleGenerateWhatsAppText(whatsAppJob, 'reminder', whatsAppPhone))
+                  }}
+                  className={cn(
+                    "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                    whatsAppTemplate === 'reminder'
+                      ? "bg-purple-50 border-purple-500 text-purple-900 dark:bg-purple-950/50 dark:text-purple-200 font-bold shadow-2xs"
+                      : "bg-slate-50 border-slate-200 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <Clock className="h-3 w-3 text-purple-600 shrink-0" />
+                    <span>২. জরুরী তাগাদা</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 mt-0.5 font-normal">অনুমোদনের রিমাইন্ডার</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWhatsAppTemplate('production')
+                    setWhatsAppEditableText(handleGenerateWhatsAppText(whatsAppJob, 'production', whatsAppPhone))
+                  }}
+                  className={cn(
+                    "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                    whatsAppTemplate === 'production'
+                      ? "bg-blue-50 border-blue-500 text-blue-900 dark:bg-blue-950/50 dark:text-blue-200 font-bold shadow-2xs"
+                      : "bg-slate-50 border-slate-200 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <Printer className="h-3 w-3 text-blue-600 shrink-0" />
+                    <span>৩. প্রেসে পাঠানো</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 mt-0.5 font-normal">প্রোডাকশন ফ্লোর কনফার্মেশন</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setWhatsAppTemplate('revision')
+                    setWhatsAppEditableText(handleGenerateWhatsAppText(whatsAppJob, 'revision', whatsAppPhone))
+                  }}
+                  className={cn(
+                    "p-2 rounded-lg text-left transition-all border cursor-pointer",
+                    whatsAppTemplate === 'revision'
+                      ? "bg-rose-50 border-rose-500 text-rose-900 dark:bg-rose-950/50 dark:text-rose-200 font-bold shadow-2xs"
+                      : "bg-slate-50 border-slate-200 dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-[11px]">
+                    <RotateCcw className="h-3 w-3 text-rose-600 shrink-0" />
+                    <span>৪. সংশোধিত প্রুফ</span>
+                  </div>
+                  <p className="text-[9px] text-slate-500 mt-0.5 font-normal">নতুন ভার্সন আপডেট</p>
+                </button>
+              </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="font-bold">Generated WhatsApp Notification Message</Label>
+              <Label className="font-bold">Customer Mobile (WhatsApp Number / মোবাইল নম্বর)</Label>
+              <Input
+                value={whatsAppPhone}
+                onChange={(e) => {
+                  setWhatsAppPhone(e.target.value)
+                }}
+                placeholder="e.g. 01712345678 বা 8801..."
+                className="h-9 font-mono font-bold"
+              />
+              <p className="text-[10px] text-slate-400">বাংলাদেশী মোবাইল নম্বরে স্বয়ংক্রিয়ভাবে +88 যুক্ত হবে।</p>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="font-bold">Editable WhatsApp Message (বার্তা সম্পাদনা করুন)</Label>
               <textarea
-                rows={6}
-                readOnly
-                value={handleGenerateWhatsAppText(whatsAppJob)}
-                className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-900 font-mono text-[11px] leading-relaxed select-all"
+                rows={7}
+                value={whatsAppEditableText || handleGenerateWhatsAppText(whatsAppJob, whatsAppTemplate, whatsAppPhone)}
+                onChange={(e) => setWhatsAppEditableText(e.target.value)}
+                className="w-full p-3 rounded-lg border bg-slate-50 dark:bg-slate-900 font-sans text-xs leading-relaxed"
               />
             </div>
 
@@ -3448,20 +3820,20 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                 variant="outline"
                 size="sm"
                 onClick={() => handleCopyWhatsApp(whatsAppJob)}
-                className="text-xs"
+                className="text-xs font-semibold"
               >
                 {whatsAppCopied ? <Check className="h-3.5 w-3.5 mr-1 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
-                <span>{whatsAppCopied ? 'Copied!' : 'Copy Text'}</span>
+                <span>{whatsAppCopied ? 'কপি হয়েছে!' : 'Copy Text (কপি করুন)'}</span>
               </Button>
 
               <Button
                 type="button"
                 size="sm"
                 onClick={() => handleSendWhatsAppWeb(whatsAppJob)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs"
               >
                 <Phone className="h-3.5 w-3.5 mr-1" />
-                <span>Open WhatsApp Web & Send</span>
+                <span>Open WhatsApp Web & Send (হোয়াটসঅ্যাপে পাঠান)</span>
               </Button>
             </div>
           </div>
@@ -3485,32 +3857,114 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           }
         >
           <form onSubmit={handleDispatchToMachine} className="space-y-4 pt-1 text-xs">
-            {/* Checklist */}
-            <div className="bg-slate-50 dark:bg-slate-900 p-3 rounded-xl border space-y-2">
-              <span className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Pre-Press Verification Checklist:</span>
+            {/* Interactive Flightcheck Checklist */}
+            <div className="bg-slate-50 dark:bg-slate-900 p-3.5 rounded-xl border space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                  Pre-Press Quality Checklist (প্রি-প্রেস কোয়ালিটি নিশ্চিত করুন):
+                </span>
+                <Badge variant="outline" className="text-[10px] font-mono">
+                  {prepressJob.dimensions_spec || 'Standard Spec'}
+                </Badge>
+              </div>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Color Mode: CMYK Separations</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Resolution: &ge; 300 DPI at 100%</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Fonts: Converted to Outlines/Curves</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-600 font-semibold">
-                  <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                  <span>Bleed: 2.0&quot; Margins for Welding/Frame</span>
-                </div>
+                {(() => {
+                  const pf = getPreflightStatus(prepressJob.id, prepressJob.status)
+                  return (
+                    <>
+                      <div
+                        onClick={() => handleTogglePreflight(prepressJob.id, 'cmyk', prepressJob.design_number)}
+                        className={cn(
+                          "p-2.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all",
+                          pf.cmyk
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                            : "bg-white dark:bg-slate-800 border-slate-200 text-slate-600 dark:text-slate-400"
+                        )}
+                      >
+                        <div className={cn(
+                          "h-4 w-4 rounded flex items-center justify-center shrink-0 border",
+                          pf.cmyk ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-300"
+                        )}>
+                          {pf.cmyk && <Check className="h-3 w-3" />}
+                        </div>
+                        <div>
+                          <div className="font-bold text-[11px]">Color Mode: CMYK Process</div>
+                          <div className="text-[9px] opacity-80">RGB কালার শিফট এড়াতে CMYK নিশ্চিত</div>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => handleTogglePreflight(prepressJob.id, 'dpi300', prepressJob.design_number)}
+                        className={cn(
+                          "p-2.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all",
+                          pf.dpi300
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                            : "bg-white dark:bg-slate-800 border-slate-200 text-slate-600 dark:text-slate-400"
+                        )}
+                      >
+                        <div className={cn(
+                          "h-4 w-4 rounded flex items-center justify-center shrink-0 border",
+                          pf.dpi300 ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-300"
+                        )}>
+                          {pf.dpi300 && <Check className="h-3 w-3" />}
+                        </div>
+                        <div>
+                          <div className="font-bold text-[11px]">Resolution: ≥ 300 DPI High-Res</div>
+                          <div className="text-[9px] opacity-80">ফাটা/ব্লার ছবি বাদ দিয়ে হাই-রেজ আর্টওয়ার্ক</div>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => handleTogglePreflight(prepressJob.id, 'bleed', prepressJob.design_number)}
+                        className={cn(
+                          "p-2.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all",
+                          pf.bleed
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                            : "bg-white dark:bg-slate-800 border-slate-200 text-slate-600 dark:text-slate-400"
+                        )}
+                      >
+                        <div className={cn(
+                          "h-4 w-4 rounded flex items-center justify-center shrink-0 border",
+                          pf.bleed ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-300"
+                        )}>
+                          {pf.bleed && <Check className="h-3 w-3" />}
+                        </div>
+                        <div>
+                          <div className="font-bold text-[11px]">Bleed: 3mm / 2.0&quot; Margins</div>
+                          <div className="text-[9px] opacity-80">কাটিং ও ফ্রেমিং মার্জিন সংরক্ষিত</div>
+                        </div>
+                      </div>
+
+                      <div
+                        onClick={() => handleTogglePreflight(prepressJob.id, 'curves', prepressJob.design_number)}
+                        className={cn(
+                          "p-2.5 rounded-lg border flex items-center gap-2 cursor-pointer transition-all",
+                          pf.curves
+                            ? "bg-emerald-50 border-emerald-300 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"
+                            : "bg-white dark:bg-slate-800 border-slate-200 text-slate-600 dark:text-slate-400"
+                        )}
+                      >
+                        <div className={cn(
+                          "h-4 w-4 rounded flex items-center justify-center shrink-0 border",
+                          pf.curves ? "bg-emerald-600 text-white border-emerald-600" : "border-slate-300"
+                        )}>
+                          {pf.curves && <Check className="h-3 w-3" />}
+                        </div>
+                        <div>
+                          <div className="font-bold text-[11px]">Fonts: Converted to Outlines/Curves</div>
+                          <div className="text-[9px] opacity-80">ফন্ট মিসিং সমস্যা এড়াতে কার্ভ করা হয়েছে</div>
+                        </div>
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
             </div>
 
             {/* Target Machine Selection */}
             <div className="space-y-1.5">
-              <Label className="font-bold">Target Print Floor Machine</Label>
+              <Label className="font-bold">Target Print Floor Machine (নির্দিষ্ট মেশিন নির্বাচন করুন)</Label>
               <select
                 value={selectedMachine}
                 onChange={(e) => setSelectedMachine(e.target.value)}
@@ -3518,7 +3972,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
               >
                 {PRINT_MACHINERY_LIST.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} ({m.type})
+                    {m.name} [{m.type}]
                   </option>
                 ))}
               </select>
@@ -3530,7 +3984,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
               </Button>
               <Button type="submit" size="sm" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold">
                 <Printer className="h-3.5 w-3.5 mr-1" />
-                <span>Authorize & Route to Machine</span>
+                <span>Authorize & Route to Machine (অনুমোদন ও প্রেসে পাঠান)</span>
               </Button>
             </div>
           </form>
