@@ -100,9 +100,23 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
                   {/* Items Specs */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
-                      {order.items[0]?.itemName || 'Print Work'}
-                      {order.items.length > 1 ? ` (+${order.items.length - 1} more)` : ''}
+                    <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1 flex items-center gap-1.5">
+                      <span>{order.items[0]?.itemName || 'Print Work'}</span>
+                      {order.items.length > 1 && (
+                        <span className="text-[10px] text-slate-500 font-normal">
+                          (+{order.items.length - 1} more)
+                        </span>
+                      )}
+                      {order.items.some((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product') && (
+                        <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
+                          📦 রেডি
+                        </span>
+                      )}
+                      {order.items.some((it) => it.itemKind === 'outsource' || it.workflowRouting === 'outsource') && (
+                        <span className="text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-1 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                          🤝 আউটসোর্স
+                        </span>
+                      )}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
                       {order.items[0]?.dimensions || 'Standard'} | {order.itemsCount} Items

@@ -41,7 +41,7 @@ export interface ChallanItemRecord {
   dimensions_spec?: string | null
   quantity: number
   unit: string
-  item_kind?: 'ready_product' | 'custom_manufacturing' | 'service'
+  item_kind?: 'ready_product' | 'custom_manufacturing' | 'service' | 'outsource' | string
   workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production'
   status?: ChallanItemStatus
   is_delivered?: boolean

@@ -22,6 +22,7 @@ export interface OrderItemSpec {
   totalPrice?: number
   materialSpec?: string
   finishing?: string
+  itemKind?: 'service' | 'ready_product' | 'material' | 'outsource' | 'custom'
   workflowRouting?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'custom'
   designRequired?: boolean
   notes?: string

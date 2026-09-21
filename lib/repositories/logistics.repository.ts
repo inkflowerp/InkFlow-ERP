@@ -3,6 +3,7 @@ import { createAdminClient } from '../supabase/admin.ts'
 import type { DeliveryChallanRecord, InstallationRecord, DeliveryStatus, ChallanItemRecord, ChallanItemStatus } from '../../types/logistics.types.ts'
 import { BillingRepository } from './billing.repository.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
+import { isReadyProduct, isOutsourceProduct } from '../units.ts'
 
 export function isValidUUID(str?: string | null): boolean {
   if (!str) return false
@@ -125,14 +126,21 @@ export class LogisticsRepository {
                 const isReady =
                   it.item_kind === 'ready_product' ||
                   it.workflow_routing === 'ready_product' ||
-                  (!it.design_required && (!it.dimensions_spec || it.dimensions_spec === ''))
+                  isReadyProduct(it)
+                const isOutsource =
+                  it.item_kind === 'outsource' ||
+                  it.workflow_routing === 'outsource' ||
+                  isOutsourceProduct(it)
                 const isDesignReq = it.workflow_routing === 'design_required' || it.design_required === true
                 const isDesignOk = it.workflow_routing === 'design_ok'
 
                 let initialStatus: ChallanItemStatus = 'ready_for_delivery'
-                if (isDesignReq) initialStatus = 'design_pending'
+                if (isReady) initialStatus = 'ready_for_delivery'
+                else if (isDesignReq) initialStatus = 'design_pending'
                 else if (isDesignOk) initialStatus = 'design_check'
                 else if (it.workflow_routing === 'ready_production') initialStatus = 'in_production'
+
+                const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom_manufacturing')
 
                 return {
                   id: it.id || crypto.randomUUID(),
@@ -142,7 +150,7 @@ export class LogisticsRepository {
                   dimensions_spec: it.dimensions_spec || null,
                   quantity: Number(it.quantity) || 1,
                   unit: it.unit || 'pcs',
-                  item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
+                  item_kind: itemKind,
                   workflow_routing:
                     it.workflow_routing ||
                     (isReady ? 'ready_product' : isDesignReq ? 'design_required' : isDesignOk ? 'design_ok' : 'ready_production'),

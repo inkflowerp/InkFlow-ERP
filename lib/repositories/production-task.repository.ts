@@ -6,6 +6,7 @@ import type {
 } from '../../types/production.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import type { DesignJobRecord } from '../../types/design.types.ts'
+import { isReadyProduct } from '../units.ts'
 
 export interface TaskFilterOptions {
   branch_id?: string | null
@@ -142,6 +143,10 @@ export class ProductionTaskRepository {
     const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
 
     const approvedJobs = allDesignJobs.filter((dj) => {
+      // Ready products bypass machine production
+      if (isReadyProduct(dj) || dj.item_kind === 'ready_product' || dj.workflow_routing === 'ready_product') {
+        return false
+      }
       const isApprovalRequired = dj.customer_approval_required !== false
       return (
         dj.status === 'approved' ||

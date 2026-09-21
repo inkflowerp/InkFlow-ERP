@@ -1354,6 +1354,19 @@ export default function DeliveryLogisticsPage() {
                               <span className="font-mono text-slate-500 text-[11px]">
                                 - {it.quantity} {it.unit}
                               </span>
+                              {it.item_kind === 'ready_product' ? (
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
+                                  📦 রেডি প্রোডাক্ট (ইন-স্টক)
+                                </span>
+                              ) : it.item_kind === 'outsource' ? (
+                                <span className="text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-300 dark:border-purple-800">
+                                  🤝 আউটসোর্স
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-bold bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                                  🎨 কাস্টম প্রিন্ট
+                                </span>
+                              )}
                             </div>
                             {it.dimensions_spec && (
                               <div className="text-[11px] text-slate-500 font-mono mt-0.5">

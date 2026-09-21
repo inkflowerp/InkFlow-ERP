@@ -99,6 +99,7 @@ export interface DesignJobRecord {
   total_price?: number | null
   area_sft?: number | null
   item_kind?: string | null
+  all_invoice_items?: any[]
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
   created_at: string

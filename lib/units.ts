@@ -1611,6 +1611,21 @@ export function isServiceProduct(p: Partial<ProductRecord> | null | undefined): 
 export function isReadyProduct(p: Partial<ProductRecord> | null | undefined): boolean {
   if (!p) return false
   if (isOutsourceProduct(p)) return false
+
+  // If item explicitly requires design or pre-press checking or is a custom manufacturing job, it is not a ready product
+  const rawAny = p as any
+  if (
+    rawAny.workflow_routing === 'design_required' ||
+    rawAny.workflow_routing === 'design_ok' ||
+    rawAny.design_required === true ||
+    rawAny.design_required === 'true' ||
+    rawAny.item_kind === 'custom_manufacturing' ||
+    rawAny.item_kind === 'service' ||
+    rawAny.item_kind === 'custom'
+  ) {
+    return false
+  }
+
   if (isServiceProduct(p)) return false
   const cat = (p.category || '').toLowerCase()
   const sku = (p.sku || '').toUpperCase()

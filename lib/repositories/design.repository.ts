@@ -2,6 +2,7 @@ import { createClient } from '../supabase/server.ts'
 import type { DesignJobRecord, DesignVersionRecord } from '../../types/design.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
+import { isReadyProduct, isOutsourceProduct } from '../units.ts'
 
 export class DesignRepository {
   static async getDesignJobs(companyId: string): Promise<DesignJobRecord[]> {
@@ -46,6 +47,13 @@ export class DesignRepository {
       for (const inv of tenantInvoices) {
         if (!inv || !inv.items || !Array.isArray(inv.items)) continue
         inv.items.forEach((it: any, idx: number) => {
+          // Ready products bypass design panel entirely
+          const isReady =
+            it.item_kind === 'ready_product' ||
+            it.workflow_routing === 'ready_product' ||
+            isReadyProduct(it)
+          if (isReady) return
+
           const routing = it.workflow_routing || (it.design_required ? 'design_required' : undefined)
           const isDesignRequired = Boolean(
             it.design_required === true ||
@@ -68,7 +76,9 @@ export class DesignRepository {
               (it.design_job_id && j.id === it.design_job_id) ||
               j.design_number === synthNum
           )
-          if (!existing) {
+          if (existing) {
+            existing.all_invoice_items = inv.items
+          } else {
             const synthJob: DesignJobRecord = {
               id: synthId,
               company_id: inv.company_id || companyId,
@@ -100,6 +110,7 @@ export class DesignRepository {
               customer_approval_required: isDesignRequired,
               is_locked: isDesignOk,
               current_version: 1,
+              all_invoice_items: inv.items,
               versions: [
                 {
                   id: `dv-${Date.now()}-${idx}`,
@@ -240,6 +251,7 @@ export class DesignRepository {
         customer_approval_required: matchingItem?.workflow_routing !== 'design_ok',
         is_locked: matchingItem?.workflow_routing === 'design_ok',
         current_version: 1,
+        all_invoice_items: targetInv.items || null,
         versions: [
           {
             id: `dv-${Date.now()}-${targetItemIdx}`,

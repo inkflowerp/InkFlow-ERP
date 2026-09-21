@@ -306,6 +306,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         customerName: string
         customerPhone?: string | null
         jobs: DesignJobRecord[]
+        allInvoiceItems?: any[]
       }
     >()
     const standalones: DesignJobRecord[] = []
@@ -320,9 +321,14 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
             customerName: job.customer_name,
             customerPhone: job.customer_phone,
             jobs: [job],
+            allInvoiceItems: job.all_invoice_items || [],
           })
         } else {
-          invMap.get(invKey)!.jobs.push(job)
+          const entry = invMap.get(invKey)!
+          entry.jobs.push(job)
+          if ((!entry.allInvoiceItems || entry.allInvoiceItems.length === 0) && job.all_invoice_items) {
+            entry.allInvoiceItems = job.all_invoice_items
+          }
         }
       } else {
         standalones.push(job)

@@ -29,6 +29,7 @@ import {
   type OrderItemSpec,
   type OrderWhatsAppTemplateKey,
 } from '@/components/orders/types'
+import { isReadyProduct, isOutsourceProduct } from '@/lib/units'
 
 import { OrdersMetricsBar, type OrderMetrics } from '@/components/orders/orders-metrics-bar'
 import { OrdersFilterToolbar, type OrderFilterState } from '@/components/orders/orders-filter-toolbar'
@@ -116,28 +117,39 @@ export default function OrdersPage() {
       // A. Process Sales Orders
       tenantOrders.forEach((o) => {
         const orderId = o.id || o.order_number
-        const mappedItems: OrderItemSpec[] = (o.items || []).map((it: any, idx: number) => ({
-          id: it.id || `item-${orderId}-${idx}`,
-          itemName: it.product_name || it.item_name || 'Printing Item',
-          dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
-          width: it.width,
-          height: it.height,
-          dimensionUnit: it.unit,
-          quantity: Number(it.quantity) || 1,
-          unit: it.unit || 'pcs',
-          unitPrice: it.unit_price,
-          totalPrice: it.total_price,
-          materialSpec: it.material_spec || it.material,
-          finishing: it.finishing,
-          workflowRouting: it.workflow_routing || 'design_required',
-          designRequired: it.design_required,
-          notes: it.notes,
-        }))
+        const mappedItems: OrderItemSpec[] = (o.items || []).map((it: any, idx: number) => {
+          const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
+          const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
+          const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+
+          return {
+            id: it.id || `item-${orderId}-${idx}`,
+            itemName: it.product_name || it.item_name || 'Printing Item',
+            dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+            width: it.width,
+            height: it.height,
+            dimensionUnit: it.unit,
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || 'pcs',
+            unitPrice: it.unit_price,
+            totalPrice: it.total_price,
+            materialSpec: it.material_spec || it.material,
+            finishing: it.finishing,
+            itemKind,
+            workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
+            designRequired: isReady ? false : it.design_required,
+            notes: it.notes,
+          }
+        })
 
         let calculatedStage: OrderStage = 'new_orders'
         const ordStatus = String(o.status || '')
+        const allReady = mappedItems.length > 0 && mappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
+
         if (ordStatus === 'completed' || ordStatus === 'delivered') {
           calculatedStage = 'delivered'
+        } else if (allReady) {
+          calculatedStage = 'ready_delivery'
         } else if (ordStatus === 'ready' || ordStatus === 'ready_for_delivery') {
           calculatedStage = 'ready_delivery'
         } else if (ordStatus === 'in_production' || ordStatus === 'production') {
@@ -206,23 +218,30 @@ export default function OrdersPage() {
           existing.rawInvoice = inv
         } else {
           // Synthesize Order from Direct Counter Invoice
-          const mappedItems: OrderItemSpec[] = (inv.items || []).map((it: any, idx: number) => ({
-            id: it.id || `inv-item-${inv.id}-${idx}`,
-            itemName: it.item_description || it.item_name || 'Printing Item',
-            dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
-            width: it.width,
-            height: it.height,
-            dimensionUnit: it.unit,
-            quantity: Number(it.quantity) || 1,
-            unit: it.unit || 'pcs',
-            unitPrice: it.unit_price,
-            totalPrice: it.total_price,
-            materialSpec: it.material || it.material_spec,
-            finishing: it.finishing,
-            workflowRouting: it.workflow_routing || (it.design_required ? 'design_required' : 'design_ok'),
-            designRequired: it.design_required,
-            notes: it.remarks || it.notes,
-          }))
+          const mappedItems: OrderItemSpec[] = (inv.items || []).map((it: any, idx: number) => {
+            const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
+            const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
+            const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+
+            return {
+              id: it.id || `inv-item-${inv.id}-${idx}`,
+              itemName: it.item_description || it.item_name || 'Printing Item',
+              dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+              width: it.width,
+              height: it.height,
+              dimensionUnit: it.unit,
+              quantity: Number(it.quantity) || 1,
+              unit: it.unit || 'pcs',
+              unitPrice: it.unit_price,
+              totalPrice: it.total_price,
+              materialSpec: it.material || it.material_spec,
+              finishing: it.finishing,
+              itemKind,
+              workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'design_ok')),
+              designRequired: isReady ? false : it.design_required,
+              notes: it.remarks || it.notes,
+            }
+          })
 
           const total = Number(inv.grand_total || (inv as any).total_amount || 0)
           const advance = Number(inv.paid_amount || 0)
@@ -230,8 +249,12 @@ export default function OrdersPage() {
           const payStatus = due <= 0 ? 'paid' : advance > 0 ? 'partial' : 'unpaid'
 
           let calculatedStage: OrderStage = 'new_orders'
+          const allReady = mappedItems.length > 0 && mappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
+
           if (inv.status === 'paid' && due <= 0) {
             calculatedStage = 'delivered'
+          } else if (allReady) {
+            calculatedStage = 'ready_delivery'
           } else {
             const hasDesignReq = mappedItems.some((it) => it.workflowRouting === 'design_required')
             calculatedStage = hasDesignReq ? 'in_design' : 'in_production'

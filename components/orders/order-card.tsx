@@ -164,14 +164,22 @@ export const OrderCard = React.memo(function OrderCard({
                     {it.materialSpec && <span>• 📄 {it.materialSpec}</span>}
                     {it.finishing && <span>• ✨ {it.finishing}</span>}
                   </div>
-                  {/* Workflow routing tag */}
-                  <div className="pt-0.5">
-                    {it.workflowRouting === 'design_required' ? (
+                  {/* Workflow routing & item classification tag */}
+                  <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
+                    {it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product' ? (
+                      <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
+                        📦 রেডি প্রোডাক্ট (ইন-স্টক)
+                      </span>
+                    ) : it.itemKind === 'outsource' || it.workflowRouting === 'outsource' ? (
+                      <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-300 dark:border-purple-800">
+                        🤝 আউটসোর্স পণ্য
+                      </span>
+                    ) : it.workflowRouting === 'design_required' ? (
                       <span className="text-[9px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
-                        🎨 ডিজাইন দরকার
+                        🎨 কাস্টম প্রিন্ট (ডিজাইন দরকার)
                       </span>
                     ) : it.workflowRouting === 'design_ok' ? (
-                      <span className="text-[9px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                      <span className="text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-800">
                         ✓ রেডি ফাইল চেক
                       </span>
                     ) : (
