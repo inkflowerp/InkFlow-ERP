@@ -4,7 +4,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InvoiceRequestService } from '../../services/invoice-request.service.ts'
 import { InvoiceRequestRepository } from '../../lib/repositories/invoice-request.repository.ts'
 import { BillingRepository } from '../../lib/repositories/billing.repository.ts'
-import { InvoiceRecord } from '../../types/billing.types.ts'
+import type { InvoiceRecord } from '../../types/billing.types.ts'
 
 describe('Work Order Modal Customer Info, Multi-Item Specs & Workflow Routing', () => {
   const companyAlpha = 'comp-tenant-alpha'
