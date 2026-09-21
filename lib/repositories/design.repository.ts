@@ -141,7 +141,7 @@ export class DesignRepository {
 
     // Check if the design job can be synthesized from invoices
     const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-    const inv = invoices.find(
+    let targetInv = invoices.find(
       (i) =>
         (!i.company_id || !companyId || companyId === 'default' || i.company_id === companyId) &&
         (i.id === id ||
@@ -149,44 +149,64 @@ export class DesignRepository {
           (id.startsWith('DSN-') && i.invoice_number === `INV-${id.replace('DSN-', '')}`) ||
           (i.items && i.items.some((it: any) => it.id === id || it.design_job_id === id)))
     )
-    if (inv) {
-      const matchingItem = inv.items?.find((it: any) => it.id === id || it.design_job_id === id) || inv.items?.[0]
+
+    let targetItemIdx = 0
+    if (!targetInv && id.startsWith('dsn-inv-')) {
+      const raw = id.replace('dsn-inv-', '')
+      const lastDash = raw.lastIndexOf('-')
+      const invIdPart = lastDash !== -1 ? raw.substring(0, lastDash) : raw
+      targetItemIdx = lastDash !== -1 ? parseInt(raw.substring(lastDash + 1), 10) || 0 : 0
+      targetInv = invoices.find(
+        (i) =>
+          (!i.company_id || !companyId || companyId === 'default' || i.company_id === companyId) &&
+          (i.id === invIdPart || i.invoice_number === invIdPart || i.id?.includes(invIdPart) || invIdPart.includes(i.id))
+      )
+    }
+
+    if (targetInv) {
+      const matchingItem = targetInv.items?.[targetItemIdx] || targetInv.items?.find((it: any) => it.id === id || it.design_job_id === id) || targetInv.items?.[0]
       const synthesizedJob: DesignJobRecord = {
         id: id.startsWith('DSN-') ? crypto.randomUUID() : id,
-        company_id: inv.company_id || companyId,
-        invoice_id: inv.id,
-        invoice_number: inv.invoice_number,
-        customer_id: inv.customer_id,
-        customer_name: inv.customer_name,
-        design_number: id.startsWith('DSN-') ? id : `DSN-${inv.invoice_number?.replace('INV-', '') || '001'}`,
+        company_id: targetInv.company_id || companyId,
+        invoice_id: targetInv.id,
+        invoice_number: targetInv.invoice_number,
+        invoice_item_id: matchingItem?.id || null,
+        customer_id: targetInv.customer_id,
+        customer_name: targetInv.customer_name || 'Walk-in Customer',
+        design_number: id.startsWith('DSN-') ? id : `DSN-${targetInv.invoice_number?.replace('INV-', '') || '001'}-${String.fromCharCode(65 + targetItemIdx)}`,
         title: matchingItem?.item_description || matchingItem?.item_name || 'Design Artwork',
         designer_name: 'Design Team',
-        priority: 'normal',
-        deadline: inv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
-        dimensions_spec: matchingItem?.dimensions_spec || null,
+        priority: ((targetInv as any).priority as any) || 'normal',
+        deadline: targetInv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+        dimensions_spec: matchingItem?.dimensions_spec || (matchingItem?.width && matchingItem?.height ? `${matchingItem.width} × ${matchingItem.height} ${matchingItem.unit || 'ft'}` : null),
         product_name: matchingItem?.item_name || null,
-        status: 'approved',
-        workflow_routing: 'ready_production',
+        material: matchingItem?.material || matchingItem?.material_spec || null,
+        finishing: matchingItem?.finishing || null,
+        quantity: Number(matchingItem?.quantity) || 1,
+        unit: matchingItem?.unit || 'pcs',
+        instructions: matchingItem?.remarks || targetInv.notes || null,
+        status: matchingItem?.workflow_routing === 'design_ok' ? 'approved' : 'received',
+        workflow_routing: matchingItem?.workflow_routing || 'design_required',
         commercial_status: 'invoice_created',
         intake_source: 'manager_billing',
-        customer_approval_required: false,
-        is_locked: true,
+        customer_approval_required: matchingItem?.workflow_routing !== 'design_ok',
+        is_locked: matchingItem?.workflow_routing === 'design_ok',
         current_version: 1,
         versions: [
           {
-            id: `dv-${Date.now()}`,
+            id: `dv-${Date.now()}-${targetItemIdx}`,
             design_job_id: id,
             version_number: 1,
-            version_label: 'Version 1 (Customer Artwork)',
-            proof_file_name: 'artwork.png',
-            proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+            version_label: matchingItem?.workflow_routing === 'design_ok' ? 'Version 1 (Customer Artwork)' : 'Version 1 (Initial Brief)',
+            proof_file_name: matchingItem?.workflow_routing === 'design_ok' ? 'artwork.pdf' : 'brief_artwork.png',
+            proof_file_url: matchingItem?.attachment_url || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
             file_format: 'png',
-            uploaded_by_name: 'Billing / Manager',
-            is_approved: true,
-            created_at: new Date().toISOString(),
+            uploaded_by_name: targetInv.created_by_name || 'Billing / Commercial',
+            is_approved: matchingItem?.workflow_routing === 'design_ok',
+            created_at: targetInv.created_at || new Date().toISOString(),
           },
         ],
-        created_at: inv.created_at || new Date().toISOString(),
+        created_at: targetInv.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
       all.unshift(synthesizedJob)
