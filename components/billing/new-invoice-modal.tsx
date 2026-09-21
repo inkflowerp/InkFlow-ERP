@@ -78,12 +78,21 @@ export interface NewInvoiceModalProps {
   onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
+import {
+  BANGLADESHI_PRINT_PRESETS,
+  getPresetsByCategory,
+  type DomainPreset,
+} from '@/lib/quotation-presets'
+
 interface ItemRowState {
   id: string
   productId?: string
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
   itemName: string
+  description_bn?: string | null
+  material_spec?: string | null
   dimensions_spec?: string
   width: string
   height: string
@@ -107,9 +116,29 @@ interface ItemRowState {
   printable_material_name?: string
   showAdvanced?: boolean
   isManualRate?: boolean
+  artwork_required?: boolean
+  installation_required?: boolean
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
   design_required?: boolean
   customer_approval_required?: boolean
-  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production'
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'outsource' | 'custom' | string
 }
 
 import {
@@ -613,10 +642,18 @@ export function NewInvoiceModal({
   const [invoiceDate, setInvoiceDate] = useState<string>(new Date().toISOString().split('T')[0])
   const [dueDate, setDueDate] = useState<string>(new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0])
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque' | 'other_mfs'>('cash')
+  const [paymentMethodNote, setPaymentMethodNote] = useState('')
+  const [referenceNo, setReferenceNo] = useState('')
+  const [deliveryDate, setDeliveryDate] = useState('')
+  const [deliveryLocation, setDeliveryLocation] = useState('')
+  const [deliveryMethod, setDeliveryMethod] = useState<'customer_pickup' | 'company_delivery' | 'courier'>('customer_pickup')
   const [notes, setNotes] = useState('')
   const [termsAndConditions, setTermsAndConditions] = useState('')
   const [quotationId, setQuotationId] = useState<string | undefined>(preselectedQuotationId)
   const [salesOrderId, setSalesOrderId] = useState<string | undefined>(preselectedSalesOrderId)
+
+  // Presets Category Filter
+  const [selectedPresetCategory, setSelectedPresetCategory] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
 
   // Credit Limit Override
   const [creditOverrideReason, setCreditOverrideReason] = useState('')
@@ -660,6 +697,53 @@ export function NewInvoiceModal({
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [vatPercentage, setVatPercentage] = useState<number>(0)
   const [advanceAmount, setAdvanceAmount] = useState<number>(0)
+  const [advancePercentage, setAdvancePercentage] = useState<number>(50)
+
+  const handleApplyDomainPreset = (preset: DomainPreset) => {
+    const newItem: ItemRowState = {
+      id: `item-${Date.now()}-${items.length + 1}`,
+      productId: '',
+      category_preset: preset.category,
+      itemName: preset.name,
+      description_bn: preset.nameBn,
+      material_spec: preset.materialSpec,
+      dimensions_spec: preset.width && preset.height ? `${preset.width} × ${preset.height} ${preset.dimensionUnit || 'ft'}` : undefined,
+      width: preset.width ? String(preset.width) : '',
+      height: preset.height ? String(preset.height) : '',
+      dimension_unit: preset.dimensionUnit || 'ft',
+      quantity: preset.quantity || 1,
+      unit: preset.unit || 'pcs',
+      base_rate: preset.defaultRate,
+      rate: preset.defaultRate,
+      finishing: preset.finishing || 'None',
+      finishing_rate: 0,
+      add_on: preset.addOn || 'None',
+      add_on_rate: 0,
+      rateSource: 'default',
+      item_kind: preset.itemKind,
+      unit_cost: preset.estimatedCostPerUnit || 0,
+      offset_specs: preset.offsetSpecs || null,
+      signage_specs: preset.signageSpecs || null,
+      artwork_required: Boolean(preset.artworkRequired),
+      installation_required: Boolean(preset.installationRequired),
+      design_required: preset.itemKind !== 'ready_product' && preset.artworkRequired !== false,
+      customer_approval_required: true,
+      workflow_routing: preset.itemKind === 'ready_product' ? 'ready_product' : preset.artworkRequired ? 'design_required' : 'ready_production',
+      showAdvanced: preset.category === 'offset_print' || preset.category === 'signage_fabrication',
+    }
+
+    if (
+      items.length === 1 &&
+      !items[0].productId &&
+      !items[0].width &&
+      !items[0].height &&
+      items[0].itemName === 'Pana Flex Banner Print'
+    ) {
+      setItems([newItem])
+    } else {
+      setItems([...items, newItem])
+    }
+  }
 
   // Feedback & Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -1435,7 +1519,10 @@ export function NewInvoiceModal({
         product_id: it.productId || undefined,
         item_kind: it.item_kind || (it.width && it.height ? 'service' : 'ready_product'),
         product_type: it.product_type || undefined,
+        category_preset: it.category_preset || undefined,
         item_name: it.itemName,
+        description_bn: it.description_bn || undefined,
+        material_spec: it.material_spec || undefined,
         dimensions_spec: it.dimensions_spec || undefined,
         width: Number(it.width) || undefined,
         height: Number(it.height) || undefined,
@@ -1444,12 +1531,17 @@ export function NewInvoiceModal({
         quantity: Number(it.quantity) || 1,
         unit: it.unit,
         unit_price: Number(it.rate) || 0,
+        rate_source: it.rateSource || 'default',
         tier_applied: it.tier_applied || undefined,
         moq: it.moq || undefined,
         unit_cost: it.unit_cost || undefined,
         finishing: it.finishing,
         add_on: it.add_on,
         add_on_rate: it.add_on_rate,
+        artwork_required: Boolean(it.artwork_required),
+        installation_required: Boolean(it.installation_required),
+        offset_specs: it.offset_specs || undefined,
+        signage_specs: it.signage_specs || undefined,
         design_required: routing === 'design_required',
         customer_approval_required: routing === 'design_required' && it.customer_approval_required !== false,
         workflow_routing: routing,
@@ -1472,19 +1564,30 @@ export function NewInvoiceModal({
           }
         : undefined,
       customer_name: customerName.trim(),
+      customer_name_bn: (selectedCustomer as any)?.name_bn || undefined,
       customer_company: companyName.trim() || undefined,
       customer_phone: phoneNumber.trim(),
       customer_whatsapp: whatsappNumber.trim() || undefined,
       customer_address: address.trim(),
       customer_email: emailAddress.trim() || undefined,
+      customer_bin: (selectedCustomer as any)?.bin_number || (selectedCustomer as any)?.bin || undefined,
+      customer_tin: (selectedCustomer as any)?.tin_number || undefined,
       customer_type: customerType,
       invoice_type: invoiceType,
       invoice_date: invoiceDate,
       due_date: dueDate,
       discount_amount: Number(discountAmount) || 0,
       vat_percentage: Number(vatPercentage) || 0,
+      advance_percentage: advancePercentage,
       advance_amount: effectiveAdvance,
+      due_on_delivery: dueAmount,
       payment_method: paymentMethod,
+      payment_method_note: paymentMethodNote.trim() || undefined,
+      mushak_version: invoiceType === 'vat_invoice' ? '6.3' : undefined,
+      reference_no: referenceNo.trim() || undefined,
+      delivery_date: deliveryDate || undefined,
+      delivery_location: deliveryLocation.trim() || undefined,
+      delivery_method: deliveryMethod,
       notes: notes.trim() || undefined,
       terms_and_conditions: termsAndConditions.trim() || undefined,
       quotation_id: quotationId,
@@ -1966,6 +2069,65 @@ export function NewInvoiceModal({
             <Badge variant="outline" className="text-[10px] font-mono uppercase bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
               {items.length} Item{items.length > 1 ? 's' : ''}
             </Badge>
+          </div>
+
+          {/* =========================================================================
+              1-CLICK BANGLADESHI INDUSTRY PRESETS BAR
+             ========================================================================= */}
+          <div className="p-3 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/70 dark:from-slate-900/80 dark:via-blue-950/30 dark:to-indigo-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/40 space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span>১-ক্লিক প্রিন্ট প্রিসেট (Fast 1-Click BD Presets):</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-1">
+                {(
+                  [
+                    { key: 'all', label: 'সব প্রিসেট (All)' },
+                    { key: 'digital_print', label: '🎨 ডিজিটাল (Digital)' },
+                    { key: 'offset_print', label: '📑 অফসেট (Offset)' },
+                    { key: 'signage_fabrication', label: '💡 ৩ডি সাইনেজ (3D Sign)' },
+                    { key: 'ready_merchandise', label: '🎯 রেডি পণ্য (Ready)' },
+                  ] as const
+                ).map((cat) => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => setSelectedPresetCategory(cat.key)}
+                    className={cn(
+                      'px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer',
+                      selectedPresetCategory === cat.key
+                        ? 'bg-blue-600 text-white shadow-xs'
+                        : 'bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700'
+                    )}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-1.5 max-h-36 overflow-y-auto pr-1">
+              {(selectedPresetCategory === 'all'
+                ? BANGLADESHI_PRINT_PRESETS
+                : getPresetsByCategory(selectedPresetCategory as any)
+              ).map((preset) => (
+                <button
+                  key={preset.id}
+                  type="button"
+                  onClick={() => handleApplyDomainPreset(preset)}
+                  className="group px-2.5 py-1 bg-white dark:bg-slate-800/90 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 border border-slate-200 dark:border-slate-700 hover:border-blue-600 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                  title={preset.description}
+                >
+                  <span className="text-sm">{preset.icon}</span>
+                  <span className="truncate max-w-[170px]">{preset.nameBn || preset.name}</span>
+                  <span className="font-mono text-[10px] font-bold px-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:bg-blue-700 group-hover:text-white">
+                    ৳{preset.defaultRate}/{preset.unit}
+                  </span>
+                  <Plus className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -2567,24 +2729,192 @@ export function NewInvoiceModal({
                     )
                   )}
 
-                  {/* Advanced Specs Drawer */}
-                  {(item.showAdvanced || isAdvancedMode) && (
-                    <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs animate-in fade-in-0">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
-                        Advanced Production Specs
-                      </span>
+                  {/* Dedicated Domain Production Specs (Offset / Signage / Custom) */}
+                  {(item.showAdvanced || isAdvancedMode || item.category_preset === 'offset_print' || item.category_preset === 'signage_fabrication') && (
+                    <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs animate-in fade-in-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                          <Layers className="h-3.5 w-3.5 text-blue-600" />
+                          {item.category_preset === 'offset_print'
+                            ? 'অফসেট প্রিন্টিং স্পেসিফিকেশন (Offset Commercial Specs)'
+                            : item.category_preset === 'signage_fabrication'
+                            ? '৩ডি সাইনেজ ও লাইটিং স্পেসিফিকেশন (3D Signage Specs)'
+                            : 'Advanced Domain & Material Specs'}
+                        </span>
+                        {item.description_bn && (
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+                            {item.description_bn}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Offset Commercial Specific Inputs */}
+                      {(item.category_preset === 'offset_print' || item.offset_specs) && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Paper GSM (জিএসএম)</Label>
+                            <select
+                              value={item.offset_specs?.paper_gsm || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'offset_specs', {
+                                  ...(item.offset_specs || {}),
+                                  paper_gsm: e.target.value,
+                                })
+                              }
+                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            >
+                              <option value="">Select GSM</option>
+                              <option value="55">55 GSM (NCR Carbonless)</option>
+                              <option value="70">70 GSM (Offset Paper)</option>
+                              <option value="80">80 GSM (Executive Offset)</option>
+                              <option value="100">100 GSM (White Offset)</option>
+                              <option value="120">120 GSM (Art Paper)</option>
+                              <option value="150">150 GSM (Art Paper)</option>
+                              <option value="300">300 GSM (Art Card)</option>
+                              <option value="350">350 GSM (Swedish Card)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Color Mode (রঙের মোড)</Label>
+                            <select
+                              value={item.offset_specs?.color_mode || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'offset_specs', {
+                                  ...(item.offset_specs || {}),
+                                  color_mode: e.target.value,
+                                })
+                              }
+                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            >
+                              <option value="1/0 Single Color">1/0 Single Color (১ রঙ)</option>
+                              <option value="2/0 Two Color">2/0 Two Color (২ রঙ)</option>
+                              <option value="4/0 Single-side CMYK">4/0 Single-side 4-Color (একপাশে ৪ রঙ)</option>
+                              <option value="4/4 Both-side CMYK">4/4 Both-side 4-Color (উভয়পাশে ৪ রঙ)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Binding / Packaging</Label>
+                            <select
+                              value={item.offset_specs?.binding_type || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'offset_specs', {
+                                  ...(item.offset_specs || {}),
+                                  binding_type: e.target.value,
+                                })
+                              }
+                              className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                            >
+                              <option value="Bundle Pack">Bundle Pack (বান্ডিল)</option>
+                              <option value="Top Gumming">Top Gumming Pad (গাম প্যাড)</option>
+                              <option value="Carbonless NCR Pad Binding">NCR Pad Binding (এনসিআর প্যাড)</option>
+                              <option value="Saddle Stitch">Saddle Stitch / Staple (পিন বাইন্ডিং)</option>
+                              <option value="Hard Binding">Hard Binding (বই বাইন্ডিং)</option>
+                              <option value="Box Packaging">Box Packaging (বক্স প্যাকিং)</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Numbering / NCR Part</Label>
+                            <Input
+                              placeholder="e.g. 0001 - 0500, 3-Part"
+                              value={item.offset_specs?.numbering_range || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'offset_specs', {
+                                  ...(item.offset_specs || {}),
+                                  numbering_range: e.target.value,
+                                  numbering_required: Boolean(e.target.value.trim()),
+                                })
+                              }
+                              className="text-xs h-8"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 3D Signage Specific Inputs */}
+                      {(item.category_preset === 'signage_fabrication' || item.signage_specs) && (
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Letter Height (ইঞ্চি)</Label>
+                            <Input
+                              type="number"
+                              placeholder="e.g. 12"
+                              value={item.signage_specs?.letter_height_inch || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'signage_specs', {
+                                  ...(item.signage_specs || {}),
+                                  letter_height_inch: Number(e.target.value) || 0,
+                                })
+                              }
+                              className="text-xs h-8 font-mono"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">LED Module Type</Label>
+                            <Input
+                              placeholder="e.g. Korean 3-LED Module"
+                              value={item.signage_specs?.led_module_type || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'signage_specs', {
+                                  ...(item.signage_specs || {}),
+                                  led_module_type: e.target.value,
+                                })
+                              }
+                              className="text-xs h-8"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">SMPS / Power Supply</Label>
+                            <Input
+                              placeholder="e.g. 12V 33A Waterproof SMPS"
+                              value={item.signage_specs?.power_supply_watts ? `${item.signage_specs.power_supply_watts}W` : ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'signage_specs', {
+                                  ...(item.signage_specs || {}),
+                                  power_supply_watts: Number(e.target.value.replace(/[^0-9]/g, '')) || 0,
+                                })
+                              }
+                              className="text-xs h-8"
+                            />
+                          </div>
+
+                          <div>
+                            <Label className="text-[10px] font-semibold mb-1 block">Frame Structure</Label>
+                            <Input
+                              placeholder="e.g. 1&quot; MS Pipe Sub-frame"
+                              value={item.signage_specs?.frame_structure || ''}
+                              onChange={(e) =>
+                                handleItemChange(index, 'signage_specs', {
+                                  ...(item.signage_specs || {}),
+                                  frame_structure: e.target.value,
+                                })
+                              }
+                              className="text-xs h-8"
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {/* General Material & Cost Row */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-[11px] font-semibold mb-1 block">Material / Structure Spec</Label>
+                          <Label className="text-[11px] font-semibold mb-1 block">Substrate Spec / Description</Label>
                           <Input
-                            placeholder="e.g. 3mm Cast Acrylic, 280 GSM Frontlit"
-                            value={item.dimensions_spec || ''}
-                            onChange={(e) => handleItemChange(index, 'dimensions_spec', e.target.value)}
+                            placeholder="e.g. 3mm Cast Acrylic Face + PVC Foam Return"
+                            value={item.material_spec || item.dimensions_spec || ''}
+                            onChange={(e) => {
+                              handleItemChange(index, 'material_spec', e.target.value)
+                              handleItemChange(index, 'dimensions_spec', e.target.value)
+                            }}
                             className="text-xs h-8"
                           />
                         </div>
                         <div>
-                          <Label className="text-[11px] font-semibold mb-1 block">Item Internal Cost (৳)</Label>
+                          <Label className="text-[11px] font-semibold mb-1 block">Item Internal Unit Cost (৳)</Label>
                           <Input
                             type="number"
                             placeholder="0"
@@ -2644,28 +2974,30 @@ export function NewInvoiceModal({
         </div>
 
         {/* =========================================================================
-            SECTION 3: FINANCIAL TOTALS & SETTLEMENT
+            SECTION 3: FINANCIAL TOTALS & BANGLADESHI COMMERCIAL SETTLEMENT
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-              3
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
+                3
+              </div>
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                Financial Totals & Commercial Settlement (চালান ও পেমেন্ট)
+              </h3>
             </div>
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              Financial Totals & Settlement
-            </h3>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Subtotal</Label>
+              <Label className="text-xs font-semibold mb-1 block">Subtotal (মোট বিল)</Label>
               <div className="h-9 px-3 flex items-center bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
                 {formatBDT(subtotal)}
               </div>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Discount (৳)</Label>
+              <Label className="text-xs font-semibold mb-1 block">Discount (ছাড় ৳)</Label>
               <Input
                 type="number"
                 value={discountAmount || ''}
@@ -2677,7 +3009,26 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">VAT (%)</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-xs font-semibold block">NBR VAT (ভ্যাট %)</Label>
+                <div className="flex items-center gap-1">
+                  {[0, 5, 7.5, 15].map((rate) => (
+                    <button
+                      key={rate}
+                      type="button"
+                      onClick={() => setVatPercentage(rate)}
+                      className={cn(
+                        'px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all',
+                        vatPercentage === rate
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
+                      )}
+                    >
+                      {rate}%
+                    </button>
+                  ))}
+                </div>
+              </div>
               <Input
                 type="number"
                 value={vatPercentage || ''}
@@ -2690,18 +3041,48 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Grand Total</Label>
+              <Label className="text-xs font-semibold mb-1 block">Grand Total (সর্বমোট বিল)</Label>
               <div className="h-9 px-3 flex items-center bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300 text-sm">
                 {formatBDT(grandTotal)}
               </div>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Advance / Paid Now (৳)</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label className="text-xs font-semibold block">Advance Paid (অগ্রিম ৳)</Label>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdvancePercentage(50)
+                      setAdvanceAmount(Math.round(grandTotal * 0.5))
+                    }}
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer"
+                  >
+                    ৫০%
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAdvancePercentage(100)
+                      setAdvanceAmount(grandTotal)
+                    }}
+                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer"
+                  >
+                    ১০০%
+                  </button>
+                </div>
+              </div>
               <Input
                 type="number"
                 value={advanceAmount || ''}
-                onChange={(e) => setAdvanceAmount(Math.max(0, Number(e.target.value) || 0))}
+                onChange={(e) => {
+                  const val = Math.max(0, Number(e.target.value) || 0)
+                  setAdvanceAmount(val)
+                  if (grandTotal > 0) {
+                    setAdvancePercentage(Math.round((val / grandTotal) * 100))
+                  }
+                }}
                 className="h-9 text-xs font-mono font-bold"
                 placeholder="0.00"
                 min={0}
@@ -2710,7 +3091,7 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Balance Due</Label>
+              <Label className="text-xs font-semibold mb-1 block">Balance Due (ডেলিভারিতে বাকি)</Label>
               <div className={cn(
                 'h-9 px-3 flex items-center rounded-md font-mono font-black text-sm border',
                 dueAmount > 0
@@ -2722,23 +3103,23 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Payment Method</Label>
+              <Label className="text-xs font-semibold mb-1 block">Payment Method (পরিশোধ মাধ্যম)</Label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as any)}
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
               >
-                <option value="cash">Cash Counter</option>
-                <option value="bkash">bKash Merchant</option>
-                <option value="nagad">Nagad Wallet</option>
-                <option value="bank">Bank Transfer</option>
-                <option value="cheque">Bank Cheque</option>
-                <option value="other_mfs">Other MFS</option>
+                <option value="cash">Cash Counter (ক্যাশ কাউন্টার)</option>
+                <option value="bkash">bKash Merchant (বিকাশ)</option>
+                <option value="nagad">Nagad Wallet (নগদ)</option>
+                <option value="bank">Bank Transfer (ব্যাংক ট্রান্সফার)</option>
+                <option value="cheque">Bank Cheque (ব্যাংক চেক)</option>
+                <option value="other_mfs">Other MFS (অন্যান্য)</option>
               </select>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Due Date</Label>
+              <Label className="text-xs font-semibold mb-1 block">Due Date (পরিশোধের শেষ তারিখ)</Label>
               <Input
                 type="date"
                 value={dueDate}
@@ -2746,6 +3127,50 @@ export function NewInvoiceModal({
                 className="h-9 text-xs"
                 required
               />
+            </div>
+          </div>
+
+          {/* Additional Commercial Details (Reference, Delivery & Payment Notes) */}
+          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div>
+              <Label className="text-[11px] font-semibold mb-1 block">Ref / Customer PO No. (রেফারেন্স)</Label>
+              <Input
+                placeholder="e.g. PO-2026-9812 / Work Order Ref"
+                value={referenceNo}
+                onChange={(e) => setReferenceNo(e.target.value)}
+                className="h-9 text-xs font-medium"
+              />
+            </div>
+
+            <div>
+              <Label className="text-[11px] font-semibold mb-1 block">Payment Note / Trx ID (ট্রানজেকশন তথ্য)</Label>
+              <Input
+                placeholder="e.g. bKash TrxID: 9X29A887B / Cheque No: 48912"
+                value={paymentMethodNote}
+                onChange={(e) => setPaymentMethodNote(e.target.value)}
+                className="h-9 text-xs"
+              />
+            </div>
+
+            <div>
+              <Label className="text-[11px] font-semibold mb-1 block">Delivery Date & Location (ডেলিভারি)</Label>
+              <div className="grid grid-cols-2 gap-1.5">
+                <Input
+                  type="date"
+                  value={deliveryDate}
+                  onChange={(e) => setDeliveryDate(e.target.value)}
+                  className="h-9 text-xs"
+                />
+                <select
+                  value={deliveryMethod}
+                  onChange={(e) => setDeliveryMethod(e.target.value as any)}
+                  className="h-9 px-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
+                >
+                  <option value="customer_pickup">কাস্টমার পিকআপ</option>
+                  <option value="company_delivery">কোম্পানি ডেলিভারি</option>
+                  <option value="courier">সুন্দরবন / এসএ পরিবহন</option>
+                </select>
+              </div>
             </div>
           </div>
 

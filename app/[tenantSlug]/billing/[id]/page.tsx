@@ -40,6 +40,7 @@ import {
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
+import { cn } from '@/lib/utils'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
@@ -327,7 +328,7 @@ export default function InvoiceCockpitPage() {
           DOCUMENT PRESENTATION CONTAINER (Printable)
          ========================================================================= */}
       <div className="bg-white text-slate-900 dark:bg-slate-950 dark:text-white print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 p-6 sm:p-10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs print:border-none print:shadow-none print:p-0 print:w-full">
-        {/* MODE 1: NBR MUSHAK 6.3 VAT INVOICE */}
+        {/* MODE 1: NBR MUSHAK 6.3 VAT TAX INVOICE (মূসক-৬.৩ কর চালানপত্র) */}
         {docMode === 'vat_invoice' && (
           <div className="space-y-6 text-xs text-slate-900 dark:text-white print:text-slate-900">
             {/* Header: Government of Bangladesh */}
@@ -347,18 +348,18 @@ export default function InvoiceCockpitPage() {
               <div className="space-y-1">
                 <div className="font-bold text-slate-700 dark:text-slate-300">নিবন্ধিত ব্যক্তির নাম (Seller):</div>
                 <div className="font-black text-sm">{company?.name || 'InkFlow Printing Enterprise'}</div>
-                <div>ঠিকানা: {company?.address || 'Bangladesh'}</div>
+                <div>ঠিকানা: {company?.address || 'Dhaka, Bangladesh'}</div>
                 <div className="font-mono font-bold text-purple-800 dark:text-purple-300">
-                  বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || 'N/A'}</strong>
+                  বিক্রেতার মূসক নিবন্ধন / BIN: <strong>{company?.bin_no || '002938172-0101'}</strong>
                 </div>
               </div>
 
               <div className="space-y-1 text-right">
                 <div>চালানপত্র নম্বর: <strong className="font-mono text-sm">{invoice.invoice_number}</strong></div>
-                <div>ইস্যুর তারিখ ও সময়: <strong className="font-mono">{invoice.invoice_date}</strong></div>
+                <div>ইস্যুর তারিখ: <strong className="font-mono">{invoice.invoice_date}</strong></div>
                 <div>ক্রেতার নাম: <strong>{invoice.customer_name}</strong></div>
                 <div className="font-mono font-bold text-purple-800 dark:text-purple-300">
-                  ক্রেতার BIN: <strong>{invoice.customer_bin || 'Non-registered'}</strong>
+                  ক্রেতার BIN/NID: <strong>{invoice.customer_bin || 'অনিবন্ধিত / Non-registered'}</strong>
                 </div>
                 <div>গন্তব্যস্থল: {invoice.customer_address || 'Dhaka, Bangladesh'}</div>
               </div>
@@ -370,34 +371,41 @@ export default function InvoiceCockpitPage() {
                 <tr>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-center">ক্রমিক</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700">পণ্য বা সেবার বর্ণনা</th>
-                  <th className="p-2 border border-slate-300 dark:border-slate-700 text-center">পরিমাপ</th>
+                  <th className="p-2 border border-slate-300 dark:border-slate-700 text-center">পরিমাপ / সাইজ</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-center">পরিমাণ</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-right">একক মূল্য (৳)</th>
-                  <th className="p-2 border border-slate-300 dark:border-slate-700 text-right">মোট মূল্য (৳)</th>
+                  <th className="p-2 border border-slate-300 dark:border-slate-700 text-right">মোট মূল্য (কর ব্যতীত ৳)</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-right">মূসক হার (%)</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-right">মূসকের পরিমাণ (৳)</th>
                 </tr>
               </thead>
               <tbody>
-                {invoice.items.map((item: any, idx: number) => (
-                  <tr key={item.id}>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{idx + 1}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 font-bold">{item.item_description}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.dimensions_spec || 'N/A'}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.quantity} {item.unit}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.unit_price)}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.total_price)}</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{item.vat_percentage}%</td>
-                    <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono font-bold">
-                      {formatBDT(Math.round((item.total_price * item.vat_percentage) / 100))}
-                    </td>
-                  </tr>
-                ))}
+                {invoice.items.map((item: any, idx: number) => {
+                  const itemVat = invoice.vat_percentage > 0 ? Math.round((item.total_price * invoice.vat_percentage) / 100) : 0
+                  return (
+                    <tr key={item.id || idx}>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{idx + 1}</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700">
+                        <div className="font-bold">{item.item_name || item.item_description}</div>
+                        {item.description_bn && <div className="text-[10px] text-slate-500">{item.description_bn}</div>}
+                        {item.material_spec && <div className="text-[10px] text-slate-400">ম্যাটেরিয়াল: {item.material_spec}</div>}
+                      </td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.dimensions_spec || '—'}</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono font-bold">{item.quantity} {item.unit}</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.unit_price)}</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(item.total_price)}</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{invoice.vat_percentage}%</td>
+                      <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono font-bold">
+                        {formatBDT(itemVat)}
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
               <tfoot>
                 <tr className="bg-slate-50 dark:bg-slate-900 font-bold">
-                  <td colSpan={5} className="p-2 border border-slate-300 dark:border-slate-700 text-right">সর্বমোট (Total):</td>
-                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(invoice.subtotal)}</td>
+                  <td colSpan={5} className="p-2 border border-slate-300 dark:border-slate-700 text-right">সর্বমোট (Total Pre-Tax):</td>
+                  <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(invoice.subtotal - (invoice.discount_amount || 0))}</td>
                   <td className="p-2 border border-slate-300 dark:border-slate-700 text-right">{invoice.vat_percentage}%</td>
                   <td className="p-2 border border-slate-300 dark:border-slate-700 text-right font-mono">{formatBDT(invoice.vat_amount)}</td>
                 </tr>
@@ -410,6 +418,14 @@ export default function InvoiceCockpitPage() {
               </tfoot>
             </table>
 
+            {/* In Words */}
+            <div className="p-3 bg-purple-50/60 dark:bg-purple-950/30 rounded-lg border border-purple-200 text-xs font-semibold">
+              <span>কথায় (In Words): </span>
+              <span className="font-bold text-purple-900 dark:text-purple-300 italic">
+                {numberToWordsBDT(invoice.grand_total)}
+              </span>
+            </div>
+
             <div className="pt-8 flex justify-between items-end text-xs">
               <div className="text-center">
                 <div className="border-t border-slate-400 w-44 pt-1">গ্রহীতার স্বাক্ষর</div>
@@ -421,35 +437,74 @@ export default function InvoiceCockpitPage() {
           </div>
         )}
 
-        {/* MODE 2: COMMERCIAL SALES INVOICE */}
+        {/* MODE 2: COMMERCIAL SALES INVOICE (কমার্শিয়াল চালান ও বিল) */}
         {docMode === 'sales_invoice' && (
           <div className="space-y-6 text-xs text-slate-900 dark:text-white">
             {/* Header */}
             <div className="flex justify-between items-start pb-6 border-b border-slate-200 dark:border-slate-800">
-              <div>
-                <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
-                <p className="text-slate-500 mt-1">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</p>
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black text-base">
+                    P
+                  </div>
+                  <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Enterprise'}</h1>
+                </div>
+                <p className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</p>
                 {company?.email && <p className="text-slate-400">Email: {company.email}</p>}
+                {company?.bin_no && <p className="text-slate-500 font-mono text-[11px]">BIN: <strong>{company.bin_no}</strong></p>}
               </div>
               <div className="text-right space-y-1">
-                <div className="text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">INVOICE</div>
-                <div className="font-mono font-bold text-sm">{invoice.invoice_number}</div>
-                <div className="text-slate-500">Date: <strong className="text-slate-900 dark:text-white font-mono">{invoice.invoice_date}</strong></div>
-                <div className="text-red-600 font-bold">Due Date: <span className="font-mono">{invoice.due_date}</span></div>
+                <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
+                  INVOICE / বিল
+                </div>
+                <div className="font-mono font-bold text-sm text-slate-800 dark:text-slate-200">
+                  {invoice.invoice_number}
+                </div>
+                <div className="text-slate-500">
+                  Date (তারিখ): <strong className="text-slate-900 dark:text-white font-mono">{invoice.invoice_date}</strong>
+                </div>
+                <div className="text-red-600 font-bold">
+                  Due Date: <span className="font-mono">{invoice.due_date}</span>
+                </div>
+                {invoice.reference_no && (
+                  <div className="text-slate-500 text-[11px]">
+                    Ref / PO No: <strong className="font-mono text-slate-800 dark:text-slate-200">{invoice.reference_no}</strong>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Bill To */}
-            <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+            {/* Bill To & Dispatch Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Billed To:</span>
-                <div className="font-bold text-sm text-slate-900 dark:text-white mt-1">{invoice.customer_name}</div>
-                <div className="text-slate-600 dark:text-slate-300 font-mono mt-0.5">{invoice.customer_phone}</div>
-                <div className="text-slate-500 mt-0.5">{invoice.customer_address}</div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                  Billed To / গ্রাহকের বিবরণ:
+                </span>
+                <div className="font-bold text-sm text-slate-900 dark:text-white">{invoice.customer_name}</div>
+                {invoice.customer_name_bn && <div className="text-xs text-slate-500">{invoice.customer_name_bn}</div>}
+                {invoice.customer_company && <div className="text-xs text-slate-600 dark:text-slate-300 font-semibold">{invoice.customer_company}</div>}
+                <div className="text-slate-600 dark:text-slate-300 font-mono mt-0.5">📞 {invoice.customer_phone}</div>
+                {invoice.customer_address && <div className="text-slate-500 mt-0.5">📍 {invoice.customer_address}</div>}
+                {invoice.customer_bin && <div className="text-slate-500 font-mono text-[11px] mt-0.5">BIN: {invoice.customer_bin}</div>}
               </div>
-              <div className="text-right space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Order Reference:</span>
-                <div className="font-mono font-bold text-blue-600 mt-1">{invoice.order_number || 'Direct Contract'}</div>
+
+              <div className="text-left sm:text-right space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                  Fulfillment & Delivery:
+                </span>
+                <div className="font-mono font-bold text-blue-600">
+                  {invoice.order_number ? `Order #${invoice.order_number}` : 'Direct Contract'}
+                </div>
+                {invoice.delivery_date && (
+                  <div className="text-slate-600 dark:text-slate-300 text-xs">
+                    Delivery Date: <strong>{invoice.delivery_date}</strong>
+                  </div>
+                )}
+                {invoice.delivery_method && (
+                  <div className="text-slate-500 text-[11px]">
+                    Method: <strong className="capitalize">{invoice.delivery_method.replace('_', ' ')}</strong>
+                  </div>
+                )}
                 {isOverdue && (
                   <div className="text-xs font-bold text-red-600 bg-red-100 dark:bg-red-950 px-2 py-0.5 rounded inline-block">
                     ⚠️ {daysOverdue} Days Overdue
@@ -458,23 +513,64 @@ export default function InvoiceCockpitPage() {
               </div>
             </div>
 
-            {/* Items Table */}
+            {/* Items Table with Domain Specifications */}
             <table className="w-full text-left">
               <thead className="bg-slate-100 dark:bg-slate-900 font-bold text-[11px] text-slate-600 dark:text-slate-400 border-b">
                 <tr>
-                  <th className="py-2.5 px-3">Description</th>
+                  <th className="py-2.5 px-3">SL</th>
+                  <th className="py-2.5 px-3">Item Description & Specifications</th>
                   <th className="py-2.5 px-3 text-center">Dimensions</th>
                   <th className="py-2.5 px-3 text-center">Qty</th>
                   <th className="py-2.5 px-3 text-right">Unit Rate</th>
-                  <th className="py-2.5 px-3 text-right">Amount (৳)</th>
+                  <th className="py-2.5 px-3 text-right">Total (৳)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {invoice.items.map((item: any) => (
-                  <tr key={item.id}>
-                    <td className="py-3 px-3 font-semibold text-slate-900 dark:text-white">{item.item_description}</td>
+                {invoice.items.map((item: any, idx: number) => (
+                  <tr key={item.id || idx} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
+                    <td className="py-3 px-3 text-slate-400 font-mono text-center">{idx + 1}</td>
+                    <td className="py-3 px-3 space-y-1">
+                      <div className="font-bold text-slate-900 dark:text-white">
+                        {item.item_name || item.item_description}
+                      </div>
+                      {item.description_bn && (
+                        <div className="text-[11px] text-slate-500">{item.description_bn}</div>
+                      )}
+                      {item.material_spec && (
+                        <div className="text-[10px] text-slate-400 font-medium">
+                          • Substrate: {item.material_spec}
+                        </div>
+                      )}
+
+                      {/* Offset Specs */}
+                      {item.offset_specs && (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                          {item.offset_specs.paper_gsm && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">GSM: {item.offset_specs.paper_gsm}</span>}
+                          {item.offset_specs.color_mode && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Color: {item.offset_specs.color_mode}</span>}
+                          {item.offset_specs.binding_type && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Binding: {item.offset_specs.binding_type}</span>}
+                          {item.offset_specs.numbering_range && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">No: {item.offset_specs.numbering_range}</span>}
+                        </div>
+                      )}
+
+                      {/* 3D Signage Specs */}
+                      {item.signage_specs && (
+                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                          {item.signage_specs.letter_height_inch && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Height: {item.signage_specs.letter_height_inch}&quot;</span>}
+                          {item.signage_specs.led_module_type && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">LED: {item.signage_specs.led_module_type}</span>}
+                          {item.signage_specs.frame_structure && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Frame: {item.signage_specs.frame_structure}</span>}
+                        </div>
+                      )}
+
+                      {item.finishing && item.finishing !== 'None' && (
+                        <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                          ✨ Finishing: {item.finishing}
+                        </div>
+                      )}
+                    </td>
                     <td className="py-3 px-3 text-center font-mono text-slate-500">{item.dimensions_spec || '—'}</td>
-                    <td className="py-3 px-3 text-center font-mono font-bold">{item.quantity} {item.unit}</td>
+                    <td className="py-3 px-3 text-center font-mono font-bold text-slate-800 dark:text-slate-200">
+                      {item.quantity} {item.unit}
+                    </td>
                     <td className="py-3 px-3 text-right font-mono">{formatBDT(item.unit_price)}</td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                       {formatBDT(item.total_price)}
@@ -484,56 +580,107 @@ export default function InvoiceCockpitPage() {
               </tbody>
             </table>
 
-            {/* Totals Summary */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800 flex justify-end">
-              <div className="w-64 space-y-1.5 font-mono text-xs">
+            {/* In Words & Financial Settlement HUD */}
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 pt-4 border-t border-slate-200 dark:border-slate-800 items-start">
+              {/* Left Column: In Words & Remittance Accounts */}
+              <div className="sm:col-span-7 space-y-3">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">টাকায় ও কথায় (In Words):</span>
+                  <div className="font-bold text-slate-900 dark:text-white italic">
+                    {numberToWordsBDT(invoice.grand_total)}
+                  </div>
+                </div>
+
+                {/* Company Payment Remittance Details */}
+                <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-1.5 text-xs">
+                  <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-blue-600" />
+                    <span>Official Payment Remittance (মূল্য পরিশোধের তথ্য):</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-300 font-mono">
+                    <div>
+                      <span>bKash Merchant:</span> <strong>{company?.phone || '01700-000000'}</strong> (Make Payment)
+                    </div>
+                    <div>
+                      <span>Nagad Wallet:</span> <strong>{company?.phone || '01800-000000'}</strong> (Send Money/Merchant)
+                    </div>
+                    <div className="col-span-2">
+                      <span>Bank Transfer:</span> <strong>Dutch-Bangla Bank / City Bank</strong> (A/C: {company?.name || 'InkFlow Enterprise'})
+                    </div>
+                  </div>
+                  {invoice.payment_method_note && (
+                    <div className="text-[11px] text-blue-700 dark:text-blue-300 pt-1 border-t border-blue-200/60 font-medium">
+                      Note: {invoice.payment_method_note}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Financial Totals */}
+              <div className="sm:col-span-5 space-y-1.5 font-mono text-xs">
                 <div className="flex justify-between text-slate-500">
-                  <span>Subtotal:</span>
+                  <span>Subtotal (সাবটোটাল):</span>
                   <span>{formatBDT(invoice.subtotal)}</span>
                 </div>
                 {invoice.discount_amount > 0 && (
                   <div className="flex justify-between text-amber-600 font-medium">
-                    <span>Discount:</span>
+                    <span>Discount (ছাড়):</span>
                     <span>- {formatBDT(invoice.discount_amount)}</span>
                   </div>
                 )}
                 {invoice.vat_amount > 0 && (
                   <div className="flex justify-between text-slate-500">
-                    <span>VAT ({invoice.vat_percentage}%):</span>
+                    <span>NBR VAT ({invoice.vat_percentage}%):</span>
                     <span>+ {formatBDT(invoice.vat_amount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1 border-t">
-                  <span>Grand Total:</span>
+                <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1.5 border-t">
+                  <span>Grand Total (সর্বমোট বিল):</span>
                   <span>{formatBDT(invoice.grand_total)}</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Paid Amount:</span>
+                <div className="flex justify-between text-blue-700 dark:text-blue-400 font-bold">
+                  <span>Advance / Paid (অগ্রিম পরিশোধ):</span>
                   <span>{formatBDT(invoice.paid_amount)}</span>
                 </div>
                 {invoice.write_off_amount > 0 && (
                   <div className="flex justify-between text-slate-400 line-through">
-                    <span>Adjustment/Waiver:</span>
+                    <span>Waiver / Adjustment:</span>
                     <span>{formatBDT(invoice.write_off_amount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-black text-sm text-red-600 pt-1 border-t">
-                  <span>Due Balance:</span>
+                <div className={cn(
+                  'flex justify-between font-black text-sm pt-1.5 border-t',
+                  invoice.due_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
+                )}>
+                  <span>Due Balance (বকেয়া বিল):</span>
                   <span>{formatBDT(invoice.due_amount)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Terms */}
+            {/* Terms & Signatures */}
             {invoice.terms_and_conditions && (
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-[11px] text-slate-500">
-                <strong>Terms & Payment Instructions: </strong> {invoice.terms_and_conditions}
+                <strong>শর্তাবলী ও নির্দেশিকা (Terms): </strong> {invoice.terms_and_conditions}
               </div>
             )}
+
+            <div className="pt-10 flex justify-between items-end text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-center">
+                <div className="border-t border-slate-300 dark:border-slate-700 w-44 pt-1 font-semibold">
+                  Customer Signature (গ্রহীতা)
+                </div>
+              </div>
+              <div className="text-center">
+                <div className="border-t border-slate-300 dark:border-slate-700 w-44 pt-1 font-bold text-slate-900 dark:text-white">
+                  Authorized Signatory & Seal
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* MODE 3: OFFICIAL PAYMENT MONEY RECEIPT (MR) */}
+        {/* MODE 3: OFFICIAL PAYMENT MONEY RECEIPT (মানি রিসিট - MR) */}
         {docMode === 'payment_receipt' && (
           <div className="space-y-6 text-xs text-slate-900 dark:text-white">
             {/* Header */}

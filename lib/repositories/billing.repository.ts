@@ -493,13 +493,38 @@ export class BillingRepository {
       : null
     const validSalespersonId = invoice.salesperson_id && isValidUUID(invoice.salesperson_id) ? invoice.salesperson_id : null
 
-    const subtotal = Number(invoice.subtotal) || Number(invoice.grand_total) || 0
-    const vatPct = Number(invoice.vat_percentage) || 0
-    const vatAmt = Number(invoice.vat_amount) || Math.round((subtotal * vatPct) / 100)
+    const itemSubtotal = (invoice.items || []).reduce((sum: number, it: any) => {
+      const lineTotal = Number(it.total_price) || Number(it.item_total) || 0
+      if (lineTotal > 0) return sum + lineTotal
+      const w = Number(it.width) || 0
+      const h = Number(it.height) || 0
+      const qty = Number(it.quantity) || 1
+      const rate = Number(it.unit_price) || Number(it.unit_rate) || 0
+      if (w > 0 && h > 0 && (it.unit === 'sft' || it.unit === 'sqft' || it.unit === 'sqin')) {
+        const area = it.unit === 'sqin' ? (w * h) / 144 : w * h
+        return sum + Math.round(area * qty * rate)
+      }
+      return sum + Math.round(qty * rate)
+    }, 0)
+
+    const subtotal = Number(invoice.subtotal) || itemSubtotal || Number(invoice.grand_total) || 0
+    const vatPct = Number(invoice.vat_percentage) || Number((invoice as any).tax_rate) || 0
     const discountAmt = Number(invoice.discount_amount) || 0
-    const grandTotal = Number(invoice.grand_total) || subtotal - discountAmt + vatAmt
+    const subtotalAfterDiscount = Math.max(0, subtotal - discountAmt)
+    const vatAmt = Number(invoice.vat_amount) || Number((invoice as any).tax_amount) || Math.round((subtotalAfterDiscount * vatPct) / 100)
+    const grandTotal = Number(invoice.grand_total) || (subtotalAfterDiscount + vatAmt)
     const paidAmount = Number(invoice.paid_amount) || 0
     const dueAmount = Math.max(0, grandTotal - paidAmount)
+
+    const advancePct = invoice.advance_percentage !== undefined && invoice.advance_percentage !== null
+      ? Number(invoice.advance_percentage)
+      : (grandTotal > 0 && paidAmount > 0 ? Math.round((paidAmount / grandTotal) * 100) : 50)
+    const advanceAmt = invoice.advance_amount !== undefined && invoice.advance_amount !== null
+      ? Number(invoice.advance_amount)
+      : (paidAmount > 0 ? paidAmount : Math.round((grandTotal * advancePct) / 100))
+    const dueOnDelivery = invoice.due_on_delivery !== undefined && invoice.due_on_delivery !== null
+      ? Number(invoice.due_on_delivery)
+      : (grandTotal - advanceAmt)
 
     const payload: any = {
       id: invoiceId,
@@ -509,33 +534,49 @@ export class BillingRepository {
       invoice_type: invoice.invoice_type || 'sales_invoice',
       customer_id: validCustomerId,
       customer_name: invoice.customer_name,
+      customer_name_bn: invoice.customer_name_bn || null,
+      customer_company: invoice.customer_company || null,
       customer_phone: invoice.customer_phone,
       customer_email: invoice.customer_email || null,
       customer_bin: invoice.customer_bin || null,
       customer_tin: invoice.customer_tin || null,
       customer_address: invoice.customer_address || null,
+      customer_type: invoice.customer_type || 'retail',
       sales_order_id: validSalesOrderId,
       job_order_id: validJobOrderId,
       quotation_id: validQuotationId,
       quotation_number: invoice.quotation_number || null,
       order_number: invoice.order_number || invoiceNumber.replace('INV-', 'ORD-'),
       job_number: invoice.job_number || null,
+      reference_no: invoice.reference_no || null,
       salesperson_id: validSalespersonId,
       salesperson_name: invoice.salesperson_name || null,
       invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
-      due_date: invoice.due_date,
+      due_date: invoice.due_date || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
       status: invoice.status || (paidAmount >= grandTotal ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'unpaid'),
       subtotal,
       discount_amount: discountAmt,
       vat_percentage: vatPct,
       vat_amount: vatAmt,
+      tax_rate: vatPct,
+      tax_amount: vatAmt,
       grand_total: grandTotal,
       paid_amount: paidAmount,
       due_amount: dueAmount,
+      advance_percentage: advancePct,
+      advance_amount: advanceAmt,
+      due_on_delivery: dueOnDelivery,
+      payment_method_note: invoice.payment_method_note || null,
+      mushak_version: invoice.mushak_version || (invoice.invoice_type === 'vat_invoice' ? '6.3' : null),
+      language_mode: invoice.language_mode || 'bn',
+      delivery_date: invoice.delivery_date || null,
+      delivery_location: invoice.delivery_location || null,
+      delivery_method: invoice.delivery_method || 'customer_pickup',
+      installation_required: Boolean(invoice.installation_required),
       write_off_amount: Number(invoice.write_off_amount) || 0,
       notes: invoice.notes || null,
       terms_and_conditions: invoice.terms_and_conditions || null,
-      created_by_name: invoice.created_by_name,
+      created_by_name: invoice.created_by_name || 'Commercial Dept',
       idempotency_key: invoice.idempotency_key || null,
       created_at: invoice.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -763,14 +804,33 @@ export class BillingRepository {
         id: it.id || generateUUID(),
         invoice_id: payload.id,
         product_id: it.product_id || null,
+        item_name: it.item_name || it.item_description || it.description || 'Printing Item',
         item_description: it.item_description || it.description || it.item_name || 'Printing Item',
+        description_bn: it.description_bn || null,
+        material_spec: it.material_spec || null,
+        category_preset: it.category_preset || null,
         dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'inch'}` : null),
+        width: it.width !== undefined ? Number(it.width) : undefined,
+        height: it.height !== undefined ? Number(it.height) : undefined,
+        dimension_unit: it.dimension_unit || 'ft',
+        area_sft: it.area_sft !== undefined ? Number(it.area_sft) : undefined,
         quantity: Number(it.quantity) || 1,
         unit: it.unit || 'pcs',
-        unit_price: Number(it.unit_price) || 0,
+        unit_price: Number(it.unit_price) || Number(it.unit_rate) || 0,
+        rate_source: it.rate_source || 'default',
+        tier_applied: it.tier_applied || null,
+        moq: it.moq || null,
+        unit_cost: Number(it.unit_cost) || 0,
         vat_percentage: Number(it.vat_percentage) || 0,
-        total_price: Number(it.total_price) || (Number(it.quantity) * Number(it.unit_price)),
+        total_price: Number(it.total_price) || Number(it.item_total) || (Number(it.quantity) * (Number(it.unit_price) || Number(it.unit_rate) || 0)),
         finishing: it.finishing || null,
+        selected_finishing: it.selected_finishing || null,
+        selected_add_ons: it.selected_add_ons || null,
+        selected_installation: it.selected_installation || null,
+        artwork_required: Boolean(it.artwork_required),
+        installation_required: Boolean(it.installation_required),
+        offset_specs: it.offset_specs || null,
+        signage_specs: it.signage_specs || null,
         item_kind: it.item_kind || (it.workflow_routing === 'ready_product' ? 'ready_product' : 'custom_manufacturing'),
         workflow_routing:
           it.workflow_routing ||
@@ -1834,6 +1894,7 @@ export class BillingRepository {
       company_id: params.companyId,
       branch_id: params.branchId || null,
       receipt_number: receiptNumber,
+      payment_number: receiptNumber,
       customer_id: params.customerId,
       customer_name: params.customerName,
       payment_date: params.paymentDate || getTodayDateString(),
@@ -1878,33 +1939,44 @@ export class BillingRepository {
   static async recordPayment(params: {
     company_id: string
     customer_id: string
-    customer_name: string
+    customer_name?: string
     amount: number
-    payment_method: 'cash' | 'bank' | 'cheque' | 'bkash' | 'nagad' | 'other_mfs'
+    payment_method: any
+    payment_date?: string
+    reference_number?: string
     invoice_id?: string
     bank_name?: string | null
     cheque_number?: string | null
     cheque_date?: string | null
     mfs_transaction_id?: string | null
     notes?: string | null
-    received_by_name: string
+    note?: string | null
+    received_by_name?: string
     idempotency_key?: string
     actor_user_id?: string
+    allocations?: Array<{ invoiceId?: string; invoice_id?: string; amount: number }>
   }): Promise<PaymentRecord> {
-    const allocations = params.invoice_id ? [{ invoiceId: params.invoice_id, amount: params.amount }] : []
+    const custName = params.customer_name || 'Customer'
+    const allocations = params.allocations
+      ? params.allocations.map((a) => ({ invoiceId: a.invoiceId || a.invoice_id!, amount: a.amount }))
+      : params.invoice_id
+      ? [{ invoiceId: params.invoice_id, amount: params.amount }]
+      : []
+
     return await this.recordMultiInvoicePayment({
       companyId: params.company_id,
       customerId: params.customer_id,
-      customerName: params.customer_name,
+      customerName: custName,
       amount: params.amount,
-      paymentMethod: params.payment_method,
+      paymentMethod: params.payment_method as any,
+      paymentDate: params.payment_date,
       invoiceId: params.invoice_id,
       bankName: params.bank_name,
-      chequeNumber: params.cheque_number,
+      chequeNumber: params.cheque_number || params.reference_number,
       chequeDate: params.cheque_date,
-      mfsTransactionId: params.mfs_transaction_id,
-      notes: params.notes,
-      receivedByName: params.received_by_name,
+      mfsTransactionId: params.mfs_transaction_id || params.reference_number,
+      notes: params.notes || params.note,
+      receivedByName: params.received_by_name || 'Accounts Desk',
       idempotencyKey: params.idempotency_key,
       actorUserId: params.actor_user_id,
       allocations,

@@ -28,8 +28,11 @@ export interface InvoiceItemRecord {
   product_id?: string | null
   item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string | null
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
   item_name?: string | null
   item_description?: string | null
+  description_bn?: string | null
+  material_spec?: string | null
   dimensions_spec?: string | null
   width?: number
   height?: number
@@ -40,12 +43,33 @@ export interface InvoiceItemRecord {
   unit_price: number
   vat_percentage?: number
   total_price: number
+  rate_source?: 'custom' | 'last_invoice' | 'default' | 'override' | string | null
   tier_applied?: string | null
   moq?: number | null
   unit_cost?: number
   finishing?: string | null
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
   selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }> | null
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
+  artwork_required?: boolean
+  installation_required?: boolean
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
   design_required?: boolean
   customer_approval_required?: boolean
   workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'outsource' | 'custom' | string | null
@@ -79,6 +103,7 @@ export interface PaymentRecord {
   company_id: string
   branch_id?: string | null
   receipt_number: string
+  payment_number?: string
   customer_id?: string | null
   customer_name: string
   payment_date: string
@@ -106,17 +131,21 @@ export interface InvoiceRecord {
   invoice_type: InvoiceType
   customer_id?: string | null
   customer_name: string
+  customer_name_bn?: string | null
+  customer_company?: string | null
   customer_phone: string
   customer_email?: string | null
   customer_bin?: string | null
   customer_tin?: string | null
   customer_address?: string | null
+  customer_type?: 'retail' | 'reseller' | 'corporate' | 'government' | string | null
   quotation_id?: string | null
   quotation_number?: string | null
   sales_order_id?: string | null
   order_number?: string | null
   job_order_id?: string | null
   job_number?: string | null
+  reference_no?: string | null
   salesperson_id?: string | null
   salesperson_name?: string | null
   invoice_date: string
@@ -129,6 +158,16 @@ export interface InvoiceRecord {
   grand_total: number
   paid_amount: number
   due_amount: number
+  advance_percentage?: number | null
+  advance_amount?: number | null
+  due_on_delivery?: number | null
+  payment_method_note?: string | null
+  mushak_version?: string | null
+  language_mode?: 'en' | 'bn' | 'bilingual'
+  delivery_date?: string | null
+  delivery_location?: string | null
+  delivery_method?: string | null
+  installation_required?: boolean | null
   write_off_amount: number
   notes?: string | null
   terms_and_conditions?: string | null

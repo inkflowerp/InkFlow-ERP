@@ -32,9 +32,13 @@ export interface ServerActionResult<T> {
 
 export interface CreateInvoiceItemInput {
   product_id?: string
-  item_kind?: 'service' | 'ready_product' | 'material' | 'custom'
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
   product_type?: string
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
   item_name: string
+  item_description?: string
+  description_bn?: string | null
+  material_spec?: string | null
   dimensions_spec?: string
   width?: number
   height?: number
@@ -43,6 +47,7 @@ export interface CreateInvoiceItemInput {
   quantity: number
   unit?: string
   unit_price: number
+  rate_source?: 'custom' | 'last_invoice' | 'default' | 'override' | string | null
   tier_applied?: string
   moq?: number
   unit_cost?: number
@@ -50,6 +55,27 @@ export interface CreateInvoiceItemInput {
   add_on?: string
   add_on_rate?: number
   selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
+  selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }>
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
+  artwork_required?: boolean
+  installation_required?: boolean
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
   design_required?: boolean
   customer_approval_required?: boolean
   workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | string
@@ -69,21 +95,34 @@ export interface CreateInvoicePayload {
     save_customer?: boolean
   }
   customer_name?: string
+  customer_name_bn?: string | null
   customer_company?: string
   customer_phone?: string
   customer_whatsapp?: string
   customer_address?: string
   customer_email?: string
+  customer_bin?: string
+  customer_tin?: string
   customer_type?: string
   invoice_type?: 'sales_invoice' | 'vat_invoice' | 'payment_receipt'
   invoice_date?: string
   due_date?: string
   discount_amount?: number
   vat_percentage?: number
+  advance_percentage?: number | null
   advance_amount?: number
+  due_on_delivery?: number | null
+  payment_method_note?: string | null
+  mushak_version?: string | null
+  reference_no?: string | null
   payment_method?: 'cash' | 'bkash' | 'nagad' | 'bank' | 'cheque' | 'other_mfs'
   notes?: string
   terms_and_conditions?: string
+  language_mode?: 'en' | 'bn' | 'bilingual'
+  delivery_date?: string | null
+  delivery_location?: string | null
+  delivery_method?: string | null
+  installation_required?: boolean | null
   quotation_id?: string
   sales_order_id?: string
   job_order_id?: string
@@ -307,16 +346,30 @@ export async function createInvoiceAction(
       return {
         product_id: it.product_id || null,
         item_name: it.item_name || 'Printing Item',
-        item_description: `${it.item_name || 'Printing Item'}${finishingStr}`,
+        item_description: it.item_description || `${it.item_name || 'Printing Item'}${finishingStr}`,
+        description_bn: it.description_bn || null,
+        material_spec: it.material_spec || null,
+        category_preset: it.category_preset || null,
         dimensions_spec: dimensionStr,
         width: w || undefined,
         height: h || undefined,
         quantity: qty,
         unit: it.unit || 'pcs',
         unit_price: rate,
+        rate_source: it.rate_source || 'default',
+        tier_applied: it.tier_applied || null,
+        moq: it.moq || null,
+        unit_cost: it.unit_cost || 0,
         vat_percentage: 0,
         total_price: lineTotal,
         finishing: it.finishing || null,
+        selected_finishing: it.selected_finishing || null,
+        selected_add_ons: it.selected_add_ons || null,
+        selected_installation: it.selected_installation || null,
+        artwork_required: Boolean(it.artwork_required),
+        installation_required: Boolean(it.installation_required),
+        offset_specs: it.offset_specs || null,
+        signage_specs: it.signage_specs || null,
         item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),
         workflow_routing: routing,
         design_required: Boolean(it.design_required || routing === 'design_required'),
@@ -338,16 +391,21 @@ export async function createInvoiceAction(
       branch_id: tenant.branchId || null,
       customer_id: resolvedCustomerId || null,
       customer_name: customerName,
+      customer_name_bn: payload.customer_name_bn || null,
+      customer_company: payload.customer_company || payload.new_customer?.company_name || null,
       customer_phone: customerPhone,
       customer_email: customerEmail,
       customer_address: customerAddress,
-      customer_bin: customerBin,
+      customer_bin: payload.customer_bin || customerBin,
+      customer_tin: payload.customer_tin || null,
+      customer_type: payload.customer_type || payload.new_customer?.customer_type || 'retail',
       invoice_type: payload.invoice_type || 'sales_invoice',
       invoice_date: payload.invoice_date || new Date().toISOString().split('T')[0],
       due_date: payload.due_date || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
       quotation_id: payload.quotation_id || null,
       sales_order_id: payload.sales_order_id || null,
       job_order_id: payload.job_order_id || null,
+      reference_no: payload.reference_no || null,
       salesperson_id: tenant.userId,
       salesperson_name: tenant.fullName,
       subtotal: calculatedSubtotal,
@@ -357,6 +415,16 @@ export async function createInvoiceAction(
       grand_total: grandTotal,
       paid_amount: advanceAmt,
       due_amount: dueAmount,
+      advance_percentage: payload.advance_percentage !== undefined ? payload.advance_percentage : (grandTotal > 0 ? Math.round((advanceAmt / grandTotal) * 100) : 50),
+      advance_amount: advanceAmt,
+      due_on_delivery: payload.due_on_delivery !== undefined && payload.due_on_delivery !== null ? payload.due_on_delivery : dueAmount,
+      payment_method_note: payload.payment_method_note || null,
+      mushak_version: payload.mushak_version || (payload.invoice_type === 'vat_invoice' ? '6.3' : null),
+      language_mode: payload.language_mode || 'bn',
+      delivery_date: payload.delivery_date || null,
+      delivery_location: payload.delivery_location || null,
+      delivery_method: payload.delivery_method || 'customer_pickup',
+      installation_required: Boolean(payload.installation_required),
       notes: payload.notes || (payload.credit_override_reason ? `[Credit Override: ${payload.credit_override_reason}]` : null),
       terms_and_conditions: payload.terms_and_conditions || null,
       payment_method: payload.payment_method || 'cash',
