@@ -246,7 +246,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'trash',
           title: 'Trash / Recycle Bin',
-          titleBn: 'রিসাইকেল বিন',
+          titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
           href: '/trash',
           icon: 'Trash2',
           permission: { action: 'view', resource: 'settings' },

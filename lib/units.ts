@@ -1715,3 +1715,168 @@ export function getProductEntityKindLabel(p: Partial<ProductRecord> | null | und
   return 'Ready Product'
 }
 
+/**
+ * ----------------------------------------------------------------------------------
+ * BANGLADESHI INDUSTRIAL PRINTING & SIGNAGE CALCULATION EXTENSIONS
+ * Specially designed for Offset Presses (Arambagh/Nilkhet/Tejgaon), Digital & Signage
+ * ----------------------------------------------------------------------------------
+ */
+
+export interface OffsetPaperCalculationInput {
+  totalCopies: number
+  pagesPerCopy: number
+  cutPerSheet: number
+  isDoubleSided?: boolean
+  wastagePercent?: number
+  sheetsPerReam?: number
+  reamPurchasePrice?: number
+  plateCount?: number
+  plateCostPerUnit?: number
+  impressionRatePerThousand?: number
+}
+
+export interface OffsetPaperCalculationResult {
+  totalSignaturesOrFormas: number
+  totalImpressions: number
+  netSheetsRequired: number
+  wastageSheets: number
+  grossFullSheetsRequired: number
+  fullReamsRequired: number
+  remainderSheets: number
+  totalReamsFractional: number
+  estimatedPaperCost: number
+  totalPlates: number
+  estimatedPlateCost: number
+  thousandImpressionsCount: number
+  estimatedImpressionCost: number
+  totalProductionCost: number
+  costPerCopy: number
+}
+
+/**
+ * Calculates complete Offset Press Paper, CTP Plate & Impression breakdown.
+ */
+export function calculateOffsetPaperRequirement(
+  input: OffsetPaperCalculationInput
+): OffsetPaperCalculationResult {
+  const copies = Math.max(1, Number(input.totalCopies) || 1)
+  const pages = Math.max(1, Number(input.pagesPerCopy) || 1)
+  const cut = Math.max(1, Number(input.cutPerSheet) || 1)
+  const isDouble = input.isDoubleSided !== false
+  const wastePct = Math.min(50, Math.max(0, Number(input.wastagePercent) || 5))
+  const sheetsPerReam = Math.max(100, Number(input.sheetsPerReam) || 500)
+  const reamPrice = Math.max(0, Number(input.reamPurchasePrice) || 0)
+  const plateCost = Math.max(0, Number(input.plateCostPerUnit) || 0)
+  const impRatePerK = Math.max(0, Number(input.impressionRatePerThousand) || 0)
+
+  const pagesPerFullSheet = isDouble ? cut * 2 : cut
+  const totalFormas = Math.ceil(pages / Math.max(1, pagesPerFullSheet))
+
+  const netSheets = Math.ceil((copies * pages) / Math.max(1, pagesPerFullSheet))
+  const wastageSheets = Math.ceil(netSheets * (wastePct / 100))
+  const grossSheets = netSheets + wastageSheets
+
+  const fullReams = Math.floor(grossSheets / sheetsPerReam)
+  const remainderSheets = grossSheets % sheetsPerReam
+  const totalReamsFractional = Math.round((grossSheets / sheetsPerReam) * 1000) / 1000
+
+  const paperCost = Math.round(totalReamsFractional * reamPrice * 100) / 100
+
+  const defaultPlates = totalFormas * (isDouble ? 8 : 4)
+  const totalPlates = input.plateCount !== undefined ? Math.max(0, input.plateCount) : defaultPlates
+  const plateTotalCost = Math.round(totalPlates * plateCost * 100) / 100
+
+  const sidesPerSheet = isDouble ? 2 : 1
+  const totalImpressions = grossSheets * sidesPerSheet
+  const thousandImpressionsCount = Math.round((totalImpressions / 1000) * 100) / 100
+  const impressionCost = Math.round((totalImpressions / 1000) * impRatePerK * 100) / 100
+
+  const totalProdCost = Math.round((paperCost + plateTotalCost + impressionCost) * 100) / 100
+  const costPerCopy = Math.round((totalProdCost / copies) * 100) / 100
+
+  return {
+    totalSignaturesOrFormas: totalFormas,
+    totalImpressions,
+    netSheetsRequired: netSheets,
+    wastageSheets,
+    grossFullSheetsRequired: grossSheets,
+    fullReamsRequired: fullReams,
+    remainderSheets,
+    totalReamsFractional,
+    estimatedPaperCost: paperCost,
+    totalPlates,
+    estimatedPlateCost: plateTotalCost,
+    thousandImpressionsCount,
+    estimatedImpressionCost: impressionCost,
+    totalProductionCost: totalProdCost,
+    costPerCopy,
+  }
+}
+
+/**
+ * 3D Letter & Signage Structure Bill of Materials (BOM) & Power Calculator
+ */
+export interface SignageStructureBOMInput {
+  widthFt: number
+  heightFt: number
+  hasBacklitLED?: boolean
+  ledModulesPerSqft?: number
+  ledWattsPerModule?: number
+  frameProfileSizeInch?: number
+  hasACPBacking?: boolean
+  acrylicFaceThicknessMm?: number
+  hasSSBorder?: boolean
+}
+
+export interface SignageStructureBOMResult {
+  totalSignboardAreaSqft: number
+  perimeterRft: number
+  msPipeRequiredRft: number
+  acpBackingSqft: number
+  acrylicFaceSqft: number
+  totalLedModules: number
+  totalLedWattage: number
+  recommendedPowerSupplyWattage: number
+  powerSupplyCount: number
+}
+
+export function calculateSignageStructureBOM(
+  input: SignageStructureBOMInput
+): SignageStructureBOMResult {
+  const w = Math.max(0.5, Number(input.widthFt) || 1)
+  const h = Math.max(0.5, Number(input.heightFt) || 1)
+  const area = Math.round(w * h * 100) / 100
+  const perimeter = Math.round((2 * (w + h)) * 100) / 100
+
+  const verticalBraces = Math.max(0, Math.floor(w / 2) - 1)
+  const horizontalBraces = Math.max(0, Math.floor(h / 2) - 1)
+  const internalBraceRft = verticalBraces * h + horizontalBraces * w
+  const msPipeRequiredRft = Math.round((perimeter + internalBraceRft) * 100) / 100
+
+  const acpBackingSqft = input.hasACPBacking !== false ? area : 0
+  const acrylicFaceSqft = area
+
+  const hasLED = input.hasBacklitLED !== false
+  const ledDensity = Math.max(6, Number(input.ledModulesPerSqft) || 14)
+  const ledWatts = Math.max(0.5, Number(input.ledWattsPerModule) || 1.2)
+
+  const totalLedModules = hasLED ? Math.ceil(area * ledDensity) : 0
+  const totalLedWattage = Math.round(totalLedModules * ledWatts * 10) / 10
+
+  const recommendedPSWatts = hasLED ? Math.ceil((totalLedWattage / 0.8) / 50) * 50 : 0
+  const powerSupplyCount = hasLED ? Math.max(1, Math.ceil(recommendedPSWatts / 400)) : 0
+
+  return {
+    totalSignboardAreaSqft: area,
+    perimeterRft: perimeter,
+    msPipeRequiredRft,
+    acpBackingSqft,
+    acrylicFaceSqft,
+    totalLedModules,
+    totalLedWattage,
+    recommendedPowerSupplyWattage: recommendedPSWatts,
+    powerSupplyCount,
+  }
+}
+
+
