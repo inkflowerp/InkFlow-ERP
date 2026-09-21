@@ -187,6 +187,27 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const [formatFilter, setFormatFilter] = useState<string>('all')
   const [onlyMyJobs, setOnlyMyJobs] = useState(false)
 
+  // Sync tab with URL search parameter reactively
+  useEffect(() => {
+    if (
+      tabParam &&
+      [
+        'all',
+        'pipeline',
+        'design_requests',
+        'design_checks',
+        'overview',
+        'work_orders',
+        'customer_approvals',
+        'design_versions',
+        'tasks',
+        'notifications',
+      ].includes(tabParam)
+    ) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam])
+
   // Datastore hooks
   const [jobs, setJobs] = useDataStore<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
@@ -347,7 +368,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     async function syncServerData() {
       if (!company?.id) return
       try {
-        const [jobsRes, ordersRes, notifsRes, invoicesRes] = await Promise.all([
+        const [jobsRes, ordersRes, notifsRes, invoicesRes] = await Promise.allSettled([
           getDesignJobsAction(company.id),
           getOrdersAction(company.id),
           getInAppNotificationsAction(company.id),
@@ -356,8 +377,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
 
         if (!isMounted) return
 
-        if (invoicesRes.success && invoicesRes.data) {
-          const serverInvoices = invoicesRes.data
+        if (invoicesRes.status === 'fulfilled' && invoicesRes.value?.success && invoicesRes.value.data) {
+          const serverInvoices = invoicesRes.value.data
           const allStoredInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
           const invMap = new Map<string, InvoiceRecord>()
           for (const i of allStoredInvoices) {
@@ -370,8 +391,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           PrintERPDataStore.set(STORAGE_KEYS.INVOICES, mergedInvoices)
         }
 
-        if (jobsRes.success && jobsRes.data) {
-          const serverJobs = jobsRes.data || []
+        if (jobsRes.status === 'fulfilled' && jobsRes.value?.success && jobsRes.value.data) {
+          const serverJobs = jobsRes.value.data || []
           const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
           const jobMap = new Map<string, DesignJobRecord>()
           for (const j of allStored) {
@@ -385,8 +406,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           setJobs(merged)
         }
 
-        if (ordersRes.success && ordersRes.data) {
-          const serverOrders = ordersRes.data
+        if (ordersRes.status === 'fulfilled' && ordersRes.value?.success && ordersRes.value.data) {
+          const serverOrders = ordersRes.value.data
           const allStoredOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
           const otherTenantOrders = allStoredOrders.filter((o) => o.company_id && !isMatchingCompany(o.company_id))
           const mergedOrders = [...otherTenantOrders, ...serverOrders]
@@ -394,8 +415,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           setOrders(mergedOrders)
         }
 
-        if (notifsRes.success && notifsRes.data) {
-          const serverNotifs = notifsRes.data
+        if (notifsRes.status === 'fulfilled' && notifsRes.value?.success && notifsRes.value.data) {
+          const serverNotifs = notifsRes.value.data
           const allStoredNotifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
           const otherTenantNotifs = allStoredNotifs.filter((n) => n.company_id && !isMatchingCompany(n.company_id))
           const mergedNotifs = [...otherTenantNotifs, ...serverNotifs]
@@ -403,7 +424,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           setNotifications(mergedNotifs)
         }
       } catch (err) {
-        console.error('Failed to sync design panel server data:', err)
+        console.warn('Silently handled design panel server sync error:', err)
       }
     }
     syncServerData()
@@ -492,9 +513,17 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   // Handle Tab Switch
   const handleTabChange = (tab: DesignPanelTab) => {
     setActiveTab(tab)
-    const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
-    currentQuery.set('tab', tab)
-    router.replace(`${pathname}?${currentQuery.toString()}`, { scroll: false })
+    if (typeof window !== 'undefined') {
+      try {
+        const url = new URL(window.location.href)
+        url.searchParams.set('tab', tab)
+        window.history.replaceState(null, '', url.toString())
+      } catch {
+        const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
+        currentQuery.set('tab', tab)
+        router.replace(`${pathname}?${currentQuery.toString()}`, { scroll: false })
+      }
+    }
   }
 
   // Tenant-scoped jobs
@@ -2779,19 +2808,71 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   )
 }
 
+class DesignErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false, error: null }
+  }
+
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error }
+  }
+
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('[DesignStudio] Unhandled error caught by Studio Error Boundary:', error, errorInfo)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 max-w-xl mx-auto my-12 text-center rounded-2xl border border-pink-200 dark:border-pink-900 bg-pink-50/50 dark:bg-pink-950/30 space-y-4">
+          <div className="h-12 w-12 rounded-xl bg-pink-600 text-white flex items-center justify-center mx-auto shadow-md">
+            <Palette className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">Design Studio</h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              The studio encountered a temporary rendering state. Click below to reload.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              this.setState({ hasError: false, error: null })
+              if (typeof window !== 'undefined') {
+                window.location.href = window.location.pathname
+              }
+            }}
+            className="bg-pink-600 hover:bg-pink-700 text-white font-bold text-xs"
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Reload Design Studio
+          </Button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
+
 export function DesignPanel(props: DesignPanelProps) {
   return (
-    <React.Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
-            <Palette className="h-5 w-5 animate-spin" />
+    <DesignErrorBoundary>
+      <React.Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+            <div className="h-10 w-10 rounded-xl bg-pink-600 text-white flex items-center justify-center animate-pulse">
+              <Palette className="h-5 w-5 animate-spin" />
+            </div>
+            <p className="text-sm font-semibold text-slate-500">Loading Design Panel...</p>
           </div>
-          <p className="text-sm font-semibold text-slate-500">Loading Design Panel...</p>
-        </div>
-      }
-    >
-      <DesignPanelInner {...props} />
-    </React.Suspense>
+        }
+      >
+        <DesignPanelInner {...props} />
+      </React.Suspense>
+    </DesignErrorBoundary>
   )
 }
