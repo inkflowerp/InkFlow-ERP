@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useTransition, useMemo, useEffect } from 'react'
+import React, { useState, useTransition, useMemo, useEffect, useRef, useDeferredValue, useCallback } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
 import {
@@ -238,10 +238,14 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const [activeTab, setActiveTab] = useState<DesignPanelTab>(initialTab)
   const [viewMode, setViewMode] = useState<ViewMode>('cards')
   const [search, setSearch] = useState('')
+  const deferredSearch = useDeferredValue(search)
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [intakeFilter, setIntakeFilter] = useState<string>('all')
   const [formatFilter, setFormatFilter] = useState<string>('all')
   const [onlyMyJobs, setOnlyMyJobs] = useState(false)
+
+  const isSyncingRef = useRef(false)
+  const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   // Sync tab with URL search parameter reactively
   useEffect(() => {
@@ -427,11 +431,12 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     return () => window.removeEventListener('paste', handlePaste)
   }, [isUploadModalOpen, isNewJobOpen, selectedJob])
 
-  // Authoritative server synchronization on mount and company change
+  // Authoritative server synchronization on mount and company change (Throttled & Guarded)
   useEffect(() => {
     let isMounted = true
     async function syncServerData() {
-      if (!company?.id) return
+      if (!company?.id || isSyncingRef.current) return
+      isSyncingRef.current = true
       try {
         const [jobsRes, ordersRes, notifsRes, invoicesRes] = await Promise.allSettled([
           getDesignJobsAction(company.id),
@@ -490,26 +495,31 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         }
       } catch (err) {
         console.warn('Silently handled design panel server sync error:', err)
+      } finally {
+        isSyncingRef.current = false
       }
     }
     syncServerData()
 
-    const handleRealtimeDesignSync = () => {
-      syncServerData()
+    const handleDebouncedRemoteSync = () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+      syncTimeoutRef.current = setTimeout(() => {
+        syncServerData()
+      }, 1200)
     }
-    window.addEventListener('printerp_table_synced:design_jobs', handleRealtimeDesignSync)
-    window.addEventListener('printerp_table_synced:design_versions', handleRealtimeDesignSync)
-    window.addEventListener('printerp_table_synced:sales_orders', handleRealtimeDesignSync)
-    window.addEventListener('printerp_table_synced:invoices', handleRealtimeDesignSync)
-    window.addEventListener('printerp_data_sync', handleRealtimeDesignSync)
+
+    window.addEventListener('printerp_table_synced:design_jobs', handleDebouncedRemoteSync)
+    window.addEventListener('printerp_table_synced:design_versions', handleDebouncedRemoteSync)
+    window.addEventListener('printerp_table_synced:sales_orders', handleDebouncedRemoteSync)
+    window.addEventListener('printerp_table_synced:invoices', handleDebouncedRemoteSync)
 
     return () => {
       isMounted = false
-      window.removeEventListener('printerp_table_synced:design_jobs', handleRealtimeDesignSync)
-      window.removeEventListener('printerp_table_synced:design_versions', handleRealtimeDesignSync)
-      window.removeEventListener('printerp_table_synced:sales_orders', handleRealtimeDesignSync)
-      window.removeEventListener('printerp_table_synced:invoices', handleRealtimeDesignSync)
-      window.removeEventListener('printerp_data_sync', handleRealtimeDesignSync)
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current)
+      window.removeEventListener('printerp_table_synced:design_jobs', handleDebouncedRemoteSync)
+      window.removeEventListener('printerp_table_synced:design_versions', handleDebouncedRemoteSync)
+      window.removeEventListener('printerp_table_synced:sales_orders', handleDebouncedRemoteSync)
+      window.removeEventListener('printerp_table_synced:invoices', handleDebouncedRemoteSync)
     }
   }, [company?.id, slug, setJobs, setOrders, setNotifications])
 
@@ -619,8 +629,15 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   // Comprehensive merged design jobs: saved jobs + synthesized invoiced items
   const allTenantDesignJobs = useMemo(() => {
     const jobMap = new Map<string, DesignJobRecord>()
+    const existingByInvAndItem = new Set<string>()
+    const existingByInvNumAndTitle = new Set<string>()
+
     for (const j of tenantJobs) {
-      if (j?.id) jobMap.set(j.id, j)
+      if (!j?.id) continue
+      jobMap.set(j.id, j)
+      if (j.invoice_id && j.invoice_item_id) existingByInvAndItem.add(`${j.invoice_id}__${j.invoice_item_id}`)
+      if (j.invoice_id && j.id) existingByInvAndItem.add(`${j.invoice_id}__${j.id}`)
+      if (j.invoice_number && j.title) existingByInvNumAndTitle.add(`${j.invoice_number}__${j.title}`)
     }
 
     // Synthesize missing invoice line items that require design or design verification
@@ -631,12 +648,14 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         const isDesignOk = it.workflow_routing === 'design_ok'
         if (!isDesignRequired && !isDesignOk) return
 
-        const existing = Array.from(jobMap.values()).find(
-          (j) =>
-            (j.invoice_id === inv.id && (j.invoice_item_id === it.id || j.id === it.design_job_id)) ||
-            (j.invoice_number && j.invoice_number === inv.invoice_number && (j.title === it.item_name || j.title === it.item_description))
-        )
-        if (!existing) {
+        const itemTitle = it.item_description || it.item_name || 'Design Artwork'
+        const hasExisting =
+          (inv.id && it.id && existingByInvAndItem.has(`${inv.id}__${it.id}`)) ||
+          (inv.id && it.design_job_id && existingByInvAndItem.has(`${inv.id}__${it.design_job_id}`)) ||
+          (inv.invoice_number && existingByInvNumAndTitle.has(`${inv.invoice_number}__${it.item_name}`)) ||
+          (inv.invoice_number && existingByInvNumAndTitle.has(`${inv.invoice_number}__${it.item_description}`))
+
+        if (!hasExisting) {
           const synthId = it.design_job_id || `dsn-inv-${inv.id}-${idx}`
           const synthNum = `DSN-${inv.invoice_number ? inv.invoice_number.replace('INV-', '') : '001'}-${String.fromCharCode(65 + idx)}`
           const synthJob: DesignJobRecord = {
@@ -648,7 +667,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
             invoice_item_id: it.id || null,
             customer_id: inv.customer_id,
             customer_name: inv.customer_name || 'Walk-in Customer',
-            title: it.item_description || it.item_name || 'Design Artwork',
+            title: itemTitle,
             product_name: it.item_name || null,
             dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
             material: it.material || null,
@@ -683,6 +702,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
             updated_at: new Date().toISOString(),
           }
           jobMap.set(synthId, synthJob)
+          existingByInvAndItem.add(`${inv.id}__${synthId}`)
+          if (it.id) existingByInvAndItem.add(`${inv.id}__${it.id}`)
+          if (inv.invoice_number) existingByInvNumAndTitle.add(`${inv.invoice_number}__${itemTitle}`)
         }
       })
     }
@@ -693,6 +715,28 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   // Grouped cards: Groups all works/items of the same Invoice or Order into ONE Card
   const groupedDesignCards = useMemo<GroupedDesignCard[]>(() => {
     const groupsMap = new Map<string, GroupedDesignCard>()
+
+    // Pre-index parent entities for O(1) matching
+    const invById = new Map<string, InvoiceRecord>()
+    const invByNumber = new Map<string, InvoiceRecord>()
+    for (const inv of tenantInvoices) {
+      if (inv.id) invById.set(inv.id, inv)
+      if (inv.invoice_number) invByNumber.set(inv.invoice_number, inv)
+    }
+
+    const ordById = new Map<string, SalesOrderRecord>()
+    const ordByNumber = new Map<string, SalesOrderRecord>()
+    for (const ord of tenantOrders) {
+      if (ord.id) ordById.set(ord.id, ord)
+      if (ord.order_number) ordByNumber.set(ord.order_number, ord)
+    }
+
+    const custById = new Map<string, CustomerRecord>()
+    const custByName = new Map<string, CustomerRecord>()
+    for (const c of customers) {
+      if (c.id) custById.set(c.id, c)
+      if (c.name) custByName.set(c.name, c)
+    }
 
     for (const job of allTenantDesignJobs) {
       let groupKey = ''
@@ -740,9 +784,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       }
 
       if (!groupsMap.has(groupKey)) {
-        const matchingInv = tenantInvoices.find((i) => i.id === job.invoice_id || i.invoice_number === job.invoice_number)
-        const matchingOrd = tenantOrders.find((o) => o.id === job.sales_order_id || o.order_number === job.order_number)
-        const cust = customers.find((c) => c.id === job.customer_id || c.name === job.customer_name)
+        const matchingInv = (job.invoice_id ? invById.get(job.invoice_id) : undefined) || (job.invoice_number ? invByNumber.get(job.invoice_number) : undefined)
+        const matchingOrd = (job.sales_order_id ? ordById.get(job.sales_order_id) : undefined) || (job.order_number ? ordByNumber.get(job.order_number) : undefined)
+        const cust = (job.customer_id ? custById.get(job.customer_id) : undefined) || (job.customer_name ? custByName.get(job.customer_name) : undefined)
 
         groupsMap.set(groupKey, {
           groupId: groupKey,
@@ -794,25 +838,65 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     return Array.from(groupsMap.values())
   }, [allTenantDesignJobs, tenantInvoices, tenantOrders, customers])
 
+  // Pre-indexed lookup maps for O(1) production job & work order relationships
+  const productionLookups = useMemo(() => {
+    const byProdJobId = new Map<string, ProductionJobRecord>()
+    const byJobOrderId = new Map<string, ProductionJobRecord>()
+    const bySalesOrderId = new Map<string, ProductionJobRecord>()
+    const byInvoiceId = new Map<string, ProductionJobRecord>()
+    const byInvoiceNumber = new Map<string, ProductionJobRecord>()
+    const byCustAndProduct = new Map<string, ProductionJobRecord>()
+
+    for (const pj of productionJobs || []) {
+      if (pj.id) byProdJobId.set(pj.id, pj)
+      if (pj.job_order_id) byJobOrderId.set(pj.job_order_id, pj)
+      if (pj.sales_order_id) bySalesOrderId.set(pj.sales_order_id, pj)
+      if ((pj as any).invoice_id) byInvoiceId.set((pj as any).invoice_id, pj)
+      if ((pj as any).invoice_number) byInvoiceNumber.set((pj as any).invoice_number, pj)
+      if (pj.customer_name && pj.product_name) {
+        byCustAndProduct.set(`${pj.customer_name}__${pj.product_name}`, pj)
+      }
+    }
+
+    const joByJoId = new Map<string, any>()
+    const joByDesignJobId = new Map<string, any>()
+    const joBySalesOrderId = new Map<string, any>()
+
+    for (const jo of jobOrders || []) {
+      if (jo.id) joByJoId.set(jo.id, jo)
+      if (jo.design_job_id) joByDesignJobId.set(jo.design_job_id, jo)
+      if (jo.order_id) joBySalesOrderId.set(jo.order_id, jo)
+    }
+
+    return {
+      byProdJobId,
+      byJobOrderId,
+      bySalesOrderId,
+      byInvoiceId,
+      byInvoiceNumber,
+      byCustAndProduct,
+      joByJoId,
+      joByDesignJobId,
+      joBySalesOrderId,
+    }
+  }, [productionJobs, jobOrders])
+
   // Helper: Get linked production info for a work item
   const getLinkedProductionInfo = (work: GroupedDesignWorkItem, card: GroupedDesignCard) => {
-    const prodJob = (productionJobs || []).find(
-      (pj) =>
-        pj.id === (work.jobRecord as any).production_job_id ||
-        (work.jobRecord.job_order_id && pj.job_order_id === work.jobRecord.job_order_id) ||
-        (work.jobRecord.sales_order_id && pj.sales_order_id === work.jobRecord.sales_order_id) ||
-        (card.invoice_id && (pj as any).invoice_id === card.invoice_id) ||
-        (card.invoice_number && (pj as any).invoice_number === card.invoice_number) ||
-        (pj.customer_name === card.customer_name && (pj.product_name === work.title || pj.product_name === work.product_name))
-    )
+    const jobRec = work.jobRecord
+    const prodJob =
+      ((jobRec as any).production_job_id && productionLookups.byProdJobId.get((jobRec as any).production_job_id)) ||
+      (jobRec.job_order_id && productionLookups.byJobOrderId.get(jobRec.job_order_id)) ||
+      (jobRec.sales_order_id && productionLookups.bySalesOrderId.get(jobRec.sales_order_id)) ||
+      (card.invoice_id && productionLookups.byInvoiceId.get(card.invoice_id)) ||
+      (card.invoice_number && productionLookups.byInvoiceNumber.get(card.invoice_number)) ||
+      (card.customer_name && work.title && productionLookups.byCustAndProduct.get(`${card.customer_name}__${work.title}`)) ||
+      (card.customer_name && work.product_name && productionLookups.byCustAndProduct.get(`${card.customer_name}__${work.product_name}`))
 
-    const jobOrder = (jobOrders || []).find(
-      (jo) =>
-        jo.id === work.jobRecord.job_order_id ||
-        jo.design_job_id === work.id ||
-        (work.jobRecord.sales_order_id && jo.order_id === work.jobRecord.sales_order_id) ||
-        (card.invoice_number && jo.job_number?.includes(card.invoice_number.replace('INV-', '')))
-    )
+    const jobOrder =
+      (jobRec.job_order_id && productionLookups.joByJoId.get(jobRec.job_order_id)) ||
+      productionLookups.joByDesignJobId.get(work.id) ||
+      (jobRec.sales_order_id && productionLookups.joBySalesOrderId.get(jobRec.sales_order_id))
 
     const isDesignApproved = work.status === 'approved' || work.is_locked || work.workflow_routing === 'ready_production'
 
@@ -949,8 +1033,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const filteredGroupedCards = useMemo(() => {
     return groupedDesignCards.filter((card) => {
       // Search
-      if (search.trim()) {
-        const q = search.toLowerCase()
+      if (deferredSearch.trim()) {
+        const q = deferredSearch.toLowerCase()
         const matchesCard =
           (card.invoice_number && card.invoice_number.toLowerCase().includes(q)) ||
           (card.order_number && card.order_number.toLowerCase().includes(q)) ||
@@ -1051,7 +1135,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
 
       return true
     })
-  }, [groupedDesignCards, activeTab, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
+  }, [groupedDesignCards, activeTab, deferredSearch, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
 
   // Backward compatible flat filtered jobs list
   const filteredJobs = useMemo(() => {
@@ -2716,6 +2800,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               <img
                                 src={activeWork.proof_url}
                                 alt={activeWork.title}
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[11px] font-bold gap-1 text-center p-1">
