@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   FileText,
   Receipt,
@@ -11,6 +12,7 @@ import {
   Plus,
   ArrowUpRight,
   CreditCard,
+  Printer,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -96,6 +98,7 @@ export function QuickActionsBar({
   onRefresh,
   className,
 }: QuickActionsBarProps) {
+  const router = useRouter()
   const { tBilingual } = useI18n()
   const { company } = useTenant()
   const { can } = usePermissions()
@@ -127,6 +130,7 @@ export function QuickActionsBar({
   }, [])
 
   // Authoritative Permission Checks
+  const canOrder = can('create', 'orders') || can('create', 'production') || can('manage', 'orders') || can('create', 'sales') || can('manage', 'sales')
   const canQuotation = can('create', 'quotations') || can('manage', 'quotations')
   const canInvoice = can('create', 'invoices') || can('create', 'billing') || can('manage', 'billing')
   const canCustomer = can('create', 'crm') || can('create', 'customers') || can('manage', 'crm')
@@ -219,13 +223,30 @@ export function QuickActionsBar({
 
   const actions = [
     {
+      id: 'new-work',
+      labelEn: 'New Work',
+      labelBn: 'নতুন কাজ (Walk-in)',
+      subEn: 'Fast Job Intake & Proof',
+      subBn: 'ওয়াক-ইন কাজ ও আর্টওয়ার্ক',
+      icon: Printer,
+      iconColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
+      allowed: canOrder,
+      onClick: () => {
+        if (onOpenNewWork) {
+          onOpenNewWork()
+        } else {
+          router.push(`/${company?.slug || 'app'}/sales/new-work`)
+        }
+      },
+    },
+    {
       id: 'new-quotation',
       labelEn: 'New Quotation',
       labelBn: 'নতুন কোটেশন',
       subEn: 'Create quotation',
       subBn: 'দরপত্র ও প্রাক্কলন',
       icon: FileText,
-      iconColor: 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800',
+      iconColor: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800',
       allowed: canQuotation,
       onClick: () => setIsQuotationModalOpen(true),
     },
@@ -236,9 +257,26 @@ export function QuickActionsBar({
       subEn: 'Sales & Billing',
       subBn: 'বিক্রয় ও বিল তৈরি',
       icon: Receipt,
-      iconColor: 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800',
+      iconColor: 'text-cyan-600 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/60 border-cyan-200 dark:border-cyan-800',
       allowed: canInvoice,
       onClick: () => setIsInvoiceModalOpen(true),
+    },
+    {
+      id: 'record-payment',
+      labelEn: 'Record Payment',
+      labelBn: 'পেমেন্ট গ্রহণ',
+      subEn: 'Money Receipt / Payment',
+      subBn: 'নগদ বা ডিজিটাল আদায়',
+      icon: DollarSign,
+      iconColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800',
+      allowed: canPayment,
+      onClick: () => {
+        if (onOpenPaymentModal) {
+          onOpenPaymentModal()
+        } else {
+          setIsPaymentModalOpen(true)
+        }
+      },
     },
     {
       id: 'new-customer',
@@ -274,23 +312,6 @@ export function QuickActionsBar({
       onClick: () => {
         fetchAccounts()
         setIsExpenseModalOpen(true)
-      },
-    },
-    {
-      id: 'record-payment',
-      labelEn: 'Record Payment',
-      labelBn: 'পেমেন্ট গ্রহণ',
-      subEn: 'Money Receipt / Payment',
-      subBn: 'নগদ বা ডিজিটাল আদায়',
-      icon: DollarSign,
-      iconColor: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800',
-      allowed: canPayment,
-      onClick: () => {
-        if (onOpenPaymentModal) {
-          onOpenPaymentModal()
-        } else {
-          setIsPaymentModalOpen(true)
-        }
       },
     },
   ]

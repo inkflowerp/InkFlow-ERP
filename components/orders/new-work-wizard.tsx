@@ -70,6 +70,26 @@ const WORK_PRESETS: WorkTypePreset[] = [
     icon: 'Layers',
   },
   {
+    id: 'offset_memo',
+    nameEn: 'Cash Memo / Invoice Book',
+    nameBn: 'ক্যাশ মেমো / ইনভয়েস বই',
+    defaultUnit: 'pcs',
+    defaultMaterial: '80gsm Offset Paper (100 Sheets)',
+    defaultFinishing: ['Numbering', 'Perforation', 'Book Binding / Pad Glue'],
+    defaultRate: 80,
+    icon: 'FileText',
+  },
+  {
+    id: 'visiting_card',
+    nameEn: 'Visiting Card / Box',
+    nameBn: 'ভিজিটিং কার্ড (১০০ পিস)',
+    defaultUnit: 'pcs',
+    defaultMaterial: '300gsm Art Card (Premium)',
+    defaultFinishing: ['Matte Lamination', 'Spot UV'],
+    defaultRate: 350,
+    icon: 'Layers',
+  },
+  {
     id: 'acrylic_sign',
     nameEn: 'Acrylic Signboard',
     nameBn: 'এক্রিলিক সাইনবোর্ড',
@@ -204,6 +224,11 @@ export function NewWorkWizard({
     setMaterialName(preset.defaultMaterial)
     setSelectedFinishings(preset.defaultFinishing)
     setUnitRate(preset.defaultRate)
+    if (preset.defaultUnit === 'pcs') {
+      setUnit('pcs')
+    } else if (unit === 'pcs') {
+      setUnit('ft')
+    }
   }
 
   // Toggle Finishing

@@ -22,6 +22,7 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Cpu,
+  Scissors,
 } from 'lucide-react'
 import { SearchService } from '@/services/search.service'
 import {
@@ -62,12 +63,21 @@ const COMMAND_ICONS: Record<string, React.ElementType> = {
   CreditCard,
   Truck,
   Receipt,
+  Printer,
+  Scissors,
+  Cpu,
 }
 
 const COMMAND_THEMES: Record<
   string,
   { gradient: string; text: string; border: string; bg: string }
 > = {
+  'cmd-new-work': {
+    gradient: 'from-blue-500/20 to-cyan-500/20',
+    text: 'text-blue-600 dark:text-blue-400',
+    border: 'border-blue-200 dark:border-blue-500/30',
+    bg: 'bg-blue-50 dark:bg-blue-500/10',
+  },
   'cmd-create-customer': {
     gradient: 'from-cyan-500/20 to-blue-500/20',
     text: 'text-cyan-600 dark:text-cyan-400',
@@ -86,6 +96,12 @@ const COMMAND_THEMES: Record<
     border: 'border-indigo-200 dark:border-indigo-500/30',
     bg: 'bg-indigo-50 dark:bg-indigo-500/10',
   },
+  'cmd-finishing': {
+    gradient: 'from-amber-500/20 to-orange-500/20',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'border-amber-200 dark:border-amber-500/30',
+    bg: 'bg-amber-50 dark:bg-amber-500/10',
+  },
   'cmd-record-payment': {
     gradient: 'from-emerald-500/20 to-teal-500/20',
     text: 'text-emerald-600 dark:text-emerald-400',
@@ -103,6 +119,12 @@ const COMMAND_THEMES: Record<
     text: 'text-amber-600 dark:text-amber-400',
     border: 'border-amber-200 dark:border-amber-500/30',
     bg: 'bg-amber-50 dark:bg-amber-500/10',
+  },
+  'cmd-add-machinery': {
+    gradient: 'from-teal-500/20 to-emerald-500/20',
+    text: 'text-teal-600 dark:text-teal-400',
+    border: 'border-teal-200 dark:border-teal-500/30',
+    bg: 'bg-teal-50 dark:bg-teal-500/10',
   },
 }
 

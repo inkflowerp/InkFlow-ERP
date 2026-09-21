@@ -24,6 +24,17 @@ import type { MachineryRecord } from '../types/machinery.types.ts'
 
 export const QUICK_COMMANDS: QuickCommand[] = [
   {
+    id: 'cmd-new-work',
+    title: 'New Work (Walk-in)',
+    titleBn: 'নতুন কাজ (ওয়াক-ইন)',
+    subtitle: 'Fast job intake, sqft dimensional calc, artwork proof',
+    subtitleBn: 'দ্রুত কাজের অর্ডার এন্ট্রি, স্কয়ার-ফিট সাইজ ও আর্টওয়ার্ক',
+    icon: 'Printer',
+    href: '/sales/new-work',
+    shortcut: 'W',
+    requiredPermission: 'order.create',
+  },
+  {
     id: 'cmd-create-customer',
     title: 'Create Customer',
     titleBn: 'নতুন কাস্টমার তৈরি',
@@ -55,6 +66,17 @@ export const QUICK_COMMANDS: QuickCommand[] = [
     href: '/orders?action=new',
     shortcut: 'O',
     requiredPermission: 'order.create',
+  },
+  {
+    id: 'cmd-finishing',
+    title: 'Finishing & Fabrication',
+    titleBn: 'ফিনিশিং ও ফ্যাব্রিকেশন',
+    subtitle: 'Eyelet, lamination, board pasting, acrylic letter bending',
+    subtitleBn: 'আইলেট রিং, লেমিনেশন, বোর্ড পেস্টিং ও সাইনেজ প্রস্তুত',
+    icon: 'Scissors',
+    href: '/finishing',
+    shortcut: 'F',
+    requiredPermission: 'production.view',
   },
   {
     id: 'cmd-record-payment',
