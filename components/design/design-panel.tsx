@@ -114,6 +114,57 @@ export type DesignPanelTab =
 
 export type ViewMode = 'cards' | 'table'
 
+export interface GroupedDesignWorkItem {
+  id: string
+  jobRecord: DesignJobRecord
+  design_number: string
+  title: string
+  product_name?: string | null
+  dimensions_spec?: string | null
+  material?: string | null
+  finishing?: string | null
+  quantity?: number | null
+  unit?: string | null
+  priority: DesignPriority
+  status: DesignStatus
+  workflow_routing?: 'design_required' | 'design_ok' | 'ready_production' | 'custom'
+  commercial_status?: string | null
+  current_version: number
+  is_locked?: boolean
+  customer_approval_required?: boolean
+  format: DesignFormat
+  proof_url: string
+  proof_file_name: string
+  designer_name: string
+  deadline?: string | null
+  instructions?: string | null
+  created_at: string
+}
+
+export interface GroupedDesignCard {
+  groupId: string
+  groupKey: string
+  groupType: 'invoice' | 'order' | 'standalone'
+  invoice_id?: string | null
+  invoice_number?: string | null
+  sales_order_id?: string | null
+  order_number?: string | null
+  customer_id?: string | null
+  customer_name: string
+  customer_phone?: string | null
+  customer_email?: string | null
+  deadline?: string | null
+  created_at: string
+  hasInvoice: boolean
+  isInvoicePending: boolean
+  invoice_request_id?: string | null
+  works: GroupedDesignWorkItem[]
+  overallStatus: 'all_approved' | 'in_progress' | 'awaiting_approval' | 'revisions' | 'received'
+  approvedCount: number
+  totalWorks: number
+  highestPriority: DesignPriority
+}
+
 const PRINT_MACHINERY_LIST = [
   { id: 'roland_eco', name: 'Roland SolJet Pro-4 Eco-Solvent (10ft Outdoor)', type: 'Roll-to-Roll' },
   { id: 'konica_c4070', name: 'Konica Minolta AccurioPress C4070 (Digital Offset)', type: 'Cut-Sheet' },
@@ -237,6 +288,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const [compareJob, setCompareJob] = useState<DesignJobRecord | null>(null)
   const [compareVerA, setCompareVerA] = useState<number>(1)
   const [compareVerB, setCompareVerB] = useState<number>(1)
+
+  // Interactive work selection per grouped invoice/order card
+  const [selectedWorkIdByGroup, setSelectedWorkIdByGroup] = useState<Record<string, string>>({})
 
   const [notificationMsg, setNotificationMsg] = useState<{ text: string; type: 'success' | 'warning' | 'info' } | null>(null)
 
@@ -531,6 +585,11 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     return (jobs || []).filter((j) => isMatchingCompany(j.company_id))
   }, [jobs, company, slug])
 
+  // Tenant-scoped invoices
+  const tenantInvoices = useMemo(() => {
+    return (invoices || []).filter((inv) => isMatchingCompany(inv.company_id))
+  }, [invoices, company, slug])
+
   // Tenant-scoped invoice requests
   const tenantRequests = useMemo(() => {
     return (invoiceRequests || []).filter((r) => isMatchingCompany(r.company_id))
@@ -546,29 +605,204 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     return (notifications || []).filter((n) => isMatchingCompany(n.company_id))
   }, [notifications, company, slug])
 
+  // Comprehensive merged design jobs: saved jobs + synthesized invoiced items
+  const allTenantDesignJobs = useMemo(() => {
+    const jobMap = new Map<string, DesignJobRecord>()
+    for (const j of tenantJobs) {
+      if (j?.id) jobMap.set(j.id, j)
+    }
 
+    // Synthesize missing invoice line items that require design or design verification
+    for (const inv of tenantInvoices) {
+      if (!inv || !inv.items || !Array.isArray(inv.items)) continue
+      inv.items.forEach((it: any, idx: number) => {
+        const isDesignRequired = Boolean(it.design_required || it.workflow_routing === 'design_required')
+        const isDesignOk = it.workflow_routing === 'design_ok'
+        if (!isDesignRequired && !isDesignOk) return
+
+        const existing = Array.from(jobMap.values()).find(
+          (j) =>
+            (j.invoice_id === inv.id && (j.invoice_item_id === it.id || j.id === it.design_job_id)) ||
+            (j.invoice_number && j.invoice_number === inv.invoice_number && (j.title === it.item_name || j.title === it.item_description))
+        )
+        if (!existing) {
+          const synthId = it.design_job_id || `dsn-inv-${inv.id}-${idx}`
+          const synthNum = `DSN-${inv.invoice_number ? inv.invoice_number.replace('INV-', '') : '001'}-${String.fromCharCode(65 + idx)}`
+          const synthJob: DesignJobRecord = {
+            id: synthId,
+            company_id: inv.company_id || companyId,
+            invoice_id: inv.id,
+            invoice_number: inv.invoice_number,
+            invoice_item_id: it.id || null,
+            customer_id: inv.customer_id,
+            customer_name: inv.customer_name || 'Walk-in Customer',
+            title: it.item_description || it.item_name || 'Design Artwork',
+            product_name: it.item_name || null,
+            dimensions_spec: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : null),
+            material: it.material || null,
+            finishing: it.finishing || null,
+            quantity: Number(it.quantity) || 1,
+            unit: it.unit || 'pcs',
+            designer_name: 'Design Team',
+            priority: (inv.priority as any) || 'normal',
+            deadline: inv.due_date || new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+            status: isDesignOk ? 'approved' : 'received',
+            workflow_routing: isDesignOk ? 'design_ok' : 'design_required',
+            commercial_status: 'invoice_created',
+            intake_source: 'manager_billing',
+            customer_approval_required: isDesignRequired,
+            is_locked: isDesignOk,
+            current_version: 1,
+            versions: [
+              {
+                id: `dv-${inv.id}-${idx}`,
+                design_job_id: synthId,
+                version_number: 1,
+                version_label: isDesignOk ? 'Version 1 (Customer Artwork)' : 'Version 1 (Initial Brief)',
+                proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'artwork_brief.png',
+                proof_file_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                file_format: 'png',
+                uploaded_by_name: inv.created_by_name || 'Billing / Commercial',
+                is_approved: isDesignOk,
+                created_at: inv.created_at || new Date().toISOString(),
+              },
+            ],
+            created_at: inv.created_at || new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+          jobMap.set(synthId, synthJob)
+        }
+      })
+    }
+
+    return Array.from(jobMap.values())
+  }, [tenantJobs, tenantInvoices, companyId])
+
+  // Grouped cards: Groups all works/items of the same Invoice or Order into ONE Card
+  const groupedDesignCards = useMemo<GroupedDesignCard[]>(() => {
+    const groupsMap = new Map<string, GroupedDesignCard>()
+
+    for (const job of allTenantDesignJobs) {
+      let groupKey = ''
+      let groupType: 'invoice' | 'order' | 'standalone' = 'standalone'
+
+      if (job.invoice_id || job.invoice_number) {
+        groupKey = `inv_${job.invoice_id || job.invoice_number}`
+        groupType = 'invoice'
+      } else if (job.sales_order_id || job.order_number) {
+        groupKey = `ord_${job.sales_order_id || job.order_number}`
+        groupType = 'order'
+      } else {
+        groupKey = `job_${job.id}`
+        groupType = 'standalone'
+      }
+
+      const latestVersion = job.versions?.[job.versions.length - 1]
+      const fmt = (latestVersion?.file_format || (latestVersion?.proof_file_name?.split('.').pop() as any) || 'png') as DesignFormat
+
+      const workItem: GroupedDesignWorkItem = {
+        id: job.id,
+        jobRecord: job,
+        design_number: job.design_number,
+        title: job.title,
+        product_name: job.product_name,
+        dimensions_spec: job.dimensions_spec,
+        material: job.material,
+        finishing: job.finishing,
+        quantity: job.quantity,
+        unit: job.unit,
+        priority: job.priority || 'normal',
+        status: job.status,
+        workflow_routing: job.workflow_routing,
+        commercial_status: job.commercial_status,
+        current_version: job.current_version || 1,
+        is_locked: job.is_locked,
+        customer_approval_required: job.customer_approval_required,
+        format: fmt,
+        proof_url: latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=600&q=80',
+        proof_file_name: latestVersion?.proof_file_name || `${job.design_number}.${fmt}`,
+        designer_name: job.designer_name || 'Designer',
+        deadline: job.deadline,
+        instructions: job.instructions,
+        created_at: job.created_at,
+      }
+
+      if (!groupsMap.has(groupKey)) {
+        const matchingInv = tenantInvoices.find((i) => i.id === job.invoice_id || i.invoice_number === job.invoice_number)
+        const matchingOrd = tenantOrders.find((o) => o.id === job.sales_order_id || o.order_number === job.order_number)
+        const cust = customers.find((c) => c.id === job.customer_id || c.name === job.customer_name)
+
+        groupsMap.set(groupKey, {
+          groupId: groupKey,
+          groupKey,
+          groupType,
+          invoice_id: job.invoice_id || matchingInv?.id || null,
+          invoice_number: job.invoice_number || matchingInv?.invoice_number || null,
+          sales_order_id: job.sales_order_id || matchingOrd?.id || null,
+          order_number: job.order_number || matchingOrd?.order_number || null,
+          customer_id: job.customer_id || matchingInv?.customer_id || matchingOrd?.customer_id || cust?.id || null,
+          customer_name: job.customer_name || matchingInv?.customer_name || matchingOrd?.customer_name || 'Walk-in Customer',
+          customer_phone: (job as any).customer_phone || matchingInv?.customer_phone || matchingOrd?.customer_phone || cust?.mobile || null,
+          customer_email: (job as any).customer_email || matchingInv?.customer_email || matchingOrd?.customer_email || cust?.email || null,
+          deadline: job.deadline || matchingInv?.due_date || matchingOrd?.delivery_date || null,
+          created_at: job.created_at || matchingInv?.created_at || matchingOrd?.created_at || new Date().toISOString(),
+          hasInvoice: Boolean(job.invoice_id || job.invoice_number || matchingInv || job.commercial_status === 'invoice_created'),
+          isInvoicePending: job.commercial_status === 'invoice_requested',
+          invoice_request_id: job.invoice_request_id || null,
+          works: [workItem],
+          overallStatus: job.status === 'approved' ? 'all_approved' : job.status === 'customer_approval' ? 'awaiting_approval' : job.status === 'revision' ? 'revisions' : 'in_progress',
+          approvedCount: job.status === 'approved' || job.is_locked ? 1 : 0,
+          totalWorks: 1,
+          highestPriority: job.priority || 'normal',
+        })
+      } else {
+        const group = groupsMap.get(groupKey)!
+        group.works.push(workItem)
+        group.totalWorks = group.works.length
+        group.approvedCount = group.works.filter((w) => w.status === 'approved' || w.is_locked).length
+        if (group.approvedCount === group.totalWorks) {
+          group.overallStatus = 'all_approved'
+        } else if (group.works.some((w) => w.status === 'revision')) {
+          group.overallStatus = 'revisions'
+        } else if (group.works.some((w) => w.status === 'customer_approval')) {
+          group.overallStatus = 'awaiting_approval'
+        } else if (group.works.some((w) => w.status === 'designing' || w.status === 'in_progress')) {
+          group.overallStatus = 'in_progress'
+        } else {
+          group.overallStatus = 'received'
+        }
+
+        const priorityOrder: Record<DesignPriority, number> = { very_urgent: 3, urgent: 2, normal: 1 }
+        if (priorityOrder[workItem.priority] > priorityOrder[group.highestPriority]) {
+          group.highestPriority = workItem.priority
+        }
+      }
+    }
+
+    return Array.from(groupsMap.values())
+  }, [allTenantDesignJobs, tenantInvoices, tenantOrders, customers])
 
   // Operational KPIs
   const kpiStats = useMemo(() => {
-    const newCount = tenantJobs.filter((j) => j.status === 'received').length
-    const designingCount = tenantJobs.filter((j) => j.status === 'designing' || j.status === 'in_progress').length
-    const approvalCount = tenantJobs.filter((j) => j.status === 'customer_approval').length
-    const revisionCount = tenantJobs.filter((j) => j.status === 'revision').length
-    const invoiceRequestedCount = tenantJobs.filter((j) => j.commercial_status === 'invoice_requested').length
-    const approvedCount = tenantJobs.filter((j) => j.status === 'approved' || j.is_locked).length
-    const readyProdCount = tenantJobs.filter(
+    const newCount = allTenantDesignJobs.filter((j) => j.status === 'received').length
+    const designingCount = allTenantDesignJobs.filter((j) => j.status === 'designing' || j.status === 'in_progress').length
+    const approvalCount = allTenantDesignJobs.filter((j) => j.status === 'customer_approval').length
+    const revisionCount = allTenantDesignJobs.filter((j) => j.status === 'revision').length
+    const invoiceRequestedCount = allTenantDesignJobs.filter((j) => j.commercial_status === 'invoice_requested').length
+    const approvedCount = allTenantDesignJobs.filter((j) => j.status === 'approved' || j.is_locked).length
+    const readyProdCount = allTenantDesignJobs.filter(
       (j) =>
         (j.status === 'approved' || j.is_locked) &&
-        (j.commercial_status === 'invoice_created' || Boolean(j.invoice_id))
+        (j.commercial_status === 'invoice_created' || Boolean(j.invoice_id) || Boolean(j.invoice_number))
     ).length
 
-    const designRequestCount = tenantJobs.filter(
+    const designRequestCount = allTenantDesignJobs.filter(
       (j) => j.workflow_routing === 'design_required' || (!j.workflow_routing && j.status !== 'approved')
     ).length
-    const designCheckCount = tenantJobs.filter((j) => j.workflow_routing === 'design_ok').length
+    const designCheckCount = allTenantDesignJobs.filter((j) => j.workflow_routing === 'design_ok').length
 
     const todayStr = new Date().toISOString().split('T')[0]
-    const dueTodayCount = tenantJobs.filter((j) => j.deadline && j.deadline.startsWith(todayStr)).length
+    const dueTodayCount = allTenantDesignJobs.filter((j) => j.deadline && j.deadline.startsWith(todayStr)).length
 
     return {
       newCount,
@@ -581,81 +815,134 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       designRequestCount,
       designCheckCount,
       dueTodayCount,
-      total: tenantJobs.length,
+      totalWorks: allTenantDesignJobs.length,
+      totalCards: groupedDesignCards.length,
     }
-  }, [tenantJobs])
+  }, [allTenantDesignJobs, groupedDesignCards])
 
-  // Filtered jobs based on tab, search, priority, format, intake source, and subfilter
-  const filteredJobs = useMemo(() => {
-    return tenantJobs.filter((job) => {
+  // Helper: Get active selected work for a grouped card
+  const getActiveWorkForGroup = (card: GroupedDesignCard): GroupedDesignWorkItem => {
+    const selectedId = selectedWorkIdByGroup[card.groupId]
+    if (selectedId) {
+      const found = card.works.find((w) => w.id === selectedId)
+      if (found) return found
+    }
+    if (activeTab === 'design_requests') {
+      const match = card.works.find((w) => w.workflow_routing === 'design_required' || (!w.workflow_routing && w.status !== 'approved'))
+      if (match) return match
+    }
+    if (activeTab === 'design_checks') {
+      const match = card.works.find((w) => w.workflow_routing === 'design_ok')
+      if (match) return match
+    }
+    if (activeTab === 'customer_approvals') {
+      const match = card.works.find((w) => w.status === 'customer_approval' || w.status === 'revision')
+      if (match) return match
+    }
+    return card.works[0]
+  }
+
+  // Helper: Ensure a synthesized or unpersisted job record is added to storage before action
+  const ensureJobRecord = (work: GroupedDesignWorkItem): DesignJobRecord => {
+    const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const exists = allStored.find((j) => j.id === work.id || j.design_number === work.design_number)
+    if (!exists) {
+      const updated = [work.jobRecord, ...allStored]
+      PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updated)
+      setJobs(updated)
+    }
+    return work.jobRecord
+  }
+
+  // Filtered grouped cards based on active tab, search, priority, format, and intake source
+  const filteredGroupedCards = useMemo(() => {
+    return groupedDesignCards.filter((card) => {
       // Search
       if (search.trim()) {
         const q = search.toLowerCase()
-        const match =
-          job.design_number.toLowerCase().includes(q) ||
-          job.title.toLowerCase().includes(q) ||
-          job.customer_name.toLowerCase().includes(q) ||
-          (job.designer_name && job.designer_name.toLowerCase().includes(q)) ||
-          ((job as any).customer_phone && (job as any).customer_phone.toLowerCase().includes(q)) ||
-          (job.order_number && job.order_number.toLowerCase().includes(q)) ||
-          (job.invoice_number && job.invoice_number.toLowerCase().includes(q)) ||
-          (job.dimensions_spec && job.dimensions_spec.toLowerCase().includes(q))
-        if (!match) return false
+        const matchesCard =
+          (card.invoice_number && card.invoice_number.toLowerCase().includes(q)) ||
+          (card.order_number && card.order_number.toLowerCase().includes(q)) ||
+          card.customer_name.toLowerCase().includes(q) ||
+          (card.customer_phone && card.customer_phone.toLowerCase().includes(q)) ||
+          (card.customer_email && card.customer_email.toLowerCase().includes(q))
+
+        const matchesWork = card.works.some(
+          (w) =>
+            w.design_number.toLowerCase().includes(q) ||
+            w.title.toLowerCase().includes(q) ||
+            (w.product_name && w.product_name.toLowerCase().includes(q)) ||
+            w.designer_name.toLowerCase().includes(q) ||
+            (w.dimensions_spec && w.dimensions_spec.toLowerCase().includes(q)) ||
+            (w.instructions && w.instructions.toLowerCase().includes(q))
+        )
+
+        if (!matchesCard && !matchesWork) return false
       }
 
       // My jobs filter
       if (onlyMyJobs) {
         const myName = currentUser?.profile?.full_name || 'Tanvir'
-        if (!job.designer_name.toLowerCase().includes(myName.toLowerCase())) return false
+        const hasMyJob = card.works.some((w) => w.designer_name.toLowerCase().includes(myName.toLowerCase()))
+        if (!hasMyJob) return false
       }
 
       // Priority filter
-      if (priorityFilter !== 'all' && job.priority !== priorityFilter) {
-        return false
+      if (priorityFilter !== 'all') {
+        const hasPriority = card.works.some((w) => w.priority === priorityFilter)
+        if (!hasPriority) return false
       }
 
       // Format filter
       if (formatFilter !== 'all') {
-        const latestVersion = job.versions?.[job.versions.length - 1]
-        const versionFmt = (latestVersion?.file_format || latestVersion?.proof_file_name?.split('.').pop() || '').toLowerCase()
         const targetFmt = formatFilter.toLowerCase()
-        if (targetFmt === 'jpg' || targetFmt === 'jpeg') {
-          if (versionFmt !== 'jpg' && versionFmt !== 'jpeg') return false
-        } else if (versionFmt !== targetFmt) {
-          return false
-        }
+        const hasFormat = card.works.some((w) => {
+          if (targetFmt === 'jpg' || targetFmt === 'jpeg') {
+            return w.format === 'jpg' || (w.format as any) === 'jpeg'
+          }
+          return w.format === targetFmt
+        })
+        if (!hasFormat) return false
       }
 
       // Intake source filter
       if (intakeFilter !== 'all') {
-        const source = job.intake_source || 'direct_customer'
-        if (source !== intakeFilter) return false
+        const hasIntake = card.works.some((w) => {
+          const source = w.jobRecord.intake_source || 'direct_customer'
+          return source === intakeFilter
+        })
+        if (!hasIntake) return false
       }
 
       // Tab specific constraints
       if (activeTab === 'design_requests') {
-        return job.workflow_routing === 'design_required' || (!job.workflow_routing && job.status !== 'approved')
+        return card.works.some((w) => w.workflow_routing === 'design_required' || (!w.workflow_routing && w.status !== 'approved'))
       }
 
       if (activeTab === 'design_checks') {
-        return job.workflow_routing === 'design_ok'
+        return card.works.some((w) => w.workflow_routing === 'design_ok')
       }
 
       if (activeTab === 'customer_approvals') {
-        return job.status === 'customer_approval' || job.status === 'revision'
+        return card.works.some((w) => w.status === 'customer_approval' || w.status === 'revision')
       }
 
       if (activeTab === 'work_orders') {
-        return Boolean(job.sales_order_id || job.order_number)
+        return card.groupType === 'order' || Boolean(card.sales_order_id || card.order_number)
       }
 
       if (activeTab === 'tasks') {
-        return job.status !== 'approved'
+        return card.works.some((w) => w.status !== 'approved')
       }
 
       return true
     })
-  }, [tenantJobs, activeTab, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
+  }, [groupedDesignCards, activeTab, search, priorityFilter, formatFilter, intakeFilter, onlyMyJobs, currentUser])
+
+  // Backward compatible flat filtered jobs list
+  const filteredJobs = useMemo(() => {
+    return filteredGroupedCards.flatMap((c) => c.works.map((w) => w.jobRecord))
+  }, [filteredGroupedCards])
 
   // Interactive Status Transitions
   const handleQuickStatusMove = async (job: DesignJobRecord, targetStatus: DesignStatus) => {
@@ -1525,10 +1812,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-500 font-semibold border-b border-slate-200 dark:border-slate-800">
                       <tr>
-                        <th className="py-3 px-4">Job #</th>
-                        <th className="py-3 px-4">Artwork & Title</th>
+                        <th className="py-3 px-4">Invoice / Project #</th>
                         <th className="py-3 px-4">Customer</th>
-                        <th className="py-3 px-4">Format / Version</th>
+                        <th className="py-3 px-4">Works in Invoice (কাজসমূহ)</th>
                         <th className="py-3 px-4">Priority</th>
                         <th className="py-3 px-4">Status</th>
                         <th className="py-3 px-4">Commercial Gate</th>
@@ -1536,67 +1822,117 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {filteredJobs.map((job) => {
-                        const latestVersion = job.versions?.[job.versions.length - 1]
-                        const format = latestVersion?.file_format || 'ai'
-                        const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
-                        const isInvoicePending = job.commercial_status === 'invoice_requested'
+                      {filteredGroupedCards.map((card) => {
+                        const activeWork = getActiveWorkForGroup(card)
+                        const format = activeWork.format || 'png'
+                        const hasInvoice = card.hasInvoice
+                        const isInvoicePending = card.isInvoicePending
 
                         return (
-                          <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
-                            <td className="py-3 px-4 font-mono font-bold text-pink-600 dark:text-pink-400">
-                              #{job.design_number}
-                              {job.workflow_routing === 'design_ok' && (
-                                <span className="block text-[9px] font-sans font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">
-                                  🔍 Design Check
-                                </span>
-                              )}
-                              {job.workflow_routing === 'design_required' && (
-                                <span className="block text-[9px] font-sans font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">
-                                  🎨 Design Request
-                                </span>
-                              )}
-                            </td>
+                          <tr key={card.groupId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                             <td className="py-3 px-4">
-                              <div className="flex items-center gap-2">
-                                <div
-                                  onClick={() => handleOpenLightbox(job)}
-                                  className="h-9 w-9 rounded-md overflow-hidden bg-slate-100 shrink-0 border border-slate-200 cursor-pointer"
-                                >
-                                  <img
-                                    src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=100&q=80'}
-                                    alt={job.title}
-                                    className="w-full h-full object-cover"
-                                  />
+                              <div className="space-y-1">
+                                <div className="font-mono font-bold text-pink-600 dark:text-pink-400 flex items-center gap-1.5">
+                                  {card.invoice_number ? (
+                                    <span>#{card.invoice_number}</span>
+                                  ) : card.order_number ? (
+                                    <span>#{card.order_number}</span>
+                                  ) : (
+                                    <span>#{activeWork.design_number}</span>
+                                  )}
+                                  <Badge variant="outline" className={cn(
+                                    "text-[9px] px-1.5 py-0 font-bold",
+                                    card.works.length > 1 ? "bg-indigo-50 text-indigo-700 border-indigo-200" : "bg-slate-100 text-slate-600"
+                                  )}>
+                                    {card.works.length} {card.works.length > 1 ? 'Works' : 'Work'}
+                                  </Badge>
                                 </div>
-                                <div>
-                                  <div className="font-bold text-slate-900 dark:text-slate-100 line-clamp-1">{job.title}</div>
-                                  <div className="text-[11px] text-slate-500 font-mono">{job.dimensions_spec || 'Standard'}</div>
-                                </div>
+                                {card.order_number && card.invoice_number && (
+                                  <div className="text-[10px] font-mono text-slate-400">
+                                    WO: #{card.order_number}
+                                  </div>
+                                )}
                               </div>
                             </td>
-                            <td className="py-3 px-4 font-medium text-slate-700 dark:text-slate-300">
-                              {job.customer_name}
+                            <td className="py-3 px-4">
+                              <div className="font-bold text-slate-800 dark:text-slate-200">{card.customer_name}</div>
+                              {card.customer_phone && (
+                                <div className="text-[10px] font-mono text-slate-400">{card.customer_phone}</div>
+                              )}
                             </td>
                             <td className="py-3 px-4">
-                              <div className="flex items-center gap-1">
-                                <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
-                                  .{format}
-                                </span>
-                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                  v{job.current_version || 1}
-                                </span>
+                              <div className="space-y-1.5 max-w-md">
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    onClick={() => {
+                                      ensureJobRecord(activeWork)
+                                      handleOpenLightbox(activeWork.jobRecord)
+                                    }}
+                                    className="h-8 w-8 rounded-md overflow-hidden bg-slate-950 shrink-0 border border-slate-200 dark:border-slate-800 cursor-pointer group"
+                                  >
+                                    <img
+                                      src={activeWork.proof_url}
+                                      alt={activeWork.title}
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform"
+                                    />
+                                  </div>
+                                  <div className="truncate">
+                                    <div className="font-bold text-slate-900 dark:text-slate-100 line-clamp-1 flex items-center gap-1">
+                                      <span>{activeWork.title}</span>
+                                      <span className={`uppercase text-[8px] font-black px-1 rounded border ${getFormatBadgeColor(format)}`}>
+                                        .{format}
+                                      </span>
+                                      <span className="text-[9px] font-mono text-slate-500">v{activeWork.current_version}</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-500 font-mono">{activeWork.dimensions_spec || 'Standard Specs'}</div>
+                                  </div>
+                                </div>
+
+                                {card.works.length > 1 && (
+                                  <div className="flex flex-wrap gap-1 pt-0.5">
+                                    {card.works.map((w, wIdx) => {
+                                      const isSelected = w.id === activeWork.id
+                                      return (
+                                        <button
+                                          key={w.id}
+                                          onClick={() => setSelectedWorkIdByGroup((prev) => ({ ...prev, [card.groupId]: w.id }))}
+                                          className={cn(
+                                            "text-[10px] px-1.5 py-0.5 rounded border flex items-center gap-1 transition-all cursor-pointer",
+                                            isSelected
+                                              ? "bg-pink-600 text-white border-pink-600 font-bold shadow-2xs"
+                                              : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-pink-300"
+                                          )}
+                                        >
+                                          <span>#{wIdx + 1} {w.title.slice(0, 14)}...</span>
+                                          {w.status === 'approved' || w.is_locked ? (
+                                            <Check className="h-2.5 w-2.5 text-emerald-400" />
+                                          ) : null}
+                                        </button>
+                                      )
+                                    })}
+                                  </div>
+                                )}
                               </div>
                             </td>
                             <td className="py-3 px-4">
                               <span className="capitalize text-[11px] font-semibold text-slate-600 dark:text-slate-400">
-                                {job.priority}
+                                {card.highestPriority}
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-block">
-                                {job.status.replace('_', ' ')}
-                              </span>
+                              {card.overallStatus === 'all_approved' ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
+                                  <CheckCircle2 className="h-3 w-3" /> All Approved
+                                </span>
+                              ) : card.works.length > 1 ? (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300 inline-block">
+                                  {card.approvedCount}/{card.totalWorks} Approved
+                                </span>
+                              ) : (
+                                <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-block">
+                                  {activeWork.status.replace('_', ' ')}
+                                </span>
+                              )}
                             </td>
                             <td className="py-3 px-4">
                               {hasInvoice ? (
@@ -1613,10 +1949,13 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-1">
-                                {job.workflow_routing === 'design_ok' && job.status !== 'approved' && (
+                                {activeWork.workflow_routing === 'design_ok' && activeWork.status !== 'approved' && (
                                   <Button
                                     size="sm"
-                                    onClick={() => handlePrepressVerifyAndRelease(job)}
+                                    onClick={() => {
+                                      const j = ensureJobRecord(activeWork)
+                                      handlePrepressVerifyAndRelease(j)
+                                    }}
                                     disabled={isPending}
                                     className="h-7 text-xs px-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs"
                                     title="Pre-Press Verified ➔ Release to Print Floor"
@@ -1628,7 +1967,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleOpenWhatsApp(job)}
+                                  onClick={() => {
+                                    const j = ensureJobRecord(activeWork)
+                                    handleOpenWhatsApp(j)
+                                  }}
                                   className="h-7 w-7 p-0 text-emerald-600 hover:bg-emerald-50"
                                   title="WhatsApp"
                                 >
@@ -1637,7 +1979,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleOpenUploadModal(job)}
+                                  onClick={() => {
+                                    const j = ensureJobRecord(activeWork)
+                                    handleOpenUploadModal(j)
+                                  }}
                                   className="h-7 w-7 p-0 text-slate-600 hover:bg-slate-100"
                                   title="Upload Version"
                                 >
@@ -1646,14 +1991,15 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleDeleteJob(job.id)}
+                                  onClick={() => handleDeleteJob(activeWork.id)}
                                   className="h-7 w-7 p-0 text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                                   title="Delete Job"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                                 <Link
-                                  href={getTenantHref(`/design/${job.id}`)}
+                                  href={getTenantHref(`/design/${activeWork.id}`)}
+                                  onClick={() => ensureJobRecord(activeWork)}
                                   className="inline-flex items-center gap-0.5 text-xs font-bold text-pink-600 hover:underline ml-1"
                                 >
                                   <span>Studio</span>
@@ -1666,58 +2012,107 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                       })}
                     </tbody>
                   </table>
-                  {filteredJobs.length === 0 && (
+                  {filteredGroupedCards.length === 0 && (
                     <div className="p-12 text-center text-slate-400 text-xs">
-                      No design jobs found in pipeline.
+                      No design jobs or invoices found in pipeline.
                     </div>
                   )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredJobs.map((job) => {
-                    const latestVersion = job.versions?.[job.versions.length - 1]
-                    const format = latestVersion?.file_format || 'ai'
-                    const hasInvoice = Boolean(job.invoice_id) || job.commercial_status === 'invoice_created'
-                    const isInvoicePending = job.commercial_status === 'invoice_requested'
+                  {filteredGroupedCards.map((card) => {
+                    const activeWork = getActiveWorkForGroup(card)
+                    const format = activeWork.format || 'png'
+                    const hasInvoice = card.hasInvoice
+                    const isInvoicePending = card.isInvoicePending
 
                     return (
-                      <Card key={job.id} className="p-4 border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all space-y-3">
-                        {/* Header Spec */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="font-mono text-xs font-black text-pink-600 dark:text-pink-400">
-                                #{job.design_number}
-                              </span>
-                              <span className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}>
-                                .{format}
-                              </span>
-                              <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                v{job.current_version || 1}
-                              </span>
-                              {job.workflow_routing === 'design_ok' && (
-                                <Badge variant="outline" className="bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 text-[9px] font-bold">
-                                  🔍 Design Check
+                      <Card
+                        key={card.groupId}
+                        className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 shadow-xs hover:shadow-lg transition-all rounded-2xl overflow-hidden flex flex-col justify-between"
+                      >
+                        {/* Top Accent Header Bar: Invoice / Project Number, Works Counter, and Status */}
+                        <div className="p-3.5 bg-slate-50/90 dark:bg-slate-800/60 border-b border-slate-200/80 dark:border-slate-800 flex items-start justify-between gap-2.5">
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {card.invoice_number ? (
+                                <Badge className="bg-pink-100 hover:bg-pink-100 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300 border-pink-300 font-mono font-black text-xs gap-1 py-0.5 shadow-2xs">
+                                  <Receipt className="h-3 w-3" />
+                                  <span>#{card.invoice_number}</span>
+                                </Badge>
+                              ) : card.order_number ? (
+                                <Badge className="bg-blue-100 hover:bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-blue-300 font-mono font-black text-xs gap-1 py-0.5 shadow-2xs">
+                                  <Layers className="h-3 w-3" />
+                                  <span>#{card.order_number}</span>
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-slate-100 hover:bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 font-mono font-black text-xs gap-1 py-0.5 shadow-2xs">
+                                  <Palette className="h-3 w-3" />
+                                  <span>#{activeWork.design_number}</span>
                                 </Badge>
                               )}
-                              {job.workflow_routing === 'design_required' && (
-                                <Badge variant="outline" className="bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[9px] font-bold">
-                                  🎨 Design Request
-                                </Badge>
+
+                              {card.order_number && card.invoice_number && (
+                                <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                                  (WO: #{card.order_number})
+                                </span>
+                              )}
+
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[10px] font-bold px-2 py-0.5',
+                                  card.works.length > 1
+                                    ? 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300'
+                                    : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400'
+                                )}
+                              >
+                                {card.works.length}{' '}
+                                {card.works.length > 1 ? tBilingual('Works (কাজ)', 'কাজ') : tBilingual('Work (কাজ)', 'কাজ')}
+                              </Badge>
+                            </div>
+
+                            <div className="flex items-center gap-2 pt-0.5">
+                              <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-snug">
+                                {card.customer_name}
+                              </h3>
+                              {card.customer_phone && (
+                                <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
+                                  • {card.customer_phone}
+                                </span>
                               )}
                             </div>
-                            <h3 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">{job.title}</h3>
                           </div>
 
-                          <div className="text-right flex items-center gap-1">
-                            <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 block">
-                              {job.status.replace('_', ' ')}
-                            </span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            {card.overallStatus === 'all_approved' ? (
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold gap-1 shadow-2xs">
+                                <CheckCircle2 className="h-3 w-3" />
+                                <span>All Approved</span>
+                              </Badge>
+                            ) : card.overallStatus === 'awaiting_approval' ? (
+                              <Badge className="bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300 text-[10px] font-bold gap-1 shadow-2xs">
+                                <Clock className="h-3 w-3" />
+                                <span>{card.approvedCount}/{card.totalWorks} Approved</span>
+                              </Badge>
+                            ) : card.overallStatus === 'revisions' ? (
+                              <Badge className="bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300 text-[10px] font-bold gap-1 shadow-2xs">
+                                <Flame className="h-3 w-3" />
+                                <span>Revision Req</span>
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 text-[10px] font-bold shadow-2xs">
+                                {card.works.length > 1
+                                  ? `${card.approvedCount}/${card.totalWorks} Ready`
+                                  : activeWork.status.replace('_', ' ')}
+                              </Badge>
+                            )}
+
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => handleDeleteJob(job.id)}
-                              className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50"
+                              onClick={() => handleDeleteJob(activeWork.id)}
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
                               title="Delete Job"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -1725,54 +2120,243 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                           </div>
                         </div>
 
-                        {/* Artwork Preview Card with Lightbox Trigger */}
-                        <div
-                          onClick={() => handleOpenLightbox(job)}
-                          className="relative aspect-video rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 cursor-pointer group"
-                        >
-                          <img
-                            src={latestVersion?.proof_file_url || 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&w=400&q=80'}
-                            alt={job.title}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
-                            <Eye className="h-4 w-4" />
-                            <span>Inspect Artwork</span>
+                        {/* Multi-work Pill Switcher (Rendered if invoice has multiple works) */}
+                        {card.works.length > 1 && (
+                          <div className="px-3.5 pt-2.5 pb-1 bg-slate-50/50 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800/80">
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-thin">
+                              {card.works.map((work, wIdx) => {
+                                const isSelected = work.id === activeWork.id
+                                return (
+                                  <button
+                                    key={work.id}
+                                    onClick={() =>
+                                      setSelectedWorkIdByGroup((prev) => ({ ...prev, [card.groupId]: work.id }))
+                                    }
+                                    className={cn(
+                                      'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border cursor-pointer',
+                                      isSelected
+                                        ? 'bg-pink-600 text-white border-pink-600 shadow-2xs font-bold'
+                                        : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-pink-300'
+                                    )}
+                                  >
+                                    <span
+                                      className={cn(
+                                        'h-4 w-4 rounded-full text-[10px] flex items-center justify-center font-mono font-bold',
+                                        isSelected
+                                          ? 'bg-white/20 text-white'
+                                          : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300'
+                                      )}
+                                    >
+                                      {wIdx + 1}
+                                    </span>
+                                    <span className="max-w-[130px] truncate">{work.title}</span>
+                                    {work.workflow_routing === 'design_ok' ? (
+                                      <span
+                                        className={cn(
+                                          'text-[9px] px-1 rounded font-mono font-black',
+                                          isSelected
+                                            ? 'bg-cyan-500 text-white'
+                                            : 'bg-cyan-100 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-300'
+                                        )}
+                                      >
+                                        ⚡ Check
+                                      </span>
+                                    ) : work.workflow_routing === 'design_required' ? (
+                                      <span
+                                        className={cn(
+                                          'text-[9px] px-1 rounded font-mono font-black',
+                                          isSelected
+                                            ? 'bg-indigo-500 text-white'
+                                            : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
+                                        )}
+                                      >
+                                        🎨 Req
+                                      </span>
+                                    ) : null}
+                                    {work.status === 'approved' || work.is_locked ? (
+                                      <Check
+                                        className={cn('h-3 w-3', isSelected ? 'text-emerald-200' : 'text-emerald-600')}
+                                      />
+                                    ) : null}
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
-                          {job.is_locked && (
-                            <div className="absolute bottom-2 right-2">
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
-                                <Lock className="h-3 w-3" /> Locked & Approved
+                        )}
+
+                        {/* Active Work Card Body */}
+                        <div className="p-3.5 space-y-3 flex-1">
+                          {/* Active Work Title & Format / Status Badges */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-black text-pink-600 dark:text-pink-400">
+                                  #{activeWork.design_number}
+                                </span>
+                                <span
+                                  className={`uppercase text-[9px] font-black px-1.5 py-0.2 rounded border ${getFormatBadgeColor(format)}`}
+                                >
+                                  .{format}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                                  v{activeWork.current_version}
+                                </span>
+                                {activeWork.workflow_routing === 'design_ok' && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-cyan-50 text-cyan-800 border-cyan-300 dark:bg-cyan-950/40 dark:text-cyan-300 text-[9px] font-bold"
+                                  >
+                                    🔍 Design Check
+                                  </Badge>
+                                )}
+                                {activeWork.workflow_routing === 'design_required' && (
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-indigo-50 text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[9px] font-bold"
+                                  >
+                                    🎨 Design Request
+                                  </Badge>
+                                )}
+                              </div>
+                              <h4 className="font-bold text-sm text-slate-900 dark:text-white mt-1 line-clamp-1">
+                                {activeWork.title}
+                              </h4>
+                            </div>
+
+                            <div className="text-right shrink-0">
+                              <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 inline-block">
+                                {activeWork.status.replace('_', ' ')}
                               </span>
+                            </div>
+                          </div>
+
+                          {/* Artwork Preview Card with Lightbox Trigger */}
+                          <div
+                            onClick={() => {
+                              ensureJobRecord(activeWork)
+                              handleOpenLightbox(activeWork.jobRecord)
+                            }}
+                            className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 border border-slate-200 dark:border-slate-800 cursor-pointer group shadow-inner"
+                          >
+                            <img
+                              src={activeWork.proof_url}
+                              alt={activeWork.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold gap-1.5">
+                              <Eye className="h-4 w-4" />
+                              <span>Inspect Artwork (জুম ও ইনস্পেক্ট)</span>
+                            </div>
+                            {activeWork.is_locked && (
+                              <div className="absolute bottom-2 right-2">
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-600 text-white shadow">
+                                  <Lock className="h-3 w-3" /> Locked & Approved
+                                </span>
+                              </div>
+                            )}
+                            {activeWork.dimensions_spec && (
+                              <div className="absolute bottom-2 left-2">
+                                <span className="inline-flex items-center font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-black/70 backdrop-blur-xs text-white border border-white/20">
+                                  {activeWork.dimensions_spec}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Active Item Specs & Details */}
+                          <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800 text-xs space-y-1">
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500">Dimensions:</span>
+                              <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">
+                                {activeWork.dimensions_spec || 'Standard'}
+                              </span>
+                            </div>
+                            {(activeWork.material || activeWork.finishing) && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-slate-500">Material & Finish:</span>
+                                <span className="text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[200px]">
+                                  {[activeWork.material, activeWork.finishing].filter(Boolean).join(' • ')}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex justify-between items-center">
+                              <span className="text-slate-500">Designer:</span>
+                              <span className="text-slate-700 dark:text-slate-300 font-medium">
+                                {activeWork.designer_name}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* All Works in this Invoice Summary Checklist (when > 1 works) */}
+                          {card.works.length > 1 && (
+                            <div className="p-2.5 bg-slate-50/60 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80 space-y-1.5">
+                              <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+                                <span>All Works in Invoice ({card.works.length}):</span>
+                                <span className="text-[10px] text-indigo-600 font-semibold">
+                                  {card.approvedCount}/{card.totalWorks} Approved
+                                </span>
+                              </div>
+                              <div className="space-y-1">
+                                {card.works.map((w, idx) => (
+                                  <div
+                                    key={w.id}
+                                    onClick={() =>
+                                      setSelectedWorkIdByGroup((prev) => ({ ...prev, [card.groupId]: w.id }))
+                                    }
+                                    className={cn(
+                                      'p-1.5 rounded-lg flex items-center justify-between gap-2 text-[11px] cursor-pointer transition-colors',
+                                      w.id === activeWork.id
+                                        ? 'bg-pink-50 dark:bg-pink-950/30 border border-pink-200 dark:border-pink-900'
+                                        : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    )}
+                                  >
+                                    <div className="flex items-center gap-1.5 truncate">
+                                      <span className="font-mono font-bold text-slate-400 text-[10px]">
+                                        {idx + 1}.
+                                      </span>
+                                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                                        {w.title}
+                                      </span>
+                                      <span className="text-[9px] font-mono text-slate-400">
+                                        ({w.dimensions_spec || 'Std'})
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1 shrink-0">
+                                      <span
+                                        className={`uppercase text-[8px] font-black px-1 rounded border ${getFormatBadgeColor(w.format)}`}
+                                      >
+                                        .{w.format}
+                                      </span>
+                                      {w.status === 'approved' || w.is_locked ? (
+                                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[9px] py-0 px-1 font-bold">
+                                          Approved
+                                        </Badge>
+                                      ) : (
+                                        <span className="text-[9px] text-slate-500 capitalize">
+                                          {w.status.replace('_', ' ')}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
 
-                        {/* Client & Specs Info */}
-                        <div className="bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-lg border border-slate-100 dark:border-slate-800 text-xs space-y-1">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-500">Customer:</span>
-                            <strong className="text-slate-800 dark:text-slate-200">{job.customer_name}</strong>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-500">Dimensions:</span>
-                            <span className="font-mono text-slate-700 dark:text-slate-300 font-semibold">{job.dimensions_spec || 'Standard'}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-500">Designer:</span>
-                            <span className="text-slate-700 dark:text-slate-300">{job.designer_name}</span>
-                          </div>
-                        </div>
-
                         {/* Action Bar */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                          <div className="flex items-center gap-1">
-                            {job.workflow_routing === 'design_ok' && job.status !== 'approved' && (
+                        <div className="p-3 bg-slate-50/80 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                          <div className="flex flex-wrap items-center gap-1">
+                            {activeWork.workflow_routing === 'design_ok' && activeWork.status !== 'approved' && (
                               <Button
                                 size="sm"
-                                onClick={() => handlePrepressVerifyAndRelease(job)}
+                                onClick={() => {
+                                  const j = ensureJobRecord(activeWork)
+                                  handlePrepressVerifyAndRelease(j)
+                                }}
                                 disabled={isPending}
-                                className="h-8 text-xs px-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-xs cursor-pointer"
+                                className="h-8 text-xs px-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
                               >
                                 <CheckCircle2 className="h-3.5 w-3.5" />
                                 <span>Pre-Press Verified ➔ Release</span>
@@ -1782,7 +2366,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleOpenWhatsApp(job)}
+                              onClick={() => {
+                                const j = ensureJobRecord(activeWork)
+                                handleOpenWhatsApp(j)
+                              }}
                               className="h-8 text-xs px-2 text-emerald-700 border-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100"
                             >
                               <Phone className="h-3.5 w-3.5 mr-1" />
@@ -1792,17 +2379,23 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleOpenUploadModal(job)}
+                              onClick={() => {
+                                const j = ensureJobRecord(activeWork)
+                                handleOpenUploadModal(j)
+                              }}
                               className="h-8 text-xs px-2"
                             >
                               <Upload className="h-3.5 w-3.5 mr-1" />
                               <span>Upload v+1</span>
                             </Button>
 
-                            {job.status === 'customer_approval' && (
+                            {activeWork.status === 'customer_approval' && (
                               <Button
                                 size="sm"
-                                onClick={() => handleOpenApprovalModal(job)}
+                                onClick={() => {
+                                  const j = ensureJobRecord(activeWork)
+                                  handleOpenApprovalModal(j)
+                                }}
                                 className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                               >
                                 <Check className="h-3.5 w-3.5 mr-1" />
@@ -1810,21 +2403,24 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               </Button>
                             )}
 
-                            {job.status === 'approved' && hasInvoice && (
+                            {hasInvoice && (activeWork.status === 'approved' || card.overallStatus === 'all_approved') && (
                               <Link
                                 href={getTenantHref('/production')}
-                                className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-sm"
+                                className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-2xs"
                               >
                                 <Printer className="h-3.5 w-3.5" />
                                 <span>Production &rarr;</span>
                               </Link>
                             )}
 
-                            {job.status === 'approved' && !hasInvoice && (
+                            {!hasInvoice && (
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => handleOpenInvoiceRequest(job)}
+                                onClick={() => {
+                                  const j = ensureJobRecord(activeWork)
+                                  handleOpenInvoiceRequest(j)
+                                }}
                                 className="h-8 text-xs px-2 border-rose-300 text-rose-600 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 font-bold"
                               >
                                 <Send className="h-3.5 w-3.5 mr-1" />
@@ -1834,17 +2430,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                           </div>
 
                           <div className="flex items-center gap-1">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDeleteJob(job.id)}
-                              className="h-8 text-xs px-2 text-rose-600 hover:bg-rose-50"
-                              title="Delete Job"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
                             <Link
-                              href={getTenantHref(`/design/${job.id}`)}
+                              href={getTenantHref(`/design/${activeWork.id}`)}
+                              onClick={() => ensureJobRecord(activeWork)}
                               className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
                             >
                               <span>Workbench &rarr;</span>
@@ -1855,9 +2443,9 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                     )
                   })}
 
-                  {filteredJobs.length === 0 && (
+                  {filteredGroupedCards.length === 0 && (
                     <div className="col-span-full p-12 text-center text-slate-400 text-xs border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
-                      No design jobs found in pipeline.
+                      No design jobs or invoices found in pipeline.
                     </div>
                   )}
                 </div>
