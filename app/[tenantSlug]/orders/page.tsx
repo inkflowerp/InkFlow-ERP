@@ -276,20 +276,48 @@ export default function OrdersPage() {
         customerNameBn: ord.customer_name_bn || undefined,
         customerPhone: ord.customer_phone || undefined,
         customerAddress: ord.customer_address || undefined,
-        items: (ord.items || []).map((it, idx) => ({
-          id: it.id || `oi-${idx}`,
-          itemName: it.item_name || 'Print Order Job',
-          dimensions: it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : undefined,
-          width: it.width,
-          height: it.height,
-          dimensionUnit: it.dimension_unit || 'ft',
-          quantity: it.quantity || 1,
-          unit: it.unit || 'sft',
-          materialSpec: it.material_spec || 'Standard Media',
-          finishing: (it as any).finishing || undefined,
-          routing: (it as any).workflow_routing || ord.workflow_routing,
-        })),
-        jobsCount: ord.jobs_count || (ord.items?.length || 1),
+      let orderItems = (ord.items || []).map((it, idx) => ({
+        id: it.id || `oi-${idx}`,
+        itemName: it.item_name || (it as any).description || (it as any).title || (it as any).name || (it as any).product_name || 'Print Order Job',
+        dimensions: it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || 'ft'}` : ((it as any).dimensions || (it as any).size || undefined),
+        width: it.width,
+        height: it.height,
+        dimensionUnit: it.dimension_unit || 'ft',
+        quantity: it.quantity || 1,
+        unit: it.unit || 'sft',
+        materialSpec: it.material_spec || (it as any).material || undefined,
+        finishing: (it as any).finishing || (it as any).remarks || undefined,
+        routing: (it as any).workflow_routing || ord.workflow_routing,
+      }))
+
+      if (orderItems.length === 0 && linkedJobs.length > 0) {
+        orderItems = linkedJobs.map((j, idx) => ({
+          id: j.id || `lj-${idx}`,
+          itemName: j.product_name || 'Print Order Job',
+          dimensions: j.size_spec || undefined,
+          width: undefined,
+          height: undefined,
+          dimensionUnit: 'ft',
+          quantity: j.quantity || 1,
+          unit: 'pcs',
+          materialSpec: j.material_spec || undefined,
+          finishing: undefined,
+          routing: j.workflow_routing,
+        }))
+      }
+
+      list.push({
+        id: ord.id,
+        orderNumber: ord.order_number,
+        invoiceNumber: ord.invoice_number || undefined,
+        origin: ord.invoice_id ? 'invoice_created' : 'sales_order',
+        customerId: ord.customer_id || undefined,
+        customerName: ord.customer_name || 'Walk-in Customer',
+        customerNameBn: ord.customer_name_bn || undefined,
+        customerPhone: ord.customer_phone || undefined,
+        customerAddress: ord.customer_address || undefined,
+        items: orderItems,
+        jobsCount: ord.jobs_count || (orderItems.length || 1),
         priority: ord.priority || 'normal',
         deliveryDate: ord.delivery_date || new Date().toISOString().split('T')[0],
         orderDate: ord.order_date || new Date().toISOString().split('T')[0],
@@ -339,6 +367,36 @@ export default function OrdersPage() {
         computedStage = 'design_ok'
       }
 
+      let invoiceItems = (inv.items || []).map((it: any, idx: number) => ({
+        id: it.id || `inv-item-${idx}`,
+        itemName: it.item_description || it.description || it.item_name || it.product_name || it.name || `Invoiced Work ${idx + 1}`,
+        dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : (it.size || it.dimensions || undefined)),
+        width: it.width,
+        height: it.height,
+        dimensionUnit: it.unit || 'ft',
+        quantity: it.quantity || 1,
+        unit: it.unit || 'pcs',
+        materialSpec: it.material_spec || it.material || 'Specified Media',
+        finishing: it.finishing || it.remarks,
+        routing: it.workflow_routing,
+      }))
+
+      if (invoiceItems.length === 0 && linkedJobs.length > 0) {
+        invoiceItems = linkedJobs.map((j, idx) => ({
+          id: j.id || `lj-inv-${idx}`,
+          itemName: j.product_name || 'Invoiced Work',
+          dimensions: j.size_spec || undefined,
+          width: undefined,
+          height: undefined,
+          dimensionUnit: 'ft',
+          quantity: j.quantity || 1,
+          unit: 'pcs',
+          materialSpec: j.material_spec || 'Specified Media',
+          finishing: undefined,
+          routing: j.workflow_routing,
+        }))
+      }
+
       list.push({
         id: inv.id,
         orderNumber: derivedOrderNumber,
@@ -348,20 +406,8 @@ export default function OrdersPage() {
         customerName: inv.customer_name || 'Counter Customer',
         customerPhone: inv.customer_phone,
         customerAddress: inv.customer_address,
-        items: (inv.items || []).map((it: any, idx: number) => ({
-          id: it.id || `inv-item-${idx}`,
-          itemName: it.item_description || it.description || it.item_name || `Invoiced Work ${idx + 1}`,
-          dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
-          width: it.width,
-          height: it.height,
-          dimensionUnit: it.unit || 'ft',
-          quantity: it.quantity || 1,
-          unit: it.unit || 'pcs',
-          materialSpec: it.material_spec || 'Specified Media',
-          finishing: it.finishing || it.remarks,
-          routing: it.workflow_routing,
-        })),
-        jobsCount: inv.items?.length || 1,
+        items: invoiceItems,
+        jobsCount: invoiceItems.length || inv.items?.length || 1,
         priority: (inv.priority as OrderPriority) || 'normal',
         deliveryDate: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
         orderDate: inv.invoice_date || new Date().toISOString().split('T')[0],
@@ -610,22 +656,22 @@ export default function OrdersPage() {
     switch (priority) {
       case 'very_urgent':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border border-red-300 dark:border-red-800 animate-pulse">
-            <Flame className="h-3 w-3 text-red-600 shrink-0" />
-            Very Urgent (জরুরি)
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800 animate-pulse whitespace-nowrap">
+            <Flame className="h-3 w-3 text-rose-600 shrink-0" />
+            <span>Very Urgent</span>
           </span>
         )
       case 'urgent':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800 whitespace-nowrap">
             <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0" />
-            Urgent (জরুরি)
+            <span>Urgent</span>
           </span>
         )
       case 'normal':
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700 whitespace-nowrap">
             Normal
           </span>
         )
@@ -635,20 +681,48 @@ export default function OrdersPage() {
   const getStageLabel = (stage: UnifiedWorkItem['stage']) => {
     switch (stage) {
       case 'design_queue':
-        return { en: '🎨 Design Queue', bn: '🎨 ডিজাইন কিউ', color: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300' }
+        return {
+          en: '🎨 Design Queue',
+          bn: '🎨 ডিজাইন কিউ',
+          color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800',
+        }
       case 'design_ok':
-        return { en: '⚡ Design Checked', bn: '⚡ ডিজাইন চেক সম্পন্ন', color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300' }
+        return {
+          en: '⚡ Design Checked',
+          bn: '⚡ ডিজাইন চেক সম্পন্ন',
+          color: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800',
+        }
       case 'in_production':
-        return { en: '🖨️ In Production', bn: '🖨️ প্রোডাকশন চলছে', color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300' }
+        return {
+          en: '🖨️ In Production',
+          bn: '🖨️ প্রোডাকশন চলছে',
+          color: 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/50 dark:text-indigo-300 dark:border-indigo-800',
+        }
       case 'finishing':
-        return { en: '✂️ Finishing & QA', bn: '✂️ ফিনিশিং ও কোয়ালিটি', color: 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300' }
+        return {
+          en: '✂️ Finishing & QA',
+          bn: '✂️ ফিনিশিং ও কোয়ালিটি',
+          color: 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800',
+        }
       case 'ready_for_delivery':
-        return { en: '🚚 Ready for Delivery', bn: '🚚 ডেলিভারির জন্য প্রস্তুত', color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300' }
+        return {
+          en: '🚚 Ready for Delivery',
+          bn: '🚚 ডেলিভারির জন্য প্রস্তুত',
+          color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
+        }
       case 'completed':
-        return { en: '✅ Completed', bn: '✅ সম্পন্ন', color: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300' }
+        return {
+          en: '✅ Completed',
+          bn: '✅ সম্পন্ন',
+          color: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+        }
       case 'queued':
       default:
-        return { en: '⏳ Queued / Awaiting', bn: '⏳ অপেক্ষমান', color: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300' }
+        return {
+          en: '⏳ Queued / Awaiting',
+          bn: '⏳ অপেক্ষমান',
+          color: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700',
+        }
     }
   }
 
@@ -957,12 +1031,14 @@ export default function OrdersPage() {
       </Card>
 
       {/* ORDERS & WORK DIRECTORY TABLE */}
-      <Card>
-        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center justify-between">
+      <Card className="overflow-hidden shadow-xs border-slate-200 dark:border-slate-800">
+        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <CardTitle className="text-base flex items-center gap-2">
-              <span>{tBilingual('Orders & Job Flow Directory', 'অর্ডার ও জব ফ্লো ডিরেক্টরি')}</span>
-              <Badge variant="secondary" className="text-xs">
+              <span className="font-bold text-slate-900 dark:text-white">
+                {tBilingual('Orders & Job Flow Directory', 'অর্ডার ও জব ফ্লো ডিরেক্টরি')}
+              </span>
+              <Badge variant="secondary" className="text-xs px-2 py-0.5 font-semibold">
                 {filteredWorks.length}
               </Badge>
             </CardTitle>
@@ -973,24 +1049,24 @@ export default function OrdersPage() {
         </CardHeader>
         <CardContent className="p-0">
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm">
+          <div className="hidden md:block overflow-x-auto scrollbar-thin">
+            <table className="w-full text-left text-sm min-w-[1050px]">
               <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">{tBilingual('Order / Work #', 'অর্ডার ও রেফারেন্স')}</th>
-                  <th className="py-3 px-4">{tBilingual('Customer', 'গ্রাহক')}</th>
-                  <th className="py-3 px-4">{tBilingual('Work & Specifications', 'কাজের বিবরণ ও সাইজ')}</th>
-                  <th className="py-3 px-4">{tBilingual('Routing & Gate', 'রাউটিং ও গেট')}</th>
-                  <th className="py-3 px-4">{tBilingual('Current Stage', 'বর্তমান পর্যায়')}</th>
-                  <th className="py-3 px-4">{tBilingual('Target Delivery', 'ডেলিভারি ডেডলাইন')}</th>
-                  <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
+                  <th className="py-3 px-4 min-w-[170px]">{tBilingual('Order / Work #', 'অর্ডার ও রেফারেন্স')}</th>
+                  <th className="py-3 px-4 min-w-[170px]">{tBilingual('Customer', 'গ্রাহক')}</th>
+                  <th className="py-3 px-4 min-w-[220px]">{tBilingual('Work & Specifications', 'কাজের বিবরণ ও সাইজ')}</th>
+                  <th className="py-3 px-4 min-w-[150px]">{tBilingual('Routing & Gate', 'রাউটিং ও গেট')}</th>
+                  <th className="py-3 px-4 min-w-[160px]">{tBilingual('Current Stage', 'বর্তমান পর্যায়')}</th>
+                  <th className="py-3 px-4 min-w-[135px]">{tBilingual('Target Delivery', 'ডেলিভারি ডেডলাইন')}</th>
+                  <th className="py-3 px-4 min-w-[280px] text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800 bg-white dark:bg-slate-950">
                 {filteredWorks.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-xs text-slate-400">
-                      <Briefcase className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                      <Briefcase className="h-8 w-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                       {tBilingual('No active orders or invoice-created works found matching filters.', 'ফিল্টার অনুযায়ী কোন অর্ডার বা ইনভয়েস কাজ পাওয়া যায়নি।')}
                     </td>
                   </tr>
@@ -1000,131 +1076,151 @@ export default function OrdersPage() {
                     const isOverdue = new Date(work.deliveryDate).getTime() < Date.now() && work.stage !== 'completed'
 
                     return (
-                      <tr key={work.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
+                      <tr key={work.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
                         {/* Order / Work # & Origin */}
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-1.5">
-                            <Link
-                              href={`/orders/${work.id}`}
-                              className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 group"
-                            >
-                              <span>{work.orderNumber}</span>
-                              <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </Link>
-                          </div>
-                          
-                          {/* Invoice origin reference */}
-                          {work.invoiceNumber && (
-                            <div className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-0.5">
-                              <FileCheck className="h-3 w-3" />
-                              <span>#{work.invoiceNumber}</span>
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <Link
+                                href={`/${slug}/orders/${work.id}`}
+                                className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:underline flex items-center gap-1 group whitespace-nowrap"
+                              >
+                                <span>{work.orderNumber}</span>
+                                <ExternalLink className="h-3.5 w-3.5 opacity-60 group-hover:opacity-100 transition-opacity shrink-0" />
+                              </Link>
                             </div>
-                          )}
+                            
+                            {/* Invoice origin reference */}
+                            {work.invoiceNumber && (
+                              <div className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1 whitespace-nowrap">
+                                <FileCheck className="h-3 w-3 shrink-0" />
+                                <span>#{work.invoiceNumber}</span>
+                              </div>
+                            )}
 
-                          <div className="flex flex-wrap items-center gap-1 mt-1.5">
-                            {getPriorityBadge(work.priority)}
-                            <span className={cn(
-                              'text-[10px] font-semibold px-1.5 py-0.2 rounded border',
-                              work.origin === 'invoice_created'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
-                                : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300'
-                            )}>
-                              {work.origin === 'invoice_created' ? 'Invoice Origin' : 'Sales Contract'}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                              {getPriorityBadge(work.priority)}
+                              <span className={cn(
+                                'text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap',
+                                work.origin === 'invoice_created'
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
+                                  : 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'
+                              )}>
+                                {work.origin === 'invoice_created' ? 'Invoice Origin' : 'Sales Order'}
+                              </span>
+                            </div>
                           </div>
                         </td>
 
                         {/* Customer */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-900 dark:text-white">
-                            {work.customerName}
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-slate-700">
+                                {(work.customerName || 'C').charAt(0).toUpperCase()}
+                              </div>
+                              <div className="font-semibold text-slate-900 dark:text-white text-xs leading-tight">
+                                {work.customerName}
+                              </div>
+                            </div>
+                            {work.customerPhone && (
+                              <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 flex items-center gap-1.5 pl-9 whitespace-nowrap">
+                                <Phone className="h-3 w-3 shrink-0 text-slate-400" />
+                                <span>{work.customerPhone}</span>
+                              </div>
+                            )}
+                            {work.customerAddress && (
+                              <div className="text-[10px] text-slate-400 dark:text-slate-500 truncate max-w-[180px] pl-9" title={work.customerAddress}>
+                                {work.customerAddress}
+                              </div>
+                            )}
                           </div>
-                          {work.customerPhone && (
-                            <div className="text-[11px] font-mono text-slate-400 flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {work.customerPhone}
-                            </div>
-                          )}
-                          {work.customerAddress && (
-                            <div className="text-[10px] text-slate-400 truncate max-w-[150px]">
-                              {work.customerAddress}
-                            </div>
-                          )}
                         </td>
 
                         {/* Works & Specifications */}
-                        <td className="py-3.5 px-4">
-                          <div className="space-y-1">
-                            {work.items.slice(0, 2).map((it, idx) => (
-                              <div key={idx} className="text-xs">
-                                <span className="font-bold text-slate-800 dark:text-slate-200">
-                                  {it.itemName}
-                                </span>
-                                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5">
-                                  {it.dimensions && (
-                                    <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-[10px]">
-                                      {it.dimensions}
-                                    </span>
-                                  )}
-                                  <span className="font-semibold">
-                                    Qty: {it.quantity} {it.unit}
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="space-y-1.5">
+                            {work.items && work.items.length > 0 ? (
+                              <>
+                                {work.items.slice(0, 2).map((it, idx) => (
+                                  <div key={idx} className="text-xs space-y-0.5">
+                                    <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                                      <span className="text-slate-400 font-mono text-[10px]">{idx + 1}.</span>
+                                      <span>{it.itemName}</span>
+                                    </div>
+                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 flex flex-wrap items-center gap-1.5 pl-3">
+                                      {it.dimensions && (
+                                        <span className="font-mono bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded text-[10px] border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                                          {it.dimensions}
+                                        </span>
+                                      )}
+                                      <span className="font-medium whitespace-nowrap">
+                                        Qty: <strong className="text-slate-800 dark:text-slate-200">{it.quantity} {it.unit}</strong>
+                                      </span>
+                                      {it.materialSpec && (
+                                        <span className="text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                                          • {it.materialSpec}
+                                        </span>
+                                      )}
+                                      {it.finishing && (
+                                        <span className="text-amber-700 dark:text-amber-400 text-[10px] font-medium whitespace-nowrap bg-amber-50 dark:bg-amber-950/40 px-1 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                                          {it.finishing}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                                {work.items.length > 2 && (
+                                  <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold block pl-3">
+                                    + {work.items.length - 2} more items...
                                   </span>
-                                  {it.materialSpec && (
-                                    <span className="text-slate-400">
-                                      • {it.materialSpec}
-                                    </span>
-                                  )}
-                                  {it.finishing && (
-                                    <span className="text-amber-600 dark:text-amber-400 text-[10px]">
-                                      ({it.finishing})
-                                    </span>
-                                  )}
-                                </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 py-1">
+                                <Tag className="h-3.5 w-3.5 text-slate-400" />
+                                <span className="font-medium">Standard Print Work</span>
                               </div>
-                            ))}
-                            {work.items.length > 2 && (
-                              <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
-                                + {work.items.length - 2} more items...
-                              </span>
                             )}
                           </div>
                         </td>
 
                         {/* Routing & Commercial Gate */}
-                        <td className="py-3.5 px-4">
-                          <div className="space-y-1">
+                        <td className="py-3.5 px-4 align-top">
+                          <div className="flex flex-col gap-1.5 items-start">
                             {work.workflowRouting && (
-                              <Badge
-                                variant="outline"
+                              <span
                                 className={cn(
-                                  'text-[10px] font-bold block w-fit',
+                                  'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold border whitespace-nowrap shadow-xs',
                                   work.workflowRouting === 'design_required'
-                                    ? 'bg-purple-50 text-purple-700 border-purple-300'
+                                    ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800'
                                     : work.workflowRouting === 'design_ok'
-                                    ? 'bg-blue-50 text-blue-700 border-blue-300'
-                                    : 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                    ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
                                 )}
                               >
-                                {work.workflowRouting === 'design_required'
-                                  ? '🎨 Design Req'
-                                  : work.workflowRouting === 'design_ok'
-                                  ? '⚡ Design OK'
-                                  : '🚀 Ready Prod'}
-                              </Badge>
+                                <span>
+                                  {work.workflowRouting === 'design_required'
+                                    ? '🎨 Design Req'
+                                    : work.workflowRouting === 'design_ok'
+                                    ? '⚡ Design OK'
+                                    : '🚀 Ready Prod'}
+                                </span>
+                              </span>
                             )}
 
                             <div>
                               {work.commercialStatus === 'invoice_created' ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
-                                  <CheckCircle2 className="h-2.5 w-2.5" /> Invoice OK
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 whitespace-nowrap">
+                                  <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" /> Invoice OK
                                 </span>
                               ) : work.commercialStatus === 'invoice_requested' ? (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800">
-                                  <Clock className="h-2.5 w-2.5" /> Inv Requested
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/50 px-2 py-0.5 rounded-md border border-amber-200 dark:border-amber-800 whitespace-nowrap">
+                                  <Clock className="h-3 w-3 text-amber-600 shrink-0" /> Inv Requested
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-200 dark:border-rose-800">
-                                  <AlertTriangle className="h-2.5 w-2.5" /> Inv Required
+                                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-800 whitespace-nowrap">
+                                  <AlertTriangle className="h-3 w-3 text-rose-600 shrink-0" /> Inv Required
                                 </span>
                               )}
                             </div>
@@ -1132,10 +1228,10 @@ export default function OrdersPage() {
                         </td>
 
                         {/* Current Stage & Status */}
-                        <td className="py-3.5 px-4">
+                        <td className="py-3.5 px-4 align-top">
                           <span
                             className={cn(
-                              'inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-bold border',
+                              'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold border whitespace-nowrap shadow-xs',
                               stageInfo.color
                             )}
                           >
@@ -1144,26 +1240,28 @@ export default function OrdersPage() {
                         </td>
 
                         {/* Target Delivery */}
-                        <td className="py-3.5 px-4 text-xs">
-                          <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-                            <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                            <span>{work.deliveryDate}</span>
+                        <td className="py-3.5 px-4 align-top text-xs">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                              <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              <span className="font-mono">{work.deliveryDate}</span>
+                            </div>
+                            {isOverdue && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold text-red-700 bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 whitespace-nowrap">
+                                ⚠️ Overdue
+                              </span>
+                            )}
                           </div>
-                          {isOverdue && (
-                            <span className="text-[10px] font-bold text-red-600 block mt-0.5">
-                              ⚠️ Overdue Delivery
-                            </span>
-                          )}
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                        <td className="py-3.5 px-4 align-top text-right">
+                          <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                             {/* Quick Stage Progression Dropdown */}
                             <select
                               value={work.stage}
                               onChange={(e) => handleUpdateStage(work, e.target.value as any)}
-                              className="h-7 px-2 text-[11px] font-semibold rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300"
+                              className="h-8 px-2 text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none cursor-pointer"
                               title="Update Work Stage"
                             >
                               <option value="queued">⏳ Queued</option>
@@ -1179,19 +1277,20 @@ export default function OrdersPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => handleOpenTicket(work)}
-                              className="h-7 px-2 text-xs font-semibold"
+                              className="h-8 px-2.5 text-xs font-semibold rounded-lg border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-xs flex items-center gap-1"
                               title="Print Technical Job Ticket"
                             >
-                              <FileText className="h-3.5 w-3.5 mr-1 text-slate-500" />
-                              Job Ticket
+                              <FileText className="h-3.5 w-3.5 text-slate-500" />
+                              <span>Job Ticket</span>
                             </Button>
 
                             {/* Shop Floor Board Link */}
                             <Link
-                              href={`/orders/${work.id}`}
-                              className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800"
+                              href={`/${slug}/orders/${work.id}`}
+                              className="h-8 px-3 text-xs font-bold rounded-lg inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition-colors whitespace-nowrap"
                             >
-                              Floor Board →
+                              <span>Floor Board</span>
+                              <ArrowRight className="h-3.5 w-3.5" />
                             </Link>
                           </div>
                         </td>
@@ -1218,7 +1317,7 @@ export default function OrdersPage() {
                     {/* Header Row: Order Number & Priority */}
                     <div className="flex items-center justify-between gap-2">
                       <Link
-                        href={`/orders/${work.id}`}
+                        href={`/${slug}/orders/${work.id}`}
                         className="font-mono font-bold text-sm text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                       >
                         <span>{work.orderNumber}</span>
@@ -1251,19 +1350,23 @@ export default function OrdersPage() {
 
                     {/* Items Specs Block */}
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 space-y-1">
-                      {work.items.map((it, idx) => (
-                        <div key={idx} className="flex items-center justify-between gap-2">
-                          <span className="font-semibold text-slate-800 dark:text-slate-200">
-                            {it.itemName}
-                          </span>
-                          <span className="font-mono text-slate-500">
-                            {it.dimensions || `${it.quantity} ${it.unit}`}
-                          </span>
-                        </div>
-                      ))}
+                      {work.items && work.items.length > 0 ? (
+                        work.items.map((it, idx) => (
+                          <div key={idx} className="flex items-center justify-between gap-2">
+                            <span className="font-semibold text-slate-800 dark:text-slate-200">
+                              {it.itemName}
+                            </span>
+                            <span className="font-mono text-slate-500">
+                              {it.dimensions || `${it.quantity} ${it.unit}`}
+                            </span>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-slate-400 italic">Standard Print Work</div>
+                      )}
                       <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 text-[11px] text-slate-500">
                         <span>Target: {work.deliveryDate}</span>
-                        <span className="font-semibold">{work.items.length} Job Items</span>
+                        <span className="font-semibold">{work.items?.length || 1} Job Items</span>
                       </div>
                     </div>
 
@@ -1280,7 +1383,7 @@ export default function OrdersPage() {
                       </Button>
 
                       <Link
-                        href={`/orders/${work.id}`}
+                        href={`/${slug}/orders/${work.id}`}
                         className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white min-h-[32px]"
                       >
                         Shop Floor Board →
