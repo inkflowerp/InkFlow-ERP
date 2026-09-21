@@ -78,6 +78,7 @@ import type {
 import type { InvoiceRecord } from '@/types/billing.types'
 import type { InvoiceRequestRecord } from '@/types/workflow.types'
 import type { SalesOrderRecord } from '@/types/order.types'
+import type { ProductionJobRecord, ProductionJobStatus } from '@/types/production.types'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { CustomerRecord } from '@/types/crm.types'
@@ -102,6 +103,10 @@ import { cn } from '@/lib/utils'
 
 export type DesignPanelTab =
   | 'all'
+  | 'new_tasks'
+  | 'design_running'
+  | 'waiting_approval'
+  | 'in_production'
   | 'pipeline'
   | 'design_requests'
   | 'design_checks'
@@ -244,6 +249,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       tabParam &&
       [
         'all',
+        'new_tasks',
+        'design_running',
+        'waiting_approval',
+        'in_production',
         'pipeline',
         'design_requests',
         'design_checks',
@@ -255,7 +264,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         'notifications',
       ].includes(tabParam)
     ) {
-      setActiveTab(tabParam)
+      setActiveTab(tabParam as DesignPanelTab)
     }
   }, [tabParam])
 
@@ -266,6 +275,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const [orders, setOrders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
   const [notifications, setNotifications] = useDataStore<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [])
+  const [productionJobs, setProductionJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+  const [jobOrders, setJobOrders] = useDataStore<any[]>(STORAGE_KEYS.JOB_ORDERS, [])
 
   // Modals state
   const [isWorkOrderOpen, setIsWorkOrderOpen] = useState(false)
@@ -783,19 +794,76 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     return Array.from(groupsMap.values())
   }, [allTenantDesignJobs, tenantInvoices, tenantOrders, customers])
 
+  // Helper: Get linked production info for a work item
+  const getLinkedProductionInfo = (work: GroupedDesignWorkItem, card: GroupedDesignCard) => {
+    const prodJob = (productionJobs || []).find(
+      (pj) =>
+        pj.id === (work.jobRecord as any).production_job_id ||
+        (work.jobRecord.job_order_id && pj.job_order_id === work.jobRecord.job_order_id) ||
+        (work.jobRecord.sales_order_id && pj.sales_order_id === work.jobRecord.sales_order_id) ||
+        (card.invoice_id && (pj as any).invoice_id === card.invoice_id) ||
+        (card.invoice_number && (pj as any).invoice_number === card.invoice_number) ||
+        (pj.customer_name === card.customer_name && (pj.product_name === work.title || pj.product_name === work.product_name))
+    )
+
+    const jobOrder = (jobOrders || []).find(
+      (jo) =>
+        jo.id === work.jobRecord.job_order_id ||
+        jo.design_job_id === work.id ||
+        (work.jobRecord.sales_order_id && jo.order_id === work.jobRecord.sales_order_id) ||
+        (card.invoice_number && jo.job_number?.includes(card.invoice_number.replace('INV-', '')))
+    )
+
+    const isDesignApproved = work.status === 'approved' || work.is_locked || work.workflow_routing === 'ready_production'
+
+    let status: ProductionJobStatus | 'not_started' = 'not_started'
+    if (prodJob?.status) {
+      status = prodJob.status
+    } else if (jobOrder?.status === 'in_progress') {
+      status = 'in_progress'
+    } else if (jobOrder?.status === 'completed') {
+      status = 'completed'
+    } else if (isDesignApproved) {
+      status = 'queued'
+    }
+
+    return {
+      prodJob,
+      jobOrder,
+      hasJob: Boolean(prodJob || jobOrder || isDesignApproved),
+      status,
+      isQueued: status === 'queued',
+      isInProgress: status === 'in_progress',
+      isPaused: status === 'paused',
+      isCompleted: status === 'completed',
+      pauseReason: (prodJob as any)?.pause_reason || null,
+      department: prodJob?.department || 'printing',
+      stage: prodJob?.stage || (status === 'queued' ? 'Pre-Press Queued' : status === 'in_progress' ? 'Printing Active' : 'Press Floor'),
+    }
+  }
+
   // Operational KPIs
   const kpiStats = useMemo(() => {
+    const newTaskCount = allTenantDesignJobs.filter(
+      (j) =>
+        j.status === 'received' ||
+        ((j.workflow_routing === 'design_required' || j.workflow_routing === 'design_ok' || !j.workflow_routing) &&
+          j.status !== 'designing' &&
+          j.status !== 'in_progress' &&
+          j.status !== 'customer_approval' &&
+          j.status !== 'approved')
+    ).length
+    const designRunningCount = allTenantDesignJobs.filter((j) => j.status === 'designing' || j.status === 'in_progress').length
+    const waitingApprovalCount = allTenantDesignJobs.filter((j) => j.status === 'customer_approval' || j.status === 'revision').length
+    const inProductionCount = allTenantDesignJobs.filter((j) => j.status === 'approved' || j.is_locked || j.workflow_routing === 'ready_production').length
+
     const newCount = allTenantDesignJobs.filter((j) => j.status === 'received').length
-    const designingCount = allTenantDesignJobs.filter((j) => j.status === 'designing' || j.status === 'in_progress').length
+    const designingCount = designRunningCount
     const approvalCount = allTenantDesignJobs.filter((j) => j.status === 'customer_approval').length
     const revisionCount = allTenantDesignJobs.filter((j) => j.status === 'revision').length
     const invoiceRequestedCount = allTenantDesignJobs.filter((j) => j.commercial_status === 'invoice_requested').length
     const approvedCount = allTenantDesignJobs.filter((j) => j.status === 'approved' || j.is_locked).length
-    const readyProdCount = allTenantDesignJobs.filter(
-      (j) =>
-        (j.status === 'approved' || j.is_locked) &&
-        (j.commercial_status === 'invoice_created' || Boolean(j.invoice_id) || Boolean(j.invoice_number))
-    ).length
+    const readyProdCount = inProductionCount
 
     const designRequestCount = allTenantDesignJobs.filter(
       (j) => j.workflow_routing === 'design_required' || (!j.workflow_routing && j.status !== 'approved')
@@ -806,6 +874,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     const dueTodayCount = allTenantDesignJobs.filter((j) => j.deadline && j.deadline.startsWith(todayStr)).length
 
     return {
+      newTaskCount,
+      designRunningCount,
+      waitingApprovalCount,
+      inProductionCount,
       newCount,
       designingCount,
       approvalCount,
@@ -828,16 +900,34 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       const found = card.works.find((w) => w.id === selectedId)
       if (found) return found
     }
+    if (activeTab === 'new_tasks') {
+      const match = card.works.find(
+        (w) =>
+          w.workflow_routing === 'design_required' ||
+          w.workflow_routing === 'design_ok' ||
+          w.status === 'received' ||
+          (!w.workflow_routing && w.status !== 'approved')
+      )
+      if (match) return match
+    }
+    if (activeTab === 'design_running') {
+      const match = card.works.find((w) => w.status === 'designing' || w.status === 'in_progress')
+      if (match) return match
+    }
+    if (activeTab === 'waiting_approval' || activeTab === 'customer_approvals') {
+      const match = card.works.find((w) => w.status === 'customer_approval' || w.status === 'revision')
+      if (match) return match
+    }
+    if (activeTab === 'in_production') {
+      const match = card.works.find((w) => w.status === 'approved' || w.is_locked || w.workflow_routing === 'ready_production')
+      if (match) return match
+    }
     if (activeTab === 'design_requests') {
       const match = card.works.find((w) => w.workflow_routing === 'design_required' || (!w.workflow_routing && w.status !== 'approved'))
       if (match) return match
     }
     if (activeTab === 'design_checks') {
       const match = card.works.find((w) => w.workflow_routing === 'design_ok')
-      if (match) return match
-    }
-    if (activeTab === 'customer_approvals') {
-      const match = card.works.find((w) => w.status === 'customer_approval' || w.status === 'revision')
       if (match) return match
     }
     return card.works[0]
@@ -916,16 +1006,39 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       }
 
       // Tab specific constraints
+      if (activeTab === 'new_tasks') {
+        return card.works.some(
+          (w) =>
+            w.workflow_routing === 'design_required' ||
+            w.workflow_routing === 'design_ok' ||
+            w.status === 'received' ||
+            (!w.workflow_routing &&
+              w.status !== 'designing' &&
+              w.status !== 'in_progress' &&
+              w.status !== 'customer_approval' &&
+              w.status !== 'revision' &&
+              w.status !== 'approved')
+        )
+      }
+
+      if (activeTab === 'design_running') {
+        return card.works.some((w) => w.status === 'designing' || w.status === 'in_progress')
+      }
+
+      if (activeTab === 'waiting_approval' || activeTab === 'customer_approvals') {
+        return card.works.some((w) => w.status === 'customer_approval' || w.status === 'revision')
+      }
+
+      if (activeTab === 'in_production') {
+        return card.works.some((w) => w.status === 'approved' || w.is_locked || w.workflow_routing === 'ready_production')
+      }
+
       if (activeTab === 'design_requests') {
         return card.works.some((w) => w.workflow_routing === 'design_required' || (!w.workflow_routing && w.status !== 'approved'))
       }
 
       if (activeTab === 'design_checks') {
         return card.works.some((w) => w.workflow_routing === 'design_ok')
-      }
-
-      if (activeTab === 'customer_approvals') {
-        return card.works.some((w) => w.status === 'customer_approval' || w.status === 'revision')
       }
 
       if (activeTab === 'work_orders') {
@@ -944,6 +1057,208 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
   const filteredJobs = useMemo(() => {
     return filteredGroupedCards.flatMap((c) => c.works.map((w) => w.jobRecord))
   }, [filteredGroupedCards])
+
+  // --- WORKFLOW ACTION HANDLERS FOR TABS 1-4 ---
+
+  // 1. Tab 1 Handler: [Start Design]
+  const handleStartDesign = async (workOrJob: GroupedDesignWorkItem | DesignJobRecord) => {
+    startTransition(async () => {
+      try {
+        const job = 'jobRecord' in workOrJob ? ensureJobRecord(workOrJob) : workOrJob
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const updated = allStored.map((j) =>
+          j.id === job.id || j.design_number === job.design_number
+            ? { ...j, status: 'designing' as DesignStatus, updated_at: new Date().toISOString() }
+            : j
+        )
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updated)
+        setJobs(updated)
+        showNotification(`🎨 Started design for #${job.design_number} (${job.title})`, 'success')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to start design', 'warning')
+      }
+    })
+  }
+
+  // 2. Tab 2 Handler: [Design Complete]
+  const handleDesignComplete = async (work: GroupedDesignWorkItem) => {
+    startTransition(async () => {
+      try {
+        const job = ensureJobRecord(work)
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const updated = allStored.map((j) =>
+          j.id === job.id || j.design_number === job.design_number
+            ? {
+                ...j,
+                status: 'customer_approval' as DesignStatus,
+                customer_approval_required: true,
+                updated_at: new Date().toISOString(),
+              }
+            : j
+        )
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updated)
+        setJobs(updated)
+        showNotification(`✅ Design completed for #${work.design_number}! Submitted for approval.`, 'success')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to complete design', 'warning')
+      }
+    })
+  }
+
+  // 3. Tab 3 Handler: [Design Confirmed send to production]
+  const handleDesignConfirmedSendToProduction = async (work: GroupedDesignWorkItem, card: GroupedDesignCard) => {
+    startTransition(async () => {
+      try {
+        const job = ensureJobRecord(work)
+
+        // 1. Mark design approved & locked
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const updated = allStored.map((j) =>
+          j.id === job.id || j.design_number === job.design_number
+            ? {
+                ...j,
+                status: 'approved' as DesignStatus,
+                workflow_routing: 'ready_production' as const,
+                is_locked: true,
+                approved_by: currentUser?.profile?.full_name || 'Design Team',
+                approval_timestamp: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }
+            : j
+        )
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updated)
+        setJobs(updated)
+
+        // 2. Call server action
+        await sendToPrintOperatorAction(job.id, companyId, {
+          ...job,
+          status: 'approved',
+          workflow_routing: 'ready_production',
+          is_locked: true,
+        })
+
+        // 3. Ensure production job is recorded in PrintERPDataStore
+        const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+        const existingProd = allProdJobs.find(
+          (pj) =>
+            pj.id === (job as any).production_job_id ||
+            pj.job_order_id === job.job_order_id ||
+            (pj.customer_name === card.customer_name && pj.product_name === work.title)
+        )
+
+        if (!existingProd) {
+          const newProdJob: any = {
+            id: `pj-${Date.now()}`,
+            company_id: companyId,
+            production_job_number: `PJ-${work.design_number.replace('DSN-', '')}`,
+            job_order_id: job.job_order_id || `jo-${Date.now()}`,
+            sales_order_id: job.sales_order_id || null,
+            customer_name: card.customer_name,
+            product_name: work.title,
+            department: 'printing',
+            stage: 'Pre-Press Approved',
+            status: 'queued',
+            priority: work.priority || 'normal',
+            deadline: job.deadline || card.deadline || new Date(Date.now() + 86400000).toISOString().split('T')[0],
+            dimensions_spec: work.dimensions_spec || 'Standard',
+            quantity: work.quantity || 1,
+            material_spec: [work.material, work.finishing].filter(Boolean).join(' • ') || 'Standard Stock',
+            artwork_proof_url: work.proof_url,
+            assigned_workers: [],
+            has_rework: false,
+            rework_count: 0,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, newProdJob)
+          setProductionJobs([newProdJob, ...allProdJobs])
+        }
+
+        showNotification(`🚀 Design confirmed for #${work.design_number}! Sent to production queue.`, 'success')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to dispatch to production', 'warning')
+      }
+    })
+  }
+
+  // 4. Tab 4 Handlers:
+  // 4a. [Pause Production Correction Required]
+  const handlePauseProductionCorrection = async (work: GroupedDesignWorkItem, card: GroupedDesignCard) => {
+    startTransition(async () => {
+      try {
+        const job = ensureJobRecord(work)
+
+        // Update production job status to paused
+        const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+        const updatedProd = allProdJobs.map((pj) => {
+          if (
+            pj.id === (job as any).production_job_id ||
+            pj.job_order_id === job.job_order_id ||
+            (pj.customer_name === card.customer_name && pj.product_name === work.title)
+          ) {
+            return {
+              ...pj,
+              status: 'paused' as const,
+              pause_reason: 'Correction Required from Design',
+              stage: 'Paused for Correction',
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return pj
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, updatedProd)
+        setProductionJobs(updatedProd)
+
+        // Also set design job back to revision so designer can edit
+        const allStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const updatedJobs = allStored.map((j) =>
+          j.id === job.id || j.design_number === job.design_number
+            ? { ...j, status: 'revision' as DesignStatus, is_locked: false, updated_at: new Date().toISOString() }
+            : j
+        )
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, updatedJobs)
+        setJobs(updatedJobs)
+
+        showNotification(`⚠️ Production paused for #${work.design_number}. Correction requested.`, 'warning')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to pause production', 'warning')
+      }
+    })
+  }
+
+  // 4b. [File Ready Start Production]
+  const handleStartProduction = async (work: GroupedDesignWorkItem, card: GroupedDesignCard) => {
+    startTransition(async () => {
+      try {
+        const job = ensureJobRecord(work)
+
+        // Update production job status to in_progress
+        const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+        const updatedProd = allProdJobs.map((pj) => {
+          if (
+            pj.id === (job as any).production_job_id ||
+            pj.job_order_id === job.job_order_id ||
+            (pj.customer_name === card.customer_name && pj.product_name === work.title)
+          ) {
+            return {
+              ...pj,
+              status: 'in_progress' as const,
+              pause_reason: null,
+              stage: 'Printing Active',
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return pj
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, updatedProd)
+        setProductionJobs(updatedProd)
+
+        showNotification(`▶️ File verified! Production started for #${work.design_number}.`, 'success')
+      } catch (err: any) {
+        showNotification(err.message || 'Failed to start production', 'warning')
+      }
+    })
+  }
 
   // Interactive Status Transitions
   const handleQuickStatusMove = async (job: DesignJobRecord, targetStatus: DesignStatus) => {
@@ -967,18 +1282,6 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
     })
   }
 
-  const handleStartDesign = async (job: DesignJobRecord) => {
-    startTransition(async () => {
-      const now = new Date().toISOString()
-      const updated = {
-        ...job,
-        status: 'designing' as const,
-        updated_at: now,
-      }
-      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-      showNotification(`Job #${job.design_number} moved to Designing workbench!`)
-    })
-  }
 
   const handleMarkReady = async (job: DesignJobRecord) => {
     startTransition(async () => {
@@ -1456,80 +1759,85 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       {/* 2. OPERATIONAL KPI BAR */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
         <Card
-          onClick={() => {
-            handleTabChange('all')
-          }}
+          onClick={() => handleTabChange('new_tasks')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-blue-500/50 bg-blue-50/30 dark:bg-blue-950/20' : ''
+            activeTab === 'new_tasks' || activeTab === 'design_requests' || activeTab === 'design_checks' ? 'ring-2 ring-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/30 shadow-xs' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>New Briefs</span>
-            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+            <span>1. New Tasks</span>
+            <Sparkles className="h-3.5 w-3.5 text-indigo-500" />
           </div>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{kpiStats.newCount}</div>
-          <div className="text-[10px] text-blue-600 font-medium mt-0.5">Needs brief intake</div>
+          <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{kpiStats.newTaskCount}</div>
+          <div className="text-[10px] text-indigo-600 font-medium mt-0.5">Needs design / verify</div>
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('all')
-          }}
+          onClick={() => handleTabChange('design_running')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-indigo-500/50 bg-indigo-50/30 dark:bg-indigo-950/20' : ''
+            activeTab === 'design_running' ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30 shadow-xs' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Designing</span>
-            <Palette className="h-3.5 w-3.5 text-indigo-500" />
+            <span>2. Running</span>
+            <Palette className="h-3.5 w-3.5 text-blue-500" />
           </div>
-          <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">{kpiStats.designingCount}</div>
-          <div className="text-[10px] text-indigo-600 font-medium mt-0.5">Active on artboard</div>
+          <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1">{kpiStats.designRunningCount}</div>
+          <div className="text-[10px] text-blue-600 font-medium mt-0.5">Active on artboard</div>
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('customer_approvals')
-          }}
+          onClick={() => handleTabChange('waiting_approval')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'customer_approvals' ? 'ring-2 ring-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''
+            activeTab === 'waiting_approval' || activeTab === 'customer_approvals' ? 'ring-2 ring-purple-500 bg-purple-50/50 dark:bg-purple-950/30 shadow-xs' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Awaiting Proof</span>
+            <span>3. Approval</span>
             <Clock className="h-3.5 w-3.5 text-purple-500" />
           </div>
-          <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">{kpiStats.approvalCount}</div>
-          <div className="text-[10px] text-purple-600 font-medium mt-0.5">Sent to customer</div>
+          <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1">{kpiStats.waitingApprovalCount}</div>
+          <div className="text-[10px] text-purple-600 font-medium mt-0.5">Awaiting customer/mgr</div>
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('customer_approvals')
-          }}
+          onClick={() => handleTabChange('in_production')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'customer_approvals' ? 'ring-1 ring-rose-500/50 bg-rose-50/30 dark:bg-rose-950/20' : ''
+            activeTab === 'in_production' ? 'ring-2 ring-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/30 shadow-xs' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Revisions</span>
-            <Flame className="h-3.5 w-3.5 text-rose-500" />
+            <span>4. In Production</span>
+            <Printer className="h-3.5 w-3.5 text-emerald-500" />
           </div>
-          <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1">{kpiStats.revisionCount}</div>
-          <div className="text-[10px] text-rose-600 font-medium mt-0.5">Feedback adjustments</div>
+          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{kpiStats.inProductionCount}</div>
+          <div className="text-[10px] text-emerald-600 font-medium mt-0.5">On press floor</div>
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('all')
-          }}
+          onClick={() => handleTabChange('all')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-amber-500/50 bg-amber-50/30 dark:bg-amber-950/20' : ''
+            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-slate-500/50 bg-slate-50 dark:bg-slate-800/40' : ''
+          )}
+        >
+          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
+            <span>All Works</span>
+            <LayoutGrid className="h-3.5 w-3.5 text-slate-500" />
+          </div>
+          <div className="text-xl font-black text-slate-900 dark:text-white mt-1">{allTenantDesignJobs.length}</div>
+          <div className="text-[10px] text-slate-500 font-medium mt-0.5">Total artboards</div>
+        </Card>
+
+        <Card
+          onClick={() => handleTabChange('all')}
+          className={cn(
+            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
+            activeTab === 'all' && kpiStats.invoiceRequestedCount > 0 ? 'ring-1 ring-amber-500/50 bg-amber-50/30 dark:bg-amber-950/20' : ''
           )}
         >
           <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
@@ -1541,26 +1849,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('all')
-          }}
-          className={cn(
-            'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
-            activeTab === 'all' || activeTab === 'pipeline' ? 'ring-1 ring-emerald-500/50 bg-emerald-50/30 dark:bg-emerald-950/20' : ''
-          )}
-        >
-          <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 flex items-center justify-between">
-            <span>Ready for Print</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-          </div>
-          <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">{kpiStats.readyProdCount}</div>
-          <div className="text-[10px] text-emerald-600 font-medium mt-0.5">Gates cleared</div>
-        </Card>
-
-        <Card
-          onClick={() => {
-            handleTabChange('work_orders')
-          }}
+          onClick={() => handleTabChange('work_orders')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
             activeTab === 'work_orders' ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-950/30' : ''
@@ -1575,9 +1864,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         </Card>
 
         <Card
-          onClick={() => {
-            handleTabChange('tasks')
-          }}
+          onClick={() => handleTabChange('tasks')}
           className={cn(
             'p-3 cursor-pointer transition-all hover:scale-[1.02] border-slate-200 dark:border-slate-800',
             activeTab === 'tasks' ? 'ring-2 ring-red-500 bg-red-50/50 dark:bg-red-950/30' : ''
@@ -1595,67 +1882,88 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
       {/* 3. UNIFIED STUDIO NAVIGATION TABS (FULL-WIDTH SCROLLABLE) */}
       <div className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs rounded-t-xl px-1 pt-1.5">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
+          {/* TAB 1: New Task */}
+          <button
+            onClick={() => handleTabChange('new_tasks')}
+            className={cn(
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
+              activeTab === 'new_tasks' || activeTab === 'design_requests' || activeTab === 'design_checks'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+            )}
+          >
+            <Sparkles className="h-4 w-4 shrink-0 text-indigo-500" />
+            <span>{tBilingual('1. New Task', '১. নতুন টাস্ক')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
+              {kpiStats.newTaskCount}
+            </Badge>
+          </button>
+
+          {/* TAB 2: Design running */}
+          <button
+            onClick={() => handleTabChange('design_running')}
+            className={cn(
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
+              activeTab === 'design_running'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+            )}
+          >
+            <Palette className="h-4 w-4 shrink-0 text-blue-500" />
+            <span>{tBilingual('2. Design running', '২. ডিজাইন চলছে')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+              {kpiStats.designRunningCount}
+            </Badge>
+          </button>
+
+          {/* TAB 3: Waiting for approval */}
+          <button
+            onClick={() => handleTabChange('waiting_approval')}
+            className={cn(
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
+              activeTab === 'waiting_approval' || activeTab === 'customer_approvals'
+                ? 'border-purple-600 text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+            )}
+          >
+            <CheckSquare className="h-4 w-4 shrink-0 text-purple-500" />
+            <span>{tBilingual('3. Waiting for approval', '৩. অনুমোদনের অপেক্ষায়')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
+              {kpiStats.waitingApprovalCount}
+            </Badge>
+          </button>
+
+          {/* TAB 4: In Production */}
+          <button
+            onClick={() => handleTabChange('in_production')}
+            className={cn(
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
+              activeTab === 'in_production'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
+            )}
+          >
+            <Printer className="h-4 w-4 shrink-0 text-emerald-500" />
+            <span>{tBilingual('4. In Production', '৪. প্রোডাকশনে')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300">
+              {kpiStats.inProductionCount}
+            </Badge>
+          </button>
+
+          {/* All */}
           <button
             onClick={() => handleTabChange('all')}
             className={cn(
               'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'all' || activeTab === 'pipeline'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
+                ? 'border-slate-800 dark:border-slate-200 text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 shadow-xs'
                 : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
             <LayoutGrid className="h-4 w-4 shrink-0" />
             <span>{tBilingual('All', 'সকল')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              {tenantJobs.length}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('design_requests')}
-            className={cn(
-              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
-              activeTab === 'design_requests'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
-            )}
-          >
-            <Palette className="h-4 w-4 shrink-0 text-indigo-500" />
-            <span>{tBilingual('Design Request', 'ডিজাইন রিকোয়েস্ট')}</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
-              {kpiStats.designRequestCount}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('design_checks')}
-            className={cn(
-              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
-              activeTab === 'design_checks'
-                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-cyan-50/70 dark:bg-cyan-950/40 shadow-xs'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
-            )}
-          >
-            <FileCheck2 className="h-4 w-4 shrink-0 text-cyan-500" />
-            <span>{tBilingual('Design Check', 'ডিজাইন চেক')}</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300">
-              {kpiStats.designCheckCount}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('customer_approvals')}
-            className={cn(
-              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
-              activeTab === 'customer_approvals'
-                ? 'border-purple-600 text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 shadow-xs'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
-            )}
-          >
-            <CheckSquare className="h-4 w-4 shrink-0 text-purple-500" />
-            <span>{tBilingual('Customer Approvals', 'গ্রাহক অনুমোদন')}</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
-              {kpiStats.approvalCount + kpiStats.revisionCount}
+              {allTenantDesignJobs.length}
             </Badge>
           </button>
 
@@ -1853,6 +2161,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                         const format = activeWork.format || 'png'
                         const hasInvoice = card.hasInvoice
                         const isInvoicePending = card.isInvoicePending
+                        const prodInfo = getLinkedProductionInfo(activeWork, card)
 
                         return (
                           <tr key={card.groupId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
@@ -1946,7 +2255,27 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               </span>
                             </td>
                             <td className="py-3 px-4">
-                              {card.overallStatus === 'all_approved' ? (
+                              {activeTab === 'in_production' || activeWork.status === 'approved' || activeWork.workflow_routing === 'ready_production' ? (
+                                <div>
+                                  {prodInfo.isQueued ? (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950 dark:text-amber-300 inline-flex items-center gap-1">
+                                      <Clock className="h-3 w-3" /> Prod: Queued
+                                    </span>
+                                  ) : prodInfo.isInProgress ? (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950 dark:text-blue-300 inline-flex items-center gap-1 animate-pulse">
+                                      <Printer className="h-3 w-3" /> Printing
+                                    </span>
+                                  ) : prodInfo.isPaused ? (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950 dark:text-rose-300 inline-flex items-center gap-1">
+                                      <AlertTriangle className="h-3 w-3" /> Paused
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
+                                      <CheckCircle2 className="h-3 w-3" /> Approved
+                                    </span>
+                                  )}
+                                </div>
+                              ) : card.overallStatus === 'all_approved' ? (
                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 inline-flex items-center gap-1">
                                   <CheckCircle2 className="h-3 w-3" /> All Approved
                                 </span>
@@ -1974,22 +2303,116 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               )}
                             </td>
                             <td className="py-3 px-4 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                {activeWork.workflow_routing === 'design_ok' && activeWork.status !== 'approved' && (
+                              <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                                {/* TAB 1 Action: [Start Design] */}
+                                {(activeTab === 'new_tasks' ||
+                                  activeWork.status === 'received' ||
+                                  ((activeWork.workflow_routing === 'design_required' || activeWork.workflow_routing === 'design_ok') &&
+                                    activeWork.status !== 'designing' &&
+                                    activeWork.status !== 'in_progress' &&
+                                    activeWork.status !== 'customer_approval' &&
+                                    activeWork.status !== 'approved')) && (
                                   <Button
                                     size="sm"
-                                    onClick={() => {
-                                      const j = ensureJobRecord(activeWork)
-                                      handlePrepressVerifyAndRelease(j)
-                                    }}
+                                    onClick={() => handleStartDesign(activeWork)}
                                     disabled={isPending}
-                                    className="h-7 text-xs px-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs"
-                                    title="Pre-Press Verified ➔ Release to Print Floor"
+                                    className="h-7 text-xs px-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                    title="Start Design"
                                   >
-                                    <CheckCircle2 className="h-3 w-3" />
-                                    <span>Verify & Release</span>
+                                    <Palette className="h-3 w-3" />
+                                    <span>Start Design</span>
                                   </Button>
                                 )}
+
+                                {/* TAB 2 Action: [Design Complete] */}
+                                {(activeTab === 'design_running' ||
+                                  activeWork.status === 'designing' ||
+                                  activeWork.status === 'in_progress') && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleDesignComplete(activeWork)}
+                                    disabled={isPending}
+                                    className="h-7 text-xs px-2 bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                    title="Design Complete"
+                                  >
+                                    <CheckCircle2 className="h-3 w-3" />
+                                    <span>Design Complete</span>
+                                  </Button>
+                                )}
+
+                                {/* TAB 3 Action: [Design Confirmed send to production] */}
+                                {(activeTab === 'waiting_approval' ||
+                                  activeTab === 'customer_approvals' ||
+                                  activeWork.status === 'customer_approval' ||
+                                  activeWork.status === 'revision') && (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleDesignConfirmedSendToProduction(activeWork, card)}
+                                    disabled={isPending}
+                                    className="h-7 text-xs px-2 bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                    title="Design Confirmed send to production"
+                                  >
+                                    <Send className="h-3 w-3" />
+                                    <span>Send Production</span>
+                                  </Button>
+                                )}
+
+                                {/* TAB 4 Actions: [Pause Production Correction Required] / [File Ready Start Production] */}
+                                {(activeTab === 'in_production' ||
+                                  activeWork.status === 'approved' ||
+                                  activeWork.workflow_routing === 'ready_production') && (
+                                  <>
+                                    {prodInfo.isQueued ? (
+                                      <>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => handlePauseProductionCorrection(activeWork, card)}
+                                          disabled={isPending}
+                                          className="h-7 text-xs px-2 border-amber-300 text-amber-700 bg-amber-50 hover:bg-amber-100 font-bold gap-1 cursor-pointer"
+                                          title="Pause Production Correction Required"
+                                        >
+                                          <AlertTriangle className="h-3 w-3 text-amber-600" />
+                                          <span>Pause Correction</span>
+                                        </Button>
+                                        <Button
+                                          size="sm"
+                                          onClick={() => handleStartProduction(activeWork, card)}
+                                          disabled={isPending}
+                                          className="h-7 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 cursor-pointer shadow-2xs"
+                                          title="File Ready Start Production"
+                                        >
+                                          <Printer className="h-3 w-3" />
+                                          <span>Start Prod</span>
+                                        </Button>
+                                      </>
+                                    ) : prodInfo.isPaused ? (
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleStartProduction(activeWork, card)}
+                                        disabled={isPending}
+                                        className="h-7 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 cursor-pointer shadow-2xs"
+                                        title="File Ready Start Production"
+                                      >
+                                        <RotateCcw className="h-3 w-3" />
+                                        <span>Start Prod</span>
+                                      </Button>
+                                    ) : (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handlePauseProductionCorrection(activeWork, card)}
+                                        disabled={isPending}
+                                        className="h-7 text-xs px-2 border-rose-300 text-rose-700 bg-rose-50 hover:bg-rose-100 font-bold gap-1 cursor-pointer"
+                                        title="Pause Production Correction Required"
+                                      >
+                                        <AlertTriangle className="h-3 w-3 text-rose-600" />
+                                        <span>Pause Correction</span>
+                                      </Button>
+                                    )}
+                                  </>
+                                )}
+
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -2051,6 +2474,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                     const format = activeWork.format || 'png'
                     const hasInvoice = card.hasInvoice
                     const isInvoicePending = card.isInvoicePending
+                    const prodInfo = getLinkedProductionInfo(activeWork, card)
 
                     return (
                       <Card
@@ -2138,7 +2562,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDeleteJob(activeWork.id)}
-                              className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                              className="h-6 w-6 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer"
                               title="Delete Job"
                             >
                               <Trash2 className="h-3.5 w-3.5" />
@@ -2315,6 +2739,57 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                             </div>
                           </div>
 
+                          {/* Production Status Banner in Item Card (Tab 4 / Production status) */}
+                          {(activeTab === 'in_production' || prodInfo.hasJob || activeWork.status === 'approved' || activeWork.workflow_routing === 'ready_production') && (
+                            <div
+                              className={cn(
+                                'p-2.5 rounded-xl border text-xs flex items-center justify-between gap-2 transition-all',
+                                prodInfo.isQueued
+                                  ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/60 text-amber-900 dark:text-amber-200'
+                                  : prodInfo.isPaused
+                                  ? 'bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-900/60 text-rose-900 dark:text-rose-200'
+                                  : prodInfo.isCompleted
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/60 text-emerald-900 dark:text-emerald-200'
+                                  : 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/60 text-blue-900 dark:text-blue-200'
+                              )}
+                            >
+                              <div className="flex items-center gap-2 truncate min-w-0">
+                                {prodInfo.isQueued ? (
+                                  <Clock className="h-4 w-4 text-amber-600 shrink-0" />
+                                ) : prodInfo.isPaused ? (
+                                  <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+                                ) : prodInfo.isCompleted ? (
+                                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                                ) : (
+                                  <Printer className="h-4 w-4 text-blue-600 shrink-0" />
+                                )}
+                                <div className="truncate">
+                                  <div className="font-bold text-[11px] leading-tight truncate">
+                                    Production Status: {prodInfo.status.toUpperCase().replace('_', ' ')}
+                                  </div>
+                                  <div className="text-[10px] opacity-80 truncate">
+                                    Stage: {prodInfo.stage || 'Press Floor Queue'} {prodInfo.pauseReason ? `• ${prodInfo.pauseReason}` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[9px] font-mono font-bold shrink-0 uppercase px-1.5 py-0.5',
+                                  prodInfo.isQueued
+                                    ? 'border-amber-400 text-amber-700 dark:text-amber-300 bg-amber-100/50 dark:bg-amber-950/50'
+                                    : prodInfo.isPaused
+                                    ? 'border-rose-400 text-rose-700 dark:text-rose-300 bg-rose-100/50 dark:bg-rose-950/50'
+                                    : prodInfo.isCompleted
+                                    ? 'border-emerald-400 text-emerald-700 dark:text-emerald-300 bg-emerald-100/50 dark:bg-emerald-950/50'
+                                    : 'border-blue-400 text-blue-700 dark:text-blue-300 bg-blue-100/50 dark:bg-blue-950/50'
+                                )}
+                              >
+                                {prodInfo.status}
+                              </Badge>
+                            </div>
+                          )}
+
                           {/* All Works in this Invoice Summary Checklist (when > 1 works) */}
                           {card.works.length > 1 && (
                             <div className="p-2.5 bg-slate-50/60 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-800/80 space-y-1.5">
@@ -2374,7 +2849,116 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
 
                         {/* Action Bar */}
                         <div className="p-3 bg-slate-50/80 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2">
-                          <div className="flex flex-wrap items-center gap-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {/* TAB 1 Action: [Start Design] */}
+                            {(activeTab === 'new_tasks' ||
+                              activeWork.status === 'received' ||
+                              ((activeWork.workflow_routing === 'design_required' || activeWork.workflow_routing === 'design_ok') &&
+                                activeWork.status !== 'designing' &&
+                                activeWork.status !== 'in_progress' &&
+                                activeWork.status !== 'customer_approval' &&
+                                activeWork.status !== 'approved')) && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleStartDesign(activeWork)}
+                                disabled={isPending}
+                                className="h-8 text-xs px-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                title="Start Design"
+                              >
+                                <Palette className="h-3.5 w-3.5" />
+                                <span>Start Design</span>
+                              </Button>
+                            )}
+
+                            {/* TAB 2 Action: [Design Complete] */}
+                            {(activeTab === 'design_running' ||
+                              activeWork.status === 'designing' ||
+                              activeWork.status === 'in_progress') && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleDesignComplete(activeWork)}
+                                disabled={isPending}
+                                className="h-8 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                title="Design Complete"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                <span>Design Complete</span>
+                              </Button>
+                            )}
+
+                            {/* TAB 3 Action: [Design Confirmed send to production] */}
+                            {(activeTab === 'waiting_approval' ||
+                              activeTab === 'customer_approvals' ||
+                              activeWork.status === 'customer_approval' ||
+                              activeWork.status === 'revision') && (
+                              <Button
+                                size="sm"
+                                onClick={() => handleDesignConfirmedSendToProduction(activeWork, card)}
+                                disabled={isPending}
+                                className="h-8 text-xs px-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                title="Design Confirmed send to production"
+                              >
+                                <Send className="h-3.5 w-3.5" />
+                                <span>Design Confirmed send to production</span>
+                              </Button>
+                            )}
+
+                            {/* TAB 4 Actions: [Pause Production Correction Requird] / [File Ready Start Production] */}
+                            {(activeTab === 'in_production' ||
+                              activeWork.status === 'approved' ||
+                              activeWork.workflow_routing === 'ready_production') && (
+                              <>
+                                {prodInfo.isQueued ? (
+                                  <>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handlePauseProductionCorrection(activeWork, card)}
+                                      disabled={isPending}
+                                      className="h-8 text-xs px-2 border-amber-300 text-amber-800 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:text-amber-300 font-bold gap-1 cursor-pointer"
+                                      title="Pause Production Correction Required"
+                                    >
+                                      <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                                      <span>Pause Production Correction Requird</span>
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleStartProduction(activeWork, card)}
+                                      disabled={isPending}
+                                      className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 cursor-pointer shadow-2xs"
+                                      title="File Ready Start Production"
+                                    >
+                                      <Printer className="h-3.5 w-3.5" />
+                                      <span>File Ready Start Production</span>
+                                    </Button>
+                                  </>
+                                ) : prodInfo.isPaused ? (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleStartProduction(activeWork, card)}
+                                    disabled={isPending}
+                                    className="h-8 text-xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1 cursor-pointer shadow-2xs"
+                                    title="File Ready Start Production"
+                                  >
+                                    <RotateCcw className="h-3.5 w-3.5" />
+                                    <span>File Ready Start Production</span>
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handlePauseProductionCorrection(activeWork, card)}
+                                    disabled={isPending}
+                                    className="h-8 text-xs px-2 border-rose-300 text-rose-700 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 font-bold gap-1 cursor-pointer"
+                                    title="Pause Production Correction Required"
+                                  >
+                                    <AlertTriangle className="h-3.5 w-3.5 text-rose-600" />
+                                    <span>Pause Production Correction Requird</span>
+                                  </Button>
+                                )}
+                              </>
+                            )}
+
                             {activeWork.workflow_routing === 'design_ok' && activeWork.status !== 'approved' && (
                               <Button
                                 size="sm"
@@ -2383,10 +2967,10 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                   handlePrepressVerifyAndRelease(j)
                                 }}
                                 disabled={isPending}
-                                className="h-8 text-xs px-2.5 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
+                                className="h-8 text-xs px-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold gap-1 shadow-2xs cursor-pointer"
                               >
                                 <CheckCircle2 className="h-3.5 w-3.5" />
-                                <span>Pre-Press Verified ➔ Release</span>
+                                <span>Pre-Press Verified</span>
                               </Button>
                             )}
 
@@ -2416,30 +3000,6 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               <span>Upload v+1</span>
                             </Button>
 
-                            {activeWork.status === 'customer_approval' && (
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  const j = ensureJobRecord(activeWork)
-                                  handleOpenApprovalModal(j)
-                                }}
-                                className="h-8 text-xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                              >
-                                <Check className="h-3.5 w-3.5 mr-1" />
-                                <span>Approve</span>
-                              </Button>
-                            )}
-
-                            {hasInvoice && (activeWork.status === 'approved' || card.overallStatus === 'all_approved') && (
-                              <Link
-                                href={getTenantHref('/production')}
-                                className="inline-flex items-center gap-1.5 h-8 text-xs px-2.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all shadow-2xs"
-                              >
-                                <Printer className="h-3.5 w-3.5" />
-                                <span>Production &rarr;</span>
-                              </Link>
-                            )}
-
                             {!hasInvoice && (
                               <Button
                                 size="sm"
@@ -2462,7 +3022,8 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                               onClick={() => ensureJobRecord(activeWork)}
                               className="inline-flex items-center gap-1 text-xs font-bold text-pink-600 hover:underline"
                             >
-                              <span>Workbench &rarr;</span>
+                              <span>Studio</span>
+                              <ExternalLink className="h-3.5 w-3.5" />
                             </Link>
                           </div>
                         </div>
