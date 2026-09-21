@@ -1592,21 +1592,21 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
         </Card>
       </div>
 
-      {/* 3. UNIFIED STUDIO NAVIGATION TABS & QUICK SEARCH */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
+      {/* 3. UNIFIED STUDIO NAVIGATION TABS (FULL-WIDTH SCROLLABLE) */}
+      <div className="w-full border-b border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 backdrop-blur-xs rounded-t-xl px-1 pt-1.5">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-bold scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-700">
           <button
             onClick={() => handleTabChange('all')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'all' || activeTab === 'pipeline'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid className="h-4 w-4 shrink-0" />
             <span>{tBilingual('All', 'সকল')}</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
               {tenantJobs.length}
             </Badge>
           </button>
@@ -1614,13 +1614,13 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <button
             onClick={() => handleTabChange('design_requests')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'design_requests'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <Palette className="h-4 w-4" />
+            <Palette className="h-4 w-4 shrink-0 text-indigo-500" />
             <span>{tBilingual('Design Request', 'ডিজাইন রিকোয়েস্ট')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300">
               {kpiStats.designRequestCount}
@@ -1630,13 +1630,13 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <button
             onClick={() => handleTabChange('design_checks')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'design_checks'
-                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-cyan-50/50 dark:bg-cyan-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400 bg-cyan-50/70 dark:bg-cyan-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <FileCheck2 className="h-4 w-4" />
+            <FileCheck2 className="h-4 w-4 shrink-0 text-cyan-500" />
             <span>{tBilingual('Design Check', 'ডিজাইন চেক')}</span>
             <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-cyan-100 dark:bg-cyan-900 text-cyan-700 dark:text-cyan-300">
               {kpiStats.designCheckCount}
@@ -1646,15 +1646,15 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <button
             onClick={() => handleTabChange('customer_approvals')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'customer_approvals'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-purple-600 text-purple-600 dark:text-purple-400 bg-purple-50/70 dark:bg-purple-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <CheckSquare className="h-4 w-4" />
-            <span>Customer Approvals</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+            <CheckSquare className="h-4 w-4 shrink-0 text-purple-500" />
+            <span>{tBilingual('Customer Approvals', 'গ্রাহক অনুমোদন')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300">
               {kpiStats.approvalCount + kpiStats.revisionCount}
             </Badge>
           </button>
@@ -1662,15 +1662,15 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <button
             onClick={() => handleTabChange('work_orders')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'work_orders'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-blue-600 text-blue-600 dark:text-blue-400 bg-blue-50/70 dark:bg-blue-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <Layers className="h-4 w-4" />
-            <span>Work Orders</span>
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+            <Layers className="h-4 w-4 shrink-0 text-blue-500" />
+            <span>{tBilingual('Work Orders', 'ওয়ার্ক অর্ডার')}</span>
+            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
               {tenantOrders.length}
             </Badge>
           </button>
@@ -1678,85 +1678,92 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <button
             onClick={() => handleTabChange('design_versions')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'design_versions'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/70 dark:bg-indigo-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <History className="h-4 w-4" />
-            <span>Artwork Assets</span>
+            <History className="h-4 w-4 shrink-0 text-indigo-500" />
+            <span>{tBilingual('Artwork Assets', 'আর্টওয়ার্ক ফাইল')}</span>
           </button>
 
           <button
             onClick={() => handleTabChange('tasks')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'tasks'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-rose-600 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <FileCode className="h-4 w-4" />
-            <span>Pre-Press Tasks</span>
+            <FileCode className="h-4 w-4 shrink-0 text-rose-500" />
+            <span>{tBilingual('Pre-Press Tasks', 'প্রি-প্রেস টাস্ক')}</span>
+            {kpiStats.dueTodayCount > 0 && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-4 bg-rose-100 dark:bg-rose-900 text-rose-700 dark:text-rose-300">
+                {kpiStats.dueTodayCount}
+              </Badge>
+            )}
           </button>
 
           <button
             onClick={() => handleTabChange('overview')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'overview'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-emerald-600 text-emerald-600 dark:text-emerald-400 bg-emerald-50/70 dark:bg-emerald-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <Sparkles className="h-4 w-4" />
-            <span>Studio Overview</span>
+            <Sparkles className="h-4 w-4 shrink-0 text-emerald-500" />
+            <span>{tBilingual('Studio Overview', 'ওভারভিউ')}</span>
           </button>
 
           <button
             onClick={() => handleTabChange('notifications')}
             className={cn(
-              'px-3.5 py-2.5 rounded-t-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5',
+              'px-3.5 py-2 rounded-lg transition-all border-b-2 whitespace-nowrap cursor-pointer flex items-center gap-1.5 shrink-0 select-none text-xs font-bold',
               activeTab === 'notifications'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30'
-                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'border-red-600 text-red-600 dark:text-red-400 bg-red-50/70 dark:bg-red-950/40 shadow-xs'
+                : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/50'
             )}
           >
-            <Bell className="h-4 w-4" />
-            <span>Alerts</span>
+            <Bell className="h-4 w-4 shrink-0 text-red-500" />
+            <span>{tBilingual('Alerts', 'নোটিফিকেশন')}</span>
             {tenantNotifications.length > 0 && (
-              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-red-600">
+              <Badge variant="default" className="text-[10px] px-1.5 py-0 h-4 bg-red-600 text-white animate-pulse">
                 {tenantNotifications.length}
               </Badge>
             )}
           </button>
         </div>
+      </div>
 
-        {/* Search & Multi-Filters */}
-        <div className="flex flex-wrap items-center gap-2 pb-1.5 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-56">
-            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <Input
-              placeholder="Search job #, client, title..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="text-xs h-8 pl-8 pr-7"
-            />
-            {search && (
-              <button
-                onClick={() => setSearch('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
+      {/* 4. SEARCH & MULTI-FILTERS TOOLBAR */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 py-2.5 px-2 bg-slate-50/70 dark:bg-slate-900/40 rounded-b-xl border-b border-slate-200/80 dark:border-slate-800/80">
+        <div className="relative flex-1 sm:max-w-xs md:max-w-sm">
+          <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <Input
+            placeholder="Search job #, client, title..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="text-xs h-8 pl-8 pr-7 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 shadow-2xs"
+          />
+          {search && (
+            <button
+              onClick={() => setSearch('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-0.5"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
 
+        <div className="flex flex-wrap items-center gap-2">
           <select
             value={formatFilter}
             onChange={(e) => setFormatFilter(e.target.value)}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+            className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 cursor-pointer"
           >
             <option value="all">All Formats</option>
             <option value="png">.PNG (Raster Image)</option>
@@ -1771,7 +1778,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <select
             value={intakeFilter}
             onChange={(e) => setIntakeFilter(e.target.value)}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+            className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 cursor-pointer"
           >
             <option value="all">All Intakes</option>
             <option value="direct_customer">Direct Walk-in</option>
@@ -1781,7 +1788,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
           <select
             value={priorityFilter}
             onChange={(e) => setPriorityFilter(e.target.value)}
-            className="h-8 px-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300"
+            className="h-8 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 shadow-2xs focus:outline-hidden focus:ring-1 focus:ring-indigo-500 cursor-pointer"
           >
             <option value="all">All Priorities</option>
             <option value="very_urgent">Very Urgent (জরুরি)</option>
@@ -1793,11 +1800,29 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
             size="sm"
             variant={onlyMyJobs ? 'default' : 'outline'}
             onClick={() => setOnlyMyJobs(!onlyMyJobs)}
-            className="text-xs h-8 px-2.5"
+            className="text-xs h-8 px-2.5 border-slate-200 dark:border-slate-700 shadow-2xs cursor-pointer font-medium"
           >
             <User className="h-3.5 w-3.5 mr-1" />
             {onlyMyJobs ? 'My Jobs Only' : 'My Jobs'}
           </Button>
+
+          {(search || formatFilter !== 'all' || intakeFilter !== 'all' || priorityFilter !== 'all' || onlyMyJobs) && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setSearch('')
+                setFormatFilter('all')
+                setIntakeFilter('all')
+                setPriorityFilter('all')
+                setOnlyMyJobs(false)
+              }}
+              className="text-xs h-8 px-2 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 cursor-pointer"
+            >
+              <X className="h-3 w-3 mr-1" />
+              Reset Filters
+            </Button>
+          )}
         </div>
       </div>
 
@@ -2134,7 +2159,7 @@ function DesignPanelInner({ defaultTab = 'all' }: DesignPanelProps) {
                                       setSelectedWorkIdByGroup((prev) => ({ ...prev, [card.groupId]: work.id }))
                                     }
                                     className={cn(
-                                      'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border cursor-pointer',
+                                      'px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 border cursor-pointer shrink-0 select-none',
                                       isSelected
                                         ? 'bg-pink-600 text-white border-pink-600 shadow-2xs font-bold'
                                         : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-pink-300'
