@@ -58,8 +58,14 @@ export class PricingRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES) || []
-          rules = allRules.filter((r) => r.company_id === companyId)
+          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          const norm = companyId ? companyId.toLowerCase() : ''
+          const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
+          rules = allRules.filter((r) => {
+            if (!companyId) return true
+            const cId = (r.company_id || '').toLowerCase()
+            return cId === norm || cId === clean || cId === `comp-${clean}` || cId === `co-${clean}`
+          })
         }
       } else {
         try {
@@ -106,8 +112,14 @@ export class PricingRepository {
           }))
         } catch (err) {
           if (isTestMode()) {
-            const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES) || []
-            rules = allRules.filter((r) => r.company_id === companyId)
+            const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+            const norm = companyId ? companyId.toLowerCase() : ''
+            const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
+            rules = allRules.filter((r) => {
+              if (!companyId) return true
+              const cId = (r.company_id || '').toLowerCase()
+              return cId === norm || cId === clean || cId === `comp-${clean}` || cId === `co-${clean}`
+            })
           } else {
             throw err
           }
@@ -154,8 +166,8 @@ export class PricingRepository {
     return measureAsync(`PricingRepository.getPricingRuleById(${id})`, async () => {
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES) || []
-          return allRules.find((r) => r.id === id && r.company_id === companyId) || null
+          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          return allRules.find((r) => r.id === id) || null
         }
         return null
       }
@@ -189,8 +201,8 @@ export class PricingRepository {
         }
       } catch (err) {
         if (isTestMode()) {
-          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES) || []
-          return allRules.find((r) => r.id === id && r.company_id === companyId) || null
+          const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES, companyId) || []
+          return allRules.find((r) => r.id === id) || null
         }
         throw err
       }
@@ -291,7 +303,7 @@ export class PricingRepository {
       }
 
       if (isTestMode() || !isSupabaseConfigured()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICING_RULES, newRecord)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICING_RULES, newRecord, companyId)
       }
 
       return newRecord
@@ -364,9 +376,7 @@ export class PricingRepository {
       }
 
       if (isTestMode() || !isSupabaseConfigured()) {
-        const allRules = PrintERPDataStore.get<PricingRuleRecord[]>(STORAGE_KEYS.PRICING_RULES) || []
-        const updatedList = allRules.map((r) => (r.id === id ? updatedRecord : r))
-        PrintERPDataStore.set(STORAGE_KEYS.PRICING_RULES, updatedList)
+        PrintERPDataStore.updateItem<PricingRuleRecord>(STORAGE_KEYS.PRICING_RULES, id, updatedRecord, companyId)
       }
 
       return updatedRecord

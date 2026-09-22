@@ -181,4 +181,109 @@ describe('Tenant Complete Purge & Deletion Verification', () => {
     assert.strictEqual(notifs.some((n) => n.company_id === multiAliasCompId), false)
     assert.strictEqual(notifs.some((n) => n.company_id === 'comp-beta-press'), true)
   })
+
+  it('5. resetTenantData comprehensively clears Products, Categories, and Commercial Masters with zero resurrection', () => {
+    const commercialSlug = 'commercial-press'
+    const commercialCompId = 'comp-commercial-press'
+    const otherCompId = 'comp-other-printing'
+
+    // 1. Seed products & categories
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [
+      { id: 'prod-1', company_id: commercialCompId, name: 'Brochure Printing', sku: 'BRO-001' },
+      { id: 'prod-2', company_id: otherCompId, name: 'Other Brochure', sku: 'BRO-002' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, [
+      { id: 'cat-1', company_id: commercialCompId, name: 'Digital Print', slug: 'digital-print' },
+      { id: 'cat-2', company_id: otherCompId, name: 'Other Category', slug: 'other-cat' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [
+      { id: 'var-1', company_id: commercialCompId, product_id: 'prod-1', name: 'A4 Glossy' },
+      { id: 'var-2', company_id: otherCompId, product_id: 'prod-2', name: 'A5 Matte' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [
+      { id: 'form-1', company_id: commercialCompId, product_id: 'prod-1', name: 'Standard Calc' },
+      { id: 'form-2', company_id: otherCompId, product_id: 'prod-2', name: 'Other Calc' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRICING_RULES, [
+      { id: 'rule-1', company_id: commercialCompId, rule_name: 'Bulk Discount' },
+      { id: 'rule-2', company_id: otherCompId, rule_name: 'VIP Discount' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [
+      { id: 'rate-1', company_id: commercialCompId, customer_id: 'cust-1', rate: 100 },
+      { id: 'rate-2', company_id: otherCompId, customer_id: 'cust-2', rate: 150 },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRICE_OVERRIDES, [
+      { id: 'po-1', company_id: commercialCompId, reason: 'Special event' },
+      { id: 'po-2', company_id: otherCompId, reason: 'Owner approved' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, [
+      { id: 'psp-1', company_id: commercialCompId, supplier_name: 'Paper Corp' },
+      { id: 'psp-2', company_id: otherCompId, supplier_name: 'Ink Ltd' },
+    ])
+
+    // Seed commercial configuration masters
+    PrintERPDataStore.set(STORAGE_KEYS.PRINTING_METHODS, [
+      { id: 'pm-1', company_id: commercialCompId, method_name: 'Offset 4-Color' },
+      { id: 'pm-2', company_id: otherCompId, method_name: 'Digital Press' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, [
+      { id: 'mpc-1', company_id: commercialCompId, material_name: 'Art Card 300gsm' },
+      { id: 'mpc-2', company_id: otherCompId, material_name: 'Vinyl Sheet' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.FINISHING_OPTIONS, [
+      { id: 'fo-1', company_id: commercialCompId, name: 'Gloss Lamination' },
+      { id: 'fo-2', company_id: otherCompId, name: 'Matte Lamination' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.ADDITIONAL_OPTIONS, [
+      { id: 'ao-1', company_id: commercialCompId, name: 'Corner Rounding' },
+      { id: 'ao-2', company_id: otherCompId, name: 'Eyeletting' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.INSTALLATION_OPTIONS, [
+      { id: 'io-1', company_id: commercialCompId, name: 'Site Mounting' },
+      { id: 'io-2', company_id: otherCompId, name: 'High Altitude Fitting' },
+    ])
+
+    // 2. Perform reset
+    PrintERPDataStore.resetTenantData(commercialCompId, [commercialSlug])
+
+    // 3. Verify target tenant is completely empty while preserving other tenant records
+    const checkKey = (key: string, label: string) => {
+      const items = PrintERPDataStore.get<any[]>(key) || []
+      assert.strictEqual(
+        items.some((item) => item.company_id === commercialCompId),
+        false,
+        `Expected ${label} to be cleared for reset tenant`
+      )
+      assert.strictEqual(
+        items.some((item) => item.company_id === otherCompId),
+        true,
+        `Expected ${label} to remain intact for other tenant`
+      )
+    }
+
+    checkKey(STORAGE_KEYS.PRODUCTS, 'PRODUCTS')
+    checkKey(STORAGE_KEYS.PRODUCT_CATEGORIES, 'PRODUCT_CATEGORIES')
+    checkKey(STORAGE_KEYS.PRODUCT_VARIANTS, 'PRODUCT_VARIANTS')
+    checkKey(STORAGE_KEYS.PRODUCT_FORMULAS, 'PRODUCT_FORMULAS')
+    checkKey(STORAGE_KEYS.PRICING_RULES, 'PRICING_RULES')
+    checkKey(STORAGE_KEYS.CUSTOMER_RATES, 'CUSTOMER_RATES')
+    checkKey(STORAGE_KEYS.PRICE_OVERRIDES, 'PRICE_OVERRIDES')
+    checkKey(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, 'PRODUCT_SUPPLIER_PRICES')
+    checkKey(STORAGE_KEYS.PRINTING_METHODS, 'PRINTING_METHODS')
+    checkKey(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, 'MATERIAL_PURCHASE_CONFIGS')
+    checkKey(STORAGE_KEYS.FINISHING_OPTIONS, 'FINISHING_OPTIONS')
+    checkKey(STORAGE_KEYS.ADDITIONAL_OPTIONS, 'ADDITIONAL_OPTIONS')
+    checkKey(STORAGE_KEYS.INSTALLATION_OPTIONS, 'INSTALLATION_OPTIONS')
+  })
 })

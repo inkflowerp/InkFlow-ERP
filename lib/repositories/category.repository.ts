@@ -132,38 +132,16 @@ export class CategoryRepository {
   ): Promise<ProductCategoryRecord[]> {
     return measureAsync(`CategoryRepository.getCategories(${companyId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        let cats = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-        
-        // Auto-seed for test/local store if empty
-        if (cats.length === 0 && companyId) {
-          const seeded: ProductCategoryRecord[] = []
-          const slugToId = new Map<string, string>()
+        let cats = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES, companyId) || []
+        const norm = companyId ? companyId.toLowerCase() : ''
+        const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
 
-          for (const item of DEFAULT_PRINT_SHOP_CATEGORIES) {
-            const id = `cat-${item.slug}-${Date.now().toString(36)}`
-            slugToId.set(item.slug, id)
-            const parentId = item.parent_slug ? slugToId.get(item.parent_slug) || null : null
+        let filtered = cats.filter((c) => {
+          if (!companyId) return true
+          const cId = (c.company_id || '').toLowerCase()
+          return cId === norm || cId === clean || cId === `comp-${clean}` || cId === `co-${clean}`
+        })
 
-            seeded.push({
-              id,
-              company_id: companyId,
-              name: item.name,
-              name_bn: item.name_bn || null,
-              slug: item.slug,
-              parent_id: parentId,
-              applies_to_product_types: item.applies_to_product_types,
-              description: item.description,
-              is_active: true,
-              display_order: item.display_order,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-            })
-          }
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, seeded)
-          cats = seeded
-        }
-
-        let filtered = cats.filter((c) => !c.company_id || c.company_id === companyId)
         if (activeOnly) filtered = filtered.filter((c) => c.is_active !== false)
         if (productType && productType !== 'all') {
           filtered = filtered.filter(
@@ -303,9 +281,7 @@ export class CategoryRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-        all.push(newRecord)
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, all)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
         return newRecord
       }
 
@@ -334,9 +310,7 @@ export class CategoryRepository {
         return data as ProductCategoryRecord
       } catch (err: any) {
         if (isTestMode()) {
-          const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-          all.push(newRecord)
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, all)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_CATEGORIES, newRecord, companyId)
           return newRecord
         }
         throw new Error(`Database error creating category: ${err.message}`)
@@ -387,12 +361,7 @@ export class CategoryRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-        const idx = all.findIndex((c) => c.id === input.id)
-        if (idx !== -1) {
-          all[idx] = updated
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, all)
-        }
+        PrintERPDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
         return updated
       }
 
@@ -422,12 +391,7 @@ export class CategoryRepository {
         return data as ProductCategoryRecord
       } catch (err: any) {
         if (isTestMode()) {
-          const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-          const idx = all.findIndex((c) => c.id === input.id)
-          if (idx !== -1) {
-            all[idx] = updated
-            PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, all)
-          }
+          PrintERPDataStore.updateItem<ProductCategoryRecord>(STORAGE_KEYS.PRODUCT_CATEGORIES, input.id, updated, companyId)
           return updated
         }
         throw new Error(`Database error updating category: ${err.message}`)
@@ -447,6 +411,11 @@ export class CategoryRepository {
       const hasChildren = existing.some((c) => c.parent_id === id)
       if (hasChildren) {
         throw new Error('Cannot delete category because it has subcategories. Remove or reassign subcategories first.')
+      }
+
+      if (!isSupabaseConfigured() || isTestMode()) {
+        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
+        return true
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
@@ -470,9 +439,7 @@ export class CategoryRepository {
         return true
       } catch (err: any) {
         if (isTestMode()) {
-          const all = PrintERPDataStore.get<ProductCategoryRecord[]>(STORAGE_KEYS.PRODUCT_CATEGORIES) || []
-          const filtered = all.filter((c) => c.id !== id)
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_CATEGORIES, filtered)
+          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_CATEGORIES, id, companyId)
           return true
         }
         throw new Error(`Database error deleting category: ${err.message}`)

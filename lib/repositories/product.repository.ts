@@ -319,8 +319,14 @@ export class ProductRepository {
   ): Promise<ProductRecord[]> {
     return measureAsync(`ProductRepository.getProducts(${companyId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-        let filtered = prods.filter((p) => !p.company_id || p.company_id === companyId)
+        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        const normTarget = companyId ? companyId.toLowerCase() : ''
+        const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
+        let filtered = prods.filter((p) => {
+          if (!companyId) return true
+          const cId = (p.company_id || '').toLowerCase()
+          return cId === normTarget || cId === cleanTarget || cId === `comp-${cleanTarget}` || cId === `co-${cleanTarget}`
+        })
         if (activeOnly) filtered = filtered.filter((p) => p.is_active !== false)
         if (entityType && entityType !== 'all') {
           if (entityType === 'outsource') {
@@ -393,7 +399,7 @@ export class ProductRepository {
     return measureAsync(`ProductRepository.getProductById(${id})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
         const prods = await this.getProducts(companyId, false)
-        const found = prods.find((p) => (p.id === id || p.sku === id) && (!p.company_id || p.company_id === companyId)) || null
+        const found = prods.find((p) => p.id === id || p.sku === id) || null
         if (found) {
           const variants = await this.getProductVariants(found.id, companyId)
           const formulas = await this.getProductFormulas(found.id, companyId)
@@ -436,10 +442,9 @@ export class ProductRepository {
 
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+        const prods = await this.getProducts(companyId, false)
         const match = prods.find(
           (p) =>
-            (!p.company_id || p.company_id === companyId) &&
             p.sku.toUpperCase() === normalizedSku &&
             p.id !== excludeProductId
         )
@@ -469,10 +474,9 @@ export class ProductRepository {
       return !data || data.length === 0
     } catch (err: any) {
       if (isTestMode()) {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+        const prods = await this.getProducts(companyId, false)
         const match = prods.find(
           (p) =>
-            (!p.company_id || p.company_id === companyId) &&
             p.sku.toUpperCase() === normalizedSku &&
             p.id !== excludeProductId
         )
@@ -673,7 +677,7 @@ export class ProductRepository {
             id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             ...payload,
           })
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
           return testRecord
         }
         throw new Error('Authoritative database connection is required to create a product.')
@@ -699,7 +703,7 @@ export class ProductRepository {
         // In test mode keep store synced
         const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched, product.company_id)
         }
 
         return enriched
@@ -709,7 +713,7 @@ export class ProductRepository {
             id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             ...payload,
           })
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
           return testRecord
         }
         throw err
@@ -859,10 +863,10 @@ export class ProductRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-          const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload)
+          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (!updated) throw new Error(`Product ${id} not found in test store`)
           return enrichProductRecord(updated)
         }
@@ -890,16 +894,16 @@ export class ProductRepository {
 
         const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
-          PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched)
+          PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched, companyId)
         }
 
         return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already assigned')) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-          const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
-          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload)
+          const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
           if (updated) return enrichProductRecord(updated)
         }
         throw err
@@ -934,17 +938,17 @@ export class ProductRepository {
   }> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const quotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
-          (q) => (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
+        const quotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []).filter(
+          (q) => q.items?.some((i: any) => i.product_id === productId)
         )
-        const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter(
-          (inv) => (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
+        const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []).filter(
+          (inv) => inv.items?.some((i: any) => i.product_id === productId)
         )
-        const jobs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter(
-          (t) => (!t.company_id || t.company_id === companyId) && t.product_id === productId
+        const jobs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []).filter(
+          (t) => t.product_id === productId
         )
-        const customerRates = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []).filter(
-          (r) => (!r.company_id || r.company_id === companyId) && r.product_id === productId
+        const customerRates = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES, companyId) || []).filter(
+          (r) => r.product_id === productId
         )
 
         const totalRefs = quotes.length + invoices.length + jobs.length + customerRates.length
@@ -1018,9 +1022,10 @@ export class ProductRepository {
 
       if (!isSupabaseConfigured()) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-          const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
+          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
           return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
@@ -1028,8 +1033,8 @@ export class ProductRepository {
       }
 
       try {
-        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-        const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+        const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        const existing = prods.find((p) => p.id === id)
 
         const supabase = await createClient()
         const { error } = await (supabase as any)
@@ -1043,17 +1048,19 @@ export class ProductRepository {
         }
 
         if (existing) {
+          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
         } else if (isTestMode()) {
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, prods.filter((p) => p.id !== id))
+          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
         }
 
         return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
       } catch (err: any) {
         if (isTestMode()) {
-          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
-          const existing = prods.find((p) => p.id === id && (!p.company_id || p.company_id === companyId))
+          const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+          const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
+          PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCTS, id, companyId)
           await TrashRepository.moveToTrash({ category: 'products', item: existing, companyId })
           return { deleted: true, archived: false, message: 'Product moved to Trash / Recycle Bin.' }
         }
@@ -1179,7 +1186,7 @@ export class ProductRepository {
 
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
         return entry
       }
       throw new Error('Authoritative database connection is required to record price history.')
@@ -1209,7 +1216,7 @@ export class ProductRepository {
 
       if (error) {
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
           return entry
         }
         throw new Error(`Failed to record price history: ${error.message}`)
@@ -1218,7 +1225,7 @@ export class ProductRepository {
       return { ...entry, id: data.id }
     } catch (err: any) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
         return entry
       }
       throw err
@@ -1228,9 +1235,11 @@ export class ProductRepository {
   static async getProductPriceHistory(productId?: string, companyId?: string): Promise<PriceHistoryRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const history = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
+        const history = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, companyId) || []
+        const norm = companyId ? companyId.toLowerCase() : ''
+        const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
         return history.filter(
-          (h) => (!productId || h.product_id === productId) && (!companyId || !h.company_id || h.company_id === companyId)
+          (h) => (!productId || h.product_id === productId) && (!companyId || (h.company_id && (h.company_id.toLowerCase() === norm || h.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
         )
       }
       return []
@@ -1261,8 +1270,8 @@ export class ProductRepository {
   static async getProductVariants(productId: string, companyId: string): Promise<ProductVariantRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []
-        return vars.filter((v) => v.product_id === productId && (!v.company_id || v.company_id === companyId))
+        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        return vars.filter((v) => v.product_id === productId)
       }
       return []
     }
@@ -1279,14 +1288,14 @@ export class ProductRepository {
 
       if (!error && data && data.length > 0) return data as ProductVariantRecord[]
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []
-        return vars.filter((v) => v.product_id === productId && (!v.company_id || v.company_id === companyId))
+        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        return vars.filter((v) => v.product_id === productId)
       }
       return []
     } catch {
       if (isTestMode()) {
-        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []
-        return vars.filter((v) => v.product_id === productId && (!v.company_id || v.company_id === companyId))
+        const vars = PrintERPDataStore.get<ProductVariantRecord[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []
+        return vars.filter((v) => v.product_id === productId)
       }
       return []
     }
@@ -1320,7 +1329,7 @@ export class ProductRepository {
           id: `var-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           ...record,
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
         return testVar
       }
       throw new Error('Authoritative database connection is required to create a variant.')
@@ -1336,7 +1345,7 @@ export class ProductRepository {
 
       if (error) throw new Error(`Database error saving variant: ${error.message}`)
       if (isTestMode() && inserted) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, inserted)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, inserted, data.company_id)
       }
       return inserted as ProductVariantRecord
     } catch (err: any) {
@@ -1345,7 +1354,7 @@ export class ProductRepository {
           id: `var-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           ...record,
         }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_VARIANTS, testVar, data.company_id)
         return testVar
       }
       throw err
@@ -1355,7 +1364,7 @@ export class ProductRepository {
   static async deleteProductVariant(variantId: string, companyId: string): Promise<boolean> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId)
+        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       throw new Error('Authoritative database connection is required to delete a variant.')
     }
@@ -1370,12 +1379,12 @@ export class ProductRepository {
 
       if (error) throw new Error(`Failed to delete variant: ${error.message}`)
       if (isTestMode()) {
-        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId)
+        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       return true
     } catch (err: any) {
       if (isTestMode()) {
-        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId)
+        return PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_VARIANTS, variantId, companyId)
       }
       throw err
     }
@@ -1388,8 +1397,8 @@ export class ProductRepository {
   static async getProductFormulas(productId: string, companyId: string): Promise<ProductFormulaRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS) || []
-        return forms.filter((f) => f.product_id === productId && (!f.company_id || f.company_id === companyId))
+        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        return forms.filter((f) => f.product_id === productId)
       }
       return []
     }
@@ -1405,14 +1414,14 @@ export class ProductRepository {
 
       if (!error && data && data.length > 0) return data as ProductFormulaRecord[]
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS) || []
-        return forms.filter((f) => f.product_id === productId && (!f.company_id || f.company_id === companyId))
+        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        return forms.filter((f) => f.product_id === productId)
       }
       return []
     } catch {
       if (isTestMode()) {
-        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS) || []
-        return forms.filter((f) => f.product_id === productId && (!f.company_id || f.company_id === companyId))
+        const forms = PrintERPDataStore.get<ProductFormulaRecord[]>(STORAGE_KEYS.PRODUCT_FORMULAS, companyId) || []
+        return forms.filter((f) => f.product_id === productId)
       }
       return []
     }
@@ -1448,7 +1457,7 @@ export class ProductRepository {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
         const testForm: ProductFormulaRecord = { id: `form-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
         return testForm
       }
       throw new Error('Authoritative database connection is required to create a formula.')
@@ -1467,7 +1476,7 @@ export class ProductRepository {
     } catch (err: any) {
       if (isTestMode()) {
         const testForm: ProductFormulaRecord = { id: `form-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_FORMULAS, testForm, data.company_id)
         return testForm
       }
       throw err
@@ -1481,52 +1490,14 @@ export class ProductRepository {
   static async getPriceLists(companyId: string): Promise<PriceListRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const lists = PrintERPDataStore.get<PriceListRecord[]>(STORAGE_KEYS.PRICE_LISTS) || []
-        const filtered = lists.filter((l) => !l.company_id || l.company_id === companyId)
-        if (filtered.length > 0) return filtered
-
-        const defaults: PriceListRecord[] = [
-          {
-            id: `pl-ret-${companyId}`,
-            company_id: companyId,
-            name: 'Standard Retail Price List',
-            code: 'RETAIL',
-            tier_type: 'retail',
-            description: 'Standard retail walk-in customer pricing',
-            default_markup_percent: 0,
-            is_default: true,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: `pl-corp-${companyId}`,
-            company_id: companyId,
-            name: 'Corporate Contract Rates',
-            code: 'CORPORATE',
-            tier_type: 'corporate',
-            description: 'Discounted contract rates for corporate accounts',
-            default_markup_percent: -10,
-            is_default: false,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-          {
-            id: `pl-who-${companyId}`,
-            company_id: companyId,
-            name: 'Wholesale / Agency Rates',
-            code: 'WHOLESALE',
-            tier_type: 'wholesale',
-            description: 'High volume wholesale and advertising agency partner pricing',
-            default_markup_percent: -20,
-            is_default: false,
-            is_active: true,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ]
-        return defaults
+        const lists = PrintERPDataStore.get<PriceListRecord[]>(STORAGE_KEYS.PRICE_LISTS, companyId) || []
+        const norm = companyId ? companyId.toLowerCase() : ''
+        const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
+        return lists.filter((l) => {
+          if (!companyId) return true
+          const cId = (l.company_id || '').toLowerCase()
+          return cId === norm || cId === clean || cId === `comp-${clean}` || cId === `co-${clean}`
+        })
       }
       return []
     }
@@ -1567,7 +1538,7 @@ export class ProductRepository {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
         const testList: PriceListRecord = { id: `pl-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
         return testList
       }
       throw new Error('Authoritative database connection is required to create a price list.')
@@ -1586,7 +1557,7 @@ export class ProductRepository {
     } catch (err: any) {
       if (isTestMode()) {
         const testList: PriceListRecord = { id: `pl-${Date.now()}`, ...record }
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_LISTS, testList, data.company_id)
         return testList
       }
       throw err
@@ -1991,8 +1962,8 @@ export class ProductRepository {
   ): Promise<ProductSupplierPriceRecord[]> {
     return measureAsync(`ProductRepository.getProductSupplierPrices(${productId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
-        return prices.filter((p) => (!p.company_id || p.company_id === companyId) && p.product_id === productId)
+        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
+        return prices.filter((p) => p.product_id === productId)
       }
 
       try {
@@ -2008,8 +1979,8 @@ export class ProductRepository {
         return (data || []) as ProductSupplierPriceRecord[]
       } catch (err: any) {
         if (isTestMode()) {
-          const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
-          return prices.filter((p) => (!p.company_id || p.company_id === companyId) && p.product_id === productId)
+          const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
+          return prices.filter((p) => p.product_id === productId)
         }
         throw err
       }
@@ -2040,14 +2011,7 @@ export class ProductRepository {
       }
 
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
-        const existingIdx = prices.findIndex((p) => p.id === record.id)
-        if (existingIdx >= 0) {
-          prices[existingIdx] = record
-        } else {
-          prices.push(record)
-        }
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, prices)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, record, companyId)
         return record
       }
 
@@ -2066,11 +2030,7 @@ export class ProductRepository {
   static async deleteProductSupplierPrice(id: string, companyId: string): Promise<boolean> {
     return measureAsync(`ProductRepository.deleteProductSupplierPrice(${id})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
-        const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES) || []
-        PrintERPDataStore.set(
-          STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES,
-          prices.filter((p) => p.id !== id || (p.company_id && p.company_id !== companyId))
-        )
+        PrintERPDataStore.removeItem(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, id, companyId)
         return true
       }
 
@@ -2123,7 +2083,7 @@ export class ProductRepository {
     }
 
     if (!isSupabaseConfigured() || isTestMode()) {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
       return entry
     }
 
@@ -2136,12 +2096,12 @@ export class ProductRepository {
         .single()
 
       if (error) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
         return entry
       }
       return saved as PriceOverrideRecord
     } catch {
-      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry)
+      PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_OVERRIDES, entry, companyId)
       return entry
     }
   }
@@ -2152,8 +2112,10 @@ export class ProductRepository {
     limit: number = 50
   ): Promise<PriceOverrideRecord[]> {
     if (!isSupabaseConfigured() || isTestMode()) {
-      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES) || []
-      entries = entries.filter((e) => !e.company_id || e.company_id === companyId)
+      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
+      const norm = companyId ? companyId.toLowerCase() : ''
+      const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
+      entries = entries.filter((e) => !companyId || (e.company_id && (e.company_id.toLowerCase() === norm || e.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
       if (productId) entries = entries.filter((e) => e.product_id === productId)
       return entries.slice(0, limit)
     }
@@ -2175,8 +2137,10 @@ export class ProductRepository {
       if (error) throw error
       return (data || []) as PriceOverrideRecord[]
     } catch {
-      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES) || []
-      entries = entries.filter((e) => !e.company_id || e.company_id === companyId)
+      let entries = PrintERPDataStore.get<PriceOverrideRecord[]>(STORAGE_KEYS.PRICE_OVERRIDES, companyId) || []
+      const norm = companyId ? companyId.toLowerCase() : ''
+      const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
+      entries = entries.filter((e) => !companyId || (e.company_id && (e.company_id.toLowerCase() === norm || e.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
       if (productId) entries = entries.filter((e) => e.product_id === productId)
       return entries.slice(0, limit)
     }
