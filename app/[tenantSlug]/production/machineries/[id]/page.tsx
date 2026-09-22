@@ -64,6 +64,11 @@ export default function MachineryDetailPage() {
   const machineId = params?.id as string
   const { can, isOwner } = usePermissions()
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [machine, setMachine] = useState<MachineryRecord | null>(null)
   const [assignments, setAssignments] = useState<MachineryAssignmentRecord[]>([])
   const [maintenances, setMaintenances] = useState<MachineryMaintenanceRecord[]>([])
@@ -118,7 +123,7 @@ export default function MachineryDetailPage() {
     try {
       const res = await archiveMachineryAction(machine.id)
       if (res.success) {
-        router.push(`/${tenantSlug}/production/machineries`)
+        router.push(getTenantNavHref('/production/machineries', pathname, tenantSlug))
       } else {
         alert(res.error || 'Failed to archive.')
       }
@@ -140,7 +145,7 @@ export default function MachineryDetailPage() {
     }
   }
 
-  if (loading && !machine) {
+  if (!mounted || (loading && !machine)) {
     return (
       <div className="space-y-6 pb-12">
         <div className="flex items-center gap-3">
@@ -159,7 +164,7 @@ export default function MachineryDetailPage() {
     return (
       <div className="space-y-4 pb-12">
         <Link
-          href={`/${tenantSlug}/production/machineries`}
+          href={getTenantNavHref('/production/machineries', pathname, tenantSlug)}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-4 w-4" />

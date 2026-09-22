@@ -30,6 +30,7 @@ import {
   Printer,
   ShieldAlert,
   Disc,
+  Scissors,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -66,6 +67,11 @@ export default function MachineriesListPage() {
   const { can, isOwner } = usePermissions()
   const { tBilingual } = useI18n()
 
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const [machineries, setMachineries] = useState<MachineryRecord[]>([])
   const [metrics, setMetrics] = useState<MachinerySummaryMetrics | null>(null)
   const [loading, setLoading] = useState(true)
@@ -92,8 +98,10 @@ export default function MachineriesListPage() {
   const canMaintain = isOwner || can('edit', 'machineries') || can('edit', 'production') || can('manage', 'production')
   const canBreakdown = true // Any floor user/operator can report breakdown
 
-  const loadData = useCallback(async () => {
-    setLoading(true)
+  const loadData = useCallback(async (isBackground = false) => {
+    if (!isBackground && machineries.length === 0) {
+      setLoading(true)
+    }
     setError(null)
     try {
       const [machRes, metRes] = await Promise.all([
@@ -120,10 +128,32 @@ export default function MachineriesListPage() {
     } finally {
       setLoading(false)
     }
-  }, [search, statusFilter, typeFilter, deptFilter])
+  }, [search, statusFilter, typeFilter, deptFilter, machineries.length])
 
   useEffect(() => {
     loadData()
+
+    const handleRealtimeSync = () => {
+      loadData(true)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:machines', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('printerp_data_sync', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('printerp_table_synced:machines', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:mounted_rolls', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('printerp_data_sync', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
   }, [loadData])
 
   const handleArchive = async (m: MachineryRecord) => {
@@ -143,17 +173,47 @@ export default function MachineriesListPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 pb-12 p-4 sm:p-6 animate-pulse">
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-6 pb-12 p-4 sm:p-6">
       {/* Page Header */}
       <PageHeader
         titleEn="Machineries & Equipment Fleet"
-        titleBn="মেশিনারিজ ও ইকুইপমেন্ট"
+        titleBn="মেশিনারিজ ও ইকুইপমেন্ট বহর"
         descriptionEn="Operational machine registry, live floor availability, job scheduling, preventive maintenance & breakdown tracking."
         descriptionBn="কারখানার সব প্রিন্টার, লেজার, সিএনসি ও যন্ত্রপাতির লাইভ স্ট্যাটাস, কাজ বরাদ্দ এবং রক্ষণাবেক্ষণ পরিচালনা।"
         icon={Cpu}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={getTenantNavHref('/production', pathname, tenantSlug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+              >
+                <LayoutGrid className="h-4 w-4 text-indigo-600" />
+                <span>Production Board</span>
+              </Button>
+            </Link>
+
             <Link href={getTenantNavHref('/operator', pathname, tenantSlug)}>
               <Button
                 variant="outline"
@@ -162,6 +222,17 @@ export default function MachineriesListPage() {
               >
                 <PlayCircle className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                 <span>Shop Floor Terminal</span>
+              </Button>
+            </Link>
+
+            <Link href={getTenantNavHref('/finishing', pathname, tenantSlug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+              >
+                <Scissors className="h-4 w-4 text-indigo-600" />
+                <span>Finishing Floor</span>
               </Button>
             </Link>
 
@@ -458,9 +529,12 @@ export default function MachineriesListPage() {
                 {/* Current Active Assignment or Location */}
                 {m.status === 'in_use' && m.current_assignment ? (
                   <div className="p-2 rounded bg-blue-50/80 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-xs space-y-0.5">
-                    <span className="text-blue-700 dark:text-blue-300 font-bold block">
+                    <Link
+                      href={getTenantNavHref(`/production/${m.current_assignment.job_order_id || m.current_assignment.production_job_id || m.current_assignment.job_order?.job_number || ''}`, pathname, tenantSlug)}
+                      className="text-blue-700 dark:text-blue-300 font-bold block hover:underline"
+                    >
                       ⚡ Active Job: {m.current_assignment.job_order?.job_number || m.current_assignment.production_job?.production_job_number || 'Running'}
-                    </span>
+                    </Link>
                     <span className="text-slate-600 dark:text-slate-400 text-[11px] block">
                       Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
                     </span>
