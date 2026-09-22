@@ -20,6 +20,7 @@ import type {
   IssueMasterRollParams,
   IssueMasterRollResult,
 } from '../../types/inventory.types.ts'
+import type { PriceIntelligenceRecord } from '../../types/price-intelligence.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
@@ -2238,11 +2239,13 @@ export class InventoryRepository {
       width_ft: params.width_ft,
       initial_length_ft: params.initial_length_ft,
       current_length_ft: params.initial_length_ft,
+      original_length_ft: params.initial_length_ft,
+      remaining_length_ft: params.initial_length_ft,
       initial_area_sft: initialArea,
       consumed_area_sft: 0,
       remaining_area_sft: initialArea,
       current_area_sft: initialArea,
-      status: 'available',
+      status: (params as any).status || 'available',
       location_name: params.location_name || 'Main Store',
       unit_cost: unitCost,
       total_cost: totalCost,
@@ -2756,6 +2759,57 @@ export class InventoryRepository {
       operator_name: params.operator_name,
     })
     return { ...res, status: 'scrapped', is_reusable: false }
+  }
+
+  // ==========================================
+  // PRICE INTELLIGENCE & INTAKE HISTORY
+  // ==========================================
+  static async recordPriceIntelligence(
+    entry: Omit<PriceIntelligenceRecord, 'id' | 'created_at'>
+  ): Promise<PriceIntelligenceRecord> {
+    const payload: PriceIntelligenceRecord = {
+      ...entry,
+      id: `pi-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      created_at: new Date().toISOString(),
+    }
+
+    try {
+      const supabase = await createClient()
+      await (supabase as any).from('supplier_prices').insert(payload)
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload, entry.company_id)
+    PrintERPDataStore.addItem(STORAGE_KEYS.SUPPLIER_PRICES, payload)
+    return payload
+  }
+
+  static async getPriceIntelligenceHistory(
+    companyId: string,
+    materialId?: string
+  ): Promise<PriceIntelligenceRecord[]> {
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('supplier_prices')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('purchase_date', { ascending: false })
+
+      if (materialId) {
+        query = query.eq('material_id', materialId)
+      }
+
+      const { data, error } = await query
+      if (!error && data && data.length > 0) {
+        return data as PriceIntelligenceRecord[]
+      }
+    } catch {}
+
+    const local = PrintERPDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.SUPPLIER_PRICES, companyId) || []
+    if (materialId) {
+      return local.filter((x) => x.material_id === materialId)
+    }
+    return local
   }
 }
 

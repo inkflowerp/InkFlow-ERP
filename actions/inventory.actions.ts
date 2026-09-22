@@ -25,6 +25,11 @@ import {
 } from '@/types/inventory.types'
 import { RollConsumptionEngine } from '@/lib/domain/roll-consumption-engine'
 import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
+import type {
+  PriceIntelligenceRecord,
+  PriceIntelligenceSummary,
+  MasterPhysicalClassification,
+} from '@/types/price-intelligence.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -186,10 +191,21 @@ export async function receiveStockAction(
     unit_cost?: number
     is_opening_balance?: boolean
     supplier_reference?: string | null
+    supplier_id?: string | null
+    supplier_name?: string | null
+    size_label?: string | null
+    width_ft?: number | null
+    length_ft?: number | null
+    physical_form?: MasterPhysicalClassification
+    purchase_unit?: string | null
+    challan_number?: string | null
+    supplier_invoice_number?: string | null
+    batch_lot_number?: string | null
+    purchase_date?: string | null
     notes?: string | null
   },
   requestedCompanyId?: string
-): Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }>> {
+): Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }>> {
   try {
     const tenant = await getCurrentTenant(requestedCompanyId)
     if (!tenant || !tenant.companyId) {
@@ -214,6 +230,33 @@ export async function receiveStockAction(
     return { success: true, data: result }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to receive stock' }
+  }
+}
+
+export async function getPriceIntelligenceAction(
+  materialId: string,
+  sizeLabel?: string,
+  currentPrice?: number,
+  supplierId?: string | null,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<PriceIntelligenceSummary | null>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const summary = await InventoryService.getPriceIntelligence(
+      materialId,
+      companyId,
+      sizeLabel,
+      currentPrice,
+      supplierId
+    )
+    return { success: true, data: summary }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch price intelligence' }
   }
 }
 

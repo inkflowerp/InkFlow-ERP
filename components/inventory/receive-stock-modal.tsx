@@ -10,11 +10,14 @@ import { MaterialRecord, InventoryLocationRecord } from '@/types/inventory.types
 import type { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.types'
 import type { ProductRecord } from '@/types/product.types'
 import { SupplierRecord } from '@/types/crm.types'
-import { receiveStockAction, getMaterialsAction } from '@/actions/inventory.actions'
+import { receiveStockAction, getMaterialsAction, getPriceIntelligenceAction } from '@/actions/inventory.actions'
 import { receiveGoodsAction } from '@/actions/purchase.actions'
 import { updateProductPriceAction, getProductsAction } from '@/actions/product.actions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { isMaterialProduct, isReadyProduct, isServiceProduct, isOutsourceProduct } from '@/lib/units'
+import { PriceIntelligenceEngine } from '@/lib/domain/price-intelligence-engine'
+import { PriceIntelligenceCard } from '@/components/inventory/price-intelligence-card'
+import type { ConfiguredMaterialSize, PriceIntelligenceSummary, PriceIntelligenceRecord } from '@/types/price-intelligence.types'
 import {
   Truck,
   Package,
@@ -124,7 +127,7 @@ export interface DirectReceiptItemRow {
   quantity: number
   batch_lot_number: string
   total_cost: number
-  // Sizing & variety properties
+  // Sizing & variety properties with discrete economics
   is_roll?: boolean
   roll_width_ft?: number | null
   roll_length_ft?: number | null
@@ -134,6 +137,9 @@ export interface DirectReceiptItemRow {
   thickness_mm?: number | null
   available_widths_ft?: number[]
   available_sheet_sizes?: string[]
+  configured_sizes?: ConfiguredMaterialSize[]
+  selected_size_id?: string
+  price_intelligence_summary?: PriceIntelligenceSummary | null
   variants?: any[]
   size_spec?: string | null
   liquid_volume_capacity?: string | null
@@ -910,6 +916,28 @@ export function ReceiveStockModal({
     return groups
   }, [unifiedCatalog])
 
+  // Helper to build live price intelligence summary for a direct item row
+  const computePriceIntelligence = (
+    item: UnifiedStockItem | undefined,
+    sizeLabel?: string,
+    unitPrice?: number,
+    supplierId?: string | null
+  ): PriceIntelligenceSummary | null => {
+    if (!item) return null
+    try {
+      const rawHistory = PrintERPDataStore.getAll<PriceIntelligenceRecord>(STORAGE_KEYS.PRICE_INTELLIGENCE, companyId) || []
+      return PriceIntelligenceEngine.buildPriceIntelligenceSummary({
+        material: item,
+        size_label: sizeLabel,
+        current_unit_price: Number(unitPrice || item.previous_cost || 0),
+        current_supplier_id: supplierId || selectedSupplierId || null,
+        history: rawHistory,
+      })
+    } catch {
+      return null
+    }
+  }
+
   // Initialize or populate Direct Items
   const createInitialDirectRow = (itemId?: string): DirectReceiptItemRow => {
     const target: UnifiedStockItem = (itemId ? unifiedCatalog.find((x) => x.id === itemId || x.parent_id === itemId) : unifiedCatalog[0]) || {
@@ -944,12 +972,22 @@ export function ReceiveStockModal({
       pack_quantity: null,
     }
 
-    const prevCost = Number(target.previous_cost) || 0
+    const pForm = target.physical_form || 'general'
+    const configuredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(target)
+    const initialSize = configuredSizes[0]
+
+    let initialCost = Number(target.previous_cost) || 0
+    if (initialSize?.default_supplier_price) {
+      initialCost = initialSize.default_supplier_price
+    }
+
+    const prevCost = initialCost
     const prevSell = Number(target.previous_selling_price) || 0
     const targetMargin = target.target_margin_percent || (prevSell > prevCost && prevSell > 0 ? Math.round(((prevSell - prevCost) / prevSell) * 100) : 35)
     const suggestedSell = prevSell > 0 ? prevSell : (prevCost > 0 ? Math.ceil(prevCost / (1 - targetMargin / 100)) : 0)
-    const pForm = target.physical_form || 'general'
     const availUnits = target.available_purchase_units || getAvailablePurchaseUnits(pForm, target.unit, target.master_purchase_unit)
+
+    const summary = computePriceIntelligence(target, initialSize?.label, initialCost, selectedSupplierId)
 
     return {
       id: `dir-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -977,16 +1015,19 @@ export function ReceiveStockModal({
       batch_lot_number: '',
       total_cost: prevCost * 1,
       is_roll: target.is_roll,
-      roll_width_ft: target.roll_width_ft,
-      roll_length_ft: target.roll_length_ft,
-      roll_area_sft: target.roll_area_sft,
-      sheet_size: target.sheet_size,
-      sheet_area_sft: target.sheet_area_sft,
-      thickness_mm: target.thickness_mm,
+      roll_width_ft: initialSize?.width_ft || target.roll_width_ft,
+      roll_length_ft: initialSize?.length_ft || target.roll_length_ft,
+      roll_area_sft: initialSize?.standard_area_sft || target.roll_area_sft,
+      sheet_size: initialSize?.physical_form === 'sheet' ? initialSize.label : target.sheet_size,
+      sheet_area_sft: initialSize?.standard_area_sft || target.sheet_area_sft,
+      thickness_mm: initialSize?.thickness_mm || target.thickness_mm,
       available_widths_ft: target.available_widths_ft,
       available_sheet_sizes: target.available_sheet_sizes,
+      configured_sizes: configuredSizes,
+      selected_size_id: initialSize?.id,
+      price_intelligence_summary: summary,
       variants: target.variants,
-      size_spec: target.size_spec,
+      size_spec: initialSize?.label || target.size_spec,
       liquid_volume_capacity: target.liquid_volume_capacity,
       pack_quantity: target.pack_quantity,
     }
@@ -1122,6 +1163,51 @@ export function ReceiveStockModal({
     )
   }
 
+  // Quick-switch configured size (Width × Length & Discrete Economics) for a direct item line
+  const handleSelectConfiguredSize = (index: number, sizeId: string) => {
+    setDirectItems((prev) => {
+      const updated = [...prev]
+      const current = { ...updated[index] }
+      const matchedSize = (current.configured_sizes || []).find((s) => s.id === sizeId)
+      if (!matchedSize) return updated
+
+      current.selected_size_id = matchedSize.id
+      current.size_spec = matchedSize.label
+
+      if (matchedSize.physical_form === 'roll') {
+        current.roll_width_ft = matchedSize.width_ft || current.roll_width_ft
+        current.roll_length_ft = matchedSize.length_ft || current.roll_length_ft
+        current.roll_area_sft = matchedSize.standard_area_sft || (current.roll_width_ft && current.roll_length_ft ? Math.round(current.roll_width_ft * current.roll_length_ft) : 820)
+      } else if (matchedSize.physical_form === 'sheet') {
+        current.sheet_size = matchedSize.label
+        current.sheet_area_sft = matchedSize.standard_area_sft || 32
+        current.thickness_mm = matchedSize.thickness_mm || current.thickness_mm
+      }
+
+      if (matchedSize.default_supplier_price && matchedSize.default_supplier_price > 0) {
+        current.unit_cost = matchedSize.default_supplier_price
+        current.previous_cost = matchedSize.default_supplier_price
+        current.total_cost = Math.round(current.quantity * current.unit_cost)
+
+        const margin = current.target_margin_percent || 35
+        if (margin > 0 && margin < 95) {
+          current.new_selling_price = Math.ceil(current.unit_cost / (1 - margin / 100))
+        }
+      }
+
+      const baseItem = unifiedCatalog.find((x) => x.id === current.material_id || x.id === current.parent_id)
+      current.price_intelligence_summary = computePriceIntelligence(
+        baseItem,
+        matchedSize.label,
+        current.unit_cost,
+        selectedSupplierId
+      )
+
+      updated[index] = current
+      return updated
+    })
+  }
+
   // Direct item row manipulation with smart cost/price intelligence
   const handleDirectItemChange = (index: number, field: keyof DirectReceiptItemRow, val: any) => {
     setDirectItems((prev) => {
@@ -1156,8 +1242,20 @@ export function ReceiveStockModal({
           current.size_spec = item.size_spec
           current.liquid_volume_capacity = item.liquid_volume_capacity
           current.pack_quantity = item.pack_quantity
-          current.previous_cost = item.previous_cost
-          current.unit_cost = item.previous_cost > 0 ? item.previous_cost : 0
+
+          // Active configured sizes with discrete economics
+          const activeSizes = PriceIntelligenceEngine.getMaterialActiveSizes(item)
+          current.configured_sizes = activeSizes
+          const primarySize = activeSizes[0]
+          current.selected_size_id = primarySize?.id
+
+          let activeCost = item.previous_cost
+          if (primarySize?.default_supplier_price) {
+            activeCost = primarySize.default_supplier_price
+          }
+
+          current.previous_cost = activeCost
+          current.unit_cost = activeCost > 0 ? activeCost : 0
           current.cost_variance_percent = 0
           current.previous_selling_price = item.previous_selling_price
           current.target_margin_percent = item.target_margin_percent || 35
@@ -1171,10 +1269,18 @@ export function ReceiveStockModal({
           } else {
             current.new_selling_price = Math.round(current.unit_cost * 1.4)
           }
+
+          // Compute Price Intelligence Summary
+          current.price_intelligence_summary = computePriceIntelligence(
+            item,
+            primarySize?.label,
+            current.unit_cost,
+            selectedSupplierId
+          )
         }
       }
 
-      // Unit Cost Changed (New Purchase Price) -> Recalculate Variance & Suggested Selling Price
+      // Unit Cost Changed (New Purchase Price) -> Recalculate Variance & Suggested Selling Price & Price Intel
       if (field === 'unit_cost') {
         const newCost = Number(val) || 0
         const prevCost = current.previous_cost
@@ -1191,6 +1297,15 @@ export function ReceiveStockModal({
         } else if (newCost > 0) {
           current.new_selling_price = Math.round(newCost * 1.4)
         }
+
+        // Live update price intelligence
+        const baseItem = unifiedCatalog.find((x) => x.id === current.material_id || x.id === current.parent_id)
+        current.price_intelligence_summary = computePriceIntelligence(
+          baseItem,
+          current.size_spec || undefined,
+          newCost,
+          selectedSupplierId
+        )
       }
 
       // New Selling Price Changed Manually -> Update Gross Profit Margin %
@@ -1603,6 +1718,17 @@ export function ReceiveStockModal({
               unit_cost: Number(item.unit_cost) || 0,
               is_opening_balance: mode === 'opening',
               supplier_reference: supplierRef,
+              supplier_id: selectedSupplierId || null,
+              supplier_name: supRecord?.supplier_name || customSupplierName.trim() || null,
+              size_label: item.size_spec || (item.roll_width_ft ? `${item.roll_width_ft} ft × ${item.roll_length_ft || 164} ft` : item.sheet_size) || null,
+              width_ft: item.roll_width_ft || null,
+              length_ft: item.roll_length_ft || null,
+              physical_form: item.physical_form as any,
+              purchase_unit: item.unit || item.master_purchase_unit || 'pcs',
+              challan_number: challanNumber.trim() || null,
+              supplier_invoice_number: supplierInvoiceNumber.trim() || null,
+              batch_lot_number: item.batch_lot_number?.trim() || null,
+              purchase_date: receivedDate,
               notes: combinedItemNotes || fullNotes,
             },
             companyId
@@ -2251,10 +2377,10 @@ export function ReceiveStockModal({
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-3 text-xs shadow-xs"
+                    className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-3.5 text-xs shadow-xs"
                   >
-                    {/* Item Header */}
-                    <div className="flex items-center justify-between gap-2">
+                    {/* Item Header with Inherited Physical Form & Purchase Unit Badges */}
+                    <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800/80 pb-2">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-mono font-bold flex items-center justify-center text-[10px]">
                           #{idx + 1}
@@ -2274,8 +2400,10 @@ export function ReceiveStockModal({
                               : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
                           )}
                         >
-                          {item.item_type === 'product' ? 'Commercial Master' : 'Raw Material'}
+                          {item.item_type === 'product' ? 'Commercial Master' : 'Registered Material Master'}
                         </Badge>
+
+                        {/* Inherited Physical Form / Classification Badge */}
                         {(() => {
                           const badgeInfo = getPhysicalFormBadge(item.physical_form)
                           const BadgeIcon = badgeInfo.icon
@@ -2286,18 +2414,30 @@ export function ReceiveStockModal({
                                 'text-[10px] px-2 py-0 font-bold flex items-center gap-1 border',
                                 badgeInfo.badgeStyle
                               )}
+                              title="Inherited from Material Master Physical Classification"
                             >
                               <BadgeIcon className="h-3 w-3" />
-                              {badgeInfo.label}
+                              <span>Form: {badgeInfo.label}</span>
                             </Badge>
                           )
                         })()}
-                        {(item.variant_name || item.size_spec || (item.physical_form === 'roll' && item.roll_width_ft) || (item.physical_form === 'sheet' && item.sheet_size)) && (
+
+                        {/* Inherited Purchase Unit Badge */}
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-2 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700 font-mono font-bold uppercase"
+                          title="Inherited from Material Master Purchasing Unit"
+                        >
+                          Purchase Unit: {item.unit || item.master_purchase_unit || 'pcs'}
+                        </Badge>
+
+                        {/* Current Active Size Pill */}
+                        {(item.size_spec || (item.physical_form === 'roll' && item.roll_width_ft) || (item.physical_form === 'sheet' && item.sheet_size)) && (
                           <Badge
                             variant="outline"
                             className="text-[10px] px-2 py-0 bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-semibold"
                           >
-                            📏 {item.variant_name || item.size_spec || (item.physical_form === 'roll' ? `${item.roll_width_ft || 5}ft Roll (${rollArea} sft)` : item.sheet_size)}
+                            📏 {item.size_spec || (item.physical_form === 'roll' ? `${item.roll_width_ft || 5}ft Roll (${rollArea} sft)` : item.sheet_size)}
                           </Badge>
                         )}
                       </div>
@@ -2316,23 +2456,23 @@ export function ReceiveStockModal({
 
                     {/* Selector & Quantities Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                      {/* Unified Catalog Selector */}
+                      {/* 1. Registered Material Master Dropdown (No Free-Text) */}
                       <div className="sm:col-span-6">
-                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
-                          Registered Physical Inventory Product / Substrate <span className="text-rose-500">*</span>
+                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
+                          Material Name (Registered Master) <span className="text-rose-500">*</span>
                         </Label>
                         <select
                           value={item.material_id}
                           onChange={(e) => handleDirectItemChange(idx, 'material_id', e.target.value)}
-                          className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
+                          className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-medium focus:ring-2 focus:ring-emerald-500"
                           required
                         >
-                          <option value="">-- Choose Registered Master Item --</option>
+                          <option value="">-- Select Registered Material Master --</option>
                           {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
                             <optgroup key={grpName} label={`📂 ${grpName}`}>
                               {grpItems.map((m) => (
                                 <option key={m.id} value={m.id}>
-                                  [{m.sku}] {m.name} — Prev Cost: {formatBDT(m.previous_cost)} | Price: {formatBDT(m.previous_selling_price)} ({m.unit})
+                                  [{m.sku}] {m.name} — Prev: {formatBDT(m.previous_cost)} ({m.unit})
                                 </option>
                               ))}
                             </optgroup>
@@ -2340,10 +2480,70 @@ export function ReceiveStockModal({
                         </select>
                       </div>
 
+                      {/* 2. Active Configured Roll/Sheet Sizes & Discrete Economics Dropdown */}
+                      <div className="sm:col-span-6">
+                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
+                          Active Configured Size & Economics <span className="text-rose-500">*</span>
+                        </Label>
+                        {item.configured_sizes && item.configured_sizes.length > 0 ? (
+                          <select
+                            value={item.selected_size_id || item.configured_sizes[0]?.id}
+                            onChange={(e) => handleSelectConfiguredSize(idx, e.target.value)}
+                            className="w-full h-9 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/30 px-2.5 text-xs font-semibold text-indigo-950 dark:text-indigo-200"
+                          >
+                            {item.configured_sizes.map((sz) => (
+                              <option key={sz.id} value={sz.id}>
+                                {sz.label}
+                                {sz.default_supplier_price ? ` — ৳${sz.default_supplier_price.toLocaleString()}` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <Input
+                            placeholder="Standard Master Size"
+                            value={item.size_spec || 'Standard Master Size'}
+                            disabled
+                            className="h-9 text-xs bg-slate-100 dark:bg-slate-800 font-mono text-slate-600 dark:text-slate-400"
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Active Configured Sizing Quick-Pills */}
+                    {item.configured_sizes && item.configured_sizes.length > 1 && (
+                      <div className="p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1 mr-1">
+                          <Disc className="h-3 w-3 text-indigo-600" />
+                          Configured Sizes:
+                        </span>
+                        {item.configured_sizes.map((sz) => {
+                          const isSelected = item.selected_size_id === sz.id
+                          return (
+                            <button
+                              key={sz.id}
+                              type="button"
+                              onClick={() => handleSelectConfiguredSize(idx, sz.id)}
+                              className={cn(
+                                'text-[11px] py-0.5 px-2.5 rounded-md font-mono transition-all cursor-pointer border',
+                                isSelected
+                                  ? 'bg-indigo-600 text-white font-bold border-indigo-700 shadow-xs'
+                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
+                              )}
+                            >
+                              {sz.label}
+                              {sz.default_supplier_price ? ` (৳${sz.default_supplier_price.toLocaleString()})` : ''}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {/* Quantity & Unit Pricing Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       {/* Quantity */}
-                      <div className="sm:col-span-3">
+                      <div>
                         <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
-                          Intake Qty ({item.unit || 'pcs'}) <span className="text-rose-500">*</span>
+                          Quantity ({item.unit || 'Roll'}) <span className="text-rose-500">*</span>
                         </Label>
                         <Input
                           type="number"
@@ -2351,342 +2551,72 @@ export function ReceiveStockModal({
                           min="0.01"
                           value={item.quantity}
                           onChange={(e) => handleDirectItemChange(idx, 'quantity', Number(e.target.value))}
-                          className="h-8.5 text-xs font-bold font-mono"
+                          className="h-9 text-xs font-bold font-mono border-emerald-300 dark:border-emerald-700"
                           required
                         />
                       </div>
 
-                      {/* Batch Lot # */}
-                      <div className="sm:col-span-3">
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Lot / Tag #</Label>
+                      {/* Unit Purchase Price (Discrete Supplier Rate) */}
+                      <div>
+                        <div className="flex items-center justify-between mb-0.5">
+                          <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block">
+                            Unit Purchase Price (৳) <span className="text-rose-500">*</span>
+                          </Label>
+                          {item.cost_variance_percent !== 0 && (
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                'text-[9px] px-1 py-0 font-mono font-bold',
+                                isVariancePositive
+                                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              )}
+                            >
+                              {isVariancePositive ? `+${item.cost_variance_percent}% ↗` : `${item.cost_variance_percent}% ↘`}
+                            </Badge>
+                          )}
+                        </div>
                         <Input
-                          placeholder="e.g. Lot-091A"
+                          type="number"
+                          step="any"
+                          min="0"
+                          value={item.unit_cost}
+                          onChange={(e) => handleDirectItemChange(idx, 'unit_cost', Number(e.target.value))}
+                          className="h-9 text-xs font-bold font-mono bg-white dark:bg-slate-900 border-emerald-300 dark:border-emerald-700"
+                          required
+                        />
+                      </div>
+
+                      {/* Inward Total Cost */}
+                      <div>
+                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
+                          Total Value (৳)
+                        </Label>
+                        <div className="h-9 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center font-mono font-bold text-emerald-700 dark:text-emerald-300 text-sm">
+                          {formatBDT(item.total_cost)}
+                        </div>
+                      </div>
+
+                      {/* Batch / Lot / Challan Tag */}
+                      <div>
+                        <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Lot / Roll Tag</Label>
+                        <Input
+                          placeholder="e.g. Lot-1024"
                           value={item.batch_lot_number}
                           onChange={(e) => handleDirectItemChange(idx, 'batch_lot_number', e.target.value)}
-                          className="h-8.5 text-xs font-mono"
+                          className="h-9 text-xs font-mono"
                         />
                       </div>
                     </div>
 
-                    {/* SIZE & VARIETY QUICK-SWITCH PILL BAR */}
-                    {(hasVariants || hasRollWidths || hasSheetSizes || hasLiquid || hasHardware) && (
-                      <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 space-y-2">
-                        {/* 1. Explicit Product Variants */}
-                        {hasVariants && (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
-                              <Layers3 className="h-3 w-3 text-emerald-600" />
-                              Variety:
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleSelectVariant(idx, null)}
-                              className={cn(
-                                'text-[11px] py-0.5 px-2 rounded-md font-medium transition-all cursor-pointer',
-                                !item.variant_id
-                                  ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                              )}
-                            >
-                              Default Master
-                            </button>
-                            {item.variants!.map((v: any) => {
-                              const isSelected = item.variant_id === v.id
-                              return (
-                                <button
-                                  key={v.id}
-                                  type="button"
-                                  onClick={() => handleSelectVariant(idx, v)}
-                                  className={cn(
-                                    'text-[11px] py-0.5 px-2 rounded-md font-medium transition-all cursor-pointer',
-                                    isSelected
-                                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                  )}
-                                >
-                                  {v.variant_name}
-                                  {v.thickness_mm ? ` (${v.thickness_mm}mm)` : ''}
-                                  {v.size_spec ? ` - ${v.size_spec}` : ''}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-
-                        {/* 2. Roll Width Pills (for roll media) */}
-                        {item.physical_form === 'roll' && (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
-                              <Disc className="h-3 w-3 text-cyan-600" />
-                              Registered Width:
-                            </span>
-                            {(item.available_widths_ft && item.available_widths_ft.length > 0 ? item.available_widths_ft : [3, 3.2, 4, 5, 6, 10]).map((w) => {
-                              const isSelected = item.roll_width_ft === w
-                              const sftArea = Math.round(w * rollLen)
-                              return (
-                                <button
-                                  key={w}
-                                  type="button"
-                                  onClick={() => handleSelectRollWidth(idx, w)}
-                                  className={cn(
-                                    'text-[11px] py-0.5 px-2 rounded-md font-mono transition-all cursor-pointer',
-                                    isSelected
-                                      ? 'bg-cyan-600 text-white font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                  )}
-                                >
-                                  {w} ft ({sftArea} sft)
-                                </button>
-                              )
-                            })}
-                            <Badge variant="outline" className="text-[10px] font-mono text-slate-500 ml-1 py-0 px-1.5">
-                              Std Length: {rollLen} ft
-                            </Badge>
-                          </div>
-                        )}
-
-                        {/* 3. Sheet Size Pills (for rigid sheets) */}
-                        {item.physical_form === 'sheet' && (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
-                              <Layers className="h-3 w-3 text-amber-600" />
-                              Sheet Dimensions:
-                            </span>
-                            {(item.available_sheet_sizes && item.available_sheet_sizes.length > 0
-                              ? item.available_sheet_sizes
-                              : ['8x4 ft (32 sft)', '6x4 ft (24 sft)', '4x4 ft (16 sft)']
-                            ).map((s) => {
-                              const isSelected = item.sheet_size === s
-                              return (
-                                <button
-                                  key={s}
-                                  type="button"
-                                  onClick={() => handleSelectSheetSize(idx, s)}
-                                  className={cn(
-                                    'text-[11px] py-0.5 px-2 rounded-md font-mono transition-all cursor-pointer',
-                                    isSelected
-                                      ? 'bg-amber-600 text-white font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                  )}
-                                >
-                                  {s}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-
-                        {/* 4. Liquid Chemistry Volume Pills */}
-                        {hasLiquid && (
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
-                              <Droplets className="h-3 w-3 text-purple-600" />
-                              Volume Pack:
-                            </span>
-                            {['1L Bottle', '5L Can', '20L Drum'].map((v) => {
-                              const isSelected = (item.size_spec || '').includes(v)
-                              return (
-                                <button
-                                  key={v}
-                                  type="button"
-                                  onClick={() => {
-                                    handleDirectItemChange(idx, 'size_spec', v)
-                                    if (v.includes('Can')) handleSelectUnit(idx, 'can')
-                                    else if (v.includes('Bottle')) handleSelectUnit(idx, 'bottle')
-                                    else handleSelectUnit(idx, 'ltr')
-                                  }}
-                                  className={cn(
-                                    'text-[11px] py-0.5 px-2 rounded-md font-medium transition-all cursor-pointer',
-                                    isSelected
-                                      ? 'bg-purple-600 text-white font-bold shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                  )}
-                                >
-                                  {v}
-                                </button>
-                              )
-                            })}
-                          </div>
-                        )}
-
-                        {/* 5. Dynamic Purchase Unit Switcher & Live Intel Bar */}
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
-                          <div className="flex items-center gap-1 flex-wrap">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 mr-1">
-                              Purchase Unit:
-                            </span>
-                            {(item.available_purchase_units && item.available_purchase_units.length > 0
-                              ? item.available_purchase_units
-                              : [item.unit || 'pcs']
-                            ).map((u) => {
-                              const isSelected = (item.unit || '').toLowerCase() === u.toLowerCase()
-                              return (
-                                <button
-                                  key={u}
-                                  type="button"
-                                  onClick={() => handleSelectUnit(idx, u)}
-                                  className={cn(
-                                    'text-[10px] py-0.5 px-2 rounded-md uppercase font-mono font-bold transition-all cursor-pointer border',
-                                    isSelected
-                                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                  )}
-                                >
-                                  {u}
-                                </button>
-                              )
-                            })}
-                          </div>
-
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
-                            {item.physical_form === 'roll' ? (
-                              <span>
-                                📏 1 Roll = {item.roll_width_ft || 5}ft × {rollLen}ft ({rollArea} sft)
-                                {item.unit === 'roll' && (
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
-                                    (৳ {(item.unit_cost / rollArea).toFixed(2)} / sft)
-                                  </span>
-                                )}
-                                {item.unit === 'sft' && (
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
-                                    (৳ {(item.unit_cost * rollArea).toFixed(2)} / full roll)
-                                  </span>
-                                )}
-                              </span>
-                            ) : item.physical_form === 'sheet' ? (
-                              <span>
-                                📏 1 Sheet = {item.sheet_size || '8x4 ft'} ({sheetArea} sft)
-                                {item.unit === 'sheet' && (
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
-                                    (৳ {(item.unit_cost / sheetArea).toFixed(2)} / sft)
-                                  </span>
-                                )}
-                                {item.unit === 'sft' && (
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
-                                    (৳ {(item.unit_cost * sheetArea).toFixed(2)} / full sheet)
-                                  </span>
-                                )}
-                              </span>
-                            ) : item.physical_form === 'liquid' ? (
-                              <span>🧪 Liquid Consumable (Stock Unit: {item.master_unit || 'ltr'})</span>
-                            ) : item.size_spec ? (
-                              <span>📐 Spec: {item.size_spec}</span>
-                            ) : null}
-                          </div>
-                        </div>
-                      </div>
+                    {/* LIVE PRICE INTELLIGENCE HUD & SUPPLIER HISTORY */}
+                    {item.price_intelligence_summary && (
+                      <PriceIntelligenceCard
+                        summary={item.price_intelligence_summary}
+                        currentUnitPrice={item.unit_cost}
+                        purchaseUnit={item.unit}
+                      />
                     )}
-
-                    {/* COST & PRICE INTELLIGENCE HUD (Previous vs New Pricing) */}
-                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
-                        <div className="flex items-center gap-1.5">
-                          <DollarSign className="h-4 w-4 text-emerald-600" />
-                          <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200">
-                            Commercial Master Pricing & Margin Intelligence
-                          </span>
-                        </div>
-
-                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={item.update_master_pricing}
-                            onChange={(e) => handleDirectItemChange(idx, 'update_master_pricing', e.target.checked)}
-                            className="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
-                          />
-                          Update Product Master with New Cost & Price
-                        </label>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-0.5">
-                        {/* 1. Previous Purchase Cost */}
-                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Cost</span>
-                          <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                            {formatBDT(item.previous_cost)}
-                            <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
-                          </div>
-                        </div>
-
-                        {/* 2. New Purchase Cost (Editable) & Variance */}
-                        <div className="p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 uppercase font-bold">
-                              New Purchase Cost <span className="text-rose-500">*</span>
-                            </span>
-                            {item.cost_variance_percent !== 0 && (
-                              <Badge
-                                variant="outline"
-                                className={cn(
-                                  'text-[9px] px-1 py-0 font-mono font-bold',
-                                  isVariancePositive
-                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
-                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                )}
-                              >
-                                {isVariancePositive ? `+${item.cost_variance_percent}% ↗` : `${item.cost_variance_percent}% ↘`}
-                              </Badge>
-                            )}
-                          </div>
-                          <Input
-                            type="number"
-                            step="any"
-                            min="0"
-                            value={item.unit_cost}
-                            onChange={(e) => handleDirectItemChange(idx, 'unit_cost', Number(e.target.value))}
-                            className="h-7 text-xs font-mono font-bold bg-white dark:bg-slate-900 border-emerald-300 dark:border-emerald-700"
-                            required
-                          />
-                        </div>
-
-                        {/* 3. Previous Selling Price */}
-                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Price</span>
-                          <div className="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5">
-                            {formatBDT(item.previous_selling_price)}
-                            <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
-                          </div>
-                        </div>
-
-                        {/* 4. New Selling Price & Margin % */}
-                        <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] text-blue-800 dark:text-blue-300 uppercase font-bold">
-                              New Selling Price
-                            </span>
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] px-1 py-0 font-mono font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                            >
-                              Margin: {item.target_margin_percent}%
-                            </Badge>
-                          </div>
-                          <Input
-                            type="number"
-                            step="any"
-                            min="0"
-                            value={item.new_selling_price}
-                            onChange={(e) => handleDirectItemChange(idx, 'new_selling_price', Number(e.target.value))}
-                            className="h-7 text-xs font-mono font-bold bg-white dark:bg-slate-900 border-blue-300 dark:border-blue-700"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Calculation Breakdown Footer */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-1 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 gap-1">
-                        <span>
-                          Inward Valuation: {item.quantity} {item.unit} × {formatBDT(item.unit_cost)}
-                          {item.new_selling_price > item.unit_cost && (
-                            <span className="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
-                              (Profit: {formatBDT(grossProfitPerUnit)} / {item.unit})
-                            </span>
-                          )}
-                        </span>
-                        <span className="font-mono font-black text-slate-900 dark:text-white text-xs">
-                          Line Total: {formatBDT(item.total_cost)}
-                        </span>
-                      </div>
-                    </div>
                   </div>
                 )
               })}

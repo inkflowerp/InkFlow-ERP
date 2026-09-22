@@ -23,6 +23,12 @@ import type {
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { AuditRepository } from '../lib/repositories/audit.repository.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
+import type {
+  PriceIntelligenceRecord,
+  PriceIntelligenceSummary,
+  MasterPhysicalClassification,
+} from '../types/price-intelligence.types.ts'
+import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
 
 export class InventoryService {
   // ==========================================
@@ -142,7 +148,7 @@ export class InventoryService {
   }
 
   /**
-   * Receive physical stock or enter opening balance into location
+   * Receive physical stock or enter opening balance into location with Discrete Roll Creation & Price Intelligence
    */
   static async receiveStock(params: {
     company_id: string
@@ -153,13 +159,44 @@ export class InventoryService {
     unit_cost?: number
     is_opening_balance?: boolean
     supplier_reference?: string | null
+    supplier_id?: string | null
+    supplier_name?: string | null
+    size_label?: string | null
+    width_ft?: number | null
+    length_ft?: number | null
+    physical_form?: MasterPhysicalClassification
+    purchase_unit?: string | null
+    challan_number?: string | null
+    supplier_invoice_number?: string | null
+    batch_lot_number?: string | null
+    purchase_date?: string | null
     notes?: string | null
     performed_by_id?: string | null
     performed_by_name: string
     actor_email?: string
-  }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }> {
+  }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }> {
     if (params.quantity <= 0) {
       throw new Error('Stock receiving rejected: Quantity must be greater than zero.')
+    }
+
+    const material = await InventoryRepository.getMaterialById(params.material_id, params.company_id)
+    if (!material) {
+      throw new Error(`Material with ID ${params.material_id} not found.`)
+    }
+
+    const physicalForm = params.physical_form || PriceIntelligenceEngine.detectMaterialPhysicalForm(material)
+    const isRoll = physicalForm === 'roll' || material.is_roll
+
+    // Width & Length extraction
+    const widthFt = Number(params.width_ft || material.roll_width_ft || 3)
+    const lengthFt = Number(params.length_ft || material.standard_roll_length_ft || material.roll_length_ft || 164)
+    const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 10) / 10 : 1
+    const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
+
+    // Quantity conversion: If purchase unit is Roll and material stock is kept in SFT, convert quantity
+    let stockChangeQty = params.quantity
+    if (isRoll && pUnit === 'roll' && material.unit.toLowerCase() === 'sft') {
+      stockChangeQty = Math.round(params.quantity * areaPerUnitSft * 100) / 100
     }
 
     const transactionType = params.is_opening_balance ? 'opening_stock' : 'RECEIPT'
@@ -168,15 +205,89 @@ export class InventoryService {
       branch_id: params.branch_id || null,
       material_id: params.material_id,
       location_id: params.location_id,
-      quantity_change: Math.abs(params.quantity),
+      quantity_change: Math.abs(stockChangeQty),
       transaction_type: transactionType,
       unit_cost: params.unit_cost,
       reference_type: params.is_opening_balance ? 'OPENING_BALANCE' : 'STOCK_RECEIPT',
-      reference_id: params.supplier_reference || null,
+      reference_id: params.challan_number || params.supplier_invoice_number || params.supplier_reference || null,
       notes: params.notes || (params.is_opening_balance ? 'Opening balance recorded' : 'Stock received'),
       performed_by_id: params.performed_by_id || null,
       performed_by_name: params.performed_by_name,
     })
+
+    // Discrete Physical Rolls Creation in Warehouse
+    const rollsCreated: InventoryRollRecord[] = []
+    if (isRoll && (pUnit === 'roll' || params.quantity >= 1)) {
+      const numRolls = Math.max(1, Math.round(params.quantity))
+      const cleanSku = (material.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+      const lot = params.batch_lot_number?.trim() || Date.now().toString().slice(-4)
+
+      for (let i = 1; i <= numRolls; i++) {
+        const rollCode = numRolls === 1
+          ? `ROL-${cleanSku}-${widthFt}FT-${lot}`
+          : `ROL-${cleanSku}-${widthFt}FT-${lot}-${String(i).padStart(2, '0')}`
+
+        try {
+          const rollRecord = await InventoryRepository.createPhysicalRoll({
+            company_id: params.company_id,
+            branch_id: params.branch_id || null,
+            material_id: material.id,
+            location_id: params.location_id,
+            roll_code: rollCode,
+            width_ft: widthFt,
+            initial_length_ft: lengthFt,
+            unit_cost: params.unit_cost ? (pUnit === 'roll' ? params.unit_cost : params.unit_cost * areaPerUnitSft) : undefined,
+            supplier_id: params.supplier_id || null,
+            batch_lot_number: params.batch_lot_number || null,
+            status: 'in_warehouse',
+            notes: `Direct Intake: ${params.supplier_name || params.supplier_reference || 'Supplier'} [${params.challan_number ? `Challan ${params.challan_number}` : ''}]`,
+          } as any)
+          rollRecord.status = 'in_warehouse'
+          rollsCreated.push(rollRecord)
+        } catch {}
+      }
+    }
+
+    // Record Inward Price Intelligence
+    const unitPrice = Number(params.unit_cost || material.last_purchase_price || material.average_cost || 0)
+    const normalizedEconomics = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
+      physical_form: physicalForm,
+      width_ft: widthFt,
+      length_ft: lengthFt,
+      standard_area_sft: areaPerUnitSft,
+      unit_purchase_price: unitPrice,
+      purchase_unit: pUnit,
+    })
+
+    try {
+      await InventoryRepository.recordPriceIntelligence({
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        material_id: material.id,
+        material_name: material.name,
+        material_sku: material.sku,
+        physical_form: physicalForm,
+        size_label: params.size_label || `${widthFt} ft × ${lengthFt === 164 ? '50 m' : `${lengthFt} ft`}`,
+        width_ft: widthFt,
+        length_ft: lengthFt,
+        area_sft: areaPerUnitSft,
+        purchase_unit: pUnit,
+        supplier_id: params.supplier_id || null,
+        supplier_name: params.supplier_name || params.supplier_reference || 'Spot Supplier',
+        unit_purchase_price: unitPrice,
+        quantity_received: params.quantity,
+        total_amount: Math.round(params.quantity * unitPrice),
+        normalized_area_sft: areaPerUnitSft,
+        normalized_price_per_sft: normalizedEconomics.normalized_cost_per_sft,
+        normalized_price_per_linear_ft: normalizedEconomics.normalized_cost_per_linear_ft,
+        normalized_price_per_unit: normalizedEconomics.normalized_cost_per_unit,
+        challan_number: params.challan_number || null,
+        supplier_invoice_number: params.supplier_invoice_number || null,
+        batch_lot_number: params.batch_lot_number || null,
+        location_id: params.location_id,
+        purchase_date: params.purchase_date || new Date().toISOString().split('T')[0],
+      })
+    } catch {}
 
     await AuditRepository.logEvent({
       companyId: params.company_id,
@@ -189,11 +300,36 @@ export class InventoryService {
         quantity: params.quantity,
         location_id: params.location_id,
         new_stock: result.material.current_stock,
+        rolls_created: rollsCreated.length,
       },
-      description: `${params.is_opening_balance ? 'Recorded opening stock' : 'Received stock'} for ${result.material.name} (${result.material.sku}): +${params.quantity} ${result.material.unit}`,
+      description: `${params.is_opening_balance ? 'Recorded opening stock' : 'Received stock'} for ${result.material.name} (${result.material.sku}): +${params.quantity} ${pUnit} (${stockChangeQty} ${result.material.unit})`,
     })
 
-    return result
+    return { ...result, rollsCreated }
+  }
+
+  /**
+   * Generates a dynamic Price Intelligence Summary for a material and configured size
+   */
+  static async getPriceIntelligence(
+    materialId: string,
+    companyId: string,
+    sizeLabel?: string,
+    currentPrice?: number,
+    supplierId?: string | null
+  ): Promise<PriceIntelligenceSummary | null> {
+    if (!materialId || !companyId) return null
+    const material = await InventoryRepository.getMaterialById(materialId, companyId)
+    if (!material) return null
+
+    const history = await InventoryRepository.getPriceIntelligenceHistory(companyId, materialId)
+    return PriceIntelligenceEngine.buildPriceIntelligenceSummary({
+      material,
+      size_label: sizeLabel,
+      current_unit_price: currentPrice || Number(material.last_purchase_price || material.average_cost || 0),
+      current_supplier_id: supplierId,
+      history,
+    })
   }
 
   // ==========================================

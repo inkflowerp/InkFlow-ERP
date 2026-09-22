@@ -109,6 +109,7 @@ export const STORAGE_KEYS = {
   QUOTATION_ACTIVITIES: 'printerp_tenant_quotation_activities',
   PRODUCTS: 'printerp_tenant_products',
   PRICE_HISTORY: 'printerp_tenant_price_history',
+  PRICE_INTELLIGENCE: 'printerp_tenant_price_intelligence',
   MATERIALS: 'printerp_tenant_materials',
   MOUNTED_ROLLS: 'printerp_tenant_mounted_rolls',
   STOCK_LEDGER: 'printerp_tenant_stock_ledger',

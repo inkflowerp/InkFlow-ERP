@@ -132,6 +132,8 @@ export interface InventoryRollRecord {
   width_ft: number
   initial_length_ft: number
   current_length_ft?: number
+  original_length_ft?: number
+  remaining_length_ft?: number
   initial_area_sft: number
   consumed_area_sft: number
   remaining_area_sft: number
@@ -286,6 +288,8 @@ export interface MaterialRecord {
   standard_roll_length_ft?: number
   default_allowance_per_side_in?: number
   unit: MaterialUnit
+  purchase_unit?: string | null
+  master_purchase_unit?: string | null
   base_unit?: string | null
   conversion_factor?: number
   is_roll: boolean
