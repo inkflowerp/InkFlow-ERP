@@ -340,50 +340,100 @@ export class LogisticsRepository {
       payload.id = challan.id
     }
 
-    let { data, error } = await (supabase as any)
-      .from('delivery_challans')
-      .insert(payload)
-      .select()
-      .single()
+    let data: any = null
+    let error: any = null
 
-    if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
-      const admin = createAdminClient()
-      const adminRes = await (admin as any)
+    try {
+      const res = await (supabase as any)
         .from('delivery_challans')
         .insert(payload)
         .select()
         .single()
-      if (!adminRes.error && adminRes.data) {
-        data = adminRes.data
-        error = null
-      }
-    }
+      data = res.data
+      error = res.error
 
-    if (error) {
-      throw new Error(`Failed to create delivery challan: ${error.message}`)
-    }
-
-    if (challan.items && challan.items.length > 0 && data?.id) {
-      const itemsPayload = challan.items.map((it: any) => ({
-        challan_id: data.id,
-        product_description: it.product_description || it.item_description || 'Item',
-        dimensions_spec: it.dimensions_spec || null,
-        quantity: Number(it.quantity) || 1,
-        unit: it.unit || 'pcs',
-        remarks: it.remarks || null,
-      }))
-
-      let itemRes = await (supabase as any).from('challan_items').insert(itemsPayload)
-      if (itemRes.error) {
+      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
         const admin = createAdminClient()
-        itemRes = await (admin as any).from('challan_items').insert(itemsPayload)
-        if (itemRes.error) {
-          await (admin as any).from('delivery_challan_items').insert(itemsPayload)
+        const adminRes = await (admin as any)
+          .from('delivery_challans')
+          .insert(payload)
+          .select()
+          .single()
+        if (!adminRes.error && adminRes.data) {
+          data = adminRes.data
+          error = null
         }
       }
-    }
 
-    return (await this.getChallanById(String(data.id), effectiveCompanyId)) as DeliveryChallanRecord
+      if (error) {
+        throw new Error(`Failed to create delivery challan: ${error.message}`)
+      }
+
+      if (challan.items && challan.items.length > 0 && data?.id) {
+        const itemsPayload = challan.items.map((it: any) => ({
+          challan_id: data.id,
+          product_description: it.product_description || it.item_description || 'Item',
+          dimensions_spec: it.dimensions_spec || null,
+          quantity: Number(it.quantity) || 1,
+          unit: it.unit || 'pcs',
+          remarks: it.remarks || null,
+        }))
+
+        let itemRes = await (supabase as any).from('challan_items').insert(itemsPayload)
+        if (itemRes.error) {
+          const admin = createAdminClient()
+          itemRes = await (admin as any).from('challan_items').insert(itemsPayload)
+          if (itemRes.error) {
+            await (admin as any).from('delivery_challan_items').insert(itemsPayload)
+          }
+        }
+      }
+
+      return (await this.getChallanById(String(data.id), effectiveCompanyId)) as DeliveryChallanRecord
+    } catch (err: any) {
+      // Offline / DataStore fallback
+      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const fallbackChallan: DeliveryChallanRecord = {
+        id: challan.id || `chl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+        company_id: effectiveCompanyId,
+        challan_number: challanNumber,
+        customer_id: challan.customer_id,
+        customer_name: challan.customer_name,
+        customer_phone: challan.customer_phone,
+        sales_order_id: challan.sales_order_id || null,
+        order_number: challan.order_number || null,
+        delivery_address: challan.delivery_address,
+        status: (challan.status as any) || 'ready',
+        delivery_method: challan.delivery_method || 'company_vehicle',
+        delivery_person_name: challan.delivery_person_name || null,
+        delivery_person_phone: challan.delivery_person_phone || null,
+        vehicle_info: challan.vehicle_info || null,
+        transport_cost: Number(challan.transport_cost) || 0,
+        scheduled_date: challan.scheduled_date || new Date().toISOString().split('T')[0],
+        notes: challan.notes || null,
+        created_by_name: challan.created_by_name || challan.dispatched_by_name || 'Logistics Coordinator',
+        due_amount: Number(challan.due_amount) || 0,
+        grand_total: Number(challan.grand_total) || 0,
+        paid_amount: Number(challan.paid_amount) || 0,
+        items: (challan.items || []).map((it: any, idx: number) => ({
+          id: it.id || `item-${idx + 1}`,
+          challan_id: challan.id || '',
+          product_description: it.product_description || it.item_description || 'Item',
+          dimensions_spec: it.dimensions_spec || null,
+          quantity: Number(it.quantity) || 1,
+          unit: it.unit || 'pcs',
+          remarks: it.remarks || null,
+          is_delivered: it.is_delivered || false,
+          status: it.status || 'ready_for_delivery',
+          workflow_routing: it.workflow_routing,
+        })),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      all.unshift(fallbackChallan)
+      PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
+      return fallbackChallan
+    }
   }
 
   static async updateChallanStatus(
@@ -420,32 +470,55 @@ export class LogisticsRepository {
       payload.delivered_at = new Date().toISOString()
     }
 
-    let updateQuery = (supabase as any)
-      .from('delivery_challans')
-      .update(payload)
-      .eq('id', id)
+    let data: any = null
+    let error: any = null
 
-    if (isEffectiveUuid) {
-      updateQuery = updateQuery.eq('company_id', effectiveCompanyId)
-    }
-
-    let { data, error } = await updateQuery.select().single()
-
-    if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
-      const admin = createAdminClient()
-      let adminQuery = (admin as any)
+    try {
+      let updateQuery = (supabase as any)
         .from('delivery_challans')
         .update(payload)
         .eq('id', id)
+
       if (isEffectiveUuid) {
-        adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+        updateQuery = updateQuery.eq('company_id', effectiveCompanyId)
       }
-      const adminRes = await adminQuery.select().single()
-      if (!adminRes.error && adminRes.data) {
-        data = adminRes.data
-        error = null
+
+      const res = await updateQuery.select().single()
+      data = res.data
+      error = res.error
+
+      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+        const admin = createAdminClient()
+        let adminQuery = (admin as any)
+          .from('delivery_challans')
+          .update(payload)
+          .eq('id', id)
+        if (isEffectiveUuid) {
+          adminQuery = adminQuery.eq('company_id', effectiveCompanyId)
+        }
+        const adminRes = await adminQuery.select().single()
+        if (!adminRes.error && adminRes.data) {
+          data = adminRes.data
+          error = null
+        }
       }
-    }
+    } catch {}
+
+    // Update in DataStore fallback as well
+    try {
+      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      const idx = all.findIndex((c) => c.id === id || c.challan_number === id)
+      if (idx !== -1) {
+        all[idx] = {
+          ...all[idx],
+          status: (status as any),
+          ...extraUpdates,
+          updated_at: new Date().toISOString(),
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, all)
+        return all[idx]
+      }
+    } catch {}
 
     return (data || { id, status, company_id: effectiveCompanyId, ...extraUpdates }) as unknown as DeliveryChallanRecord
   }

@@ -58,6 +58,12 @@ import {
   updateChallanStatusAction,
 } from '@/actions/logistics.actions'
 
+import { DeliveryKpiBar } from '@/components/delivery/delivery-kpi-bar'
+import { DeliveryFilterToolbar } from '@/components/delivery/delivery-filter-toolbar'
+import { DeliveryChallanTable } from '@/components/delivery/delivery-challan-table'
+import { DeliveryInstallationTable } from '@/components/delivery/delivery-installation-table'
+import { LogisticsService } from '@/services/logistics.service'
+
 export default function DeliveryLogisticsPage() {
   const params = useParams()
   const pathname = usePathname()
@@ -77,6 +83,9 @@ export default function DeliveryLogisticsPage() {
   const [designJobs] = useDataStore<any[]>(STORAGE_KEYS.DESIGN_JOBS, [])
   const [productionTasks] = useDataStore<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, [])
   const [viewMode, setViewMode] = useState<'challans' | 'installations' | 'calendar'>('challans')
+  const [selectedKpiFilter, setSelectedKpiFilter] = useState<string>('all')
+  const [selectedMethod, setSelectedMethod] = useState<'all' | DeliveryMethod>('all')
+  const [dueOnly, setDueOnly] = useState<boolean>(false)
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -412,6 +421,16 @@ export default function DeliveryLogisticsPage() {
     showNotification(`Installation job ${insNum} scheduled at ${insSite}.`)
   }
 
+  // Update Installation Status
+  const handleUpdateInstallationStatus = (installationId: string, status: InstallationStatus) => {
+    PrintERPDataStore.updateItem<InstallationRecord>(STORAGE_KEYS.INSTALLATIONS, installationId, {
+      status,
+      updated_at: new Date().toISOString(),
+    })
+    showNotification(`Installation status updated to ${status.toUpperCase()}.`)
+    loadLogisticsData(true)
+  }
+
   // Tenant-scoped Challans & Installations
   const tenantChallans = React.useMemo(() => {
     if (!company?.id && !company?.slug && !routeSlug) return challans
@@ -445,168 +464,131 @@ export default function DeliveryLogisticsPage() {
     })
   }, [installations, company, routeSlug])
 
+  // KPIs
+  const metrics = React.useMemo(() => {
+    return LogisticsService.calculateLogisticsKpis(tenantChallans, tenantInstallations)
+  }, [tenantChallans, tenantInstallations])
+
+  // Handle KPI Click Filter
+  const handleKpiFilterSelect = (filter: string) => {
+    if (filter === 'installations') {
+      setViewMode('installations')
+      setSelectedKpiFilter('all')
+    } else {
+      setSelectedKpiFilter(filter)
+      if (viewMode !== 'challans') {
+        setViewMode('challans')
+      }
+    }
+  }
+
+  // Filtered Challans
   const filteredChallans = React.useMemo(() => {
-    if (!search.trim()) return tenantChallans
+    const todayStr = new Date().toISOString().split('T')[0]
+    return tenantChallans.filter((ch) => {
+      // 1. Search Query
+      if (search.trim()) {
+        const q = search.toLowerCase()
+        const matches =
+          ch.challan_number?.toLowerCase().includes(q) ||
+          ch.invoice_number?.toLowerCase().includes(q) ||
+          ch.order_number?.toLowerCase().includes(q) ||
+          ch.customer_name?.toLowerCase().includes(q) ||
+          ch.customer_phone?.includes(q) ||
+          ch.delivery_address?.toLowerCase().includes(q) ||
+          ch.vehicle_info?.toLowerCase().includes(q) ||
+          ch.delivery_person_name?.toLowerCase().includes(q) ||
+          ch.items?.some((i) => i.product_description?.toLowerCase().includes(q))
+        if (!matches) return false
+      }
+
+      // 2. Delivery Method
+      if (selectedMethod !== 'all' && ch.delivery_method !== selectedMethod) {
+        return false
+      }
+
+      // 3. Due Only Filter
+      if (dueOnly && (!ch.due_amount || Number(ch.due_amount) <= 0)) {
+        return false
+      }
+
+      // 4. Selected KPI Filter
+      if (selectedKpiFilter === 'scheduled_today' && ch.scheduled_date !== todayStr) {
+        return false
+      }
+      if (selectedKpiFilter === 'out_for_delivery' && ch.status !== 'out_for_delivery') {
+        return false
+      }
+      if (selectedKpiFilter === 'partially_delivered' && ch.status !== 'partially_delivered') {
+        return false
+      }
+      if (selectedKpiFilter === 'has_due' && (!ch.due_amount || Number(ch.due_amount) <= 0)) {
+        return false
+      }
+      if (selectedKpiFilter === 'delivered' && ch.status !== 'delivered') {
+        return false
+      }
+
+      return true
+    })
+  }, [tenantChallans, search, selectedMethod, dueOnly, selectedKpiFilter])
+
+  // Filtered Installations
+  const filteredInstallations = React.useMemo(() => {
+    if (!search.trim()) return tenantInstallations
     const q = search.toLowerCase()
-    return tenantChallans.filter(
-      (ch) =>
-        ch.challan_number?.toLowerCase().includes(q) ||
-        ch.invoice_number?.toLowerCase().includes(q) ||
-        ch.order_number?.toLowerCase().includes(q) ||
-        ch.customer_name?.toLowerCase().includes(q) ||
-        ch.delivery_address?.toLowerCase().includes(q) ||
-        ch.items?.some((i) => i.product_description?.toLowerCase().includes(q))
+    return tenantInstallations.filter(
+      (ins) =>
+        ins.installation_number?.toLowerCase().includes(q) ||
+        ins.customer_name?.toLowerCase().includes(q) ||
+        ins.site_location?.toLowerCase().includes(q) ||
+        ins.installer_lead_name?.toLowerCase().includes(q) ||
+        ins.equipment_used?.toLowerCase().includes(q)
     )
-  }, [tenantChallans, search])
+  }, [tenantInstallations, search])
 
-  // Executive Metrics
-  const countScheduledToday = tenantChallans.filter(
-    (ch: DeliveryChallanRecord) => ch.scheduled_date === new Date().toISOString().split('T')[0]
-  ).length
-  const countOutForDelivery = tenantChallans.filter((ch: DeliveryChallanRecord) => ch.status === 'out_for_delivery').length
-  const countActiveInstallations = tenantInstallations.filter(
-    (ins: InstallationRecord) => ins.status === 'on_site' || ins.status === 'scheduled'
-  ).length
-  const countDelivered = tenantChallans.filter((ch: DeliveryChallanRecord) => ch.status === 'delivered').length
-
-  const getMethodBadge = (method: DeliveryMethod) => {
-    switch (method) {
-      case 'company_vehicle':
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-            Company Vehicle
-          </span>
-        )
-      case 'courier':
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-200">
-            Courier Service
-          </span>
-        )
-      case 'local_transport':
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
-            Local Hired Transport
-          </span>
-        )
-      case 'customer_pickup':
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700">
-            Customer Self-Pickup
-          </span>
-        )
-    }
-  }
-
-  const getDeliveryStatusBadge = (status: DeliveryStatus) => {
+  const getItemStatusBadge = (status: string) => {
     switch (status) {
-      case 'delivered':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
-          </span>
-        )
-      case 'partially_delivered':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
-            <Package className="h-3 w-3 text-amber-600" /> Partially Delivered
-          </span>
-        )
-      case 'out_for_delivery':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800 border border-blue-300 animate-pulse dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
-            <Truck className="h-3 w-3 text-blue-600" /> Out for Delivery
-          </span>
-        )
-      case 'assigned':
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950/50 dark:text-amber-300">
-            Vehicle Assigned
-          </span>
-        )
-      case 'pending_dispatch':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <Sparkles className="h-3 w-3 text-emerald-600" /> Ready to Dispatch
-          </span>
-        )
-      case 'scheduled':
-      default:
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            Scheduled
-          </span>
-        )
-    }
-  }
-
-  const getItemStatusBadge = (status?: string) => {
-    switch (status) {
-      case 'delivered':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
-          </span>
-        )
       case 'ready_for_delivery':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
-            <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Ready for Delivery
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+            {locale === 'bn' ? 'ডেলিভারি প্রস্তুত' : 'Ready for Dispatch'}
           </span>
         )
       case 'design_pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300">
-            <Clock className="h-3 w-3 text-amber-600" /> Design Pending
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+            <Clock className="h-3 w-3 text-amber-600" />
+            {locale === 'bn' ? 'ডিজাইন পেন্ডিং' : 'Design Pending'}
           </span>
         )
       case 'design_check':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-            <FileCheck2 className="h-3 w-3 text-blue-600" /> Design Check (Pre-Press)
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+            <Sparkles className="h-3 w-3 text-blue-600" />
+            {locale === 'bn' ? 'ডিজাইন ওকে' : 'Design OK'}
           </span>
         )
-      case 'in_production':
       case 'printing_pending':
+      case 'in_production':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-50 text-cyan-800 border border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300">
-            <Wrench className="h-3 w-3 text-cyan-600" /> Printing Pending
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800">
+            <Layers className="h-3 w-3 text-indigo-600" />
+            {locale === 'bn' ? 'প্রিন্টিং চলছে' : 'Printing / Production'}
           </span>
         )
       case 'finishing_pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-800 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
-            <Layers className="h-3 w-3 text-purple-600" /> Finishing Pending
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800">
+            <Wrench className="h-3 w-3 text-purple-600" />
+            {locale === 'bn' ? 'ফিনিশিং চলছে' : 'Finishing Floor'}
           </span>
         )
       default:
         return (
-          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-            {status || 'Pending'}
-          </span>
-        )
-    }
-  }
-
-  const getInstallationStatusBadge = (status: InstallationStatus) => {
-    switch (status) {
-      case 'completed':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-            <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Completed & Signed
-          </span>
-        )
-      case 'on_site':
-        return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-300 animate-pulse">
-            <Wrench className="h-3 w-3 text-purple-600" /> On Site Fitting
-          </span>
-        )
-      case 'scheduled':
-      default:
-        return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
-            Crew Scheduled
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+            {status.replace(/_/g, ' ')}
           </span>
         )
     }
@@ -616,8 +598,8 @@ export default function DeliveryLogisticsPage() {
     return (
       <div className="space-y-6 max-w-7xl pb-12 p-4 sm:p-6 animate-pulse">
         <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
@@ -635,692 +617,268 @@ export default function DeliveryLogisticsPage() {
     <FeatureGate feature="delivery_challan">
       <div className="space-y-6 max-w-7xl">
         {/* Header */}
-      <PageHeader
-        titleEn="Delivery, Logistics & On-Site Installation"
-        titleBn="ডেলিভারি চালান ও অন-সাইট ইনস্টলেশন"
-        descriptionEn="Track multi-method dispatches, printable delivery challans, and on-site rigging crew installations."
-        descriptionBn="মাল ডেলিভারি চালানপত্র, কুরিয়ার ট্র্যাকিং এবং সাইট ফিটিং ও সাইনেজ স্থাপন পরিচালনা করুন।"
-        icon={Truck}
-        iconColor="text-blue-600"
-        actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            <Link href={getTenantNavHref('/production', pathname, slug)}>
-              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
-                <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
-                <span className="hidden sm:inline">Production</span>
+        <PageHeader
+          titleEn="Delivery, Logistics & On-Site Installation"
+          titleBn="ডেলিভারি চালান ও অন-সাইট ইনস্টলেশন"
+          descriptionEn="Track multi-method dispatches, printable delivery challans, and on-site rigging crew installations."
+          descriptionBn="মাল ডেলিভারি চালানপত্র, কুরিয়ার ট্র্যাকিং এবং সাইট ফিটিং ও সাইনেজ স্থাপন পরিচালনা করুন।"
+          icon={Truck}
+          iconColor="text-blue-600"
+          actions={
+            <div className="flex items-center gap-2 flex-wrap">
+              <Link href={getTenantNavHref('/production', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                  <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
+                  <span className="hidden sm:inline">Production</span>
+                </Button>
+              </Link>
+
+              <Link href={getTenantNavHref('/finishing', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Scissors className="h-3.5 w-3.5 text-indigo-600" />
+                  <span className="hidden sm:inline">Finishing</span>
+                </Button>
+              </Link>
+
+              <Link href={getTenantNavHref('/operator', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Printer className="h-3.5 w-3.5 text-blue-600" />
+                  <span className="hidden sm:inline">Terminal</span>
+                </Button>
+              </Link>
+
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => loadLogisticsData()}
+                disabled={isLoading}
+                className="text-xs text-slate-700 dark:text-slate-300"
+              >
+                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+                {tBilingual('Refresh', 'রিফ্রেশ')}
               </Button>
-            </Link>
 
-            <Link href={getTenantNavHref('/finishing', pathname, slug)}>
-              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
-                <Scissors className="h-3.5 w-3.5 text-indigo-600" />
-                <span className="hidden sm:inline">Finishing</span>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsNewInstallationOpen(true)}
+                className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 bangla-text"
+              >
+                <Wrench className="mr-1.5 h-3.5 w-3.5" />
+                {tBilingual('Schedule Installation', 'ইনস্টলেশন শিডিউল')}
               </Button>
-            </Link>
 
-            <Link href={getTenantNavHref('/operator', pathname, slug)}>
-              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
-                <Printer className="h-3.5 w-3.5 text-blue-600" />
-                <span className="hidden sm:inline">Terminal</span>
+              <Button
+                size="sm"
+                onClick={() => setIsNewChallanOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text font-bold"
+              >
+                <Plus className="mr-1.5 h-3.5 w-3.5" />
+                {tBilingual('New Delivery Challan', 'নতুন ডেলিভারি চালান')}
               </Button>
-            </Link>
+            </div>
+          }
+        />
 
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => loadLogisticsData()}
-              disabled={isLoading}
-              className="text-xs text-slate-700 dark:text-slate-300"
-            >
-              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              {tBilingual('Refresh', 'রিফ্রেশ')}
-            </Button>
-
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsNewInstallationOpen(true)}
-              className="text-xs border-purple-300 text-purple-700 hover:bg-purple-50 dark:border-purple-800 bangla-text"
-            >
-              <Wrench className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('Schedule Installation', 'ইনস্টলেশন শিডিউল')}
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={() => setIsNewChallanOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text font-bold"
-            >
-              <Plus className="mr-1.5 h-3.5 w-3.5" />
-              {tBilingual('New Delivery Challan', 'নতুন ডেলিভারি চালান')}
-            </Button>
+        {/* Notification */}
+        {notification && (
+          <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{notification}</span>
           </div>
-        }
-      />
+        )}
 
-      {/* Notification */}
-      {notification && (
-        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-lg text-xs font-semibold flex items-center gap-2 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 animate-in fade-in-0">
-          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>{notification}</span>
-        </div>
-      )}
+        {/* Executive Logistics & COD Metrics KPI Bar */}
+        <DeliveryKpiBar
+          metrics={metrics}
+          selectedFilter={selectedKpiFilter}
+          onSelectFilter={handleKpiFilterSelect}
+        />
 
-      {/* Executive Logistics Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="p-4 border-l-4 border-l-blue-600">
-          <span className="text-xs font-semibold text-slate-500">Scheduled Today</span>
-          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">{countScheduledToday} Dispatches</div>
-          <span className="text-[11px] text-slate-400">Loading at factory dock</span>
-        </Card>
+        {/* View Switcher, Search & Filters Toolbar */}
+        <DeliveryFilterToolbar
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          selectedMethod={selectedMethod}
+          onMethodChange={setSelectedMethod}
+          search={search}
+          onSearchChange={setSearch}
+          dueOnly={dueOnly}
+          onDueOnlyChange={setDueOnly}
+          totalCount={viewMode === 'challans' ? filteredChallans.length : filteredInstallations.length}
+        />
 
-        <Card className="p-4 border-l-4 border-l-amber-500">
-          <span className="text-xs font-semibold text-slate-500">Out for Delivery (চলমান)</span>
-          <div className="text-2xl font-black text-amber-600 mt-1">{countOutForDelivery} Vans / Trucks</div>
-          <span className="text-[11px] text-amber-600 font-medium">In transit to site</span>
-        </Card>
-
-        <Card className="p-4 border-l-4 border-l-purple-600">
-          <span className="text-xs font-semibold text-slate-500">On-Site Installations</span>
-          <div className="text-2xl font-black text-purple-600 mt-1">{countActiveInstallations} Sites</div>
-          <span className="text-[11px] text-purple-600 font-medium">Rigging & electrical crews</span>
-        </Card>
-
-        <Card className="p-4 border-l-4 border-l-emerald-600">
-          <span className="text-xs font-semibold text-slate-500">Successfully Delivered</span>
-          <div className="text-2xl font-black text-emerald-600 mt-1">{countDelivered} Jobs</div>
-          <span className="text-[11px] text-emerald-600 font-medium">Receiver signatures verified</span>
-        </Card>
-      </div>
-
-      {/* View Switcher Tabs */}
-      <div className="flex items-center justify-between gap-3 p-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-1.5">
-          <Button
-            size="sm"
-            variant={viewMode === 'challans' ? 'default' : 'ghost'}
-            onClick={() => setViewMode('challans')}
-            className={`text-xs h-8 px-3.5 ${
-              viewMode === 'challans' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <Truck className="h-3.5 w-3.5 mr-1.5" />
-            Challan Deliveries (চালান সমূহ)
-          </Button>
-
-          <Button
-            size="sm"
-            variant={viewMode === 'installations' ? 'default' : 'ghost'}
-            onClick={() => setViewMode('installations')}
-            className={`text-xs h-8 px-3.5 ${
-              viewMode === 'installations' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <Wrench className="h-3.5 w-3.5 mr-1.5" />
-            On-Site Installations (ফিটিং)
-          </Button>
-
-          <Button
-            size="sm"
-            variant={viewMode === 'calendar' ? 'default' : 'ghost'}
-            onClick={() => setViewMode('calendar')}
-            className={`text-xs h-8 px-3.5 ${
-              viewMode === 'calendar' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
-            }`}
-          >
-            <Calendar className="h-3.5 w-3.5 mr-1.5" />
-            Dispatch Calendar (ক্যালেন্ডার)
-          </Button>
-        </div>
-
-        <div className="relative w-64 hidden sm:block">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-          <Input
-            placeholder="Search by challan #, customer, or site..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8 h-8 text-xs bg-white dark:bg-slate-950"
-          />
-        </div>
-      </div>
-
-      {/* =========================================================================
-          VIEW 1: CHALLAN DELIVERIES TABLE
-         ========================================================================= */}
-      {viewMode === 'challans' && (
-        <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Delivery Challans & Dispatches ({filteredChallans.length})</CardTitle>
-              <span className="text-xs text-slate-400">Transit slips with receiver verification</span>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3 px-4">Challan #</th>
-                    <th className="py-3 px-4">Customer & Destination</th>
-                    <th className="py-3 px-4">Delivery Method</th>
-                    <th className="py-3 px-4">Vehicle / Consignment</th>
-                    <th className="py-3 px-4">Scheduled Date</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {filteredChallans.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="p-8 text-center text-xs text-slate-400">
-                        {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredChallans.map((ch: DeliveryChallanRecord) => {
-                    const items = ch.items || []
-                    const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
-                    const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
-                    const deliveredCount = items.filter((it) => it.is_delivered).length
-
-                    return (
-                      <tr key={ch.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                        {/* Challan & Invoice ID */}
-                        <td className="py-3.5 px-4">
-                          <Link
-                            href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
-                            className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
-                          >
-                            <span>{ch.challan_number}</span>
-                            <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                          </Link>
-                          <div className="flex items-center gap-1.5 mt-1 flex-wrap font-mono">
-                            <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                              {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
-                            </Badge>
-                            {ch.order_number && (
-                              <span className="text-[10px] text-slate-400">({ch.order_number})</span>
-                            )}
-                            {ch.due_amount !== undefined && ch.due_amount > 0 ? (
-                              <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
-                                বকেয়া: {formatBDT(ch.due_amount)}
-                              </Badge>
-                            ) : ch.grand_total ? (
-                              <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
-                                পরিশোধিত
-                              </Badge>
-                            ) : null}
-                          </div>
-                        </td>
-
-                        {/* Customer & Destination + Products Breakdown */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                            {ch.customer_name}
-                          </div>
-                          <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[220px]">
-                            <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                            <span className="truncate">{ch.delivery_address}</span>
-                          </div>
-                          {items.length > 0 && (
-                            <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                              <span className="text-[10px] text-slate-400 font-medium">{items.length} Item(s):</span>
-                              {readyCount > 0 && (
-                                <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
-                                  {readyCount} Ready
-                                </Badge>
-                              )}
-                              {pendingCount > 0 && (
-                                <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
-                                  {pendingCount} Pending
-                                </Badge>
-                              )}
-                              {deliveredCount > 0 && (
-                                <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
-                                  {deliveredCount} Delivered
-                                </Badge>
-                              )}
-                            </div>
-                          )}
-                        </td>
-
-                        {/* Delivery Method */}
-                        <td className="py-3.5 px-4">
-                          {getMethodBadge(ch.delivery_method)}
-                        </td>
-
-                        {/* Vehicle */}
-                        <td className="py-3.5 px-4 text-xs font-mono">
-                          <div className="font-medium text-slate-800 dark:text-slate-200">
-                            {ch.vehicle_info || 'Company Vehicle'}
-                          </div>
-                          <div className="text-[10px] text-slate-400">{ch.delivery_person_name}</div>
-                        </td>
-
-                        {/* Scheduled Date */}
-                        <td className="py-3.5 px-4 text-xs font-mono text-slate-600 dark:text-slate-300">
-                          {ch.scheduled_date}
-                        </td>
-
-                        {/* Status */}
-                        <td className="py-3.5 px-4">
-                          {getDeliveryStatusBadge(ch.status)}
-                        </td>
-
-                        {/* Actions */}
-                        <td className="py-3.5 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5 flex-wrap">
-                            <Link
-                              href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
-                              className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
-                            >
-                              PDF
-                            </Link>
-
-                            <Button
-                              size="sm"
-                              onClick={() => openDeliveryModal(ch)}
-                              className={`h-7 text-[11px] px-2.5 font-bold shadow-xs ${
-                                ch.status === 'delivered'
-                                  ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
-                                  : ch.status === 'partially_delivered'
-                                  ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                                  : readyCount > 0
-                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-                              }`}
-                            >
-                              {ch.status === 'delivered'
-                                ? 'View Sign-off'
-                                : ch.status === 'partially_delivered'
-                                ? 'Fulfill Balance'
-                                : 'Deliver / Dispatch'}
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card List View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+        {/* =========================================================================
+            VIEW 1: CHALLAN DELIVERIES TABLE
+           ========================================================================= */}
+        {viewMode === 'challans' && (
+          <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>{tBilingual('Delivery Challans & Dispatches', 'ডেলিভারি চালান ও ট্রানজিট তালিকা')}</span>
+                  <Badge variant="secondary" className="text-[11px] font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                    {filteredChallans.length}
+                  </Badge>
+                </CardTitle>
+                <span className="text-xs text-slate-500 hidden sm:inline bangla-text">
+                  {tBilingual('Transit slips with COD due balance & receiver verification', 'বকেয়া বিল আদায় সতর্কবার্তা ও গ্রহীতার স্বাক্ষর ট্র্যাকিং')}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
               {filteredChallans.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">
-                  {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
+                <div className="p-12 text-center text-xs text-slate-400">
+                  <Truck className="h-8 w-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                  <p className="font-semibold text-slate-600 dark:text-slate-400">
+                    {search ? tBilingual('No challans matching search criteria.', 'অনুসন্ধানের সাথে মিল রেখে কোন চালান পাওয়া যায়নি।') : tBilingual('No delivery challans found.', 'কোন ডেলিভারি চালান পাওয়া যায়নি।')}
+                  </p>
                 </div>
               ) : (
-                filteredChallans.map((ch: DeliveryChallanRecord) => {
-                  const items = ch.items || []
-                  const readyCount = items.filter((it) => !it.is_delivered && (getLiveItemStatus(it, ch) === 'ready_for_delivery' || it.item_kind === 'ready_product')).length
-                  const pendingCount = items.filter((it) => !it.is_delivered && getLiveItemStatus(it, ch) !== 'ready_for_delivery').length
-                  const deliveredCount = items.filter((it) => it.is_delivered).length
+                <DeliveryChallanTable
+                  challans={filteredChallans}
+                  tenantSlug={slug}
+                  companyName={company?.name || 'InkFlow Printing & Signage'}
+                  onOpenDeliveryModal={openDeliveryModal}
+                  onMarkOutForDelivery={handleMarkOutForDelivery}
+                  getLiveItemStatus={getLiveItemStatus}
+                />
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* =========================================================================
+            VIEW 2: ON-SITE INSTALLATIONS TABLE
+           ========================================================================= */}
+        {viewMode === 'installations' && (
+          <Card className="border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+            <CardHeader className="py-3 px-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>{tBilingual('On-Site Signage Installations', 'অন-সাইট সাইনেজ ইনস্টলেশন')}</span>
+                  <Badge variant="secondary" className="text-[11px] font-mono font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                    {filteredInstallations.length}
+                  </Badge>
+                </CardTitle>
+                <span className="text-xs text-slate-500 hidden sm:inline bangla-text">
+                  {tBilingual('Field rigging, crane hookups, and customer sign-offs', 'মাঠ পর্যায়ের রিগিং, ক্রেন সংযোগ ও সাইট সাইন-অফ')}
+                </span>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {filteredInstallations.length === 0 ? (
+                <div className="p-12 text-center text-xs text-slate-400">
+                  <Wrench className="h-8 w-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                  <p className="font-semibold text-slate-600 dark:text-slate-400">
+                    {search ? tBilingual('No installations matching search criteria.', 'কোন ইনস্টলেশন কাজ পাওয়া যায়নি।') : tBilingual('No on-site installations scheduled.', 'কোন অন-সাইট সাইনেজ কাজ শিডিউল করা নেই।')}
+                  </p>
+                </div>
+              ) : (
+                <DeliveryInstallationTable
+                  installations={filteredInstallations}
+                  onUpdateStatus={handleUpdateInstallationStatus}
+                />
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* =========================================================================
+            VIEW 3: DELIVERY & INSTALLATION CALENDAR
+           ========================================================================= */}
+        {viewMode === 'calendar' && (
+          <Card className="p-6 space-y-4 border-slate-200 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-blue-600" />
+                  {tBilingual('Logistics & Field Dispatch Agenda', 'লজিস্টিক ও ফিল্ড ডিসপ্যাচ ক্যালেন্ডার')}
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5 bangla-text">
+                  {tBilingual('Consolidated schedule view of outgoing delivery transit vans and on-site fitting jobs.', 'চলতি সপ্তাহে আউটগোয়িং ডেলিভারি ভ্যান ও সাইট ফিটিং কাজের ক্যালেন্ডার।')}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
+                  <span className="h-2 w-2 rounded-full bg-blue-600" /> {tBilingual('Delivery Runs', 'ডেলিভারি ট্রানজিট')}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-purple-50 text-purple-800 border border-purple-200 dark:bg-purple-950 dark:text-purple-300 dark:border-purple-800">
+                  <span className="h-2 w-2 rounded-full bg-purple-600" /> {tBilingual('Site Installations', 'সাইনেজ ফিটিং')}
+                </span>
+              </div>
+            </div>
+
+            {/* Agenda Days */}
+            <div className="space-y-4">
+              {(() => {
+                const dates = Array.from(
+                  new Set([
+                    ...challans.map((ch: DeliveryChallanRecord) => ch.scheduled_date).filter(Boolean),
+                    ...installations.map((ins: InstallationRecord) => ins.installation_date).filter(Boolean),
+                  ])
+                ).sort()
+
+                if (dates.length === 0) {
+                  return (
+                    <div className="p-10 text-center text-slate-500 text-xs">
+                      {tBilingual('No scheduled deliveries or installations found in this period.', 'এই সময়ের মধ্যে কোন শিডিউল করা ডেলিভারি বা ফিটিং নেই।')}
+                    </div>
+                  )
+                }
+
+                return dates.map((dateStr) => {
+                  const dayChallans = challans.filter((ch: DeliveryChallanRecord) => ch.scheduled_date === dateStr)
+                  const dayInstallations = installations.filter((ins: InstallationRecord) => ins.installation_date === dateStr)
 
                   return (
-                    <div key={ch.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      {/* Top: Challan # & Status */}
-                      <div className="flex items-center justify-between gap-2">
-                        <Link
-                          href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
-                          className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                        >
-                          <span>{ch.challan_number}</span>
-                          <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                        </Link>
-                        {getDeliveryStatusBadge(ch.status)}
+                    <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
+                      <div className="flex items-center justify-between font-mono text-xs">
+                        <span className="font-black text-sm text-slate-900 dark:text-white">
+                          📅 {dateStr}
+                        </span>
+                        <span className="text-slate-400">
+                          {dayChallans.length} {tBilingual('Deliveries', 'টি ডেলিভারি')} • {dayInstallations.length} {tBilingual('Installations', 'টি ইনস্টলেশন')}
+                        </span>
                       </div>
 
-                      <div className="flex items-center gap-2 font-mono flex-wrap">
-                        <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
-                          {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
-                        </Badge>
-                        {ch.order_number && (
-                          <span className="text-[10px] text-slate-400">({ch.order_number})</span>
-                        )}
-                        {ch.due_amount !== undefined && ch.due_amount > 0 ? (
-                          <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
-                            বকেয়া: {formatBDT(ch.due_amount)}
-                          </Badge>
-                        ) : ch.grand_total ? (
-                          <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
-                            পরিশোধিত
-                          </Badge>
-                        ) : null}
-                      </div>
-
-                      {/* Customer & Address */}
-                      <div>
-                        <div className="font-semibold text-sm text-slate-900 dark:text-white">{ch.customer_name}</div>
-                        <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
-                          <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
-                          <span>{ch.delivery_address}</span>
-                        </div>
-                        {items.length > 0 && (
-                          <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                            <span className="text-[10px] text-slate-400 font-medium">{items.length} Items:</span>
-                            {readyCount > 0 && (
-                              <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
-                                {readyCount} Ready
-                              </Badge>
-                            )}
-                            {pendingCount > 0 && (
-                              <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
-                                {pendingCount} Pending
-                              </Badge>
-                            )}
-                            {deliveredCount > 0 && (
-                              <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
-                                {deliveredCount} Delivered
-                              </Badge>
-                            )}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {/* Deliveries */}
+                        {dayChallans.map((ch: DeliveryChallanRecord) => (
+                          <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
+                            <div className="flex justify-between font-bold">
+                              <span className="text-blue-600 font-mono">{ch.challan_number}</span>
+                              <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                                {ch.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
+                            <div className="text-[11px] text-slate-500 truncate">📍 {ch.delivery_address}</div>
                           </div>
-                        )}
-                      </div>
+                        ))}
 
-                      {/* Meta Grid */}
-                      <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                        <div>
-                          <span className="text-[10px] uppercase font-semibold text-slate-400 block">Method</span>
-                          <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
-                        </div>
-                        <div>
-                          <span className="text-[10px] uppercase font-semibold text-slate-400 block">Scheduled Date</span>
-                          <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
-                        </div>
-                        {ch.vehicle_info && (
-                          <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                            Vehicle: <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
-                            {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
+                        {/* Installations */}
+                        {dayInstallations.map((ins: InstallationRecord) => (
+                          <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
+                            <div className="flex justify-between font-bold">
+                              <span className="text-purple-600 font-mono">{ins.installation_number}</span>
+                              <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                                {ins.status.replace('_', ' ')}
+                              </span>
+                            </div>
+                            <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
+                            <div className="text-[11px] text-slate-500 truncate">📍 {ins.site_location}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
                           </div>
-                        )}
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center justify-end gap-2 pt-1">
-                        <Link
-                          href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
-                          className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
-                        >
-                          Challan PDF
-                        </Link>
-
-                        <Button
-                          size="sm"
-                          onClick={() => openDeliveryModal(ch)}
-                          className={`h-9 text-xs px-3 font-bold ${
-                            ch.status === 'delivered'
-                              ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
-                              : ch.status === 'partially_delivered'
-                              ? 'bg-amber-600 hover:bg-amber-700 text-white'
-                              : readyCount > 0
-                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                              : 'bg-blue-600 hover:bg-blue-700 text-white'
-                          }`}
-                        >
-                          {ch.status === 'delivered'
-                            ? 'View Sign-off'
-                            : ch.status === 'partially_delivered'
-                            ? 'Fulfill Balance'
-                            : 'Deliver / Dispatch'}
-                        </Button>
+                        ))}
                       </div>
                     </div>
                   )
                 })
-              )}
+              })()}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* =========================================================================
-          VIEW 2: ON-SITE INSTALLATIONS TABLE
-         ========================================================================= */}
-      {viewMode === 'installations' && (
-        <Card>
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">On-Site Signage Installations ({installations.length})</CardTitle>
-              <span className="text-xs text-slate-400">Field rigging, crane hookups, and customer sign-offs</span>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {/* Desktop Table View */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th className="py-3 px-4">Installation #</th>
-                    <th className="py-3 px-4">Customer & Site Location</th>
-                    <th className="py-3 px-4">Crew Lead & Riggers</th>
-                    <th className="py-3 px-4">Scheduled Window</th>
-                    <th className="py-3 px-4">Equipment Used</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4">Customer Confirmation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {installations.map((ins: InstallationRecord) => (
-                    <tr key={ins.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                      {/* Installation # */}
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-purple-600 dark:text-purple-400">
-                          {ins.installation_number}
-                        </span>
-                        <div className="text-[10px] font-mono text-slate-400 mt-0.5">{ins.order_number}</div>
-                      </td>
-
-                      {/* Customer & Location */}
-                      <td className="py-3.5 px-4">
-                        <div className="font-semibold text-slate-900 dark:text-white text-xs">
-                          {ins.customer_name}
-                        </div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate max-w-[200px]">
-                          <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
-                          <span className="truncate">{ins.site_location}</span>
-                        </div>
-                      </td>
-
-                      {/* Crew */}
-                      <td className="py-3.5 px-4 text-xs">
-                        <div className="font-bold text-slate-800 dark:text-slate-200">
-                          {ins.installer_lead_name}
-                        </div>
-                        <div className="text-[10px] text-slate-400">+{ins.crew_members.length} technicians</div>
-                      </td>
-
-                      {/* Scheduled Time */}
-                      <td className="py-3.5 px-4 text-xs font-mono">
-                        <div>{ins.installation_date}</div>
-                        <div className="text-[10px] text-slate-400">{ins.scheduled_time}</div>
-                      </td>
-
-                      {/* Equipment */}
-                      <td className="py-3.5 px-4 text-xs truncate max-w-[180px] text-slate-600 dark:text-slate-300">
-                        {ins.equipment_used || 'Standard Hand Tools'}
-                      </td>
-
-                      {/* Status */}
-                      <td className="py-3.5 px-4">
-                        {getInstallationStatusBadge(ins.status)}
-                      </td>
-
-                      {/* Confirmation */}
-                      <td className="py-3.5 px-4 text-xs">
-                        {ins.customer_confirmed_by ? (
-                          <div className="space-y-0.5">
-                            <span className="inline-flex items-center gap-0.5 font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[10px] border border-emerald-200">
-                              <Star className="h-3 w-3 fill-emerald-500 text-emerald-500" /> Sign-Off Verified
-                            </span>
-                            <div className="text-[10px] text-slate-500">{ins.customer_confirmed_by}</div>
-                          </div>
-                        ) : (
-                          <span className="text-slate-400 text-[11px] italic">Pending site sign-off</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Card List View */}
-            <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {installations.length === 0 ? (
-                <div className="p-6 text-center text-xs text-slate-400">
-                  {tBilingual('No installation jobs found.', 'কোন ইনস্টলেশন কাজ পাওয়া যায়নি।')}
-                </div>
-              ) : (
-                installations.map((ins: InstallationRecord) => (
-                  <div key={ins.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                    {/* Top: Installation # & Status */}
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-mono font-bold text-sm text-purple-600 dark:text-purple-400">
-                        {ins.installation_number}
-                      </span>
-                      {getInstallationStatusBadge(ins.status)}
-                    </div>
-
-                    {/* Customer & Location */}
-                    <div>
-                      <div className="font-semibold text-sm text-slate-900 dark:text-white">{ins.customer_name}</div>
-                      <div className="text-xs text-slate-500 flex items-start gap-1 mt-0.5">
-                        <MapPin className="h-3.5 w-3.5 shrink-0 text-slate-400 mt-0.5" />
-                        <span>{ins.site_location}</span>
-                      </div>
-                    </div>
-
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
-                      <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Lead Tech</span>
-                        <strong className="text-slate-800 dark:text-slate-200">{ins.installer_lead_name}</strong>
-                      </div>
-                      <div>
-                        <span className="text-[10px] uppercase font-semibold text-slate-400 block">Date & Window</span>
-                        <span className="font-mono text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
-                      </div>
-                      {ins.equipment_used && (
-                        <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                          Gear: <span>{ins.equipment_used}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Sign-off badge if present */}
-                    {ins.customer_confirmed_by && (
-                      <div className="flex items-center gap-1.5 p-2 rounded bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 text-xs border border-emerald-200">
-                        <Star className="h-3.5 w-3.5 fill-emerald-500 text-emerald-500" />
-                        <span>Signed off by: <strong>{ins.customer_confirmed_by}</strong></span>
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* =========================================================================
-          VIEW 3: DELIVERY & INSTALLATION CALENDAR
-         ========================================================================= */}
-      {viewMode === 'calendar' && (
-        <Card className="p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-            <div>
-              <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-600" />
-                Logistics & Field Dispatch Agenda (চলতি সপ্তাহ)
-              </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Consolidated schedule view of outgoing delivery transit vans and on-site fitting jobs.
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200">
-                <span className="h-2 w-2 rounded-full bg-blue-600" /> Delivery Runs
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-purple-50 text-purple-800 border border-purple-200">
-                <span className="h-2 w-2 rounded-full bg-purple-600" /> Site Installations
-              </span>
-            </div>
-          </div>
-
-          {/* Agenda Days */}
-          <div className="space-y-4">
-            {(() => {
-              const dates = Array.from(
-                new Set([
-                  ...challans.map((ch: DeliveryChallanRecord) => ch.scheduled_date).filter(Boolean),
-                  ...installations.map((ins: InstallationRecord) => ins.installation_date).filter(Boolean),
-                ])
-              ).sort()
-
-              if (dates.length === 0) {
-                return (
-                  <div className="p-10 text-center text-slate-500 text-xs">
-                    No scheduled deliveries or installations found in this period.
-                  </div>
-                )
-              }
-
-              return dates.map((dateStr) => {
-                const dayChallans = challans.filter((ch: DeliveryChallanRecord) => ch.scheduled_date === dateStr)
-                const dayInstallations = installations.filter((ins: InstallationRecord) => ins.installation_date === dateStr)
-
-                return (
-                  <div key={dateStr} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5">
-                    <div className="flex items-center justify-between font-mono text-xs">
-                      <span className="font-black text-sm text-slate-900 dark:text-white">
-                        📅 {dateStr}
-                      </span>
-                      <span className="text-slate-400">
-                        {dayChallans.length} Deliveries • {dayInstallations.length} Installations
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {/* Deliveries */}
-                      {dayChallans.map((ch: DeliveryChallanRecord) => (
-                        <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
-                          <div className="flex justify-between font-bold">
-                            <span className="text-blue-600 font-mono">{ch.challan_number}</span>
-                            <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800">
-                              {ch.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
-                          <div className="text-[11px] text-slate-500 truncate">{ch.delivery_address}</div>
-                        </div>
-                      ))}
-
-                      {/* Installations */}
-                      {dayInstallations.map((ins: InstallationRecord) => (
-                        <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
-                          <div className="flex justify-between font-bold">
-                            <span className="text-purple-600 font-mono">{ins.installation_number}</span>
-                            <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-800">
-                              {ins.status.replace('_', ' ')}
-                            </span>
-                          </div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
-                          <div className="text-[11px] text-slate-500 truncate">📍 {ins.site_location}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })
-            })()}
-          </div>
-        </Card>
-      )}
+          </Card>
+        )}
 
       {/* MODAL: DELIVERY CONSIGNMENT HANDOVER & STATUS TRACKING */}
       <ModalDialog
