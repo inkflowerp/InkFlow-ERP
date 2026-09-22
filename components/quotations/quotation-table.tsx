@@ -42,8 +42,8 @@ export function QuotationTable({
   onTrash,
 }: QuotationTableProps) {
   const pathname = usePathname()
-  const { language } = useI18n()
-  const isBn = language === 'bn'
+  const { locale } = useI18n()
+  const isBn = locale === 'bn'
 
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {

@@ -38,8 +38,8 @@ export function NeedsAttentionPanel({
   onOpenFollowUp,
 }: NeedsAttentionPanelProps) {
   const pathname = usePathname()
-  const { language } = useI18n()
-  const isBn = language === 'bn'
+  const { locale } = useI18n()
+  const isBn = locale === 'bn'
   const urgentQuotes = QuotationService.getNeedsAttentionQuotes(quotations)
 
   if (urgentQuotes.length === 0) {
