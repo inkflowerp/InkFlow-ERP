@@ -85,7 +85,7 @@ import {
   getInvoiceRequestsAction,
   cancelInvoiceRequestAction,
 } from '@/actions/invoice-request.actions'
-import { BillingService } from '@/services/billing.service'
+import { getSectorForInvoice } from '@/lib/billing-utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
@@ -463,7 +463,7 @@ function BillingContent() {
       ready_merchandise: 0,
     }
     invoices.forEach((inv) => {
-      const sec = BillingService.getSectorForInvoice(inv)
+      const sec = getSectorForInvoice(inv)
       if (sec === 'digital_print') counts.digital_print++
       else if (sec === 'offset_print') counts.offset_print++
       else if (sec === 'signage_fabrication') counts.signage_fabrication++
@@ -503,7 +503,7 @@ function BillingContent() {
       if (!matchSearch) return false
 
       if (sectorFilter !== 'all') {
-        const sec = BillingService.getSectorForInvoice(inv)
+        const sec = getSectorForInvoice(inv)
         if (sec !== sectorFilter) return false
       }
 
@@ -587,7 +587,7 @@ function BillingContent() {
     const list = Array.from(custMap.values())
     const filteredBySector = sectorFilter === 'all'
       ? list
-      : list.filter((c) => c.invoices.some((inv) => BillingService.getSectorForInvoice(inv) === sectorFilter))
+      : list.filter((c) => c.invoices.some((inv) => getSectorForInvoice(inv) === sectorFilter))
 
     const q = search.toLowerCase()
     if (!q) return filteredBySector.sort((a, b) => b.totalDue - a.totalDue)
@@ -1378,7 +1378,7 @@ function BillingContent() {
                               >
                                 {inv.invoice_number}
                               </Link>
-                              {getSectorBadge(BillingService.getSectorForInvoice(inv))}
+                              {getSectorBadge(getSectorForInvoice(inv))}
                               {inv.invoice_type === 'vat_invoice' && (
                                 <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300 text-[9px] py-0">
                                   VAT 6.3
@@ -1512,7 +1512,7 @@ function BillingContent() {
                           >
                             #{inv.invoice_number}
                           </Link>
-                          {getSectorBadge(BillingService.getSectorForInvoice(inv))}
+                          {getSectorBadge(getSectorForInvoice(inv))}
                         </div>
                         {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
                       </div>

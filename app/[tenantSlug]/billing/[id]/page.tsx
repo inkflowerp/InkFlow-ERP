@@ -42,7 +42,7 @@ import {
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
-import { BillingService } from '@/services/billing.service'
+import { generateInvoiceTextMessage } from '@/lib/billing-utils'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
@@ -133,7 +133,7 @@ export default function InvoiceCockpitPage() {
 
   const handleCopyWhatsAppText = () => {
     if (!invoice) return
-    const text = BillingService.generateInvoiceTextMessage(invoice, company?.name, {
+    const text = generateInvoiceTextMessage(invoice, company?.name, {
       bkash: company?.phone,
       nagad: company?.phone,
       bank: 'Dutch-Bangla Bank / City Bank',
