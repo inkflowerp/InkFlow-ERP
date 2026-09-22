@@ -1,7 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   FileSpreadsheet,
   Download,
@@ -22,6 +24,11 @@ import {
   BarChart3,
   PieChart,
   Sparkles,
+  GitBranch,
+  Calculator,
+  Clock,
+  ArrowRight,
+  RefreshCw,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -39,9 +46,13 @@ import { formatBDT, formatDate, formatDateTime } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SalesOrderRecord } from '@/types/order.types'
+import { CustomerRecord } from '@/types/crm.types'
 import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { MaterialRecord } from '@/types/inventory.types'
+import { ProductionJobRecord } from '@/types/production.types'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { listBranchesAction } from '@/actions/branch.actions'
+import type { BranchMasterRecord } from '@/types/branch.types'
 
 function EmptyReportState() {
   const { tBilingual } = useI18n()
@@ -54,10 +65,44 @@ function EmptyReportState() {
   )
 }
 
+function matchesDateRange(dateStr?: string | null, range?: string): boolean {
+  if (!dateStr || !range || range === 'all') return true
+  try {
+    const d = new Date(dateStr)
+    const now = new Date()
+    if (range === 'today') {
+      return d.toDateString() === now.toDateString()
+    } else if (range === '7d') {
+      const past7 = new Date()
+      past7.setDate(past7.getDate() - 7)
+      return d >= past7
+    } else if (range === 'this_month') {
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+    } else if (range === 'last_month') {
+      const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1
+      const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
+      return d.getMonth() === prevMonth && d.getFullYear() === prevYear
+    } else if (range === 'quarter') {
+      const past90 = new Date()
+      past90.setDate(past90.getDate() - 90)
+      return d >= past90
+    }
+    return true
+  } catch {
+    return true
+  }
+}
+
 export default function ReportingAnalyticsPage() {
+  const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  const [mounted, setMounted] = useState(false)
+  const [branches, setBranches] = useState<BranchMasterRecord[]>([])
+  const [syncCount, setSyncCount] = useState(0)
 
   // Global Multi-Dimensional Filters
   const [filters, setFilters] = useState<ReportFilterState>({
@@ -76,33 +121,117 @@ export default function ReportingAnalyticsPage() {
   const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
   const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
   const [materials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
+  const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
+  const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
 
-  // Dynamic datasets computed from real records
-  const salesByProduct = useMemo(() => ReportsService.getSalesByProduct(), [orders])
-  const salesByCustomer = useMemo(() => ReportsService.getSalesByCustomer(), [orders])
-  const salesByPerson = useMemo(() => ReportsService.getSalesByPerson(), [orders])
-  const salesByArea = useMemo(() => ReportsService.getSalesByArea(), [orders])
-  const paymentMethods = useMemo(() => ReportsService.getPaymentMethods(), [payments])
-  const productionMetrics = useMemo(() => ReportsService.getProductionMetrics(), [])
-  const financialAging = useMemo(() => ReportsService.getFinancialAging(), [invoices])
-  const inventoryValuation = useMemo(() => ReportsService.getInventoryValuation(), [materials])
-  const customerReports = useMemo(() => ReportsService.getCustomerReports(), [orders, payments])
+  useEffect(() => {
+    setMounted(true)
+    listBranchesAction({ includeInactive: false }).then((res) => {
+      if (res.success && res.data) {
+        setBranches(res.data as BranchMasterRecord[])
+      }
+    })
+  }, [])
+
+  // Realtime Broadcast Listener for Live Multi-User Sync
+  useEffect(() => {
+    const handleSync = () => {
+      setSyncCount((prev) => prev + 1)
+    }
+
+    window.addEventListener('printerp_table_synced:orders', handleSync)
+    window.addEventListener('printerp_table_synced:invoices', handleSync)
+    window.addEventListener('printerp_table_synced:payments', handleSync)
+    window.addEventListener('printerp_table_synced:materials', handleSync)
+    window.addEventListener('printerp_table_synced:customers', handleSync)
+    window.addEventListener('printerp_table_synced:branches', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:orders', handleSync)
+      window.removeEventListener('printerp_table_synced:invoices', handleSync)
+      window.removeEventListener('printerp_table_synced:payments', handleSync)
+      window.removeEventListener('printerp_table_synced:materials', handleSync)
+      window.removeEventListener('printerp_table_synced:customers', handleSync)
+      window.removeEventListener('printerp_table_synced:branches', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
+  }, [])
+
+  // Filter-Aware Datasets
+  const filteredOrders = useMemo(() => {
+    return (orders || []).filter((o) => {
+      const matchDate = matchesDateRange(o.created_at || (o as any).order_date, filters.dateRange)
+      const matchBranch = filters.branch === 'all' || (o as any).branch_id === filters.branch || (o as any).branch === filters.branch
+      const matchCustomerType = filters.customerType === 'all' || (o as any).customer_type === filters.customerType
+      return matchDate && matchBranch && matchCustomerType
+    })
+  }, [orders, filters, syncCount])
+
+  const filteredInvoices = useMemo(() => {
+    return (invoices || []).filter((i) => {
+      const matchDate = matchesDateRange(i.created_at || (i as any).invoice_date, filters.dateRange)
+      const matchBranch = filters.branch === 'all' || (i as any).branch_id === filters.branch
+      return matchDate && matchBranch
+    })
+  }, [invoices, filters, syncCount])
+
+  const filteredPayments = useMemo(() => {
+    return (payments || []).filter((p) => {
+      const matchDate = matchesDateRange(p.created_at || (p as any).payment_date, filters.dateRange)
+      const matchBranch = filters.branch === 'all' || (p as any).branch_id === filters.branch
+      return matchDate && matchBranch
+    })
+  }, [payments, filters, syncCount])
+
+  const filteredMaterials = useMemo(() => {
+    if (filters.department === 'all') return materials || []
+    return (materials || []).filter((m) => {
+      const cat = (m.category || '').toLowerCase()
+      if (filters.department === 'printing') return cat.includes('paper') || cat.includes('vinyl') || cat.includes('banner') || cat.includes('ink') || cat.includes('sheet')
+      if (filters.department === 'finishing') return cat.includes('lamination') || cat.includes('eyelet') || cat.includes('glue') || cat.includes('tape')
+      if (filters.department === 'fabrication') return cat.includes('acrylic') || cat.includes('led') || cat.includes('board') || cat.includes('metal') || cat.includes('pvc')
+      if (filters.department === 'installation') return cat.includes('frame') || cat.includes('structure') || cat.includes('cable') || cat.includes('screw')
+      return true
+    })
+  }, [materials, filters.department, syncCount])
+
+  const filteredCustomers = useMemo(() => {
+    if (filters.customerType === 'all') return customers || []
+    return (customers || []).filter((c) => (c.customer_type || '').toLowerCase() === filters.customerType.toLowerCase())
+  }, [customers, filters.customerType, syncCount])
+
+  const filteredJobs = useMemo(() => {
+    if (filters.department === 'all') return jobs || []
+    return (jobs || []).filter((j) => (j.department || '').toLowerCase() === filters.department.toLowerCase())
+  }, [jobs, filters.department, syncCount])
+
+  // Dynamic datasets computed from filtered records
+  const salesByProduct = useMemo(() => ReportsService.getSalesByProduct(filteredOrders), [filteredOrders])
+  const salesByCustomer = useMemo(() => ReportsService.getSalesByCustomer(filteredOrders), [filteredOrders])
+  const salesByPerson = useMemo(() => ReportsService.getSalesByPerson(filteredOrders), [filteredOrders])
+  const salesByArea = useMemo(() => ReportsService.getSalesByArea(filteredOrders), [filteredOrders])
+  const paymentMethods = useMemo(() => ReportsService.getPaymentMethods(filteredPayments), [filteredPayments])
+  const productionMetrics = useMemo(() => ReportsService.getProductionMetrics(filteredJobs), [filteredJobs])
+  const financialAging = useMemo(() => ReportsService.getFinancialAging(filteredInvoices), [filteredInvoices])
+  const inventoryValuation = useMemo(() => ReportsService.getInventoryValuation(filteredMaterials), [filteredMaterials])
+  const customerReports = useMemo(() => ReportsService.getCustomerReports(filteredCustomers, filteredOrders), [filteredCustomers, filteredOrders])
 
   const totalInventoryValuation = useMemo(() => {
     return inventoryValuation.reduce((acc: number, i: any) => acc + (i.totalValue || 0), 0)
   }, [inventoryValuation])
 
   const grossSalesTurnover = useMemo(() => {
-    return (invoices || []).reduce((acc: number, i: any) => acc + (Number(i.grand_total) || Number(i.total_amount) || Number(i.subtotal) || 0), 0)
-  }, [invoices])
+    return (filteredInvoices || []).reduce((acc: number, i: any) => acc + (Number(i.grand_total) || Number(i.total_amount) || Number(i.subtotal) || 0), 0)
+  }, [filteredInvoices])
 
   const totalCollections = useMemo(() => {
-    return (payments || []).reduce((acc: number, p: any) => acc + (Number(p.amount) || 0), 0)
-  }, [payments])
+    return (filteredPayments || []).reduce((acc: number, p: any) => acc + (Number(p.amount) || 0), 0)
+  }, [filteredPayments])
 
   const totalDue = useMemo(() => {
-    return (invoices || []).reduce((acc: number, i: any) => acc + (Number(i.due_amount) || 0), 0)
-  }, [invoices])
+    return (filteredInvoices || []).reduce((acc: number, i: any) => acc + (Number(i.due_amount) || 0), 0)
+  }, [filteredInvoices])
 
   const realizedMargin = useMemo(() => {
     if (grossSalesTurnover === 0) return 0
@@ -178,6 +307,20 @@ export default function ReportingAnalyticsPage() {
     exportToCsv(filename, headers, rows, isExcel)
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        <div className="h-14 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <div key={n} className="h-20 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+      </div>
+    )
+  }
+
   return (
     <FeatureGate feature="reports">
       <div className="space-y-6 max-w-7xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
@@ -212,7 +355,43 @@ export default function ReportingAnalyticsPage() {
           icon={BarChart3}
           iconColor="text-blue-600"
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="text-xs h-8 hidden md:inline-flex"
+              >
+                <Link href={getTenantNavHref('/reports/branches', pathname, slug)}>
+                  <GitBranch className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
+                  {tBilingual('Branch Telemetry', 'শাখা রিপোর্ট')}
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="text-xs h-8 hidden sm:inline-flex"
+              >
+                <Link href={getTenantNavHref('/accounting', pathname, slug)}>
+                  <DollarSign className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
+                  {tBilingual('Accounting OPEX', 'হিসাব')}
+                </Link>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="outline"
+                asChild
+                className="text-xs h-8 hidden lg:inline-flex"
+              >
+                <Link href={getTenantNavHref('/costing', pathname, slug)}>
+                  <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
+                  {tBilingual('Job Costing', 'কস্টিং')}
+                </Link>
+              </Button>
+
               <Button
                 size="sm"
                 variant="outline"
@@ -230,16 +409,16 @@ export default function ReportingAnalyticsPage() {
                 className="text-xs h-8 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 bangla-text"
               >
                 <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
-                {tBilingual('Excel CSV', 'এক্সেল সিএসভি')}
+                {tBilingual('Excel CSV', 'এক্সেল')}
               </Button>
 
               <Button
                 size="sm"
                 onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-8 bangla-text"
+                className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-8 bangla-text shadow-xs"
               >
                 <Printer className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Print Report', 'প্রিন্ট রিপোর্ট')}
+                {tBilingual('Print', 'প্রিন্ট')}
               </Button>
             </div>
           }
@@ -258,11 +437,11 @@ export default function ReportingAnalyticsPage() {
             onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
             className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
-            <option value="today">Today</option>
-            <option value="7d">Last 7 Days</option>
-            <option value="this_month">This Month</option>
-            <option value="last_month">Last Month</option>
-            <option value="quarter">This Financial Quarter</option>
+            <option value="today">Today (আজকের)</option>
+            <option value="7d">Last 7 Days (গত ৭ দিন)</option>
+            <option value="this_month">This Month (চলতি মাস)</option>
+            <option value="last_month">Last Month (গত মাস)</option>
+            <option value="quarter">This Financial Quarter (ত্রৈমাসিক)</option>
           </select>
 
           {/* Branch */}
@@ -271,7 +450,12 @@ export default function ReportingAnalyticsPage() {
             onChange={(e) => setFilters({ ...filters, branch: e.target.value as any })}
             className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
           >
-            <option value="all">All Branches</option>
+            <option value="all">All Branches ({branches.length > 0 ? `${branches.length} Outlets` : 'All'})</option>
+            {branches.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name} {b.code ? `(${b.code})` : ''}
+              </option>
+            ))}
           </select>
 
           {/* Customer Segment */}

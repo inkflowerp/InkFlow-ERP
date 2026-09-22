@@ -31,7 +31,7 @@ export function exportToCsv(
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { SalesOrderRecord } from '@/types/order.types'
 import { CustomerRecord } from '@/types/crm.types'
-import { InvoiceRecord } from '@/types/billing.types'
+import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { MaterialRecord } from '@/types/inventory.types'
 import { ProductionJobRecord } from '@/types/production.types'
 
@@ -46,8 +46,8 @@ export const DEMO_INVENTORY_VALUATION: InventoryValuationItem[] = []
 export const DEMO_CUSTOMER_REPORTS: CustomerReportItem[] = []
 
 export class ReportsService {
-  static getSalesByProduct(): SalesBreakdownItem[] {
-    const orders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+  static getSalesByProduct(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
+    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number; category: string }>()
     let totalRev = 0
@@ -71,8 +71,8 @@ export class ReportsService {
     }))
   }
 
-  static getSalesByCustomer(): SalesBreakdownItem[] {
-    const orders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+  static getSalesByCustomer(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
+    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -95,8 +95,8 @@ export class ReportsService {
     }))
   }
 
-  static getSalesByPerson(): SalesBreakdownItem[] {
-    const orders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+  static getSalesByPerson(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
+    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -119,8 +119,8 @@ export class ReportsService {
     }))
   }
 
-  static getSalesByArea(): SalesBreakdownItem[] {
-    const orders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+  static getSalesByArea(ordersList?: SalesOrderRecord[]): SalesBreakdownItem[] {
+    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     if (!orders.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
@@ -143,14 +143,14 @@ export class ReportsService {
     }))
   }
 
-  static getPaymentMethods(): SalesBreakdownItem[] {
-    const invoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    if (!invoices.length) return []
+  static getPaymentMethods(paymentsList?: PaymentRecord[]): SalesBreakdownItem[] {
+    const payments = paymentsList || PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+    if (!payments.length) return []
     const map = new Map<string, { revenue: number; count: number }>()
     let totalRev = 0
-    invoices.forEach((inv) => {
-      const method = (inv as any).payment_method || 'Cash / Bank'
-      const amt = inv.paid_amount || 0
+    payments.forEach((p) => {
+      const method = (p as any).payment_method || (p as any).method || 'Cash / Bank'
+      const amt = Number(p.amount) || 0
       const existing = map.get(method) || { revenue: 0, count: 0 }
       existing.revenue += amt
       existing.count += 1
@@ -167,8 +167,8 @@ export class ReportsService {
     }))
   }
 
-  static getProductionMetrics(): ProductionMetricItem[] {
-    const jobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+  static getProductionMetrics(jobsList?: ProductionJobRecord[]): ProductionMetricItem[] {
+    const jobs = jobsList || PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
     const completed = jobs.filter((j) => j.status === 'completed').length
     const inProgress = jobs.filter((j) => j.status === 'in_progress').length
     const queued = jobs.filter((j) => j.status === 'queued').length
@@ -198,10 +198,10 @@ export class ReportsService {
     ]
   }
 
-  static getFinancialAging(): FinancialAgingItem[] {
-    const invoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    const overdueInvoices = invoices.filter((i) => (i.due_amount || 0) > 0)
-    const totalOverdue = overdueInvoices.reduce((sum, i) => sum + (i.due_amount || 0), 0)
+  static getFinancialAging(invoicesList?: InvoiceRecord[]): FinancialAgingItem[] {
+    const invoices = invoicesList || PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+    const overdueInvoices = invoices.filter((i) => (Number(i.due_amount) || 0) > 0)
+    const totalOverdue = overdueInvoices.reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
 
     return [
       {
@@ -235,8 +235,8 @@ export class ReportsService {
     ]
   }
 
-  static getInventoryValuation(): InventoryValuationItem[] {
-    const materials = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+  static getInventoryValuation(materialsList?: MaterialRecord[]): InventoryValuationItem[] {
+    const materials = materialsList || PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
     return materials.map((m, idx) => {
       const unitCost = Number(m.average_cost ?? m.cost_per_unit ?? m.last_purchase_price ?? 0)
       return {
@@ -253,17 +253,29 @@ export class ReportsService {
     })
   }
 
-  static getCustomerReports(): CustomerReportItem[] {
-    const customers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-    return customers.map((c, idx) => ({
-      id: `cr-${idx}`,
-      customerName: c.name,
-      customerType: c.customer_type || 'Regular',
-      lifetimeSales: c.total_orders_amount || 0,
-      totalPaid: (c.total_orders_amount || 0) - (c.total_due_balance || 0),
-      dueBalance: c.total_due_balance || 0,
-      ordersCount: c.total_orders_count || 0,
-      lastOrderDate: c.updated_at ? c.updated_at.split('T')[0] : 'N/A',
-    }))
+  static getCustomerReports(customersList?: CustomerRecord[], ordersList?: SalesOrderRecord[]): CustomerReportItem[] {
+    const customers = customersList || PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const orders = ordersList || PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+
+    return customers.map((c, idx) => {
+      const custOrders = orders.filter((o) => o.customer_id === c.id || o.customer_name === c.name)
+      const lifetimeSales = custOrders.length > 0
+        ? custOrders.reduce((sum, o) => sum + (Number(o.final_price) || Number(o.subtotal) || 0), 0)
+        : (c.total_orders_amount || 0)
+      const dueBalance = Number(c.total_due_balance) || 0
+      const totalPaid = Math.max(0, lifetimeSales - dueBalance)
+      const ordersCount = custOrders.length > 0 ? custOrders.length : (c.total_orders_count || 0)
+
+      return {
+        id: `cr-${idx}`,
+        customerName: c.name,
+        customerType: c.customer_type || 'Regular',
+        lifetimeSales,
+        totalPaid,
+        dueBalance,
+        ordersCount,
+        lastOrderDate: c.updated_at ? c.updated_at.split('T')[0] : 'N/A',
+      }
+    })
   }
 }
