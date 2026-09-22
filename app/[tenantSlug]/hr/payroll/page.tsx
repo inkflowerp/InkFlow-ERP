@@ -7,7 +7,8 @@
 
 import React, { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Wallet,
   Calendar,
@@ -33,6 +34,7 @@ import {
   Receipt,
   Download,
   AlertCircle,
+  UserCheck,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -67,11 +69,13 @@ import {
 function PayrollContent() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
+  const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'periods' | 'advances'>('periods')
@@ -171,7 +175,30 @@ function PayrollContent() {
   }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
     loadData()
+  }, [])
+
+  // Realtime Broadcast & Synced Event Listeners
+  useEffect(() => {
+    const handleSync = () => {
+      loadData()
+    }
+
+    window.addEventListener('printerp_table_synced:payroll_periods', handleSync)
+    window.addEventListener('printerp_table_synced:salary_advances', handleSync)
+    window.addEventListener('printerp_table_synced:employees', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:payroll_periods', handleSync)
+      window.removeEventListener('printerp_table_synced:salary_advances', handleSync)
+      window.removeEventListener('printerp_table_synced:employees', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
   }, [])
 
   const handleSelectPeriod = async (periodId: string) => {
@@ -334,6 +361,20 @@ function PayrollContent() {
   const partialCount = selectedPeriod?.items?.filter((i) => Number(i.paid_amount || 0) > 0 && Number(i.due_amount || 0) > 0).length || 0
   const unpaidCount = selectedPeriod?.items?.filter((i) => Number(i.paid_amount || 0) === 0).length || 0
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        <div className="h-14 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="h-24 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-5 max-w-7xl mx-auto pb-16">
       {/* Toast Notification */}
@@ -346,7 +387,7 @@ function PayrollContent() {
 
       {/* Page Header */}
       <PageHeader
-        titleEn="Payroll and Salery"
+        titleEn="Payroll & Salary Management"
         titleBn="পেরোল ও বেতন ব্যবস্থাপনা"
         descriptionEn="Automated monthly salary sheets, advance deductions & MFS disbursements"
         descriptionBn="স্বয়ংক্রিয় মাসিক বেতন শিট, অগ্রিম কর্তন ও ব্যাংক/বিকাশ বেতন প্রদান"
@@ -359,6 +400,42 @@ function PayrollContent() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden md:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/employees', pathname, tenantSlug)}>
+                <UserCheck className="w-3.5 h-3.5 text-slate-500" />
+                {tBilingual('Staff Directory', 'কর্মী তালিকা')}
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden sm:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/attendance', pathname, tenantSlug)}>
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                {tBilingual('Attendance Hub', 'হাজিরা')}
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
+            >
+              <Link href={getTenantNavHref('/hr/salary-report', pathname, tenantSlug)}>
+                <Printer className="w-3.5 h-3.5" />
+                {tBilingual('Salary Report', 'বেতন রিপোর্ট')}
+              </Link>
+            </Button>
+
             <Button
               variant="outline"
               size="sm"
@@ -562,7 +639,7 @@ function PayrollContent() {
                   )}
 
                   <Button asChild size="sm" variant="outline" className="h-8 text-xs gap-1 border-slate-200 dark:border-slate-800">
-                    <Link href={`/hr/salary-report`}>
+                    <Link href={getTenantNavHref('/hr/salary-report', pathname, tenantSlug)}>
                       <Printer className="w-3 h-3" />
                       {tBilingual('Print Sheet', 'প্রিন্ট শিট')}
                     </Link>
@@ -768,7 +845,7 @@ function PayrollContent() {
                                 </Button>
                               )}
                               <Button asChild size="sm" variant="outline" className="h-7 text-xs px-2 border-slate-200 dark:border-slate-800">
-                                <Link href={`/hr/payroll/${selectedPeriod.id}`}>
+                                <Link href={getTenantNavHref(`/hr/payroll/${selectedPeriod.id}`, pathname, tenantSlug)}>
                                   <FileText className="w-3 h-3" />
                                 </Link>
                               </Button>

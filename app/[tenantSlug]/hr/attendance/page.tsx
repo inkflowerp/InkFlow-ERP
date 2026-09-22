@@ -7,7 +7,8 @@
 
 import React, { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   UserCheck,
   Clock,
@@ -30,6 +31,7 @@ import {
   Building,
   Radio,
   FileText,
+  Wallet,
   SlidersHorizontal,
   Download,
   FileSpreadsheet,
@@ -138,11 +140,13 @@ function format12Hour(timeStr?: string | null): string {
 function AttendanceContent() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
+  const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'roster' | 'duty_log' | 'reports' | 'overtime' | 'shifts'>('roster')
@@ -314,8 +318,33 @@ function AttendanceContent() {
   }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
     loadData()
   }, [selectedDate])
+
+  // Realtime Broadcast & Synced Event Listeners
+  useEffect(() => {
+    const handleSync = () => {
+      loadData()
+      if (activeTab === 'duty_log') loadDutyLogData()
+      if (activeTab === 'reports') loadReportsData()
+    }
+
+    window.addEventListener('printerp_table_synced:attendance', handleSync)
+    window.addEventListener('printerp_table_synced:employees', handleSync)
+    window.addEventListener('printerp_table_synced:overtime_records', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:attendance', handleSync)
+      window.removeEventListener('printerp_table_synced:employees', handleSync)
+      window.removeEventListener('printerp_table_synced:overtime_records', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
+  }, [activeTab, selectedDate, logStartDate, logEndDate, logEmployeeId, reportStartDate, reportEndDate])
 
   // Load Duty Log Data when tab or filters change
   const loadDutyLogData = async () => {
@@ -859,6 +888,20 @@ function AttendanceContent() {
     }).filter(Boolean)
   }, [reportFilteredEmps, reportRecords, reportDays])
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        <div className="h-14 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="h-24 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Toast Notification */}
@@ -884,6 +927,30 @@ function AttendanceContent() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden md:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/employees', pathname, tenantSlug)}>
+                <User className="w-3.5 h-3.5 text-muted-foreground" />
+                {tBilingual('Staff Directory', 'কর্মী তালিকা')}
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden sm:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/payroll', pathname, tenantSlug)}>
+                <Wallet className="w-3.5 h-3.5 text-blue-600" />
+                {tBilingual('Payroll & Salary', 'পেরোল')}
+              </Link>
+            </Button>
+
             <Button
               variant="outline"
               size="sm"

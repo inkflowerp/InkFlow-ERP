@@ -7,7 +7,8 @@
 
 import React, { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Users,
   Plus,
@@ -231,11 +232,13 @@ const POPULAR_BANKS = [
 function EmployeeListContent() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
+  const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isLoading, setIsLoading] = useState(true)
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])
@@ -506,7 +509,26 @@ function EmployeeListContent() {
   }
 
   useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
     loadData()
+  }, [])
+
+  // Realtime Broadcast & Synced Event Listeners
+  useEffect(() => {
+    const handleSync = () => {
+      loadData()
+    }
+
+    window.addEventListener('printerp_table_synced:employees', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:employees', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
   }, [])
 
   // Open modal if action=new in URL query
@@ -874,6 +896,20 @@ function EmployeeListContent() {
   const hourlyCount = employees.filter((e) => e.employee_type === 'hourly_worker').length
   const onLeaveCount = employees.filter((e) => e.status === 'on_leave').length
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16">
+        <div className="h-14 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="h-24 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16">
       {/* Toast Notification */}
@@ -899,6 +935,30 @@ function EmployeeListContent() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden md:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/attendance', pathname, tenantSlug)}>
+                <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                {tBilingual('Floor Attendance', 'হাজিরা')}
+              </Link>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="gap-1.5 text-xs h-9 hidden sm:inline-flex"
+            >
+              <Link href={getTenantNavHref('/hr/payroll', pathname, tenantSlug)}>
+                <Wallet className="w-3.5 h-3.5 text-blue-600" />
+                {tBilingual('Payroll & Salary', 'পেরোল')}
+              </Link>
+            </Button>
+
             <Button
               variant="outline"
               size="sm"

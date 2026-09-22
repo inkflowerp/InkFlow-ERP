@@ -6,7 +6,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   ArrowLeft,
   Printer,
@@ -29,15 +30,21 @@ import { getPayrollPeriodDetailAction } from '@/actions/workforce.actions'
 
 export default function PayrollDetailPage() {
   const params = useParams()
+  const pathname = usePathname()
   const periodId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
+  const [mounted, setMounted] = useState(false)
   const [period, setPeriod] = useState<PayrollPeriodRecord | null>(null)
   const [selectedItemIndex, setSelectedItemIndex] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     async function loadPeriod() {
@@ -58,7 +65,7 @@ export default function PayrollDetailPage() {
     if (periodId) loadPeriod()
   }, [periodId])
 
-  if (isLoading) {
+  if (!mounted || isLoading) {
     return (
       <div className="flex items-center justify-center p-16 text-slate-500 text-xs">
         <RefreshCw className="h-5 w-5 animate-spin mr-2" />
@@ -71,7 +78,7 @@ export default function PayrollDetailPage() {
     return (
       <div className="space-y-6 max-w-4xl mx-auto">
         <Link
-          href={`/hr/payroll`}
+          href={getTenantNavHref('/hr/payroll', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -84,7 +91,7 @@ export default function PayrollDetailPage() {
             {errorMsg || 'The payroll period record you are looking for does not exist in your organization.'}
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/hr/payroll`}>View All Payroll Periods</Link>
+            <Link href={getTenantNavHref('/hr/payroll', pathname, slug)}>View All Payroll Periods</Link>
           </Button>
         </Card>
       </div>
@@ -98,7 +105,7 @@ export default function PayrollDetailPage() {
       {/* Non-Print Action & Selector Bar */}
       <div className="print:hidden flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <Link
-          href={`/hr/payroll`}
+          href={getTenantNavHref('/hr/payroll', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
