@@ -1,6 +1,8 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   UserPlus,
   UserCheck,
@@ -18,6 +20,7 @@ import {
 import { CustomerTimelineEvent } from '@/types/crm.types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 interface CustomerTimelineProps {
@@ -33,6 +36,8 @@ export function CustomerTimeline({
   tenantSlug,
   onSelectPaymentForReceipt,
 }: CustomerTimelineProps) {
+  const pathname = usePathname()
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -60,49 +65,45 @@ export function CustomerTimeline({
     )
   }
 
-  const getEventIcon = (type: CustomerTimelineEvent['type']) => {
+  const getEventIcon = (type: string) => {
     switch (type) {
       case 'customer_created':
-        return <UserPlus className="h-3.5 w-3.5 text-blue-600" />
-      case 'customer_updated':
-        return <UserCheck className="h-3.5 w-3.5 text-indigo-600" />
-      case 'rate_updated':
-        return <Tag className="h-3.5 w-3.5 text-purple-600" />
-      case 'quotation_created':
+        return <UserPlus className="h-4 w-4 text-blue-600" />
       case 'quotation_sent':
-        return <Send className="h-3.5 w-3.5 text-amber-600" />
-      case 'invoice_created':
-        return <FileText className="h-3.5 w-3.5 text-blue-600" />
-      case 'payment_received':
-        return <CreditCard className="h-3.5 w-3.5 text-emerald-600" />
+      case 'quotation_created':
+        return <Send className="h-4 w-4 text-amber-600" />
       case 'order_created':
       case 'job_started':
-        return <ShoppingBag className="h-3.5 w-3.5 text-cyan-600" />
-      case 'delivery_completed':
-        return <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+        return <ShoppingBag className="h-4 w-4 text-cyan-600" />
+      case 'invoice_created':
+        return <FileText className="h-4 w-4 text-indigo-600" />
+      case 'payment_received':
+        return <CreditCard className="h-4 w-4 text-emerald-600" />
       case 'communication_logged':
-        return <PhoneCall className="h-3.5 w-3.5 text-sky-600" />
+        return <PhoneCall className="h-4 w-4 text-sky-600" />
+      case 'rate_overridden':
+        return <Tag className="h-4 w-4 text-purple-600" />
       default:
-        return <Clock className="h-3.5 w-3.5 text-slate-500" />
+        return <Clock className="h-4 w-4 text-slate-400" />
     }
   }
 
-  const getEventBadge = (type: CustomerTimelineEvent['type']) => {
+  const getEventBadge = (type: string) => {
     switch (type) {
-      case 'invoice_created':
-        return (
-          <Badge className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 text-[10px]">
-            Invoice
-          </Badge>
-        )
       case 'payment_received':
         return (
           <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px]">
             Payment
           </Badge>
         )
-      case 'quotation_created':
+      case 'invoice_created':
+        return (
+          <Badge className="bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 text-[10px]">
+            Invoice
+          </Badge>
+        )
       case 'quotation_sent':
+      case 'quotation_created':
         return (
           <Badge className="bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 text-[10px]">
             Quotation
@@ -133,40 +134,40 @@ export function CustomerTimeline({
 
     if (evt.referenceType === 'invoice' || evt.type === 'invoice_created') {
       return (
-        <a
-          href={`/${baseSlug}/billing/invoices/${evt.referenceId || refNum}`}
+        <Link
+          href={getTenantNavHref(`/billing/${evt.referenceId || refNum}`, pathname, baseSlug)}
           className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-blue-600 hover:text-blue-800 dark:text-blue-400 hover:underline bg-blue-50/70 dark:bg-blue-950/50 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-900"
           title="Open Invoice"
         >
           <span>{refNum}</span>
           <span className="text-[9px]">&rarr;</span>
-        </a>
+        </Link>
       )
     }
 
     if (evt.referenceType === 'quotation' || evt.type.startsWith('quotation')) {
       return (
-        <a
-          href={`/${baseSlug}/quotations`}
+        <Link
+          href={getTenantNavHref('/quotations', pathname, baseSlug)}
           className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 hover:underline bg-amber-50/70 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900"
           title="Open Quotations"
         >
           <span>{refNum}</span>
           <span className="text-[9px]">&rarr;</span>
-        </a>
+        </Link>
       )
     }
 
     if (evt.referenceType === 'order' || evt.type.startsWith('order') || evt.type === 'job_started') {
       return (
-        <a
-          href={`/${baseSlug}/orders`}
+        <Link
+          href={getTenantNavHref('/orders', pathname, baseSlug)}
           className="inline-flex items-center gap-1 font-mono text-[11px] font-bold text-cyan-600 hover:text-cyan-800 dark:text-cyan-400 hover:underline bg-cyan-50/70 dark:bg-cyan-950/50 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-900"
           title="Open Orders"
         >
           <span>{refNum}</span>
           <span className="text-[9px]">&rarr;</span>
-        </a>
+        </Link>
       )
     }
 

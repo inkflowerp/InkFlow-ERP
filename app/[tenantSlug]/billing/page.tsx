@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useSearchParams, useRouter, useParams } from 'next/navigation'
+import { useSearchParams, useRouter, useParams, usePathname } from 'next/navigation'
 import {
   Receipt,
   Plus,
@@ -85,6 +85,7 @@ import {
   cancelInvoiceRequestAction,
 } from '@/actions/invoice-request.actions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 export type BillingTab = 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
@@ -93,10 +94,12 @@ function BillingContent() {
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { can } = usePermissions()
   const { locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const [isMounted, setIsMounted] = useState(false)
 
   // View Mode: 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
   const viewParam = searchParams?.get('view')
@@ -124,37 +127,12 @@ function BillingContent() {
   const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
-  const [isLoading, setIsLoading] = useState(() => {
-    try {
-      const cached = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES)
-      return !cached || cached.length === 0
-    } catch {
-      return true
-    }
-  })
+  const [isLoading, setIsLoading] = useState(true)
 
   // Data State with Stale-While-Revalidate Instant Hydration
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => {
-    try {
-      return PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    } catch {
-      return []
-    }
-  })
-  const [payments, setPayments] = useState<PaymentRecord[]>(() => {
-    try {
-      return PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
-    } catch {
-      return []
-    }
-  })
-  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestRecord[]>(() => {
-    try {
-      return PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-    } catch {
-      return []
-    }
-  })
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
+  const [payments, setPayments] = useState<PaymentRecord[]>([])
+  const [invoiceRequests, setInvoiceRequests] = useState<InvoiceRequestRecord[]>([])
   const [overviewMetrics, setOverviewMetrics] = useState<BillingOverviewMetrics | null>(null)
   const [priorityItems, setPriorityItems] = useState<CollectionPriorityItem[]>([])
   const [paymentMethodsSummary, setPaymentMethodsSummary] = useState<PaymentMethodSummaryItem[]>([])
@@ -206,12 +184,30 @@ function BillingContent() {
     setTimeout(() => setNotification(null), 4000)
   }
 
+  // Hydrate from localStorage on client mount safely to prevent SSR mismatch
+  useEffect(() => {
+    setIsMounted(true)
+    try {
+      const cachedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      const cachedPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+      const cachedRequests = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
+      if (cachedInvoices.length > 0) setInvoices(cachedInvoices)
+      if (cachedPayments.length > 0) setPayments(cachedPayments)
+      if (cachedRequests.length > 0) setInvoiceRequests(cachedRequests)
+      if (cachedInvoices.length > 0 || cachedPayments.length > 0) {
+        setIsLoading(false)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
+
   // Sync tab changes with URL search parameter
   const handleTabChange = (tab: BillingTab) => {
     setActiveTab(tab)
     const currentQuery = searchParams ? new URLSearchParams(searchParams.toString()) : new URLSearchParams()
     currentQuery.set('view', tab)
-    router.replace(`/billing?${currentQuery.toString()}`)
+    router.replace(getTenantNavHref(`/billing?${currentQuery.toString()}`, pathname, slug))
   }
 
   // Pending Invoice Requests count
@@ -690,7 +686,7 @@ function BillingContent() {
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2.5">
-            <Link href="/trash?tab=invoices">
+            <Link href={getTenantNavHref('/trash?tab=invoices', pathname, slug)}>
               <Button
                 variant="outline"
                 size="sm"
@@ -1132,7 +1128,7 @@ function BillingContent() {
                               <span>Collect</span>
                             </Button>
 
-                            <Link href={`/billing/${item.invoiceId}`}>
+                            <Link href={getTenantNavHref(`/billing/${item.invoiceId}`, pathname, slug)}>
                               <Button
                                 size="sm"
                                 variant="ghost"
@@ -1280,7 +1276,7 @@ function BillingContent() {
                         <tr key={inv.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                           <td className="p-3">
                             <Link
-                              href={`/billing/${inv.id}`}
+                              href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
                               className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                             >
                               <span>{inv.invoice_number}</span>
@@ -1334,7 +1330,7 @@ function BillingContent() {
                                 </Button>
                               )}
 
-                              <Link href={`/billing/${inv.id}`}>
+                              <Link href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}>
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -1387,7 +1383,7 @@ function BillingContent() {
                     <div key={inv.id} className="p-3.5 space-y-2.5">
                       <div className="flex items-center justify-between">
                         <Link
-                          href={`/billing/${inv.id}`}
+                          href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
                           className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400"
                         >
                           #{inv.invoice_number}
@@ -1431,7 +1427,7 @@ function BillingContent() {
                               Collect Due
                             </Button>
                           )}
-                          <Link href={`/billing/${inv.id}`}>
+                          <Link href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}>
                             <Button size="sm" variant="outline" className="h-8 text-xs px-2.5">
                               View
                             </Button>

@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Sparkles,
   Phone,
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { UnifiedOrderRecord, OrderStage } from './types'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 interface OrdersTableViewProps {
   orders: UnifiedOrderRecord[]
@@ -33,6 +35,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
   onOpenQuickStatus,
   onAdvanceStage,
 }: OrdersTableViewProps) {
+  const pathname = usePathname()
   if (orders.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
@@ -68,7 +71,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                   {/* Order # */}
                   <td className="py-3 px-4 align-middle">
                     <Link
-                      href={`/${tenantSlug}/orders/${order.id}`}
+                      href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
                       className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
                     >
                       <span>#{order.orderNumber}</span>

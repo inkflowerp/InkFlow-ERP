@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Briefcase,
   ArrowLeft,
@@ -47,6 +47,7 @@ import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createInvoiceRequestAction } from '@/actions/invoice-request.actions'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 const LIFECYCLE_STAGES = [
   { id: 'quotation', label: 'Quotation' },
@@ -62,10 +63,16 @@ const LIFECYCLE_STAGES = [
 
 function OrderDetailContent() {
   const params = useParams()
+  const pathname = usePathname()
   const orderId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
   const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
@@ -231,7 +238,7 @@ function OrderDetailContent() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href="/orders"
+          href={getTenantNavHref('/orders', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -244,7 +251,7 @@ function OrderDetailContent() {
             The sales order record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href="/orders">View All Orders</Link>
+            <Link href={getTenantNavHref('/orders', pathname, slug)}>View All Orders</Link>
           </Button>
         </Card>
       </div>
@@ -357,7 +364,7 @@ function OrderDetailContent() {
       {/* Back Link & Header */}
       <div>
         <Link
-          href={`/${slug}/orders`}
+          href={getTenantNavHref('/orders', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

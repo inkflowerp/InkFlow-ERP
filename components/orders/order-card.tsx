@@ -2,6 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Sparkles,
   Phone,
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { UnifiedOrderRecord, OrderStage } from './types'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 interface OrderCardProps {
   order: UnifiedOrderRecord
@@ -40,6 +42,7 @@ export const OrderCard = React.memo(function OrderCard({
   onOpenQuickStatus,
   onAdvanceStage,
 }: OrderCardProps) {
+  const pathname = usePathname()
   const isUrgent = order.priority === 'urgent' || order.priority === 'very_urgent'
   const isDueToday = order.deliveryDate?.includes(new Date().toISOString().split('T')[0])
   const isPaid = order.paymentStatus === 'paid'
@@ -87,7 +90,7 @@ export const OrderCard = React.memo(function OrderCard({
             {/* Order # & Badges */}
             <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
               <Link
-                href={`/${tenantSlug}/orders/${order.id}`}
+                href={getTenantNavHref(`/orders/${order.id}`, pathname, tenantSlug)}
                 className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 hover:underline flex items-center gap-1"
               >
                 <span>#{order.orderNumber}</span>
@@ -95,7 +98,7 @@ export const OrderCard = React.memo(function OrderCard({
               </Link>
               {order.invoiceNumber && (
                 <Link
-                  href={`/${tenantSlug}/invoices`}
+                  href={getTenantNavHref('/invoices', pathname, tenantSlug)}
                   className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded hover:underline"
                 >
                   Inv: #{order.invoiceNumber}

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Receipt,
   ArrowLeft,
@@ -40,21 +40,28 @@ import {
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
+  const pathname = usePathname()
   const invId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id || 'comp-default'
 
+  const [isMounted, setIsMounted] = useState(false)
   const [invoice, setInvoice] = useState<InvoiceRecord | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [docMode, setDocMode] = useState<InvoiceType>('sales_invoice')
   const [isRecordPayOpen, setIsRecordPayOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const loadInvoice = useCallback(async () => {
     if (!invId) return
@@ -121,7 +128,7 @@ export default function InvoiceCockpitPage() {
     }
   }
 
-  if (isLoading) {
+  if (!isMounted || isLoading) {
     return (
       <div className="space-y-6 max-w-5xl">
         <div className="p-12 text-center text-sm font-semibold text-slate-500">
@@ -135,7 +142,7 @@ export default function InvoiceCockpitPage() {
     return (
       <div className="space-y-6 max-w-5xl">
         <Link
-          href="/billing"
+          href={getTenantNavHref('/billing', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -148,7 +155,7 @@ export default function InvoiceCockpitPage() {
           </p>
           <div>
             <Link
-              href="/billing"
+              href={getTenantNavHref('/billing', pathname, slug)}
               className="inline-flex items-center text-xs font-bold text-blue-600 hover:underline"
             >
               Return to Invoices &rarr;
@@ -175,7 +182,7 @@ export default function InvoiceCockpitPage() {
       {/* Non-Print Action Bar */}
       <div className="print:hidden space-y-3">
         <Link
-          href="/billing"
+          href={getTenantNavHref('/billing', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

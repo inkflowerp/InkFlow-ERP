@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Users,
   Plus,
@@ -48,11 +48,13 @@ import {
   CustomerSummaryStatistics,
   CustomerCategory,
 } from '@/types/crm.types'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function CustomersPage() {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { can } = usePermissions()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
@@ -60,29 +62,17 @@ export default function CustomersPage() {
 
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id
+  const [isMounted, setIsMounted] = useState(false)
 
   // State with Zero-Latency SWR Cache Hydration
-  const [customers, setCustomers] = useState<CustomerRecord[]>(() => {
-    try {
-      return PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
-    } catch {
-      return []
-    }
-  })
+  const [customers, setCustomers] = useState<CustomerRecord[]>([])
   const [summary, setSummary] = useState<CustomerSummaryStatistics>({
     totalCustomers: 0,
     activeCustomers: 0,
     customersWithDue: 0,
     totalOutstandingDue: 0,
   })
-  const [totalRecords, setTotalRecords] = useState(() => {
-    try {
-      const cached = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
-      return cached ? cached.length : 0
-    } catch {
-      return 0
-    }
-  })
+  const [totalRecords, setTotalRecords] = useState(0)
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(25)
 
@@ -91,14 +81,7 @@ export default function CustomersPage() {
   const [selectedDueFilter, setSelectedDueFilter] = useState<'all' | 'has_due' | 'no_due'>('all')
   const [sortPreset, setSortPreset] = useState<'newest' | 'highest_billed' | 'highest_due' | 'latest_order' | 'alphabetical'>('newest')
 
-  const [isLoading, setIsLoading] = useState(() => {
-    try {
-      const cached = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
-      return !cached || cached.length === 0
-    } catch {
-      return true
-    }
-  })
+  const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [errorText, setErrorText] = useState('')
 
@@ -112,6 +95,21 @@ export default function CustomersPage() {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
   }
+
+  // Hydrate from localStorage on client mount safely to prevent SSR mismatch
+  useEffect(() => {
+    setIsMounted(true)
+    try {
+      const cached = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS)
+      if (cached && cached.length > 0) {
+        setCustomers(cached)
+        setTotalRecords(cached.length)
+        setIsLoading(false)
+      }
+    } catch {
+      // ignore
+    }
+  }, [])
 
   // Derive sortBy & sortOrder from preset
   const getSortParams = () => {
@@ -284,7 +282,7 @@ export default function CustomersPage() {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Link href="/trash?tab=customers">
+          <Link href={getTenantNavHref('/trash?tab=customers', pathname, slug)}>
             <Button
               variant="outline"
               size="sm"
@@ -551,7 +549,7 @@ export default function CustomersPage() {
                         {/* Customer Name */}
                         <td className="py-3.5 px-4">
                           <Link
-                            href={`/customers/${c.id}`}
+                            href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
                             className="font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1.5"
                           >
                             <span>{c.name}</span>
@@ -656,7 +654,7 @@ export default function CustomersPage() {
                           <div className="flex items-center justify-center gap-1.5">
                             {/* New Quotation Shortcut */}
                             <Link
-                              href={`/quotations/new?customerId=${c.id}`}
+                              href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
                               title="Create Quotation"
                             >
@@ -685,7 +683,7 @@ export default function CustomersPage() {
 
                             {/* 360 View */}
                             <Link
-                              href={`/customers/${c.id}`}
+                              href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 font-semibold text-xs transition-colors ml-1"
                             >
                               <span>360</span>
@@ -732,7 +730,7 @@ export default function CustomersPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <Link
-                        href={`/customers/${c.id}`}
+                        href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
                         className="font-bold text-base text-slate-900 dark:text-white hover:text-blue-600"
                       >
                         {c.name}
@@ -807,7 +805,7 @@ export default function CustomersPage() {
                   {/* Mobile Quick Action Buttons */}
                   <div className="flex items-center gap-2 pt-1">
                     <Link
-                      href={`/quotations/new?customerId=${c.id}`}
+                      href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
                       className="flex-1 text-center py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                     >
                       + Quote
@@ -839,7 +837,7 @@ export default function CustomersPage() {
 
                   {/* Bottom: View 360 Workspace Button */}
                   <Link
-                    href={`/customers/${c.id}`}
+                    href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
                     className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs"
                   >
                     <span>Open Customer 360 Workspace</span>

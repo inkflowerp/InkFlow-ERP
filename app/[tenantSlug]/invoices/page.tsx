@@ -1,13 +1,15 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { Receipt, Loader2 } from 'lucide-react'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 function InvoicesRedirectContent() {
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const pathname = usePathname()
   const tenantSlug = (params?.tenantSlug as string) || 'app'
 
   useEffect(() => {
@@ -16,9 +18,9 @@ function InvoicesRedirectContent() {
     if (!currentQuery.has('view')) {
       currentQuery.set('view', 'invoices')
     }
-    const targetUrl = `/billing?${currentQuery.toString()}`
+    const targetUrl = getTenantNavHref(`/billing?${currentQuery.toString()}`, pathname, tenantSlug)
     router.replace(targetUrl)
-  }, [searchParams, router])
+  }, [searchParams, router, pathname, tenantSlug])
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4 text-center">

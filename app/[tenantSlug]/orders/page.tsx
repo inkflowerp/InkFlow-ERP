@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback, useTransition } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Briefcase,
   Plus,
@@ -30,6 +30,7 @@ import {
   type OrderWhatsAppTemplateKey,
 } from '@/components/orders/types'
 import { isReadyProduct, isOutsourceProduct } from '@/lib/units'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 import { OrdersMetricsBar, type OrderMetrics } from '@/components/orders/orders-metrics-bar'
 import { OrdersFilterToolbar, type OrderFilterState } from '@/components/orders/orders-filter-toolbar'
@@ -43,10 +44,14 @@ import { WorkOrderModal } from '@/components/shared/work-order-modal'
 
 export default function OrdersPage() {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const companyId = company?.id || tenantSlug
+
+  // Hydration state
+  const [isMounted, setIsMounted] = useState(false)
 
   // Data States
   const [orders, setOrders] = useState<UnifiedOrderRecord[]>([])
@@ -309,6 +314,7 @@ export default function OrdersPage() {
   }, [companyId, tenantSlug, showNotification])
 
   useEffect(() => {
+    setIsMounted(true)
     loadData()
 
     const handleSync = () => {

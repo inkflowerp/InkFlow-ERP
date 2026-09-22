@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
 import {
   Users,
   ArrowLeft,
@@ -65,11 +65,13 @@ import {
 import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { QuotationRecord } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 export default function CustomerProfilePage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const customerId = (params?.id as string) || (params?.customerId as string) || ''
   const { company } = useTenant()
   const { can } = usePermissions()
@@ -77,6 +79,7 @@ export default function CustomerProfilePage() {
 
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id
+  const [isMounted, setIsMounted] = useState(false)
 
   // Data State
   const [customer, setCustomer] = useState<CustomerRecord | null>(null)
@@ -98,6 +101,10 @@ export default function CustomerProfilePage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isError, setIsError] = useState(false)
   const [errorText, setErrorText] = useState('')
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Tab State
   const [activeTab, setActiveTab] = useState<
@@ -347,7 +354,7 @@ export default function CustomerProfilePage() {
     }
   }
 
-  if (isLoading) {
+  if (!isMounted || isLoading) {
     return (
       <div className="space-y-6 max-w-7xl mx-auto pb-12">
         <div className="h-8 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse" />
@@ -377,7 +384,7 @@ export default function CustomerProfilePage() {
               <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
               Retry
             </Button>
-            <Link href="/customers">
+            <Link href={getTenantNavHref('/customers', pathname, slug)}>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                 Back to Customer Directory
               </Button>
@@ -407,7 +414,7 @@ export default function CustomerProfilePage() {
       {/* Back to Customer Directory link */}
       <div className="flex items-center justify-between">
         <Link
-          href="/customers"
+          href={getTenantNavHref('/customers', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -563,7 +570,7 @@ export default function CustomerProfilePage() {
               + Create Invoice
             </Button>
 
-            <Link href={`/quotations/new?customerId=${customer.id}`}>
+            <Link href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}>
               <Button size="sm" variant="outline" className="text-xs font-semibold h-8">
                 <Send className="h-3.5 w-3.5 mr-1.5" />
                 + New Quotation
@@ -685,7 +692,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href={`/billing/invoices/${inv.id}`}
+                                href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
                                 className="font-bold text-blue-600 hover:underline flex items-center gap-1"
                               >
                                 {inv.invoice_number}
@@ -716,7 +723,7 @@ export default function CustomerProfilePage() {
                         Open Quotations ({openQuotations.length})
                       </span>
                       <Link
-                        href={`/quotations/new?customerId=${customer.id}`}
+                        href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}
                         className="text-[10px] font-bold text-blue-600 hover:underline"
                       >
                         + New
@@ -733,7 +740,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href="/quotations"
+                                href={getTenantNavHref('/quotations', pathname, slug)}
                                 className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {q.quotation_number}
@@ -759,7 +766,7 @@ export default function CustomerProfilePage() {
                         Active Orders ({activeOrders.length})
                       </span>
                       <Link
-                        href="/orders"
+                        href={getTenantNavHref('/orders', pathname, slug)}
                         className="text-[10px] font-bold text-blue-600 hover:underline"
                       >
                         View
@@ -776,7 +783,7 @@ export default function CustomerProfilePage() {
                           >
                             <div>
                               <Link
-                                href="/orders"
+                                href={getTenantNavHref('/orders', pathname, slug)}
                                 className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1"
                               >
                                 {ord.order_number}
@@ -1026,7 +1033,7 @@ export default function CustomerProfilePage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link
-                          href={`/billing/invoices/${inv.id}`}
+                          href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
                           className="inline-flex items-center text-blue-600 hover:underline font-semibold"
                         >
                           View &rarr;
@@ -1119,7 +1126,7 @@ export default function CustomerProfilePage() {
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">Customer Quotations</h3>
               <p className="text-xs text-slate-400">Price proposals and estimates</p>
             </div>
-            <Link href={`/quotations/new?customerId=${customer.id}`}>
+            <Link href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8">
                 + New Quotation
               </Button>
@@ -1163,7 +1170,7 @@ export default function CustomerProfilePage() {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <Link
-                          href="/quotations"
+                          href={getTenantNavHref('/quotations', pathname, slug)}
                           className="text-blue-600 hover:underline font-semibold"
                         >
                           View &rarr;

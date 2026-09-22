@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   FileText,
   Search,
@@ -30,6 +31,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Label } from '@/components/ui/label'
 import type { InvoiceRequestRecord, InvoiceRequestStatus } from '@/types/workflow.types'
 import { formatBDT } from '@/lib/formatters'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 export interface InvoiceRequestsPanelProps {
@@ -70,6 +72,7 @@ export function InvoiceRequestsPanel({
   onCancelRequest,
   onRefresh,
 }: InvoiceRequestsPanelProps) {
+  const pathname = usePathname()
   const [activeSubFilter, setActiveSubFilter] = useState<'all' | 'pending' | 'invoice_created' | 'cancelled'>('all')
   const [search, setSearch] = useState('')
 
@@ -395,14 +398,14 @@ export function InvoiceRequestsPanel({
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
-                            <Link href={`/orders/${req.sales_order_id || ''}`}>
+                            <Link href={getTenantNavHref(`/orders/${req.sales_order_id || ''}`, pathname, tenantSlug)}>
                               <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
-                            <Link href={`/design/${req.design_job_id || ''}`}>
+                            <Link href={getTenantNavHref(`/design/${req.design_job_id || ''}`, pathname, tenantSlug)}>
                               <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Design #{req.design_number}
                               </Badge>
@@ -481,7 +484,7 @@ export function InvoiceRequestsPanel({
                     ) : req.status === 'invoice_created' ? (
                       <div className="flex items-center gap-2">
                         {req.invoice_id ? (
-                          <Link href={`/billing/${req.invoice_id}`}>
+                          <Link href={getTenantNavHref(`/billing/${req.invoice_id}`, pathname, tenantSlug)}>
                             <Button
                               size="sm"
                               variant="outline"
