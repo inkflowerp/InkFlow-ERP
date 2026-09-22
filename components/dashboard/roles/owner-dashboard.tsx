@@ -241,11 +241,12 @@ export function OwnerDashboard({
   const getWhatsAppReminderUrl = (item: OverdueReceivableSummary) => {
     const rawPhone = (item.customerPhone || '').replace(/\D/g, '')
     const phone = rawPhone.startsWith('880') ? rawPhone : rawPhone.startsWith('0') ? `88${rawPhone}` : `880${rawPhone}`
+    const companyTitle = company?.name || 'প্রিন্টিং প্রেস'
     const msg = encodeURIComponent(
       `আসসালামু আলাইকুম / আদাব ${item.customerName},\n` +
-      `InkFlow প্রিন্টিং প্রেস থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ৳${item.dueAmount.toLocaleString()} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
+      `${companyTitle} থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ৳${formatBDT(item.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
       `বিল পরিশোধের তারিখ ছিল: ${item.dueDate} (${item.daysOverdue} দিন অতিবাহিত)।\n` +
-      `বিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে আমাদের অবহিত করুন।\n` +
+      `বিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন।\n` +
       `ধন্যবাদ!`
     )
     return `https://wa.me/${phone}?text=${msg}`
@@ -530,22 +531,27 @@ export function OwnerDashboard({
               </div>
             </div>
 
-            {/* 4. Today's Net Cash Flow */}
+            {/* 4. Today's Net Cash Flow (Collection vs Expenses) */}
             <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
               <div className="flex items-center justify-between text-xs text-amber-300 font-medium">
                 <span className="flex items-center gap-1.5">
                   <TrendingUp className="h-3.5 w-3.5" />
                   {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
                 </span>
-                <Badge className="bg-emerald-500/20 text-emerald-300 text-[10px] py-0 px-1">
+                <span className="text-[10px] font-mono font-bold text-emerald-300">
                   +{formatBDT(safeData.liquiditySummary.todayCollection)}
-                </Badge>
+                </span>
               </div>
               <div className="text-lg font-black font-mono text-white">
                 ৳ {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
               </div>
-              <div className="text-[10px] text-amber-300 font-semibold">
-                {tBilingual('Collection vs Outflow', 'কালেকশন বনাম খরচ')}
+              <div className="flex items-center justify-between text-[10px] font-medium pt-0.5">
+                <span className="text-rose-300">
+                  {tBilingual('Expense:', 'খরচ:')} -৳{formatBDT(safeData.liquiditySummary.todayExpenses)}
+                </span>
+                <span className="text-emerald-300 font-bold">
+                  {tBilingual('Net Drawer', 'নিট জমা')}
+                </span>
               </div>
             </div>
           </div>
@@ -698,25 +704,38 @@ export function OwnerDashboard({
       {safeData.segmentMetrics && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Digital Printing Stream Card */}
-          <Card className="p-4 border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 rounded-2xl space-y-2">
+          <button
+            type="button"
+            onClick={() => setProdFilter((prev) => (prev === 'digital' ? 'all' : 'digital'))}
+            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+              prodFilter === 'digital'
+                ? 'bg-blue-100/70 border-blue-500 dark:bg-blue-950/60 dark:border-blue-400 ring-2 ring-blue-500/30 shadow-xs'
+                : 'bg-blue-50/40 border-blue-200 dark:bg-blue-950/20 dark:border-blue-900/60 hover:border-blue-400 hover:shadow-xs'
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-blue-600 text-white">
-                  <Printer className="h-4 w-4" />
+                <div className="p-2 rounded-xl bg-blue-600 text-white shadow-xs">
+                  <Printer className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
-                    {tBilingual('Digital Printing', 'ডিজিটাল প্রিন্টিং')}
-                  </h3>
-                  <p className="text-[10px] text-slate-500">Fast Laser, ID, Cards, Mugs</p>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                      {tBilingual('Digital Printing', 'ডিজিটাল প্রিন্টিং')}
+                    </h3>
+                    {prodFilter === 'digital' && (
+                      <Badge className="bg-blue-600 text-white text-[9px] py-0 px-1">Active Filter</Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Fast Laser, ID, Cards, Mugs, Crests</p>
                 </div>
               </div>
-              <Badge className="bg-blue-600 text-white text-[10px] py-0">
-                {safeData.segmentMetrics.digital.activeJobsCount} Active
+              <Badge className="bg-blue-600 text-white text-[10px] py-0.5 px-2">
+                {safeData.segmentMetrics.digital.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-blue-100 dark:border-blue-900 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-blue-100 dark:border-blue-900/80 flex items-center justify-between text-xs font-mono">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
@@ -724,28 +743,41 @@ export function OwnerDashboard({
                 ৳ {formatBDT(safeData.segmentMetrics.digital.todaySales)}
               </span>
             </div>
-          </Card>
+          </button>
 
           {/* Offset Printing Stream Card */}
-          <Card className="p-4 border-purple-200 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 rounded-2xl space-y-2">
+          <button
+            type="button"
+            onClick={() => setProdFilter((prev) => (prev === 'offset' ? 'all' : 'offset'))}
+            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+              prodFilter === 'offset'
+                ? 'bg-purple-100/70 border-purple-500 dark:bg-purple-950/60 dark:border-purple-400 ring-2 ring-purple-500/30 shadow-xs'
+                : 'bg-purple-50/40 border-purple-200 dark:bg-purple-950/20 dark:border-purple-900/60 hover:border-purple-400 hover:shadow-xs'
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-purple-600 text-white">
-                  <Layers className="h-4 w-4" />
+                <div className="p-2 rounded-xl bg-purple-600 text-white shadow-xs">
+                  <Layers className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
-                    {tBilingual('Offset Printing', 'অফসেট প্রিন্টিং')}
-                  </h3>
-                  <p className="text-[10px] text-slate-500">Books, Packaging, Cartons, Memos</p>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                      {tBilingual('Offset Printing', 'অফসেট প্রিন্টিং')}
+                    </h3>
+                    {prodFilter === 'offset' && (
+                      <Badge className="bg-purple-600 text-white text-[9px] py-0 px-1">Active Filter</Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Books, Packaging, Cartons, Memos, Pads</p>
                 </div>
               </div>
-              <Badge className="bg-purple-600 text-white text-[10px] py-0">
-                {safeData.segmentMetrics.offset.activeJobsCount} Active
+              <Badge className="bg-purple-600 text-white text-[10px] py-0.5 px-2">
+                {safeData.segmentMetrics.offset.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-purple-100 dark:border-purple-900 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs font-mono">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Plates/CTP:', 'প্লেট/CTP:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
@@ -753,28 +785,41 @@ export function OwnerDashboard({
                 ৳ {formatBDT(safeData.segmentMetrics.offset.todaySales)}
               </span>
             </div>
-          </Card>
+          </button>
 
           {/* Signage & Large Format Stream Card */}
-          <Card className="p-4 border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 rounded-2xl space-y-2">
+          <button
+            type="button"
+            onClick={() => setProdFilter((prev) => (prev === 'signage' ? 'all' : 'signage'))}
+            className={`p-4 rounded-2xl text-left border transition-all cursor-pointer space-y-2 select-none ${
+              prodFilter === 'signage'
+                ? 'bg-amber-100/70 border-amber-500 dark:bg-amber-950/60 dark:border-amber-400 ring-2 ring-amber-500/30 shadow-xs'
+                : 'bg-amber-50/40 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60 hover:border-amber-400 hover:shadow-xs'
+            }`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-amber-600 text-white">
-                  <Gauge className="h-4 w-4" />
+                <div className="p-2 rounded-xl bg-amber-600 text-white shadow-xs">
+                  <Gauge className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
-                    {tBilingual('Signage & Large Format', 'সাইনেজ ও লার্জ ফরম্যাট')}
-                  </h3>
-                  <p className="text-[10px] text-slate-500">Banner, Vinyl, Acrylic, Boards</p>
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text">
+                      {tBilingual('Signage & Large Format', 'সাইনেজ ও লার্জ ফরম্যাট')}
+                    </h3>
+                    {prodFilter === 'signage' && (
+                      <Badge className="bg-amber-600 text-white text-[9px] py-0 px-1">Active Filter</Badge>
+                    )}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400">Banner, Vinyl, Acrylic 3D, LED, Boards</p>
                 </div>
               </div>
-              <Badge className="bg-amber-600 text-white text-[10px] py-0">
-                {safeData.segmentMetrics.signage.activeJobsCount} Active
+              <Badge className="bg-amber-600 text-white text-[10px] py-0.5 px-2">
+                {safeData.segmentMetrics.signage.activeJobsCount} {tBilingual('Active', 'চলমান')}
               </Badge>
             </div>
 
-            <div className="pt-2 border-t border-amber-100 dark:border-amber-900 flex items-center justify-between text-xs font-mono">
+            <div className="pt-2 border-t border-amber-100 dark:border-amber-900/80 flex items-center justify-between text-xs font-mono">
               <span className="text-slate-600 dark:text-slate-400">
                 {tBilingual('Volume:', 'সাইজ:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
@@ -782,7 +827,7 @@ export function OwnerDashboard({
                 ৳ {formatBDT(safeData.segmentMetrics.signage.todaySales)}
               </span>
             </div>
-          </Card>
+          </button>
         </div>
       )}
 
@@ -1243,7 +1288,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs font-mono border space-y-1">
               <div className="text-slate-500 font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
               <div className="text-slate-800 dark:text-slate-200 whitespace-pre-line">
-                {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\nInkFlow প্রিন্টিং প্রেস থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ৳${reminderItem.dueAmount.toLocaleString()} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে আমাদের অবহিত করুন। ধন্যবাদ!`}
+                {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\n${company?.name || 'প্রিন্টিং প্রেস'} থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ৳${formatBDT(reminderItem.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন। धन्यवाद / ধন্যবাদ!`}
               </div>
             </div>
 

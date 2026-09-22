@@ -15,6 +15,7 @@ import { BranchRepository } from '@/lib/repositories/branch.repository'
 import { QuotationRepository } from '@/lib/repositories/quotation.repository'
 import { FinanceRepository } from '@/lib/repositories/finance.repository'
 import { MachineryRepository } from '@/lib/repositories/machinery.repository'
+import { AccountingService } from '@/services/accounting.service'
 import {
   CanonicalFinance,
   type CanonicalSalesMetrics,
@@ -37,6 +38,7 @@ import type { DesignJobRecord } from '@/types/design.types'
 import type { MaterialRecord } from '@/types/inventory.types'
 import type { JobCostingRecord } from '@/types/costing.types'
 import type { QuotationRecord } from '@/types/quotation.types'
+import type { ExpenseRecord } from '@/types/accounting.types'
 
 export interface CriticalStockAlert {
   id: string
@@ -201,6 +203,7 @@ export class DashboardService {
       branches,
       accounts,
       machineries,
+      expenses,
     ]: [
       InvoiceRecord[],
       PaymentRecord[],
@@ -214,6 +217,7 @@ export class DashboardService {
       any[],
       any[],
       any[],
+      ExpenseRecord[],
     ] = await Promise.all([
       BillingRepository.getInvoices(companyId).catch(() => []),
       BillingRepository.getPayments(companyId).catch(() => []),
@@ -227,6 +231,7 @@ export class DashboardService {
       BranchRepository.listBranches(companyId).catch(() => []),
       FinanceRepository.getAccounts(companyId, branchId || undefined).catch(() => []),
       MachineryRepository.getMachineries(companyId, { branch_id: branchId || undefined }).catch(() => []),
+      AccountingService.getExpenses(companyId).catch(() => []),
     ])
 
     // Filter by branch if specific branch selected
@@ -238,6 +243,7 @@ export class DashboardService {
     const branchDesign = branchId ? designJobs.filter((d) => !(d as any).branch_id || (d as any).branch_id === branchId) : designJobs
     const branchMaterials = branchId ? materials.filter((m) => !(m as any).branch_id || (m as any).branch_id === branchId) : materials
     const branchQuotations = branchId ? quotations.filter((q) => !(q as any).branch_id || (q as any).branch_id === branchId) : quotations
+    const branchExpenses = branchId ? expenses.filter((e) => !(e as any).branch_id || (e as any).branch_id === branchId) : expenses
 
     // 1. Business Today KPIs (Permission Gated)
     const salesMetrics = hasFinancialPermission
@@ -263,17 +269,25 @@ export class DashboardService {
 
     for (const acc of accounts || []) {
       const bal = Number(acc.current_balance) || 0
-      if (acc.account_subtype === 'CASH') cashBal += bal
-      else if (acc.account_subtype === 'BANK') bankBal += bal
-      else if (acc.account_subtype === 'MFS') mfsBal += bal
-      else if (acc.code === '1001') cashBal += bal
-      else if (acc.code === '1002') bankBal += bal
-      else if (acc.code === '1003') mfsBal += bal
+      const code = String(acc.code || '')
+      const subtype = String(acc.account_subtype || '').toUpperCase()
+
+      if (subtype === 'CASH' || code === '1010' || code === '1001') {
+        cashBal += bal
+      } else if (subtype === 'BANK' || code === '1020' || code === '1002') {
+        bankBal += bal
+      } else if (subtype === 'MFS' || code === '1030' || code === '1031' || code === '1032' || code === '1003') {
+        mfsBal += bal
+      }
     }
 
     const todayCollectionAmt = collectionMetrics.todayCollection || 0
-    // Estimate or extract today's shop expenses (cash outflow)
-    const todayExpensesAmt = 0 // Will be populated from cash closing / transactions if logged
+    
+    // Live Today's Shop Expenses (Vouchers logged today)
+    const todayExpensesAmt = branchExpenses
+      .filter((e) => toBangladeshDateString(e.expense_date || e.created_at) === todayStr)
+      .reduce((sum, e) => sum + (Number(e.amount) || 0), 0)
+
     const todayNetCashFlow = Number((todayCollectionAmt - todayExpensesAmt).toFixed(2))
 
     const liquiditySummary: LiquiditySummary | undefined = hasFinancialPermission
@@ -283,7 +297,7 @@ export class DashboardService {
           mfsBalance: Number(mfsBal.toFixed(2)),
           totalLiquidAssets: Number((cashBal + bankBal + mfsBal).toFixed(2)),
           todayCollection: todayCollectionAmt,
-          todayExpenses: todayExpensesAmt,
+          todayExpenses: Number(todayExpensesAmt.toFixed(2)),
           todayNetCashFlow,
         }
       : undefined
@@ -291,15 +305,63 @@ export class DashboardService {
     // 3. Printing Segment Metrics (Digital / Offset / Signage Streams)
     const isDigital = (text: string) => {
       const t = text.toLowerCase()
-      return t.includes('digital') || t.includes('laser') || t.includes('card') || t.includes('flyer') || t.includes('brochure') || t.includes('id') || t.includes('mug') || t.includes('crest')
+      return (
+        t.includes('digital') ||
+        t.includes('laser') ||
+        t.includes('card') ||
+        t.includes('visiting') ||
+        t.includes('flyer') ||
+        t.includes('brochure') ||
+        t.includes('id') ||
+        t.includes('mug') ||
+        t.includes('crest') ||
+        t.includes('sublimation') ||
+        t.includes('sticker') ||
+        t.includes('glossy') ||
+        t.includes('envelope')
+      )
     }
     const isOffset = (text: string) => {
       const t = text.toLowerCase()
-      return t.includes('offset') || t.includes('book') || t.includes('box') || t.includes('carton') || t.includes('magazine') || t.includes('memo') || t.includes('voucher') || t.includes('poster') || t.includes('pad')
+      return (
+        t.includes('offset') ||
+        t.includes('book') ||
+        t.includes('box') ||
+        t.includes('carton') ||
+        t.includes('packaging') ||
+        t.includes('magazine') ||
+        t.includes('memo') ||
+        t.includes('voucher') ||
+        t.includes('poster') ||
+        t.includes('pad') ||
+        t.includes('forma') ||
+        t.includes('ctp') ||
+        t.includes('plate') ||
+        t.includes('calendar') ||
+        t.includes('impression')
+      )
     }
     const isSignage = (text: string) => {
       const t = text.toLowerCase()
-      return t.includes('signage') || t.includes('large_format') || t.includes('banner') || t.includes('vinyl') || t.includes('flex') || t.includes('sticker') || t.includes('acrylic') || t.includes('board') || t.includes('standee') || t.includes('sign')
+      return (
+        t.includes('signage') ||
+        t.includes('large_format') ||
+        t.includes('banner') ||
+        t.includes('vinyl') ||
+        t.includes('flex') ||
+        t.includes('star flex') ||
+        t.includes('backlit') ||
+        t.includes('acrylic') ||
+        t.includes('letter') ||
+        t.includes('board') ||
+        t.includes('standee') ||
+        t.includes('sign') ||
+        t.includes('led') ||
+        t.includes('neon') ||
+        t.includes('acp') ||
+        t.includes('fabrication') ||
+        t.includes('installation')
+      )
     }
 
     let digitalActive = 0
@@ -322,7 +384,7 @@ export class DashboardService {
       const isCompToday = pj.status === 'completed' && toBangladeshDateString((pj as any).completed_at || pj.updated_at) === todayStr
       const isActive = pj.status !== 'completed' && (pj.status as string) !== 'cancelled'
 
-      if (isDigital(name) || pj.department === 'printing' && !isOffset(name) && !isSignage(name)) {
+      if (isDigital(name) || (pj.department === 'printing' && !isOffset(name) && !isSignage(name))) {
         if (isActive) digitalActive++
         if (isCompToday) digitalCompletedToday++
       } else if (isOffset(name)) {
@@ -345,7 +407,7 @@ export class DashboardService {
       const invDate = toBangladeshDateString(inv.invoice_date || inv.created_at)
       if (invDate !== todayStr) continue
       const amt = Number(inv.grand_total) || 0
-      const desc = `${(inv as any).notes || ''} ${(inv as any).customer_name || ''}`
+      const desc = `${(inv as any).notes || ''} ${(inv as any).customer_name || ''} ${(inv as any).item_names || ''}`
       if (isOffset(desc)) offsetSales += amt
       else if (isSignage(desc)) signageSales += amt
       else digitalSales += amt
