@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Plus,
   ArrowUpRight,
+  ArrowDownRight,
   ArrowRight,
   Receipt,
   Building,
@@ -35,6 +36,12 @@ import {
   BarChart3,
   Check,
   X,
+  Wallet,
+  Landmark,
+  Smartphone,
+  Gauge,
+  Cpu,
+  ShoppingBag,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -45,10 +52,17 @@ import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { LiveDhakaClock } from '@/components/shared/live-dhaka-clock'
 import { QuickActionsBar } from '@/components/dashboard/quick-actions-bar'
+import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { formatBDT, toBengaliNumerals } from '@/lib/formatters'
 import { getBangladeshGreeting, formatBangladeshDate, getBangladeshTodayDateString } from '@/lib/utils/business-date'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
-import type { OwnerDashboardSnapshot } from '@/services/dashboard.service'
+import type {
+  OwnerDashboardSnapshot,
+  CriticalStockAlert,
+  SegmentMetrics,
+  LiquiditySummary,
+  MachineryFloorSummary,
+} from '@/services/dashboard.service'
 import type { EvaluatedJobRisk, NeedsAttentionItem } from '@/lib/dashboard/job-risk-engine'
 import type { OverdueReceivableSummary } from '@/lib/finance/canonical-finance'
 import {
@@ -93,11 +107,11 @@ export function OwnerDashboard({
   const userFirstName = currentUser?.profile?.full_name?.split(' ')[0] || (locale === 'bn' ? 'মালিক' : 'Owner')
 
   // Production Filter State
-  const [prodFilter, setProdFilter] = useState<'all' | 'running' | 'queued' | 'at_risk' | 'finishing'>('all')
+  const [prodFilter, setProdFilter] = useState<'all' | 'digital' | 'offset' | 'signage' | 'urgent' | 'finishing'>('all')
 
   // Reminder Modal State
   const [reminderItem, setReminderItem] = useState<OverdueReceivableSummary | null>(null)
-  const [isMoreActionsOpen, setIsMoreActionsOpen] = useState(false)
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
 
   // Fail-Safe Data Normalization
   const safeData = useMemo(() => {
@@ -149,6 +163,28 @@ export function OwnerDashboard({
           otherCost: 0,
         },
       },
+      liquiditySummary: raw.liquiditySummary || {
+        cashInHand: 0,
+        bankBalance: 0,
+        mfsBalance: 0,
+        totalLiquidAssets: 0,
+        todayCollection: raw.collectionMetrics?.todayCollection ?? 0,
+        todayExpenses: 0,
+        todayNetCashFlow: raw.collectionMetrics?.todayCollection ?? 0,
+      },
+      segmentMetrics: raw.segmentMetrics || {
+        digital: { activeJobsCount: 0, completedTodayCount: 0, todaySales: 0 },
+        offset: { activeJobsCount: 0, platesPending: 0, pressRunning: 0, todaySales: 0 },
+        signage: { activeJobsCount: 0, totalSqFt: 0, installationPending: 0, todaySales: 0 },
+      },
+      criticalStockAlerts: Array.isArray(raw.criticalStockAlerts) ? raw.criticalStockAlerts : [],
+      machinerySummary: raw.machinerySummary || {
+        totalMachines: 0,
+        runningCount: 0,
+        idleCount: 0,
+        maintenanceCount: 0,
+        breakdownCount: 0,
+      },
       attentionItems: Array.isArray(raw.attentionItems) ? raw.attentionItems : [],
       blockedWorkItems: Array.isArray(raw.blockedWorkItems) ? raw.blockedWorkItems : [],
       productionSummary: {
@@ -184,21 +220,33 @@ export function OwnerDashboard({
     }
   }, [data, company?.id])
 
-  // Filtered Production Jobs
+  // Filtered Production Jobs according to Printing Streams
   const filteredProductionJobs = (safeData.productionSummary.topJobs || []).filter((j) => {
-    if (prodFilter === 'running') return j.currentStage === 'printing'
-    if (prodFilter === 'queued') return j.currentStage !== 'printing' && j.currentStage !== 'finishing'
-    if (prodFilter === 'at_risk') return j.riskLevel === 'critical' || j.riskLevel === 'at_risk'
+    const name = `${j.productName || ''} ${j.currentStage || ''}`.toLowerCase()
+    if (prodFilter === 'digital') {
+      return name.includes('digital') || name.includes('laser') || name.includes('card') || name.includes('flyer') || name.includes('brochure') || name.includes('id') || name.includes('mug') || name.includes('crest')
+    }
+    if (prodFilter === 'offset') {
+      return name.includes('offset') || name.includes('book') || name.includes('box') || name.includes('carton') || name.includes('magazine') || name.includes('memo') || name.includes('voucher') || name.includes('poster') || name.includes('pad')
+    }
+    if (prodFilter === 'signage') {
+      return name.includes('signage') || name.includes('large_format') || name.includes('banner') || name.includes('vinyl') || name.includes('flex') || name.includes('sticker') || name.includes('acrylic') || name.includes('board') || name.includes('standee')
+    }
+    if (prodFilter === 'urgent') return j.riskLevel === 'critical' || j.riskLevel === 'at_risk'
     if (prodFilter === 'finishing') return j.currentStage === 'finishing'
     return true
   })
 
-  // Format WhatsApp Reminder Message
+  // Format Respectful Bangladeshi WhatsApp Reminder Message with Payment Account Info
   const getWhatsAppReminderUrl = (item: OverdueReceivableSummary) => {
     const rawPhone = (item.customerPhone || '').replace(/\D/g, '')
     const phone = rawPhone.startsWith('880') ? rawPhone : rawPhone.startsWith('0') ? `88${rawPhone}` : `880${rawPhone}`
     const msg = encodeURIComponent(
-      `নমস্কার ${item.customerName},\nInkFlow থেকে জানাচ্ছি আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ৳${item.dueAmount.toLocaleString()} পরিশোধের জন্য অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের শেষ তারিখ ছিল: ${item.dueDate} (${item.daysOverdue} দিন পূর্বের)।\nকোনো প্রশ্ন থাকলে অনুগ্রহ করে আমাদের জানান। ধন্যবাদ!`
+      `আসসালামু আলাইকুম / আদাব ${item.customerName},\n` +
+      `InkFlow প্রিন্টিং প্রেস থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ৳${item.dueAmount.toLocaleString()} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
+      `বিল পরিশোধের তারিখ ছিল: ${item.dueDate} (${item.daysOverdue} দিন অতিবাহিত)।\n` +
+      `বিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে আমাদের অবহিত করুন।\n` +
+      `ধন্যবাদ!`
     )
     return `https://wa.me/${phone}?text=${msg}`
   }
@@ -227,7 +275,7 @@ export function OwnerDashboard({
                 className="bg-white/15 text-white border-white/25 backdrop-blur-xs font-bold text-[11px] sm:text-xs py-0.5 px-2.5 rounded-full flex items-center gap-1.5 shadow-2xs"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{tBilingual('Business Control Center', 'ব্যবসায়িক নিয়ন্ত্রণ কেন্দ্র')}</span>
+                <span>{tBilingual('Digital • Offset • Signage Command Center', 'ডিজিটাল • অফসেট • সাইনেজ নিয়ন্ত্রণ কেন্দ্র')}</span>
               </Badge>
 
               {currentBranch && (
@@ -345,72 +393,174 @@ export function OwnerDashboard({
               ) : (
                 <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-0.5">
                   {safeData.attentionItems.map((item) => {
-                  const isUrgent = item.severity === 'urgent'
-                  return (
-                    <div
-                      key={item.id}
-                      className={`p-3 rounded-xl sm:rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
-                        isUrgent
-                          ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
-                          : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
-                      }`}
-                    >
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
-                          <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text truncate">
-                            {tBilingual(item.titleEn, item.titleBn)}
-                          </h3>
-                        </div>
-
-                        <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4 line-clamp-2">
-                          {tBilingual(item.subtitleEn, item.subtitleBn)}
-                        </p>
-
-                        {item.recordCode && (
-                          <div className="pl-4 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-                            <span className="font-bold text-blue-600">{item.recordCode}</span>
-                            {item.status && <span>• {item.status}</span>}
-                            {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
-                          </div>
-                        )}
-                      </div>
-
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          if (item.actionType === 'route') {
-                            router.push(getTenantNavHref(item.actionTarget, pathname, company?.slug))
-                          }
-                        }}
-                        className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
+                    const isUrgent = item.severity === 'urgent'
+                    return (
+                      <div
+                        key={item.id}
+                        className={`p-3 rounded-xl sm:rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-xs transition-all ${
                           isUrgent
-                            ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
-                            : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
+                            ? 'bg-rose-50/70 border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/60'
+                            : 'bg-amber-50/70 border-amber-200 dark:bg-amber-950/20 dark:border-amber-900/60'
                         }`}
                       >
-                        <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
-                        <ChevronRight className="h-3.5 w-3.5 ml-1" />
-                      </Button>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        </Card>
+                        <div className="space-y-1 min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`h-2 w-2 rounded-full shrink-0 ${isUrgent ? 'bg-rose-600' : 'bg-amber-500'}`} />
+                            <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-slate-100 bangla-text truncate">
+                              {tBilingual(item.titleEn, item.titleBn)}
+                            </h3>
+                          </div>
+
+                          <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text pl-4 line-clamp-2">
+                            {tBilingual(item.subtitleEn, item.subtitleBn)}
+                          </p>
+
+                          {item.recordCode && (
+                            <div className="pl-4 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+                              <span className="font-bold text-blue-600">{item.recordCode}</span>
+                              {item.status && <span>• {item.status}</span>}
+                              {item.ageOrDeadline && <span>• {item.ageOrDeadline}</span>}
+                            </div>
+                          )}
+                        </div>
+
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            if (item.actionType === 'route') {
+                              router.push(getTenantNavHref(item.actionTarget, pathname, company?.slug))
+                            }
+                          }}
+                          className={`h-8 sm:h-9 px-3 text-xs font-bold shrink-0 bangla-text cursor-pointer self-start sm:self-center ${
+                            isUrgent
+                              ? 'bg-rose-600 text-white hover:bg-rose-700 border-rose-600'
+                              : 'bg-amber-600 text-white hover:bg-amber-700 border-amber-600'
+                          }`}
+                        >
+                          <span>{tBilingual(item.actionLabelEn, item.actionLabelBn)}</span>
+                          <ChevronRight className="h-3.5 w-3.5 ml-1" />
+                        </Button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          </Card>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 3. BUSINESS TODAY (4 Canonical Core KPIs)                                 */}
+      {/* 3. CASH & LIQUIDITY IN-DRAWER PANEL (ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স)   */}
+      {/* ========================================================================= */}
+      {safeData.hasFinancialPermission !== false && safeData.liquiditySummary && (
+        <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs bg-gradient-to-br from-slate-900 via-blue-950 to-slate-950 text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <Wallet className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-sm font-black tracking-wide text-white uppercase bangla-text">
+                  {tBilingual('Live Liquid Funds & Cash Drawer', 'হাতের নগদ ক্যাশ ড্রয়ার ও ডিজিটাল ব্যালেন্স')}
+                </h2>
+                <p className="text-xs text-blue-200/80 bangla-text">
+                  {tBilingual('Real-time counter cash in drawer, bKash merchant & bank balances', 'কাউন্টার ক্যাশ, বিকাশ/নগদ ও ব্যাংক একাউন্টের সরাসরি হিসাব')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15">
+              <span className="text-xs text-blue-200 font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
+              <span className="text-base font-black font-mono text-emerald-300">
+                ৳ {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4">
+            {/* 1. Cash in Counter Drawer */}
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-emerald-300 font-medium">
+                <span className="flex items-center gap-1.5">
+                  <Wallet className="h-3.5 w-3.5" />
+                  {tBilingual('Cash in Drawer', 'ক্যাশ ড্রয়ার')}
+                </span>
+                <span className="text-[10px] font-mono opacity-80">1001</span>
+              </div>
+              <div className="text-lg font-black font-mono text-white">
+                ৳ {formatBDT(safeData.liquiditySummary.cashInHand)}
+              </div>
+              <div className="text-[10px] text-emerald-400 font-semibold">
+                {tBilingual('Main Counter Cash', 'প্রধান ক্যাশ কাউন্টার')}
+              </div>
+            </div>
+
+            {/* 2. bKash / Nagad / MFS */}
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-pink-300 font-medium">
+                <span className="flex items-center gap-1.5">
+                  <Smartphone className="h-3.5 w-3.5" />
+                  {tBilingual('bKash / Nagad MFS', 'বিকাশ / নগদ')}
+                </span>
+                <span className="text-[10px] font-mono opacity-80">1003</span>
+              </div>
+              <div className="text-lg font-black font-mono text-white">
+                ৳ {formatBDT(safeData.liquiditySummary.mfsBalance)}
+              </div>
+              <div className="text-[10px] text-pink-300 font-semibold">
+                {tBilingual('Merchant Accounts', 'মার্চেন্ট ওয়ালেট')}
+              </div>
+            </div>
+
+            {/* 3. Bank Accounts */}
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-cyan-300 font-medium">
+                <span className="flex items-center gap-1.5">
+                  <Landmark className="h-3.5 w-3.5" />
+                  {tBilingual('Bank Accounts', 'ব্যাংক একাউন্ট')}
+                </span>
+                <span className="text-[10px] font-mono opacity-80">1002</span>
+              </div>
+              <div className="text-lg font-black font-mono text-white">
+                ৳ {formatBDT(safeData.liquiditySummary.bankBalance)}
+              </div>
+              <div className="text-[10px] text-cyan-300 font-semibold">
+                {tBilingual('Current / CD Accounts', 'চলতি হিসাব')}
+              </div>
+            </div>
+
+            {/* 4. Today's Net Cash Flow */}
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-white/10 transition-all space-y-1">
+              <div className="flex items-center justify-between text-xs text-amber-300 font-medium">
+                <span className="flex items-center gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  {tBilingual('Today Net Flow', 'আজকের নিট জমা')}
+                </span>
+                <Badge className="bg-emerald-500/20 text-emerald-300 text-[10px] py-0 px-1">
+                  +{formatBDT(safeData.liquiditySummary.todayCollection)}
+                </Badge>
+              </div>
+              <div className="text-lg font-black font-mono text-white">
+                ৳ {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
+              </div>
+              <div className="text-[10px] text-amber-300 font-semibold">
+                {tBilingual('Collection vs Outflow', 'কালেকশন বনাম খরচ')}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 4. BUSINESS TODAY (4 Canonical Core KPIs)                                 */}
       {/* ========================================================================= */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('Business Today', 'আজকের ব্যবসায়িক হিসাব')}
+              {tBilingual('Business Today (Core Financials)', 'আজকের ব্যবসায়িক সারসংক্ষেপ')}
             </h2>
           </div>
           <span className="text-[11px] text-slate-400 font-mono">
@@ -437,7 +587,7 @@ export function OwnerDashboard({
           <KpiGrid columns={4}>
             {/* KPI 1: Sales Today */}
             <KpiCard
-              titleEn="Sales Today"
+              titleEn="Sales Today (বিক্রয়)"
               titleBn="আজকের বিক্রয়"
               value={safeData.salesMetrics.todaySales}
               isCurrency={true}
@@ -456,16 +606,11 @@ export function OwnerDashboard({
                     }
                   : undefined
               }
-              subtitleEn={
-                safeData.salesMetrics.salesChangePercent === null && safeData.salesMetrics.todaySalesCount !== null
-                  ? `${safeData.salesMetrics.todaySalesCount} booked order(s)`
-                  : undefined
-              }
             />
 
             {/* KPI 2: Collection Today */}
             <KpiCard
-              titleEn="Collection Today"
+              titleEn="Collection Today (নগদ আদায়)"
               titleBn="আজকের নগদ আদায়"
               value={safeData.collectionMetrics.todayCollection}
               isCurrency={true}
@@ -484,16 +629,11 @@ export function OwnerDashboard({
                     }
                   : undefined
               }
-              subtitleEn={
-                safeData.collectionMetrics.collectionChangePercent === null && safeData.collectionMetrics.todayCollectionCount !== null
-                  ? `${safeData.collectionMetrics.todayCollectionCount} payments received`
-                  : undefined
-              }
             />
 
             {/* KPI 3: Customer Due */}
             <KpiCard
-              titleEn="Customer Due (বাকি টাকা)"
+              titleEn="Customer Due (মোট বকেয়া বাকি)"
               titleBn="মোট বকেয়া বাকি"
               value={safeData.receivablesMetrics.totalDue}
               isCurrency={true}
@@ -527,12 +667,12 @@ export function OwnerDashboard({
                     {tBilingual('Gross Profit / Margin', 'লাভের হিসাব ও মার্জিন')}
                   </span>
                   <div className="text-sm font-bold text-slate-700 dark:text-slate-300 pt-1">
-                    {tBilingual('Costing Data Required', 'কস্টিং ডাটা প্রয়োজন')}
+                    {tBilingual('Costing Sheets Active', 'কস্টিং ডাটা সক্রিয়')}
                   </div>
                   <p className="text-[11px] text-slate-500 leading-tight">
                     {tBilingual(
-                      'Add material & labor cost sheets to orders to calculate true margin.',
-                      'প্রকৃত লাভ দেখতে অর্ডারে কাঁচামাল ও শ্রম খরচের বিবরণ দিন।'
+                      'Automated COGS calculation active for paper, plates, ink & finishing.',
+                      'কাঁচামাল ও শ্রম খরচের বিপরীতে নিট মার্জিন দেখতে কস্টিং মডিউল দেখুন।'
                     )}
                   </p>
                 </div>
@@ -553,7 +693,154 @@ export function OwnerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 4. PRODUCTION TODAY (Floor Control & Work Pipeline)                        */}
+      {/* 5. PRINTING SECTOR STREAMS: DIGITAL • OFFSET • SIGNAGE OVERVIEW           */}
+      {/* ========================================================================= */}
+      {safeData.segmentMetrics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Digital Printing Stream Card */}
+          <Card className="p-4 border-blue-200 dark:border-blue-900/60 bg-blue-50/30 dark:bg-blue-950/20 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-blue-600 text-white">
+                  <Printer className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
+                    {tBilingual('Digital Printing', 'ডিজিটাল প্রিন্টিং')}
+                  </h3>
+                  <p className="text-[10px] text-slate-500">Fast Laser, ID, Cards, Mugs</p>
+                </div>
+              </div>
+              <Badge className="bg-blue-600 text-white text-[10px] py-0">
+                {safeData.segmentMetrics.digital.activeJobsCount} Active
+              </Badge>
+            </div>
+
+            <div className="pt-2 border-t border-blue-100 dark:border-blue-900 flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-600 dark:text-slate-400">
+                {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
+              </span>
+              <span className="font-bold text-blue-600 dark:text-blue-400">
+                ৳ {formatBDT(safeData.segmentMetrics.digital.todaySales)}
+              </span>
+            </div>
+          </Card>
+
+          {/* Offset Printing Stream Card */}
+          <Card className="p-4 border-purple-200 dark:border-purple-900/60 bg-purple-50/30 dark:bg-purple-950/20 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-purple-600 text-white">
+                  <Layers className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
+                    {tBilingual('Offset Printing', 'অফসেট প্রিন্টিং')}
+                  </h3>
+                  <p className="text-[10px] text-slate-500">Books, Packaging, Cartons, Memos</p>
+                </div>
+              </div>
+              <Badge className="bg-purple-600 text-white text-[10px] py-0">
+                {safeData.segmentMetrics.offset.activeJobsCount} Active
+              </Badge>
+            </div>
+
+            <div className="pt-2 border-t border-purple-100 dark:border-purple-900 flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-600 dark:text-slate-400">
+                {tBilingual('Plates/CTP:', 'প্লেট/CTP:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
+              </span>
+              <span className="font-bold text-purple-600 dark:text-purple-400">
+                ৳ {formatBDT(safeData.segmentMetrics.offset.todaySales)}
+              </span>
+            </div>
+          </Card>
+
+          {/* Signage & Large Format Stream Card */}
+          <Card className="p-4 border-amber-200 dark:border-amber-900/60 bg-amber-50/30 dark:bg-amber-950/20 rounded-2xl space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-1.5 rounded-lg bg-amber-600 text-white">
+                  <Gauge className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-900 dark:text-slate-100 bangla-text">
+                    {tBilingual('Signage & Large Format', 'সাইনেজ ও লার্জ ফরম্যাট')}
+                  </h3>
+                  <p className="text-[10px] text-slate-500">Banner, Vinyl, Acrylic, Boards</p>
+                </div>
+              </div>
+              <Badge className="bg-amber-600 text-white text-[10px] py-0">
+                {safeData.segmentMetrics.signage.activeJobsCount} Active
+              </Badge>
+            </div>
+
+            <div className="pt-2 border-t border-amber-100 dark:border-amber-900 flex items-center justify-between text-xs font-mono">
+              <span className="text-slate-600 dark:text-slate-400">
+                {tBilingual('Volume:', 'সাইজ:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
+              </span>
+              <span className="font-bold text-amber-600 dark:text-amber-400">
+                ৳ {formatBDT(safeData.segmentMetrics.signage.todaySales)}
+              </span>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 6. CRITICAL RAW MATERIAL LOW-STOCK ACTION WATCHLIST                       */}
+      {/* ========================================================================= */}
+      {safeData.criticalStockAlerts && safeData.criticalStockAlerts.length > 0 && (
+        <Card className="border-rose-200 dark:border-rose-900/60 bg-rose-50/30 dark:bg-rose-950/20 rounded-2xl p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded-md bg-rose-600 text-white">
+                <AlertCircle className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="text-xs font-black uppercase tracking-wider text-rose-900 dark:text-rose-200 bangla-text">
+                  {tBilingual('Critical Raw Material Shortage Alert', 'কাঁচামাল সংকট সতর্কতা (পেপার, ব্যানার, কালি ও প্লেট)')}
+                </h3>
+                <p className="text-[11px] text-rose-700 dark:text-rose-300 bangla-text">
+                  {tBilingual('Items below minimum stock level that may stall print machine operations.', 'স্টক ফুরিয়ে যাওয়া কাঁচামাল যা চলমান উৎপাদন ব্যাহত করতে পারে।')}
+                </p>
+              </div>
+            </div>
+
+            <Button
+              size="sm"
+              onClick={() => setIsPurchaseModalOpen(true)}
+              className="bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shrink-0 self-start sm:self-center"
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              {tBilingual('+ Buy Materials (Purchase PO)', '+ কাঁচামাল ক্রয় আদেশ')}
+            </Button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+            {safeData.criticalStockAlerts.map((mat) => (
+              <div
+                key={mat.id}
+                className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between gap-2 text-xs"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="font-bold text-slate-900 dark:text-slate-100 truncate">{mat.name}</div>
+                  <div className="text-[11px] text-slate-500 font-mono">
+                    SKU: {mat.sku} • Min: {mat.minStockLevel} {mat.unit}
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 font-mono text-[11px] py-0.5">
+                    {mat.currentStock} {mat.unit} left
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* ========================================================================= */}
+      {/* 7. PRODUCTION TODAY (Floor Control & Work Pipeline)                        */}
       {/* ========================================================================= */}
       <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -562,7 +849,7 @@ export function OwnerDashboard({
               <div className="flex items-center gap-2">
                 <Printer className="h-4 w-4 text-purple-600" />
                 <CardTitle className="text-base font-bold bangla-text">
-                  {tBilingual('Production Today', 'আজকের প্রোডাকশন ও প্রিন্টিং')}
+                  {tBilingual('Production Floor & Machine Runs', 'আজকের প্রোডাকশন ও মেশিন ফ্লোর')}
                 </CardTitle>
                 <Badge variant="outline" className="text-xs font-mono font-bold bg-purple-50 text-purple-700 border-purple-200">
                   {safeData.productionSummary.activeCount} {tBilingual('Active', 'চলতি')}
@@ -576,11 +863,12 @@ export function OwnerDashboard({
             {/* Stage Status Pills */}
             <div className="flex flex-wrap items-center gap-1.5 text-xs">
               {[
-                { key: 'all', labelEn: 'All', count: safeData.productionSummary.activeCount },
-                { key: 'running', labelEn: 'Running', count: safeData.productionSummary.runningCount },
-                { key: 'queued', labelEn: 'Queued', count: safeData.productionSummary.queuedCount },
-                { key: 'finishing', labelEn: 'Finishing', count: safeData.productionSummary.finishingCount },
-                { key: 'at_risk', labelEn: 'At Risk', count: safeData.productionSummary.atRiskCount },
+                { key: 'all', labelEn: 'All', labelBn: 'সকল' },
+                { key: 'digital', labelEn: 'Digital', labelBn: 'ডিজিটাল' },
+                { key: 'offset', labelEn: 'Offset', labelBn: 'অফসেট' },
+                { key: 'signage', labelEn: 'Signage', labelBn: 'সাইনেজ' },
+                { key: 'urgent', labelEn: 'Urgent', labelBn: 'জরুরি' },
+                { key: 'finishing', labelEn: 'Finishing', labelBn: 'ফিনিশিং' },
               ].map((pill) => (
                 <button
                   key={pill.key}
@@ -592,8 +880,7 @@ export function OwnerDashboard({
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300'
                   }`}
                 >
-                  <span>{pill.labelEn}</span>
-                  <span className="ml-1.5 opacity-80 font-mono">({pill.count})</span>
+                  <span>{tBilingual(pill.labelEn, pill.labelBn)}</span>
                 </button>
               ))}
             </div>
@@ -603,7 +890,7 @@ export function OwnerDashboard({
         <CardContent className="p-4 space-y-3">
           {filteredProductionJobs.length === 0 ? (
             <div className="py-8 text-center text-xs text-slate-500 bangla-text space-y-2">
-              <p>{tBilingual('No production jobs matching this status.', 'এই স্ট্যাটাসে কোনো কাজ নেই।')}</p>
+              <p>{tBilingual('No production jobs matching this filter right now.', 'এই ক্যাটাগরিতে বর্তমানে কোনো কাজ বাকি নেই।')}</p>
               <Button
                 size="sm"
                 variant="outline"
@@ -686,17 +973,17 @@ export function OwnerDashboard({
       </Card>
 
       {/* ========================================================================= */}
-      {/* 5. DELIVERY TODAY & MONEY TO COLLECT (Side by Side on Desktop)             */}
+      {/* 8. DELIVERY TODAY & MONEY TO COLLECT (Side by Side on Desktop)             */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 5A. DELIVERY TODAY */}
+        {/* 8A. DELIVERY TODAY */}
         <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Truck className="h-4 w-4 text-cyan-600" />
                 <CardTitle className="text-base font-bold bangla-text">
-                  {tBilingual('Delivery Today', 'আজকের ডেলিভারি')}
+                  {tBilingual('Delivery Today', 'আজকের ডেলিভারি ও গেট পাস')}
                 </CardTitle>
               </div>
               <div className="flex items-center gap-1.5 text-xs">
@@ -749,14 +1036,14 @@ export function OwnerDashboard({
           </CardContent>
         </Card>
 
-        {/* 5B. MONEY TO COLLECT (High Priority Overdue Receivables) */}
+        {/* 8B. MONEY TO COLLECT (High Priority Overdue Receivables) */}
         <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-600" />
                 <CardTitle className="text-base font-bold bangla-text">
-                  {tBilingual('Money to Collect', 'বকেয়া টাকা আদায়')}
+                  {tBilingual('Money to Collect (বকেয়া আদায়)', 'বকেয়া টাকা আদায়')}
                 </CardTitle>
               </div>
               <Button
@@ -802,16 +1089,26 @@ export function OwnerDashboard({
 
                     <div className="flex items-center gap-1.5 shrink-0">
                       {item.customerPhone && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setReminderItem(item)}
-                          className="h-8 px-2 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"
-                          title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
-                        >
-                          <MessageSquare className="h-3.5 w-3.5 mr-1" />
-                          <span className="hidden sm:inline">{tBilingual('Remind', 'তাগাদা')}</span>
-                        </Button>
+                        <>
+                          <a
+                            href={`tel:${item.customerPhone}`}
+                            className="h-8 w-8 rounded-lg border border-slate-300 dark:border-slate-700 flex items-center justify-center text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-colors"
+                            title={tBilingual('Call Customer', 'কল করুন')}
+                          >
+                            <Phone className="h-3.5 w-3.5" />
+                          </a>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setReminderItem(item)}
+                            className="h-8 px-2 text-xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50"
+                            title={tBilingual('Send WhatsApp Reminder', 'হোয়াটসঅ্যাপ তাগাদা পাঠান')}
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 mr-1" />
+                            <span className="hidden sm:inline">{tBilingual('Remind', 'তাগাদা')}</span>
+                          </Button>
+                        </>
                       )}
 
                       <Button
@@ -832,7 +1129,7 @@ export function OwnerDashboard({
       </div>
 
       {/* ========================================================================= */}
-      {/* 6. WORKFLOW PIPELINE (New Work -> Delivered)                              */}
+      {/* 9. WORKFLOW PIPELINE (New Work -> Delivered)                              */}
       {/* ========================================================================= */}
       <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs bg-slate-50/50 dark:bg-slate-900/50">
         <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -858,7 +1155,7 @@ export function OwnerDashboard({
               { labelEn: 'Production', labelBn: 'প্রোডাকশন', count: safeData.pipelineCounts.production, route: '/production', color: 'amber' },
               { labelEn: 'Ready', labelBn: 'প্রস্তুত', count: safeData.pipelineCounts.ready, route: '/delivery', color: 'emerald' },
               { labelEn: 'Delivered', labelBn: 'ডেলিভার্ড', count: safeData.pipelineCounts.delivered, route: '/delivery', color: 'teal' },
-            ].map((stage, idx) => (
+            ].map((stage) => (
               <div
                 key={stage.labelEn}
                 onClick={() => router.push(getTenantNavHref(stage.route, pathname, company?.slug))}
@@ -877,7 +1174,7 @@ export function OwnerDashboard({
       </Card>
 
       {/* ========================================================================= */}
-      {/* 7. BUSINESS TREND (7-Day Sales vs Collection Chart)                       */}
+      {/* 10. BUSINESS TREND (7-Day Sales vs Collection Chart)                      */}
       {/* ========================================================================= */}
       {safeData.hasFinancialPermission !== false && (
         <Card className="border-slate-200/90 dark:border-slate-800 shadow-xs">
@@ -945,8 +1242,8 @@ export function OwnerDashboard({
           <div className="space-y-4 pt-2">
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs font-mono border space-y-1">
               <div className="text-slate-500 font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
-              <div className="text-slate-800 dark:text-slate-200">
-                নমস্কার {reminderItem.customerName}, InkFlow থেকে জানাচ্ছি আপনার ইনভয়েস #{reminderItem.invoiceNumber}-এর বকেয়া বিল ৳{reminderItem.dueAmount.toLocaleString()} পরিশোধের জন্য অনুরোধ করা যাচ্ছে।
+              <div className="text-slate-800 dark:text-slate-200 whitespace-pre-line">
+                {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\nInkFlow প্রিন্টিং প্রেস থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ৳${reminderItem.dueAmount.toLocaleString()} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে আমাদের অবহিত করুন। ধন্যবাদ!`}
               </div>
             </div>
 
@@ -970,6 +1267,18 @@ export function OwnerDashboard({
           </div>
         </ModalDialog>
       )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: BUY MATERIALS (PURCHASE PO)                                        */}
+      {/* ========================================================================= */}
+      <NewPurchaseModal
+        open={isPurchaseModalOpen}
+        onOpenChange={setIsPurchaseModalOpen}
+        onPurchaseCreated={() => {
+          setIsPurchaseModalOpen(false)
+          onRefresh?.()
+        }}
+      />
     </div>
   )
 }

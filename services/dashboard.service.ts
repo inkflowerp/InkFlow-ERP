@@ -13,6 +13,8 @@ import { InventoryRepository } from '@/lib/repositories/inventory.repository'
 import { CostingRepository } from '@/lib/repositories/costing.repository'
 import { BranchRepository } from '@/lib/repositories/branch.repository'
 import { QuotationRepository } from '@/lib/repositories/quotation.repository'
+import { FinanceRepository } from '@/lib/repositories/finance.repository'
+import { MachineryRepository } from '@/lib/repositories/machinery.repository'
 import {
   CanonicalFinance,
   type CanonicalSalesMetrics,
@@ -36,6 +38,56 @@ import type { MaterialRecord } from '@/types/inventory.types'
 import type { JobCostingRecord } from '@/types/costing.types'
 import type { QuotationRecord } from '@/types/quotation.types'
 
+export interface CriticalStockAlert {
+  id: string
+  name: string
+  sku: string
+  category: string
+  currentStock: number
+  minStockLevel: number
+  unit: string
+  reorderQuantity: number
+  severity: 'critical' | 'warning'
+}
+
+export interface SegmentMetrics {
+  digital: {
+    activeJobsCount: number
+    completedTodayCount: number
+    todaySales: number
+  }
+  offset: {
+    activeJobsCount: number
+    platesPending: number
+    pressRunning: number
+    todaySales: number
+  }
+  signage: {
+    activeJobsCount: number
+    totalSqFt: number
+    installationPending: number
+    todaySales: number
+  }
+}
+
+export interface LiquiditySummary {
+  cashInHand: number
+  bankBalance: number
+  mfsBalance: number // bKash, Nagad, Rocket
+  totalLiquidAssets: number
+  todayCollection: number
+  todayExpenses: number
+  todayNetCashFlow: number
+}
+
+export interface MachineryFloorSummary {
+  totalMachines: number
+  runningCount: number
+  idleCount: number
+  maintenanceCount: number
+  breakdownCount: number
+}
+
 export interface OwnerDashboardSnapshot {
   timestamp: string
   companyId: string
@@ -49,13 +101,25 @@ export interface OwnerDashboardSnapshot {
   receivablesMetrics: CanonicalReceivablesMetrics
   profitMetrics: CanonicalProfitMetrics
 
-  // 2. Needs Your Attention
+  // 2. Liquid Funds & Cash Drawer (BDT)
+  liquiditySummary?: LiquiditySummary
+
+  // 3. Printing Segment Metrics (Digital / Offset / Signage)
+  segmentMetrics?: SegmentMetrics
+
+  // 4. Critical Stock Watchlist (Low Paper, Vinyl, Banner, Ink, Plates)
+  criticalStockAlerts?: CriticalStockAlert[]
+
+  // 5. Machine Floor Status
+  machinerySummary?: MachineryFloorSummary
+
+  // 6. Needs Your Attention
   attentionItems: NeedsAttentionItem[]
 
-  // 3. Blocked Work
+  // 7. Blocked Work
   blockedWorkItems: BlockedWorkItem[]
 
-  // 4. Production Today
+  // 8. Production Today
   productionSummary: {
     activeCount: number
     runningCount: number
@@ -67,7 +131,7 @@ export interface OwnerDashboardSnapshot {
     topJobs: EvaluatedJobRisk[]
   }
 
-  // 5. Delivery Today
+  // 9. Delivery Today
   deliverySummary: {
     scheduledCount: number
     assignedCount: number
@@ -86,10 +150,10 @@ export interface OwnerDashboardSnapshot {
     }>
   }
 
-  // 6. Money to Collect
+  // 10. Money to Collect
   moneyToCollect: OverdueReceivableSummary[]
 
-  // 7. Workflow Pipeline Counts
+  // 11. Workflow Pipeline Counts
   pipelineCounts: {
     newWork: number
     quotation: number
@@ -100,7 +164,7 @@ export interface OwnerDashboardSnapshot {
     delivered: number
   }
 
-  // 8. Business Trend (Past 7 Days)
+  // 12. Business Trend (Past 7 Days)
   trendData: Array<{
     dateStr: string
     dayLabelEn: string
@@ -135,6 +199,8 @@ export class DashboardService {
       costings,
       quotations,
       branches,
+      accounts,
+      machineries,
     ]: [
       InvoiceRecord[],
       PaymentRecord[],
@@ -145,6 +211,8 @@ export class DashboardService {
       MaterialRecord[],
       JobCostingRecord[],
       QuotationRecord[],
+      any[],
+      any[],
       any[],
     ] = await Promise.all([
       BillingRepository.getInvoices(companyId).catch(() => []),
@@ -157,6 +225,8 @@ export class DashboardService {
       CostingRepository.getCostings(companyId).catch(() => []),
       QuotationRepository.getQuotations(companyId).catch(() => []),
       BranchRepository.listBranches(companyId).catch(() => []),
+      FinanceRepository.getAccounts(companyId, branchId || undefined).catch(() => []),
+      MachineryRepository.getMachineries(companyId, { branch_id: branchId || undefined }).catch(() => []),
     ])
 
     // Filter by branch if specific branch selected
@@ -186,7 +256,157 @@ export class DashboardService {
       ? CanonicalFinance.calculateProfitMetrics(costings, branchInvoices, branchId)
       : CanonicalFinance.createRestrictedProfitMetrics()
 
-    // 2. Needs Your Attention (Filter invoice exceptions if financial permission missing)
+    // 2. Liquid Funds & Cash Drawer Calculations (Permission Gated)
+    let cashBal = 0
+    let bankBal = 0
+    let mfsBal = 0
+
+    for (const acc of accounts || []) {
+      const bal = Number(acc.current_balance) || 0
+      if (acc.account_subtype === 'CASH') cashBal += bal
+      else if (acc.account_subtype === 'BANK') bankBal += bal
+      else if (acc.account_subtype === 'MFS') mfsBal += bal
+      else if (acc.code === '1001') cashBal += bal
+      else if (acc.code === '1002') bankBal += bal
+      else if (acc.code === '1003') mfsBal += bal
+    }
+
+    const todayCollectionAmt = collectionMetrics.todayCollection || 0
+    // Estimate or extract today's shop expenses (cash outflow)
+    const todayExpensesAmt = 0 // Will be populated from cash closing / transactions if logged
+    const todayNetCashFlow = Number((todayCollectionAmt - todayExpensesAmt).toFixed(2))
+
+    const liquiditySummary: LiquiditySummary | undefined = hasFinancialPermission
+      ? {
+          cashInHand: Number(cashBal.toFixed(2)),
+          bankBalance: Number(bankBal.toFixed(2)),
+          mfsBalance: Number(mfsBal.toFixed(2)),
+          totalLiquidAssets: Number((cashBal + bankBal + mfsBal).toFixed(2)),
+          todayCollection: todayCollectionAmt,
+          todayExpenses: todayExpensesAmt,
+          todayNetCashFlow,
+        }
+      : undefined
+
+    // 3. Printing Segment Metrics (Digital / Offset / Signage Streams)
+    const isDigital = (text: string) => {
+      const t = text.toLowerCase()
+      return t.includes('digital') || t.includes('laser') || t.includes('card') || t.includes('flyer') || t.includes('brochure') || t.includes('id') || t.includes('mug') || t.includes('crest')
+    }
+    const isOffset = (text: string) => {
+      const t = text.toLowerCase()
+      return t.includes('offset') || t.includes('book') || t.includes('box') || t.includes('carton') || t.includes('magazine') || t.includes('memo') || t.includes('voucher') || t.includes('poster') || t.includes('pad')
+    }
+    const isSignage = (text: string) => {
+      const t = text.toLowerCase()
+      return t.includes('signage') || t.includes('large_format') || t.includes('banner') || t.includes('vinyl') || t.includes('flex') || t.includes('sticker') || t.includes('acrylic') || t.includes('board') || t.includes('standee') || t.includes('sign')
+    }
+
+    let digitalActive = 0
+    let digitalCompletedToday = 0
+    let digitalSales = 0
+
+    let offsetActive = 0
+    let offsetPlatesPending = 0
+    let offsetPressRunning = 0
+    let offsetSales = 0
+
+    let signageActive = 0
+    let signageSqFt = 0
+    let signageInstallationPending = 0
+    let signageSales = 0
+
+    // Classify production jobs into streams
+    for (const pj of branchProduction) {
+      const name = `${pj.product_name || ''} ${pj.department || ''} ${(pj as any).stage || ''}`
+      const isCompToday = pj.status === 'completed' && toBangladeshDateString((pj as any).completed_at || pj.updated_at) === todayStr
+      const isActive = pj.status !== 'completed' && (pj.status as string) !== 'cancelled'
+
+      if (isDigital(name) || pj.department === 'printing' && !isOffset(name) && !isSignage(name)) {
+        if (isActive) digitalActive++
+        if (isCompToday) digitalCompletedToday++
+      } else if (isOffset(name)) {
+        if (isActive) {
+          offsetActive++
+          if (pj.status === 'in_progress') offsetPressRunning++
+          if ((pj as any).stage === 'prepress' || (pj as any).stage === 'ctp' || pj.status === 'queued') offsetPlatesPending++
+        }
+      } else if (isSignage(name) || pj.department === 'fabrication' || pj.department === 'installation') {
+        if (isActive) {
+          signageActive++
+          signageSqFt += Number(pj.quantity) || 10
+          if (pj.department === 'installation' || (pj as any).stage === 'installation') signageInstallationPending++
+        }
+      }
+    }
+
+    // Segment sales from orders / invoices
+    for (const inv of branchInvoices) {
+      const invDate = toBangladeshDateString(inv.invoice_date || inv.created_at)
+      if (invDate !== todayStr) continue
+      const amt = Number(inv.grand_total) || 0
+      const desc = `${(inv as any).notes || ''} ${(inv as any).customer_name || ''}`
+      if (isOffset(desc)) offsetSales += amt
+      else if (isSignage(desc)) signageSales += amt
+      else digitalSales += amt
+    }
+
+    const segmentMetrics: SegmentMetrics = {
+      digital: {
+        activeJobsCount: digitalActive,
+        completedTodayCount: digitalCompletedToday,
+        todaySales: Number(digitalSales.toFixed(2)),
+      },
+      offset: {
+        activeJobsCount: offsetActive,
+        platesPending: offsetPlatesPending,
+        pressRunning: offsetPressRunning,
+        todaySales: Number(offsetSales.toFixed(2)),
+      },
+      signage: {
+        activeJobsCount: signageActive,
+        totalSqFt: signageSqFt,
+        installationPending: signageInstallationPending,
+        todaySales: Number(signageSales.toFixed(2)),
+      },
+    }
+
+    // 4. Critical Stock Watchlist (Depleted Consumables Alert)
+    const criticalStockAlerts: CriticalStockAlert[] = (branchMaterials || [])
+      .filter((m) => {
+        const stock = Number(m.current_stock) || 0
+        const minLvl = Number(m.min_stock_level) || 10
+        return stock <= minLvl
+      })
+      .slice(0, 6)
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        sku: m.sku || m.id.slice(0, 6).toUpperCase(),
+        category: (m as any).category || 'Raw Material',
+        currentStock: Number(m.current_stock) || 0,
+        minStockLevel: Number(m.min_stock_level) || 10,
+        unit: m.unit || 'pcs',
+        reorderQuantity: (Number(m.min_stock_level) || 10) * 2,
+        severity: (Number(m.current_stock) || 0) === 0 ? 'critical' : 'warning',
+      }))
+
+    // 5. Machinery Floor Summary
+    const totalMachs = (machineries || []).length
+    const runningMachs = (machineries || []).filter((m: any) => m.status === 'running' || m.status === 'in_use').length
+    const idleMachs = (machineries || []).filter((m: any) => m.status === 'idle' || m.status === 'available').length
+    const maintMachs = (machineries || []).filter((m: any) => m.status === 'maintenance' || m.status === 'under_maintenance').length
+    const breakdownMachs = (machineries || []).filter((m: any) => m.status === 'breakdown' || m.status === 'damaged').length
+
+    const machinerySummary: MachineryFloorSummary = {
+      totalMachines: totalMachs,
+      runningCount: runningMachs,
+      idleCount: idleMachs,
+      maintenanceCount: maintMachs,
+      breakdownCount: breakdownMachs,
+    }
+
+    // 6. Needs Your Attention (Filter invoice exceptions if financial permission missing)
     const rawAttentionItems = JobRiskEngine.generateNeedsAttentionItems({
       productionJobs: branchProduction,
       designJobs: branchDesign,
@@ -199,7 +419,7 @@ export class DashboardService {
       ? rawAttentionItems
       : rawAttentionItems.filter((item) => item.category !== 'money')
 
-    // 3. Blocked Work
+    // 7. Blocked Work
     const blockedWorkItems = JobRiskEngine.getBlockedWorkItems({
       productionJobs: branchProduction,
       designJobs: branchDesign,
@@ -207,7 +427,7 @@ export class DashboardService {
       branchId,
     })
 
-    // 4. Production Today Summary & Top Jobs
+    // 8. Production Today Summary & Top Jobs
     const evaluatedJobs = branchProduction.map((pj) =>
       JobRiskEngine.evaluateProductionJobRisk(pj, branchMaterials, todayStr)
     )
@@ -236,7 +456,7 @@ export class DashboardService {
         .slice(0, 6),
     }
 
-    // 5. Delivery Today Summary & Top Deliveries
+    // 9. Delivery Today Summary & Top Deliveries
     const scheduledDels = branchDelivery.filter((d) => d.status === 'scheduled')
     const assignedDels = branchDelivery.filter((d) => d.status === 'assigned')
     const outDels = branchDelivery.filter((d) => d.status === 'out_for_delivery' || (d as any).status === 'in_transit')
@@ -272,12 +492,12 @@ export class DashboardService {
       topDeliveries,
     }
 
-    // 6. Money to Collect (Gated)
+    // 10. Money to Collect (Gated)
     const moneyToCollect = hasFinancialPermission
       ? CanonicalFinance.getTopOverdueReceivables(branchInvoices, 5, branchId)
       : []
 
-    // 7. Workflow Pipeline Counts
+    // 11. Workflow Pipeline Counts
     const pipelineCounts = {
       newWork: branchOrders.filter((o) => o.status === 'draft' || o.status === 'confirmed').length,
       quotation: branchQuotations.filter((q) => q.status === 'draft' || q.status === 'sent').length,
@@ -288,7 +508,7 @@ export class DashboardService {
       delivered: branchDelivery.filter((d) => d.status === 'delivered').length,
     }
 
-    // 8. 7-Day Trend (Gated)
+    // 12. 7-Day Trend (Gated)
     const dateRange = getBangladeshDateRange(7)
     const trendData = hasFinancialPermission
       ? dateRange.map((rangeItem) => {
@@ -327,6 +547,10 @@ export class DashboardService {
       collectionMetrics,
       receivablesMetrics,
       profitMetrics,
+      liquiditySummary,
+      segmentMetrics,
+      criticalStockAlerts,
+      machinerySummary,
       attentionItems,
       blockedWorkItems,
       productionSummary,
