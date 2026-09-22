@@ -121,14 +121,16 @@ export function getTenantNavHref(
   // 1. Client-Side Resolution (Browser context with window.location)
   if (typeof window !== 'undefined') {
     const host = window.location.host.toLowerCase().trim()
+    const hostWithoutPort = host.split(':')[0]
     const browserPathname = window.location.pathname
 
     // Check if host is a tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.localhost:3000)
     const isSubdomain =
       (cleanSlug && host.startsWith(`${cleanSlug}.`)) ||
-      (host.endsWith('.vercel.app') && host.split('.').length === 4) ||
-      (host.endsWith('.inkflow.com.bd') && host.split('.').length >= 4) ||
-      (host.endsWith('.localhost') && host !== 'localhost')
+      (hostWithoutPort.endsWith('.vercel.app') && hostWithoutPort.split('.').length === 4) ||
+      (hostWithoutPort.endsWith('.inkflow.com.bd') && hostWithoutPort.split('.').length >= 4) ||
+      (hostWithoutPort.endsWith('.localhost') && hostWithoutPort !== 'localhost') ||
+      (hostWithoutPort.split('.').length > 1 && !hostWithoutPort.includes('127.0.0.1') && hostWithoutPort !== 'localhost')
 
     if (isSubdomain) {
       // On subdomain routing, NEVER prefix with slug in browser pathname

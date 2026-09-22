@@ -78,62 +78,22 @@ export default function TaxSettingsPage() {
     setMounted(true)
   }, [])
 
-  const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
-    STORAGE_KEYS.TAX_SETTINGS,
-    {
+  const defaultSettings = useMemo<CompanyTaxSettingsRecord>(
+    () => ({
       ...DEFAULT_TAX_SETTINGS,
       bin_number: company?.bin_no || DEFAULT_TAX_SETTINGS.bin_number,
       tin_number: company?.tin_no || DEFAULT_TAX_SETTINGS.tin_number,
       trade_license_number: company?.trade_license_no || DEFAULT_TAX_SETTINGS.trade_license_number,
       vat_enabled: settings?.vat_enabled ?? DEFAULT_TAX_SETTINGS.vat_enabled,
       default_vat_rate: settings?.vat_rate ?? DEFAULT_TAX_SETTINGS.default_vat_rate,
-    }
+    }),
+    [company?.bin_no, company?.tin_no, company?.trade_license_no, settings?.vat_enabled, settings?.vat_rate]
   )
 
-  // Real-time synchronization listener across tabs
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const handleSync = () => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEYS.TAX_SETTINGS)
-        if (raw) {
-          const parsed = JSON.parse(raw)
-          if (parsed && typeof parsed === 'object') {
-            setTaxSettings(parsed)
-          }
-        }
-      } catch (err) {
-        console.error('[TaxSettings] Real-time sync parse error:', err)
-      }
-    }
-
-    window.addEventListener('printerp_table_synced:tax_settings', handleSync)
-    window.addEventListener('printerp_table_synced:settings', handleSync)
-    window.addEventListener('printerp_table_synced:company', handleSync)
-    window.addEventListener('printerp_data_sync', handleSync)
-
-    return () => {
-      window.removeEventListener('printerp_table_synced:tax_settings', handleSync)
-      window.removeEventListener('printerp_table_synced:settings', handleSync)
-      window.removeEventListener('printerp_table_synced:company', handleSync)
-      window.removeEventListener('printerp_data_sync', handleSync)
-    }
-  }, [setTaxSettings])
-
-  // Sync with company/settings if updated from server context
-  useEffect(() => {
-    if (company || settings) {
-      setTaxSettings((prev) => ({
-        ...prev,
-        bin_number: company?.bin_no || prev.bin_number,
-        tin_number: company?.tin_no || prev.tin_number,
-        trade_license_number: company?.trade_license_no || prev.trade_license_number,
-        vat_enabled: settings?.vat_enabled ?? prev.vat_enabled,
-        default_vat_rate: settings?.vat_rate ?? prev.default_vat_rate,
-      }))
-    }
-  }, [company, settings, setTaxSettings])
+  const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
+    STORAGE_KEYS.TAX_SETTINGS,
+    defaultSettings
+  )
 
   const [invoices] = useDataStore<any[]>(STORAGE_KEYS.INVOICES, [])
   const [purchases] = useDataStore<any[]>(STORAGE_KEYS.PURCHASE_ORDERS, [])
