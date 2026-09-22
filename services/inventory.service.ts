@@ -760,6 +760,108 @@ export class InventoryService {
     return await InventoryRepository.unmountRollFromMachine(params)
   }
 
+  static async createPhysicalRoll(params: {
+    company_id: string
+    branch_id?: string | null
+    material_id: string
+    roll_code?: string
+    roll_tag?: string
+    width_ft: number
+    initial_length_ft: number
+    unit_cost?: number
+    location_name?: string
+    notes?: string | null
+  }): Promise<InventoryRollRecord> {
+    const created = await InventoryRepository.createPhysicalRoll(params)
+    await AuditRepository.logEvent({
+      companyId: params.company_id,
+      userEmail: 'inventory',
+      action: 'inventory.roll_created',
+      entity: 'inventory_roll',
+      entityId: created.id,
+      newValue: { roll_code: created.roll_code, width_ft: created.width_ft, initial_length_ft: created.initial_length_ft },
+      description: `Created physical roll ${created.roll_code} (${created.width_ft}ft × ${created.initial_length_ft}ft)`,
+    })
+    return created
+  }
+
+  static async consumeFromPhysicalRoll(params: {
+    company_id: string
+    roll_id: string
+    linear_length_consumed_ft: number
+    bleed_allowance_ft?: number
+    wastage_length_ft?: number
+    wastage_reason?: string | null
+    production_task_id?: string | null
+    job_order_id?: string | null
+    operator_name?: string
+    notes?: string | null
+    offcut_remnant?: {
+      create_remnant: boolean
+      width_ft?: number
+      length_ft?: number
+      location_id?: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }
+    actor_email?: string
+  }): Promise<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null; totalDeductedFt: number }> {
+    const result = await InventoryRepository.consumeFromPhysicalRoll(params)
+
+    await AuditRepository.logEvent({
+      companyId: params.company_id,
+      userEmail: params.actor_email || params.operator_name || 'operator',
+      action: 'inventory.roll_consumed',
+      entity: 'inventory_roll',
+      entityId: params.roll_id,
+      newValue: {
+        total_deducted_ft: result.totalDeductedFt,
+        good_feed_ft: params.linear_length_consumed_ft,
+        bleed_ft: params.bleed_allowance_ft || 0,
+        wastage_ft: params.wastage_length_ft || 0,
+        wastage_reason: params.wastage_reason || null,
+        remaining_length_ft: result.roll.current_length_ft,
+        status: result.roll.status,
+      },
+      description: `Consumed ${result.totalDeductedFt}ft from Roll ${result.roll.roll_code || result.roll.roll_tag}. Remaining: ${result.roll.current_length_ft}ft (Task: ${params.production_task_id || 'Direct'})`,
+    })
+
+    return result
+  }
+
+  static async requestAndIssueNewRollToFloor(params: {
+    company_id: string
+    branch_id?: string | null
+    material_id: string
+    width_ft: number
+    length_ft?: number
+    machine_id?: string | null
+    machine_name?: string | null
+    operator_name?: string
+    notes?: string | null
+    actor_email?: string
+  }): Promise<InventoryRollRecord> {
+    const created = await InventoryRepository.requestAndIssueNewRollToFloor(params)
+
+    await AuditRepository.logEvent({
+      companyId: params.company_id,
+      userEmail: params.actor_email || params.operator_name || 'operator',
+      action: 'inventory.roll_issued_floor',
+      entity: 'inventory_roll',
+      entityId: created.id,
+      newValue: {
+        roll_tag: created.roll_tag,
+        width_ft: created.width_ft,
+        initial_length_ft: created.initial_length_ft,
+        machine_name: params.machine_name || null,
+      },
+      description: `Requisitioned and issued new Roll ${created.roll_tag} (${created.width_ft}ft × ${created.initial_length_ft}ft) to Print Floor`,
+    })
+
+    return created
+  }
+
+
   static async recordStockAdjustment(params: {
     company_id: string
     branch_id?: string | null

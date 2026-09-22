@@ -155,6 +155,46 @@ export interface InventoryRollRecord {
   updated_at?: string
 }
 
+export interface RollFeedCalculationInput {
+  roll_width_ft: number
+  roll_current_length_ft?: number
+  roll_available_length_ft?: number
+  job_width_ft: number
+  job_length_ft: number
+  quantity?: number
+  orientation?: 'auto' | 'normal' | 'rotated'
+  bleed_allowance_in?: number
+  bleed_allowance_inches?: number
+  wastage_length_ft?: number
+  wastage_reason?: string | null
+}
+
+export interface RollFeedCalculationResult {
+  orientation: 'normal' | 'rotated'
+  fits_on_roll: boolean
+  is_fit_across_width: boolean
+  linear_feed_per_unit_ft: number
+  job_linear_feed_ft: number
+  linear_feed_ft: number
+  bleed_allowance_ft: number
+  wastage_length_ft: number
+  wastage_reason?: string | null
+  wastage_area_sft: number
+  total_deducted_length_ft: number
+  total_linear_deduction_ft: number
+  remaining_roll_length_ft: number
+  new_remaining_length_ft: number
+  has_shortage: boolean
+  is_shortage: boolean
+  shortage_length_ft: number
+  shortage_amount_ft: number
+  utilized_width_ft: number
+  side_margin_loss_ft: number
+  total_utilized_area_sft: number
+  total_deducted_area_sft: number
+  roll_current_length_ft: number
+}
+
 export interface StockLedgerRecord {
   id: string
   company_id: string
@@ -457,3 +497,5 @@ export interface InventorySummaryStats {
   totalRemnantsCount: number
   totalWastageRecordsCount: number
 }
+
+

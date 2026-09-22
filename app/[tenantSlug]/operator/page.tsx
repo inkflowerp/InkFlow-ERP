@@ -54,6 +54,7 @@ import {
   reportBreakdownAction,
 } from '@/actions/machinery.actions'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
+import { CompleteTaskModal } from '@/components/production/complete-task-modal'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function MobileOperatorPanelContent() {
@@ -711,114 +712,27 @@ function MobileOperatorPanelContent() {
         </div>
       )}
 
-      {/* COMPLETE PRODUCTION TASK MODAL WITH DEFECT REASONS */}
-      <ModalDialog
-        open={!!selectedTaskForComplete}
-        onOpenChange={(open) => !open && setSelectedTaskForComplete(null)}
-        title={tBilingual('Sign Off Production Task', 'কাজ সম্পন্ন ও পরিমাণ নিশ্চিতকরণ')}
-        hideFooter={true}
-      >
-        <form onSubmit={handleConfirmComplete} className="space-y-4">
-          <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800 space-y-1">
-            <span className="text-xs font-bold text-emerald-900 dark:text-emerald-200">
-              {selectedTaskForComplete?.task_name}
-            </span>
-            <p className="text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
-              Confirm quantities produced. Downstream tasks (e.g. Lamination or Cutting) will automatically be marked READY.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
-                {tBilingual('Good Quantity Produced', 'সঠিক পরিমাণ')}
-              </Label>
-              <Input
-                type="number"
-                min={0}
-                required
-                value={goodQty}
-                onChange={(e) => setGoodQty(parseInt(e.target.value) || 0)}
-                className="text-xs font-bold text-emerald-800 dark:text-emerald-200"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-rose-700 dark:text-rose-400">
-                {tBilingual('Rejected / Scrap Qty', 'নষ্ট / অপচয়')}
-              </Label>
-              <Input
-                type="number"
-                min={0}
-                value={rejectedQty}
-                onChange={(e) => setRejectedQty(parseInt(e.target.value) || 0)}
-                className="text-xs font-bold text-rose-800 dark:text-rose-200"
-              />
-            </div>
-          </div>
-
-          {/* Defect Reason Selection if rejected > 0 */}
-          {rejectedQty > 0 && (
-            <div className="p-3 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900 rounded-lg space-y-2">
-              <Label className="text-xs font-bold text-rose-800 dark:text-rose-300">
-                {tBilingual('Primary Scrap / Defect Reason', 'অপচয় বা ত্রুটির প্রধান কারণ')}
-              </Label>
-              <select
-                value={defectReason}
-                onChange={(e) => setDefectReason(e.target.value)}
-                className="w-full text-xs rounded-md border border-rose-300 bg-white px-3 py-2 text-rose-900 dark:border-rose-800 dark:bg-slate-950 dark:text-rose-100"
-              >
-                {Object.entries(DEFECT_REASON_LABELS).map(([code, label]) => (
-                  <option key={code} value={code}>
-                    {label.labelEn} ({label.labelBn})
-                  </option>
-                ))}
-              </select>
-
-              <Input
-                value={scrapNotes}
-                onChange={(e) => setScrapNotes(e.target.value)}
-                placeholder="Detailed defect explanation (e.g. 5 sqft vinyl damaged due to media jam)..."
-                className="text-xs"
-              />
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold">
-              {tBilingual('Operator Notes (Optional)', 'অপারেটর মন্তব্য')}
-            </Label>
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Finished with high quality color profile..."
-              className="text-xs"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setSelectedTaskForComplete(null)}
-              disabled={isSubmittingComplete}
-              className="text-xs"
-            >
-              {tBilingual('Cancel', 'বাতিল')}
-            </Button>
-            <Button
-              type="submit"
-              variant="default"
-              size="sm"
-              disabled={isSubmittingComplete}
-              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
-            >
-              {isSubmittingComplete ? tBilingual('Completing...', 'সম্পন্ন হচ্ছে...') : tBilingual('Sign Off & Finish', 'সম্পন্ন নিশ্চিত করুন')}
-            </Button>
-          </div>
-        </form>
-      </ModalDialog>
+      {/* COMPLETE PRODUCTION TASK MODAL WITH DEFECT REASONS & DIMENSIONAL ROLL ENGINE */}
+      <CompleteTaskModal
+        isOpen={!!selectedTaskForComplete}
+        onClose={() => setSelectedTaskForComplete(null)}
+        task={selectedTaskForComplete}
+        onComplete={async (taskId, completionData) => {
+          const res = await completeProductionTaskAction(
+            taskId,
+            completionData,
+            undefined,
+            selectedTaskForComplete || undefined
+          )
+          if (res.success) {
+            showNotification(`Production signed off! Good: ${completionData.good_quantity}, Scrap: ${completionData.rejected_quantity}`)
+            setSelectedTaskForComplete(null)
+            loadData()
+          } else {
+            showNotification(`Error: ${res.error}`)
+          }
+        }}
+      />
 
       {/* QUICK MACHINE BREAKDOWN MODAL */}
       <ModalDialog

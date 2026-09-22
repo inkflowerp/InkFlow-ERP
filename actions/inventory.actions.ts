@@ -18,7 +18,10 @@ import {
   StockLedgerRecord,
   TaskMaterialRequirementRecord,
   InventoryRollRecord,
+  RollFeedCalculationInput,
+  RollFeedCalculationResult,
 } from '@/types/inventory.types'
+import { RollConsumptionEngine } from '@/lib/domain/roll-consumption-engine'
 import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
 
 export interface ServerActionResult<T> {
@@ -779,6 +782,129 @@ export async function unmountRollFromMachineAction(
     return { success: true, data: roll }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to unmount roll from machine' }
+  }
+}
+
+/**
+ * Server Action: Deterministic roll feed, bleed, and wastage calculation
+ */
+export async function calculateRollFeedAction(
+  input: RollFeedCalculationInput
+): Promise<ServerActionResult<RollFeedCalculationResult>> {
+  try {
+    const result = RollConsumptionEngine.calculateRollLinearFeed(input)
+    return { success: true, data: result }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to calculate roll feed' }
+  }
+}
+
+/**
+ * Server Action: Consume linear length from a physical roll with bleed allowance and scrap/wastage logging
+ */
+export async function consumeRollWithBleedAndWastageAction(
+  params: {
+    roll_id: string
+    linear_length_consumed_ft: number
+    bleed_allowance_ft?: number
+    wastage_length_ft?: number
+    wastage_reason?: string | null
+    production_task_id?: string | null
+    job_order_id?: string | null
+    offcut_remnant?: {
+      create_remnant: boolean
+      width_ft?: number
+      length_ft?: number
+      location_id?: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }
+    notes?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null; totalDeductedFt: number }>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await InventoryService.consumeFromPhysicalRoll({
+      ...params,
+      company_id: companyId,
+      operator_name: tenant.fullName || tenant.userEmail || 'Floor Operator',
+      actor_email: tenant.userEmail,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/operator', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+
+    return { success: true, data: result }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to consume from roll' }
+  }
+}
+
+/**
+ * Server Action: Requisition and mount/issue a brand new physical master roll directly to the print floor
+ */
+export async function requestAndIssueFloorRollAction(
+  params: {
+    material_id: string
+    width_ft: number
+    length_ft?: number
+    machine_id?: string | null
+    machine_name?: string | null
+    notes?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InventoryRollRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const roll = await InventoryService.requestAndIssueNewRollToFloor({
+      ...params,
+      company_id: companyId,
+      branch_id: tenant.branchId || null,
+      operator_name: tenant.fullName || tenant.userEmail || 'Floor Operator',
+      actor_email: tenant.userEmail,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/operator', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+
+    return { success: true, data: roll }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to request new floor roll' }
+  }
+}
+
+/**
+ * Server Action: Get all physical rolls in inventory/floor
+ */
+export async function getInventoryRollsAction(
+  requestedCompanyId?: string
+): Promise<ServerActionResult<InventoryRollRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const rolls = await InventoryService.getInventoryRolls(companyId)
+    return { success: true, data: rolls }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch rolls' }
   }
 }
 

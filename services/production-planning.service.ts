@@ -566,22 +566,30 @@ export class ProductionPlanningService {
 
     // 1. Automatic Roll / Substrate Inventory Deduction
     const targetRollId = (completionData as any)?.mounted_roll_id || task.mounted_roll_id
+    const explicitLinearFt = (completionData as any)?.linear_feed_ft ?? (completionData as any)?.linear_length_consumed_ft
+    const bleedAllowanceFt = (completionData as any)?.bleed_allowance_ft ?? 0
+    const wastageLengthFt = (completionData as any)?.wastage_length_ft ?? 0
+    const wastageReason = (completionData as any)?.wastage_reason ?? completionData?.defect_reason ?? null
     const consumedQty = (completionData as any)?.consumed_material_qty || task.consumed_material_qty || (task.width && task.height && (task.unit === 'sft' || task.unit === 'sqft') ? task.width * task.height * (task.quantity || 1) : task.quantity)
 
-    if (targetRollId && consumedQty > 0) {
+    if (targetRollId && (explicitLinearFt !== undefined || consumedQty > 0)) {
       try {
         const roll = await InventoryRepository.getInventoryRollById(targetRollId, companyId)
         if (roll) {
           const widthFt = Number(roll.width_ft) || 1
-          const linearFt = Math.round((consumedQty / widthFt) * 100) / 100
+          const linearFt = explicitLinearFt !== undefined ? Number(explicitLinearFt) : Math.round((consumedQty / widthFt) * 100) / 100
           await InventoryRepository.consumeFromPhysicalRoll({
             company_id: companyId,
             roll_id: targetRollId,
             linear_length_consumed_ft: linearFt,
+            bleed_allowance_ft: Number(bleedAllowanceFt) || 0,
+            wastage_length_ft: Number(wastageLengthFt) || 0,
+            wastage_reason: wastageReason,
             production_task_id: task.id,
             job_order_id: task.job_order_id,
             operator_name: task.assigned_operator_name || 'Operator',
             notes: `Auto-deducted from ${task.task_name} (${task.task_number})`,
+            offcut_remnant: (completionData as any)?.offcut_remnant,
           })
         }
       } catch (_) {}

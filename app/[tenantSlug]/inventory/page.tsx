@@ -930,6 +930,7 @@ function UnifiedInventoryContent() {
             materials={materials}
             locations={locations}
             issues={issues}
+            rolls={rolls}
             onOpenLogConsumption={(record) => {
               setSelectedFloorRecordForConsumption(record || null)
               setIsConsumptionOpen(true)

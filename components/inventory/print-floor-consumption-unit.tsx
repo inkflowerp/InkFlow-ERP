@@ -26,6 +26,7 @@ import {
   ChevronRight,
   ShieldAlert,
   SlidersHorizontal,
+  Disc,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -39,17 +40,22 @@ import {
   InventoryLocationRecord,
   MaterialIssueRecord,
   MaterialIssueItemRecord,
+  InventoryRollRecord,
 } from '@/types/inventory.types'
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
-import { returnFloorStockToStoreAction } from '@/actions/inventory.actions'
+import {
+  returnFloorStockToStoreAction,
+  requestAndIssueFloorRollAction,
+} from '@/actions/inventory.actions'
 
 export interface PrintFloorConsumptionUnitProps {
   floorConsumptions: FloorConsumptionRecord[]
   materials?: MaterialRecord[]
   locations?: InventoryLocationRecord[]
   issues?: MaterialIssueRecord[]
+  rolls?: InventoryRollRecord[]
   onOpenLogConsumption: (item?: FloorConsumptionRecord | null) => void
   onRefresh: () => void
   companyId?: string
@@ -71,6 +77,7 @@ export function PrintFloorConsumptionUnit({
   materials = [],
   locations = [],
   issues = [],
+  rolls = [],
   onOpenLogConsumption,
   onRefresh,
   companyId,
@@ -91,6 +98,66 @@ export function PrintFloorConsumptionUnit({
   const [returnLoading, setReturnLoading] = useState<boolean>(false)
   const [returnError, setReturnError] = useState<string | null>(null)
   const [returnSuccess, setReturnSuccess] = useState<string | null>(null)
+
+  // Issue Master Roll to Floor State
+  const [isIssueRollOpen, setIsIssueRollOpen] = useState<boolean>(false)
+  const [issueRollMaterialId, setIssueRollMaterialId] = useState<string>(materials[0]?.id || '')
+  const [issueRollWidthFt, setIssueRollWidthFt] = useState<number>(3)
+  const [issueRollLengthFt, setIssueRollLengthFt] = useState<number>(164)
+  const [issueRollMachineId, setIssueRollMachineId] = useState<string>('roland')
+  const [issueRollLoading, setIssueRollLoading] = useState<boolean>(false)
+  const [issueRollError, setIssueRollError] = useState<string | null>(null)
+  const [issueRollSuccess, setIssueRollSuccess] = useState<string | null>(null)
+
+  const activeFloorRolls = useMemo(() => {
+    return (rolls || []).filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
+  }, [rolls])
+
+  const handleIssueRollSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!issueRollMaterialId) {
+      setIssueRollError('Please select a material substrate.')
+      return
+    }
+    if (issueRollWidthFt <= 0 || issueRollLengthFt <= 0) {
+      setIssueRollError('Roll width and length must be positive numbers.')
+      return
+    }
+
+    setIssueRollLoading(true)
+    setIssueRollError(null)
+    setIssueRollSuccess(null)
+
+    try {
+      const targetMachine = PRODUCTION_MACHINES.find((m) => m.id === issueRollMachineId)
+      const res = await requestAndIssueFloorRollAction(
+        {
+          material_id: issueRollMaterialId,
+          width_ft: Number(issueRollWidthFt),
+          length_ft: Number(issueRollLengthFt),
+          machine_id: issueRollMachineId === 'all' ? null : issueRollMachineId,
+          machine_name: targetMachine ? targetMachine.name : 'Print Floor Machine',
+          notes: `Requisitioned directly from Print Floor Hub (${issueRollWidthFt}ft × ${issueRollLengthFt}ft)`,
+        },
+        companyId
+      )
+
+      if (!res.success || !res.data) {
+        setIssueRollError(res.error || 'Failed to issue roll to floor.')
+        return
+      }
+
+      setIssueRollSuccess(`Roll ${res.data.roll_code || res.data.roll_tag} issued to Print Floor successfully!`)
+      setTimeout(() => {
+        setIsIssueRollOpen(false)
+        onRefresh()
+      }, 700)
+    } catch (err: any) {
+      setIssueRollError(err.message || 'Error issuing roll.')
+    } finally {
+      setIssueRollLoading(false)
+    }
+  }
 
   // Filtered Floor Consumptions
   const filteredRecords = useMemo(() => {
@@ -344,6 +411,108 @@ export function PrintFloorConsumptionUnit({
           </Button>
         </Card>
       </div>
+
+      {/* ========================================================= */}
+      {/* ACTIVE MASTER ROLLS ON PRINT FLOOR SECTION */}
+      {/* ========================================================= */}
+      <Card className="p-3.5 border-blue-200 dark:border-blue-900/60 bg-blue-50/20 dark:bg-blue-950/10">
+        <div className="flex items-center justify-between gap-2 flex-wrap mb-2.5">
+          <div className="flex items-center gap-2">
+            <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 tracking-wider">
+              {tBilingual('Active Physical Rolls on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় মাস্টার রোল বহর')} ({activeFloorRolls.length})
+            </span>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              setIsIssueRollOpen(true)
+              setIssueRollError(null)
+              setIssueRollSuccess(null)
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>{tBilingual('Issue Master Roll to Floor', '+ নতুন রোল ইস্যু করুন')}</span>
+          </Button>
+        </div>
+
+        {activeFloorRolls.length === 0 ? (
+          <div className="p-4 text-center text-xs text-slate-500 border border-dashed rounded-lg bg-white/60 dark:bg-slate-900/60">
+            <span>No master rolls currently mounted or active on the floor. Click &quot;Issue Master Roll to Floor&quot; to mount a roll.</span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {activeFloorRolls.map((roll) => {
+              const currentLen = Number(roll.current_length_ft ?? (roll.remaining_area_sft / (roll.width_ft || 1)))
+              const initialLen = Number(roll.initial_length_ft || 164)
+              const percentLeft = initialLen > 0 ? Math.round((currentLen / initialLen) * 100) : 0
+
+              return (
+                <div
+                  key={roll.id}
+                  className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-2"
+                >
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white font-mono">
+                          {roll.roll_code || roll.roll_tag}
+                        </span>
+                        <Badge className="text-[9px] bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
+                          {roll.width_ft} ft Wide
+                        </Badge>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                        {roll.material?.name || 'Raw Material Roll'}
+                      </span>
+                    </div>
+
+                    <Badge
+                      variant="outline"
+                      className={`text-[9px] uppercase font-bold py-0 ${
+                        roll.status === 'mounted'
+                          ? 'border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40'
+                          : 'border-blue-400 text-blue-700 bg-blue-50 dark:bg-blue-950/40'
+                      }`}
+                    >
+                      {roll.status}
+                    </Badge>
+                  </div>
+
+                  {/* Machine Mount */}
+                  <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                    <Cpu className="h-3 w-3 text-slate-400 shrink-0" />
+                    <span className="truncate">
+                      {roll.mounted_machine_name || roll.location_name || 'General Press Workstation'}
+                    </span>
+                  </div>
+
+                  {/* Length Ticker & Progress Bar */}
+                  <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center justify-between text-xs font-mono">
+                      <span className="text-slate-500 text-[11px]">Remaining Length:</span>
+                      <strong className="text-emerald-600 dark:text-emerald-400 font-black">
+                        {currentLen.toFixed(2)} ft / {initialLen} ft
+                      </strong>
+                    </div>
+                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-full ${percentLeft < 20 ? 'bg-rose-500' : percentLeft < 50 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                        style={{ width: `${percentLeft}%` }}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-0.5">
+                      <span>Area: <strong>{roll.remaining_area_sft} SFT</strong></span>
+                      <span>{percentLeft}% remaining</span>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </Card>
 
       {/* ========================================================= */}
       {/* FILTER & SEARCH BAR */}
@@ -762,6 +931,120 @@ export function PrintFloorConsumptionUnit({
               </Button>
               <Button type="submit" disabled={returnLoading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
                 {returnLoading ? 'Returning...' : 'Confirm Return to Store'}
+              </Button>
+            </div>
+          </div>
+        </ModalDialog>
+      )}
+
+      {/* ========================================================= */}
+      {/* ISSUE MASTER ROLL TO PRINT FLOOR MODAL */}
+      {/* ========================================================= */}
+      {isIssueRollOpen && (
+        <ModalDialog
+          open={isIssueRollOpen}
+          onOpenChange={(v) => !v && setIsIssueRollOpen(false)}
+          title="Issue / Requisition New Master Roll to Print Floor"
+          description="Mount or issue a brand new physical master roll (e.g. 3ft × 164ft, 5ft × 164ft) directly to the production workstation."
+          onSubmit={handleIssueRollSubmit}
+        >
+          <div className="space-y-4 pt-1 text-xs">
+            {issueRollSuccess && (
+              <div className="p-3 bg-emerald-50 text-emerald-900 rounded-lg border border-emerald-300 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                <span>{issueRollSuccess}</span>
+              </div>
+            )}
+            {issueRollError && (
+              <div className="p-3 bg-rose-50 text-rose-900 rounded-lg border border-rose-300 flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-rose-600" />
+                <span>{issueRollError}</span>
+              </div>
+            )}
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Material Substrate <span className="text-rose-500">*</span>
+              </Label>
+              <select
+                value={issueRollMaterialId}
+                onChange={(e) => setIssueRollMaterialId(e.target.value)}
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+                required
+              >
+                <option value="">-- Select Material Substrate --</option>
+                {materials.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name} ({m.sku}) • Stock: {m.current_stock} {m.unit}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Roll Width (Feet) <span className="text-rose-500">*</span>
+                </Label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {[3, 4, 5].map((w) => (
+                    <Button
+                      key={w}
+                      type="button"
+                      size="sm"
+                      variant={issueRollWidthFt === w ? 'default' : 'outline'}
+                      onClick={() => setIssueRollWidthFt(w)}
+                      className="h-8 text-xs font-bold"
+                    >
+                      {w} ft Wide
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  Initial Master Length (Feet) <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  step="any"
+                  min="1"
+                  value={issueRollLengthFt}
+                  onChange={(e) => setIssueRollLengthFt(Number(e.target.value))}
+                  placeholder="e.g. 164 (50m)"
+                  className="h-8 text-xs font-mono font-bold"
+                  required
+                />
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
+                  = {Math.round(issueRollWidthFt * issueRollLengthFt)} SFT Total Area
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-xs font-semibold mb-1 block">
+                Mount to Machine / Workstation
+              </Label>
+              <select
+                value={issueRollMachineId}
+                onChange={(e) => setIssueRollMachineId(e.target.value)}
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
+              >
+                {PRODUCTION_MACHINES.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <Button type="button" variant="outline" onClick={() => setIsIssueRollOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={issueRollLoading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                {issueRollLoading ? 'Issuing Roll...' : 'Confirm Issue & Mount'}
               </Button>
             </div>
           </div>

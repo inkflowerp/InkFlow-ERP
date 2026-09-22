@@ -1,7 +1,21 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { CheckCircle2, AlertTriangle, Disc, Cpu, Scissors, Layers, Sparkles } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import {
+  CheckCircle2,
+  AlertTriangle,
+  Disc,
+  Cpu,
+  Scissors,
+  Layers,
+  Sparkles,
+  RotateCw,
+  Plus,
+  ArrowRight,
+  AlertOctagon,
+  HelpCircle,
+  TrendingDown,
+} from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,8 +26,13 @@ import {
   DefectReasonCode,
   DEFECT_REASON_LABELS,
 } from '@/types/production.types'
-import { InventoryRollRecord } from '@/types/inventory.types'
+import { InventoryRollRecord, RollFeedCalculationResult } from '@/types/inventory.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { RollConsumptionEngine } from '@/lib/domain/roll-consumption-engine'
+import {
+  requestAndIssueFloorRollAction,
+  getInventoryRollsAction,
+} from '@/actions/inventory.actions'
 import { formatBDT } from '@/lib/formatters'
 
 interface CompleteTaskModalProps {
@@ -27,6 +46,10 @@ interface CompleteTaskModalProps {
     scrap_notes?: string | null
     scrap_area_sft?: number
     mounted_roll_id?: string | null
+    linear_feed_ft?: number
+    bleed_allowance_ft?: number
+    wastage_length_ft?: number
+    wastage_reason?: string | null
     consumed_material_qty?: number
     machine_meter_after?: number
     notes?: string
@@ -49,8 +72,35 @@ export function CompleteTaskModal({
   const [notes, setNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Dimensional Roll Feed States
+  const [orientation, setOrientation] = useState<'normal' | 'rotated'>('normal')
+  const [bleedInches, setBleedInches] = useState<number>(3) // Default 3 inches bleed
+  const [scrapWastageLengthFt, setScrapWastageLengthFt] = useState<number>(0)
+  const [scrapWastageReason, setScrapWastageReason] = useState<string>('banding')
+
+  // Roll Requisitioning States
+  const [isRequestingRoll, setIsRequestingRoll] = useState(false)
+  const [requestRollError, setRequestRollError] = useState<string | null>(null)
+  const [requestRollSuccess, setRequestRollSuccess] = useState<string | null>(null)
+
   // Load available mounted rolls
   const [availableRolls, setAvailableRolls] = useState<InventoryRollRecord[]>([])
+
+  const loadRolls = async () => {
+    try {
+      const res = await getInventoryRollsAction()
+      if (res.success && res.data) {
+        const filtered = res.data.filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
+        setAvailableRolls(filtered)
+        return filtered
+      }
+    } catch {}
+
+    const cached = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+    const filtered = cached.filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
+    setAvailableRolls(filtered)
+    return filtered
+  }
 
   useEffect(() => {
     if (!task) return
@@ -61,12 +111,15 @@ export function CompleteTaskModal({
     setDefectReason('')
     setScrapNotes('')
     setNotes('')
+    setOrientation('normal')
+    setBleedInches(3)
+    setScrapWastageLengthFt(0)
+    setScrapWastageReason('banding')
+    setRequestRollError(null)
+    setRequestRollSuccess(null)
 
-    try {
-      const rolls = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
-      setAvailableRolls(rolls.filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use'))
-
-      // Pre-select roll if task or machine has active mounted roll
+    loadRolls().then((rolls) => {
+      // Auto pre-select roll
       const preSelected = rolls.find(
         (r) =>
           r.id === task.mounted_roll_id ||
@@ -77,16 +130,75 @@ export function CompleteTaskModal({
       } else if (rolls.length > 0) {
         setSelectedRollId(rolls[0].id)
       }
-    } catch {}
+    })
   }, [task, isOpen])
 
   if (!task) return null
 
-  const isSftUnit = task.unit === 'sft' || task.unit === 'sqft' || (task.width && task.height)
-  const taskAreaSft = (task.width && task.height) ? Math.round(task.width * task.height * goodQty * 100) / 100 : (isSftUnit ? goodQty : 0)
-  const scrapAreaSft = (task.width && task.height && scrapQty > 0) ? Math.round(task.width * task.height * scrapQty * 100) / 100 : scrapQty
-
   const selectedRoll = availableRolls.find((r) => r.id === selectedRollId)
+
+  // Job Dimensions in Feet
+  const jobWidthFt = Number(task.width) || (task.unit === 'ft' || task.unit === 'sft' ? 3 : 1)
+  const jobLengthFt = Number(task.height) || (task.unit === 'ft' || task.unit === 'sft' ? 5 : 1)
+
+  // Deterministic Roll Feed Calculation
+  const rollCalc: RollFeedCalculationResult | null = useMemo(() => {
+    if (!selectedRoll) return null
+    return RollConsumptionEngine.calculateRollLinearFeed({
+      roll_width_ft: selectedRoll.width_ft,
+      roll_current_length_ft: Number(selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)),
+      job_width_ft: jobWidthFt,
+      job_length_ft: jobLengthFt,
+      quantity: Number(goodQty) || 1,
+      orientation,
+      bleed_allowance_in: Number(bleedInches) || 0,
+      wastage_length_ft: hasScrap ? Number(scrapWastageLengthFt) || 0 : 0,
+      wastage_reason: hasScrap && defectReason ? defectReason : undefined,
+    })
+  }, [selectedRoll, jobWidthFt, jobLengthFt, goodQty, orientation, bleedInches, hasScrap, scrapWastageLengthFt, defectReason])
+
+  const isSftUnit = task.unit === 'sft' || task.unit === 'sqft' || (task.width && task.height)
+  const taskAreaSft = (task.width && task.height)
+    ? Math.round(task.width * task.height * goodQty * 100) / 100
+    : (isSftUnit ? goodQty : 0)
+
+  const scrapAreaSft = hasScrap
+    ? (rollCalc ? rollCalc.wastage_area_sft : (task.width && task.height ? Math.round(task.width * task.height * scrapQty * 100) / 100 : scrapQty))
+    : 0
+
+  // 1-Click Request New Roll from Warehouse to Print Floor
+  const handleRequestNewRoll = async () => {
+    if (!selectedRoll && !task.required_material) return
+    setIsRequestingRoll(true)
+    setRequestRollError(null)
+    setRequestRollSuccess(null)
+
+    try {
+      const matId = selectedRoll?.material_id || task.required_material || 'mat-pvc-banner'
+      const widthFt = selectedRoll?.width_ft || (jobWidthFt <= 3 ? 3 : jobWidthFt <= 5 ? 5 : 3)
+      const res = await requestAndIssueFloorRollAction({
+        material_id: matId,
+        width_ft: widthFt,
+        length_ft: 164, // Standard 50m / 164ft master roll
+        machine_id: task.assigned_machine_id || null,
+        machine_name: task.assigned_machine_name || 'Print Press',
+        notes: `Requisitioned during Job #${task.job_number || task.task_number} due to shortage`,
+      })
+
+      if (!res.success || !res.data) {
+        setRequestRollError(res.error || 'Failed to request new roll.')
+        return
+      }
+
+      setRequestRollSuccess(`New Roll ${res.data.roll_code || res.data.roll_tag} (${res.data.width_ft}ft × 164ft) issued & mounted!`)
+      const updatedList = await loadRolls()
+      setSelectedRollId(res.data.id)
+    } catch (err: any) {
+      setRequestRollError(err.message || 'Error requisitioning roll.')
+    } finally {
+      setIsRequestingRoll(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -94,12 +206,16 @@ export function CompleteTaskModal({
     try {
       await onComplete(task.id, {
         good_quantity: Number(goodQty) || 0,
-        rejected_quantity: hasScrap ? Number(scrapQty) || 0 : 0,
+        rejected_quantity: hasScrap ? Number(scrapQty || (rollCalc ? rollCalc.wastage_length_ft : 0)) : 0,
         defect_reason: hasScrap && defectReason ? defectReason : null,
         scrap_notes: hasScrap && scrapNotes ? scrapNotes : null,
-        scrap_area_sft: hasScrap ? scrapAreaSft : 0,
+        scrap_area_sft: scrapAreaSft,
         mounted_roll_id: selectedRollId || null,
-        consumed_material_qty: taskAreaSft > 0 ? taskAreaSft : Number(goodQty),
+        linear_feed_ft: rollCalc?.linear_feed_ft,
+        bleed_allowance_ft: rollCalc?.bleed_allowance_ft,
+        wastage_length_ft: hasScrap ? (rollCalc?.wastage_length_ft || Number(scrapWastageLengthFt)) : 0,
+        wastage_reason: hasScrap ? (defectReason || scrapWastageReason) : null,
+        consumed_material_qty: rollCalc?.total_utilized_area_sft || (taskAreaSft > 0 ? taskAreaSft : Number(goodQty)),
         machine_meter_after: machineMeter ? Number(machineMeter) : undefined,
         notes: notes || undefined,
       })
@@ -117,7 +233,7 @@ export function CompleteTaskModal({
       onOpenChange={(openVal) => {
         if (!openVal) onClose()
       }}
-      title={`Complete Task: ${task.task_number}`}
+      title={`Complete Print Job: ${task.task_number}`}
       size="lg"
       hideFooter
     >
@@ -137,7 +253,7 @@ export function CompleteTaskModal({
             {task.width && task.height && (
               <>
                 <span>•</span>
-                <span>Size: <strong>{task.width} × {task.height} {task.unit || 'ft'} ({taskAreaSft} SFT)</strong></span>
+                <span>Print Size: <strong>{task.width}ft × {task.height}ft ({taskAreaSft} SFT)</strong></span>
               </>
             )}
             {task.assigned_machine_name && (
@@ -174,43 +290,192 @@ export function CompleteTaskModal({
             </div>
             {taskAreaSft > 0 && (
               <p className="text-[11px] text-emerald-600 font-semibold font-mono">
-                ✓ Total Yield: {taskAreaSft} Sq.Ft. Production
+                ✓ Total Net Print Area: {taskAreaSft} Sq.Ft.
               </p>
             )}
           </div>
 
-          {/* Mounted Roll Media Link */}
-          {availableRolls.length > 0 && (
-            <div className="space-y-1.5">
+          {/* Mounted Roll Media Link & Selector */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Disc className="h-3.5 w-3.5 text-blue-600" />
-                <span>Deduct from Mounted Roll (রোল ইনভেন্টরি)</span>
+                <span>Select Print Roll (রোল নির্বাচন)</span>
               </Label>
-              <select
-                value={selectedRollId}
-                onChange={(e) => setSelectedRollId(e.target.value)}
-                className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono"
+              <button
+                type="button"
+                onClick={handleRequestNewRoll}
+                disabled={isRequestingRoll}
+                className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold flex items-center gap-1 cursor-pointer"
               >
-                <option value="">-- No direct roll deduction --</option>
-                {availableRolls.map((roll) => (
-                  <option key={roll.id} value={roll.id}>
-                    {roll.roll_code || roll.roll_tag} ({roll.width_ft}ft wide) • {roll.remaining_area_sft} SFT left {roll.mounted_machine_name ? `[${roll.mounted_machine_name}]` : ''}
-                  </option>
-                ))}
-              </select>
-              {selectedRoll && (
-                <div className="text-[11px] text-slate-500 flex items-center justify-between font-mono">
-                  <span>Available: {selectedRoll.remaining_area_sft} SFT</span>
-                  {taskAreaSft > 0 && (
-                    <span className="text-blue-600 font-bold">
-                      After: {Math.max(0, Math.round((selectedRoll.remaining_area_sft - taskAreaSft) * 100) / 100)} SFT
-                    </span>
-                  )}
-                </div>
-              )}
+                <Plus className="h-3 w-3" />
+                <span>Request New Roll</span>
+              </button>
             </div>
-          )}
+            <select
+              value={selectedRollId}
+              onChange={(e) => setSelectedRollId(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono font-bold"
+            >
+              <option value="">-- No roll deduction --</option>
+              {availableRolls.map((roll) => (
+                <option key={roll.id} value={roll.id}>
+                  {roll.roll_code || roll.roll_tag} ({roll.width_ft}ft wide) • {roll.current_length_ft ?? (roll.remaining_area_sft / roll.width_ft)}ft left ({roll.remaining_area_sft} SFT)
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* Requisition Status Notifications */}
+        {requestRollSuccess && (
+          <div className="p-2.5 bg-emerald-50 text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-lg text-xs font-bold flex items-center gap-2 border border-emerald-300 dark:border-emerald-800">
+            <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+            <span>{requestRollSuccess}</span>
+          </div>
+        )}
+        {requestRollError && (
+          <div className="p-2.5 bg-rose-50 text-rose-900 dark:bg-rose-950/40 dark:text-rose-300 rounded-lg text-xs font-bold flex items-center gap-2 border border-rose-300 dark:border-rose-800">
+            <AlertTriangle className="h-4 w-4 text-rose-600 shrink-0" />
+            <span>{requestRollError}</span>
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* DIMENSIONAL ROLL CONSUMPTION & ORIENTATION CALCULATOR */}
+        {/* ========================================================= */}
+        {selectedRoll && (
+          <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/60 rounded-xl space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 tracking-wider flex items-center gap-1.5">
+                <Scissors className="h-3.5 w-3.5 text-blue-600" />
+                <span>Dimensional Roll Feed Engine ({selectedRoll.width_ft}ft Roll)</span>
+              </span>
+              <span className="text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300">
+                Available: {selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)} ft
+              </span>
+            </div>
+
+            {/* Orientation & Bleed Controls */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Orientation Switcher */}
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Print Orientation</span>
+                  {rollCalc && (
+                    <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-[10px] py-0">
+                      {rollCalc.is_fit_across_width ? '✓ Fits Roll Width' : '✗ Exceeds Roll Width'}
+                    </Badge>
+                  )}
+                </Label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={orientation === 'normal' ? 'default' : 'outline'}
+                    onClick={() => setOrientation('normal')}
+                    className="h-8 text-xs font-bold cursor-pointer"
+                  >
+                    Normal ({jobWidthFt}ft W)
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={orientation === 'rotated' ? 'default' : 'outline'}
+                    onClick={() => setOrientation('rotated')}
+                    className="h-8 text-xs font-bold cursor-pointer gap-1"
+                  >
+                    <RotateCw className="h-3 w-3" />
+                    Rotated 90° ({jobLengthFt}ft W)
+                  </Button>
+                </div>
+              </div>
+
+              {/* Bleed / Lead-in Allowance */}
+              <div className="space-y-1">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Bleed / Lead-in Allowance</span>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    = {(bleedInches / 12).toFixed(2)} ft
+                  </span>
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.5"
+                    value={bleedInches}
+                    onChange={(e) => setBleedInches(Number(e.target.value))}
+                    className="h-8 font-mono text-xs font-bold"
+                    placeholder="e.g. 3"
+                  />
+                  <span className="text-xs font-bold text-slate-500 shrink-0">inches</span>
+                </div>
+              </div>
+            </div>
+
+            {/* LIVE TELEMETRY CALCULATION HUD */}
+            {rollCalc && (
+              <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
+                <div className="flex items-center justify-between font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                  <span>Good Linear Feed:</span>
+                  <strong className="text-slate-900 dark:text-white">{rollCalc.linear_feed_ft} ft</strong>
+                </div>
+                {rollCalc.bleed_allowance_ft > 0 && (
+                  <div className="flex items-center justify-between font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                    <span>+ Bleed Allowance ({bleedInches}&quot;):</span>
+                    <strong className="text-blue-600">+{rollCalc.bleed_allowance_ft} ft</strong>
+                  </div>
+                )}
+                {rollCalc.wastage_length_ft > 0 && (
+                  <div className="flex items-center justify-between font-mono text-[11px] text-rose-600">
+                    <span>+ Scrap Wastage Run:</span>
+                    <strong>+{rollCalc.wastage_length_ft} ft</strong>
+                  </div>
+                )}
+                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between font-mono text-xs">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Total Linear Deduction:</span>
+                  <span className="font-black text-rose-600 dark:text-rose-400 text-sm">
+                    -{rollCalc.total_linear_deduction_ft} ft ({rollCalc.total_utilized_area_sft} SFT)
+                  </span>
+                </div>
+                <div className="flex items-center justify-between font-mono text-xs pt-0.5">
+                  <span className="font-bold text-slate-800 dark:text-slate-200">Remaining Roll Length:</span>
+                  <span className="font-black text-emerald-600 dark:text-emerald-400">
+                    {rollCalc.roll_current_length_ft} ft ➔ {rollCalc.new_remaining_length_ft} ft
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {/* SHORTAGE WARNING & 1-CLICK REQUISITION TRIGGER */}
+            {rollCalc?.is_shortage && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border-2 border-rose-300 dark:border-rose-900 rounded-xl space-y-2">
+                <div className="flex items-start gap-2">
+                  <AlertOctagon className="h-4 w-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <strong className="text-rose-900 dark:text-rose-200 font-black block">
+                      Roll Length Shortage Detected! (রোলে পর্যাপ্ত দৈর্ঘ্য নেই)
+                    </strong>
+                    <p className="text-rose-800 dark:text-rose-300 font-mono mt-0.5">
+                      Required: <strong>{rollCalc.total_linear_deduction_ft}ft</strong> | Available: <strong>{rollCalc.roll_current_length_ft}ft</strong> (Shortage of <strong>{rollCalc.shortage_amount_ft}ft</strong>)
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleRequestNewRoll}
+                  disabled={isRequestingRoll}
+                  className="w-full bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold h-9 cursor-pointer shadow-xs gap-1.5"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>{isRequestingRoll ? 'Requisitioning Roll...' : `Request & Mount New ${selectedRoll.width_ft}ft Roll (164ft Master)`}</span>
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Scrap / Wastage Toggle */}
         <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
@@ -230,7 +495,7 @@ export function CompleteTaskModal({
             </div>
             {hasScrap && (
               <span className="text-[11px] font-bold text-rose-600 animate-pulse">
-                Scrap will be logged to inventory ledger
+                Wastage will be logged to inventory ledger
               </span>
             )}
           </div>
@@ -238,18 +503,23 @@ export function CompleteTaskModal({
           {hasScrap && (
             <div className="mt-3 p-3.5 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Scrap Linear Length in Feet */}
                 <div className="space-y-1">
                   <Label className="text-xs font-bold text-rose-900 dark:text-rose-200">
-                    Defective / Scrap Qty ({task.unit || 'pcs'})
+                    Scrap Wastage Length (Linear Feet)
                   </Label>
                   <Input
                     type="number"
                     min="0.1"
                     step="any"
-                    value={scrapQty}
-                    onChange={(e) => setScrapQty(Number(e.target.value))}
+                    value={scrapWastageLengthFt || ''}
+                    onChange={(e) => {
+                      const val = Number(e.target.value)
+                      setScrapWastageLengthFt(val)
+                      setScrapQty(val)
+                    }}
                     className="h-9 font-mono font-bold text-sm bg-white dark:bg-slate-900 border-rose-300 dark:border-rose-800"
-                    placeholder="e.g. 1"
+                    placeholder="e.g. 2.5 ft"
                     required={hasScrap}
                   />
                   {scrapAreaSft > 0 && (
@@ -265,7 +535,10 @@ export function CompleteTaskModal({
                   </Label>
                   <select
                     value={defectReason}
-                    onChange={(e) => setDefectReason(e.target.value as any)}
+                    onChange={(e) => {
+                      setDefectReason(e.target.value as any)
+                      setScrapWastageReason(e.target.value)
+                    }}
                     className="w-full h-9 px-2.5 rounded-md border border-rose-300 dark:border-rose-800 bg-white dark:bg-slate-900 text-xs font-semibold"
                     required={hasScrap}
                   >
@@ -286,7 +559,7 @@ export function CompleteTaskModal({
                 <Input
                   value={scrapNotes}
                   onChange={(e) => setScrapNotes(e.target.value)}
-                  placeholder="e.g. Head scratched middle 4ft of banner / Lamination wrinkling on corner"
+                  placeholder="e.g. Head scratched middle 4ft of banner / Color banding during roll end"
                   className="h-9 text-xs bg-white dark:bg-slate-900 border-rose-300"
                 />
               </div>
@@ -316,7 +589,7 @@ export function CompleteTaskModal({
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Passed to Lamination table with extra 2 inch border"
+              placeholder="e.g. Clean roll cut; passed to Grommeting"
               className="h-9 text-xs"
             />
           </div>
@@ -335,7 +608,7 @@ export function CompleteTaskModal({
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || (rollCalc ? !rollCalc.is_fit_across_width : false)}
             className="text-xs font-bold h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer gap-1.5"
           >
             <CheckCircle2 className="h-4 w-4" />
@@ -346,3 +619,4 @@ export function CompleteTaskModal({
     </ModalDialog>
   )
 }
+

@@ -2082,6 +2082,9 @@ export class InventoryRepository {
     company_id: string
     roll_id: string
     linear_length_consumed_ft: number
+    bleed_allowance_ft?: number
+    wastage_length_ft?: number
+    wastage_reason?: string | null
     production_task_id?: string | null
     job_order_id?: string | null
     operator_name?: string
@@ -2094,19 +2097,27 @@ export class InventoryRepository {
       condition?: 'excellent' | 'usable' | 'minor_defect'
       notes?: string | null
     }
-  }): Promise<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null }> {
+  }): Promise<{ roll: InventoryRollRecord; remnant?: InventoryRemnantRecord | null; totalDeductedFt: number }> {
     const roll = await this.getInventoryRollById(params.roll_id, params.company_id)
     if (!roll) {
       throw new Error(`Physical Roll ${params.roll_id} not found.`)
     }
 
     const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / (roll.width_ft || 1))
-    const consumedLen = Math.min(currentLen, Math.max(0, Number(params.linear_length_consumed_ft) || 0))
-    const consumedArea = Math.round(consumedLen * roll.width_ft * 100) / 100
+    const goodLen = Math.max(0, Number(params.linear_length_consumed_ft) || 0)
+    const bleedLen = Math.max(0, Number(params.bleed_allowance_ft) || 0)
+    const wastageLen = Math.max(0, Number(params.wastage_length_ft) || 0)
 
-    const newRemainingLen = Math.max(0, Math.round((currentLen - consumedLen) * 100) / 100)
+    const totalToDeduct = Math.round((goodLen + bleedLen + wastageLen) * 100) / 100
+    const actualDeducted = Math.min(currentLen, totalToDeduct)
+
+    const goodConsumedArea = Math.round((goodLen + bleedLen) * roll.width_ft * 100) / 100
+    const wastageArea = Math.round(wastageLen * roll.width_ft * 100) / 100
+    const totalDeductedArea = Math.round(actualDeducted * roll.width_ft * 100) / 100
+
+    const newRemainingLen = Math.max(0, Math.round((currentLen - actualDeducted) * 100) / 100)
     const newRemainingArea = Math.round(newRemainingLen * roll.width_ft * 100) / 100
-    const newConsumedArea = (Number(roll.consumed_area_sft) || 0) + consumedArea
+    const newConsumedArea = (Number(roll.consumed_area_sft) || 0) + totalDeductedArea
 
     const isDepleted = newRemainingLen <= 0.5 // less than 6 inches is considered depleted
     const newStatus: any = isDepleted ? 'depleted' : 'in_use'
@@ -2134,23 +2145,44 @@ export class InventoryRepository {
       if (data) updatedRoll = data as unknown as InventoryRollRecord
     } catch {}
 
+    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll, params.company_id)
     PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updatedRoll)
 
-    // Log Stock Ledger Entry for Roll Consumption
-    await this.recordStockAdjustment({
-      company_id: params.company_id,
-      branch_id: roll.branch_id || null,
-      material_id: roll.material_id,
-      location_id: roll.location_id || null,
-      quantity_change: -consumedArea,
-      transaction_type: 'CONSUMPTION',
-      unit_cost: roll.unit_cost || 0,
-      reference_type: 'INVENTORY_ROLL',
-      reference_id: roll.id,
-      production_task_id: params.production_task_id || null,
-      notes: `Consumed ${consumedLen}ft (${consumedArea} sqft) from Roll ${roll.roll_code || roll.roll_tag}. Remaining: ${newRemainingLen}ft.`,
-      performed_by_name: params.operator_name || 'Production Operator',
-    })
+    // Log Stock Ledger Entry for Good Job Run (+ Bleed)
+    if (goodConsumedArea > 0) {
+      await this.recordStockAdjustment({
+        company_id: params.company_id,
+        branch_id: roll.branch_id || null,
+        material_id: roll.material_id,
+        location_id: roll.location_id || null,
+        quantity_change: -goodConsumedArea,
+        transaction_type: 'CONSUMPTION',
+        unit_cost: roll.unit_cost || 0,
+        reference_type: 'INVENTORY_ROLL',
+        reference_id: roll.id,
+        production_task_id: params.production_task_id || null,
+        notes: `Roll Print Feed: ${goodLen}ft + Bleed: ${bleedLen}ft (${goodConsumedArea} sqft) from Roll ${roll.roll_code || roll.roll_tag}. Remaining: ${newRemainingLen}ft.`,
+        performed_by_name: params.operator_name || 'Production Operator',
+      })
+    }
+
+    // Log Stock Ledger Entry for Wastage/Scrap if logged
+    if (wastageArea > 0) {
+      await this.recordStockAdjustment({
+        company_id: params.company_id,
+        branch_id: roll.branch_id || null,
+        material_id: roll.material_id,
+        location_id: roll.location_id || null,
+        quantity_change: -wastageArea,
+        transaction_type: 'WASTAGE',
+        unit_cost: roll.unit_cost || 0,
+        reference_type: 'INVENTORY_ROLL_SCRAP',
+        reference_id: roll.id,
+        production_task_id: params.production_task_id || null,
+        notes: `Roll Print Scrap: ${wastageLen}ft (${wastageArea} sqft). Reason: ${params.wastage_reason || 'Print Head/Banding Defect'} [Roll: ${roll.roll_code || roll.roll_tag}]`,
+        performed_by_name: params.operator_name || 'Production Operator',
+      })
+    }
 
     // Create Remnant ONLY if:
     // 1. Explicitly requested with offcut dimensions, OR
@@ -2183,7 +2215,104 @@ export class InventoryRepository {
       } catch {}
     }
 
-    return { roll: updatedRoll, remnant }
+    return { roll: updatedRoll, remnant, totalDeductedFt: actualDeducted }
+  }
+
+  static async requestAndIssueNewRollToFloor(params: {
+    company_id: string
+    branch_id?: string | null
+    material_id: string
+    width_ft: number
+    length_ft?: number
+    machine_id?: string | null
+    machine_name?: string | null
+    operator_name?: string
+    notes?: string | null
+  }): Promise<InventoryRollRecord> {
+    const mat = await this.getMaterialById(params.material_id, params.company_id)
+    if (!mat) {
+      throw new Error(`Material with ID ${params.material_id} not found.`)
+    }
+
+    const widthFt = Number(params.width_ft) || 3
+    const lengthFt = Number(params.length_ft) || 164 // standard 50m roll = 164 ft
+    const initialArea = Math.round(widthFt * lengthFt * 100) / 100
+    const rollId = `roll-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`
+    const rollTag = `ROL-${(mat.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '')}-${widthFt}FT-${Date.now().toString().slice(-4)}`
+
+    const newRoll: InventoryRollRecord = {
+      id: rollId,
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      location_id: null,
+      location_name: 'Print Floor',
+      material_id: mat.id,
+      roll_code: rollTag,
+      roll_tag: rollTag,
+      width_ft: widthFt,
+      initial_length_ft: lengthFt,
+      current_length_ft: lengthFt,
+      initial_area_sft: initialArea,
+      consumed_area_sft: 0,
+      remaining_area_sft: initialArea,
+      current_area_sft: initialArea,
+      status: params.machine_id ? 'mounted' : 'available',
+      mounted_machine_id: params.machine_id || null,
+      mounted_machine_name: params.machine_name || null,
+      mounted_press_name: params.machine_name || null,
+      mounted_at: params.machine_id ? new Date().toISOString() : null,
+      mounted_by_name: params.operator_name || 'Floor Operator',
+      unit_cost: Number((mat as any).unit_cost || mat.average_cost || mat.last_purchase_price || 0),
+      total_cost: Math.round(initialArea * Number((mat as any).unit_cost || mat.average_cost || mat.last_purchase_price || 0) * 100) / 100,
+      notes: params.notes || `Requisitioned for Print Floor Workstation [${params.machine_name || 'Press'}]`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      material: mat,
+    }
+
+    try {
+      const supabase = await createClient()
+      await (supabase as any).from('inventory_rolls').insert({
+        id: newRoll.id,
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        material_id: mat.id,
+        roll_tag: rollTag,
+        roll_code: rollTag,
+        width_ft: widthFt,
+        initial_length_ft: lengthFt,
+        current_length_ft: lengthFt,
+        initial_area_sft: initialArea,
+        remaining_area_sft: initialArea,
+        consumed_area_sft: 0,
+        status: newRoll.status,
+        mounted_machine_id: params.machine_id || null,
+        mounted_machine_name: params.machine_name || null,
+        unit_cost: newRoll.unit_cost,
+        total_cost: newRoll.total_cost,
+        notes: newRoll.notes,
+      })
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, newRoll, params.company_id)
+    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, newRoll)
+
+    // Deduct raw material master balance & log ISSUE
+    await this.recordStockAdjustment({
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      material_id: mat.id,
+      location_id: null,
+      quantity_change: -initialArea,
+      transaction_type: 'ISSUE',
+      unit_cost: newRoll.unit_cost || 0,
+      reference_type: 'PRINT_FLOOR_ROLL_ISSUE',
+      reference_id: newRoll.id,
+      notes: `Master Roll ${rollTag} (${widthFt}ft × ${lengthFt}ft = ${initialArea} SFT) issued to Print Floor`,
+      performed_by_name: params.operator_name || 'Store Keeper',
+    })
+
+    return newRoll
   }
 
   static async mountRollToMachine(params: {
