@@ -89,14 +89,6 @@ export function InventoryTabsNavigation({
       count: readyProductsCount,
     },
     {
-      id: 'floor_consumption',
-      labelEn: 'Print Floor Consumption',
-      labelBn: 'প্রিন্ট ফ্লোর কনজাম্পশন',
-      icon: Flame,
-      count: floorConsumptionsCount,
-      alert: activeFloorCount > 0,
-    },
-    {
       id: 'rolls',
       labelEn: 'Physical Rolls',
       labelBn: 'রোল তালিকা ও প্রেস',

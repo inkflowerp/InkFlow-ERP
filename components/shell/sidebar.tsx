@@ -54,6 +54,7 @@ import {
   Key,
   Shield,
   RotateCcw,
+  Flame,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -101,6 +102,7 @@ const iconMap: Record<string, React.ElementType> = {
   Tag,
   Trash2,
   Scissors,
+  Flame,
   Globe2,
   Hash,
   GitBranch,

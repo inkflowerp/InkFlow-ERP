@@ -36,6 +36,8 @@ import {
   Truck,
   ArrowDownLeft,
   ArrowUpRight,
+  ArrowRight,
+  Flame,
   Clock,
   User,
   Crown,
@@ -960,19 +962,43 @@ function UnifiedInventoryContent() {
         {/* VIEW: PRINT FLOOR CONSUMPTION & SCRAP UNIT TAB */}
         {/* ========================================================= */}
         {currentView === 'floor_consumption' && (
-          <PrintFloorConsumptionUnit
-            floorConsumptions={floorConsumptions}
-            materials={materials}
-            locations={locations}
-            issues={issues}
-            rolls={rolls}
-            onOpenLogConsumption={(record) => {
-              setSelectedFloorRecordForConsumption(record || null)
-              setIsConsumptionOpen(true)
-            }}
-            onRefresh={() => loadAllData()}
-            companyId={companyId}
-          />
+          <div className="space-y-4">
+            <Card className="border-amber-500/30 bg-amber-950/20 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Flame className="h-6 w-6 text-amber-400 shrink-0" />
+                <div>
+                  <h4 className="text-sm font-semibold text-amber-200">
+                    {isBn ? 'প্রিন্ট ফ্লোর কনজাম্পশন স্থানান্তরিত হয়েছে' : 'Floor Consumption moved to Factory & Floor'}
+                  </h4>
+                  <p className="text-xs text-amber-300/80">
+                    {isBn
+                      ? 'এখন থেকে সাইডবারের "কারখানা ও প্রোডাকশন" (Factory & Floor) মেনুতে ডেডিকেটেড ফ্লোর কনজাম্পশন ওয়ার্কস্টেশন পাবেন।'
+                      : 'You can now access the full dedicated Floor Consumption workstation directly from the "Factory & Floor" sidebar menu.'}
+                  </p>
+                </div>
+              </div>
+              <Link href={getTenantNavHref(slug, '/production/floor-consumption')}>
+                <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-white gap-2 font-medium shrink-0">
+                  <span>{isBn ? 'ফ্লোর কনজাম্পশনে যান' : 'Go to Floor Consumption'}</span>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </Card>
+
+            <PrintFloorConsumptionUnit
+              floorConsumptions={floorConsumptions}
+              materials={materials}
+              locations={locations}
+              issues={issues}
+              rolls={rolls}
+              onOpenLogConsumption={(record) => {
+                setSelectedFloorRecordForConsumption(record || null)
+                setIsConsumptionOpen(true)
+              }}
+              onRefresh={() => loadAllData()}
+              companyId={companyId}
+            />
+          </div>
         )}
 
         {/* ========================================================= */}

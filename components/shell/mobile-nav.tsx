@@ -54,6 +54,7 @@ import {
   Sliders,
   Key,
   RotateCcw,
+  Flame,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -105,6 +106,7 @@ const iconMap: Record<string, React.ElementType> = {
   Disc,
   Trash2,
   Scissors,
+  Flame,
   Globe2,
   Hash,
   GitBranch,

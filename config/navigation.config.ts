@@ -110,6 +110,16 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           permission: { action: 'view', resource: 'production' },
         },
         {
+          key: 'floor_consumption',
+          title: 'Floor Consumption',
+          titleBn: 'ফ্লোর কনজাম্পশন',
+          href: '/production/floor-consumption',
+          icon: 'Flame',
+          permission: { action: 'view', resource: 'production' },
+          badge: 'Live',
+          badgeVariant: 'live',
+        },
+        {
           key: 'finishing',
           title: 'Finishing & Fabrication',
           titleBn: 'ফিনিশিং ও ফেব্রিকেশন',
