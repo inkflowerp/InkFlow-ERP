@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useParams, usePathname, useSearchParams } from 'next/navigation'
 import {
   Printer,
   CheckCircle2,
@@ -25,9 +25,11 @@ import {
   Activity,
   Wrench,
   Search,
+  LayoutGrid,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -57,8 +59,16 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 function MobileOperatorPanelContent() {
   const { tBilingual } = useI18n()
   const { company } = useTenant()
+  const params = useParams()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  // Hydration protection guard
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
     try {
@@ -93,11 +103,12 @@ function MobileOperatorPanelContent() {
   // Live timer tick for running jobs
   const [timerTick, setTimerTick] = useState<number>(0)
   useEffect(() => {
+    if (!mounted) return
     const interval = setInterval(() => {
       setTimerTick((prev) => prev + 1)
     }, 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [mounted])
 
   // Completion Modal State
   const [selectedTaskForComplete, setSelectedTaskForComplete] = useState<ProductionTaskRecord | null>(null)
@@ -195,25 +206,9 @@ function MobileOperatorPanelContent() {
     }
   }
 
-  const handlePauseTask = async (task: ProductionTaskRecord) => {
+  const handlePauseTask = (task: ProductionTaskRecord) => {
     if (actionInProgressTaskId) return
-    const reason = prompt('Enter pause reason (e.g. Break / Maintenance / Media change):')
-    if (reason === null) return
-
-    setActionInProgressTaskId(task.id)
-    try {
-      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused', undefined, task)
-      if (res.success) {
-        showNotification(`Production paused.`)
-        loadData()
-      } else {
-        showNotification(`Error: ${res.error}`)
-      }
-    } catch (err: any) {
-      showNotification(`Error: ${err.message}`)
-    } finally {
-      setActionInProgressTaskId(null)
-    }
+    setSelectedTaskForHold(task)
   }
 
   const handleOpenCompleteModal = (task: ProductionTaskRecord) => {
@@ -336,8 +331,23 @@ function MobileOperatorPanelContent() {
 
   const selectedStationMachine = machineries.find((m) => m.id === selectedStationMachineId)
 
+  if (!mounted) {
+    return (
+      <div className="space-y-4 max-w-3xl mx-auto pb-12 p-4 sm:p-6 animate-pulse">
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-4 max-w-3xl mx-auto pb-12">
+    <div className="space-y-4 max-w-3xl mx-auto pb-12 p-4 sm:p-6">
       {/* Header */}
       <PageHeader
         titleEn="Shop Floor Terminal"
@@ -346,10 +356,21 @@ function MobileOperatorPanelContent() {
         descriptionBn="সহজ ও দ্রুত টার্মিনাল: মেশিন স্টেশন সিলেক্ট করুন, কাজ পরিচালনা করুন এবং মান যাচাই সম্পন্ন করুন।"
         icon={Printer}
         iconColor="text-blue-600"
-        badge={
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
-            {tBilingual('Operator First Terminal', 'অপারেটর টার্মিনাল')}
-          </Badge>
+        actions={
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={getTenantNavHref('/production', pathname, slug)}>
+              <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800">
+                <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
+                {tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}
+              </Button>
+            </Link>
+            <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
+              <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800">
+                <Cpu className="h-3.5 w-3.5 text-blue-600" />
+                {tBilingual('Machinery Fleet', 'মেশিন বহর')}
+              </Button>
+            </Link>
+          </div>
         }
       />
 
@@ -385,7 +406,7 @@ function MobileOperatorPanelContent() {
         </div>
 
         <Link
-          href={`/finishing`}
+          href={getTenantNavHref('/finishing', pathname, slug)}
           className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition-colors"
         >
           <Scissors className="h-3.5 w-3.5" />
@@ -472,9 +493,13 @@ function MobileOperatorPanelContent() {
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">
-                          <Badge className="bg-blue-600 text-white text-xs font-bold uppercase tracking-wider">
-                            Job #{task.job_number || 'N/A'}
-                          </Badge>
+                          <Link
+                            href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
+                          >
+                            <Badge className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold uppercase tracking-wider cursor-pointer transition-colors">
+                              Job #{task.job_number || 'N/A'}
+                            </Badge>
+                          </Link>
                           <span className="text-xs font-mono text-slate-500">{task.task_number}</span>
                         </div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
@@ -597,9 +622,13 @@ function MobileOperatorPanelContent() {
               <CardContent className="p-3.5 flex items-center justify-between gap-3">
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[10px] font-mono">
-                      #{task.job_number || task.task_number}
-                    </Badge>
+                    <Link
+                      href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
+                    >
+                      <Badge variant="outline" className="text-[10px] font-mono hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                        #{task.job_number || task.task_number}
+                      </Badge>
+                    </Link>
                     <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                       {task.task_name}
                     </span>
@@ -661,9 +690,13 @@ function MobileOperatorPanelContent() {
               <Card key={task.id} className="border border-amber-200 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20 p-3">
                 <div className="flex items-center justify-between text-xs">
                   <div>
-                    <span className="font-bold text-slate-900 dark:text-slate-100">
-                      #{task.job_number}: {task.task_name}
-                    </span>
+                    <Link
+                      href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
+                    >
+                      <span className="font-bold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer">
+                        #{task.job_number}: {task.task_name}
+                      </span>
+                    </Link>
                     <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
                       Reason: {task.hold_reason || 'Under inspection'} {task.hold_notes ? `(${task.hold_notes})` : ''}
                     </p>
@@ -861,6 +894,7 @@ function MobileOperatorPanelContent() {
         task={selectedTaskForHold}
         onSuccess={() => {
           showNotification('Problem reported and task placed on hold.')
+          setSelectedTaskForHold(null)
           loadData()
         }}
       />
@@ -875,4 +909,3 @@ export default function MobileOperatorPanelPage() {
     </Suspense>
   )
 }
-
