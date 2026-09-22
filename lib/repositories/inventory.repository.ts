@@ -132,44 +132,159 @@ export class InventoryRepository {
   }
 
   static async getMaterialById(id: string, companyId: string): Promise<MaterialRecord | null> {
+    if (!id) return null
+    const cleanId = String(id).trim()
+
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      
+      // 1. Try materials table with tenant company_id
+      let { data: matData } = await (supabase as any)
         .from('materials')
         .select('*')
-        .or(`id.eq.${id},sku.eq.${id}`)
+        .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
         .eq('company_id', companyId)
         .maybeSingle()
 
-      if (!error && data) {
-        return data as unknown as MaterialRecord
+      // 1b. Fallback: try materials table without company_id filter
+      if (!matData) {
+        const { data: globalMat } = await (supabase as any)
+          .from('materials')
+          .select('*')
+          .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+          .maybeSingle()
+        if (globalMat) matData = globalMat
+      }
+
+      if (matData) {
+        return matData as unknown as MaterialRecord
+      }
+
+      // 2. Try products table (Commercial Masters) in Supabase
+      let { data: prodData } = await (supabase as any)
+        .from('products')
+        .select('*')
+        .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+        .eq('company_id', companyId)
+        .maybeSingle()
+
+      // 2b. Fallback: try products table without company_id filter
+      if (!prodData) {
+        const { data: globalProd } = await (supabase as any)
+          .from('products')
+          .select('*')
+          .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+          .maybeSingle()
+        if (globalProd) prodData = globalProd
+      }
+
+      if (prodData) {
+        // Ensure product has a corresponding row in materials table for foreign key integrity
+        try {
+          const { data: bridgedMat } = await (supabase as any)
+            .from('materials')
+            .upsert(
+              {
+                id: prodData.id,
+                company_id: prodData.company_id || companyId,
+                branch_id: prodData.branch_id || null,
+                sku: prodData.sku || `PRD-${cleanId.substring(0, 8).toUpperCase()}`,
+                name: prodData.name,
+                name_bn: prodData.name_bn || null,
+                category: prodData.category || 'ready_product',
+                unit: prodData.selling_unit || prodData.unit || 'pcs',
+                current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
+                average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+                last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+                is_active: prodData.is_active !== false,
+              },
+              { onConflict: 'id' }
+            )
+            .select()
+            .maybeSingle()
+
+          if (bridgedMat) {
+            return bridgedMat as unknown as MaterialRecord
+          }
+        } catch {}
+
+        return {
+          id: prodData.id,
+          company_id: prodData.company_id || companyId,
+          sku: prodData.sku,
+          name: prodData.name,
+          name_bn: prodData.name_bn || null,
+          category: prodData.category || 'ready_product',
+          unit: prodData.selling_unit || prodData.unit || 'pcs',
+          current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
+          average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+          last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+          selling_price: Number(prodData.selling_price) || 0,
+          is_active: prodData.is_active !== false,
+        } as unknown as MaterialRecord
       }
     } catch {}
 
-    const all = (PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || [])
-      .concat(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || [])
-    const found = all.find((m) => (!m.company_id || m.company_id === companyId) && (m.id === id || m.sku === id))
-    if (found) return found
+    // 3. Fallback: Check PrintERPDataStore (Local Cache & Offline Memory)
+    const normTarget = companyId ? companyId.toLowerCase() : ''
+    const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
 
-    // Fallback: Check if it exists in products catalog
-    const prods = (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || [])
-      .concat(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS) || [])
-    const foundProd = prods.find((p) => (!p.company_id || p.company_id === companyId) && (p.id === id || p.sku === id))
+    const allMaterials: MaterialRecord[] = [
+      ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+      ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+      ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
+      ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
+    ]
+
+    const foundMat = allMaterials.find((m) => {
+      if (!m) return false
+      const matchesId = String(m.id).toLowerCase() === cleanId.toLowerCase() || String(m.sku || '').toLowerCase() === cleanId.toLowerCase()
+      if (!matchesId) return false
+      if (!companyId || !m.company_id) return true
+      const cId = (m.company_id || '').toLowerCase()
+      return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
+    })
+    if (foundMat) return foundMat
+
+    // 4. Fallback: Check Products in PrintERPDataStore
+    const allProducts: any[] = [
+      ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+      ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS) || []),
+      ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+      ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []),
+    ]
+
+    const foundProd = allProducts.find((p) => {
+      if (!p) return false
+      const matchesId = String(p.id).toLowerCase() === cleanId.toLowerCase() || String(p.sku || '').toLowerCase() === cleanId.toLowerCase()
+      if (!matchesId) return false
+      if (!companyId || !p.company_id) return true
+      const cId = (p.company_id || '').toLowerCase()
+      return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
+    })
+
     if (foundProd) {
-      return {
+      const bridged: MaterialRecord = {
         id: foundProd.id,
         company_id: foundProd.company_id || companyId,
-        sku: foundProd.sku,
+        sku: foundProd.sku || `PRD-${cleanId.substring(0, 8).toUpperCase()}`,
         name: foundProd.name,
         name_bn: foundProd.name_bn || null,
-        category: foundProd.category || 'general',
+        category: foundProd.category || 'ready_product',
         unit: foundProd.selling_unit || foundProd.unit || 'pcs',
         current_stock: Number(foundProd.current_stock ?? foundProd.stock ?? 0),
-        average_cost: Number(foundProd.base_cost ?? foundProd.purchase_price ?? foundProd.cost_price) || 0,
-        last_purchase_price: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price) || 0,
+        average_cost: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
+        last_purchase_price: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
         selling_price: Number(foundProd.selling_price) || 0,
         is_active: foundProd.is_active !== false,
       } as unknown as MaterialRecord
+
+      // Sync into materials collection for fast subsequent lookups
+      try {
+        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged)
+      } catch {}
+
+      return bridged
     }
 
     return null
@@ -366,7 +481,25 @@ export class InventoryRepository {
         }
       }
 
-      // 3. Direct DB Ledger Insert
+      // 3. Direct DB Ledger Insert & Multi-Table Sync
+      // Ensure material row exists in Supabase materials table
+      try {
+        await (supabase as any).from('materials').upsert({
+          id: material.id,
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          sku: material.sku,
+          name: material.name,
+          category: material.category || 'general',
+          unit: material.unit || 'pcs',
+          current_stock: newStock,
+          average_cost: unitCost > 0 ? unitCost : material.average_cost,
+          last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
+          is_active: material.is_active !== false,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'id' })
+      } catch {}
+
       const { data: ledgerEntry, error: ledgerErr } = await (supabase as any)
         .from('stock_ledger')
         .insert({
@@ -391,20 +524,23 @@ export class InventoryRepository {
         .select()
         .single()
 
-      if (!ledgerErr && ledgerEntry) {
-        const { data: updatedMaterial } = await (supabase as any)
-          .from('materials')
+      // Also update products table if product exists
+      try {
+        await (supabase as any)
+          .from('products')
           .update({
             current_stock: newStock,
+            stock: newStock,
+            purchase_price: unitCost > 0 ? unitCost : undefined,
+            base_cost: unitCost > 0 ? unitCost : undefined,
             updated_at: new Date().toISOString(),
           })
           .eq('id', material.id)
-          .eq('company_id', params.company_id)
-          .select()
-          .single()
+      } catch {}
 
+      if (!ledgerErr && ledgerEntry) {
         return {
-          material: (updatedMaterial || { ...material, current_stock: newStock }) as MaterialRecord,
+          material: { ...material, current_stock: newStock, average_cost: unitCost > 0 ? unitCost : material.average_cost },
           ledgerEntry: ledgerEntry as unknown as StockLedgerRecord,
         }
       }
@@ -419,9 +555,21 @@ export class InventoryRepository {
 
     PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, {
       current_stock: newStock,
+      stock: newStock,
       base_cost: unitCost > 0 ? unitCost : undefined,
       purchase_price: unitCost > 0 ? unitCost : undefined,
     })
+
+    if (params.company_id) {
+      try {
+        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, {
+          current_stock: newStock,
+          stock: newStock,
+          base_cost: unitCost > 0 ? unitCost : undefined,
+          purchase_price: unitCost > 0 ? unitCost : undefined,
+        }, params.company_id)
+      } catch {}
+    }
 
     const localLedgerEntry: StockLedgerRecord = {
       id: `led-${Date.now()}`,
