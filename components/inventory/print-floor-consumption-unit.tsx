@@ -45,10 +45,8 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
-import {
-  returnFloorStockToStoreAction,
-  requestAndIssueFloorRollAction,
-} from '@/actions/inventory.actions'
+import { returnFloorStockToStoreAction } from '@/actions/inventory.actions'
+import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
 
 export interface PrintFloorConsumptionUnitProps {
   floorConsumptions: FloorConsumptionRecord[]
@@ -101,63 +99,10 @@ export function PrintFloorConsumptionUnit({
 
   // Issue Master Roll to Floor State
   const [isIssueRollOpen, setIsIssueRollOpen] = useState<boolean>(false)
-  const [issueRollMaterialId, setIssueRollMaterialId] = useState<string>(materials[0]?.id || '')
-  const [issueRollWidthFt, setIssueRollWidthFt] = useState<number>(3)
-  const [issueRollLengthFt, setIssueRollLengthFt] = useState<number>(164)
-  const [issueRollMachineId, setIssueRollMachineId] = useState<string>('roland')
-  const [issueRollLoading, setIssueRollLoading] = useState<boolean>(false)
-  const [issueRollError, setIssueRollError] = useState<string | null>(null)
-  const [issueRollSuccess, setIssueRollSuccess] = useState<string | null>(null)
 
   const activeFloorRolls = useMemo(() => {
     return (rolls || []).filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
   }, [rolls])
-
-  const handleIssueRollSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!issueRollMaterialId) {
-      setIssueRollError('Please select a material substrate.')
-      return
-    }
-    if (issueRollWidthFt <= 0 || issueRollLengthFt <= 0) {
-      setIssueRollError('Roll width and length must be positive numbers.')
-      return
-    }
-
-    setIssueRollLoading(true)
-    setIssueRollError(null)
-    setIssueRollSuccess(null)
-
-    try {
-      const targetMachine = PRODUCTION_MACHINES.find((m) => m.id === issueRollMachineId)
-      const res = await requestAndIssueFloorRollAction(
-        {
-          material_id: issueRollMaterialId,
-          width_ft: Number(issueRollWidthFt),
-          length_ft: Number(issueRollLengthFt),
-          machine_id: issueRollMachineId === 'all' ? null : issueRollMachineId,
-          machine_name: targetMachine ? targetMachine.name : 'Print Floor Machine',
-          notes: `Requisitioned directly from Print Floor Hub (${issueRollWidthFt}ft × ${issueRollLengthFt}ft)`,
-        },
-        companyId
-      )
-
-      if (!res.success || !res.data) {
-        setIssueRollError(res.error || 'Failed to issue roll to floor.')
-        return
-      }
-
-      setIssueRollSuccess(`Roll ${res.data.roll_code || res.data.roll_tag} issued to Print Floor successfully!`)
-      setTimeout(() => {
-        setIsIssueRollOpen(false)
-        onRefresh()
-      }, 700)
-    } catch (err: any) {
-      setIssueRollError(err.message || 'Error issuing roll.')
-    } finally {
-      setIssueRollLoading(false)
-    }
-  }
 
   // Filtered Floor Consumptions
   const filteredRecords = useMemo(() => {
@@ -425,11 +370,7 @@ export function PrintFloorConsumptionUnit({
           </div>
           <Button
             size="sm"
-            onClick={() => {
-              setIsIssueRollOpen(true)
-              setIssueRollError(null)
-              setIssueRollSuccess(null)
-            }}
+            onClick={() => setIsIssueRollOpen(true)}
             className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1"
           >
             <Plus className="h-3.5 w-3.5" />
@@ -938,118 +879,16 @@ export function PrintFloorConsumptionUnit({
       )}
 
       {/* ========================================================= */}
-      {/* ISSUE MASTER ROLL TO PRINT FLOOR MODAL */}
+      {/* UPGRADED ISSUE MASTER ROLL TO PRINT FLOOR MODAL */}
       {/* ========================================================= */}
-      {isIssueRollOpen && (
-        <ModalDialog
-          open={isIssueRollOpen}
-          onOpenChange={(v) => !v && setIsIssueRollOpen(false)}
-          title="Issue / Requisition New Master Roll to Print Floor"
-          description="Mount or issue a brand new physical master roll (e.g. 3ft × 164ft, 5ft × 164ft) directly to the production workstation."
-          onSubmit={handleIssueRollSubmit}
-        >
-          <div className="space-y-4 pt-1 text-xs">
-            {issueRollSuccess && (
-              <div className="p-3 bg-emerald-50 text-emerald-900 rounded-lg border border-emerald-300 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-                <span>{issueRollSuccess}</span>
-              </div>
-            )}
-            {issueRollError && (
-              <div className="p-3 bg-rose-50 text-rose-900 rounded-lg border border-rose-300 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-rose-600" />
-                <span>{issueRollError}</span>
-              </div>
-            )}
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                Material Substrate <span className="text-rose-500">*</span>
-              </Label>
-              <select
-                value={issueRollMaterialId}
-                onChange={(e) => setIssueRollMaterialId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-                required
-              >
-                <option value="">-- Select Material Substrate --</option>
-                {materials.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.sku}) • Stock: {m.current_stock} {m.unit}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Roll Width (Feet) <span className="text-rose-500">*</span>
-                </Label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {[3, 4, 5].map((w) => (
-                    <Button
-                      key={w}
-                      type="button"
-                      size="sm"
-                      variant={issueRollWidthFt === w ? 'default' : 'outline'}
-                      onClick={() => setIssueRollWidthFt(w)}
-                      className="h-8 text-xs font-bold"
-                    >
-                      {w} ft Wide
-                    </Button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">
-                  Initial Master Length (Feet) <span className="text-rose-500">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  step="any"
-                  min="1"
-                  value={issueRollLengthFt}
-                  onChange={(e) => setIssueRollLengthFt(Number(e.target.value))}
-                  placeholder="e.g. 164 (50m)"
-                  className="h-8 text-xs font-mono font-bold"
-                  required
-                />
-                <span className="text-[10px] text-slate-500 mt-0.5 block">
-                  = {Math.round(issueRollWidthFt * issueRollLengthFt)} SFT Total Area
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                Mount to Machine / Workstation
-              </Label>
-              <select
-                value={issueRollMachineId}
-                onChange={(e) => setIssueRollMachineId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
-              >
-                {PRODUCTION_MACHINES.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2 border-t">
-              <Button type="button" variant="outline" onClick={() => setIsIssueRollOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={issueRollLoading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
-                {issueRollLoading ? 'Issuing Roll...' : 'Confirm Issue & Mount'}
-              </Button>
-            </div>
-          </div>
-        </ModalDialog>
-      )}
+      <IssueMasterRollModal
+        open={isIssueRollOpen}
+        onOpenChange={setIsIssueRollOpen}
+        materials={materials}
+        locations={locations}
+        companyId={companyId}
+        onSuccess={() => onRefresh()}
+      />
     </div>
   )
 }

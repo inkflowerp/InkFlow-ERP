@@ -195,6 +195,34 @@ export interface RollFeedCalculationResult {
   roll_current_length_ft: number
 }
 
+export interface IssueMasterRollParams {
+  material_id: string
+  width_ft: number
+  length_ft?: number
+  quantity_rolls?: number
+  location_id?: string | null
+  destination?: 'machine' | 'floor_staging'
+  machine_id?: string | null
+  machine_name?: string | null
+  lot_number?: string | null
+  roll_code_custom?: string | null
+  notes?: string | null
+  operator_name?: string
+  unit_cost?: number
+  company_id?: string
+  branch_id?: string | null
+  actor_email?: string
+}
+
+export interface IssueMasterRollResult {
+  roll: InventoryRollRecord
+  rolls: InventoryRollRecord[]
+  total_area_sft: number
+  total_valuation: number
+  quantity_issued: number
+}
+
+
 export interface StockLedgerRecord {
   id: string
   company_id: string

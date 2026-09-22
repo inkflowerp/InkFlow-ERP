@@ -17,6 +17,8 @@ import type {
   StockLedgerRecord,
   InventoryRollRecord,
   InventorySummaryStats,
+  IssueMasterRollParams,
+  IssueMasterRollResult,
 } from '../types/inventory.types.ts'
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { AuditRepository } from '../lib/repositories/audit.repository.ts'
@@ -829,36 +831,34 @@ export class InventoryService {
     return result
   }
 
-  static async requestAndIssueNewRollToFloor(params: {
-    company_id: string
-    branch_id?: string | null
-    material_id: string
-    width_ft: number
-    length_ft?: number
-    machine_id?: string | null
-    machine_name?: string | null
-    operator_name?: string
-    notes?: string | null
-    actor_email?: string
-  }): Promise<InventoryRollRecord> {
-    const created = await InventoryRepository.requestAndIssueNewRollToFloor(params)
+  static async issueMasterRollsBatch(params: IssueMasterRollParams): Promise<IssueMasterRollResult> {
+    const result = await InventoryRepository.issueMasterRollsBatch(params)
 
     await AuditRepository.logEvent({
-      companyId: params.company_id,
+      companyId: params.company_id || '',
       userEmail: params.actor_email || params.operator_name || 'operator',
       action: 'inventory.roll_issued_floor',
       entity: 'inventory_roll',
-      entityId: created.id,
+      entityId: result.roll.id,
       newValue: {
-        roll_tag: created.roll_tag,
-        width_ft: created.width_ft,
-        initial_length_ft: created.initial_length_ft,
+        roll_tag: result.roll.roll_tag,
+        width_ft: result.roll.width_ft,
+        initial_length_ft: result.roll.initial_length_ft,
+        quantity_issued: result.quantity_issued,
+        total_area_sft: result.total_area_sft,
+        total_valuation: result.total_valuation,
         machine_name: params.machine_name || null,
+        location_id: params.location_id || null,
       },
-      description: `Requisitioned and issued new Roll ${created.roll_tag} (${created.width_ft}ft × ${created.initial_length_ft}ft) to Print Floor`,
+      description: `Requisitioned and issued ${result.quantity_issued} Roll(s) (${result.roll.width_ft}ft × ${result.roll.initial_length_ft}ft, total ${result.total_area_sft} SFT) to Print Floor`,
     })
 
-    return created
+    return result
+  }
+
+  static async requestAndIssueNewRollToFloor(params: IssueMasterRollParams): Promise<InventoryRollRecord> {
+    const res = await this.issueMasterRollsBatch(params)
+    return res.roll
   }
 
 

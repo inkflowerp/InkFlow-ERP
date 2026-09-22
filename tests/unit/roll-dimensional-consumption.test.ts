@@ -247,4 +247,40 @@ test('Roll Dimensional Consumption Engine - User Specific Scenarios', async (t) 
     assert.equal(foundRollA?.current_length_ft, 18, 'Roll A must still have 18ft intact')
     assert.equal(foundRollB?.current_length_ft, 143.75, 'Roll B must have 143.75ft left')
   })
+
+  await t.test('Scenario 5: Multi-roll batch issuance (2 rolls of 5ft x 164ft) with store deduction and sequential roll tags', async () => {
+    const storeMatBefore = await InventoryRepository.getMaterialById('mat-pvc-banner', companyId)
+    const stockBefore = Number(storeMatBefore?.current_stock || 0)
+
+    // Issue batch: 2 rolls of 5ft x 164ft = 820 SFT x 2 = 1,640 SFT total
+    const batchResult = await InventoryRepository.issueMasterRollsBatch({
+      company_id: companyId,
+      material_id: 'mat-pvc-banner',
+      width_ft: 5,
+      length_ft: 164,
+      quantity_rolls: 2,
+      lot_number: 'BATCH-2026',
+      machine_name: 'Mimaki UV Flatbed 2513',
+      operator_name: 'Lead Print Tech',
+    })
+
+    assert.equal(batchResult.quantity_issued, 2)
+    assert.equal(batchResult.total_area_sft, 1640)
+    assert.equal(batchResult.rolls.length, 2)
+
+    const roll1 = batchResult.rolls[0]
+    const roll2 = batchResult.rolls[1]
+
+    assert.match(roll1.roll_code || roll1.roll_tag, /-01$/)
+    assert.match(roll2.roll_code || roll2.roll_tag, /-02$/)
+    assert.equal(roll1.width_ft, 5)
+    assert.equal(roll2.width_ft, 5)
+    assert.equal(roll1.current_length_ft, 164)
+    assert.equal(roll2.current_length_ft, 164)
+
+    // Verify stock ledger entry deducted 1,640 SFT from raw materials store
+    const storeMatAfter = await InventoryRepository.getMaterialById('mat-pvc-banner', companyId)
+    assert.equal(Number(storeMatAfter?.current_stock), stockBefore - 1640)
+  })
 })
+

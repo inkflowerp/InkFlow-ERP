@@ -105,6 +105,7 @@ import { InventoryKpiBar } from '@/components/inventory/inventory-kpi-bar'
 import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
 import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
+import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
 
 function UnifiedInventoryContent() {
   const router = useRouter()
@@ -233,6 +234,8 @@ function UnifiedInventoryContent() {
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
   const [isNewLocationOpen, setIsNewLocationOpen] = useState(false)
+  const [isIssueMasterRollOpen, setIsIssueMasterRollOpen] = useState(false)
+  const [initialRollMaterialId, setInitialRollMaterialId] = useState<string>('')
 
   // Target items for contextual actions
   const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
@@ -1144,6 +1147,17 @@ function UnifiedInventoryContent() {
                       {st.label}
                     </Button>
                   ))}
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setInitialRollMaterialId('')
+                      setIsIssueMasterRollOpen(true)
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8 px-3 cursor-pointer shrink-0 gap-1"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    <span>Issue Roll to Floor</span>
+                  </Button>
                 </div>
               </div>
             </Card>
@@ -1171,16 +1185,30 @@ function UnifiedInventoryContent() {
                           <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
                           <p className="font-bold">No physical rolls registered yet.</p>
                           <p className="text-[11px] text-slate-400 mt-1">
-                            Physical rolls are automatically created when receiving roll media in GRN.
+                            Issue a master roll from warehouse stock or receive new roll media in GRN.
                           </p>
-                          <Button
-                            size="sm"
-                            onClick={() => setIsReceiveStockOpen(true)}
-                            className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
-                          >
-                            <Plus className="h-3.5 w-3.5 mr-1" />
-                            Receive Roll via GRN
-                          </Button>
+                          <div className="flex items-center justify-center gap-2 mt-3">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setInitialRollMaterialId('')
+                                setIsIssueMasterRollOpen(true)
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" />
+                              Issue Roll to Floor
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setIsReceiveStockOpen(true)}
+                              className="text-xs"
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" />
+                              Receive Roll via GRN
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -2202,6 +2230,17 @@ function UnifiedInventoryContent() {
             </Card>
           </div>
         )}
+
+        {/* Upgraded Issue Master Roll to Print Floor Modal */}
+        <IssueMasterRollModal
+          open={isIssueMasterRollOpen}
+          onOpenChange={setIsIssueMasterRollOpen}
+          materials={materials}
+          locations={locations}
+          initialMaterialId={initialRollMaterialId}
+          companyId={companyId}
+          onSuccess={() => loadAllData(true)}
+        />
       </div>
     </FeatureGate>
   )

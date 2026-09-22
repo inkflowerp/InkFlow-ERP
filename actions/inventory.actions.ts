@@ -20,6 +20,8 @@ import {
   InventoryRollRecord,
   RollFeedCalculationInput,
   RollFeedCalculationResult,
+  IssueMasterRollParams,
+  IssueMasterRollResult,
 } from '@/types/inventory.types'
 import { RollConsumptionEngine } from '@/lib/domain/roll-consumption-engine'
 import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
@@ -852,14 +854,7 @@ export async function consumeRollWithBleedAndWastageAction(
  * Server Action: Requisition and mount/issue a brand new physical master roll directly to the print floor
  */
 export async function requestAndIssueFloorRollAction(
-  params: {
-    material_id: string
-    width_ft: number
-    length_ft?: number
-    machine_id?: string | null
-    machine_name?: string | null
-    notes?: string | null
-  },
+  params: IssueMasterRollParams,
   requestedCompanyId?: string
 ): Promise<ServerActionResult<InventoryRollRecord>> {
   try {
@@ -873,7 +868,7 @@ export async function requestAndIssueFloorRollAction(
       ...params,
       company_id: companyId,
       branch_id: tenant.branchId || null,
-      operator_name: tenant.fullName || tenant.userEmail || 'Floor Operator',
+      operator_name: params.operator_name || tenant.fullName || tenant.userEmail || 'Floor Operator',
       actor_email: tenant.userEmail,
     })
 
@@ -885,6 +880,39 @@ export async function requestAndIssueFloorRollAction(
     return { success: true, data: roll }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to request new floor roll' }
+  }
+}
+
+/**
+ * Server Action: Requisition and issue batch master rolls to print floor with complete telemetry
+ */
+export async function issueMasterRollsBatchAction(
+  params: IssueMasterRollParams,
+  requestedCompanyId?: string
+): Promise<ServerActionResult<IssueMasterRollResult>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await InventoryService.issueMasterRollsBatch({
+      ...params,
+      company_id: companyId,
+      branch_id: tenant.branchId || null,
+      operator_name: params.operator_name || tenant.fullName || tenant.userEmail || 'Floor Operator',
+      actor_email: tenant.userEmail,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/operator', 'page')
+    revalidatePath('/[tenantSlug]/machinery', 'page')
+
+    return { success: true, data: result }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to issue master rolls batch' }
   }
 }
 
