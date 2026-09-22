@@ -218,6 +218,15 @@ export async function updateSession(request: NextRequest) {
         return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
       }
 
+      // 2b. Redundant duplicate segment normalization:
+      // e.g. /settings/settings/tax -> /settings/tax
+      // e.g. /settings/settings -> /settings
+      if (pathname.includes('/settings/settings')) {
+        const cleanPath = pathname.replace(/\/settings\/settings(\/|$)/, '/settings$1')
+        const cleanUrl = new URL(`${cleanPath}${search}`, request.url)
+        return applyNoCacheHeaders(NextResponse.redirect(cleanUrl, 307))
+      }
+
       // 3. Tenant Auth Paths on Subdomain (e.g. vision.inkflow.com.bd/login)
       if (isAuthPage) {
         if (pathname === '/login') {

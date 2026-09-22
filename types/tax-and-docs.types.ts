@@ -21,6 +21,17 @@ export interface CompanyTaxSettingsRecord {
   trade_license_number?: string | null
   vat_commissionerate?: string | null
   vat_circle?: string | null
+  // Extended Bangladeshi Industrial Tax & Compliance Fields
+  vds_enabled?: boolean
+  vds_rate?: number
+  tds_enabled?: boolean
+  tds_rate?: number
+  mushak_6_3_enabled?: boolean
+  mushak_6_5_enabled?: boolean
+  mushak_6_6_enabled?: boolean
+  rebate_enabled?: boolean
+  vat_responsible_person?: string | null
+  vat_responsible_phone?: string | null
   updated_at: string
 }
 
