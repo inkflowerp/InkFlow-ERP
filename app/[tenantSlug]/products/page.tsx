@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useMemo, useTransition } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Package,
   Plus,
@@ -151,11 +152,18 @@ import { cn } from '@/lib/utils'
 export default function ProductsCatalogPage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id
+
+  // Hydration state
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Data state
   const [products, setProducts] = useState<ProductRecord[]>([])
@@ -1696,6 +1704,20 @@ export default function ProductsCatalogPage() {
     }
   }, [products])
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
+        <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-7xl pb-12">
       {/* Page Header with Direct Action Launchers */}
@@ -1717,7 +1739,7 @@ export default function ProductsCatalogPage() {
               <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
             </Button>
 
-            <Link href="/pricing">
+            <Link href={getTenantNavHref('/quotations', pathname, slug)}>
               <Button
                 size="sm"
                 variant="outline"
@@ -1728,7 +1750,7 @@ export default function ProductsCatalogPage() {
               </Button>
             </Link>
 
-            <Link href="/trash?tab=products">
+            <Link href={getTenantNavHref('/trash?tab=products', pathname, slug)}>
               <Button
                 size="sm"
                 variant="outline"
@@ -2685,7 +2707,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/products/${item.id}`}
+                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -2897,7 +2919,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/products/${item.id}`}
+                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3095,7 +3117,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/products/${item.id}`}
+                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3291,7 +3313,7 @@ export default function ProductsCatalogPage() {
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/products/${item.id}`}
+                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3510,7 +3532,7 @@ export default function ProductsCatalogPage() {
                           {/* Item & SKU */}
                           <td className="py-3.5 px-4">
                             <Link
-                              href={`/products/${item.id}`}
+                              href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
                             >
                               <span>{item.name}</span>
@@ -3707,7 +3729,7 @@ export default function ProductsCatalogPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <Link
-                            href={`/products/${item.id}`}
+                            href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                             className="font-bold text-sm text-slate-900 dark:text-white hover:text-blue-600"
                           >
                             {item.name}
@@ -3806,7 +3828,7 @@ export default function ProductsCatalogPage() {
                           Edit
                         </Button>
                         <Link
-                          href={`/products/${item.id}`}
+                          href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                           className="inline-flex items-center justify-center h-9 px-2.5 rounded-md text-xs font-semibold border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                         >
                           Detail
@@ -3863,7 +3885,7 @@ export default function ProductsCatalogPage() {
                   The quotation has been saved authoritatively in PostgreSQL and can now be dispatched to the client.
                 </p>
                 <div className="flex items-center gap-2 pt-1">
-                  <Link href="/quotations">
+                  <Link href={getTenantNavHref('/quotations', pathname, slug)}>
                     <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
                       View in Quotations Module
                     </Button>
