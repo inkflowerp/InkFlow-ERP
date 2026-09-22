@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Truck,
   ArrowLeft,
@@ -59,10 +60,16 @@ type TabKey = 'prices' | 'purchases' | 'payments' | 'ledger' | 'company_info'
 export default function SupplierProfilePage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const supplierId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [suppliers, setSuppliers] = useDataStore<SupplierRecord[]>(STORAGE_KEYS.SUPPLIERS, [])
   const [allPrices, setAllPrices] = useDataStore<SupplierMaterialPrice[]>(STORAGE_KEYS.SUPPLIER_PRICES, [])
@@ -148,11 +155,25 @@ export default function SupplierProfilePage() {
     window.print()
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
+        <div className="h-6 w-48 bg-slate-100 dark:bg-slate-800 rounded mb-3" />
+        <div className="h-24 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-100 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   if (!supplier) {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href="/suppliers"
+          href={getTenantNavHref('/suppliers', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -167,7 +188,7 @@ export default function SupplierProfilePage() {
             The supplier record you are looking for does not exist in your organization or was removed.
           </p>
           <Button asChild className="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold" size="sm">
-            <Link href="/suppliers">View All Suppliers</Link>
+            <Link href={getTenantNavHref('/suppliers', pathname, slug)}>View All Suppliers</Link>
           </Button>
         </Card>
       </div>
@@ -185,7 +206,7 @@ export default function SupplierProfilePage() {
       {/* Top Breadcrumb & Action Header */}
       <div>
         <Link
-          href="/suppliers"
+          href={getTenantNavHref('/suppliers', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
