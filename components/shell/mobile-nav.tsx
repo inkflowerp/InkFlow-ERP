@@ -46,6 +46,13 @@ import {
   ChevronDown,
   ChevronRight,
   Headphones,
+  Globe2,
+  Hash,
+  GitBranch,
+  Mail,
+  QrCode,
+  Sliders,
+  Key,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -96,6 +103,14 @@ const iconMap: Record<string, React.ElementType> = {
   Disc,
   Trash2,
   Scissors,
+  Globe2,
+  Hash,
+  GitBranch,
+  Mail,
+  QrCode,
+  Sliders,
+  Key,
+  Shield,
 }
 
 export function MobileNav() {
@@ -104,9 +119,11 @@ export function MobileNav() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     today: true,
     work: true,
-    materials: true,
     management: true,
     settings: true,
+  })
+  const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>({
+    company_settings: true,
   })
 
   const pathname = usePathname()
@@ -163,25 +180,93 @@ export function MobileNav() {
     setExpandedGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }))
   }, [])
 
-  // Filter sections by search and permissions
+  // Toggle sub-nav expansion
+  const toggleSubNav = useCallback((key: string) => {
+    setExpandedSubNav((prev) => ({ ...prev, [key]: !prev[key] }))
+  }, [])
+
+  // Check whether an item is active
+  const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
+    if (!pathname) return false
+    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+      ? pathname.slice(`/${company.slug}`.length) || '/'
+      : pathname
+
+    if (pathname === itemHref || cleanPath === itemHref) return true
+
+    if (exact || itemHref === '/' || itemHref === '/settings') {
+      return false
+    }
+
+    if (cleanPath.startsWith(`${itemHref}/`)) {
+      return true
+    }
+    return false
+  }, [pathname, company?.slug])
+
+  // Filter sections by search and permissions (including child sub-items)
   const filteredNavSections = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase()
+
     return navSections
       .map((section) => {
-        const allowedItems = section.items.filter(isNavItemAllowed)
-        if (!searchQuery.trim()) {
-          return { ...section, items: allowedItems }
+        const allowedItems: NavItem[] = []
+
+        for (const item of section.items) {
+          if (!isNavItemAllowed(item)) continue
+
+          const allowedChildren = item.children?.filter(isNavItemAllowed)
+
+          if (!q) {
+            allowedItems.push({
+              ...item,
+              children: allowedChildren,
+            })
+            continue
+          }
+
+          const matchTitle = item.title.toLowerCase().includes(q)
+          const matchTitleBn = item.titleBn.toLowerCase().includes(q)
+          const matchKey = item.key.toLowerCase().includes(q)
+
+          const matchedChildren = allowedChildren?.filter((child) => {
+            const cTitle = child.title.toLowerCase().includes(q)
+            const cTitleBn = child.titleBn.toLowerCase().includes(q)
+            const cKey = child.key.toLowerCase().includes(q)
+            return cTitle || cTitleBn || cKey
+          })
+
+          if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
+            allowedItems.push({
+              ...item,
+              children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
+            })
+          }
         }
-        const q = searchQuery.toLowerCase()
-        const matchedItems = allowedItems.filter(
-          (item) =>
-            item.title.toLowerCase().includes(q) ||
-            item.titleBn.toLowerCase().includes(q) ||
-            item.key.toLowerCase().includes(q)
-        )
-        return { ...section, items: matchedItems }
+
+        return { ...section, items: allowedItems }
       })
       .filter((section) => section.items.length > 0)
   }, [navSections, isNavItemAllowed, searchQuery])
+
+  // Auto-expand subnav if active child route
+  useEffect(() => {
+    if (!pathname) return
+    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+      ? pathname.slice(`/${company.slug}`.length) || '/'
+      : pathname
+
+    for (const section of filteredNavSections) {
+      for (const item of section.items) {
+        if (item.children && item.children.length > 0) {
+          const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
+          if (hasActiveChild || (cleanPath.startsWith('/settings') && item.key === 'company_settings')) {
+            setExpandedSubNav((prev) => ({ ...prev, [item.key]: true }))
+          }
+        }
+      }
+    }
+  }, [pathname, filteredNavSections, isItemActive, company?.slug])
 
   return (
     <div className="lg:hidden">
@@ -360,52 +445,113 @@ export function MobileNav() {
                       <div className="space-y-0.5">
                         {section.items.map((item) => {
                           const Icon = iconMap[item.icon] || Sparkles
-                          const cleanPath = (company?.slug && pathname?.startsWith(`/${company.slug}`))
-                            ? pathname.slice(`/${company.slug}`.length) || '/'
-                            : (pathname || '')
-                          const isActive = pathname === item.href || cleanPath === item.href || (cleanPath.startsWith(`${item.href}/`) && item.href !== '/')
+                          const isActive = isItemActive(item.href, item.exact)
                           const itemTitle = tBilingual(item.title, item.titleBn)
                           const isPrimary = item.isPrimaryAction
+                          const hasChildren = item.children && item.children.length > 0
+                          const isSubExpanded = expandedSubNav[item.key] ?? false
+                          const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
 
                           return (
                             <React.Fragment key={item.key}>
-                              <Link
-                                href={getTenantNavHref(item.href, pathname, company?.slug)}
-                                onClick={() => setOpen(false)}
-                                className={cn(
-                                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
-                                  isPrimary
-                                    ? isActive
-                                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                      : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
-                                    : isActive
-                                    ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
-                                    : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
-                                )}
-                              >
-                                <Icon
+                              <div className="flex items-center">
+                                <Link
+                                  href={getTenantNavHref(item.href, pathname, company?.slug)}
+                                  onClick={() => setOpen(false)}
                                   className={cn(
-                                    'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
-                                    isPrimary || isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                                    'group flex flex-1 items-center gap-3 rounded-xl px-3 py-2.5 text-xs sm:text-sm font-medium transition-all min-h-[44px] cursor-pointer bangla-text',
+                                    isPrimary
+                                      ? isActive
+                                        ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
+                                        : 'bg-gradient-to-r from-blue-600/90 to-indigo-600/90 text-white font-bold'
+                                      : isActive
+                                      ? 'bg-blue-600 text-white font-semibold shadow-xs shadow-blue-500/20'
+                                      : isChildActive && !isActive
+                                      ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
+                                      : 'text-slate-700 hover:bg-slate-100/90 dark:text-slate-200 dark:hover:bg-slate-800'
                                   )}
-                                />
-                                <span className="flex-1 truncate">{itemTitle}</span>
-                                {item.badge && (
-                                  <Badge
-                                    variant={isActive || isPrimary ? 'secondary' : 'default'}
+                                >
+                                  <Icon
                                     className={cn(
-                                      'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
-                                      item.badgeVariant === 'live'
-                                        ? 'bg-rose-500 text-white animate-pulse'
-                                        : item.badgeVariant === 'fast'
-                                        ? 'bg-emerald-400 text-slate-950 font-black'
-                                        : 'bg-emerald-500 text-white'
+                                      'h-4 w-4 shrink-0 transition-transform group-hover:scale-110',
+                                      isPrimary || isActive
+                                        ? 'text-white'
+                                        : isChildActive
+                                        ? 'text-blue-600 dark:text-blue-400'
+                                        : 'text-slate-500 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                                     )}
+                                  />
+                                  <span className="flex-1 truncate">{itemTitle}</span>
+                                  {item.badge && (
+                                    <Badge
+                                      variant={isActive || isPrimary ? 'secondary' : 'default'}
+                                      className={cn(
+                                        'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5',
+                                        item.badgeVariant === 'live'
+                                          ? 'bg-rose-500 text-white animate-pulse'
+                                          : item.badgeVariant === 'fast'
+                                          ? 'bg-emerald-400 text-slate-950 font-black'
+                                          : 'bg-emerald-500 text-white'
+                                      )}
+                                    >
+                                      {item.badge}
+                                    </Badge>
+                                  )}
+                                </Link>
+
+                                {hasChildren && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault()
+                                      e.stopPropagation()
+                                      toggleSubNav(item.key)
+                                    }}
+                                    className="p-2.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-lg"
+                                    title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
                                   >
-                                    {item.badge}
-                                  </Badge>
+                                    <ChevronDown
+                                      className={cn(
+                                        'h-4 w-4 transition-transform duration-200',
+                                        isSubExpanded ? 'rotate-180' : ''
+                                      )}
+                                    />
+                                  </button>
                                 )}
-                              </Link>
+                              </div>
+
+                              {/* Nested Children in Mobile Drawer */}
+                              {hasChildren && (isSubExpanded || Boolean(searchQuery)) && (
+                                <div className="ml-5 pl-3 border-l-2 border-slate-200 dark:border-slate-800 space-y-1 my-1">
+                                  {item.children!.map((child) => {
+                                    const ChildIcon = iconMap[child.icon] || Sparkles
+                                    const isSubActive = isItemActive(child.href, child.exact)
+                                    const childTitle = tBilingual(child.title, child.titleBn)
+
+                                    return (
+                                      <Link
+                                        key={child.key}
+                                        href={getTenantNavHref(child.href, pathname, company?.slug)}
+                                        onClick={() => setOpen(false)}
+                                        className={cn(
+                                          'flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-xs font-medium transition-all min-h-[36px] bangla-text',
+                                          isSubActive
+                                            ? 'bg-blue-600 text-white font-bold shadow-xs'
+                                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800'
+                                        )}
+                                      >
+                                        <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-slate-400')} />
+                                        <span className="flex-1 truncate">{childTitle}</span>
+                                        {child.badge && (
+                                          <Badge className="text-3xs px-1.5 py-0 h-4">
+                                            {child.badge}
+                                          </Badge>
+                                        )}
+                                      </Link>
+                                    )
+                                  })}
+                                </div>
+                              )}
 
                               {/* Optional Visual Separator Below Item */}
                               {item.hasDividerBelow && (

@@ -45,6 +45,14 @@ import {
   Scissors,
   Search,
   X,
+  Globe2,
+  Hash,
+  GitBranch,
+  Mail,
+  QrCode,
+  Sliders,
+  Key,
+  Shield,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -91,10 +99,19 @@ const iconMap: Record<string, React.ElementType> = {
   Tag,
   Trash2,
   Scissors,
+  Globe2,
+  Hash,
+  GitBranch,
+  Mail,
+  QrCode,
+  Sliders,
+  Key,
+  Shield,
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'inkflow_sidebar_collapsed'
 const EXPANDED_GROUPS_STORAGE_KEY = 'inkflow_nav_expanded_groups'
+const EXPANDED_SUB_NAV_STORAGE_KEY = 'inkflow_nav_expanded_sub_nav'
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -128,6 +145,20 @@ export function Sidebar() {
     return { today: true, work: true, management: true, settings: true }
   })
 
+  // State of expanded sub-item groups (e.g. company_settings)
+  const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') {
+      return { company_settings: true }
+    }
+    try {
+      const saved = localStorage.getItem(EXPANDED_SUB_NAV_STORAGE_KEY)
+      if (saved) {
+        return JSON.parse(saved)
+      }
+    } catch {}
+    return { company_settings: true }
+  })
+
   const navSections = useMemo(() => getNavigationConfig(), [])
 
   // Explicit permission and feature entitlement filtering
@@ -145,14 +176,40 @@ export function Sidebar() {
 
     return navSections
       .map((section) => {
-        const allowedItems = section.items.filter((item) => {
-          if (!isNavItemAllowed(item)) return false
-          if (!q) return true
+        const allowedItems: NavItem[] = []
+
+        for (const item of section.items) {
+          if (!isNavItemAllowed(item)) continue
+
+          const allowedChildren = item.children?.filter(isNavItemAllowed)
+
+          if (!q) {
+            allowedItems.push({
+              ...item,
+              children: allowedChildren,
+            })
+            continue
+          }
+
           const matchTitle = item.title.toLowerCase().includes(q)
           const matchTitleBn = item.titleBn.toLowerCase().includes(q)
           const matchKey = item.key.toLowerCase().includes(q)
-          return matchTitle || matchTitleBn || matchKey
-        })
+
+          const matchedChildren = allowedChildren?.filter((child) => {
+            const cTitle = child.title.toLowerCase().includes(q)
+            const cTitleBn = child.titleBn.toLowerCase().includes(q)
+            const cKey = child.key.toLowerCase().includes(q)
+            return cTitle || cTitleBn || cKey
+          })
+
+          if (matchTitle || matchTitleBn || matchKey || (matchedChildren && matchedChildren.length > 0)) {
+            allowedItems.push({
+              ...item,
+              children: matchedChildren && matchedChildren.length > 0 ? matchedChildren : allowedChildren,
+            })
+          }
+        }
+
         return { ...section, items: allowedItems }
       })
       .filter((section) => section.items.length > 0)
@@ -180,25 +237,50 @@ export function Sidebar() {
     })
   }, [])
 
-  // Check whether an item is active
-  const isItemActive = useCallback((itemHref: string) => {
+  // Persist sub-nav expansion state
+  const toggleSubNav = useCallback((key: string) => {
+    setExpandedSubNav((prev) => {
+      const next = { ...prev, [key]: !prev[key] }
+      try {
+        localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
+      } catch {}
+      return next
+    })
+  }, [])
+
+  // Check whether an item is active with strict exact matching for root paths
+  const isItemActive = useCallback((itemHref: string, exact?: boolean) => {
     if (!pathname) return false
     const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
       ? pathname.slice(`/${company.slug}`.length) || '/'
       : pathname
 
     if (pathname === itemHref || cleanPath === itemHref) return true
-    if (cleanPath.startsWith(`${itemHref}/`) && itemHref !== '/') {
+
+    // Exact matches or /settings base must not claim child routes
+    if (exact || itemHref === '/' || itemHref === '/settings') {
+      return false
+    }
+
+    if (cleanPath.startsWith(`${itemHref}/`)) {
       return true
     }
     return false
   }, [pathname, company?.slug])
 
-  // Automatically ensure active route's parent group is expanded
+  // Automatically ensure active route's parent group and sub-nav are expanded
   useEffect(() => {
     if (!pathname) return
+    const cleanPath = (company?.slug && pathname.startsWith(`/${company.slug}`))
+      ? pathname.slice(`/${company.slug}`.length) || '/'
+      : pathname
+
     for (const section of processedSections) {
-      const hasActive = section.items.some((item) => isItemActive(item.href))
+      const hasActive = section.items.some((item) => {
+        if (isItemActive(item.href, item.exact)) return true
+        return item.children?.some((child) => isItemActive(child.href, child.exact))
+      })
+
       if (hasActive && !expandedGroups[section.id]) {
         setExpandedGroups((prev) => {
           const next = { ...prev, [section.id]: true }
@@ -208,8 +290,24 @@ export function Sidebar() {
           return next
         })
       }
+
+      for (const item of section.items) {
+        if (item.children && item.children.length > 0) {
+          const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
+          if (hasActiveChild || (cleanPath.startsWith('/settings') && item.key === 'company_settings')) {
+            setExpandedSubNav((prev) => {
+              if (prev[item.key]) return prev
+              const next = { ...prev, [item.key]: true }
+              try {
+                localStorage.setItem(EXPANDED_SUB_NAV_STORAGE_KEY, JSON.stringify(next))
+              } catch {}
+              return next
+            })
+          }
+        }
+      }
     }
-  }, [pathname, processedSections, isItemActive])
+  }, [pathname, processedSections, isItemActive, expandedGroups, company?.slug])
 
   return (
     <aside
@@ -328,81 +426,194 @@ export function Sidebar() {
                 <div className="space-y-0.5 transition-all">
                   {section.items.map((item) => {
                     const Icon = iconMap[item.icon] || Sparkles
-                    const isActive = isItemActive(item.href)
+                    const isActive = isItemActive(item.href, item.exact)
                     const itemTitle = tBilingual(item.title, item.titleBn)
                     const isPrimary = item.isPrimaryAction
+                    const hasChildren = item.children && item.children.length > 0
+                    const isSubExpanded = expandedSubNav[item.key] ?? false
+                    const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
 
                     return (
                       <div key={item.key} className="relative group/nav">
-                        <Link
-                          href={getTenantNavHref(item.href, pathname, company?.slug)}
-                          aria-label={`${item.title} - ${item.titleBn}`}
-                          className={cn(
-                            'flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
-                            isPrimary
-                              ? isActive
-                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
-                                : 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
-                              : isActive
-                              ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
-                              : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
-                            collapsed && 'justify-center px-2'
-                          )}
-                        >
-                          <Icon
+                        <div className="flex items-center">
+                          <Link
+                            href={getTenantNavHref(item.href, pathname, company?.slug)}
+                            aria-label={`${item.title} - ${item.titleBn}`}
                             className={cn(
-                              'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
-                              isPrimary || isActive
-                                ? 'text-white'
-                                : 'text-slate-400 group-hover/nav:text-slate-600 dark:group-hover/nav:text-slate-200'
+                              'flex flex-1 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition-all cursor-pointer bangla-text min-h-[38px] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500',
+                              isPrimary
+                                ? isActive
+                                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold shadow-md shadow-blue-500/25 ring-2 ring-blue-400'
+                                  : 'bg-gradient-to-r from-blue-600/95 to-indigo-600/95 text-white font-bold hover:from-blue-600 hover:to-indigo-600 shadow-sm shadow-blue-500/20 active:scale-98'
+                                : isActive
+                                ? 'bg-blue-600 text-white shadow-xs shadow-blue-500/20 font-semibold'
+                                : isChildActive && !isActive
+                                ? 'bg-blue-50 text-blue-800 font-semibold dark:bg-blue-950/40 dark:text-blue-300'
+                                : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white',
+                              collapsed && 'justify-center px-2'
                             )}
-                          />
+                          >
+                            <Icon
+                              className={cn(
+                                'h-4 w-4 shrink-0 transition-transform group-hover/nav:scale-105',
+                                isPrimary || isActive
+                                  ? 'text-white'
+                                  : isChildActive
+                                  ? 'text-blue-600 dark:text-blue-400'
+                                  : 'text-slate-400 group-hover/nav:text-slate-600 dark:group-hover/nav:text-slate-200'
+                              )}
+                            />
 
-                          {!collapsed ? (
-                            <div className="flex flex-1 items-center justify-between truncate min-w-0">
-                              <span className="truncate">{itemTitle}</span>
-                              {item.badge && (
-                                <Badge
-                                  variant={isActive || isPrimary ? 'secondary' : 'default'}
+                            {!collapsed ? (
+                              <div className="flex flex-1 items-center justify-between truncate min-w-0">
+                                <span className="truncate">{itemTitle}</span>
+                                <div className="flex items-center gap-1.5 shrink-0 ml-1.5">
+                                  {item.badge && (
+                                    <Badge
+                                      variant={isActive || isPrimary ? 'secondary' : 'default'}
+                                      className={cn(
+                                        'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0',
+                                        item.badgeVariant === 'live'
+                                          ? 'bg-rose-500 text-white animate-pulse'
+                                          : item.badgeVariant === 'fast'
+                                          ? 'bg-emerald-400 text-slate-950 font-black'
+                                          : item.badgeVariant === 'pro'
+                                          ? 'bg-amber-500 text-white'
+                                          : 'bg-emerald-500 text-white'
+                                      )}
+                                    >
+                                      {item.badge}
+                                    </Badge>
+                                  )}
+                                  {hasChildren && (
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.preventDefault()
+                                        e.stopPropagation()
+                                        toggleSubNav(item.key)
+                                      }}
+                                      className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition-colors"
+                                      title={isSubExpanded ? 'Collapse sub-menu' : 'Expand sub-menu'}
+                                    >
+                                      <ChevronDown
+                                        className={cn(
+                                          'h-3.5 w-3.5 transition-transform duration-200',
+                                          isSubExpanded ? 'rotate-180' : ''
+                                        )}
+                                      />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              /* Collapsed Badges (Live pulse dot) */
+                              item.badge && (
+                                <span
                                   className={cn(
-                                    'text-2xs px-2 py-0.5 h-4.5 font-bold shrink-0 ml-1.5',
-                                    item.badgeVariant === 'live'
-                                      ? 'bg-rose-500 text-white animate-pulse'
-                                      : item.badgeVariant === 'fast'
-                                      ? 'bg-emerald-400 text-slate-950 font-black'
-                                      : item.badgeVariant === 'pro'
-                                      ? 'bg-amber-500 text-white'
-                                      : 'bg-emerald-500 text-white'
+                                    'absolute top-1.5 right-1.5 h-2 w-2 rounded-full',
+                                    item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+                                  )}
+                                />
+                              )
+                            )}
+                          </Link>
+                        </div>
+
+                        {/* Nested Sub-Modules (Expanded Sidebar) */}
+                        {!collapsed && hasChildren && (isSubExpanded || Boolean(filterQuery)) && (
+                          <div className="ml-4 pl-3.5 border-l-2 border-slate-200/80 dark:border-slate-800 space-y-0.5 mt-1 animate-in fade-in-0 duration-150">
+                            {item.children!.map((child) => {
+                              const ChildIcon = iconMap[child.icon] || Sparkles
+                              const isSubActive = isItemActive(child.href, child.exact)
+                              const childTitle = tBilingual(child.title, child.titleBn)
+
+                              return (
+                                <Link
+                                  key={child.key}
+                                  href={getTenantNavHref(child.href, pathname, company?.slug)}
+                                  aria-label={`${child.title} - ${child.titleBn}`}
+                                  className={cn(
+                                    'flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all cursor-pointer bangla-text min-h-[32px] focus:outline-none focus-visible:ring-1 focus-visible:ring-blue-500',
+                                    isSubActive
+                                      ? 'bg-blue-600 text-white font-bold shadow-xs shadow-blue-500/20'
+                                      : 'text-slate-600 hover:bg-slate-100/90 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
                                   )}
                                 >
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </div>
-                          ) : (
-                            /* Collapsed Badges (Live pulse dot) */
-                            item.badge && (
-                              <span
-                                className={cn(
-                                  'absolute top-1.5 right-1.5 h-2 w-2 rounded-full',
-                                  item.badgeVariant === 'live' ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
-                                )}
-                              />
-                            )
-                          )}
-                        </Link>
+                                  <ChildIcon
+                                    className={cn(
+                                      'h-3.5 w-3.5 shrink-0 transition-transform',
+                                      isSubActive
+                                        ? 'text-white'
+                                        : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'
+                                    )}
+                                  />
+                                  <span className="truncate flex-1">{childTitle}</span>
+                                  {child.badge && (
+                                    <Badge
+                                      variant={isSubActive ? 'secondary' : 'default'}
+                                      className="text-3xs px-1.5 py-0 h-4 font-bold shrink-0 ml-1"
+                                    >
+                                      {child.badge}
+                                    </Badge>
+                                  )}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        )}
 
-                        {/* Collapsed Hover Tooltip */}
+                        {/* Collapsed Hover Flyout / Popover */}
                         {collapsed && (
-                          <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 hidden group-hover/nav:flex items-center z-50 pointer-events-none animate-in fade-in-0 zoom-in-95 duration-150">
-                            <div className="rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs font-semibold shadow-xl whitespace-nowrap dark:bg-slate-800 dark:border dark:border-slate-700 bangla-text flex items-center gap-2">
-                              <span>{itemTitle}</span>
-                              {item.badge && (
-                                <span className="px-1.5 py-0.2 rounded bg-white/20 text-2xs font-bold uppercase">
-                                  {item.badge}
+                          <div className="absolute left-full top-0 ml-2.5 hidden group-hover/nav:flex flex-col z-50 animate-in fade-in-0 zoom-in-95 duration-150 w-64 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-2 shadow-2xl">
+                            {/* Popover Header */}
+                            <div className="px-2.5 py-2 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <Icon className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                <span className="font-bold text-xs text-slate-900 dark:text-white truncate bangla-text">
+                                  {itemTitle}
+                                </span>
+                              </div>
+                              {hasChildren && (
+                                <span className="text-3xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
+                                  {item.children!.length} modules
                                 </span>
                               )}
                             </div>
+
+                            {/* Flyout Sub-links */}
+                            {hasChildren ? (
+                              <div className="py-1 max-h-[70vh] overflow-y-auto space-y-0.5 scrollbar-thin">
+                                {item.children!.map((child) => {
+                                  const ChildIcon = iconMap[child.icon] || Sparkles
+                                  const isSubActive = isItemActive(child.href, child.exact)
+                                  return (
+                                    <Link
+                                      key={child.key}
+                                      href={getTenantNavHref(child.href, pathname, company?.slug)}
+                                      className={cn(
+                                        'flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors bangla-text',
+                                        isSubActive
+                                          ? 'bg-blue-600 text-white font-bold shadow-xs'
+                                          : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
+                                      )}
+                                    >
+                                      <ChildIcon className={cn('h-3.5 w-3.5 shrink-0', isSubActive ? 'text-white' : 'text-slate-400')} />
+                                      <span className="truncate flex-1">{tBilingual(child.title, child.titleBn)}</span>
+                                    </Link>
+                                  )
+                                })}
+                              </div>
+                            ) : (
+                              <div className="p-1">
+                                <Link
+                                  href={getTenantNavHref(item.href, pathname, company?.slug)}
+                                  className="flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 hover:text-blue-600 bangla-text"
+                                >
+                                  <span>Open {itemTitle}</span>
+                                </Link>
+                              </div>
+                            )}
                           </div>
                         )}
 

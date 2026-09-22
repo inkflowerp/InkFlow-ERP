@@ -7,6 +7,7 @@ export interface NavItem {
   titleBn: string
   href: string
   icon: string
+  exact?: boolean
   badge?: string
   badgeVariant?: 'live' | 'fast' | 'pwa' | 'pro' | 'default'
   permission?: {
@@ -17,6 +18,7 @@ export interface NavItem {
   isPrimaryAction?: boolean
   ownerOnly?: boolean
   hasDividerBelow?: boolean
+  children?: NavItem[]
 }
 
 export interface NavSection {
@@ -49,6 +51,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           titleBn: 'ড্যাশবোর্ড',
           href: '/dashboard',
           icon: 'LayoutDashboard',
+          exact: true,
         },
         {
           key: 'quotations',
@@ -103,6 +106,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           titleBn: 'প্রিন্টিং ফ্লোর',
           href: '/production',
           icon: 'Printer',
+          exact: true,
           permission: { action: 'view', resource: 'production' },
         },
         {
@@ -217,7 +221,139 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           titleBn: 'কোম্পানি সেটিংস',
           href: '/settings',
           icon: 'Settings',
+          exact: true,
           permission: { action: 'view', resource: 'settings' },
+          children: [
+            {
+              key: 'settings_overview',
+              title: 'Overview',
+              titleBn: 'মূল সেটিংস',
+              href: '/settings',
+              icon: 'LayoutDashboard',
+              exact: true,
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_company',
+              title: 'Company Profile',
+              titleBn: 'প্রতিষ্ঠান তথ্য',
+              href: '/settings/company',
+              icon: 'Building2',
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_branding',
+              title: 'Branding & Theme',
+              titleBn: 'ব্র্যান্ডিং ও লোগো',
+              href: '/settings/branding',
+              icon: 'Palette',
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_localization',
+              title: 'Localization & Formats',
+              titleBn: 'ভাষা ও মুদ্রা',
+              href: '/settings/localization',
+              icon: 'Globe2',
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_tax',
+              title: 'Tax & NBR VAT 6.3',
+              titleBn: 'ট্যাক্স ও ভ্যাট',
+              href: '/settings/tax',
+              icon: 'FileCheck2',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_numbering',
+              title: 'Document Numbering',
+              titleBn: 'ডকুমেন্ট নাম্বারিং',
+              href: '/settings/document-numbering',
+              icon: 'Hash',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_templates',
+              title: 'Document Templates',
+              titleBn: 'ডকুমেন্ট টেমপ্লেট',
+              href: '/settings/documents',
+              icon: 'FileText',
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_automations',
+              title: 'Workflow Automations',
+              titleBn: 'কাজের অটোমেশন',
+              href: '/settings/automations',
+              icon: 'Workflow',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_branches',
+              title: 'Branches & Hubs',
+              titleBn: 'শাখা ও কারখানা',
+              href: '/settings/branches',
+              icon: 'Building',
+              permission: { action: 'view', resource: 'branches' },
+            },
+            {
+              key: 'settings_attendance',
+              title: 'Attendance & QR',
+              titleBn: 'হাজিরা ও কিউআর',
+              href: '/settings/attendance',
+              icon: 'QrCode',
+              permission: { action: 'view', resource: 'settings' },
+            },
+            {
+              key: 'settings_notifications',
+              title: 'Notifications & SMS',
+              titleBn: 'নোটিফিকেশন ও এসএমএস',
+              href: '/settings/notifications',
+              icon: 'Bell',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_email',
+              title: 'Email Gateway',
+              titleBn: 'ইমেইল গেটওয়ে',
+              href: '/settings/email',
+              icon: 'Mail',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_users',
+              title: 'Team Users',
+              titleBn: 'টিম মেম্বার',
+              href: '/settings/users',
+              icon: 'Users',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_roles',
+              title: 'Roles & Matrix',
+              titleBn: 'অনুমতি ম্যাট্রিক্স',
+              href: '/settings/roles',
+              icon: 'ShieldCheck',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_subscription',
+              title: 'Subscription & Plan',
+              titleBn: 'সাবস্ক্রিপশন',
+              href: '/settings/subscription',
+              icon: 'Crown',
+              permission: { action: 'manage', resource: 'settings' },
+            },
+            {
+              key: 'settings_trash',
+              title: 'Trash / Recycle Bin',
+              titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
+              href: '/settings/trash',
+              icon: 'Trash2',
+              permission: { action: 'view', resource: 'settings' },
+            },
+          ],
         },
         {
           key: 'users',
