@@ -554,7 +554,7 @@ export function StockTransferModal({
                     <div className="sm:col-span-2">
                       <Label className="text-[11px] text-slate-500 mb-0.5 block">Unit Rate (৳)</Label>
                       <div className="h-8.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center font-mono text-slate-700 dark:text-slate-300">
-                        ৳{formatBDT(item.unit_cost)}
+                        {formatBDT(item.unit_cost)}
                       </div>
                     </div>
 
@@ -593,7 +593,7 @@ export function StockTransferModal({
                     <div className="flex items-center gap-2">
                       <span>Movement Value:</span>
                       <span className="font-mono font-bold text-slate-900 dark:text-white">
-                        ৳ {formatBDT(item.total_cost)}
+                        {formatBDT(item.total_cost)}
                       </span>
                     </div>
                   </div>
@@ -613,7 +613,7 @@ export function StockTransferModal({
             <div className="text-right">
               <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Moving Valuation</span>
               <div className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
-                ৳ {formatBDT(totalValuation)}
+                {formatBDT(totalValuation)}
               </div>
             </div>
           </div>

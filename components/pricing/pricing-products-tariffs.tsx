@@ -132,14 +132,14 @@ export function PricingProductsTariffs({
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">Retail Price</span>
                       <div className="text-base font-black text-slate-900 dark:text-white font-mono">
-                        ৳ {formatBDT(baseSell)}
+                        {formatBDT(baseSell)}
                       </div>
                     </div>
 
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">Wholesale Tier</span>
                       <div className="text-base font-bold text-blue-700 dark:text-blue-400 font-mono">
-                        ৳ {formatBDT(resellerPrice)}
+                        {formatBDT(resellerPrice)}
                       </div>
                     </div>
                   </div>
@@ -149,7 +149,7 @@ export function PricingProductsTariffs({
                     <div className="flex justify-between text-[11px] text-slate-500">
                       <span>Acquisition Cost:</span>
                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                        {baseCost > 0 ? `৳ ${formatBDT(baseCost)}` : '—'}
+                        {baseCost > 0 ? formatBDT(baseCost) : '—'}
                       </span>
                     </div>
 

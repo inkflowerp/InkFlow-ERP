@@ -266,7 +266,7 @@ export function DashboardCharts() {
                       <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
                       <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
                       <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                      <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, '']} />
+                      <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
                       <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#salesGrad)" name="Sales" />
                       <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colGrad)" name="Collections" />
                     </AreaChart>
@@ -302,7 +302,7 @@ export function DashboardCharts() {
                       <CartesianGrid strokeDasharray="3 3" horizontal={false} opacity={0.2} />
                       <XAxis type="number" tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
                       <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} fontSize={11} width={140} />
-                      <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, 'Collected']} />
+                      <Tooltip formatter={(value: any) => [formatBDT(Number(value)), 'Collected']} />
                       <Bar dataKey="amount" radius={[0, 4, 4, 0]}>
                         {paymentCollectionData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />

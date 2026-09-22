@@ -468,19 +468,19 @@ export default function SalesManagerPage() {
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase block">Total</span>
                       <div className="font-mono font-bold text-xs text-slate-900 dark:text-white">
-                        ৳{formatBDT(o.final_price || 0)}
+                        {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
                     <div>
                       <span className="text-[10px] text-emerald-600 uppercase block">Paid</span>
                       <div className="font-mono font-bold text-xs text-emerald-600">
-                        ৳{formatBDT(o.advance_amount || 0)}
+                        {formatBDT(o.advance_amount || 0)}
                       </div>
                     </div>
                     <div>
                       <span className="text-[10px] text-red-500 uppercase block">Due</span>
                       <div className="font-mono font-bold text-xs text-red-600">
-                        ৳{formatBDT(o.due_amount || 0)}
+                        {formatBDT(o.due_amount || 0)}
                       </div>
                     </div>
                   </div>

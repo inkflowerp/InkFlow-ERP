@@ -244,7 +244,7 @@ export function OwnerDashboard({
     const companyTitle = company?.name || 'প্রিন্টিং প্রেস'
     const msg = encodeURIComponent(
       `আসসালামু আলাইকুম / আদাব ${item.customerName},\n` +
-      `${companyTitle} থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ৳${formatBDT(item.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
+      `${companyTitle} থেকে আপনার ইনভয়েস #${item.invoiceNumber}-এর বকেয়া বিল ${formatBDT(item.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\n` +
       `বিল পরিশোধের তারিখ ছিল: ${item.dueDate} (${item.daysOverdue} দিন অতিবাহিত)।\n` +
       `বিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন।\n` +
       `ধন্যবাদ!`
@@ -474,7 +474,7 @@ export function OwnerDashboard({
             <div className="flex items-center gap-2 bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15">
               <span className="text-xs text-blue-200 font-semibold">{tBilingual('Total Liquid Cash:', 'মোট ক্যাশ ব্যালেন্স:')}</span>
               <span className="text-base font-black font-mono text-emerald-300">
-                ৳ {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
+                {formatBDT(safeData.liquiditySummary.totalLiquidAssets)}
               </span>
             </div>
           </div>
@@ -490,7 +490,7 @@ export function OwnerDashboard({
                 <span className="text-[10px] font-mono opacity-80">1001</span>
               </div>
               <div className="text-lg font-black font-mono text-white">
-                ৳ {formatBDT(safeData.liquiditySummary.cashInHand)}
+                {formatBDT(safeData.liquiditySummary.cashInHand)}
               </div>
               <div className="text-[10px] text-emerald-400 font-semibold">
                 {tBilingual('Main Counter Cash', 'প্রধান ক্যাশ কাউন্টার')}
@@ -507,7 +507,7 @@ export function OwnerDashboard({
                 <span className="text-[10px] font-mono opacity-80">1003</span>
               </div>
               <div className="text-lg font-black font-mono text-white">
-                ৳ {formatBDT(safeData.liquiditySummary.mfsBalance)}
+                {formatBDT(safeData.liquiditySummary.mfsBalance)}
               </div>
               <div className="text-[10px] text-pink-300 font-semibold">
                 {tBilingual('Merchant Accounts', 'মার্চেন্ট ওয়ালেট')}
@@ -524,7 +524,7 @@ export function OwnerDashboard({
                 <span className="text-[10px] font-mono opacity-80">1002</span>
               </div>
               <div className="text-lg font-black font-mono text-white">
-                ৳ {formatBDT(safeData.liquiditySummary.bankBalance)}
+                {formatBDT(safeData.liquiditySummary.bankBalance)}
               </div>
               <div className="text-[10px] text-cyan-300 font-semibold">
                 {tBilingual('Current / CD Accounts', 'চলতি হিসাব')}
@@ -543,11 +543,11 @@ export function OwnerDashboard({
                 </span>
               </div>
               <div className="text-lg font-black font-mono text-white">
-                ৳ {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
+                {formatBDT(safeData.liquiditySummary.todayNetCashFlow)}
               </div>
               <div className="flex items-center justify-between text-[10px] font-medium pt-0.5">
                 <span className="text-rose-300">
-                  {tBilingual('Expense:', 'খরচ:')} -৳{formatBDT(safeData.liquiditySummary.todayExpenses)}
+                  {tBilingual('Expense:', 'খরচ:')} -{formatBDT(safeData.liquiditySummary.todayExpenses)}
                 </span>
                 <span className="text-emerald-300 font-bold">
                   {tBilingual('Net Drawer', 'নিট জমা')}
@@ -740,7 +740,7 @@ export function OwnerDashboard({
                 {tBilingual('Done Today:', 'আজকে সম্পন্ন:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.digital.completedTodayCount}</strong>
               </span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
-                ৳ {formatBDT(safeData.segmentMetrics.digital.todaySales)}
+                {formatBDT(safeData.segmentMetrics.digital.todaySales)}
               </span>
             </div>
           </button>
@@ -782,7 +782,7 @@ export function OwnerDashboard({
                 {tBilingual('Plates/CTP:', 'প্লেট/CTP:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
               <span className="font-bold text-purple-600 dark:text-purple-400">
-                ৳ {formatBDT(safeData.segmentMetrics.offset.todaySales)}
+                {formatBDT(safeData.segmentMetrics.offset.todaySales)}
               </span>
             </div>
           </button>
@@ -824,7 +824,7 @@ export function OwnerDashboard({
                 {tBilingual('Volume:', 'সাইজ:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.signage.totalSqFt} sft</strong>
               </span>
               <span className="font-bold text-amber-600 dark:text-amber-400">
-                ৳ {formatBDT(safeData.segmentMetrics.signage.todaySales)}
+                {formatBDT(safeData.segmentMetrics.signage.todaySales)}
               </span>
             </div>
           </button>
@@ -1123,7 +1123,7 @@ export function OwnerDashboard({
                         <span className="font-mono text-[11px] text-blue-600">#{item.invoiceNumber}</span>
                       </div>
                       <div className="flex items-center gap-2 font-mono text-[11px]">
-                        <span className="font-bold text-rose-600 text-sm">৳ {formatBDT(item.dueAmount)}</span>
+                        <span className="font-bold text-rose-600 text-sm">{formatBDT(item.dueAmount)}</span>
                         {item.daysOverdue > 0 && (
                           <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200 text-[10px] py-0">
                             {item.daysOverdue}d overdue
@@ -1261,7 +1261,7 @@ export function OwnerDashboard({
                     <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
                     <XAxis dataKey="dayLabelEn" tickLine={false} axisLine={false} fontSize={12} />
                     <YAxis tickLine={false} axisLine={false} fontSize={11} tickFormatter={(val) => `৳${val / 1000}k`} />
-                    <Tooltip formatter={(value: any) => [`৳ ${formatBDT(Number(value))}`, '']} />
+                    <Tooltip formatter={(value: any) => [formatBDT(Number(value)), '']} />
                     <Area type="monotone" dataKey="sales" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerSalesGrad)" name="Sales" />
                     <Area type="monotone" dataKey="collections" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#ownerColGrad)" name="Collections" />
                   </AreaChart>
@@ -1288,7 +1288,7 @@ export function OwnerDashboard({
             <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-xs font-mono border space-y-1">
               <div className="text-slate-500 font-sans">{tBilingual('Message Preview:', 'বার্তা প্রিভিউ:')}</div>
               <div className="text-slate-800 dark:text-slate-200 whitespace-pre-line">
-                {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\n${company?.name || 'প্রিন্টিং প্রেস'} থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ৳${formatBDT(reminderItem.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন। धन्यवाद / ধন্যবাদ!`}
+                {`আসসালামু আলাইকুম / আদাব ${reminderItem.customerName},\n${company?.name || 'প্রিন্টিং প্রেস'} থেকে আপনার ইনভয়েস #${reminderItem.invoiceNumber}-এর বকেয়া বিল ${formatBDT(reminderItem.dueAmount)} পরিশোধের জন্য বিনীত অনুরোধ করা যাচ্ছে।\nবিল পরিশোধের তারিখ ছিল: ${reminderItem.dueDate} (${reminderItem.daysOverdue} দিন অতিবাহিত)।\nবিকাশ মার্চেন্ট / নগদ / ব্যাংক একাউন্টে পেমেন্ট করে অনুগ্রহ করে ট্রানজেকশন আইডি আমাদের অবহিত করুন। ধন্যবাদ!`}
               </div>
             </div>
 

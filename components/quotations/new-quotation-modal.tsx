@@ -1666,7 +1666,7 @@ export function NewQuotationModal({
       const formatted = clean.startsWith('880') ? clean : clean.startsWith('0') ? `88${clean}` : `880${clean}`
 
       const itemsSummary = quoteToUse.items
-        .map((it, idx) => `${idx + 1}. ${it.description} (${it.area_sft > 0 ? `${it.width}×${it.height}ft = ${it.area_sft}sft` : `${it.quantity} ${it.unit}`}) - ৳${formatBDT(it.item_total)}`)
+        .map((it, idx) => `${idx + 1}. ${it.description} (${it.area_sft > 0 ? `${it.width}×${it.height}ft = ${it.area_sft}sft` : `${it.quantity} ${it.unit}`}) - ${formatBDT(it.item_total)}`)
         .join('\n')
 
       const text = encodeURIComponent(
@@ -1674,9 +1674,9 @@ export function NewQuotationModal({
         `কোটেশন নং: #${quoteToUse.quotation_number}\n` +
         `তারিখ: ${quoteToUse.quotation_date} (মেয়াদ: ${quoteToUse.valid_until} পর্যন্ত)\n\n` +
         `আইটেম বিবরণ:\n${itemsSummary}\n\n` +
-        `মোট মূল্য: ৳${formatBDT(quoteToUse.grand_total)}\n` +
-        `অগ্রিম প্রদেয় (৫০%): ৳${formatBDT(quoteToUse.advance_amount || Math.round(quoteToUse.grand_total * 0.5))}\n` +
-        `ডেলিভারির সময় অবশিষ্ট: ৳${formatBDT(quoteToUse.due_on_delivery || Math.round(quoteToUse.grand_total * 0.5))}\n\n` +
+        `মোট মূল্য: ${formatBDT(quoteToUse.grand_total)}\n` +
+        `অগ্রিম প্রদেয় (৫০%): ${formatBDT(quoteToUse.advance_amount || Math.round(quoteToUse.grand_total * 0.5))}\n` +
+        `ডেলিভারির সময় অবশিষ্ট: ${formatBDT(quoteToUse.due_on_delivery || Math.round(quoteToUse.grand_total * 0.5))}\n\n` +
         `পেমেন্ট নির্দেশিকা: bKash/Nagad/Bank Transfer প্রযোজ্য।\n` +
         `অনুমোদনের জন্য অনুগ্রহ করে মেসেজের রিপ্লাই দিন অথবা কল করুন। ধন্যবাদ!`
       )
@@ -2795,22 +2795,22 @@ export function NewQuotationModal({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs border-b border-white/10 pb-3">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold block">Subtotal</span>
-                  <span className="font-mono font-bold text-slate-200">৳{formatBDT(calculatedSubtotal)}</span>
+                  <span className="font-mono font-bold text-slate-200">{formatBDT(calculatedSubtotal)}</span>
                 </div>
 
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold block">Discount</span>
-                  <span className="font-mono font-bold text-rose-300">-৳{formatBDT(effectiveDiscountAmount)}</span>
+                  <span className="font-mono font-bold text-rose-300">-{formatBDT(effectiveDiscountAmount)}</span>
                 </div>
 
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-semibold block">VAT ({vatRate}%)</span>
-                  <span className="font-mono font-bold text-slate-200">+৳{formatBDT(calculatedVat)}</span>
+                  <span className="font-mono font-bold text-slate-200">+{formatBDT(calculatedVat)}</span>
                 </div>
 
                 <div className="text-right">
                   <span className="text-[10px] text-cyan-300 uppercase font-bold block">Grand Total</span>
-                  <span className="font-mono font-black text-cyan-300 text-base">৳{formatBDT(calculatedGrandTotal)}</span>
+                  <span className="font-mono font-black text-cyan-300 text-base">{formatBDT(calculatedGrandTotal)}</span>
                 </div>
               </div>
 
@@ -2822,7 +2822,7 @@ export function NewQuotationModal({
                     <span className="text-xs text-emerald-200 font-medium">Work order confirmation</span>
                   </div>
                   <span className="font-mono font-black text-emerald-300 text-lg">
-                    ৳{formatBDT(calculatedAdvanceAmount)}
+                    {formatBDT(calculatedAdvanceAmount)}
                   </span>
                 </div>
 
@@ -2832,7 +2832,7 @@ export function NewQuotationModal({
                     <span className="text-xs text-amber-200 font-medium">Upon Challan delivery</span>
                   </div>
                   <span className="font-mono font-black text-amber-300 text-lg">
-                    ৳{formatBDT(calculatedDueOnDelivery)}
+                    {formatBDT(calculatedDueOnDelivery)}
                   </span>
                 </div>
               </div>

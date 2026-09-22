@@ -509,7 +509,7 @@ export function PricingCalculatorSimulator({
                 {tBilingual('Calculated Commercial Tariff', 'গণনাকৃত বাণিজ্যিক মূল্য')}
               </span>
               <div className="text-3xl font-black font-mono text-white mt-0.5">
-                ৳ {formatBDT(simulation.totalClientPrice)}
+                {formatBDT(simulation.totalClientPrice)}
               </div>
             </div>
             <div className="text-right">
@@ -540,37 +540,37 @@ export function PricingCalculatorSimulator({
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
               <span className="font-mono font-bold text-teal-300">
-                ৳ {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
+                {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
               </span>
             </div>
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Base Print Substrate:</span>
-              <span className="font-mono text-slate-200">৳ {formatBDT(simulation.baseMediaCost)}</span>
+              <span className="font-mono text-slate-200">{formatBDT(simulation.baseMediaCost)}</span>
             </div>
 
             {simulation.machineSurcharge > 0 && (
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-400">Machine Method Surcharge:</span>
-                <span className="font-mono text-slate-200">৳ {formatBDT(simulation.machineSurcharge)}</span>
+                <span className="font-mono text-slate-200">{formatBDT(simulation.machineSurcharge)}</span>
               </div>
             )}
 
             {simulation.finishingTotal > 0 && (
               <div className="flex justify-between py-1 border-b border-slate-800/80">
                 <span className="text-slate-400">Finishing & Fabrication:</span>
-                <span className="font-mono text-slate-200">৳ {formatBDT(simulation.finishingTotal)}</span>
+                <span className="font-mono text-slate-200">{formatBDT(simulation.finishingTotal)}</span>
               </div>
             )}
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Estimated Raw Material Cost:</span>
-              <span className="font-mono text-slate-400">৳ {formatBDT(simulation.estimatedBOMCost)}</span>
+              <span className="font-mono text-slate-400">{formatBDT(simulation.estimatedBOMCost)}</span>
             </div>
 
             <div className="flex justify-between py-1 pt-1.5 text-sm font-bold">
               <span className="text-emerald-400">Estimated Net Gross Profit:</span>
-              <span className="font-mono text-emerald-400">৳ {formatBDT(simulation.grossProfit)}</span>
+              <span className="font-mono text-emerald-400">{formatBDT(simulation.grossProfit)}</span>
             </div>
           </div>
 

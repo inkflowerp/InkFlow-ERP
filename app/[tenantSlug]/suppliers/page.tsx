@@ -155,7 +155,7 @@ export default function SuppliersPage() {
       PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
-    showNotification(`Payment voucher ${details.voucherNumber} of ৳ ${formatBDT(amount)} recorded for ${payTargetSupplier.supplier_name}.`)
+    showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${payTargetSupplier.supplier_name}.`)
   }
 
   // Handle Save Rate
@@ -387,7 +387,7 @@ export default function SuppliersPage() {
             <CreditCard className="h-4 w-4 text-amber-600" />
           </div>
           <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
-            ৳ {formatBDT(stats.totalPayableDue)}
+            {formatBDT(stats.totalPayableDue)}
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
             {stats.vendorsWithDue} vendors pending payment
@@ -718,7 +718,7 @@ export default function SuppliersPage() {
                           </div>
                           {(supplier.credit_limit || 0) > 0 && (
                             <div className="text-[10px] text-slate-400 font-mono">
-                              Limit: ৳ {formatBDT(supplier.credit_limit || 0)}
+                              Limit: {formatBDT(supplier.credit_limit || 0)}
                             </div>
                           )}
                         </td>
@@ -728,7 +728,7 @@ export default function SuppliersPage() {
                           {hasDue ? (
                             <div>
                               <div className="text-sm font-black font-mono text-amber-700 dark:text-amber-400">
-                                ৳ {formatBDT(supplier.outstanding_balance || 0)}
+                                {formatBDT(supplier.outstanding_balance || 0)}
                               </div>
                               {isOverLimit ? (
                                 <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-[9px] py-0 px-1 border-0">
@@ -917,7 +917,7 @@ export default function SuppliersPage() {
                     <div className="space-y-1">
                       <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
                         <span>Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
-                        <span>Credit Limit: ৳ {formatBDT(creditLimit)}</span>
+                        <span>Credit Limit: {formatBDT(creditLimit)}</span>
                       </div>
                       <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
@@ -940,7 +940,7 @@ export default function SuppliersPage() {
                     <div className="text-base font-black font-mono">
                       {hasDue ? (
                         <span className="text-amber-700 dark:text-amber-400">
-                          ৳ {formatBDT(currentBal)}
+                          {formatBDT(currentBal)}
                         </span>
                       ) : (
                         <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">

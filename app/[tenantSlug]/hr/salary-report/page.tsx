@@ -361,27 +361,27 @@ export default function SalaryReportPage() {
         <Card className="p-4 border-l-4 border-l-blue-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
           <div className="text-[11px] font-semibold uppercase text-slate-500">{tBilingual('Gross Pay Budget', 'মোট বেতন বাজেট')}</div>
           <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-mono">
-            ৳ {formatBDT(totalGross)}
+            {formatBDT(totalGross)}
           </div>
           <div className="text-[10px] text-slate-400 mt-1 font-mono">
-            Includes ৳ {formatBDT(totalOtPaid)} overtime
+            Includes {formatBDT(totalOtPaid)} overtime
           </div>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-purple-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
           <div className="text-[11px] font-semibold uppercase text-purple-700 dark:text-purple-300">{tBilingual('Net Payable', 'নিট প্রদেয় বেতন')}</div>
           <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1 font-mono">
-            ৳ {formatBDT(totalNet)}
+            {formatBDT(totalNet)}
           </div>
           <div className="text-[10px] text-slate-400 mt-1 font-mono">
-            After ৳ {formatBDT(totalAdvancesDeducted)} advances deducted
+            After {formatBDT(totalAdvancesDeducted)} advances deducted
           </div>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
           <div className="text-[11px] font-semibold uppercase text-emerald-700 dark:text-emerald-300">{tBilingual('Total Disbursed', 'পরিশোধিত টাকা')}</div>
           <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
-            ৳ {formatBDT(totalPaid)}
+            {formatBDT(totalPaid)}
           </div>
           <div className="text-[10px] text-emerald-600/90 dark:text-emerald-400/90 mt-1 font-mono">
             {totalNet > 0 ? Math.round((totalPaid / totalNet) * 100) : 0}% cleared
@@ -391,7 +391,7 @@ export default function SalaryReportPage() {
         <Card className="p-4 border-l-4 border-l-rose-500 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 rounded-2xl">
           <div className="text-[11px] font-semibold uppercase text-rose-700 dark:text-rose-300">{tBilingual('Pending Dues', 'বকেয়া পাওনা')}</div>
           <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1 font-mono">
-            ৳ {formatBDT(totalDue)}
+            {formatBDT(totalDue)}
           </div>
           <div className="text-[10px] text-rose-600/90 dark:text-rose-400/90 mt-1 font-mono">
             {filteredItems.filter((i) => (i.due_amount || 0) > 0).length} employees pending
@@ -505,27 +505,27 @@ export default function SalaryReportPage() {
                     </td>
 
                     <td className="p-3 text-slate-700 dark:text-slate-300">
-                      ৳ {formatBDT(item.base_salary || 0)}
+                      {formatBDT(item.base_salary || 0)}
                     </td>
 
                     <td className="p-3 text-purple-600 dark:text-purple-400 font-medium">
-                      {Number(item.overtime_amount || 0) > 0 ? `+৳ ${formatBDT(item.overtime_amount || 0)}` : '৳ 0'}
+                      {Number(item.overtime_amount || 0) > 0 ? `+${formatBDT(item.overtime_amount || 0)}` : '৳ 0'}
                     </td>
 
                     <td className="p-3 text-rose-600 dark:text-rose-400">
-                      {totalDeduction > 0 ? `-৳ ${formatBDT(totalDeduction)}` : '৳ 0'}
+                      {totalDeduction > 0 ? `-${formatBDT(totalDeduction)}` : '৳ 0'}
                     </td>
 
                     <td className="p-3 font-bold text-slate-900 dark:text-white">
-                      ৳ {formatBDT(item.net_salary || 0)}
+                      {formatBDT(item.net_salary || 0)}
                     </td>
 
                     <td className="p-3 text-emerald-600 dark:text-emerald-400 font-semibold">
-                      ৳ {formatBDT(item.paid_amount || 0)}
+                      {formatBDT(item.paid_amount || 0)}
                     </td>
 
                     <td className="p-3 pr-4 text-right text-rose-600 dark:text-rose-400">
-                      ৳ {formatBDT(item.due_amount || 0)}
+                      {formatBDT(item.due_amount || 0)}
                     </td>
                   </tr>
                 )
@@ -543,12 +543,12 @@ export default function SalaryReportPage() {
                 <td colSpan={4} className="p-3 pl-4 font-sans text-right uppercase text-slate-700 dark:text-slate-300">
                   {tBilingual('Total Summary', 'মোট সর্বমোট')}:
                 </td>
-                <td className="p-3 text-slate-900 dark:text-white">৳ {formatBDT(totalGross)}</td>
-                <td className="p-3 text-purple-600 dark:text-purple-400">+৳ {formatBDT(totalOtPaid)}</td>
-                <td className="p-3 text-rose-600 dark:text-rose-400">-৳ {formatBDT(totalAdvancesDeducted)}</td>
-                <td className="p-3 text-slate-900 dark:text-white">৳ {formatBDT(totalNet)}</td>
-                <td className="p-3 text-emerald-600 dark:text-emerald-400">৳ {formatBDT(totalPaid)}</td>
-                <td className="p-3 pr-4 text-right text-rose-600 dark:text-rose-400">৳ {formatBDT(totalDue)}</td>
+                <td className="p-3 text-slate-900 dark:text-white">{formatBDT(totalGross)}</td>
+                <td className="p-3 text-purple-600 dark:text-purple-400">+{formatBDT(totalOtPaid)}</td>
+                <td className="p-3 text-rose-600 dark:text-rose-400">-{formatBDT(totalAdvancesDeducted)}</td>
+                <td className="p-3 text-slate-900 dark:text-white">{formatBDT(totalNet)}</td>
+                <td className="p-3 text-emerald-600 dark:text-emerald-400">{formatBDT(totalPaid)}</td>
+                <td className="p-3 pr-4 text-right text-rose-600 dark:text-rose-400">{formatBDT(totalDue)}</td>
               </tr>
             </tfoot>
           </table>

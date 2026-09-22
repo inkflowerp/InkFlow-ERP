@@ -341,7 +341,7 @@ export default function TaxSettingsPage() {
                   {tBilingual('Net Treasury Payable', 'সরকারি কোষাগারে প্রদেয়')}
                 </span>
                 <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300">
-                  ৳ {formatBDT(vatReturnSummary.netPayableVat)}
+                  {formatBDT(vatReturnSummary.netPayableVat)}
                 </div>
               </div>
             </div>
@@ -357,7 +357,7 @@ export default function TaxSettingsPage() {
               </span>
             </div>
             <div className="font-bold text-slate-900 dark:text-slate-100 text-base font-mono">
-              ৳ {formatBDT(vatReturnSummary.grossTurnover)}
+              {formatBDT(vatReturnSummary.grossTurnover)}
             </div>
           </div>
 
@@ -369,7 +369,7 @@ export default function TaxSettingsPage() {
               </Badge>
             </div>
             <div className="font-bold text-blue-600 dark:text-blue-400 text-base font-mono">
-              +৳ {formatBDT(vatReturnSummary.outputVat)}
+              +{formatBDT(vatReturnSummary.outputVat)}
             </div>
           </div>
 
@@ -381,7 +381,7 @@ export default function TaxSettingsPage() {
               </span>
             </div>
             <div className="font-bold text-purple-600 dark:text-purple-400 text-base font-mono">
-              -৳ {formatBDT(vatReturnSummary.inputVat)}
+              -{formatBDT(vatReturnSummary.inputVat)}
             </div>
           </div>
         </div>
@@ -971,7 +971,7 @@ export default function TaxSettingsPage() {
           <div className="space-y-0.5">
             <span className="text-slate-500 text-[10px] uppercase">{tBilingual('Base Price', 'মূল পণ্যের দাম')}:</span>
             <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
-              ৳ {formatBDT(testCalcResult.baseAmount)}
+              {formatBDT(testCalcResult.baseAmount)}
             </div>
           </div>
 
@@ -980,7 +980,7 @@ export default function TaxSettingsPage() {
               {tBilingual('VAT Amount', 'ভ্যাট পরিমাণ')} ({testCalcResult.vatRate}%):
             </span>
             <div className="font-bold text-blue-600 dark:text-blue-400 text-sm">
-              +৳ {formatBDT(testCalcResult.vatAmount)}
+              +{formatBDT(testCalcResult.vatAmount)}
             </div>
           </div>
 
@@ -989,7 +989,7 @@ export default function TaxSettingsPage() {
               {tBilingual('Withheld (VDS+TDS)', 'কর্তন (VDS+TDS)')}:
             </span>
             <div className="font-bold text-purple-600 dark:text-purple-400 text-sm">
-              -৳ {formatBDT(testCalcResult.vdsAmount + testCalcResult.tdsAmount)}
+              -{formatBDT(testCalcResult.vdsAmount + testCalcResult.tdsAmount)}
             </div>
           </div>
 
@@ -998,7 +998,7 @@ export default function TaxSettingsPage() {
               {tBilingual('Net Cash/Bank Due', 'নেট প্রাপ্তব্য টাকা')}:
             </span>
             <div className="font-black text-emerald-700 dark:text-emerald-300 text-base">
-              ৳ {formatBDT(testCalcResult.netReceivable)}
+              {formatBDT(testCalcResult.netReceivable)}
             </div>
           </div>
         </div>

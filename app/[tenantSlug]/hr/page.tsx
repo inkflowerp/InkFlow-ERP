@@ -389,7 +389,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2">
             <span className="text-lg font-black tracking-tight text-rose-600 dark:text-rose-400 font-mono">
-              ৳ {formatBDT(arrearsDue)}
+              {formatBDT(arrearsDue)}
             </span>
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
@@ -412,7 +412,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2">
             <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white font-mono">
-              ৳ {formatBDT(monthPayroll)}
+              {formatBDT(monthPayroll)}
             </span>
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
@@ -435,7 +435,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2">
             <span className="text-lg font-black tracking-tight text-indigo-600 dark:text-indigo-400 font-mono">
-              ৳ {formatBDT(totalCommission)}
+              {formatBDT(totalCommission)}
             </span>
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
@@ -458,7 +458,7 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2">
             <span className="text-lg font-black tracking-tight text-teal-600 dark:text-teal-400 font-mono">
-              ৳ {formatBDT(advanceGiven)}
+              {formatBDT(advanceGiven)}
             </span>
           </div>
           <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
@@ -507,7 +507,7 @@ export default function HrmDashboardPage() {
                     {salaryDisbursedPct}%
                   </span>
                   <span className="text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
-                    ৳ {formatBDT(totalPaidSalary)}
+                    {formatBDT(totalPaidSalary)}
                   </span>
                 </div>
               </div>
@@ -521,7 +521,7 @@ export default function HrmDashboardPage() {
                     {salaryPendingPct}%
                   </span>
                   <span className="text-xs text-rose-700 dark:text-rose-300 font-semibold">
-                    ৳ {formatBDT(Math.max(0, totalNetSalary - totalPaidSalary))}
+                    {formatBDT(Math.max(0, totalNetSalary - totalPaidSalary))}
                   </span>
                 </div>
               </div>
@@ -532,7 +532,7 @@ export default function HrmDashboardPage() {
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span>{tBilingual('Disbursal Progress', 'পরিশোধের অগ্রগতি')}</span>
                 <span className="font-semibold text-slate-700 dark:text-slate-300 font-mono">
-                  ৳ {formatBDT(totalPaidSalary)} / ৳ {formatBDT(totalNetSalary)}
+                  {formatBDT(totalPaidSalary)} / {formatBDT(totalNetSalary)}
                 </span>
               </div>
               <div className="w-full h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex">
@@ -822,7 +822,7 @@ export default function HrmDashboardPage() {
                         </div>
                         <div className="text-right">
                           <div className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono">
-                            ৳ {formatBDT(ot.calculated_amount || 0)}
+                            {formatBDT(ot.calculated_amount || 0)}
                           </div>
                           <span className="text-[10px] text-slate-400 capitalize">{ot.ot_type.replace('_', ' ')}</span>
                         </div>

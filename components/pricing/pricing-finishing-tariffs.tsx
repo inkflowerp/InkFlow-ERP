@@ -213,10 +213,10 @@ export function PricingFinishingTariffs({
                         {fin.pricing_method || 'sqft'}
                       </td>
                       <td className="py-3 px-4 font-mono font-black text-teal-700 dark:text-teal-400 text-sm">
-                        ৳ {formatBDT(sell)}
+                        {formatBDT(sell)}
                       </td>
                       <td className="py-3 px-4 font-mono text-slate-500">
-                        ৳ {formatBDT(cost)}
+                        {formatBDT(cost)}
                       </td>
                       <td className="py-3 px-4">
                         <Badge
@@ -311,7 +311,7 @@ export function PricingFinishingTariffs({
                     <td className="py-3 px-4 font-mono text-slate-400">{m.code || '—'}</td>
                     <td className="py-3 px-4 uppercase font-mono font-semibold">sft</td>
                     <td className="py-3 px-4 font-mono font-black text-blue-700 dark:text-blue-400 text-sm">
-                      + ৳ {formatBDT(m.cost_per_sqft || 0)}
+                      +{formatBDT(m.cost_per_sqft || 0)}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex items-center justify-end gap-1">

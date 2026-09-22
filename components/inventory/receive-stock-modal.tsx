@@ -1080,7 +1080,7 @@ export function ReceiveStockModal({
                 <option value="">-- Choose Inward Purchase Order --</option>
                 {receivableOrders.map((o) => (
                   <option key={o.id} value={o.id}>
-                    {o.po_number} — {o.supplier_name} ({o.status.replace('_', ' ')}) — Grand Total: ৳{formatBDT(o.grand_total)}
+                    {o.po_number} — {o.supplier_name} ({o.status.replace('_', ' ')}) — Grand Total: {formatBDT(o.grand_total)}
                   </option>
                 ))}
               </select>
@@ -1110,7 +1110,7 @@ export function ReceiveStockModal({
                 <div>
                   <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">PO Total Value:</span>
                   <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">
-                    ৳ {formatBDT(currentPo.grand_total)}
+                    {formatBDT(currentPo.grand_total)}
                   </span>
                 </div>
               </div>
@@ -1144,7 +1144,7 @@ export function ReceiveStockModal({
 
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className="text-[10px] font-mono">
-                              Rate: ৳{formatBDT(row.unit_cost)} / {row.unit}
+                              Rate: {formatBDT(row.unit_cost)} / {row.unit}
                             </Badge>
                           </div>
                         </div>
@@ -1187,7 +1187,7 @@ export function ReceiveStockModal({
                           <div>
                             <Label className="text-[11px] text-slate-500 mb-0.5 block">Inward Value (৳)</Label>
                             <div className="h-8 px-3 rounded-md bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center font-mono font-bold text-emerald-700 dark:text-emerald-300">
-                              ৳ {formatBDT(lineAcceptedVal)}
+                              {formatBDT(lineAcceptedVal)}
                             </div>
                           </div>
                         </div>
@@ -1214,7 +1214,7 @@ export function ReceiveStockModal({
                             <div>
                               <span className="text-[10px] text-slate-400 block">Previous Cost:</span>
                               <div className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
-                                ৳{formatBDT(row.previous_cost)} / {row.unit}
+                                {formatBDT(row.previous_cost)} / {row.unit}
                               </div>
                             </div>
 
@@ -1222,7 +1222,7 @@ export function ReceiveStockModal({
                               <span className="text-[10px] text-slate-400 block">PO Inward Cost:</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="font-mono text-xs font-bold text-emerald-600">
-                                  ৳{formatBDT(row.unit_cost)}
+                                  {formatBDT(row.unit_cost)}
                                 </span>
                                 {costVariance !== 0 && (
                                   <Badge
@@ -1243,7 +1243,7 @@ export function ReceiveStockModal({
                             <div>
                               <span className="text-[10px] text-slate-400 block">Previous Price:</span>
                               <div className="font-mono text-xs text-slate-500">
-                                ৳{formatBDT(row.previous_selling_price)}
+                                {formatBDT(row.previous_selling_price)}
                               </div>
                             </div>
 
@@ -1281,7 +1281,7 @@ export function ReceiveStockModal({
                   <div className="text-right">
                     <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Accepted GRN Value</span>
                     <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-                      ৳ {formatBDT(poTotalAcceptedValuation)}
+                      {formatBDT(poTotalAcceptedValuation)}
                     </div>
                   </div>
                 </div>
@@ -1418,7 +1418,7 @@ export function ReceiveStockModal({
                             <optgroup key={grpName} label={`📂 ${grpName}`}>
                               {grpItems.map((m) => (
                                 <option key={m.id} value={m.id}>
-                                  [{m.sku}] {m.name} — Prev Cost: ৳{formatBDT(m.previous_cost)} | Price: ৳{formatBDT(m.previous_selling_price)} ({m.unit})
+                                  [{m.sku}] {m.name} — Prev Cost: {formatBDT(m.previous_cost)} | Price: {formatBDT(m.previous_selling_price)} ({m.unit})
                                 </option>
                               ))}
                             </optgroup>
@@ -1480,7 +1480,7 @@ export function ReceiveStockModal({
                         <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
                           <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Cost</span>
                           <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                            ৳ {formatBDT(item.previous_cost)}
+                            {formatBDT(item.previous_cost)}
                             <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
                           </div>
                         </div>
@@ -1520,7 +1520,7 @@ export function ReceiveStockModal({
                         <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
                           <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Price</span>
                           <div className="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5">
-                            ৳ {formatBDT(item.previous_selling_price)}
+                            {formatBDT(item.previous_selling_price)}
                             <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
                           </div>
                         </div>
@@ -1552,15 +1552,15 @@ export function ReceiveStockModal({
                       {/* Calculation Breakdown Footer */}
                       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-1 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 gap-1">
                         <span>
-                          Inward Valuation: {item.quantity} {item.unit} × ৳{formatBDT(item.unit_cost)}
+                          Inward Valuation: {item.quantity} {item.unit} × {formatBDT(item.unit_cost)}
                           {item.new_selling_price > item.unit_cost && (
                             <span className="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
-                              (Profit: ৳{formatBDT(grossProfitPerUnit)} / {item.unit})
+                              (Profit: {formatBDT(grossProfitPerUnit)} / {item.unit})
                             </span>
                           )}
                         </span>
                         <span className="font-mono font-black text-slate-900 dark:text-white text-xs">
-                          Line Total: ৳ {formatBDT(item.total_cost)}
+                          Line Total: {formatBDT(item.total_cost)}
                         </span>
                       </div>
                     </div>
@@ -1580,7 +1580,7 @@ export function ReceiveStockModal({
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Inward Valuation</span>
                 <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
-                  ৳ {formatBDT(directTotalValuation)}
+                  {formatBDT(directTotalValuation)}
                 </div>
               </div>
             </div>

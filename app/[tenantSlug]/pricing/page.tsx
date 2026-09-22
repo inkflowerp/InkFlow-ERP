@@ -857,7 +857,7 @@ export default function PricingManagementPage() {
           <div className="p-3 bg-teal-50 dark:bg-teal-950/40 rounded-xl border border-teal-200 dark:border-teal-800 flex items-center justify-between text-xs">
             <span className="text-slate-600 dark:text-slate-300">Effective Calculated Price:</span>
             <span className="text-base font-black text-teal-700 dark:text-teal-300 font-mono">
-              ৳ {formatBDT(livePreview.calculatedPrice)}
+              {formatBDT(livePreview.calculatedPrice)}
             </span>
           </div>
 

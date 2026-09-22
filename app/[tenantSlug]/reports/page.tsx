@@ -519,7 +519,7 @@ export default function ReportingAnalyticsPage() {
 
         <Card className="p-3.5 border-l-4 border-l-purple-600">
           <span className="text-[11px] font-semibold text-slate-500 block">Warehouse Stock Value</span>
-          <div className="text-xl font-black text-purple-600 mt-0.5">৳ {formatBDT(totalInventoryValuation)}</div>
+          <div className="text-xl font-black text-purple-600 mt-0.5">{formatBDT(totalInventoryValuation)}</div>
           <span className="text-[10px] text-purple-600 font-medium">{materials.length} Raw Materials</span>
         </Card>
       </div>
@@ -619,7 +619,7 @@ export default function ReportingAnalyticsPage() {
                   {salesSubTab.replace('_', ' ')} Sales Breakdown
                 </CardTitle>
                 <span className="text-xs text-slate-400">
-                  Total: ৳ {formatBDT(grossSalesTurnover)}
+                  Total: {formatBDT(grossSalesTurnover)}
                 </span>
               </div>
             </CardHeader>
@@ -650,7 +650,7 @@ export default function ReportingAnalyticsPage() {
                             </td>
                             <td className="py-3.5 px-4 font-mono text-center">{row.ordersCount}</td>
                             <td className="py-3.5 px-4 font-mono font-bold text-right text-slate-900 dark:text-white">
-                              ৳ {formatBDT(row.revenue)}
+                              {formatBDT(row.revenue)}
                             </td>
                             <td className="py-3.5 px-4 text-right">
                               <div className="flex items-center justify-end gap-2 font-mono font-bold">
@@ -681,7 +681,7 @@ export default function ReportingAnalyticsPage() {
                           </div>
                           <div className="text-right shrink-0">
                             <div className="font-mono font-bold text-sm text-slate-900 dark:text-white">
-                              ৳ {formatBDT(row.revenue)}
+                              {formatBDT(row.revenue)}
                             </div>
                             <span className="text-[10px] text-slate-400 font-mono">
                               {row.ordersCount} orders
@@ -761,7 +761,7 @@ export default function ReportingAnalyticsPage() {
                         <tr key={fa.id} className="hover:bg-slate-50/50">
                           <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{fa.range}</td>
                           <td className="py-3.5 px-4 text-center">{fa.invoicesCount} Invoices</td>
-                          <td className="py-3.5 px-4 text-right font-black text-sm">৳ {formatBDT(fa.amount)}</td>
+                          <td className="py-3.5 px-4 text-right font-black text-sm">{formatBDT(fa.amount)}</td>
                           <td className="py-3.5 px-4 text-center">
                             <Badge
                               variant="outline"
@@ -794,7 +794,7 @@ export default function ReportingAnalyticsPage() {
                           <span className="text-[11px] text-slate-400">{fa.invoicesCount} Invoices</span>
                         </div>
                         <div className="text-right">
-                          <div className="font-black text-base text-red-600">৳ {formatBDT(fa.amount)}</div>
+                          <div className="font-black text-base text-red-600">{formatBDT(fa.amount)}</div>
                           <Badge
                             variant="outline"
                             className={`capitalize text-[9px] mt-1 ${
@@ -834,7 +834,7 @@ export default function ReportingAnalyticsPage() {
                 </CardDescription>
               </div>
               <strong className="text-purple-700 font-mono text-sm">
-                Total Value: ৳ {formatBDT(totalInventoryValuation)}
+                Total Value: {formatBDT(totalInventoryValuation)}
               </strong>
             </div>
           </CardHeader>
@@ -864,9 +864,9 @@ export default function ReportingAnalyticsPage() {
                           <td className="py-3.5 px-4 text-center font-bold">
                             {item.stockQty} {item.unit}s
                           </td>
-                          <td className="py-3.5 px-4 text-right text-slate-600">৳ {formatBDT(item.unitCost)}</td>
+                          <td className="py-3.5 px-4 text-right text-slate-600">{formatBDT(item.unitCost)}</td>
                           <td className="py-3.5 px-4 text-right font-black text-slate-900 dark:text-white">
-                            ৳ {formatBDT(item.totalValue)}
+                            {formatBDT(item.totalValue)}
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             {item.isLowStock ? (
@@ -895,8 +895,8 @@ export default function ReportingAnalyticsPage() {
                           <span className="font-sans text-[11px] text-slate-400">{item.category}</span>
                         </div>
                         <div className="text-right">
-                          <div className="font-black text-sm text-slate-900 dark:text-white">৳ {formatBDT(item.totalValue)}</div>
-                          <div className="text-[10px] text-slate-400">@ ৳{formatBDT(item.unitCost)}/{item.unit}</div>
+                          <div className="font-black text-sm text-slate-900 dark:text-white">{formatBDT(item.totalValue)}</div>
+                          <div className="text-[10px] text-slate-400">@ {formatBDT(item.unitCost)}/{item.unit}</div>
                         </div>
                       </div>
 
@@ -958,13 +958,13 @@ export default function ReportingAnalyticsPage() {
                           <td className="py-3.5 px-4 font-sans text-slate-500">{cust.customerType}</td>
                           <td className="py-3.5 px-4 text-center font-bold">{cust.ordersCount}</td>
                           <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">
-                            ৳ {formatBDT(cust.lifetimeSales)}
+                            {formatBDT(cust.lifetimeSales)}
                           </td>
                           <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
-                            ৳ {formatBDT(cust.totalPaid)}
+                            {formatBDT(cust.totalPaid)}
                           </td>
                           <td className="py-3.5 px-4 text-right font-black text-amber-700">
-                            ৳ {formatBDT(cust.dueBalance)}
+                            {formatBDT(cust.dueBalance)}
                           </td>
                         </tr>
                       ))}
@@ -986,17 +986,17 @@ export default function ReportingAnalyticsPage() {
                         <div className="text-right">
                           <div className="text-xs text-slate-400 font-sans">{cust.ordersCount} orders</div>
                           <div className="font-bold text-xs text-slate-900 dark:text-white">
-                            Sales: ৳{formatBDT(cust.lifetimeSales)}
+                            Sales: {formatBDT(cust.lifetimeSales)}
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60">
                         <span className="text-emerald-700 font-bold">
-                          Paid: ৳{formatBDT(cust.totalPaid)}
+                          Paid: {formatBDT(cust.totalPaid)}
                         </span>
                         <span className="text-amber-700 font-black">
-                          Due: ৳{formatBDT(cust.dueBalance)}
+                          Due: {formatBDT(cust.dueBalance)}
                         </span>
                       </div>
                     </div>

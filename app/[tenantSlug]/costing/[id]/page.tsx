@@ -184,7 +184,7 @@ export default function JobCostingDetailPage() {
               <div>
                 Selling Price (Revenue):{' '}
                 <strong className="text-base font-black text-slate-900 dark:text-white">
-                  ৳ {formatBDT(costing.selling_price)}
+                  {formatBDT(costing.selling_price)}
                 </strong>
               </div>
               <div>Labor Mode: <strong className="uppercase">{costing.labor_cost_mode.replace('_', ' ')}</strong></div>
@@ -223,7 +223,7 @@ export default function JobCostingDetailPage() {
 
                       {/* Pre-Production Estimate */}
                       <td className="p-3 text-right text-slate-600 dark:text-slate-400">
-                        {isSalesRoleShielded ? '••••' : `৳ ${formatBDT(h.est)}`}
+                        {isSalesRoleShielded ? '••••' : formatBDT(h.est)}
                       </td>
 
                       {/* Post-Production Actual */}
@@ -231,7 +231,7 @@ export default function JobCostingDetailPage() {
                         {isSalesRoleShielded ? (
                           '••••'
                         ) : costing.status === 'actualized' ? (
-                          `৳ ${formatBDT(h.act)}`
+                          formatBDT(h.act)
                         ) : (
                           <span className="text-slate-400 italic">In progress</span>
                         )}
@@ -243,9 +243,9 @@ export default function JobCostingDetailPage() {
                           '••••'
                         ) : costing.status === 'actualized' ? (
                           variance < 0 ? (
-                            <span className="text-emerald-600 font-bold">-৳ {formatBDT(Math.abs(variance))}</span>
+                            <span className="text-emerald-600 font-bold">-{formatBDT(Math.abs(variance))}</span>
                           ) : variance > 0 ? (
-                            <span className="text-red-600 font-bold">+৳ {formatBDT(variance)}</span>
+                            <span className="text-red-600 font-bold">+{formatBDT(variance)}</span>
                           ) : (
                             <span className="text-slate-400">৳ 0</span>
                           )
@@ -259,21 +259,19 @@ export default function JobCostingDetailPage() {
                         {isSalesRoleShielded ? (
                           <span className="text-slate-400 text-[10px]">Shielded</span>
                         ) : costing.status === 'actualized' ? (
-                          variance < 0 ? (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                              Savings
-                            </span>
-                          ) : variance > 0 ? (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">
-                              Overrun
-                            </span>
-                          ) : (
-                            <span className="px-1.5 py-0.5 rounded text-[10px] text-slate-500 bg-slate-100">
-                              Exact
-                            </span>
-                          )
+                          <Badge
+                            className={
+                              variance < 0
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
+                                : variance > 0
+                                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                : 'bg-slate-100 text-slate-800'
+                            }
+                          >
+                            {variance < 0 ? 'Under Budget' : variance > 0 ? 'Cost Overrun' : 'On Target'}
+                          </Badge>
                         ) : (
-                          <span className="text-slate-400 text-[10px]">Pending</span>
+                          <Badge variant="outline">Pending</Badge>
                         )}
                       </td>
                     </tr>
@@ -284,13 +282,13 @@ export default function JobCostingDetailPage() {
                 <tr>
                   <td className="p-3">TOTAL PRODUCTION COST</td>
                   <td className="p-3 text-right text-slate-600">
-                    {isSalesRoleShielded ? '••••••' : `৳ ${formatBDT(costing.est.total_cost)}`}
+                    {isSalesRoleShielded ? '••••••' : formatBDT(costing.est.total_cost)}
                   </td>
                   <td className="p-3 text-right text-slate-900 dark:text-white">
                     {isSalesRoleShielded
                       ? '••••••'
                       : costing.status === 'actualized'
-                      ? `৳ ${formatBDT(costing.act.total_cost)}`
+                      ? formatBDT(costing.act.total_cost)
                       : '—'}
                   </td>
                   <td className="p-3 text-right">
@@ -299,11 +297,11 @@ export default function JobCostingDetailPage() {
                     ) : costing.status === 'actualized' ? (
                       (costing.variances?.total_variance || 0) < 0 ? (
                         <span className="text-emerald-700 font-black">
-                          -৳ {formatBDT(Math.abs(costing.variances?.total_variance || 0))}
+                          -{formatBDT(Math.abs(costing.variances?.total_variance || 0))}
                         </span>
                       ) : (
                         <span className="text-red-700 font-black">
-                          +৳ {formatBDT(costing.variances?.total_variance || 0)}
+                          +{formatBDT(costing.variances?.total_variance || 0)}
                         </span>
                       )
                     ) : (
@@ -324,7 +322,7 @@ export default function JobCostingDetailPage() {
               <div className="flex justify-between">
                 <span>Estimated Profit:</span>
                 <strong className="text-blue-600 font-bold">
-                  {isSalesRoleShielded ? '••••••' : `৳ ${formatBDT(costing.est.profit)}`}
+                  {isSalesRoleShielded ? '••••••' : formatBDT(costing.est.profit)}
                 </strong>
               </div>
               <div className="flex justify-between">
@@ -346,7 +344,7 @@ export default function JobCostingDetailPage() {
                   {isSalesRoleShielded
                     ? '••••••'
                     : costing.status === 'actualized'
-                    ? `৳ ${formatBDT(costing.act.profit)}`
+                    ? formatBDT(costing.act.profit)
                     : 'In Production'}
                 </strong>
               </div>

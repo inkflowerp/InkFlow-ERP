@@ -1385,10 +1385,10 @@ export function NewPurchaseModal({
 
                     <div className="flex items-center gap-3">
                       <span>
-                        {item.quantity} {item.unit} × ৳{formatBDT(item.unit_cost)}
+                        {item.quantity} {item.unit} × {formatBDT(item.unit_cost)}
                       </span>
                       <span className="font-mono font-black text-slate-900 dark:text-white text-xs">
-                        ৳ {formatBDT(item.total_cost)}
+                        {formatBDT(item.total_cost)}
                       </span>
                     </div>
                   </div>
@@ -1407,7 +1407,7 @@ export function NewPurchaseModal({
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Subtotal:</span>{' '}
                 <span className="text-lg font-black text-amber-700 dark:text-amber-400 font-mono">
-                  ৳ {formatBDT(itemsSubtotal)}
+                  {formatBDT(itemsSubtotal)}
                 </span>
               </div>
             </div>
@@ -1608,7 +1608,7 @@ export function NewPurchaseModal({
                   Items Subtotal
                 </span>
                 <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
-                  ৳ {formatBDT(itemsSubtotal)}
+                  {formatBDT(itemsSubtotal)}
                 </div>
               </div>
 
@@ -1617,7 +1617,7 @@ export function NewPurchaseModal({
                   VAT & Freight
                 </span>
                 <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
-                  + ৳ {formatBDT(calculatedVatAmount + (Number(shippingCost) || 0))}
+                  +{formatBDT(calculatedVatAmount + (Number(shippingCost) || 0))}
                 </div>
               </div>
 
@@ -1626,7 +1626,7 @@ export function NewPurchaseModal({
                   PO Grand Total
                 </span>
                 <div className="text-base font-black font-mono text-amber-700 dark:text-amber-400 mt-0.5">
-                  ৳ {formatBDT(grandTotal)}
+                  {formatBDT(grandTotal)}
                 </div>
               </div>
 
@@ -1635,7 +1635,7 @@ export function NewPurchaseModal({
                   Due on Delivery
                 </span>
                 <div className="text-base font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5">
-                  ৳ {formatBDT(dueAmount)}
+                  {formatBDT(dueAmount)}
                 </div>
               </div>
             </div>

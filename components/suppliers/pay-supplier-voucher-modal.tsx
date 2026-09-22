@@ -183,7 +183,7 @@ export function PaySupplierVoucherModal({
               {tBilingual('Current Payable Balance (বকেয়া পাওনা)', 'বর্তমান বকেয়া পাওনা')}
             </span>
             <div className="text-2xl font-black text-teal-900 dark:text-teal-100 font-mono mt-0.5">
-              ৳ {formatBDT(currentBalance)}
+              {formatBDT(currentBalance)}
             </div>
             <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
               Terms: <strong className="text-slate-700 dark:text-slate-300">{supplier.payment_terms.replace('_', ' ').toUpperCase()}</strong>
@@ -196,7 +196,7 @@ export function PaySupplierVoucherModal({
               {tBilingual('Balance After Payment', 'পেমেন্ট পরবর্তী অবশিষ্ট')}
             </span>
             <div className="text-xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
-              ৳ {formatBDT(remainingBalance)}
+              {formatBDT(remainingBalance)}
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
               <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] mt-1 border-0">

@@ -122,7 +122,7 @@ export default function PayrollDetailPage() {
             >
               {period.items.map((it, idx) => (
                 <option key={it.id} value={idx}>
-                  {it.employee_name} ({it.role}) — ৳ {formatBDT(it.net_salary)}
+                  {it.employee_name} ({it.role}) — {formatBDT(it.net_salary)}
                 </option>
               ))}
             </select>
@@ -194,35 +194,35 @@ export default function PayrollDetailPage() {
                 <tr>
                   <td className="p-2.5">Basic Salary (মূল বেতন)</td>
                   <td className="p-2.5 text-right font-bold">
-                    ৳ {formatBDT(currentItem.allowances_breakdown?.basic || currentItem.base_salary * 0.6)}
+                    {formatBDT(currentItem.allowances_breakdown?.basic || currentItem.base_salary * 0.6)}
                   </td>
                 </tr>
                 {currentItem.allowances_breakdown?.house_allowance > 0 && (
                   <tr>
                     <td className="p-2.5">House Allowance (বাড়ি ভাড়া)</td>
-                    <td className="p-2.5 text-right">৳ {formatBDT(currentItem.allowances_breakdown.house_allowance)}</td>
+                    <td className="p-2.5 text-right">{formatBDT(currentItem.allowances_breakdown.house_allowance)}</td>
                   </tr>
                 )}
                 {currentItem.allowances_breakdown?.transport_allowance > 0 && (
                   <tr>
                     <td className="p-2.5">Transport Allowance (যাতায়াত)</td>
-                    <td className="p-2.5 text-right">৳ {formatBDT(currentItem.allowances_breakdown.transport_allowance)}</td>
+                    <td className="p-2.5 text-right">{formatBDT(currentItem.allowances_breakdown.transport_allowance)}</td>
                   </tr>
                 )}
                 {currentItem.allowances_breakdown?.medical_allowance > 0 && (
                   <tr>
                     <td className="p-2.5">Medical Allowance (চিকিৎসা)</td>
-                    <td className="p-2.5 text-right">৳ {formatBDT(currentItem.allowances_breakdown.medical_allowance)}</td>
+                    <td className="p-2.5 text-right">{formatBDT(currentItem.allowances_breakdown.medical_allowance)}</td>
                   </tr>
                 )}
                 <tr>
                   <td className="p-2.5">Overtime ({currentItem.overtime_hours} hrs)</td>
-                  <td className="p-2.5 text-right text-amber-600 font-bold">৳ {formatBDT(currentItem.overtime_amount)}</td>
+                  <td className="p-2.5 text-right text-amber-600 font-bold">{formatBDT(currentItem.overtime_amount)}</td>
                 </tr>
                 {currentItem.bonuses > 0 && (
                   <tr>
                     <td className="p-2.5">Bonus / Incentive</td>
-                    <td className="p-2.5 text-right text-emerald-600">৳ {formatBDT(currentItem.bonuses)}</td>
+                    <td className="p-2.5 text-right text-emerald-600">{formatBDT(currentItem.bonuses)}</td>
                   </tr>
                 )}
               </tbody>
@@ -230,7 +230,7 @@ export default function PayrollDetailPage() {
                 <tr>
                   <td className="p-2.5">GROSS EARNINGS (মোট আয়)</td>
                   <td className="p-2.5 text-right text-sm text-slate-900 dark:text-white">
-                    ৳ {formatBDT(currentItem.gross_salary)}
+                    {formatBDT(currentItem.gross_salary)}
                   </td>
                 </tr>
               </tfoot>
@@ -247,31 +247,31 @@ export default function PayrollDetailPage() {
                 <tr>
                   <td className="p-2.5">Salary Advance Deducted (অগ্রিম কর্তন)</td>
                   <td className="p-2.5 text-right text-purple-600 font-bold">
-                    ৳ {formatBDT(currentItem.advance_salary_deducted)}
+                    {formatBDT(currentItem.advance_salary_deducted)}
                   </td>
                 </tr>
                 {currentItem.late_fine > 0 && (
                   <tr>
                     <td className="p-2.5">Late Attendance Fine (দেরি জরিমানা)</td>
-                    <td className="p-2.5 text-right text-rose-600">৳ {formatBDT(currentItem.late_fine)}</td>
+                    <td className="p-2.5 text-right text-rose-600">{formatBDT(currentItem.late_fine)}</td>
                   </tr>
                 )}
                 {currentItem.absence_deduction > 0 && (
                   <tr>
                     <td className="p-2.5">Absence Deduction (অনুপস্থিতি)</td>
-                    <td className="p-2.5 text-right text-rose-600">৳ {formatBDT(currentItem.absence_deduction)}</td>
+                    <td className="p-2.5 text-right text-rose-600">{formatBDT(currentItem.absence_deduction)}</td>
                   </tr>
                 )}
                 {currentItem.loan_deduction > 0 && (
                   <tr>
                     <td className="p-2.5">Loan / Equipment Fine</td>
-                    <td className="p-2.5 text-right">৳ {formatBDT(currentItem.loan_deduction)}</td>
+                    <td className="p-2.5 text-right">{formatBDT(currentItem.loan_deduction)}</td>
                   </tr>
                 )}
                 {currentItem.other_deductions > 0 && (
                   <tr>
                     <td className="p-2.5">Other Deductions</td>
-                    <td className="p-2.5 text-right">৳ {formatBDT(currentItem.other_deductions)}</td>
+                    <td className="p-2.5 text-right">{formatBDT(currentItem.other_deductions)}</td>
                   </tr>
                 )}
                 {currentItem.advance_salary_deducted === 0 && currentItem.late_fine === 0 && currentItem.absence_deduction === 0 && (
@@ -285,7 +285,7 @@ export default function PayrollDetailPage() {
                 <tr>
                   <td className="p-2.5">TOTAL DEDUCTIONS (মোট কর্তন)</td>
                   <td className="p-2.5 text-right text-sm text-rose-600">
-                    ৳ {formatBDT(
+                    {formatBDT(
                       currentItem.advance_salary_deducted +
                         currentItem.late_fine +
                         currentItem.absence_deduction +
@@ -312,7 +312,7 @@ export default function PayrollDetailPage() {
 
           <div className="text-right">
             <div className="text-2xl font-black text-emerald-400 font-mono">
-              ৳ {formatBDT(currentItem.net_salary)}
+              {formatBDT(currentItem.net_salary)}
             </div>
             <span className="text-[10px] text-slate-400">
               {currentItem.payment_status === 'paid' ? 'Paid in Full' : 'Amount Due'}
@@ -324,7 +324,7 @@ export default function PayrollDetailPage() {
         {currentItem.advance_remaining_balance > 0 && (
           <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-300 text-[11px] border border-amber-200 dark:border-amber-800 flex items-center justify-between">
             <span>Remaining Salary Advance Balance carried forward to next month:</span>
-            <strong className="font-mono text-xs">৳ {formatBDT(currentItem.advance_remaining_balance)}</strong>
+            <strong className="font-mono text-xs">{formatBDT(currentItem.advance_remaining_balance)}</strong>
           </div>
         )}
 

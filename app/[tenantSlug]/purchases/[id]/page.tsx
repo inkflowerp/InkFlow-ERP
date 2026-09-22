@@ -244,7 +244,7 @@ export default function PurchaseOrderDetailPage() {
     }
 
     setIsPayOpen(false)
-    showNotification(`Supplier payment of ৳ ${formatBDT(payAmount)} via ${payMethod.toUpperCase()} registered.`)
+    showNotification(`Supplier payment of ${formatBDT(payAmount)} via ${payMethod.toUpperCase()} registered.`)
   }
 
   return (
@@ -413,12 +413,12 @@ export default function PurchaseOrderDetailPage() {
 
                     {/* Unit Cost */}
                     <td className="py-3.5 px-4 text-right font-mono text-xs print:text-slate-900">
-                      ৳ {formatBDT(item.unit_cost)}
+                      {formatBDT(item.unit_cost)}
                     </td>
 
                     {/* Total */}
                     <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white print:text-slate-900">
-                      ৳ {formatBDT(item.total_cost)}
+                      {formatBDT(item.total_cost)}
                     </td>
                   </tr>
                 ))}
@@ -433,7 +433,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="flex items-center justify-between">
                   <strong className="text-slate-900 dark:text-white font-bold text-sm">{item.material_name}</strong>
                   <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                    ৳ {formatBDT(item.total_cost)}
+                    {formatBDT(item.total_cost)}
                   </span>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
@@ -451,7 +451,7 @@ export default function PurchaseOrderDetailPage() {
                   </div>
                 </div>
                 <div className="text-[11px] text-slate-400 text-right font-mono">
-                  Unit Cost: ৳ {formatBDT(item.unit_cost)} / {item.unit}
+                  Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
             ))}
@@ -483,7 +483,7 @@ export default function PurchaseOrderDetailPage() {
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                 <span className="text-slate-400">Last PO Price</span>
                 <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
-                  ৳ {formatBDT(benchmark.last_price)}
+                  {formatBDT(benchmark.last_price)}
                 </div>
                 <span className="text-[10px] text-slate-500">Most recent order</span>
               </div>
@@ -491,7 +491,7 @@ export default function PurchaseOrderDetailPage() {
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                 <span className="text-slate-400">Average Price</span>
                 <div className="text-lg font-black text-blue-600 mt-0.5">
-                  ৳ {formatBDT(benchmark.average_price)}
+                  {formatBDT(benchmark.average_price)}
                 </div>
                 <span className="text-[10px] text-blue-600">Weighted market avg</span>
               </div>
@@ -499,7 +499,7 @@ export default function PurchaseOrderDetailPage() {
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                 <span className="text-slate-400">Lowest Price Paid</span>
                 <div className="text-lg font-black text-emerald-600 mt-0.5">
-                  ৳ {formatBDT(benchmark.lowest_price)}
+                  {formatBDT(benchmark.lowest_price)}
                 </div>
                 <span className="text-[10px] text-emerald-600">Best historical rate</span>
               </div>
@@ -507,7 +507,7 @@ export default function PurchaseOrderDetailPage() {
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
                 <span className="text-slate-400">Highest Price Paid</span>
                 <div className="text-lg font-black text-red-600 mt-0.5">
-                  ৳ {formatBDT(benchmark.highest_price)}
+                  {formatBDT(benchmark.highest_price)}
                 </div>
                 <span className="text-[10px] text-red-500">Ceiling market rate</span>
               </div>
@@ -559,7 +559,7 @@ export default function PurchaseOrderDetailPage() {
               po.payments.map((p) => (
                 <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-emerald-600 font-mono">৳ {formatBDT(p.amount)}</span>
+                    <span className="text-emerald-600 font-mono">{formatBDT(p.amount)}</span>
                     <span className="uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">
                       {p.payment_method}
                     </span>

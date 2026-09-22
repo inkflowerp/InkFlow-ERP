@@ -534,7 +534,7 @@ export function StockAdjustmentModal({
             <div>
               <span className="text-[10px] text-slate-400 block font-semibold uppercase">Unit Valuation:</span>
               <div className="text-base font-bold font-mono text-slate-700 dark:text-slate-300 mt-0.5">
-                ৳ {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
+                {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
               </div>
             </div>
 
@@ -550,7 +550,7 @@ export function StockAdjustmentModal({
                     : 'text-slate-500'
                 )}
               >
-                {valuationImpact > 0 ? `+৳ ${formatBDT(valuationImpact)} Gain` : valuationImpact < 0 ? `-৳ ${formatBDT(Math.abs(valuationImpact))} Loss` : '৳ 0 Net Impact'}
+                {valuationImpact > 0 ? `+${formatBDT(valuationImpact)} Gain` : valuationImpact < 0 ? `-${formatBDT(Math.abs(valuationImpact))} Loss` : '৳ 0 Net Impact'}
               </div>
             </div>
           </div>

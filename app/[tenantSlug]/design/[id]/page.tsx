@@ -1489,7 +1489,7 @@ function DesignDetailContent() {
                     </span>
                     {work.totalPrice && (
                       <span className="font-mono font-bold text-slate-900 dark:text-white">
-                        ৳{formatBDT(work.totalPrice)}
+                        {formatBDT(work.totalPrice)}
                       </span>
                     )}
                   </div>
@@ -1830,12 +1830,12 @@ function DesignDetailContent() {
                   <div className="flex items-center justify-between font-bold">
                     <span className="text-slate-500">Commercial Amount:</span>
                     <span className="font-mono text-slate-900 dark:text-white">
-                      ৳{formatBDT((linkedInvoice as any).total_amount || linkedInvoice.grand_total || 0)}
+                      {formatBDT((linkedInvoice as any).total_amount || linkedInvoice.grand_total || 0)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-emerald-600 font-semibold">Paid: ৳{formatBDT(linkedInvoice.paid_amount || 0)}</span>
-                    <span className="text-rose-600 font-semibold">Due: ৳{formatBDT(linkedInvoice.due_amount || 0)}</span>
+                    <span className="text-emerald-600 font-semibold">Paid: {formatBDT(linkedInvoice.paid_amount || 0)}</span>
+                    <span className="text-rose-600 font-semibold">Due: {formatBDT(linkedInvoice.due_amount || 0)}</span>
                   </div>
                 </div>
               )}
@@ -1928,7 +1928,7 @@ function DesignDetailContent() {
                     </p>
                     {(currentWork?.unitPrice || (job as any).unit_price) && (
                       <span className="inline-block mt-0.5 text-[10px] text-slate-500 font-medium">
-                        Rate: ৳{formatBDT(currentWork?.unitPrice || (job as any).unit_price)} / {currentWork?.unit || job.unit || 'pcs'}
+                        Rate: {formatBDT(currentWork?.unitPrice || (job as any).unit_price)} / {currentWork?.unit || job.unit || 'pcs'}
                       </span>
                     )}
                   </div>
@@ -1971,7 +1971,7 @@ function DesignDetailContent() {
                         <span>{fin.name}</span>
                         {fin.cost && fin.cost > 0 && (
                           <span className="font-mono text-[10px] text-pink-700 dark:text-pink-300 font-bold">
-                            (+৳{formatBDT(fin.cost)})
+                            (+{formatBDT(fin.cost)})
                           </span>
                         )}
                       </span>
@@ -2002,7 +2002,7 @@ function DesignDetailContent() {
                         <span>{addon.name}</span>
                         {addon.cost && addon.cost > 0 && (
                           <span className="font-mono text-[10px] text-amber-700 dark:text-amber-300 font-bold">
-                            (+৳{formatBDT(addon.cost)})
+                            (+{formatBDT(addon.cost)})
                           </span>
                         )}
                       </span>
@@ -2221,7 +2221,7 @@ function DesignDetailContent() {
                             </Badge>
                             {sw.totalPrice && (
                               <div className="text-[10px] font-mono font-bold text-slate-700 dark:text-slate-300 mt-0.5">
-                                ৳{formatBDT(sw.totalPrice)}
+                                {formatBDT(sw.totalPrice)}
                               </div>
                             )}
                           </div>

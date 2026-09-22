@@ -136,14 +136,14 @@ export function PricingServicesTariffs({
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">Retail Rate</span>
                       <div className="text-base font-black text-slate-900 dark:text-white font-mono">
-                        ৳ {formatBDT(baseSell)} <span className="text-[10px] text-slate-400 font-normal">/{p.unit || 'sft'}</span>
+                        {formatBDT(baseSell)} <span className="text-[10px] text-slate-400 font-normal">/{p.unit || 'sft'}</span>
                       </div>
                     </div>
 
                     <div>
                       <span className="text-[10px] text-slate-400 uppercase font-semibold">Reseller Wholesale</span>
                       <div className="text-base font-bold text-blue-700 dark:text-blue-400 font-mono">
-                        ৳ {formatBDT(resellerPrice)}
+                        {formatBDT(resellerPrice)}
                       </div>
                     </div>
                   </div>
@@ -153,7 +153,7 @@ export function PricingServicesTariffs({
                     <div className="flex justify-between text-[11px] text-slate-500">
                       <span>Base Material Cost:</span>
                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                        {baseCost > 0 ? `৳ ${formatBDT(baseCost)}` : '—'}
+                        {baseCost > 0 ? formatBDT(baseCost) : '—'}
                       </span>
                     </div>
 
@@ -168,7 +168,7 @@ export function PricingServicesTariffs({
                       <div className="flex justify-between text-[11px] text-slate-500">
                         <span>Min Job Charge:</span>
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
-                          ৳ {formatBDT(minCharge)}
+                          {formatBDT(minCharge)}
                         </span>
                       </div>
                     )}

@@ -925,7 +925,7 @@ export default function JobCostingPage() {
             <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
               {isSalesRoleShielded ? '৳ ••••••' : <CurrencyDisplay amount={totalActualProfit} />}
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Total Billed: ৳ {formatBDT(totalRevenue)}</span>
+            <span className="text-[11px] text-slate-400 font-mono">Total Billed: {formatBDT(totalRevenue)}</span>
           </Card>
 
           {/* Cost Overruns Alert */}
@@ -939,7 +939,7 @@ export default function JobCostingPage() {
           <Card className="p-4 border-l-4 border-l-purple-600 rounded-2xl shadow-xs">
             <span className="text-xs font-semibold text-slate-500">{tBilingual('Material & Yield Savings', 'কাঁচামাল ও নেস্টিং সাশ্রয়')}</span>
             <div className="text-2xl font-black text-purple-600 mt-1 font-mono">
-              {isSalesRoleShielded ? '৳ ••••••' : `৳ ${formatBDT(totalSavings)}`}
+              {isSalesRoleShielded ? '৳ ••••••' : formatBDT(totalSavings)}
             </div>
             <span className="text-[11px] text-purple-600 font-medium">Favorable gang-run nesting</span>
           </Card>
@@ -1072,12 +1072,12 @@ export default function JobCostingPage() {
 
                       {/* Selling Price */}
                       <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
-                        ৳ {formatBDT(cst.selling_price)}
+                        {formatBDT(cst.selling_price)}
                       </td>
 
                       {/* Estimated Cost */}
                       <td className="py-3.5 px-4 font-mono text-slate-500">
-                        {isSalesRoleShielded ? '••••••' : `৳ ${formatBDT(cst.est.total_cost)}`}
+                        {isSalesRoleShielded ? '••••••' : formatBDT(cst.est.total_cost)}
                       </td>
 
                       {/* Actual Cost */}
@@ -1085,7 +1085,7 @@ export default function JobCostingPage() {
                         {isSalesRoleShielded ? (
                           '••••••'
                         ) : cst.status === 'actualized' ? (
-                          <span className="text-slate-900 dark:text-white">৳ {formatBDT(cst.act.total_cost)}</span>
+                          <span className="text-slate-900 dark:text-white">{formatBDT(cst.act.total_cost)}</span>
                         ) : (
                           <span className="text-slate-400 italic">In progress</span>
                         )}
@@ -1122,12 +1122,12 @@ export default function JobCostingPage() {
                           (cst.variances?.total_variance || 0) < 0 ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
                               <TrendingDown className="h-3 w-3 text-emerald-600" />
-                              Saved ৳ {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
+                              Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                             </span>
                           ) : (cst.variances?.total_variance || 0) > 0 ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
                               <TrendingUp className="h-3 w-3 text-red-600" />
-                              Overrun +৳ {formatBDT(cst.variances.total_variance)}
+                              Overrun +{formatBDT(cst.variances.total_variance)}
                             </span>
                           ) : (
                             <span className="text-[10px] text-slate-500 font-mono">On Budget</span>
@@ -1215,7 +1215,7 @@ export default function JobCostingPage() {
                     </div>
                     <div className="text-right">
                       <div className="font-mono font-black text-sm text-slate-900 dark:text-white">
-                        ৳ {formatBDT(cst.selling_price)}
+                        {formatBDT(cst.selling_price)}
                       </div>
                       {isSalesRoleShielded ? (
                         <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
@@ -1261,11 +1261,11 @@ export default function JobCostingPage() {
                       ) : cst.status === 'actualized' ? (
                         (cst.variances?.total_variance || 0) < 0 ? (
                           <span className="text-[11px] font-bold text-emerald-600 font-mono">
-                            Saved ৳{formatBDT(Math.abs(cst.variances?.total_variance || 0))}
+                            Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                           </span>
                         ) : (cst.variances?.total_variance || 0) > 0 ? (
                           <span className="text-[11px] font-bold text-red-600 font-mono">
-                            +৳{formatBDT(cst.variances.total_variance)}
+                            +{formatBDT(cst.variances.total_variance)}
                           </span>
                         ) : (
                           <span className="text-[11px] text-slate-500 font-mono">On Budget</span>
@@ -1356,7 +1356,7 @@ export default function JobCostingPage() {
                     className="text-left p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-xs transition-colors"
                   >
                     <div className="font-semibold text-slate-800 dark:text-slate-200">{p.nameEn}</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">Preset Ref: ৳{formatBDT(p.selling)}</div>
+                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">Preset Ref: {formatBDT(p.selling)}</div>
                   </button>
                 ))}
               </div>
@@ -1418,7 +1418,7 @@ export default function JobCostingPage() {
                   {tBilingual('9-Head Estimated Cost Breakdown (৯টি ব্যয় খাত)', '৯টি ব্যয় খাত')}
                 </Label>
                 <span className="text-xs font-mono font-bold text-slate-500">
-                  Total Cost: ৳{formatBDT(newTotalEstCost)}
+                  Total Cost: {formatBDT(newTotalEstCost)}
                 </span>
               </div>
 
@@ -1543,7 +1543,7 @@ export default function JobCostingPage() {
 
               <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200 dark:border-slate-800 font-mono">
                 <span className="text-slate-500">Estimated Gross Profit:</span>
-                <span className="font-bold text-blue-600">৳ {formatBDT(newEstProfit)}</span>
+                <span className="font-bold text-blue-600">{formatBDT(newEstProfit)}</span>
               </div>
 
               <div className="flex items-center justify-between text-xs font-mono">
@@ -1627,17 +1627,17 @@ export default function JobCostingPage() {
               <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 space-y-2 text-xs font-mono">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Original List Price:</span>
-                  <span className="font-bold">৳ {formatBDT(negotiatingJob.selling_price)}</span>
+                  <span className="font-bold">{formatBDT(negotiatingJob.selling_price)}</span>
                 </div>
 
                 <div className="flex justify-between text-red-600 font-bold">
                   <span>(-) Proposed Discount:</span>
-                  <span>-৳ {formatBDT(negotiationResult.discountAmount)} ({discountPercent}%)</span>
+                  <span>-{formatBDT(negotiationResult.discountAmount)} ({discountPercent}%)</span>
                 </div>
 
                 <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-800 font-black text-sm text-slate-900 dark:text-white">
                   <span>Final Negotiated Price:</span>
-                  <span className="text-blue-600">৳ {formatBDT(negotiationResult.finalPrice)}</span>
+                  <span className="text-blue-600">{formatBDT(negotiationResult.finalPrice)}</span>
                 </div>
 
                 {/* Sensitive Margin Display (Hidden if sales rep is shielded) */}
@@ -1701,7 +1701,7 @@ export default function JobCostingPage() {
                       },
                     })
                     showNotification(
-                      `Quotation updated with approved price of ৳ ${formatBDT(negotiationResult.finalPrice)}.`
+                      `Quotation updated with approved price of ${formatBDT(negotiationResult.finalPrice)}.`
                     )
                     setNegotiatingJob(null)
                   }}
@@ -1743,7 +1743,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.material_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.material_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1756,7 +1756,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.ink_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1769,7 +1769,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.machine_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1782,7 +1782,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.finishing_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1795,7 +1795,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.labor_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1808,7 +1808,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.fabrication_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1821,7 +1821,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.installation_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1834,7 +1834,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.transport_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1847,7 +1847,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: ৳{formatBDT(editingJob.est.other_cost)}</span>
+                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.other_cost)}</span>
                 </div>
               </div>
 

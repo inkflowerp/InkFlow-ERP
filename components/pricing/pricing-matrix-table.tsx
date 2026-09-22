@@ -167,32 +167,32 @@ export function PricingMatrixTable({
 
                     {/* Cost */}
                     <td className="py-3 px-3 text-center font-mono text-slate-500">
-                      {baseCost > 0 ? `৳ ${formatBDT(baseCost)}` : '—'}
+                      {baseCost > 0 ? formatBDT(baseCost) : '—'}
                     </td>
 
                     {/* Retail */}
                     <td className="py-3 px-3 text-center font-mono font-black text-emerald-700 dark:text-emerald-400">
-                      ৳ {formatBDT(retailPrice)}
+                      {formatBDT(retailPrice)}
                     </td>
 
                     {/* Reseller */}
                     <td className="py-3 px-3 text-center font-mono font-bold text-blue-700 dark:text-blue-400">
-                      ৳ {formatBDT(resellerPrice)}
+                      {formatBDT(resellerPrice)}
                     </td>
 
                     {/* Corporate */}
                     <td className="py-3 px-3 text-center font-mono font-bold text-purple-700 dark:text-purple-400">
-                      ৳ {formatBDT(corporatePrice)}
+                      {formatBDT(corporatePrice)}
                     </td>
 
                     {/* Agency */}
                     <td className="py-3 px-3 text-center font-mono font-bold text-amber-700 dark:text-amber-400">
-                      ৳ {formatBDT(agencyPrice)}
+                      {formatBDT(agencyPrice)}
                     </td>
 
                     {/* Govt */}
                     <td className="py-3 px-3 text-center font-mono font-bold text-rose-700 dark:text-rose-400">
-                      ৳ {formatBDT(govtPrice)}
+                      {formatBDT(govtPrice)}
                     </td>
 
                     {/* Action */}

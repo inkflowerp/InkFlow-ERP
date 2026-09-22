@@ -411,7 +411,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     setActiveModal(null)
     setPaymentAmount('')
     setSelectedCustomerId('')
-    showNotification(`Payment of ৳ ${formatBDT(amt)} received from ${cust.name}!`)
+    showNotification(`Payment of ${formatBDT(amt)} received from ${cust.name}!`)
   }
 
   const handleCreateExpense = (e: React.FormEvent) => {
@@ -437,7 +437,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     setActiveModal(null)
     setExpenseTitle('')
     setExpenseAmount('')
-    showNotification(`Expense '${expenseTitle}' (৳ ${formatBDT(amt)}) logged successfully!`)
+    showNotification(`Expense '${expenseTitle}' (${formatBDT(amt)}) logged successfully!`)
   }
 
   const handleCreateMaterial = (e: React.FormEvent) => {

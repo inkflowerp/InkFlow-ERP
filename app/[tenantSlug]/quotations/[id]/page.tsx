@@ -463,7 +463,7 @@ function QuotationDetailContent() {
                   <span>•</span>
                   <span>Sales: <strong className="text-white">{quote.salesperson_name}</strong></span>
                   <span>•</span>
-                  <span className="font-mono text-cyan-200">Total: ৳{formatBDT(quote.grand_total)}</span>
+                  <span className="font-mono text-cyan-200">Total: {formatBDT(quote.grand_total)}</span>
                 </div>
               </div>
 
@@ -510,7 +510,7 @@ function QuotationDetailContent() {
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
                 <span className={`text-sm font-black font-mono ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
-                  {quote.margin_percent || 40}% (৳{formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
+                  {quote.margin_percent || 40}% ({formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
                 </span>
               </div>
             </div>

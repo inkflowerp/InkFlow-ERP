@@ -503,7 +503,7 @@ export default function QuotationsPage() {
                 {locale === 'bn' ? 'চলতি পাইপলাইন' : 'Active Pipeline'}
               </span>
               <span className="font-mono font-bold text-cyan-300">
-                ৳ {formatBDT(pipelineSummary.totalPipelineValue)}
+                {formatBDT(pipelineSummary.totalPipelineValue)}
               </span>
             </div>
             <div className="h-6 w-px bg-white/10 hidden sm:block" />
@@ -512,7 +512,7 @@ export default function QuotationsPage() {
                 {locale === 'bn' ? 'প্রত্যাশিত অগ্রিম (৫০%)' : 'Est. Advance (50%)'}
               </span>
               <span className="font-mono font-bold text-amber-300">
-                ৳ {formatBDT(pipelineSummary.expectedAdvance)}
+                {formatBDT(pipelineSummary.expectedAdvance)}
               </span>
             </div>
           </div>

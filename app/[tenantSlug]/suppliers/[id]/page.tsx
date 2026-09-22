@@ -147,7 +147,7 @@ export default function SupplierProfilePage() {
       PrintERPDataStore.addItem<CashBookEntryRecord>(STORAGE_KEYS.CASH_BOOK, cashEntry)
     }
 
-    showNotification(`Payment voucher ${details.voucherNumber} of ৳ ${formatBDT(amount)} recorded for ${supplier.supplier_name}.`)
+    showNotification(`Payment voucher ${details.voucherNumber} of ${formatBDT(amount)} recorded for ${supplier.supplier_name}.`)
   }
 
   // Print Statement Summary
@@ -516,7 +516,7 @@ export default function SupplierProfilePage() {
                         <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
                         <td className="py-3 px-4 uppercase font-mono font-semibold">{price.unit}</td>
                         <td className="py-3 px-4 font-black font-mono text-teal-700 dark:text-teal-400 text-sm">
-                          ৳ {formatBDT(price.contract_price_bdt)} <span className="text-[10px] font-normal text-slate-400">/ {price.unit}</span>
+                          {formatBDT(price.contract_price_bdt)} <span className="text-[10px] font-normal text-slate-400">/ {price.unit}</span>
                         </td>
                         <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                           MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
@@ -617,7 +617,7 @@ export default function SupplierProfilePage() {
                           {po.items?.length || 0} line item(s) • {po.items?.[0]?.material_name || 'Standard supplies'}
                         </td>
                         <td className="py-3 px-4 font-mono font-bold text-slate-900 dark:text-white">
-                          ৳ {formatBDT(po.grand_total || 0)}
+                          {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-[10px]">
@@ -736,7 +736,7 @@ export default function SupplierProfilePage() {
                     <td className="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">৳ 23,750</td>
                     <td className="py-3 px-4 text-right text-slate-400">—</td>
                     <td className="py-3 px-4 text-right font-bold text-amber-700 dark:text-amber-400">
-                      ৳ {formatBDT(supplier.outstanding_balance || 0)}
+                      {formatBDT(supplier.outstanding_balance || 0)}
                     </td>
                   </tr>
                   <tr>

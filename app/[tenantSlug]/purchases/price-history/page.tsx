@@ -95,25 +95,25 @@ export default function SupplierPriceHistoryPage() {
                 <div>
                   <span className="text-slate-400 text-[10px]">Last Paid:</span>
                   <div className="font-mono font-bold text-slate-900 dark:text-white">
-                    ৳ {formatBDT(lastPrice)}
+                    {formatBDT(lastPrice)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">Average:</span>
                   <div className="font-mono font-bold text-blue-600">
-                    ৳ {formatBDT(avg)}
+                    {formatBDT(avg)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">Lowest:</span>
                   <div className="font-mono font-bold text-emerald-600">
-                    ৳ {formatBDT(lowest)}
+                    {formatBDT(lowest)}
                   </div>
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px]">Highest:</span>
                   <div className="font-mono font-bold text-red-600">
-                    ৳ {formatBDT(highest)}
+                    {formatBDT(highest)}
                   </div>
                 </div>
               </div>
@@ -200,10 +200,10 @@ export default function SupplierPriceHistoryPage() {
                           {item.quantity}
                         </td>
                         <td className="py-3 px-4 text-right font-mono font-bold text-slate-900 dark:text-white">
-                          ৳ {formatBDT(item.purchase_price)}
+                          {formatBDT(item.purchase_price)}
                         </td>
                         <td className="py-3 px-4 text-right font-mono text-slate-400">
-                          {item.previous_price ? `৳ ${formatBDT(item.previous_price)}` : 'N/A'}
+                          {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </td>
                         <td className="py-3 px-4 text-right font-mono text-xs">
                           {item.previous_price ? (
@@ -258,13 +258,13 @@ export default function SupplierPriceHistoryPage() {
                       <div>
                         <div className="text-[10px] text-slate-400">Qty: {item.quantity}</div>
                         <div className="text-sm font-black text-slate-900 dark:text-white">
-                          ৳ {formatBDT(item.purchase_price)}
+                          {formatBDT(item.purchase_price)}
                         </div>
                       </div>
 
                       <div className="text-right">
                         <div className="text-[10px] text-slate-400">
-                          Prev: {item.previous_price ? `৳ ${formatBDT(item.previous_price)}` : 'N/A'}
+                          Prev: {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </div>
                         {item.previous_price ? (
                           <span
