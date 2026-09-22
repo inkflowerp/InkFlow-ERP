@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Scissors,
   Layers,
@@ -32,9 +32,11 @@ import {
   Tag,
   Boxes,
   HelpCircle,
+  LayoutGrid,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -78,8 +80,15 @@ export default function FinishingAndFabricationPage() {
   const { company } = useTenant()
   const { tBilingual } = useI18n()
   const params = useParams()
+  const pathname = usePathname()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id
+
+  // Client mounting hydration guard
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // State with Zero-Latency SWR Cache Hydration
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
@@ -346,25 +355,9 @@ export default function FinishingAndFabricationPage() {
     }
   }
 
-  const handlePauseTask = async (task: ProductionTaskRecord) => {
+  const handlePauseTask = (task: ProductionTaskRecord) => {
     if (actionInProgressTaskId) return
-    const reason = prompt('Enter hold/pause reason (e.g. Waiting for Hardware, Adhesive Drying, Power issue):')
-    if (reason === null) return
-
-    setActionInProgressTaskId(task.id)
-    try {
-      const res = await pauseProductionTaskAction(task.id, reason || 'Finishing paused', undefined, task)
-      if (res.success) {
-        showToast('Task paused on bench.', 'success')
-        loadData(true)
-      } else {
-        showToast(res.error || 'Failed to pause task.', 'error')
-      }
-    } catch (err: any) {
-      showToast(err.message, 'error')
-    } finally {
-      setActionInProgressTaskId(null)
-    }
+    setSelectedTaskForHold(task)
   }
 
   const handleOpenQCModal = (task: ProductionTaskRecord) => {
@@ -429,9 +422,28 @@ export default function FinishingAndFabricationPage() {
     })
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto pb-16 animate-pulse p-4 sm:p-6">
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-32 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <FeatureGate feature="production">
-      <div className="space-y-5 max-w-7xl mx-auto pb-16">
+      <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
         {/* Header */}
         <PageHeader
           titleEn="Finishing & Fabrication Floor"
@@ -442,13 +454,19 @@ export default function FinishingAndFabricationPage() {
           iconColor="text-indigo-600"
           actions={
             <div className="flex items-center gap-2 flex-wrap">
-              <Link href={`/${slug}/operator`}>
+              <Link href={getTenantNavHref('/production', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800">
+                  <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
+                  {tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}
+                </Button>
+              </Link>
+              <Link href={getTenantNavHref('/operator', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Printer className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}
                 </Button>
               </Link>
-              <Link href={`/${slug}/delivery`}>
+              <Link href={getTenantNavHref('/delivery', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300">
                   <Truck className="h-3.5 w-3.5 text-emerald-600" />
                   {tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}
@@ -628,9 +646,13 @@ export default function FinishingAndFabricationPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <Badge variant="outline" className="font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800">
-                          #{task.job_number || task.task_number}
-                        </Badge>
+                        <Link
+                          href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
+                        >
+                          <Badge variant="outline" className="font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                            #{task.job_number || task.task_number}
+                          </Badge>
+                        </Link>
                         <Badge
                           className={`text-[10px] font-bold uppercase ${
                             category === 'digital_finishing'
@@ -826,6 +848,18 @@ export default function FinishingAndFabricationPage() {
           )}
         </div>
 
+        {/* HOLD / PAUSE TASK MODAL */}
+        <HoldTaskModal
+          isOpen={!!selectedTaskForHold}
+          onClose={() => setSelectedTaskForHold(null)}
+          task={selectedTaskForHold}
+          onSuccess={() => {
+            showToast(tBilingual('Task placed on hold.', 'কাজ সাময়িক স্থগিত করা হয়েছে।'), 'success')
+            setSelectedTaskForHold(null)
+            loadData(true)
+          }}
+        />
+
         {/* QC SIGN-OFF & COMPLETION MODAL */}
         <ModalDialog
           open={!!selectedTaskForQC}
@@ -856,7 +890,7 @@ export default function FinishingAndFabricationPage() {
                     onChange={(e) => setQcSizeChecked(e.target.checked)}
                     className="rounded text-emerald-600 focus:ring-emerald-500"
                   />
-                  <span>1. Dimensions & Finished Size ($W \times H$) verified against job order</span>
+                  <span>1. Dimensions & Finished Size (W × H) verified against job order</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
