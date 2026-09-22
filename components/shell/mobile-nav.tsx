@@ -53,6 +53,7 @@ import {
   QrCode,
   Sliders,
   Key,
+  RotateCcw,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -66,6 +67,7 @@ import { Avatar } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { LanguageSwitcher } from './language-switcher'
 import { ThemeToggle } from './theme-toggle'
+import { ResetTenantDataModal } from './reset-tenant-data-modal'
 import { cn } from '@/lib/utils'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -115,6 +117,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 export function MobileNav() {
   const [open, setOpen] = useState(false)
+  const [resetModalOpen, setResetModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
     today: true,
@@ -598,7 +601,7 @@ export function MobileNav() {
           </div>
         </SheetContent>
 
-        {/* Footer with Support Desk and Sign Out Button */}
+        {/* Footer with Support Desk, Reset All Data and Sign Out Button */}
         <SheetFooter className="pb-[calc(1rem+env(safe-area-inset-bottom,0px))] flex flex-col gap-2">
           <div className="flex items-center justify-between w-full text-xs text-slate-500 dark:text-slate-400 px-1">
             <Link
@@ -612,19 +615,42 @@ export function MobileNav() {
             <span className="text-xs text-slate-400">InkFlow ERP</span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => {
-              setOpen(false)
-              signOut()
-            }}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
-          >
-            <LogOut className="h-4 w-4" />
-            <span>{tBilingual('Sign Out', 'লগ আউট')}</span>
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                setResetModalOpen(true)
+              }}
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/80 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100 dark:hover:bg-rose-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
+            >
+              <RotateCcw className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{tBilingual('Reset Data', 'ডাটা রিসেট')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                signOut()
+              }}
+              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border border-red-200/80 dark:border-red-900/60 bg-red-50/80 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-950/60 active:scale-98 transition-all cursor-pointer min-h-[42px] bangla-text shadow-xs"
+            >
+              <LogOut className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{tBilingual('Sign Out', 'লগ আউট')}</span>
+            </button>
+          </div>
         </SheetFooter>
       </Sheet>
+
+      {/* Reset Confirmation Dialog */}
+      <ResetTenantDataModal
+        open={resetModalOpen}
+        onOpenChange={setResetModalOpen}
+        companyId={company?.id || ''}
+        companySlug={company?.slug || ''}
+        companyName={company?.name || 'Your Business'}
+      />
     </div>
   )
 }

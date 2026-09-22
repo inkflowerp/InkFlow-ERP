@@ -112,3 +112,26 @@ export async function updateCompanySettingsAction(companyId: string, settings: a
   return await TenantService.updateCompanySettings(tenant.companyId, settings)
 }
 
+/**
+ * Server action to reset all operational and transactional records for a company workspace
+ */
+export async function resetTenantDataAction(companyId?: string) {
+  const tenant = await getCurrentTenant(companyId)
+  if (
+    !tenant ||
+    (tenant.companyRole !== 'business_owner' &&
+      !tenant.permissions.includes('settings.edit') &&
+      !tenant.permissions.includes('settings.manage') &&
+      !tenant.permissions.includes('company.edit'))
+  ) {
+    return { success: false, error: 'Unauthorized: Only Business Owners or authorized administrators can reset workspace data.' }
+  }
+
+  const result = await TenantService.resetTenantData(tenant.companyId)
+  if (result.success) {
+    revalidatePath('/', 'layout')
+  }
+  return result
+}
+
+

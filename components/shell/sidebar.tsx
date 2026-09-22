@@ -53,6 +53,7 @@ import {
   Sliders,
   Key,
   Shield,
+  RotateCcw,
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
@@ -62,6 +63,7 @@ import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { ResetTenantDataModal } from './reset-tenant-data-modal'
 
 const iconMap: Record<string, React.ElementType> = {
   LayoutDashboard,
@@ -121,6 +123,7 @@ export function Sidebar() {
   const { tBilingual } = useI18n()
 
   const [filterQuery, setFilterQuery] = useState('')
+  const [resetModalOpen, setResetModalOpen] = useState(false)
 
   const [collapsed, setCollapsed] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false
@@ -713,8 +716,49 @@ export function Sidebar() {
             </div>
             <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0" />
           </Link>
+
+          {/* Reset All Data Button */}
+          <button
+            type="button"
+            onClick={() => setResetModalOpen(true)}
+            className="w-full flex items-center justify-between rounded-xl bg-rose-50/60 dark:bg-rose-950/20 px-2.5 py-1.5 border border-rose-200/80 dark:border-rose-900/40 hover:bg-rose-100/80 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 transition-all group cursor-pointer"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <RotateCcw className="h-3.5 w-3.5 text-rose-600 dark:text-rose-400 shrink-0 group-hover:rotate-[-45deg] transition-transform" />
+              <span className="text-xs font-bold truncate bangla-text">
+                {tBilingual('Reset All Data', 'সব ডাটা রিসেট')}
+              </span>
+            </div>
+            <Badge className="text-[9px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 font-mono px-1 py-0 shrink-0">
+              Zero State
+            </Badge>
+          </button>
         </div>
       )}
+
+      {/* Collapsed Reset Action */}
+      {collapsed && (
+        <div className="shrink-0 border-t border-slate-100 p-2 dark:border-slate-800 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setResetModalOpen(true)}
+            className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition-colors cursor-pointer"
+            title="Reset All Data (সব ডাটা রিসেট)"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Reset Confirmation Dialog */}
+      <ResetTenantDataModal
+        open={resetModalOpen}
+        onOpenChange={setResetModalOpen}
+        companyId={company?.id || ''}
+        companySlug={company?.slug || ''}
+        companyName={company?.name || 'Your Business'}
+      />
     </aside>
   )
 }
+

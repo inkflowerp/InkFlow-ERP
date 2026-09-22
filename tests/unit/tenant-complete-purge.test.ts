@@ -67,4 +67,72 @@ describe('Tenant Complete Purge & Deletion Verification', () => {
     assert.strictEqual(customers.some((c) => c.id === 'cust-purge-1'), false)
     assert.strictEqual(customers.some((c) => c.id === 'cust-keep-1'), true)
   })
+
+  it('3. resetTenantData resets all operational records while safely keeping users, roles, and company profile intact', () => {
+    const resetSlug = 'reset-test-tenant'
+    const resetCompanyId = 'comp-reset-test-tenant'
+
+    // 1. Seed company profile & users (SHOULD REMAIN SAFE)
+    const existingCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANIES) || []
+    PrintERPDataStore.set(STORAGE_KEYS.COMPANIES, [
+      ...existingCompanies,
+      { id: resetCompanyId, slug: resetSlug, name: 'Reset Test Printing Press' },
+    ])
+
+    const existingUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
+    PrintERPDataStore.set(STORAGE_KEYS.USERS, [
+      ...existingUsers,
+      { id: 'usr-reset-owner', company_id: resetCompanyId, email: 'owner@resettest.com', role: 'business_owner' },
+      { id: 'usr-reset-staff', company_id: resetCompanyId, email: 'staff@resettest.com', role: 'operator' },
+    ])
+
+    // 2. Seed transactional and operational records (SHOULD BE CLEARED)
+    PrintERPDataStore.set(STORAGE_KEYS.ORDERS, [
+      { id: 'ord-reset-1', company_id: resetCompanyId, total_amount: 50000 },
+      { id: 'ord-other-keep', company_id: 'comp-other-enterprise', total_amount: 12000 },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [
+      { id: 'inv-reset-1', company_id: resetCompanyId, grand_total: 50000 },
+      { id: 'inv-other-keep', company_id: 'comp-other-enterprise', grand_total: 12000 },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [
+      { id: 'cust-reset-1', company_id: resetCompanyId, name: 'Reset Client Ltd' },
+      { id: 'cust-other-keep', company_id: 'comp-other-enterprise', name: 'Other Keep Client' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.ATTENDANCE, [
+      { id: 'att-reset-1', company_id: resetCompanyId, date: '2026-09-22' },
+    ], true, resetSlug)
+
+    // 3. Execute tenant reset
+    PrintERPDataStore.resetTenantData(resetCompanyId, [resetSlug])
+
+    // 4. Verify operational data was reset for this tenant
+    const ordersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+    assert.strictEqual(ordersAfter.some((o) => o.company_id === resetCompanyId), false)
+    assert.strictEqual(ordersAfter.some((o) => o.id === 'ord-other-keep'), true)
+
+    const invoicesAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    assert.strictEqual(invoicesAfter.some((i) => i.company_id === resetCompanyId), false)
+    assert.strictEqual(invoicesAfter.some((i) => i.id === 'inv-other-keep'), true)
+
+    const customersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMERS) || []
+    assert.strictEqual(customersAfter.some((c) => c.company_id === resetCompanyId), false)
+    assert.strictEqual(customersAfter.some((c) => c.id === 'cust-other-keep'), true)
+
+    const attendanceAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ATTENDANCE, resetSlug)
+    assert.deepStrictEqual(attendanceAfter || [], [])
+
+    // 5. Verify company and staff accounts are preserved intact
+    const companiesAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANIES) || []
+    assert.strictEqual(companiesAfter.some((c) => c.id === resetCompanyId), true)
+
+    const usersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
+    const resetUsers = usersAfter.filter((u) => u.company_id === resetCompanyId)
+    assert.strictEqual(resetUsers.length, 2)
+    assert.strictEqual(resetUsers.some((u) => u.id === 'usr-reset-owner'), true)
+    assert.strictEqual(resetUsers.some((u) => u.id === 'usr-reset-staff'), true)
+  })
 })

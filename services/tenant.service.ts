@@ -3,6 +3,7 @@ import { ApiResponse } from '@/types/common.types'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { isValidSlugFormat, isReservedSlug } from '@/lib/tenant/tenant-resolution'
+import { PrintERPDataStore } from '@/lib/db/data-store'
 
 export interface CreateCompanyInput {
   name: string
@@ -368,6 +369,61 @@ export class TenantService {
       available: true,
       status: 'available',
       message: `'${normalizedSlug}' is available!`,
+    }
+  }
+
+  /**
+   * Resets all operational and transactional data for a company workspace
+   */
+  static async resetTenantData(companyId: string): Promise<ApiResponse<{ message: string }>> {
+    try {
+      if (!companyId) {
+        return { success: false, error: 'Company ID is required' }
+      }
+
+      const company = await TenantRepository.getCompanyById(companyId)
+      if (!company) {
+        return { success: false, error: 'Company not found' }
+      }
+
+      const admin = createAdminClient()
+      const aliases = [company.slug, `comp-${company.slug}`, `co-${company.slug}`]
+
+      // 1. Reset local memory and browser storage
+      PrintERPDataStore.resetTenantData(company.id, aliases)
+
+      // 2. Clean database tables if Supabase is connected
+      try {
+        const tablesToClear = [
+          'order_items',
+          'orders',
+          'quotation_items',
+          'quotations',
+          'invoices',
+          'payments',
+          'production_tasks',
+          'production_jobs',
+          'delivery_challans',
+          'attendance',
+          'stock_transactions',
+          'customers',
+          'suppliers',
+          'in_app_notifications',
+        ]
+
+        for (const tbl of tablesToClear) {
+          try {
+            await (admin as any).from(tbl).delete().eq('company_id', company.id)
+          } catch {}
+        }
+      } catch {}
+
+      return {
+        success: true,
+        data: { message: `Workspace data for '${company.name}' has been successfully reset.` },
+      }
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Failed to reset workspace data' }
     }
   }
 }

@@ -834,6 +834,141 @@ export class PrintERPDataStore {
   }
 
   /**
+   * Resets all operational & transactional records for a tenant while preserving company profile, users & branches
+   */
+  static resetTenantData(companyIdOrSlug: string, additionalAliases: string[] = []): void {
+    if (!companyIdOrSlug) return
+
+    const norm = companyIdOrSlug.toLowerCase()
+    const cleanSlug = norm.replace(/^comp-/, '').replace(/^co-/, '')
+    const compSlug = `comp-${cleanSlug}`
+    const coSlug = `co-${cleanSlug}`
+
+    const targets = new Set<string>([
+      norm,
+      cleanSlug,
+      compSlug,
+      coSlug,
+      companyIdOrSlug,
+      ...additionalAliases.map((a) => a.toLowerCase()),
+      ...additionalAliases.map((a) => a.replace(/^comp-/, '').replace(/^co-/, '')),
+    ])
+
+    // Operational & transactional keys that will be reset
+    const operationalKeys = [
+      STORAGE_KEYS.CUSTOMERS,
+      STORAGE_KEYS.COMMUNICATIONS,
+      STORAGE_KEYS.COMMUNICATION_LOGS,
+      STORAGE_KEYS.SUPPLIERS,
+      STORAGE_KEYS.SUPPLIER_PRICES,
+      STORAGE_KEYS.ORDERS,
+      STORAGE_KEYS.JOB_ORDERS,
+      STORAGE_KEYS.TIMELINE_EVENTS,
+      STORAGE_KEYS.QUOTATIONS,
+      STORAGE_KEYS.QUOTATION_ACTIVITIES,
+      STORAGE_KEYS.PRICE_HISTORY,
+      STORAGE_KEYS.MATERIALS,
+      STORAGE_KEYS.MOUNTED_ROLLS,
+      STORAGE_KEYS.STOCK_LEDGER,
+      STORAGE_KEYS.REMNANTS,
+      STORAGE_KEYS.PRODUCTION_JOBS,
+      STORAGE_KEYS.PRODUCTION_TASKS,
+      STORAGE_KEYS.REWORKS,
+      STORAGE_KEYS.INVOICES,
+      STORAGE_KEYS.INVOICE_REQUESTS,
+      STORAGE_KEYS.PAYMENTS,
+      STORAGE_KEYS.EXPENSES,
+      STORAGE_KEYS.BANK_ACCOUNTS,
+      STORAGE_KEYS.CASH_BOOK,
+      STORAGE_KEYS.PURCHASE_ORDERS,
+      STORAGE_KEYS.DELIVERY_CHALLANS,
+      STORAGE_KEYS.INSTALLATIONS,
+      STORAGE_KEYS.JOB_COSTINGS,
+      STORAGE_KEYS.DESIGN_JOBS,
+      STORAGE_KEYS.ATTENDANCE,
+      STORAGE_KEYS.SALARY_ADVANCES,
+      STORAGE_KEYS.DAILY_LABOR_LOGS,
+      STORAGE_KEYS.PAYROLL,
+      STORAGE_KEYS.PAYROLL_PERIODS,
+      STORAGE_KEYS.IN_APP_NOTIFICATIONS,
+      STORAGE_KEYS.TRASH_ITEMS,
+    ]
+
+    // 1. Purge partitioned keys for operational collections from inMemoryStore
+    for (const inMemKey of Object.keys(inMemoryStore)) {
+      for (const opKey of operationalKeys) {
+        for (const t of targets) {
+          if (inMemKey === `${opKey}__${t}`) {
+            delete inMemoryStore[inMemKey]
+          }
+        }
+      }
+    }
+
+    // 2. Purge partitioned operational keys from localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      try {
+        const keysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const lsKey = localStorage.key(i)
+          if (lsKey) {
+            for (const opKey of operationalKeys) {
+              for (const t of targets) {
+                if (lsKey === `${opKey}__${t}`) {
+                  keysToRemove.push(lsKey)
+                }
+              }
+            }
+          }
+        }
+        for (const k of keysToRemove) {
+          localStorage.removeItem(k)
+        }
+      } catch {}
+    }
+
+    // 3. Purge matching items from global collection arrays for operational keys
+    for (const key of operationalKeys) {
+      const list = inMemoryStore[key]
+      if (Array.isArray(list)) {
+        inMemoryStore[key] = list.filter((item: any) => {
+          if (!item || typeof item !== 'object') return true
+          const cId = String(item.company_id || item.companyId || item.id || '').toLowerCase()
+          const cSlug = String(item.company_slug || item.companySlug || item.slug || '').toLowerCase()
+          for (const t of targets) {
+            if (cId === t || cSlug === t) return false
+            const cleanCId = cId.replace(/^comp-/, '').replace(/^co-/, '')
+            const cleanCSlug = cSlug.replace(/^comp-/, '').replace(/^co-/, '')
+            if (cleanCId === t || cleanCSlug === t) return false
+          }
+          return true
+        })
+
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem(key, JSON.stringify(inMemoryStore[key]))
+          } catch {}
+        }
+      }
+    }
+
+    // 4. Broadcast cross-tab reset notification
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const channel = new BroadcastChannel('printerp_realtime_bus')
+        channel.postMessage({
+          type: 'LOCAL_STORE_MUTATION',
+          mutationType: 'RESET_DATA',
+          tenantSlug: companyIdOrSlug,
+          senderId: CLIENT_TAB_ID,
+          timestamp: Date.now(),
+        })
+        channel.close()
+      } catch {}
+    }
+  }
+
+  /**
    * Appends an item to an array collection or creates it if not present
    */
   static addItem<T extends { id?: string }>(
