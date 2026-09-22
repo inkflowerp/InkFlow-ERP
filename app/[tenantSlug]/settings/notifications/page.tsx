@@ -9,6 +9,7 @@ import {
   PhoneCall,
   Mail,
   AlertTriangle,
+  AlertCircle,
   Volume2,
   VolumeX,
   Radio,
@@ -22,6 +23,10 @@ import {
   Smartphone,
   ShieldCheck,
   Info,
+  Layers,
+  Package,
+  Flame,
+  Megaphone,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -38,11 +43,13 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   playNotificationSound,
+  previewSound,
   isSoundMuted,
   setSoundMuted,
   getSoundVolume,
   setSoundVolume,
   NotificationSoundType,
+  SOUND_CATALOG,
 } from '@/lib/notifications/sound-manager'
 import {
   getBrowserNotificationPermission,
@@ -65,9 +72,11 @@ export default function NotificationSettingsPage() {
 
   // Sound and browser notification state
   const [soundMuted, setSoundMutedState] = useState(false)
-  const [volume, setVolumeState] = useState(80)
+  const [volume, setVolumeState] = useState(85)
   const [browserPerm, setBrowserPerm] = useState<BrowserPermissionStatus>('default')
   const [browserEnabled, setBrowserEnabledState] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'commercial' | 'operations' | 'alerts' | 'system'>('all')
+  const [activePlaying, setActivePlaying] = useState<NotificationSoundType | null>(null)
 
   useEffect(() => {
     setMounted(true)
@@ -103,13 +112,23 @@ export default function NotificationSettingsPage() {
     setSoundMuted(next)
     setSoundMutedState(next)
     if (!next) {
-      playNotificationSound('success')
+      previewSound('success')
     }
   }
 
   const handleVolumeChange = (newVal: number) => {
     setVolumeState(newVal)
     setSoundVolume(newVal / 100)
+  }
+
+  const handleVolumePreset = (presetVal: number) => {
+    setVolumeState(presetVal)
+    setSoundVolume(presetVal / 100)
+    if (soundMuted) {
+      setSoundMuted(false)
+      setSoundMutedState(false)
+    }
+    previewSound('system', presetVal / 100)
   }
 
   const handleRequestPushPermission = async () => {
@@ -139,7 +158,9 @@ export default function NotificationSettingsPage() {
   }
 
   const handleTestSound = (type: NotificationSoundType) => {
-    playNotificationSound(type, { force: true })
+    setActivePlaying(type)
+    previewSound(type)
+    setTimeout(() => setActivePlaying(null), 1000)
   }
 
   const handleTestLivePopup = (type: NotificationSoundType) => {
@@ -172,6 +193,27 @@ export default function NotificationSettingsPage() {
         msgBn: 'অপারেটর তানভীর আহমেদ ফ্লোর ১ এ চেক-ইন করেছেন (সকাল ০৯:০৫)',
         url: '/attendance',
       },
+      job: {
+        title: 'Production Step Completed',
+        titleBn: 'প্রোডাকশন ধাপ সম্পন্ন',
+        msg: 'Offset UV Varnishing finished for Job #JOB-8842',
+        msgBn: 'জব #JOB-8842 এর অফসেট ইউভি বার্নিশ সফলভাবে সমাপ্ত হয়েছে',
+        url: '/production',
+      },
+      inventory: {
+        title: 'Roll Received: Self-Adhesive Vinyl 5ft',
+        titleBn: 'নতুন রোল জমা: সেলফ-আঠালো ভিনাইল ৫ ফিট',
+        msg: 'Added 500 sft to Main Warehouse Rack B-04',
+        msgBn: 'প্রধান ওয়্যারহাউস র্যাক B-04 এ ৫০০ স্কয়ার ফিট যুক্ত হয়েছে',
+        url: '/inventory/rolls',
+      },
+      urgent: {
+        title: 'Machine Jam: Solvent Printhead 1 Halted',
+        titleBn: 'জরুরি সতর্কতা: সলভেন্ট হেড ১ জ্যাম',
+        msg: 'Roland VS-640 emergency stop triggered during high-speed banner print.',
+        msgBn: 'হাই-স্পিড ব্যানার প্রিন্টিং চলাকালীন রোল্যান্ড মেশিনে জরুরি থামা সংকেত।',
+        url: '/production',
+      },
       warning: {
         title: 'Low Stock: Solvent Frontlit 440gsm',
         titleBn: 'স্টক সংকট: সলভেন্ট ফ্রন্টলিট ৪৪০ জিএসএম',
@@ -180,11 +222,11 @@ export default function NotificationSettingsPage() {
         url: '/inventory/rolls',
       },
       error: {
-        title: 'Machine Error: Eco-Solvent Head 2 Jam',
-        titleBn: 'মেশিন সমস্যা: ইকো-সলভেন্ট হেড ২ জ্যাম',
-        msg: 'Roland VS-640 halted on job #JOB-102. Immediate maintenance required.',
-        msgBn: 'রোল্যান্ড VS-640 মেশিনে ত্রুটি ধরা পড়েছে। দ্রুত রক্ষণাবেক্ষণ প্রয়োজন।',
-        url: '/production',
+        title: 'Transaction Gateway Timeout',
+        titleBn: 'পেমেন্ট গেটওয়ে সময়সীমা অতিক্রম',
+        msg: 'bKash merchant auto-settlement failed for POS Terminal 2',
+        msgBn: 'পিওএস টার্মিনাল ২ এর বিকাশ অটো-সেটেলমেন্ট ব্যর্থ হয়েছে',
+        url: '/orders',
       },
       broadcast: {
         title: 'Platform Maintenance Advisory',
@@ -192,6 +234,13 @@ export default function NotificationSettingsPage() {
         msg: 'Scheduled database indexing tonight from 02:00 AM to 02:30 AM (BST)',
         msgBn: 'আজ রাত ০২:০০ থেকে ০২:৩০ পর্যন্ত সিস্টেম আপডেট চলবে।',
         url: '/settings',
+      },
+      message: {
+        title: 'New Customer Support Message',
+        titleBn: 'নতুন গ্রাহক বার্তা',
+        msg: 'Aman Graphics: "Can we get the proof approved by 4 PM today?"',
+        msgBn: 'আমান গ্রাফিক্স: "আজ বিকাল ৪টার মধ্যে প্রুফ পাওয়া যাবে কি?"',
+        url: '/support',
       },
       success: {
         title: 'Job Order #JB-901 Completed',
@@ -217,7 +266,7 @@ export default function NotificationSettingsPage() {
       messageBn: item.msgBn,
       type,
       actionUrl: item.url,
-      mode: 'popup',
+      mode: type === 'urgent' ? 'both' : 'popup',
     })
   }
 
@@ -262,13 +311,49 @@ export default function NotificationSettingsPage() {
     )
   }
 
+  const filteredCatalog = SOUND_CATALOG.filter(
+    (item) => selectedCategory === 'all' || item.category === selectedCategory
+  )
+
+  const getSoundIcon = (type: NotificationSoundType) => {
+    switch (type) {
+      case 'order':
+        return ShoppingBag
+      case 'payment':
+        return DollarSign
+      case 'delivery':
+        return Truck
+      case 'attendance':
+        return UserCheck
+      case 'job':
+        return Layers
+      case 'inventory':
+        return Package
+      case 'urgent':
+        return Flame
+      case 'warning':
+        return AlertTriangle
+      case 'error':
+        return AlertCircle
+      case 'broadcast':
+        return Megaphone
+      case 'message':
+        return MessageSquare
+      case 'success':
+        return Sparkles
+      case 'system':
+      default:
+        return Bell
+    }
+  }
+
   return (
     <div className="space-y-6 max-w-5xl">
       <PageHeader
         titleEn="Notifications, Audio & Push Gateways"
         titleBn="নোটিফিকেশন, অডিও ও পুশ গেটওয়ে"
-        descriptionEn="Configure polyphonic audio chimes, browser push alerts, automated WhatsApp dispatches, and Bangladeshi masked SMS."
-        descriptionBn="পলিফোনিক অডিও চাইম, ব্রাউজার পুশ নোটিফিকেশন, হোয়াটসঅ্যাপ চালন এবং মাস্কড এসএমএস গেটওয়ে কনফিগার করুন।"
+        descriptionEn="Configure studio-grade polyphonic audio synthesis, amplified factory chimes, browser push alerts, and SMS/WhatsApp dispatches."
+        descriptionBn="স্টুডিও-গ্রেড পলিফোনিক অডিও সিন্থেসাইজার, উচ্চ শব্দযুক্ত ফ্যাক্টরি চাইম, ব্রাউজার পুশ ও এসএমএস/হোয়াটসঅ্যাপ গেটওয়ে কনফিগার করুন।"
         icon={Bell}
         iconColor="text-amber-600"
       />
@@ -293,10 +378,13 @@ export default function NotificationSettingsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">Realtime Audio Chimes &amp; Browser Push</CardTitle>
-                  <Badge className="bg-indigo-600 text-white text-[10px] font-bold">Web Audio API</Badge>
+                  <Badge className="bg-indigo-600 text-white text-[10px] font-bold">Web Audio 2.0</Badge>
+                  <Badge className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                    Limiter Protected
+                  </Badge>
                 </div>
                 <CardDescription className="text-xs">
-                  Zero-latency polyphonic frequency synthesis with multi-tone alerts and native OS desktop push notifications.
+                  High-fidelity harmonic synthesis with 5.6x amplified output volume and native OS desktop push notifications.
                 </CardDescription>
               </div>
             </div>
@@ -307,7 +395,7 @@ export default function NotificationSettingsPage() {
                 size="sm"
                 variant="outline"
                 onClick={handleToggleSoundMute}
-                className={`text-xs h-9 font-bold border transition-all ${
+                className={`text-xs h-9 font-bold border transition-all cursor-pointer ${
                   soundMuted
                     ? 'border-rose-300 text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30'
                     : 'border-emerald-300 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30'
@@ -316,12 +404,12 @@ export default function NotificationSettingsPage() {
                 {soundMuted ? (
                   <>
                     <VolumeX className="mr-1.5 h-4 w-4" />
-                    Audio Muted
+                    Audio Muted (নিঃশব্দ)
                   </>
                 ) : (
                   <>
                     <Volume2 className="mr-1.5 h-4 w-4" />
-                    Audio Active
+                    Audio Active (সক্রিয়)
                   </>
                 )}
               </Button>
@@ -332,13 +420,13 @@ export default function NotificationSettingsPage() {
         <CardContent className="space-y-6 pt-5">
           {/* Audio Volume & Browser Permission Status Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {/* Audio Volume Slider */}
+            {/* Audio Volume Slider & Quick Presets */}
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Sliders className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                   <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                    Master Chime Volume
+                    Master Chime Volume (সাউন্ড ভলিউম)
                   </span>
                 </div>
                 <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400">
@@ -356,8 +444,32 @@ export default function NotificationSettingsPage() {
                 className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600 disabled:opacity-40"
               />
 
+              {/* Quick Volume Preset Buttons */}
+              <div className="flex items-center gap-1.5 pt-1">
+                <span className="text-[10px] text-slate-400 uppercase font-semibold">Presets:</span>
+                {[
+                  { label: '25% Subtle', val: 25 },
+                  { label: '50% Normal', val: 50 },
+                  { label: '85% Loud', val: 85 },
+                  { label: '100% Boost', val: 100 },
+                ].map((preset) => (
+                  <button
+                    key={preset.val}
+                    type="button"
+                    onClick={() => handleVolumePreset(preset.val)}
+                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                      volume === preset.val && !soundMuted
+                        ? 'bg-indigo-600 text-white border-indigo-500'
+                        : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-indigo-400'
+                    }`}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
+
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                Uses polyphonic harmonic intervals crafted to cut through loud printing factory environments without being harsh.
+                Crafted with dynamic limiter compression to cut through loud printing presses, noisy cutter machines, and busy retail counters without digital distortion.
               </p>
             </div>
 
@@ -391,8 +503,8 @@ export default function NotificationSettingsPage() {
               <div className="flex items-center justify-between gap-3 pt-1">
                 <span className="text-[11px] text-slate-500 dark:text-slate-400">
                   {browserPerm === 'granted'
-                    ? 'System alerts will pop up even when the browser tab is in background.'
-                    : 'Enable browser permission to receive desktop alerts when away from tab.'}
+                    ? 'System alerts will pop up even when the browser tab is minimized or in background.'
+                    : 'Enable browser permission to receive desktop alerts when away from the tab.'}
                 </span>
 
                 {browserPerm !== 'granted' ? (
@@ -400,7 +512,7 @@ export default function NotificationSettingsPage() {
                     type="button"
                     size="sm"
                     onClick={handleRequestPushPermission}
-                    className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 font-bold"
+                    className="h-8 text-xs bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 font-bold cursor-pointer"
                   >
                     Enable Push
                   </Button>
@@ -410,7 +522,7 @@ export default function NotificationSettingsPage() {
                     size="sm"
                     variant="outline"
                     onClick={handleToggleBrowserEnabled}
-                    className="h-8 text-xs shrink-0"
+                    className="h-8 text-xs shrink-0 cursor-pointer"
                   >
                     {browserEnabled ? 'Disable' : 'Enable'}
                   </Button>
@@ -419,57 +531,124 @@ export default function NotificationSettingsPage() {
             </div>
           </div>
 
-          {/* Interactive Sound Chime & Live Popup Testing Suite */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-                Audio Chime &amp; Notification Tester
-              </span>
-              <span className="text-[11px] text-slate-500">Click any preset to test the synthesizer sound and popup</span>
+          {/* Interactive Sound Chime & Live Popup Testing Suite (13 Sound Archetypes) */}
+          <div className="space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-4 w-4 text-amber-500" />
+                  Sound Synthesizer &amp; Alert Studio (13 Archetypes)
+                </span>
+                <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-[10px]">
+                  {filteredCatalog.length} Sounds
+                </Badge>
+              </div>
+
+              {/* Category Filter Tabs */}
+              <div className="flex items-center gap-1 overflow-x-auto">
+                {[
+                  { key: 'all' as const, label: 'All' },
+                  { key: 'commercial' as const, label: 'Commercial' },
+                  { key: 'operations' as const, label: 'Operations' },
+                  { key: 'alerts' as const, label: 'Alerts' },
+                  { key: 'system' as const, label: 'System' },
+                ].map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => setSelectedCategory(tab.key)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                      selectedCategory === tab.key
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              {[
-                { type: 'order' as const, label: 'Sales Order', icon: ShoppingBag, color: 'indigo', freq: 'C5-E5-G5-C6' },
-                { type: 'payment' as const, label: 'Payment', icon: DollarSign, color: 'emerald', freq: 'D5-F#5-A5-D6' },
-                { type: 'delivery' as const, label: 'Dispatch', icon: Truck, color: 'cyan', freq: 'E5-G5' },
-                { type: 'attendance' as const, label: 'Attendance', icon: UserCheck, color: 'blue', freq: 'G5-C6 Ping' },
-                { type: 'warning' as const, label: 'Caution / Alert', icon: AlertTriangle, color: 'amber', freq: 'A4-Ab4 Amber' },
-                { type: 'broadcast' as const, label: 'Broadcast', icon: Radio, color: 'purple', freq: 'F5-A5-C6 Fanfare' },
-              ].map((item) => {
-                const Icon = item.icon
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredCatalog.map((item) => {
+                const Icon = getSoundIcon(item.type)
+                const isPlayingThis = activePlaying === item.type
+
                 return (
                   <div
                     key={item.type}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 flex flex-col gap-2 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all group"
+                    className={`p-3.5 rounded-2xl border bg-white dark:bg-slate-900/70 flex flex-col justify-between gap-3 transition-all group ${
+                      isPlayingThis
+                        ? 'border-indigo-500 ring-2 ring-indigo-500/30 shadow-lg shadow-indigo-950/20'
+                        : 'border-slate-200 dark:border-slate-800 hover:border-indigo-400 dark:hover:border-indigo-500'
+                    }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 transition-colors">
-                        <Icon className="h-4 w-4" />
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-2 rounded-xl border ${
+                            item.type === 'urgent'
+                              ? 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                              : item.type === 'payment' || item.type === 'success'
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                              : item.type === 'order'
+                              ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+                              : item.type === 'delivery' || item.type === 'message'
+                              ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30'
+                              : item.type === 'attendance'
+                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+                              : item.type === 'warning' || item.type === 'job'
+                              ? 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              : item.type === 'broadcast'
+                              ? 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-400 border-slate-700'
+                          }`}>
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
+                              {tBilingual(item.nameEn, item.nameBn)}
+                            </div>
+                            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">
+                              {item.category} • {item.waveform}
+                            </span>
+                          </div>
+                        </div>
+
+                        {isPlayingThis && (
+                          <span className="flex items-center gap-1 text-[10px] text-indigo-400 font-bold animate-pulse">
+                            <Volume2 className="h-3 w-3" />
+                            Playing
+                          </span>
+                        )}
                       </div>
-                      <span className="text-[9px] font-mono text-slate-400">{item.freq}</span>
+
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                        {tBilingual(item.descEn, item.descBn)}
+                      </p>
+
+                      <div className="text-[9px] font-mono text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 truncate">
+                        {item.frequencies}
+                      </div>
                     </div>
 
-                    <div>
-                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200">{item.label}</div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-1 pt-1">
+                    <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-slate-800/80">
                       <button
                         type="button"
                         onClick={() => handleTestSound(item.type)}
-                        className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/60 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors cursor-pointer text-center"
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
                         title="Play audio chime only"
                       >
+                        <Volume2 className="h-3.5 w-3.5" />
                         Chime 🔊
                       </button>
                       <button
                         type="button"
                         onClick={() => handleTestLivePopup(item.type)}
-                        className="px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-[10px] font-bold text-white transition-colors cursor-pointer text-center"
+                        className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[11px] font-bold text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"
                         title="Trigger live popup card & chime"
                       >
+                        <Bell className="h-3.5 w-3.5" />
                         Popup 🔔
                       </button>
                     </div>

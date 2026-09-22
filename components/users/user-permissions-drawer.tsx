@@ -40,6 +40,7 @@ import {
   normalizeResponsibilitySlug,
 } from '@/lib/auth/rbac.client'
 import { updateUserAccessAndPermissionsAction } from '@/actions/company-users.actions'
+import { getAuditLogsAction } from '@/actions/audit.actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
@@ -116,7 +117,8 @@ export function UserPermissionsDrawer({
   const [branchId, setBranchId] = useState<string | null>(null)
   const [expandedModules, setExpandedModules] = useState<Record<string, boolean>>({})
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false)
-  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([])
+  const [auditLogs, setAuditLogs] = useState<any[]>([])
+  const [isAuditLoading, setIsAuditLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
@@ -227,19 +229,14 @@ export function UserPermissionsDrawer({
     const nextOverrides = { ...overrides }
 
     if (detail.source === 'inherited') {
-      // Inherited is TRUE -> User explicitly DENIES it
       nextOverrides[code] = false
     } else if (detail.source === 'override_deny') {
-      // It was explicitly denied -> remove override (reverts to inherited TRUE)
       delete nextOverrides[code]
     } else if (detail.source === 'override_allow') {
-      // It was explicitly allowed -> remove override (reverts to default FALSE)
       delete nextOverrides[code]
     } else if (detail.source === 'default_deny') {
-      // It was default denied -> user explicitly ALLOWS it
       nextOverrides[code] = true
     } else {
-      // Fallback toggle
       nextOverrides[code] = !currentlyGranted
     }
 
@@ -334,9 +331,23 @@ export function UserPermissionsDrawer({
     }
   }
 
-  const handleOpenAudit = () => {
-    setAuditLogs([])
+  const handleOpenAudit = async () => {
     setIsAuditModalOpen(true)
+    setIsAuditLoading(true)
+    try {
+      const email = user.profile?.email || user.invited_email || user.id
+      const res = await getAuditLogsAction(email)
+      if (res && res.success && res.data) {
+        setAuditLogs(res.data)
+      } else {
+        setAuditLogs([])
+      }
+    } catch (err) {
+      console.error('Error fetching audit logs for user:', err)
+      setAuditLogs([])
+    } finally {
+      setIsAuditLoading(false)
+    }
   }
 
   const handleResetToUserInitial = () => {
@@ -361,8 +372,8 @@ export function UserPermissionsDrawer({
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 shrink-0">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
-                  {(user.profile?.full_name || 'U')[0].toUpperCase()}
+                <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center font-bold text-base shadow-sm">
+                  {(user.profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -447,7 +458,7 @@ export function UserPermissionsDrawer({
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'summary'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
@@ -460,7 +471,7 @@ export function UserPermissionsDrawer({
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
                   activeTab === 'permissions'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
@@ -472,7 +483,7 @@ export function UserPermissionsDrawer({
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'responsibilities'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
@@ -487,7 +498,7 @@ export function UserPermissionsDrawer({
                 className={cn(
                   'px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap',
                   activeTab === 'branches'
-                    ? 'bg-blue-600 text-white shadow-xs'
+                    ? 'bg-primary text-white shadow-xs'
                     : 'bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300 hover:bg-slate-200'
                 )}
               >
@@ -531,7 +542,7 @@ export function UserPermissionsDrawer({
                     <button
                       type="button"
                       onClick={() => setActiveTab('responsibilities')}
-                      className="text-xs text-blue-600 hover:underline font-semibold"
+                      className="text-xs text-primary hover:underline font-semibold"
                     >
                       Change
                     </button>
@@ -543,7 +554,7 @@ export function UserPermissionsDrawer({
                         <Badge
                           key={slug}
                           variant="outline"
-                          className="bg-blue-50/80 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:border-blue-800 dark:text-blue-300 py-1 px-2.5 text-xs font-semibold"
+                          className="bg-sky-50/80 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:border-sky-800 dark:text-sky-300 py-1 px-2.5 text-xs font-semibold"
                         >
                           <Briefcase className="h-3 w-3 mr-1.5" />
                           {r?.name || slug} {r?.nameBn ? `(${r.nameBn})` : ''}
@@ -571,7 +582,7 @@ export function UserPermissionsDrawer({
                     <button
                       type="button"
                       onClick={() => setActiveTab('permissions')}
-                      className="text-xs text-blue-600 hover:underline font-semibold"
+                      className="text-xs text-primary hover:underline font-semibold"
                     >
                       Configure Scopes
                     </button>
@@ -677,11 +688,11 @@ export function UserPermissionsDrawer({
             ) : activeTab === 'responsibilities' ? (
               /* TAB 1: RESPONSIBILITIES ASSIGNMENT */
               <div className="space-y-3">
-                <div className="bg-blue-50/60 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl p-3 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2.5">
-                  <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="bg-sky-50/60 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-900 rounded-xl p-3 text-xs text-sky-900 dark:text-sky-200 flex items-start gap-2.5">
+                  <Info className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">Multi-Responsibility Role System</p>
-                    <p className="text-[11px] text-blue-800/80 dark:text-blue-300/80 mt-0.5">
+                    <p className="text-[11px] text-sky-800/80 dark:text-sky-300/80 mt-0.5">
                       Users receive the merged permissions of all selected roles. You can also define specific permission overrides per module.
                     </p>
                   </div>
@@ -698,7 +709,7 @@ export function UserPermissionsDrawer({
                         className={cn(
                           'p-3.5 rounded-xl border transition-all cursor-pointer flex items-start justify-between gap-3',
                           isSelected
-                            ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/30 shadow-xs'
+                            ? 'border-primary bg-sky-50/40 dark:bg-sky-950/30 shadow-xs'
                             : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
                         )}
                       >
@@ -707,7 +718,7 @@ export function UserPermissionsDrawer({
                             className={cn(
                               'mt-0.5 h-4 w-4 rounded border flex items-center justify-center transition-colors',
                               isSelected
-                                ? 'bg-blue-600 border-blue-600 text-white'
+                                ? 'bg-primary border-primary text-white'
                                 : 'border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800'
                             )}
                           >
@@ -729,7 +740,7 @@ export function UserPermissionsDrawer({
                         </div>
 
                         {isSelected && (
-                          <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 text-[10px]">
+                          <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 text-[10px]">
                             Assigned
                           </Badge>
                         )}
@@ -742,7 +753,7 @@ export function UserPermissionsDrawer({
               /* TAB 3: AUTHORIZED BRANCHES */
               <div className="space-y-3">
                 <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-xs text-slate-700 dark:text-slate-300 flex items-start gap-2.5">
-                  <Building className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                  <Building className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">Multi-Branch Scoping</p>
                     <p className="text-[11px] text-slate-500 mt-0.5">
@@ -763,7 +774,7 @@ export function UserPermissionsDrawer({
                         className={cn(
                           'p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between',
                           isChecked
-                            ? 'border-blue-300 bg-blue-50/40 dark:border-blue-800 dark:bg-blue-950/30'
+                            ? 'border-sky-300 bg-sky-50/40 dark:border-sky-800 dark:bg-sky-950/30'
                             : 'border-slate-200 dark:border-slate-800'
                         )}
                       >
@@ -772,7 +783,7 @@ export function UserPermissionsDrawer({
                             type="checkbox"
                             checked={isChecked}
                             onChange={() => {}}
-                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                           />
                           <div>
                             <div className="flex items-center gap-1.5">
@@ -783,7 +794,7 @@ export function UserPermissionsDrawer({
                                 {b.code}
                               </Badge>
                               {isPrimary && (
-                                <Badge className="bg-blue-600 text-white text-[9px] px-1 py-0">
+                                <Badge className="bg-primary text-white text-[9px] px-1 py-0">
                                   Primary
                                 </Badge>
                               )}
@@ -823,7 +834,7 @@ export function UserPermissionsDrawer({
                           className={cn(
                             'px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors cursor-pointer whitespace-nowrap',
                             isCatSelected
-                              ? 'bg-blue-600 text-white shadow-2xs'
+                              ? 'bg-primary text-white shadow-2xs'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200'
                           )}
                         >
@@ -842,7 +853,7 @@ export function UserPermissionsDrawer({
                     Inherited Allowed
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-blue-600" />
+                    <span className="h-2 w-2 rounded-full bg-primary" />
                     Override (Allow)
                   </span>
                   <span className="inline-flex items-center gap-1">
@@ -880,7 +891,7 @@ export function UserPermissionsDrawer({
                           className="p-3.5 bg-slate-50/70 dark:bg-slate-800/50 flex items-center justify-between gap-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800/80 transition-colors"
                         >
                           <div className="flex items-center gap-2.5">
-                            <Layers className="h-4 w-4 text-blue-600 shrink-0" />
+                            <Layers className="h-4 w-4 text-primary shrink-0" />
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-xs text-slate-900 dark:text-white">
@@ -951,49 +962,48 @@ export function UserPermissionsDrawer({
                               </div>
                             </div>
 
-                            {/* Quick Module Actions Toolbar */}
-                            <div className="flex items-center justify-between text-xs pt-1 border-b border-slate-100 dark:border-slate-800/80 pb-2">
-                              <span className="text-[11px] text-slate-500 font-medium">Quick Override:</span>
-                              <div className="flex items-center gap-2">
+                            {/* Quick Action Overrides */}
+                            <div className="flex items-center justify-between pt-1 text-xs">
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                Specific Action Overrides:
+                              </span>
+                              <div className="flex items-center gap-1.5">
                                 <button
                                   type="button"
-                                  onClick={() => grantAllModuleActions(modName as PermissionModule)}
-                                  className="text-[11px] text-emerald-600 hover:underline flex items-center gap-0.5 cursor-pointer font-medium"
+                                  onClick={() => grantAllModuleActions(modName)}
+                                  className="text-[11px] text-primary hover:underline font-semibold"
                                 >
-                                  <Check className="h-3 w-3" />
                                   Allow All
                                 </button>
-                                <span className="text-slate-300 dark:text-slate-700">•</span>
+                                <span className="text-slate-300">|</span>
                                 <button
                                   type="button"
-                                  onClick={() => denyAllModuleActions(modName as PermissionModule)}
-                                  className="text-[11px] text-red-600 hover:underline flex items-center gap-0.5 cursor-pointer font-medium"
+                                  onClick={() => denyAllModuleActions(modName)}
+                                  className="text-[11px] text-red-600 hover:underline font-semibold"
                                 >
-                                  <Ban className="h-3 w-3" />
                                   Deny All
                                 </button>
-                                <span className="text-slate-300 dark:text-slate-700">•</span>
+                                <span className="text-slate-300">|</span>
                                 <button
                                   type="button"
-                                  onClick={() => resetModuleOverrides(modName as PermissionModule)}
-                                  className="text-[11px] text-slate-500 hover:text-blue-600 flex items-center gap-0.5 cursor-pointer font-medium"
+                                  onClick={() => resetModuleOverrides(modName)}
+                                  className="text-[11px] text-slate-500 hover:underline font-semibold"
                                 >
-                                  <RotateCcw className="h-3 w-3" />
                                   Reset
                                 </button>
                               </div>
                             </div>
 
-                            {/* Actions Checkboxes Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                            {/* Actions Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                               {spec.actions.map((act) => {
                                 const detail = getPermissionDetail(simulatedUserCtx, modName, act)
                                 const isGranted = detail.isGranted
 
-                                let sourceBadge: React.ReactNode
+                                let sourceBadge: React.ReactNode = null
                                 if (detail.source === 'override_allow') {
                                   sourceBadge = (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
+                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
                                       Override (Allow)
                                     </span>
                                   )
@@ -1024,7 +1034,7 @@ export function UserPermissionsDrawer({
                                     className={cn(
                                       'p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2',
                                       isGranted
-                                        ? 'border-blue-200 dark:border-blue-900/60 bg-blue-50/20 dark:bg-blue-950/20'
+                                        ? 'border-sky-200 dark:border-sky-900/60 bg-sky-50/20 dark:bg-sky-950/20'
                                         : 'border-slate-200/80 dark:border-slate-800 bg-slate-50/30'
                                     )}
                                   >
@@ -1032,8 +1042,8 @@ export function UserPermissionsDrawer({
                                       <input
                                         type="checkbox"
                                         checked={isGranted}
-                                        onChange={() => {}} // Handled by container onClick
-                                        className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                        onChange={() => {}}
+                                        className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary cursor-pointer"
                                       />
                                       <div>
                                         <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
@@ -1094,7 +1104,7 @@ export function UserPermissionsDrawer({
                 size="sm"
                 onClick={handleSave}
                 disabled={isSaving || !isDirty}
-                className="h-10 sm:h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 shadow-sm font-semibold flex-1 sm:flex-initial"
+                className="h-10 sm:h-9 bg-primary hover:bg-primary/90 text-white text-xs px-4 shadow-sm font-semibold flex-1 sm:flex-initial"
               >
                 {isSaving ? (
                   <>
@@ -1117,13 +1127,18 @@ export function UserPermissionsDrawer({
       <ModalDialog
         open={isAuditModalOpen}
         onOpenChange={setIsAuditModalOpen}
-        title={`Audit Trail: ${user.profile?.full_name || 'User'}`}
-        description="Chronological record of responsibility and permission changes."
+        title={`Audit Trail: ${user.profile?.full_name || user.invited_email || 'User'}`}
+        description="Chronological record of responsibility and permission changes for this user."
       >
         <div className="max-h-96 overflow-y-auto space-y-3 pt-2">
-          {auditLogs.length === 0 ? (
+          {isAuditLoading ? (
+            <div className="p-8 text-center text-xs text-slate-400 flex flex-col items-center justify-center gap-2">
+              <RotateCcw className="w-4 h-4 animate-spin text-primary" />
+              Loading user audit trail...
+            </div>
+          ) : auditLogs.length === 0 ? (
             <div className="p-6 text-center text-xs text-slate-400 italic">
-              No previous permission changes recorded for this user yet.
+              No previous security or permission modifications recorded for this user.
             </div>
           ) : (
             auditLogs.map((log) => (
@@ -1132,15 +1147,18 @@ export function UserPermissionsDrawer({
                 className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs space-y-1"
               >
                 <div className="flex items-center justify-between text-slate-500 text-[11px]">
-                  <span>Changed by: <strong className="text-slate-700 dark:text-slate-300">{log.actorName}</strong></span>
-                  <span>{formatDateTime(log.createdAt)}</span>
+                  <span>Actor: <strong className="text-slate-700 dark:text-slate-300">{log.user_email || 'System'}</strong></span>
+                  <span>{formatDateTime(log.timestamp || log.created_at)}</span>
                 </div>
-                <div className="font-semibold text-slate-900 dark:text-white capitalize">
-                  {log.actionType.replace(/_/g, ' ')}
+                <div className="font-semibold text-slate-900 dark:text-white font-mono">
+                  {log.action}
                 </div>
-                {log.details && (
-                  <pre className="text-[10px] bg-white dark:bg-slate-800 p-2 rounded border border-slate-100 dark:border-slate-700/60 overflow-x-auto text-slate-600 dark:text-slate-300">
-                    {JSON.stringify(log.details, null, 2)}
+                {log.description && (
+                  <p className="text-slate-600 dark:text-slate-300 text-[11px]">{log.description}</p>
+                )}
+                {(log.previous_value || log.new_value) && (
+                  <pre className="text-[10px] bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 font-mono">
+                    {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}
               </div>

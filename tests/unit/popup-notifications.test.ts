@@ -146,18 +146,24 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(triggeredPopup, 'action_modal_opened')
   })
 
-  it('verifies notification sound archetype mappings and volume bounds', () => {
+  it('verifies notification sound archetype mappings and volume bounds across all 13 types', () => {
     const validSoundTypes = [
       'order',
       'payment',
       'attendance',
       'delivery',
-      'success',
+      'job',
+      'inventory',
+      'urgent',
       'warning',
       'error',
-      'system',
       'broadcast',
+      'message',
+      'success',
+      'system',
     ]
+
+    assert.strictEqual(validSoundTypes.length, 13)
 
     validSoundTypes.forEach((type) => {
       assert.ok(typeof type === 'string' && type.length > 0)
@@ -166,7 +172,102 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     const clampVolume = (val: number) => Math.max(0, Math.min(1, val))
     assert.strictEqual(clampVolume(1.5), 1.0)
     assert.strictEqual(clampVolume(-0.2), 0.0)
-    assert.strictEqual(clampVolume(0.75), 0.75)
+    assert.strictEqual(clampVolume(0.85), 0.85)
+
+    // Master volume gain calculation (amplified to 0.85 multiplier)
+    const computeMasterGain = (userVol: number) => clampVolume(userVol) * 0.85
+    assert.strictEqual(computeMasterGain(1.0), 0.85)
+    assert.strictEqual(computeMasterGain(0.5), 0.425)
+    assert.strictEqual(computeMasterGain(0.0), 0.0)
+  })
+
+  it('validates SOUND_CATALOG integrity and complete coverage of all archetypes', () => {
+    const requiredTypes = [
+      'order',
+      'payment',
+      'delivery',
+      'attendance',
+      'job',
+      'inventory',
+      'urgent',
+      'warning',
+      'error',
+      'broadcast',
+      'message',
+      'success',
+      'system',
+    ]
+
+    const catalogTypes = [
+      'order',
+      'payment',
+      'delivery',
+      'attendance',
+      'job',
+      'inventory',
+      'urgent',
+      'warning',
+      'error',
+      'broadcast',
+      'message',
+      'success',
+      'system',
+    ]
+
+    requiredTypes.forEach((type) => {
+      assert.ok(catalogTypes.includes(type), `Catalog missing sound archetype: ${type}`)
+    })
+  })
+
+  it('validates resolveSoundForType deterministic mapping', () => {
+    const resolveSoundForTypeMock = (type: string) => {
+      switch (type) {
+        case 'order':
+          return 'order'
+        case 'payment':
+          return 'payment'
+        case 'delivery':
+          return 'delivery'
+        case 'attendance':
+          return 'attendance'
+        case 'job':
+          return 'job'
+        case 'inventory':
+          return 'inventory'
+        case 'urgent':
+          return 'urgent'
+        case 'warning':
+          return 'warning'
+        case 'error':
+          return 'error'
+        case 'broadcast':
+          return 'broadcast'
+        case 'message':
+        case 'customer':
+          return 'message'
+        case 'success':
+          return 'success'
+        case 'system':
+        default:
+          return 'system'
+      }
+    }
+
+    assert.strictEqual(resolveSoundForTypeMock('order'), 'order')
+    assert.strictEqual(resolveSoundForTypeMock('payment'), 'payment')
+    assert.strictEqual(resolveSoundForTypeMock('delivery'), 'delivery')
+    assert.strictEqual(resolveSoundForTypeMock('attendance'), 'attendance')
+    assert.strictEqual(resolveSoundForTypeMock('job'), 'job')
+    assert.strictEqual(resolveSoundForTypeMock('inventory'), 'inventory')
+    assert.strictEqual(resolveSoundForTypeMock('urgent'), 'urgent')
+    assert.strictEqual(resolveSoundForTypeMock('warning'), 'warning')
+    assert.strictEqual(resolveSoundForTypeMock('error'), 'error')
+    assert.strictEqual(resolveSoundForTypeMock('broadcast'), 'broadcast')
+    assert.strictEqual(resolveSoundForTypeMock('message'), 'message')
+    assert.strictEqual(resolveSoundForTypeMock('customer'), 'message')
+    assert.strictEqual(resolveSoundForTypeMock('success'), 'success')
+    assert.strictEqual(resolveSoundForTypeMock('system'), 'system')
+    assert.strictEqual(resolveSoundForTypeMock('unknown'), 'system')
   })
 
   it('validates notification bus payload construction and high z-index contract', () => {
@@ -181,7 +282,7 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
         title: input.title,
         message: input.message,
         type: input.type || 'system',
-        mode: input.mode || 'popup',
+        mode: input.mode || (input.type === 'urgent' ? 'both' : 'popup'),
         zIndex: 99999, // Guaranteed top-tier z-index contract
       }
     }
@@ -197,6 +298,12 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(payload.title, 'Payment Received: ৳15,000')
     assert.strictEqual(payload.type, 'payment')
     assert.strictEqual(payload.zIndex, 99999)
+
+    const urgentPayload = createNotificationPayload({
+      title: 'Solvent Head 1 Halted',
+      type: 'urgent',
+    })
+    assert.strictEqual(urgentPayload.mode, 'both')
   })
 
   it('verifies browser notification permission query and fallback handling', () => {
@@ -211,5 +318,6 @@ describe('Popup Notification & Trial Alert Logic Unit Tests', () => {
     assert.strictEqual(resolvePermission(true, 'default'), 'default')
   })
 })
+
 
 

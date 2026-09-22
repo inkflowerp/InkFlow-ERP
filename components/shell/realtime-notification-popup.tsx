@@ -18,6 +18,10 @@ import {
   X,
   Volume2,
   VolumeX,
+  UserCheck,
+  Megaphone,
+  MessageSquare,
+  Flame,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -38,8 +42,13 @@ export type PopupNotificationType =
   | 'delivery'
   | 'inventory'
   | 'customer'
-  | 'success'
+  | 'attendance'
+  | 'urgent'
   | 'warning'
+  | 'error'
+  | 'broadcast'
+  | 'message'
+  | 'success'
   | 'system'
 
 export interface RealtimePopupNotification {
@@ -66,7 +75,7 @@ interface PopupItemProps {
 
 function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
   const { tBilingual } = useI18n()
-  const duration = notification.durationMs || 6500
+  const duration = notification.durationMs || (notification.type === 'urgent' ? 10000 : 6500)
   const [progress, setProgress] = useState(100)
   const [isPaused, setIsPaused] = useState(false)
   const remainingTimeRef = useRef(duration)
@@ -94,6 +103,15 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
 
   const getTheme = () => {
     switch (notification.type) {
+      case 'urgent':
+        return {
+          icon: <Flame className="h-5 w-5 text-rose-400 animate-bounce" />,
+          badgeBg: 'bg-rose-500/20 border-rose-500/40 text-rose-300 animate-pulse',
+          borderAccent: 'border-l-rose-500',
+          progressBg: 'bg-rose-500',
+          tag: 'Urgent Action',
+          tagBn: 'জরুরি সতর্কতা',
+        }
       case 'order':
         return {
           icon: <ShoppingBag className="h-5 w-5 text-indigo-400" />,
@@ -130,6 +148,15 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
           tag: 'Dispatch',
           tagBn: 'ডেলিভারি',
         }
+      case 'attendance':
+        return {
+          icon: <UserCheck className="h-5 w-5 text-blue-400" />,
+          badgeBg: 'bg-blue-500/10 border-blue-500/30 text-blue-400',
+          borderAccent: 'border-l-blue-500',
+          progressBg: 'bg-blue-500',
+          tag: 'Attendance',
+          tagBn: 'হাজিরা',
+        }
       case 'inventory':
         return {
           icon: <Package className="h-5 w-5 text-purple-400" />,
@@ -139,14 +166,42 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
           tag: 'Inventory',
           tagBn: 'ইনভেন্টরি',
         }
+      case 'broadcast':
+        return {
+          icon: <Megaphone className="h-5 w-5 text-fuchsia-400" />,
+          badgeBg: 'bg-fuchsia-500/10 border-fuchsia-500/30 text-fuchsia-400',
+          borderAccent: 'border-l-fuchsia-500',
+          progressBg: 'bg-fuchsia-500',
+          tag: 'Broadcast',
+          tagBn: 'ঘোষণা',
+        }
+      case 'message':
+      case 'customer':
+        return {
+          icon: <MessageSquare className="h-5 w-5 text-teal-400" />,
+          badgeBg: 'bg-teal-500/10 border-teal-500/30 text-teal-400',
+          borderAccent: 'border-l-teal-500',
+          progressBg: 'bg-teal-500',
+          tag: 'Live Chat',
+          tagBn: 'লাইভ চ্যাট',
+        }
       case 'warning':
         return {
-          icon: <AlertTriangle className="h-5 w-5 text-rose-400" />,
+          icon: <AlertTriangle className="h-5 w-5 text-amber-400" />,
+          badgeBg: 'bg-amber-500/10 border-amber-500/30 text-amber-400',
+          borderAccent: 'border-l-amber-500',
+          progressBg: 'bg-amber-500',
+          tag: 'Alert',
+          tagBn: 'সতর্কতা',
+        }
+      case 'error':
+        return {
+          icon: <AlertCircle className="h-5 w-5 text-rose-400" />,
           badgeBg: 'bg-rose-500/10 border-rose-500/30 text-rose-400',
           borderAccent: 'border-l-rose-500',
           progressBg: 'bg-rose-500',
-          tag: 'Alert',
-          tagBn: 'সতর্কতা',
+          tag: 'Exception',
+          tagBn: 'ত্রুটি',
         }
       case 'success':
         return {
@@ -304,19 +359,24 @@ export function RealtimeNotificationPopup() {
 
         // Play audio chime if not silent
         if (!item.silent) {
-          const soundType: NotificationSoundType =
-            item.type === 'payment'
-              ? 'payment'
-              : item.type === 'order'
-              ? 'order'
-              : item.type === 'delivery'
-              ? 'delivery'
-              : item.type === 'warning'
-              ? 'warning'
-              : item.type === 'success'
-              ? 'success'
-              : 'system'
+          const soundMap: Record<string, NotificationSoundType> = {
+            order: 'order',
+            payment: 'payment',
+            delivery: 'delivery',
+            attendance: 'attendance',
+            job: 'job',
+            inventory: 'inventory',
+            urgent: 'urgent',
+            warning: 'warning',
+            error: 'error',
+            broadcast: 'broadcast',
+            message: 'message',
+            customer: 'message',
+            success: 'success',
+            system: 'system',
+          }
 
+          const soundType: NotificationSoundType = soundMap[item.type || 'system'] || 'system'
           playNotificationSound(soundType)
         }
 
