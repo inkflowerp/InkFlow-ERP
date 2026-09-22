@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import {
   GitBranch,
   Plus,
@@ -10,6 +10,11 @@ import {
   CheckCircle2,
   Check,
   Star,
+  Edit2,
+  Power,
+  Search,
+  Crown,
+  User,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -22,18 +27,25 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Crown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toBengaliDigits } from '@/hooks/use-public-plans'
-import { listBranchesAction, createBranchAction, updateBranchAction } from '@/actions/branch.actions'
+import {
+  listBranchesAction,
+  createBranchAction,
+  updateBranchAction,
+  setBranchStatusAction,
+} from '@/actions/branch.actions'
+import { useDataStore } from '@/hooks/use-data-store'
+import { STORAGE_KEYS } from '@/lib/db/data-store'
 
 interface BranchItem {
   id: string
   code: string
   name: string
-  nameBn: string
-  phone: string
-  address: string
+  nameBn?: string | null
+  phone?: string | null
+  address?: string | null
+  managerName?: string | null
   isMain: boolean
   isActive: boolean
 }
@@ -43,16 +55,14 @@ const DEFAULT_MAIN_BRANCH: BranchItem[] = [
     id: 'b-01',
     code: 'HQ-MAIN',
     name: 'Head Office & Main Facility',
-    nameBn: 'প্রধান কার্যালয় ও কেন্দ্রীয় শাখা',
+    nameBn: 'প্রধান কার্যালয় ও কেন্দ্রীয় কারখানা',
     phone: '+880 1700-000000',
     address: 'Dhaka, Bangladesh',
+    managerName: 'Operations Lead',
     isMain: true,
     isActive: true,
   },
 ]
-
-import { useDataStore } from '@/hooks/use-data-store'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export default function BranchesSettingsPage() {
   const { company, refreshTenant } = useTenant()
@@ -60,7 +70,10 @@ export default function BranchesSettingsPage() {
   const [mounted, setMounted] = useState(false)
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
+  const [searchQuery, setSearchQuery] = useState('')
   const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [editingBranch, setEditingBranch] = useState<BranchItem | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
 
@@ -68,7 +81,7 @@ export default function BranchesSettingsPage() {
     setMounted(true)
   }, [])
 
-  const loadLiveBranches = React.useCallback(async () => {
+  const loadLiveBranches = useCallback(async () => {
     try {
       const res = await listBranchesAction({ includeInactive: true })
       if (res.success && res.data && res.data.length > 0) {
@@ -77,10 +90,11 @@ export default function BranchesSettingsPage() {
           code: b.code || 'BR',
           name: b.name,
           nameBn: b.name_bn || b.name,
-          phone: b.phone || '',
+          phone: b.phone || b.contact_phone || '',
           address: b.full_address || b.address || '',
+          managerName: b.manager_name || b.contact_person || '',
           isMain: !!b.is_main,
-          isActive: b.status === 'active',
+          isActive: b.status === 'active' || b.status === undefined || b.is_active !== false,
         }))
         setBranches(mapped)
       }
@@ -89,8 +103,19 @@ export default function BranchesSettingsPage() {
     }
   }, [setBranches])
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadLiveBranches()
+
+    const handleSync = () => {
+      loadLiveBranches()
+    }
+    window.addEventListener('printerp_table_synced:branches', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:branches', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
   }, [loadLiveBranches, company?.id])
 
   const branchCheck = checkCanCreate('max_branches')
@@ -104,18 +129,26 @@ export default function BranchesSettingsPage() {
     setIsAddOpen(true)
   }
 
-  // Form State
+  // Form States
   const [newBranch, setNewBranch] = useState({
     code: '',
     name: '',
     nameBn: '',
     phone: '',
     address: '',
+    managerName: '',
   })
 
   const showNotification = (msg: string) => {
     setNotification(msg)
     setTimeout(() => setNotification(null), 3500)
+  }
+
+  const broadcastSync = () => {
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:branches'))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+    }
   }
 
   const handleMakeMain = async (id: string) => {
@@ -124,14 +157,45 @@ export default function BranchesSettingsPage() {
       if (res.success) {
         await loadLiveBranches()
         await refreshTenant()
-        showNotification('Main headquarters branch updated.')
+        showNotification(tBilingual('Main headquarters branch updated.', 'প্রধান কার্যালয় শাখা সফলভাবে পরিবর্তন করা হয়েছে।'))
+        broadcastSync()
       } else {
         setBranches(branches.map((b) => ({ ...b, isMain: b.id === id })))
-        showNotification('Main headquarters branch updated in local view.')
+        showNotification(tBilingual('Main headquarters branch updated.', 'প্রধান কার্যালয় শাখা আপডেট হয়েছে।'))
+        broadcastSync()
       }
     } catch {
       setBranches(branches.map((b) => ({ ...b, isMain: b.id === id })))
-      showNotification('Main headquarters branch updated.')
+      showNotification(tBilingual('Main headquarters branch updated.', 'প্রধান কার্যালয় শাখা আপডেট হয়েছে।'))
+      broadcastSync()
+    }
+  }
+
+  const handleToggleStatus = async (branch: BranchItem) => {
+    if (branch.isMain) {
+      showNotification(tBilingual('Primary Head Office branch cannot be deactivated.', 'প্রধান কার্যালয় নিষ্ক্রিয় করা যাবে না।'))
+      return
+    }
+    const nextStatus = branch.isActive ? 'inactive' : 'active'
+    try {
+      const res = await setBranchStatusAction(branch.id, nextStatus)
+      if (res.success) {
+        await loadLiveBranches()
+        showNotification(
+          nextStatus === 'active'
+            ? tBilingual(`Branch '${branch.name}' activated.`, `'${branch.name}' শাখা সক্রিয় করা হয়েছে।`)
+            : tBilingual(`Branch '${branch.name}' deactivated.`, `'${branch.name}' শাখা নিষ্ক্রিয় করা হয়েছে।`)
+        )
+        broadcastSync()
+      } else {
+        setBranches(branches.map((b) => (b.id === branch.id ? { ...b, isActive: !branch.isActive } : b)))
+        showNotification(tBilingual('Branch status toggled.', 'শাখার স্ট্যাটাস পরিবর্তন করা হয়েছে।'))
+        broadcastSync()
+      }
+    } catch {
+      setBranches(branches.map((b) => (b.id === branch.id ? { ...b, isActive: !branch.isActive } : b)))
+      showNotification(tBilingual('Branch status toggled.', 'শাখার স্ট্যাটাস পরিবর্তন করা হয়েছে।'))
+      broadcastSync()
     }
   }
 
@@ -145,12 +209,14 @@ export default function BranchesSettingsPage() {
     setIsSubmitting(true)
     try {
       const payload = {
-        code: newBranch.code.toUpperCase(),
-        name: newBranch.name,
-        name_bn: newBranch.nameBn || null,
-        phone: newBranch.phone || null,
-        address: newBranch.address || null,
-        full_address: newBranch.address || null,
+        code: newBranch.code.toUpperCase().trim(),
+        name: newBranch.name.trim(),
+        name_bn: newBranch.nameBn?.trim() || null,
+        phone: newBranch.phone?.trim() || null,
+        address: newBranch.address?.trim() || null,
+        full_address: newBranch.address?.trim() || null,
+        manager_name: newBranch.managerName?.trim() || null,
+        contact_phone: newBranch.phone?.trim() || null,
         is_main: false,
       }
 
@@ -160,32 +226,91 @@ export default function BranchesSettingsPage() {
         await refreshTenant()
         refreshUsage()
         setIsAddOpen(false)
-        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
-        showNotification(`Branch '${res.data.name}' created successfully.`)
+        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '', managerName: '' })
+        showNotification(tBilingual(`Branch '${res.data.name}' created successfully.`, `'${res.data.name}' শাখা সফলভাবে যোগ করা হয়েছে।`))
+        broadcastSync()
       } else {
-        // Fallback to local store if Supabase returned limit or offline
         const created: BranchItem = {
           id: `b-${Date.now()}`,
-          code: newBranch.code.toUpperCase(),
-          name: newBranch.name,
-          nameBn: newBranch.nameBn,
-          phone: newBranch.phone,
-          address: newBranch.address,
+          code: newBranch.code.toUpperCase().trim(),
+          name: newBranch.name.trim(),
+          nameBn: newBranch.nameBn?.trim() || newBranch.name.trim(),
+          phone: newBranch.phone?.trim() || '',
+          address: newBranch.address?.trim() || '',
+          managerName: newBranch.managerName?.trim() || '',
           isMain: false,
           isActive: true,
         }
         setBranches([...branches, created])
         refreshUsage()
         setIsAddOpen(false)
-        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '' })
-        showNotification(`Branch '${created.name}' created successfully.`)
+        setNewBranch({ code: '', name: '', nameBn: '', phone: '', address: '', managerName: '' })
+        showNotification(tBilingual(`Branch '${created.name}' created successfully.`, `'${created.name}' শাখা সফলভাবে যোগ করা হয়েছে।`))
+        broadcastSync()
       }
     } catch (err: any) {
-      showNotification(`Failed to create branch: ${err.message || 'Error'}`)
+      showNotification(`Failed: ${err.message || 'Error creating branch'}`)
     } finally {
       setIsSubmitting(false)
     }
   }
+
+  const handleOpenEdit = (branch: BranchItem) => {
+    setEditingBranch({ ...branch })
+    setIsEditOpen(true)
+  }
+
+  const handleUpdateBranch = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingBranch) return
+
+    setIsSubmitting(true)
+    try {
+      const payload = {
+        code: editingBranch.code.toUpperCase().trim(),
+        name: editingBranch.name.trim(),
+        name_bn: editingBranch.nameBn?.trim() || null,
+        phone: editingBranch.phone?.trim() || null,
+        address: editingBranch.address?.trim() || null,
+        full_address: editingBranch.address?.trim() || null,
+        manager_name: editingBranch.managerName?.trim() || null,
+        contact_phone: editingBranch.phone?.trim() || null,
+      }
+
+      const res = await updateBranchAction(editingBranch.id, payload)
+      if (res.success) {
+        await loadLiveBranches()
+        await refreshTenant()
+        setIsEditOpen(false)
+        setEditingBranch(null)
+        showNotification(tBilingual(`Branch '${editingBranch.name}' updated.`, `'${editingBranch.name}' শাখার তথ্য আপডেট হয়েছে।`))
+        broadcastSync()
+      } else {
+        setBranches(branches.map((b) => (b.id === editingBranch.id ? { ...editingBranch } : b)))
+        setIsEditOpen(false)
+        setEditingBranch(null)
+        showNotification(tBilingual(`Branch '${editingBranch.name}' updated.`, `'${editingBranch.name}' শাখার তথ্য আপডেট হয়েছে।`))
+        broadcastSync()
+      }
+    } catch (err: any) {
+      showNotification(`Failed: ${err.message || 'Error updating branch'}`)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const filteredBranches = branches.filter((b) => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase().trim()
+    return (
+      b.name.toLowerCase().includes(q) ||
+      (b.nameBn && b.nameBn.toLowerCase().includes(q)) ||
+      b.code.toLowerCase().includes(q) ||
+      (b.phone && b.phone.toLowerCase().includes(q)) ||
+      (b.address && b.address.toLowerCase().includes(q)) ||
+      (b.managerName && b.managerName.toLowerCase().includes(q))
+    )
+  })
 
   if (!mounted) {
     return (
@@ -269,69 +394,136 @@ export default function BranchesSettingsPage() {
         </div>
       )}
 
+      {/* Search Filter Bar */}
+      {branches.length > 1 && (
+        <div className="relative max-w-md">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder={tBilingual('Search branches by name, code, phone, or location...', 'শাখার নাম, কোড, ফোন বা ঠিকানা দিয়ে খুঁজুন...')}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-9 text-xs rounded-xl"
+          />
+        </div>
+      )}
+
+      {/* Branches List */}
       <div className="space-y-4">
-        {branches.map((branch) => (
-          <Card key={branch.id} className="p-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
-                    {branch.code}
-                  </span>
-                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                    {branch.name}
-                  </h3>
-                  {branch.isMain && (
-                    <Badge variant="default" className="text-[10px] bg-blue-600">
-                      <Star className="h-3 w-3 mr-1 fill-white" />
-                      Head Office
-                    </Badge>
+        {filteredBranches.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-500 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+            {tBilingual('No branches matching your search criteria.', 'কোন শাখা খুঁজে পাওয়া যায়নি।')}
+          </div>
+        ) : (
+          filteredBranches.map((branch) => (
+            <Card key={branch.id} className={cn('p-5 transition-all', !branch.isActive && 'opacity-65 bg-slate-50/40 dark:bg-slate-900/40')}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400">
+                      {branch.code}
+                    </span>
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                      {branch.name}
+                    </h3>
+                    {branch.isMain && (
+                      <Badge variant="default" className="text-[10px] bg-blue-600">
+                        <Star className="h-3 w-3 mr-1 fill-white" />
+                        {tBilingual('Head Office', 'প্রধান কার্যালয়')}
+                      </Badge>
+                    )}
+                    {!branch.isActive && (
+                      <Badge variant="outline" className="text-[10px] border-rose-300 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300">
+                        {tBilingual('Inactive', 'নিষ্ক্রিয়')}
+                      </Badge>
+                    )}
+                  </div>
+                  {branch.nameBn && (
+                    <div className="text-xs text-slate-500">{branch.nameBn}</div>
                   )}
-                </div>
-                <div className="text-xs text-slate-500">{branch.nameBn}</div>
 
-                <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400 pt-1">
-                  <span className="flex items-center gap-1">
-                    <Phone className="h-3.5 w-3.5 text-slate-400" />
-                    {branch.phone}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                    {branch.address}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-4 text-xs text-slate-600 dark:text-slate-400 pt-1">
+                    {branch.phone && (
+                      <a href={`tel:${branch.phone}`} className="flex items-center gap-1 hover:text-blue-600">
+                        <Phone className="h-3.5 w-3.5 text-slate-400" />
+                        <span className="font-mono">{branch.phone}</span>
+                      </a>
+                    )}
+                    {branch.address && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3.5 w-3.5 text-slate-400" />
+                        <span>{branch.address}</span>
+                      </span>
+                    )}
+                    {branch.managerName && (
+                      <span className="flex items-center gap-1">
+                        <User className="h-3.5 w-3.5 text-slate-400" />
+                        <span>Manager: {branch.managerName}</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
-                {!branch.isMain && (
+                <div className="flex flex-wrap items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100 dark:border-slate-800">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-xs h-9"
-                    onClick={() => handleMakeMain(branch.id)}
+                    className="text-xs h-8 px-2.5 rounded-lg"
+                    onClick={() => handleOpenEdit(branch)}
+                    title="Edit Branch Information"
                   >
-                    Set as Head Office
+                    <Edit2 className="h-3.5 w-3.5 mr-1 text-slate-500" />
+                    {tBilingual('Edit', 'এডিট')}
                   </Button>
-                )}
-                <Badge
-                  variant="outline"
-                  className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 py-1.5 sm:py-0.5 justify-center"
-                >
-                  <Check className="h-3 w-3 mr-1" />
-                  Operational
-                </Badge>
+
+                  {!branch.isMain && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs h-8 px-2.5 rounded-lg text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
+                        onClick={() => handleMakeMain(branch.id)}
+                      >
+                        {tBilingual('Set as Main', 'প্রধান করুন')}
+                      </Button>
+
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                          'text-xs h-8 px-2 rounded-lg',
+                          branch.isActive ? 'text-rose-600 hover:bg-rose-50' : 'text-emerald-600 hover:bg-emerald-50'
+                        )}
+                        onClick={() => handleToggleStatus(branch)}
+                        title={branch.isActive ? 'Deactivate Branch' : 'Activate Branch'}
+                      >
+                        <Power className="h-3.5 w-3.5 mr-1" />
+                        {branch.isActive ? tBilingual('Deactivate', 'নিষ্ক্রিয়') : tBilingual('Activate', 'সক্রিয়')}
+                      </Button>
+                    </>
+                  )}
+
+                  {branch.isActive && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 py-1 sm:py-0.5 justify-center font-medium"
+                    >
+                      <Check className="h-3 w-3 mr-1" />
+                      {tBilingual('Operational', 'চলমান')}
+                    </Badge>
+                  )}
+                </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
 
-      {/* MODAL: ADD BRANCH */}
+      {/* MODAL 1: ADD BRANCH */}
       <ModalDialog
         open={isAddOpen}
         onOpenChange={setIsAddOpen}
-        title="Add Printing Branch or Factory Hub"
-        description="Register a new showroom counter or production workshop location."
+        title={tBilingual('Add Printing Branch or Factory Hub', 'নতুন শাখা বা কারখানা যোগ করুন')}
+        description={tBilingual('Register a new showroom counter or production workshop location.', 'নতুন শোরুম কাউন্টার বা প্রোডাকশন ওয়ার্কশপ নিবন্ধন করুন।')}
         hideFooter
       >
         <form onSubmit={handleCreateBranch} className="space-y-4 pt-2">
@@ -342,10 +534,10 @@ export default function BranchesSettingsPage() {
               </Label>
               <Input
                 id="branchCode"
-                placeholder="e.g. FCT-UTTR"
+                placeholder="e.g. TEJ-PLANT"
                 value={newBranch.code}
                 onChange={(e) => setNewBranch({ ...newBranch, code: e.target.value })}
-                className="h-10 text-sm"
+                className="h-9 text-xs font-mono uppercase"
                 required
               />
             </div>
@@ -358,67 +550,189 @@ export default function BranchesSettingsPage() {
                 placeholder="+880 1711-XXXXXX"
                 value={newBranch.phone}
                 onChange={(e) => setNewBranch({ ...newBranch, phone: e.target.value })}
-                className="h-10 text-sm"
+                className="h-9 text-xs"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="branchName" required>
-              Branch Name (English)
-            </Label>
-            <Input
-              id="branchName"
-              placeholder="e.g. Uttara Signage & Fast Print Hub"
-              value={newBranch.name}
-              onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
-              className="h-10 text-sm"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="branchName" required>
+                Branch Name (English)
+              </Label>
+              <Input
+                id="branchName"
+                placeholder="e.g. Tejgaon Industrial Offset Plant"
+                value={newBranch.name}
+                onChange={(e) => setNewBranch({ ...newBranch, name: e.target.value })}
+                className="h-9 text-xs"
+                required
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="branchNameBn">
+                শাখার নাম (বাংলা)
+              </Label>
+              <Input
+                id="branchNameBn"
+                placeholder="যেমন: তেজগাঁও অফসেট প্রিন্টিং কারখানা"
+                value={newBranch.nameBn}
+                onChange={(e) => setNewBranch({ ...newBranch, nameBn: e.target.value })}
+                className="h-9 text-xs"
+              />
+            </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="branchNameBn">
-              শাখার নাম (বাংলা)
-            </Label>
-            <Input
-              id="branchNameBn"
-              placeholder="যেমন: উত্তরা সাইনেজ অ্যান্ড ফাস্ট প্রিন্ট হাব"
-              value={newBranch.nameBn}
-              onChange={(e) => setNewBranch({ ...newBranch, nameBn: e.target.value })}
-              className="h-10 text-sm"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="branchManager">
+                Manager / Contact Person
+              </Label>
+              <Input
+                id="branchManager"
+                placeholder="e.g. Md. Kabir Hossain"
+                value={newBranch.managerName}
+                onChange={(e) => setNewBranch({ ...newBranch, managerName: e.target.value })}
+                className="h-9 text-xs"
+              />
+            </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="branchAddress" required>
-              Full Address
-            </Label>
-            <Input
-              id="branchAddress"
-              placeholder="Sector 3, Uttara, Dhaka-1230"
-              value={newBranch.address}
-              onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
-              className="h-10 text-sm"
-              required
-            />
+            <div className="space-y-1.5">
+              <Label htmlFor="branchAddress" required>
+                Full Address
+              </Label>
+              <Input
+                id="branchAddress"
+                placeholder="Plot 42, Tejgaon I/A, Dhaka-1208"
+                value={newBranch.address}
+                onChange={(e) => setNewBranch({ ...newBranch, address: e.target.value })}
+                className="h-9 text-xs"
+                required
+              />
+            </div>
           </div>
 
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-10 sm:h-9">
-              Cancel
+            <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)} className="w-full sm:w-auto h-9 text-xs">
+              {tBilingual('Cancel', 'বাতিল')}
             </Button>
             <Button
               type="submit"
               isLoading={isSubmitting}
-              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-10 sm:h-9"
+              className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-9 text-xs font-semibold"
             >
-              Create Branch
+              {tBilingual('Create Branch', 'শাখা তৈরি করুন')}
             </Button>
           </div>
         </form>
       </ModalDialog>
+
+      {/* MODAL 2: EDIT BRANCH */}
+      {editingBranch && (
+        <ModalDialog
+          open={isEditOpen}
+          onOpenChange={setIsEditOpen}
+          title={tBilingual('Edit Branch Details', 'শাখার তথ্য পরিবর্তন')}
+          description={tBilingual(`Update contact info and location for ${editingBranch.name}.`, `${editingBranch.name} এর যোগাযোগের তথ্য ও ঠিকানা পরিবর্তন করুন।`)}
+          hideFooter
+        >
+          <form onSubmit={handleUpdateBranch} className="space-y-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-1.5 sm:col-span-1">
+                <Label htmlFor="editCode" required>
+                  Branch Code
+                </Label>
+                <Input
+                  id="editCode"
+                  value={editingBranch.code}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, code: e.target.value })}
+                  className="h-9 text-xs font-mono uppercase"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="editPhone">
+                  Contact Phone
+                </Label>
+                <Input
+                  id="editPhone"
+                  value={editingBranch.phone || ''}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, phone: e.target.value })}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="editName" required>
+                  Branch Name (English)
+                </Label>
+                <Input
+                  id="editName"
+                  value={editingBranch.name}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, name: e.target.value })}
+                  className="h-9 text-xs"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="editNameBn">
+                  নাম (বাংলা)
+                </Label>
+                <Input
+                  id="editNameBn"
+                  value={editingBranch.nameBn || ''}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, nameBn: e.target.value })}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="editManager">
+                  Manager / In-Charge
+                </Label>
+                <Input
+                  id="editManager"
+                  value={editingBranch.managerName || ''}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, managerName: e.target.value })}
+                  className="h-9 text-xs"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="editAddress">
+                  Address
+                </Label>
+                <Input
+                  id="editAddress"
+                  value={editingBranch.address || ''}
+                  onChange={(e) => setEditingBranch({ ...editingBranch, address: e.target.value })}
+                  className="h-9 text-xs"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)} className="w-full sm:w-auto h-9 text-xs">
+                {tBilingual('Cancel', 'বাতিল')}
+              </Button>
+              <Button
+                type="submit"
+                isLoading={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto h-9 text-xs font-semibold"
+              >
+                {tBilingual('Save Changes', 'সংরক্ষণ করুন')}
+              </Button>
+            </div>
+          </form>
+        </ModalDialog>
+      )}
     </div>
   )
 }
