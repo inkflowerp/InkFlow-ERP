@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams, usePathname, useSearchParams } from 'next/navigation'
 import {
   FileSpreadsheet,
   Plus,
@@ -47,6 +47,7 @@ import { formatBDT } from '@/lib/formatters'
 export default function QuotationsPage() {
   const params = useParams()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal } = useSubscription()
   const { tBilingual, locale } = useI18n()
@@ -72,6 +73,13 @@ export default function QuotationsPage() {
   const [followUpQuote, setFollowUpQuote] = useState<QuotationRecord | null>(null)
   const [isFollowUpOpen, setIsFollowUpOpen] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+
+  // Auto-open new quotation modal if arrived with ?new=true
+  useEffect(() => {
+    if (searchParams?.get('new') === 'true') {
+      setIsNewOpen(true)
+    }
+  }, [searchParams])
 
   const showNotification = (msg: string) => {
     setNotification(msg)
@@ -398,7 +406,7 @@ export default function QuotationsPage() {
                 </Button>
               </Link>
 
-              <Link href={getTenantNavHref('/pricing', pathname, slug)}>
+              <Link href={getTenantNavHref('/pricing?tab=calculator', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 font-medium bangla-text">
                   <Calculator className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Live Estimator', 'লাইভ ক্যালকুলেটর')}

@@ -781,6 +781,77 @@ export function NewQuotationModal({
     }
   }, [open])
 
+  // Auto-prefill item from Live Estimator session if available
+  useEffect(() => {
+    if (!open || typeof window === 'undefined') return
+
+    const prefillRaw = sessionStorage.getItem('printerp_estimator_prefill')
+    if (!prefillRaw) return
+
+    try {
+      const prefill = JSON.parse(prefillRaw)
+      sessionStorage.removeItem('printerp_estimator_prefill')
+
+      if (prefill.customerType) {
+        setCustomerType(prefill.customerType)
+      }
+
+      if (prefill.productId) {
+        const prod = productsCatalog.find((p) => p.id === prefill.productId)
+        const isReadyProd = prod ? isReadyProduct(prod) : false
+        const isMat = prod ? isMaterialProduct(prod) : false
+        const isService = prod ? isServiceProduct(prod) : true
+        const isSignage = prod?.category === 'signage_3d' || prod?.category === 'rigid_board'
+        const isOffset = prod?.category === 'offset_print'
+
+        const w = prefill.width ?? ''
+        const h = prefill.height ?? ''
+        const qty = Number(prefill.quantity) || 1
+        const dimUnit = prefill.dimensionUnit || 'ft'
+        const baseRate = Number(prefill.baseRate) || (prod ? Number(prod.selling_price) : 0)
+        const unitRate = Number(prefill.unitRate) || baseRate
+
+        const lineMath = calculateLineTotal(
+          Number(w) || 0,
+          Number(h) || 0,
+          qty,
+          unitRate,
+          prod,
+          dimUnit
+        )
+
+        setItems([
+          {
+            ...DEFAULT_ITEM('item-1'),
+            product_id: prefill.productId,
+            item_kind: isService ? 'service' : isReadyProd ? 'ready_product' : isMat ? 'material' : 'service',
+            category_preset: isSignage ? 'signage_fabrication' : isOffset ? 'offset_print' : isReadyProd ? 'ready_merchandise' : 'digital_print',
+            description: prod ? prod.name : (prefill.productName || 'Custom Print Item'),
+            description_bn: prod?.name_bn || '',
+            material_spec: prod?.printable_material_name || prod?.material_spec || '',
+            dimensions_spec: prod?.dimensions_spec || '',
+            width: w as any,
+            height: h as any,
+            dimension_unit: dimUnit,
+            quantity: qty,
+            unit: prefill.unit || prod?.unit || 'sft',
+            base_rate: baseRate,
+            unit_rate: unitRate,
+            unit_cost: prod ? Number(prod.effective_unit_cost ?? prod.base_cost) || 0 : 0,
+            rate_source: 'default',
+            tier_applied: prefill.customerType ? `${prefill.customerType.toUpperCase()} Tier` : null,
+            area_sft: lineMath.area,
+            item_total: lineMath.total > 0 ? lineMath.total : Number(prefill.totalEstimated) || 0,
+            isSignageProduct: isSignage,
+            isOffsetProduct: isOffset,
+          },
+        ])
+      }
+    } catch (e) {
+      console.warn('[Quotation] Failed to consume estimator prefill:', e)
+    }
+  }, [open, productsCatalog])
+
   // -------------------------------------------------------------
   // DEBOUNCED MULTI-FIELD CUSTOMER SEARCH
   // -------------------------------------------------------------

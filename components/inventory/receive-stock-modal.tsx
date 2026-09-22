@@ -8,9 +8,11 @@ import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { MaterialRecord, InventoryLocationRecord } from '@/types/inventory.types'
 import type { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.types'
+import type { ProductRecord } from '@/types/product.types'
 import { SupplierRecord } from '@/types/crm.types'
 import { receiveStockAction } from '@/actions/inventory.actions'
 import { receiveGoodsAction } from '@/actions/purchase.actions'
+import { updateProductPriceAction, getProductsAction } from '@/actions/product.actions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   Truck,
@@ -31,6 +33,14 @@ import {
   Barcode,
   CheckCheck,
   RotateCcw,
+  TrendingUp,
+  TrendingDown,
+  Sparkles,
+  Percent,
+  ArrowRight,
+  Tag,
+  Info,
+  Layers3,
 } from 'lucide-react'
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
@@ -40,6 +50,7 @@ export interface ReceiveStockModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   materials: MaterialRecord[]
+  products?: ProductRecord[]
   locations: InventoryLocationRecord[]
   orders?: PurchaseOrderRecord[]
   purchaseOrder?: PurchaseOrderRecord | null
@@ -53,7 +64,12 @@ export interface ItemReceiveRow {
   material_id: string
   material_name: string
   unit: string
-  unit_cost: number
+  unit_cost: number // Inward purchase rate from PO
+  previous_cost: number
+  previous_selling_price: number
+  new_selling_price: number
+  target_margin_percent: number
+  update_master_pricing: boolean
   quantity_ordered: number
   quantity_received: number
   quantity_remaining: number
@@ -67,20 +83,46 @@ export interface ItemReceiveRow {
 
 export interface DirectReceiptItemRow {
   id: string
-  material_id: string
+  material_id: string // Material ID or Product ID
   material_name: string
+  sku: string
   unit: string
-  unit_cost: number
+  item_type: 'material' | 'product'
+  category: string
+  // Cost & price intelligence
+  previous_cost: number
+  unit_cost: number // New inward purchase cost
+  cost_variance_percent: number
+  previous_selling_price: number
+  new_selling_price: number // Suggested / edited selling price
+  target_margin_percent: number
+  update_master_pricing: boolean
+  // Intake quantities & lot
   quantity: number
   batch_lot_number: string
   total_cost: number
 }
 
+export interface UnifiedStockItem {
+  id: string
+  sku: string
+  name: string
+  item_type: 'material' | 'product'
+  category: string
+  category_group: string
+  unit: string
+  current_stock: number
+  previous_cost: number
+  previous_selling_price: number
+  target_margin_percent: number
+}
+
 export function ReceiveStockModal({
   open,
   onOpenChange,
-  materials,
-  locations,
+  materials = [],
+  products: initialProducts = [],
+  locations = [],
   orders = [],
   purchaseOrder,
   selectedMaterialId,
@@ -92,6 +134,9 @@ export function ReceiveStockModal({
   // Mode selection: 'po' (Purchase Order GRN), 'direct' (Direct Spot Purchase), or 'opening' (Opening Balance)
   const [mode, setMode] = useState<'po' | 'direct' | 'opening'>('direct')
   const [selectedPoId, setSelectedPoId] = useState<string>('')
+
+  // Catalog products state
+  const [catalogProducts, setCatalogProducts] = useState<ProductRecord[]>(initialProducts)
 
   // Suppliers list for direct receipts
   const [suppliers, setSuppliers] = useState<SupplierRecord[]>([])
@@ -112,32 +157,215 @@ export function ReceiveStockModal({
   const [poReceiveRows, setPoReceiveRows] = useState<ItemReceiveRow[]>([])
 
   // Direct receiving multi-item state
-  const [directItems, setDirectItems] = useState<DirectReceiptItemRow[]>([
-    {
-      id: `dir-item-${Date.now()}-1`,
-      material_id: selectedMaterialId || materials[0]?.id || '',
-      material_name: materials.find((m) => m.id === selectedMaterialId)?.name || materials[0]?.name || '',
-      unit: materials.find((m) => m.id === selectedMaterialId)?.unit || materials[0]?.unit || 'pcs',
-      unit_cost:
-        materials.find((m) => m.id === selectedMaterialId)?.average_cost ||
-        materials.find((m) => m.id === selectedMaterialId)?.last_purchase_price ||
-        materials[0]?.average_cost ||
-        0,
-      quantity: 1,
-      batch_lot_number: '',
-      total_cost: 0,
-    },
-  ])
+  const [directItems, setDirectItems] = useState<DirectReceiptItemRow[]>([])
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // Load suppliers and reset fields when modal opens
+  // Load products & suppliers from store
   useEffect(() => {
     if (open) {
       const supList = PrintERPDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, companyId) || []
       setSuppliers(supList)
+
+      let prods = initialProducts
+      if (!prods || prods.length === 0) {
+        prods = PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
+      }
+      setCatalogProducts(prods)
+
+      // Background fetch products from server if needed
+      getProductsAction(companyId, false)
+        .then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            setCatalogProducts(res.data)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [open, initialProducts, companyId])
+
+  // Build unified items catalog merging materials and registered products
+  const unifiedCatalog = useMemo<UnifiedStockItem[]>(() => {
+    const list: UnifiedStockItem[] = []
+    const seenIds = new Set<string>()
+
+    // 1. Process Materials (Raw Materials & Substrates)
+    for (const m of materials) {
+      if (!m || !m.id) continue
+      seenIds.add(m.id)
+      const cost = Number(m.average_cost || m.last_purchase_price || 0)
+      const estimatedSellingPrice = Math.round(cost > 0 ? cost * 1.35 : 0)
+      const cat = m.category || 'General Substrates'
+
+      let catGroup = 'Raw Materials & Substrates'
+      const catLower = (cat + ' ' + (m.name || '')).toLowerCase()
+      if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit')) {
+        catGroup = 'Digital & Large Format Media'
+      } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum')) {
+        catGroup = '3D Signage & Structural Media'
+      } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical')) {
+        catGroup = 'Inks & Finishing Consumables'
+      } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset')) {
+        catGroup = 'Paper & Offset Sheets'
+      }
+
+      list.push({
+        id: m.id,
+        sku: m.sku || 'MAT',
+        name: m.name,
+        item_type: 'material',
+        category: cat,
+        category_group: catGroup,
+        unit: m.unit || 'pcs',
+        current_stock: Number(m.current_stock || 0),
+        previous_cost: cost,
+        previous_selling_price: estimatedSellingPrice,
+        target_margin_percent: 35,
+      })
+    }
+
+    // 2. Process Catalog Products (Commercial Masters)
+    for (const p of catalogProducts) {
+      if (!p || !p.id) continue
+      if (seenIds.has(p.id)) continue
+      seenIds.add(p.id)
+
+      const cost = Number(p.purchase_price || p.base_cost || 0)
+      const sellPrice = Number(p.selling_price || 0)
+      let margin = Number(p.target_margin_percentage || 0)
+      if (margin <= 0 && sellPrice > cost && sellPrice > 0) {
+        margin = Math.round(((sellPrice - cost) / sellPrice) * 100)
+      }
+      if (margin <= 0) margin = 40
+
+      const cat = p.category || 'Commercial Product'
+      let catGroup = 'Commercial Finished Products'
+      const catLower = (cat + ' ' + (p.name || '')).toLowerCase()
+      if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready')) {
+        catGroup = 'Ready Merchandise & Display Hardware'
+      } else if (catLower.includes('digital') || catLower.includes('large format') || catLower.includes('print') || catLower.includes('banner')) {
+        catGroup = 'Digital & Large Format Media'
+      } else if (catLower.includes('signage') || catLower.includes('letter') || catLower.includes('acrylic') || catLower.includes('fabrication')) {
+        catGroup = '3D Signage & Structural Media'
+      } else if (catLower.includes('offset') || catLower.includes('flyer') || catLower.includes('brochure') || catLower.includes('card')) {
+        catGroup = 'Paper & Offset Sheets'
+      }
+
+      list.push({
+        id: p.id,
+        sku: p.sku || 'PRD',
+        name: p.name,
+        item_type: 'product',
+        category: cat,
+        category_group: catGroup,
+        unit: String(p.unit || p.selling_unit || 'pcs'),
+        current_stock: 0,
+        previous_cost: cost,
+        previous_selling_price: sellPrice,
+        target_margin_percent: margin,
+      })
+    }
+
+    return list
+  }, [materials, catalogProducts])
+
+  // Group items by category_group for clean UX dropdown
+  const groupedCatalog = useMemo(() => {
+    const groups: Record<string, UnifiedStockItem[]> = {}
+    for (const item of unifiedCatalog) {
+      const g = item.category_group || 'General Products'
+      if (!groups[g]) groups[g] = []
+      groups[g].push(item)
+    }
+    return groups
+  }, [unifiedCatalog])
+
+  // Initialize or populate Direct Items
+  const createInitialDirectRow = (itemId?: string): DirectReceiptItemRow => {
+    const target = (itemId ? unifiedCatalog.find((x) => x.id === itemId) : unifiedCatalog[0]) || {
+      id: materials[0]?.id || 'item-1',
+      sku: materials[0]?.sku || 'MAT',
+      name: materials[0]?.name || 'Select Item',
+      item_type: 'material' as const,
+      category: materials[0]?.category || 'General',
+      category_group: 'General',
+      unit: materials[0]?.unit || 'pcs',
+      current_stock: 0,
+      previous_cost: Number(materials[0]?.average_cost || 0),
+      previous_selling_price: Math.round(Number(materials[0]?.average_cost || 0) * 1.35),
+      target_margin_percent: 35,
+    }
+
+    const prevCost = Number(target.previous_cost) || 0
+    const prevSell = Number(target.previous_selling_price) || 0
+    const targetMargin = target.target_margin_percent || (prevSell > prevCost && prevSell > 0 ? Math.round(((prevSell - prevCost) / prevSell) * 100) : 35)
+    const suggestedSell = prevSell > 0 ? prevSell : (prevCost > 0 ? Math.ceil(prevCost / (1 - targetMargin / 100)) : 0)
+
+    return {
+      id: `dir-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      material_id: target.id,
+      material_name: target.name,
+      sku: target.sku,
+      unit: target.unit,
+      item_type: target.item_type,
+      category: target.category,
+      previous_cost: prevCost,
+      unit_cost: prevCost,
+      cost_variance_percent: 0,
+      previous_selling_price: prevSell,
+      new_selling_price: suggestedSell,
+      target_margin_percent: targetMargin,
+      update_master_pricing: true,
+      quantity: 1,
+      batch_lot_number: '',
+      total_cost: prevCost * 1,
+    }
+  }
+
+  // Populate PO Rows with price intelligence
+  const populatePoRows = (po: PurchaseOrderRecord) => {
+    const rows: ItemReceiveRow[] = (po.items || []).map((item) => {
+      const match = unifiedCatalog.find((m) => m.id === item.material_id)
+      const prevCost = match?.previous_cost || Number(item.unit_cost) || 0
+      const prevSell = match?.previous_selling_price || Math.round(prevCost * 1.35)
+      const currentUnitCost = Number(item.unit_cost) || prevCost
+      const targetMargin = match?.target_margin_percent || 35
+      const suggestedSell = prevSell > 0 && prevCost === currentUnitCost
+        ? prevSell
+        : (targetMargin < 90 && targetMargin > 0 ? Math.ceil(currentUnitCost / (1 - targetMargin / 100)) : Math.round(currentUnitCost * 1.4))
+
+      const rem = Number(item.quantity_remaining ?? Math.max(0, item.quantity_ordered - item.quantity_received))
+
+      return {
+        po_item_id: item.id,
+        material_id: item.material_id,
+        material_name: item.material_name,
+        unit: item.unit,
+        unit_cost: currentUnitCost,
+        previous_cost: prevCost,
+        previous_selling_price: prevSell,
+        new_selling_price: suggestedSell,
+        target_margin_percent: targetMargin,
+        update_master_pricing: true,
+        quantity_ordered: Number(item.quantity_ordered),
+        quantity_received: Number(item.quantity_received),
+        quantity_remaining: rem,
+        accepted_quantity: rem,
+        rejected_quantity: 0,
+        damaged_quantity: 0,
+        batch_lot_number: '',
+        roll_width_ft: (match as any)?.roll_width_ft,
+        roll_length_ft: (match as any)?.roll_length_ft,
+      }
+    })
+    setPoReceiveRows(rows)
+  }
+
+  // Setup modal on open
+  useEffect(() => {
+    if (open) {
       setError(null)
       setSuccessMsg(null)
       setLoading(false)
@@ -161,49 +389,11 @@ export function ReceiveStockModal({
           setSelectedPoId(firstReceivable.id)
           populatePoRows(firstReceivable)
         }
-      } else if (selectedMaterialId) {
-        const mat = materials.find((x) => x.id === selectedMaterialId)
-        if (mat) {
-          setDirectItems([
-            {
-              id: `dir-item-${Date.now()}-1`,
-              material_id: mat.id,
-              material_name: mat.name,
-              unit: mat.unit,
-              unit_cost: mat.average_cost || mat.last_purchase_price || 0,
-              quantity: 1,
-              batch_lot_number: '',
-              total_cost: Number(mat.average_cost || mat.last_purchase_price || 0),
-            },
-          ])
-        }
+      } else {
+        setDirectItems([createInitialDirectRow(selectedMaterialId)])
       }
     }
-  }, [open, purchaseOrder, selectedMaterialId, companyId])
-
-  const populatePoRows = (po: PurchaseOrderRecord) => {
-    const rows: ItemReceiveRow[] = (po.items || []).map((item) => {
-      const mat = materials.find((m) => m.id === item.material_id)
-      const rem = Number(item.quantity_remaining ?? Math.max(0, item.quantity_ordered - item.quantity_received))
-      return {
-        po_item_id: item.id,
-        material_id: item.material_id,
-        material_name: item.material_name,
-        unit: item.unit,
-        unit_cost: item.unit_cost,
-        quantity_ordered: Number(item.quantity_ordered),
-        quantity_received: Number(item.quantity_received),
-        quantity_remaining: rem,
-        accepted_quantity: rem, // Default to receiving remaining balance
-        rejected_quantity: 0,
-        damaged_quantity: 0,
-        batch_lot_number: '',
-        roll_width_ft: mat?.roll_width_ft || (mat?.width ? Number(mat.width) : undefined),
-        roll_length_ft: mat?.roll_length_ft || (mat?.length ? Number(mat.length) : undefined),
-      }
-    })
-    setPoReceiveRows(rows)
-  }
+  }, [open, purchaseOrder, selectedMaterialId, companyId, unifiedCatalog.length])
 
   const handlePoChange = (poId: string) => {
     setSelectedPoId(poId)
@@ -218,12 +408,30 @@ export function ReceiveStockModal({
   const handlePoRowChange = (index: number, field: keyof ItemReceiveRow, val: any) => {
     setPoReceiveRows((prev) => {
       const updated = [...prev]
-      updated[index] = { ...updated[index], [field]: val }
+      const current = { ...updated[index], [field]: val }
+
+      // Live intelligence on PO row changes
+      if (field === 'unit_cost') {
+        const cost = Number(val) || 0
+        const margin = current.target_margin_percent || 35
+        if (margin > 0 && margin < 95) {
+          current.new_selling_price = Math.ceil(cost / (1 - margin / 100))
+        } else {
+          current.new_selling_price = Math.round(cost * 1.4)
+        }
+      } else if (field === 'new_selling_price') {
+        const sell = Number(val) || 0
+        const cost = Number(current.unit_cost) || 0
+        if (sell > 0 && cost > 0) {
+          current.target_margin_percent = Math.round(((sell - cost) / sell) * 100)
+        }
+      }
+
+      updated[index] = current
       return updated
     })
   }
 
-  // Quick action: Receive All Remaining for PO
   const handleReceiveAllRemaining = () => {
     setPoReceiveRows((prev) =>
       prev.map((row) => ({
@@ -235,7 +443,6 @@ export function ReceiveStockModal({
     )
   }
 
-  // Quick action: Clear All for PO
   const handleClearAllPo = () => {
     setPoReceiveRows((prev) =>
       prev.map((row) => ({
@@ -247,18 +454,72 @@ export function ReceiveStockModal({
     )
   }
 
-  // Direct item row manipulation
+  // Direct item row manipulation with smart cost/price intelligence
   const handleDirectItemChange = (index: number, field: keyof DirectReceiptItemRow, val: any) => {
     setDirectItems((prev) => {
       const updated = [...prev]
       const current = { ...updated[index], [field]: val }
 
       if (field === 'material_id') {
-        const mat = materials.find((m) => m.id === val)
-        if (mat) {
-          current.material_name = mat.name
-          current.unit = mat.unit
-          current.unit_cost = mat.average_cost || mat.last_purchase_price || 0
+        const item = unifiedCatalog.find((m) => m.id === val)
+        if (item) {
+          current.material_name = item.name
+          current.sku = item.sku
+          current.unit = item.unit
+          current.item_type = item.item_type
+          current.category = item.category
+          current.previous_cost = item.previous_cost
+          current.unit_cost = item.previous_cost > 0 ? item.previous_cost : 0
+          current.cost_variance_percent = 0
+          current.previous_selling_price = item.previous_selling_price
+          current.target_margin_percent = item.target_margin_percent || 35
+
+          // Suggest selling price maintaining target margin
+          const margin = current.target_margin_percent
+          if (item.previous_selling_price > 0) {
+            current.new_selling_price = item.previous_selling_price
+          } else if (current.unit_cost > 0 && margin > 0 && margin < 95) {
+            current.new_selling_price = Math.ceil(current.unit_cost / (1 - margin / 100))
+          } else {
+            current.new_selling_price = Math.round(current.unit_cost * 1.4)
+          }
+        }
+      }
+
+      // Unit Cost Changed (New Purchase Price) -> Recalculate Variance & Suggested Selling Price
+      if (field === 'unit_cost') {
+        const newCost = Number(val) || 0
+        const prevCost = current.previous_cost
+        if (prevCost > 0) {
+          current.cost_variance_percent = Math.round(((newCost - prevCost) / prevCost) * 100)
+        } else {
+          current.cost_variance_percent = 0
+        }
+
+        // Maintain target margin % to auto-update new selling price
+        const margin = current.target_margin_percent || 35
+        if (margin > 0 && margin < 95 && newCost > 0) {
+          current.new_selling_price = Math.ceil(newCost / (1 - margin / 100))
+        } else if (newCost > 0) {
+          current.new_selling_price = Math.round(newCost * 1.4)
+        }
+      }
+
+      // New Selling Price Changed Manually -> Update Gross Profit Margin %
+      if (field === 'new_selling_price') {
+        const newSell = Number(val) || 0
+        const cost = Number(current.unit_cost) || 0
+        if (newSell > 0 && cost > 0) {
+          current.target_margin_percent = Math.round(((newSell - cost) / newSell) * 100)
+        }
+      }
+
+      // Target Margin % Changed Manually -> Update New Selling Price
+      if (field === 'target_margin_percent') {
+        const newMargin = Number(val) || 0
+        const cost = Number(current.unit_cost) || 0
+        if (newMargin > 0 && newMargin < 95 && cost > 0) {
+          current.new_selling_price = Math.ceil(cost / (1 - newMargin / 100))
         }
       }
 
@@ -272,20 +533,7 @@ export function ReceiveStockModal({
   }
 
   const handleAddDirectItem = () => {
-    const firstMat = materials[0]
-    setDirectItems((prev) => [
-      ...prev,
-      {
-        id: `dir-item-${Date.now()}-${prev.length + 1}`,
-        material_id: firstMat?.id || '',
-        material_name: firstMat?.name || '',
-        unit: firstMat?.unit || 'pcs',
-        unit_cost: firstMat?.average_cost || firstMat?.last_purchase_price || 0,
-        quantity: 1,
-        batch_lot_number: '',
-        total_cost: Number(firstMat?.average_cost || 0),
-      },
-    ])
+    setDirectItems((prev) => [...prev, createInitialDirectRow()])
   }
 
   const handleRemoveDirectItem = (index: number) => {
@@ -295,7 +543,7 @@ export function ReceiveStockModal({
 
   const currentPo = orders.find((o) => o.id === selectedPoId) || purchaseOrder
 
-  // Calculations
+  // Valuation Calculations
   const poTotalAcceptedValuation = useMemo(() => {
     return poReceiveRows.reduce((sum, r) => sum + (Number(r.accepted_quantity) || 0) * (Number(r.unit_cost) || 0), 0)
   }, [poReceiveRows])
@@ -311,6 +559,7 @@ export function ReceiveStockModal({
     return directItems.filter((r) => r.quantity > 0).length
   }, [mode, poReceiveRows, directItems])
 
+  // SUBMIT HANDLER
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -384,10 +633,38 @@ export function ReceiveStockModal({
 
         if (!res.success) {
           setError(res.error || 'Failed to process goods receipt.')
+          setLoading(false)
           return
         }
 
-        setSuccessMsg('Goods Received Note (GRN) posted and inventory balances updated successfully!')
+        // Synchronize master product prices for items where update_master_pricing is true
+        for (const item of itemsToReceive) {
+          if (item.update_master_pricing && item.new_selling_price > 0) {
+            try {
+              await updateProductPriceAction(
+                item.material_id,
+                item.new_selling_price,
+                `Updated during PO GRN Intake (${currentPo?.po_number || 'PO'})`,
+                companyId,
+                {
+                  newPurchasePrice: item.unit_cost,
+                  newTargetMarginPercent: item.target_margin_percent,
+                }
+              )
+            } catch {}
+          }
+        }
+
+        // Dispatch real-time sync broadcast events
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:purchase_orders'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:pricing_rules'))
+        }
+
+        setSuccessMsg('Goods Received Note (GRN) posted, inventory balances updated, and product masters synced successfully!')
         setTimeout(() => {
           onSuccess?.()
           onOpenChange(false)
@@ -401,14 +678,14 @@ export function ReceiveStockModal({
     } else {
       // Direct Receipt or Opening Balance Mode
       if (directItems.length === 0) {
-        setError('Please add at least one material item.')
+        setError('Please add at least one item.')
         return
       }
 
       for (let i = 0; i < directItems.length; i++) {
         const it = directItems[i]
         if (!it.material_id) {
-          setError(`Item #${i + 1} material selection is required.`)
+          setError(`Item #${i + 1} selection is required.`)
           return
         }
         if (it.quantity <= 0) {
@@ -456,12 +733,36 @@ export function ReceiveStockModal({
             setLoading(false)
             return
           }
+
+          // If update_master_pricing is enabled, update product price and purchase cost in master
+          if (item.update_master_pricing) {
+            try {
+              await updateProductPriceAction(
+                item.material_id,
+                item.new_selling_price || item.previous_selling_price || Math.round(item.unit_cost * 1.35),
+                `Updated during Direct Stock Intake (${mode === 'opening' ? 'Opening Balance' : 'Spot Inward'})`,
+                companyId,
+                {
+                  newPurchasePrice: item.unit_cost,
+                  newTargetMarginPercent: item.target_margin_percent,
+                }
+              )
+            } catch {}
+          }
+        }
+
+        // Dispatch real-time sync broadcast events
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:pricing_rules'))
         }
 
         setSuccessMsg(
           mode === 'opening'
-            ? 'Opening balances recorded and audited successfully!'
-            : 'Direct material receipt posted to stock ledger successfully!'
+            ? 'Opening balances and product master valuations recorded successfully!'
+            : 'Direct stock receipt posted and Commercial Master prices synced successfully!'
         )
         setTimeout(() => {
           onSuccess?.()
@@ -485,18 +786,7 @@ export function ReceiveStockModal({
     setVehicleNumber('')
     setCarrierName('')
     setNotes('')
-    setDirectItems([
-      {
-        id: `dir-item-${Date.now()}-1`,
-        material_id: materials[0]?.id || '',
-        material_name: materials[0]?.name || '',
-        unit: materials[0]?.unit || 'pcs',
-        unit_cost: materials[0]?.average_cost || 0,
-        quantity: 1,
-        batch_lot_number: '',
-        total_cost: 0,
-      },
-    ])
+    setDirectItems([createInitialDirectRow()])
   }
 
   const receivableOrders = orders.filter((o) => o.status !== 'received' && o.status !== 'cancelled')
@@ -512,7 +802,7 @@ export function ReceiveStockModal({
       onSubmit={handleSubmit}
       title={
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-emerald-500 to-emerald-700 text-white shadow-md flex items-center justify-center font-bold shrink-0">
+          <div className="h-10 w-10 rounded-xl bg-linear-to-br from-emerald-500 to-teal-700 text-white shadow-md flex items-center justify-center font-bold shrink-0">
             <Truck className="h-5 w-5" />
           </div>
           <div>
@@ -522,19 +812,19 @@ export function ReceiveStockModal({
                   ? tBilingual('Goods Receiving Note (GRN) Intake', 'ক্রয় আদেশ অনুযায়ী মাল গ্রহণ (GRN)')
                   : mode === 'opening'
                   ? tBilingual('Record Opening Stock Balance', 'প্রারম্ভিক স্টক ব্যালেন্স এন্ট্রি')
-                  : tBilingual('Direct Material Receipt (Spot Intake)', 'সরাসরি কাঁচামাল গ্রহণ')}
+                  : tBilingual('Direct Stock Intake & Price Intelligence', 'সরাসরি পণ্য/কাঁচামাল গ্রহণ ও মূল্য আপডেট')}
               </h2>
               <Badge
                 variant="outline"
                 className="text-[10px] uppercase font-mono py-0.5 px-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
               >
-                Inward Gate
+                Inward Gate & Master Sync
               </Badge>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               {tBilingual(
-                'Record physical store intake with quality inspection, batch tracking & stock valuation',
-                'চালান ও গেট পাস যাচাই করে গুদামে মাল প্রবেশ এবং স্টক লেজার আপডেট'
+                'Receive raw materials & commercial catalog products, track purchase cost variances, and auto-sync selling prices',
+                'কাঁচামাল ও প্রোডাক্ট গ্রহণ, আগের ও নতুন ক্রয় মূল্য যাচাই এবং বিক্রয় মূল্য স্বয়ংক্রিয় আপডেট'
               )}
             </p>
           </div>
@@ -562,7 +852,7 @@ export function ReceiveStockModal({
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  <span>Processing Intake...</span>
+                  <span>Processing Intake & Master Sync...</span>
                 </>
               ) : (
                 <div className="flex items-center gap-2">
@@ -572,7 +862,7 @@ export function ReceiveStockModal({
                       ? tBilingual('Post GRN Stock Receipt', 'GRN স্টক গ্রহণ নিশ্চিত করুন')
                       : mode === 'opening'
                       ? tBilingual('Save Opening Balance', 'প্রারম্ভিক স্টক সংরক্ষণ করুন')
-                      : tBilingual('Confirm Material Intake', 'কাঁচামাল গ্রহণ সম্পন্ন করুন')}
+                      : tBilingual('Confirm Intake & Sync Pricing', 'পণ্য গ্রহণ ও মূল্য আপডেট নিশ্চিত করুন')}
                   </span>
                 </div>
               )}
@@ -625,7 +915,7 @@ export function ReceiveStockModal({
             )}
           >
             <Package className="h-4 w-4 shrink-0" />
-            <span className="truncate">{tBilingual('Direct Spot Intake', 'সরাসরি গ্রহণ')}</span>
+            <span className="truncate">{tBilingual('Direct Spot Intake', 'সরাসরি পণ্য গ্রহণ')}</span>
           </button>
 
           <button
@@ -828,84 +1118,156 @@ export function ReceiveStockModal({
 
             {/* PO Line Items Receiving Grid */}
             {poReceiveRows.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
-                  {tBilingual('Quality Inspection & Intake Quantities', 'মান যাচাই ও গ্রহণের পরিমাণ')}
+                  {tBilingual('Quality Inspection & Intake Lines', 'মান যাচাই ও পণ্য গ্রহণ')}
                 </Label>
 
-                <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-x-auto">
-                  <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800">
-                      <tr>
-                        <th className="p-3 min-w-[180px]">Material / Item</th>
-                        <th className="p-3 text-right">Ordered</th>
-                        <th className="p-3 text-right">Prev Rcvd</th>
-                        <th className="p-3 text-right">Remaining</th>
-                        <th className="p-3 text-right min-w-[90px]">Accepted (Rcv)</th>
-                        <th className="p-3 text-right min-w-[70px]">Rejected</th>
-                        <th className="p-3 min-w-[110px]">Batch / Lot #</th>
-                        <th className="p-3 text-right min-w-[90px]">Value (৳)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {poReceiveRows.map((row, idx) => {
-                        const lineAcceptedVal = Math.round((Number(row.accepted_quantity) || 0) * (Number(row.unit_cost) || 0))
+                <div className="space-y-3">
+                  {poReceiveRows.map((row, idx) => {
+                    const lineAcceptedVal = Math.round((Number(row.accepted_quantity) || 0) * (Number(row.unit_cost) || 0))
+                    const costVariance = row.previous_cost > 0 ? Math.round(((row.unit_cost - row.previous_cost) / row.previous_cost) * 100) : 0
 
-                        return (
-                          <tr key={row.po_item_id || idx} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="p-3">
-                              <div className="font-bold text-slate-900 dark:text-white">{row.material_name}</div>
-                              <div className="text-[10px] text-slate-500 font-mono mt-0.5">
-                                Rate: ৳{formatBDT(row.unit_cost)} / {row.unit}
-                              </div>
-                            </td>
-                            <td className="p-3 text-right font-mono text-slate-700 dark:text-slate-300">
-                              {row.quantity_ordered} {row.unit}
-                            </td>
-                            <td className="p-3 text-right font-mono text-slate-500">
-                              {row.quantity_received} {row.unit}
-                            </td>
-                            <td className="p-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                              {row.quantity_remaining} {row.unit}
-                            </td>
-                            <td className="p-3 text-right">
-                              <Input
-                                type="number"
-                                step="any"
-                                min="0"
-                                max={row.quantity_remaining}
-                                value={row.accepted_quantity}
-                                onChange={(e) => handlePoRowChange(idx, 'accepted_quantity', Number(e.target.value))}
-                                className="h-8 text-xs text-right font-mono font-bold w-20 ml-auto border-emerald-300 dark:border-emerald-700 focus:ring-emerald-500"
-                              />
-                            </td>
-                            <td className="p-3 text-right">
-                              <Input
-                                type="number"
-                                step="any"
-                                min="0"
-                                value={row.rejected_quantity}
-                                onChange={(e) => handlePoRowChange(idx, 'rejected_quantity', Number(e.target.value))}
-                                className="h-8 text-xs text-right font-mono text-rose-600 w-16 ml-auto"
-                                placeholder="0"
-                              />
-                            </td>
-                            <td className="p-3">
-                              <Input
-                                placeholder="Lot # / Roll Tag"
-                                value={row.batch_lot_number}
-                                onChange={(e) => handlePoRowChange(idx, 'batch_lot_number', e.target.value)}
-                                className="h-8 text-xs font-mono w-28"
-                              />
-                            </td>
-                            <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
+                    return (
+                      <div
+                        key={row.po_item_id || idx}
+                        className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-3 text-xs"
+                      >
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                          <div>
+                            <div className="font-bold text-slate-900 dark:text-white text-sm">{row.material_name}</div>
+                            <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                              PO Order: {row.quantity_ordered} {row.unit} | Received: {row.quantity_received} | Remaining:{' '}
+                              <span className="font-bold text-emerald-600">{row.quantity_remaining} {row.unit}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px] font-mono">
+                              Rate: ৳{formatBDT(row.unit_cost)} / {row.unit}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        {/* Inspection inputs */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                          <div>
+                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Accepted Qty ({row.unit})</Label>
+                            <Input
+                              type="number"
+                              step="any"
+                              min="0"
+                              max={row.quantity_remaining}
+                              value={row.accepted_quantity}
+                              onChange={(e) => handlePoRowChange(idx, 'accepted_quantity', Number(e.target.value))}
+                              className="h-8 text-xs font-mono font-bold border-emerald-300 dark:border-emerald-700"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Rejected Qty</Label>
+                            <Input
+                              type="number"
+                              step="any"
+                              min="0"
+                              value={row.rejected_quantity}
+                              onChange={(e) => handlePoRowChange(idx, 'rejected_quantity', Number(e.target.value))}
+                              className="h-8 text-xs font-mono text-rose-600"
+                              placeholder="0"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Roll Lot #</Label>
+                            <Input
+                              placeholder="e.g. Lot-108"
+                              value={row.batch_lot_number}
+                              onChange={(e) => handlePoRowChange(idx, 'batch_lot_number', e.target.value)}
+                              className="h-8 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Inward Value (৳)</Label>
+                            <div className="h-8 px-3 rounded-md bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center font-mono font-bold text-emerald-700 dark:text-emerald-300">
                               ৳ {formatBDT(lineAcceptedVal)}
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* COST & PRICING INTELLIGENCE PANEL */}
+                        <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                              Commercial Master Price Intelligence & Sync
+                            </span>
+                            <label className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={row.update_master_pricing}
+                                onChange={(e) => handlePoRowChange(idx, 'update_master_pricing', e.target.checked)}
+                                className="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                              />
+                              Sync Master Pricing
+                            </label>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1">
+                            <div>
+                              <span className="text-[10px] text-slate-400 block">Previous Cost:</span>
+                              <div className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
+                                ৳{formatBDT(row.previous_cost)} / {row.unit}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] text-slate-400 block">PO Inward Cost:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-mono text-xs font-bold text-emerald-600">
+                                  ৳{formatBDT(row.unit_cost)}
+                                </span>
+                                {costVariance !== 0 && (
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      'text-[9px] px-1 py-0 font-mono font-bold',
+                                      costVariance > 0
+                                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                    )}
+                                  >
+                                    {costVariance > 0 ? `+${costVariance}% ↗` : `${costVariance}% ↘`}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] text-slate-400 block">Previous Price:</span>
+                              <div className="font-mono text-xs text-slate-500">
+                                ৳{formatBDT(row.previous_selling_price)}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="text-[10px] text-slate-400 block">New Selling Price:</span>
+                              <div className="flex items-center gap-1.5">
+                                <Input
+                                  type="number"
+                                  step="any"
+                                  min="0"
+                                  value={row.new_selling_price}
+                                  onChange={(e) => handlePoRowChange(idx, 'new_selling_price', Number(e.target.value))}
+                                  className="h-7 text-xs font-mono font-bold w-24"
+                                />
+                                <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-mono">
+                                  Margin: {row.target_margin_percent}%
+                                </Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
                 </div>
 
                 {/* GRN Summary Banner */}
@@ -938,8 +1300,8 @@ export function ReceiveStockModal({
                 <Package className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                   {mode === 'opening'
-                    ? tBilingual('Opening Stock Materials & Quantities', 'প্রারম্ভিক স্টক আইটেম ও পরিমাণ')
-                    : tBilingual('Direct Stock Intake Catalog Lines', 'সরাসরি গ্রহণের আইটেম ও দরপত্র')}
+                    ? tBilingual('Opening Stock Items & Valuation Masters', 'প্রারম্ভিক স্টক আইটেম ও দরপত্র মাস্টার')
+                    : tBilingual('Direct Stock Intake & Commercial Masters Catalog', 'সরাসরি পণ্য/কাঁচামাল গ্রহণ ও মাস্টার প্রাইসিং')}
                 </h3>
               </div>
 
@@ -990,23 +1352,40 @@ export function ReceiveStockModal({
             )}
 
             {/* Direct Items List */}
-            <div className="space-y-3 max-h-[42vh] overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-[46vh] overflow-y-auto pr-1">
               {directItems.map((item, idx) => {
-                const activeMat = materials.find((m) => m.id === item.material_id)
+                const isVariancePositive = item.cost_variance_percent > 0
+                const isVarianceNegative = item.cost_variance_percent < 0
+                const grossProfitPerUnit = Math.max(0, (item.new_selling_price || 0) - (item.unit_cost || 0))
 
                 return (
                   <div
                     key={item.id}
-                    className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40 space-y-2.5 text-xs shadow-xs"
+                    className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/40 space-y-3 text-xs shadow-xs"
                   >
+                    {/* Item Header */}
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-mono font-bold flex items-center justify-center text-[10px]">
                           #{idx + 1}
                         </span>
-                        <span className="font-bold text-slate-800 dark:text-slate-200">
-                          {item.material_name || 'Select Material'}
+                        <span className="font-bold text-slate-900 dark:text-white">
+                          {item.material_name || 'Select Item'}
                         </span>
+                        <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 bg-white dark:bg-slate-900">
+                          {item.sku || 'SKU'}
+                        </Badge>
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            'text-[10px] px-1.5 py-0',
+                            item.item_type === 'product'
+                              ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                              : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          )}
+                        >
+                          {item.item_type === 'product' ? 'Commercial Product' : 'Raw Material'}
+                        </Badge>
                       </div>
 
                       {directItems.length > 1 && (
@@ -1021,11 +1400,12 @@ export function ReceiveStockModal({
                       )}
                     </div>
 
+                    {/* Selector & Quantities Grid */}
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
-                      {/* Material Selector */}
-                      <div className="sm:col-span-5">
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">
-                          Material Item <span className="text-rose-500">*</span>
+                      {/* Unified Catalog Selector */}
+                      <div className="sm:col-span-6">
+                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
+                          Product / Material Registered in Masters <span className="text-rose-500">*</span>
                         </Label>
                         <select
                           value={item.material_id}
@@ -1033,19 +1413,23 @@ export function ReceiveStockModal({
                           className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
                           required
                         >
-                          <option value="">-- Choose Material Item --</option>
-                          {materials.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} ({m.sku}) — {m.current_stock} {m.unit} on hand
-                            </option>
+                          <option value="">-- Choose Product / Material --</option>
+                          {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
+                            <optgroup key={grpName} label={`📂 ${grpName}`}>
+                              {grpItems.map((m) => (
+                                <option key={m.id} value={m.id}>
+                                  [{m.sku}] {m.name} — Prev Cost: ৳{formatBDT(m.previous_cost)} | Price: ৳{formatBDT(m.previous_selling_price)} ({m.unit})
+                                </option>
+                              ))}
+                            </optgroup>
                           ))}
                         </select>
                       </div>
 
                       {/* Quantity */}
-                      <div className="sm:col-span-2">
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">
-                          Qty ({item.unit || 'pcs'}) <span className="text-rose-500">*</span>
+                      <div className="sm:col-span-3">
+                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
+                          Intake Qty ({item.unit || 'pcs'}) <span className="text-rose-500">*</span>
                         </Label>
                         <Input
                           type="number"
@@ -1058,25 +1442,9 @@ export function ReceiveStockModal({
                         />
                       </div>
 
-                      {/* Unit Cost */}
-                      <div className="sm:col-span-2">
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">
-                          Unit Cost (৳) <span className="text-rose-500">*</span>
-                        </Label>
-                        <Input
-                          type="number"
-                          step="any"
-                          min="0"
-                          value={item.unit_cost}
-                          onChange={(e) => handleDirectItemChange(idx, 'unit_cost', Number(e.target.value))}
-                          className="h-8.5 text-xs font-mono font-semibold"
-                          required
-                        />
-                      </div>
-
                       {/* Batch Lot # */}
                       <div className="sm:col-span-3">
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Lot / Tag</Label>
+                        <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Lot / Tag #</Label>
                         <Input
                           placeholder="e.g. Lot-091A"
                           value={item.batch_lot_number}
@@ -1086,13 +1454,115 @@ export function ReceiveStockModal({
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center pt-1 text-[11px] text-slate-500 dark:text-slate-400">
-                      <span>
-                        Calculation: {item.quantity} {item.unit} × ৳{formatBDT(item.unit_cost)}
-                      </span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white text-xs">
-                        ৳ {formatBDT(item.total_cost)}
-                      </span>
+                    {/* COST & PRICE INTELLIGENCE HUD (Previous vs New Pricing) */}
+                    <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 border-b border-slate-100 dark:border-slate-800 pb-2">
+                        <div className="flex items-center gap-1.5">
+                          <DollarSign className="h-4 w-4 text-emerald-600" />
+                          <span className="font-bold text-[11px] text-slate-800 dark:text-slate-200">
+                            Commercial Master Pricing & Margin Intelligence
+                          </span>
+                        </div>
+
+                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={item.update_master_pricing}
+                            onChange={(e) => handleDirectItemChange(idx, 'update_master_pricing', e.target.checked)}
+                            className="rounded text-emerald-600 focus:ring-emerald-500 h-3.5 w-3.5"
+                          />
+                          Update Product Master with New Cost & Price
+                        </label>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-0.5">
+                        {/* 1. Previous Purchase Cost */}
+                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Cost</span>
+                          <div className="font-mono text-xs font-bold text-slate-700 dark:text-slate-300 mt-0.5">
+                            ৳ {formatBDT(item.previous_cost)}
+                            <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
+                          </div>
+                        </div>
+
+                        {/* 2. New Purchase Cost (Editable) & Variance */}
+                        <div className="p-2 rounded-lg bg-emerald-50/50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-emerald-800 dark:text-emerald-300 uppercase font-bold">
+                              New Purchase Cost <span className="text-rose-500">*</span>
+                            </span>
+                            {item.cost_variance_percent !== 0 && (
+                              <Badge
+                                variant="outline"
+                                className={cn(
+                                  'text-[9px] px-1 py-0 font-mono font-bold',
+                                  isVariancePositive
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                )}
+                              >
+                                {isVariancePositive ? `+${item.cost_variance_percent}% ↗` : `${item.cost_variance_percent}% ↘`}
+                              </Badge>
+                            )}
+                          </div>
+                          <Input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={item.unit_cost}
+                            onChange={(e) => handleDirectItemChange(idx, 'unit_cost', Number(e.target.value))}
+                            className="h-7 text-xs font-mono font-bold bg-white dark:bg-slate-900 border-emerald-300 dark:border-emerald-700"
+                            required
+                          />
+                        </div>
+
+                        {/* 3. Previous Selling Price */}
+                        <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-400 uppercase font-semibold block">Previous Price</span>
+                          <div className="font-mono text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5">
+                            ৳ {formatBDT(item.previous_selling_price)}
+                            <span className="text-[10px] font-normal text-slate-400 ml-1">/{item.unit}</span>
+                          </div>
+                        </div>
+
+                        {/* 4. New Selling Price & Margin % */}
+                        <div className="p-2 rounded-lg bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] text-blue-800 dark:text-blue-300 uppercase font-bold">
+                              New Selling Price
+                            </span>
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] px-1 py-0 font-mono font-bold bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                            >
+                              Margin: {item.target_margin_percent}%
+                            </Badge>
+                          </div>
+                          <Input
+                            type="number"
+                            step="any"
+                            min="0"
+                            value={item.new_selling_price}
+                            onChange={(e) => handleDirectItemChange(idx, 'new_selling_price', Number(e.target.value))}
+                            className="h-7 text-xs font-mono font-bold bg-white dark:bg-slate-900 border-blue-300 dark:border-blue-700"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Calculation Breakdown Footer */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-1 text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-800 gap-1">
+                        <span>
+                          Inward Valuation: {item.quantity} {item.unit} × ৳{formatBDT(item.unit_cost)}
+                          {item.new_selling_price > item.unit_cost && (
+                            <span className="ml-2 font-semibold text-emerald-600 dark:text-emerald-400">
+                              (Profit: ৳{formatBDT(grossProfitPerUnit)} / {item.unit})
+                            </span>
+                          )}
+                        </span>
+                        <span className="font-mono font-black text-slate-900 dark:text-white text-xs">
+                          Line Total: ৳ {formatBDT(item.total_cost)}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )
@@ -1104,7 +1574,7 @@ export function ReceiveStockModal({
               <div>
                 <span className="text-slate-500 dark:text-slate-400">Total Lines Configured:</span>
                 <div className="font-mono text-slate-700 dark:text-slate-300 font-bold">
-                  {directItems.length} item line(s)
+                  {directItems.length} item line(s) ready for inward post & master price update
                 </div>
               </div>
               <div className="text-right">
@@ -1124,7 +1594,7 @@ export function ReceiveStockModal({
           </Label>
           <textarea
             rows={2}
-            placeholder="e.g. Physical rolls inspected; no transit damage detected; verified by store officer..."
+            placeholder="e.g. Physical stock inspected; rates cross-checked against market invoices; verified by store officer..."
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             className="w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-2.5 text-xs text-slate-900 dark:text-slate-100 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"

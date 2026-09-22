@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import {
   Tag,
   Plus,
@@ -109,13 +110,29 @@ export default function PricingManagementPage() {
   const { company } = useTenant()
   const { can, isOwner } = usePermissions()
   const { locale, tBilingual } = useI18n()
+  const searchParams = useSearchParams()
   const companyId = company?.id
   const slug = company?.slug || 'my-company'
+
+  const tabParam = searchParams?.get('tab') as MainDomainTab | null
+  const productIdParam = searchParams?.get('productId') || searchParams?.get('product_id')
 
   const canEdit = isOwner || can('edit', 'pricing') || can('create', 'pricing') || can('manage', 'pricing')
 
   // Domain Tab Navigation
-  const [domainTab, setDomainTab] = useState<MainDomainTab>('matrix')
+  const [domainTab, setDomainTab] = useState<MainDomainTab>(() => {
+    if (tabParam && ['matrix', 'services', 'products', 'tariffs', 'calculator'].includes(tabParam)) {
+      return tabParam
+    }
+    return 'matrix'
+  })
+
+  // Sync tab with URL query changes
+  useEffect(() => {
+    if (tabParam && ['matrix', 'services', 'products', 'tariffs', 'calculator'].includes(tabParam)) {
+      setDomainTab(tabParam)
+    }
+  }, [tabParam])
 
   // Matrix and Rules State
   const [rules, setRules] = useState<PricingRuleRecord[]>([])
@@ -715,6 +732,7 @@ export default function PricingManagementPage() {
           finishingOptions={finishingOptions}
           printingMethods={printingMethods}
           tenantSlug={slug}
+          initialProductId={productIdParam || undefined}
         />
       )}
 

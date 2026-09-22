@@ -613,10 +613,10 @@ export default function ProductDetailPage() {
               Adjust Price
             </Button>
 
-            <Link href={getTenantNavHref('/quotations', pathname, slug)}>
-              <Button size="sm" variant="outline" className="text-xs font-bold">
-                <Tag className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                Live Estimator
+            <Link href={getTenantNavHref(`/pricing?tab=calculator&productId=${product.id}`, pathname, slug)}>
+              <Button size="sm" variant="outline" className="text-xs font-bold gap-1.5">
+                <Calculator className="h-3.5 w-3.5 text-blue-600" />
+                <span>Live Estimator</span>
               </Button>
             </Link>
 

@@ -1739,7 +1739,7 @@ export default function ProductsCatalogPage() {
               <span>{tBilingual('New Product / Service', 'নতুন পণ্য / সেবা')}</span>
             </Button>
 
-            <Link href={getTenantNavHref('/quotations', pathname, slug)}>
+            <Link href={getTenantNavHref('/pricing?tab=calculator', pathname, slug)}>
               <Button
                 size="sm"
                 variant="outline"
@@ -2681,17 +2681,17 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Service & SKU</th>
-                      <th className="py-3 px-3">Printable Substrate</th>
-                      <th className="py-3 px-3">Pricing Model</th>
-                      <th className="py-3 px-3">Dimension Presets</th>
-                      <th className="py-3 px-3">Finishing</th>
-                      <th className="py-3 px-3">Base Cost</th>
-                      <th className="py-3 px-3">Selling Rate</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Min Charge</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px]">Service & SKU</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Printable Substrate</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Pricing Model</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Dimension Presets</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Finishing</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Base Cost</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2705,7 +2705,7 @@ export default function ProductsCatalogPage() {
 
                       return (
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
@@ -2720,53 +2720,57 @@ export default function ProductsCatalogPage() {
                               {item.sku} • {item.category || 'printing'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3">
-                            <Badge variant="outline" className="text-xs font-medium">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
+                            <Badge variant="outline" className="text-xs font-medium whitespace-nowrap">
                               {item.service_config?.printable_material_name || item.material_spec || 'Standard Media'}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-700 dark:text-slate-300">
-                            <Badge variant="secondary" className="text-[11px] uppercase">
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-700 dark:text-slate-300">
+                            <Badge variant="secondary" className="text-[11px] uppercase whitespace-nowrap">
                               {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
                             </Badge>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {presets.length > 0 ? (
-                              <div className="flex flex-wrap gap-1 max-w-[140px]">
+                              <div className="flex flex-wrap gap-1 max-w-[160px]">
                                 {presets.slice(0, 2).map((p, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono rounded">
+                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono rounded whitespace-nowrap">
                                     {p.width}&apos;×{p.length}&apos;
                                   </span>
                                 ))}
                                 {presets.length > 2 && (
-                                  <span className="text-[10px] text-slate-400 font-mono">+{presets.length - 2} more</span>
+                                  <span className="text-[10px] text-slate-400 font-mono whitespace-nowrap">+{presets.length - 2} more</span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">Custom Dimensions</span>
+                              <span className="text-xs text-slate-400 italic whitespace-nowrap">Custom Dimensions</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {finishings.length > 0 ? (
-                              <Badge variant="secondary" className="text-[10px]">
+                              <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
                                 {finishings.length} options
                               </Badge>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">—</span>
+                              <span className="text-xs text-slate-400 italic whitespace-nowrap">—</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
-                            <CurrencyDisplay amount={item.base_cost} />
-                            <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.base_cost} />
+                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                            <CurrencyDisplay amount={item.selling_price} />
-                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.selling_price} />
+                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
                                 marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
@@ -2777,10 +2781,10 @@ export default function ProductsCatalogPage() {
                               {marginPercent}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-3 text-xs font-mono">
-                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : '—'}
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs font-mono">
+                            {item.minimum_charge ? <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span> : <span className="text-slate-300">—</span>}
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
@@ -2791,7 +2795,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="sm"
@@ -2896,15 +2900,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Product & SKU</th>
-                      <th className="py-3 px-3">Physical Dimensions & Spec</th>
-                      <th className="py-3 px-3">Packaging & MOQ</th>
-                      <th className="py-3 px-3">Price Tiers (Corp/Dealer/Wholesale)</th>
-                      <th className="py-3 px-3">Unit Cost</th>
-                      <th className="py-3 px-3">Selling Rate</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Physical Dimensions & Spec</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Packaging & MOQ</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Price Tiers (Corp/Dealer/Wholesale)</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Unit Cost</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2917,7 +2921,7 @@ export default function ProductsCatalogPage() {
 
                       return (
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
@@ -2932,47 +2936,52 @@ export default function ProductsCatalogPage() {
                               {item.sku} • {item.category || 'hardware'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3">
-                            <div className="font-semibold text-xs text-slate-800 dark:text-slate-200">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
+                            <div className="font-semibold text-xs text-slate-800 dark:text-slate-200 whitespace-nowrap">
                               {item.dimensions_spec || item.material_spec || 'Standard Dimension'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-400">
-                            <span>📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-400">
+                            <span className="whitespace-nowrap">📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1 text-[10px] font-mono">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200">
+                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
                                   Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200">
+                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
                                   Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200">
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
                                   WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
-                                <span className="text-slate-400 italic">Standard Retail</span>
+                                <span className="text-slate-400 italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
-                            <CurrencyDisplay amount={item.base_cost} />
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.base_cost} />
+                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                            <CurrencyDisplay amount={item.selling_price} />
-                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.selling_price} />
+                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
                                 marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
@@ -2983,7 +2992,7 @@ export default function ProductsCatalogPage() {
                               {marginPercent}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
@@ -2994,7 +3003,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="sm"
@@ -3099,14 +3108,14 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Material Name & SKU</th>
-                      <th className="py-3 px-3">Media Form & Geometry</th>
-                      <th className="py-3 px-3">Purchase Economics</th>
-                      <th className="py-3 px-3">Yield & Conversion</th>
-                      <th className="py-3 px-3">Compatible Printing</th>
-                      <th className="py-3 px-3">Effective Cost / Unit</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px]">Material Name & SKU</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Media Form & Geometry</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Purchase Economics</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Yield & Conversion</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Compatible Printing</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Effective Cost / Unit</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -3115,7 +3124,7 @@ export default function ProductsCatalogPage() {
 
                       return (
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
@@ -3130,56 +3139,58 @@ export default function ProductsCatalogPage() {
                               {item.sku} • {item.material_spec || 'Standard Grade'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.roll_width_ft && item.roll_length_ft ? (
-                              <Badge variant="outline" className="text-[11px] font-mono bg-blue-50/50">
+                              <Badge variant="outline" className="text-[11px] font-mono bg-blue-50/50 whitespace-nowrap">
                                 Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
                               </Badge>
                             ) : item.sheet_width_ft && item.sheet_length_ft ? (
-                              <Badge variant="outline" className="text-[11px] font-mono bg-emerald-50/50">
+                              <Badge variant="outline" className="text-[11px] font-mono bg-emerald-50/50 whitespace-nowrap">
                                 Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-[11px] font-mono">
+                              <Badge variant="outline" className="text-[11px] font-mono whitespace-nowrap">
                                 Unit ({item.unit})
                               </Badge>
                             )}
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.purchase_price && item.purchase_price > 0 ? (
                               <div>
-                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">No Purchase Tariff</span>
+                              <span className="text-xs text-slate-400 italic whitespace-nowrap">No Purchase Tariff</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-400">
-                            <div>1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}</div>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-400">
+                            <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
-                              <div className="text-[10px] text-amber-600">({item.default_wastage_percentage}% waste allowance)</div>
+                              <div className="text-[10px] text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
                             ) : null}
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {printingList.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {printingList.map((m, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-[10px] uppercase font-mono">
+                                  <Badge key={idx} variant="secondary" className="text-[10px] uppercase font-mono whitespace-nowrap">
                                     {m}
                                   </Badge>
                                 ))}
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">Universal Media</span>
+                              <span className="text-xs text-slate-400 italic whitespace-nowrap">Universal Media</span>
                             )}
                           </td>
-                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                            ৳{item.base_cost}
-                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <span>৳{item.base_cost}</span>
+                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
@@ -3190,7 +3201,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="sm"
@@ -3287,15 +3298,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Product & SKU</th>
-                      <th className="py-3 px-3">Subcontract Vendor</th>
-                      <th className="py-3 px-3">Lead Time & Inventory</th>
-                      <th className="py-3 px-3">Price Tiers</th>
-                      <th className="py-3 px-3">Vendor Cost</th>
-                      <th className="py-3 px-3">Selling Rate</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px]">Product & SKU</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Subcontract Vendor</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Lead Time & Inventory</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Price Tiers</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Vendor Cost</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -3311,7 +3322,7 @@ export default function ProductsCatalogPage() {
 
                       return (
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-purple-600 flex items-center gap-1.5 group"
@@ -3326,63 +3337,67 @@ export default function ProductsCatalogPage() {
                               {item.sku} • {item.category || 'outsource'}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3">
-                            <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
+                            <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 flex items-center gap-1 whitespace-nowrap">
                               <Building2 className="h-3 w-3 text-purple-500" />
                               <span>{vendorName}</span>
                             </div>
                             {vendorPhone && (
-                              <div className="text-[11px] text-slate-400 font-mono">{vendorPhone}</div>
+                              <div className="text-[11px] text-slate-400 font-mono whitespace-nowrap">{vendorPhone}</div>
                             )}
                             {item.vendor_item_code && (
-                              <div className="text-[10px] text-slate-400 font-mono">Ref: {item.vendor_item_code}</div>
+                              <div className="text-[10px] text-slate-400 font-mono whitespace-nowrap">Ref: {item.vendor_item_code}</div>
                             )}
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-col gap-1">
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap">
                                 <Clock className="h-3 w-3 text-amber-500" />
                                 {turnaround} {turnaround === 1 ? 'day' : 'days'}
                               </span>
-                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit">
+                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
                                 Non-Inventory
                               </Badge>
                             </div>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             <div className="flex flex-wrap gap-1 text-[10px] font-mono">
                               {tiers.corporate ? (
-                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200">
+                                <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
                                   Corp: ৳{tiers.corporate}
                                 </span>
                               ) : null}
                               {tiers.dealer ? (
-                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200">
+                                <span className="px-1.5 py-0.5 bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded border border-purple-200 whitespace-nowrap">
                                   Dealer: ৳{tiers.dealer}
                                 </span>
                               ) : null}
                               {tiers.wholesale ? (
-                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200">
+                                <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 rounded border border-emerald-200 whitespace-nowrap">
                                   WS: ৳{tiers.wholesale}
                                 </span>
                               ) : null}
                               {!tiers.corporate && !tiers.dealer && !tiers.wholesale && (
-                                <span className="text-slate-400 italic">Standard Retail</span>
+                                <span className="text-slate-400 italic whitespace-nowrap">Standard Retail</span>
                               )}
                             </div>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
-                            <CurrencyDisplay amount={item.base_cost} />
-                            <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.base_cost} />
+                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono font-bold text-xs text-slate-900 dark:text-white">
-                            <CurrencyDisplay amount={item.selling_price} />
-                            <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.selling_price} />
+                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
-                          <td className="py-3.5 px-3 font-mono text-xs">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border',
+                                'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border',
                                 marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : marginPercent >= 20
@@ -3393,7 +3408,7 @@ export default function ProductsCatalogPage() {
                               {marginPercent}%
                             </span>
                           </td>
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
@@ -3404,7 +3419,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
                                 size="sm"
@@ -3506,15 +3521,15 @@ export default function ProductsCatalogPage() {
                 <table className="w-full text-left text-sm">
                   <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
                     <tr>
-                      <th className="py-3 px-4">Item & SKU</th>
-                      <th className="py-3 px-3">Entity Kind</th>
-                      <th className="py-3 px-3">Purchase Economics</th>
-                      <th className="py-3 px-3">Effective Cost</th>
-                      <th className="py-3 px-3">Selling Rate</th>
-                      <th className="py-3 px-3">Gross Margin</th>
-                      <th className="py-3 px-3">Min Charge</th>
-                      <th className="py-3 px-3">Status</th>
-                      <th className="py-3 px-4 text-right">Actions</th>
+                      <th className="py-3 px-4 min-w-[200px]">Item & SKU</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Entity Kind</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Purchase Economics</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Effective Cost</th>
+                      <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
+                      <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
+                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -3530,7 +3545,7 @@ export default function ProductsCatalogPage() {
                       return (
                         <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
                           {/* Item & SKU */}
-                          <td className="py-3.5 px-4">
+                          <td className="py-3.5 px-4 min-w-[200px]">
                             <Link
                               href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
                               className="font-bold text-slate-900 dark:text-white hover:text-blue-600 flex items-center gap-1.5 group"
@@ -3547,10 +3562,10 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Entity Kind Badge */}
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             <span
                               className={cn(
-                                'capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
+                                'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
                                 isOutsourceProduct(item)
                                   ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                                   : isServiceProduct(item)
@@ -3565,39 +3580,43 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Purchase Economics */}
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap">
                             {!isService && item.purchase_price && item.purchase_price > 0 ? (
                               <div>
-                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200">
+                                <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
-                                <div className="text-[10px] text-slate-400 font-mono">
+                                <div className="text-[10px] text-slate-400 font-mono whitespace-nowrap">
                                   1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}
                                   {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400 italic">No Purchase Unit</span>
+                              <span className="text-xs text-slate-400 italic whitespace-nowrap">No Purchase Unit</span>
                             )}
                           </td>
 
                           {/* Effective Unit Cost */}
-                          <td className="py-3.5 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
-                            <CurrencyDisplay amount={item.base_cost} />
-                            <span className="text-[10px] text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.base_cost} />
+                              <span className="text-[10px] text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
 
                           {/* Selling Rate */}
-                          <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-white font-mono">
-                            <CurrencyDisplay amount={item.selling_price} />
-                            <span className="text-xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                          <td className="py-3.5 px-3 whitespace-nowrap font-bold text-slate-900 dark:text-white font-mono">
+                            <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
+                              <CurrencyDisplay amount={item.selling_price} />
+                              <span className="text-xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                            </span>
                           </td>
 
                           {/* Gross Margin % */}
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             <span
                               className={cn(
-                                'inline-flex items-center px-2 py-0.5 rounded text-xs font-bold border font-mono',
+                                'inline-flex items-center whitespace-nowrap px-2 py-0.5 rounded text-xs font-bold border font-mono',
                                 marginPercent >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
                                   : marginPercent >= 20
@@ -3610,7 +3629,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Minimum Charge */}
-                          <td className="py-3.5 px-3 text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center text-xs font-mono font-medium text-slate-600 dark:text-slate-400">
                             {item.minimum_charge && item.minimum_charge > 0 ? (
                               <span className="text-blue-600 font-bold">৳{item.minimum_charge}</span>
                             ) : (
@@ -3619,7 +3638,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Status */}
-                          <td className="py-3.5 px-3">
+                          <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
                               <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
@@ -3632,7 +3651,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Actions */}
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
                             <div className="flex items-center justify-end gap-1.5">
                               {/* Fast Quote Button */}
                               <Button

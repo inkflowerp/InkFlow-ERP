@@ -36,6 +36,7 @@ interface PricingCalculatorSimulatorProps {
   finishingOptions: FinishingOptionRecord[]
   printingMethods: PrintingMethod[]
   tenantSlug: string
+  initialProductId?: string
 }
 
 export function PricingCalculatorSimulator({
@@ -43,11 +44,17 @@ export function PricingCalculatorSimulator({
   finishingOptions,
   printingMethods,
   tenantSlug,
+  initialProductId,
 }: PricingCalculatorSimulatorProps) {
   const { tBilingual } = useI18n()
   const pathname = usePathname()
 
-  const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || '')
+  const [selectedProductId, setSelectedProductId] = useState<string>(() => {
+    if (initialProductId && products.some((p) => p.id === initialProductId)) {
+      return initialProductId
+    }
+    return products[0]?.id || ''
+  })
   const [customerType, setCustomerType] = useState<PricingCustomerType>('retail')
   const [widthFt, setWidthFt] = useState<number>(4)
   const [heightFt, setHeightFt] = useState<number>(3)
@@ -55,9 +62,33 @@ export function PricingCalculatorSimulator({
   const [selectedPrintingMethodId, setSelectedPrintingMethodId] = useState<string>('')
   const [selectedFinishingIds, setSelectedFinishingIds] = useState<string[]>([])
 
+  // Keep selectedProductId in sync if initialProductId changes
+  React.useEffect(() => {
+    if (initialProductId && products.some((p) => p.id === initialProductId)) {
+      setSelectedProductId(initialProductId)
+    }
+  }, [initialProductId, products])
+
   const selectedProduct = useMemo(() => {
     return products.find((p) => p.id === selectedProductId) || products[0] || null
   }, [products, selectedProductId])
+
+  const isAreaBased = useMemo(() => {
+    if (!selectedProduct) return true
+    const method = (selectedProduct.pricing_method || '').toLowerCase()
+    const unit = (selectedProduct.unit || selectedProduct.selling_unit || '').toLowerCase()
+    return (
+      method === 'per_sft' ||
+      method === 'per_area' ||
+      method === 'dimensional_area' ||
+      method === 'per_sqft' ||
+      unit === 'sft' ||
+      unit === 'sqft' ||
+      unit === 'sqm' ||
+      unit === 'sq.ft' ||
+      unit === 'square_feet'
+    )
+  }, [selectedProduct])
 
   const toggleFinishing = (id: string) => {
     setSelectedFinishingIds((prev) =>
@@ -83,24 +114,29 @@ export function PricingCalculatorSimulator({
       }
     }
 
-    const isAreaBased =
-      selectedProduct.pricing_method === 'per_sft' ||
-      selectedProduct.pricing_method === 'per_area' ||
-      selectedProduct.pricing_method === 'dimensional_area' ||
-      selectedProduct.unit === 'sft' ||
-      selectedProduct.unit === 'sqft' ||
-      (selectedProduct.pricing_method as any) === 'per_sqft'
-
-    const areaPerUnit = isAreaBased ? widthFt * heightFt : 1
-    const totalAreaOrQty = (isAreaBased ? areaPerUnit : 1) * quantity
+    const areaPerUnit = isAreaBased ? Math.max(0.01, widthFt * heightFt) : 1
+    const totalAreaOrQty = (isAreaBased ? areaPerUnit : 1) * Math.max(1, quantity)
 
     // Base price per unit (sft or piece)
     const baseSellingRate = Number(selectedProduct.selling_price) || Number((selectedProduct as any).base_price) || 0
     const baseCostRate = Number(selectedProduct.base_cost) || Number((selectedProduct as any).cost_price) || 0
 
-    // Resolve Customer Tier Price
+    // Resolve Customer Tier Price with robust fallback mapping
     const tiers = (selectedProduct.price_tiers as any) || {}
-    let tierUnitPrice = tiers[customerType] ?? baseSellingRate
+    let tierUnitPrice = tiers[customerType]
+    if (tierUnitPrice === undefined || tierUnitPrice === null || isNaN(Number(tierUnitPrice))) {
+      const cType = customerType as string
+      if (cType === 'reseller' && tiers.dealer !== undefined) tierUnitPrice = Number(tiers.dealer)
+      else if (cType === 'agency' && (tiers.dealer !== undefined || tiers.wholesale !== undefined)) {
+        tierUnitPrice = Number(tiers.wholesale ?? tiers.dealer)
+      } else if (cType === 'corporate' && tiers.corporate_price !== undefined) {
+        tierUnitPrice = Number(tiers.corporate_price)
+      } else {
+        tierUnitPrice = baseSellingRate
+      }
+    } else {
+      tierUnitPrice = Number(tierUnitPrice)
+    }
 
     // Apply minimum billable area / charge
     const minBillable = Number(selectedProduct.min_billable_quantity) || Number(selectedProduct.service_config?.min_billable_qty) || 0
@@ -130,7 +166,7 @@ export function PricingCalculatorSimulator({
         const method = fin.pricing_method || 'sqft'
 
         if (method === 'per_piece' || method === 'piece') {
-          finishingTotal += rate * quantity * 4 // e.g. 4 eyelets
+          finishingTotal += rate * quantity * 4 // e.g. 4 eyelets or edge loops
           finishingCost += cost * quantity * 4
         } else if (method === 'sqft' || method === 'sft' || method === 'per_sqft') {
           finishingTotal += rate * totalAreaOrQty
@@ -174,6 +210,7 @@ export function PricingCalculatorSimulator({
     }
   }, [
     selectedProduct,
+    isAreaBased,
     customerType,
     widthFt,
     heightFt,
@@ -183,6 +220,42 @@ export function PricingCalculatorSimulator({
     printingMethods,
     finishingOptions,
   ])
+
+  // Save calculated estimate to sessionStorage for auto-prefilling in New Quotation Modal
+  const handleSaveToQuoteSession = () => {
+    if (typeof window === 'undefined' || !selectedProduct) return
+
+    const prefillData = {
+      productId: selectedProduct.id,
+      productName: selectedProduct.name,
+      customerType: customerType,
+      width: isAreaBased ? widthFt : '',
+      height: isAreaBased ? heightFt : '',
+      dimensionUnit: 'ft',
+      quantity: Math.max(1, quantity),
+      unit: selectedProduct.unit || (isAreaBased ? 'sft' : 'pcs'),
+      unitRate: simulation.tierUnitPrice,
+      baseRate: simulation.baseUnitPrice,
+      machineMethodId: selectedPrintingMethodId,
+      finishingIds: selectedFinishingIds,
+      totalEstimated: simulation.totalClientPrice,
+      grossProfit: simulation.grossProfit,
+      marginPct: simulation.marginPct,
+      timestamp: Date.now(),
+    }
+
+    try {
+      sessionStorage.setItem('printerp_estimator_prefill', JSON.stringify(prefillData))
+    } catch (e) {
+      console.warn('[Estimator] Failed to store quote prefill:', e)
+    }
+  }
+
+  // Product category groupings for select
+  const digitalProducts = useMemo(() => products.filter((p) => p.product_type === 'print_service' || p.category === 'flex_banner' || p.category === 'vinyl_sticker' || p.category === 'banner' || p.unit === 'sft'), [products])
+  const signageProducts = useMemo(() => products.filter((p) => p.category === 'signage_3d' || p.product_type === 'fabrication_service'), [products])
+  const readyHardware = useMemo(() => products.filter((p) => p.product_type === 'ready_product' || p.unit === 'pcs' || p.unit === 'set'), [products])
+  const rawMaterials = useMemo(() => products.filter((p) => p.product_type === 'material' || p.unit === 'roll'), [products])
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -211,11 +284,50 @@ export function PricingCalculatorSimulator({
               onChange={(e) => setSelectedProductId(e.target.value)}
               className="w-full h-10 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold"
             >
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} ({p.unit?.toUpperCase()} • Base ৳ {p.selling_price || (p as any).base_price || 0})
-                </option>
-              ))}
+              {digitalProducts.length > 0 && (
+                <optgroup label="🎨 Digital & Large Format Print Services">
+                  {digitalProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unit?.toUpperCase() || 'SFT'} • Base ৳{p.selling_price || (p as any).base_price || 0})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {signageProducts.length > 0 && (
+                <optgroup label="💡 3D Signage & Fabrication Services">
+                  {signageProducts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unit?.toUpperCase() || 'SFT'} • Base ৳{p.selling_price || (p as any).base_price || 0})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {readyHardware.length > 0 && (
+                <optgroup label="📦 Ready Merchandise & Hardware">
+                  {readyHardware.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unit?.toUpperCase() || 'PCS'} • Base ৳{p.selling_price || (p as any).base_price || 0})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {rawMaterials.length > 0 && (
+                <optgroup label="🧵 Raw Materials & Rolls">
+                  {rawMaterials.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.unit?.toUpperCase() || 'ROLL'} • Base ৳{p.selling_price || (p as any).base_price || 0})
+                    </option>
+                  ))}
+                </optgroup>
+              )}
+              {/* Fallback un-grouped */}
+              {digitalProducts.length === 0 && signageProducts.length === 0 && readyHardware.length === 0 && rawMaterials.length === 0 && (
+                products.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.unit?.toUpperCase()} • Base ৳{p.selling_price || (p as any).base_price || 0})
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -251,48 +363,77 @@ export function PricingCalculatorSimulator({
           </div>
 
           {/* Dimensions & Quantity */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Width (Feet)', 'প্রস্থ (ফিট)')}
-              </Label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0.5"
-                value={widthFt}
-                onChange={(e) => setWidthFt(Number(e.target.value))}
-                className="text-xs h-9 font-mono font-bold"
-              />
-            </div>
+          {isAreaBased ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Width (Feet)', 'প্রস্থ (ফিট)')}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0.5"
+                  value={widthFt}
+                  onChange={(e) => setWidthFt(Math.max(0.1, Number(e.target.value) || 0))}
+                  className="text-xs h-9 font-mono font-bold"
+                />
+              </div>
 
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Height (Feet)', 'উচ্চতা (ফিট)')}
-              </Label>
-              <Input
-                type="number"
-                step="0.1"
-                min="0.5"
-                value={heightFt}
-                onChange={(e) => setHeightFt(Number(e.target.value))}
-                className="text-xs h-9 font-mono font-bold"
-              />
-            </div>
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Height (Feet)', 'উচ্চতা (ফিট)')}
+                </Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  min="0.5"
+                  value={heightFt}
+                  onChange={(e) => setHeightFt(Math.max(0.1, Number(e.target.value) || 0))}
+                  className="text-xs h-9 font-mono font-bold"
+                />
+              </div>
 
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Quantity (Pieces)', 'পরিমাণ (পিস)')}
-              </Label>
-              <Input
-                type="number"
-                min="1"
-                value={quantity}
-                onChange={(e) => setQuantity(Number(e.target.value))}
-                className="text-xs h-9 font-mono font-bold"
-              />
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual('Quantity (Pieces)', 'পরিমাণ (পিস)')}
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="text-xs h-9 font-mono font-bold"
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <div>
+                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Billing Unit</span>
+                  <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase font-mono">
+                    Per {selectedProduct?.unit || 'Piece'} (Fixed Unit)
+                  </span>
+                </div>
+                <Badge variant="outline" className="text-[11px] font-medium text-slate-600 bg-white dark:bg-slate-800">
+                  No Dimensions Needed
+                </Badge>
+              </div>
+
+              <div>
+                <Label className="text-xs font-semibold mb-1 block">
+                  {tBilingual(`Order Quantity (${selectedProduct?.unit || 'Pcs'})`, `অর্ডার পরিমাণ (${selectedProduct?.unit || 'পিস'})`)}
+                </Label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="text-xs h-10 font-mono font-bold"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Machine Printing Method */}
           {printingMethods.length > 0 && (
@@ -308,7 +449,7 @@ export function PricingCalculatorSimulator({
                 <option value="">-- Standard Default Print Mode (No Surcharge) --</option>
                 {printingMethods.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.name} (+ ৳ {m.cost_per_sqft || (m as any).base_cost_per_unit || 0}/sft)
+                    {m.name} (+ ৳{m.cost_per_sqft || (m as any).base_cost_per_unit || 0}/sft)
                   </option>
                 ))}
               </select>
@@ -340,7 +481,7 @@ export function PricingCalculatorSimulator({
                           {fin.name}
                         </div>
                         <div className="text-[10px] text-slate-500 font-mono">
-                          + ৳ {fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
+                          + ৳{fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
                         </div>
                       </div>
                       <div
@@ -386,16 +527,20 @@ export function PricingCalculatorSimulator({
           {/* Breakdown Items */}
           <div className="space-y-2.5 text-xs">
             <div className="flex justify-between py-1 border-b border-slate-800/80">
-              <span className="text-slate-400">Total Billable Area:</span>
+              <span className="text-slate-400">
+                {isAreaBased ? 'Total Billable Area:' : 'Total Billable Quantity:'}
+              </span>
               <span className="font-mono font-bold text-slate-200">
-                {simulation.totalArea.toFixed(1)} sft ({quantity} pcs)
+                {isAreaBased
+                  ? `${simulation.totalArea.toFixed(1)} sft (${quantity} pcs)`
+                  : `${quantity} ${selectedProduct?.unit || 'pcs'}`}
               </span>
             </div>
 
             <div className="flex justify-between py-1 border-b border-slate-800/80">
               <span className="text-slate-400">Resolved Tier Rate ({customerType.toUpperCase()}):</span>
               <span className="font-mono font-bold text-teal-300">
-                ৳ {formatBDT(simulation.tierUnitPrice)} / sft
+                ৳ {formatBDT(simulation.tierUnitPrice)} / {isAreaBased ? 'sft' : (selectedProduct?.unit || 'pcs')}
               </span>
             </div>
 
@@ -433,6 +578,7 @@ export function PricingCalculatorSimulator({
           <div className="pt-2 border-t border-slate-800">
             <Button
               asChild
+              onClick={handleSaveToQuoteSession}
               className="w-full h-10 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl shadow-md text-xs cursor-pointer"
             >
               <Link href={getTenantNavHref('/quotations?new=true', pathname, tenantSlug)}>

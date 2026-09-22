@@ -1869,6 +1869,7 @@ function UnifiedInventoryContent() {
             if (!open) setSelectedPoForReceive(null)
           }}
           materials={materials}
+          products={readyProducts}
           locations={locations}
           orders={orders}
           purchaseOrder={selectedPoForReceive}

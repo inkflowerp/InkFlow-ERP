@@ -149,7 +149,30 @@ export class InventoryRepository {
     const all = (PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || [])
       .concat(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || [])
     const found = all.find((m) => (!m.company_id || m.company_id === companyId) && (m.id === id || m.sku === id))
-    return found || null
+    if (found) return found
+
+    // Fallback: Check if it exists in products catalog
+    const prods = (PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || [])
+      .concat(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS) || [])
+    const foundProd = prods.find((p) => (!p.company_id || p.company_id === companyId) && (p.id === id || p.sku === id))
+    if (foundProd) {
+      return {
+        id: foundProd.id,
+        company_id: foundProd.company_id || companyId,
+        sku: foundProd.sku,
+        name: foundProd.name,
+        name_bn: foundProd.name_bn || null,
+        category: foundProd.category || 'general',
+        unit: foundProd.selling_unit || foundProd.unit || 'pcs',
+        current_stock: Number(foundProd.current_stock ?? foundProd.stock ?? 0),
+        average_cost: Number(foundProd.base_cost ?? foundProd.purchase_price ?? foundProd.cost_price) || 0,
+        last_purchase_price: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price) || 0,
+        selling_price: Number(foundProd.selling_price) || 0,
+        is_active: foundProd.is_active !== false,
+      } as unknown as MaterialRecord
+    }
+
+    return null
   }
 
   static async createMaterial(material: Partial<MaterialRecord> & {
@@ -390,7 +413,15 @@ export class InventoryRepository {
     // 4. DataStore Fallback Execution
     const updatedMaterial = PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
       current_stock: newStock,
+      average_cost: unitCost > 0 ? unitCost : material.average_cost,
+      last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
     }) || { ...material, current_stock: newStock }
+
+    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, {
+      current_stock: newStock,
+      base_cost: unitCost > 0 ? unitCost : undefined,
+      purchase_price: unitCost > 0 ? unitCost : undefined,
+    })
 
     const localLedgerEntry: StockLedgerRecord = {
       id: `led-${Date.now()}`,
