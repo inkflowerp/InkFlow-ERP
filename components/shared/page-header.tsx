@@ -44,11 +44,11 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        'flex flex-col xl:flex-row xl:items-center justify-between gap-4 pb-1',
+        'flex flex-col lg:flex-row lg:items-start xl:items-center justify-between gap-4 pb-1',
         className
       )}
     >
-      <div className="space-y-1 min-w-0 flex-1">
+      <div className="space-y-1 min-w-[280px] max-w-full lg:max-w-xl xl:max-w-2xl shrink-0 lg:shrink flex-1">
         <div className="flex items-center gap-2.5 flex-wrap">
           {icon && (
             <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/20 flex items-center justify-center shrink-0 shadow-xs">
@@ -59,20 +59,20 @@ export function PageHeader({
               ) : null}
             </div>
           )}
-          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white bangla-text whitespace-nowrap">
+          <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white bangla-text">
             {title}
           </h1>
           {badge}
         </div>
         {description && (
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-3xl bangla-text leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 bangla-text leading-relaxed">
             {description}
           </p>
         )}
       </div>
 
       {actions && (
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full xl:w-auto justify-start xl:justify-end shrink-0">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 w-full lg:w-auto justify-start lg:justify-end shrink-0">
           {actions}
         </div>
       )}

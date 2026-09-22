@@ -99,16 +99,10 @@ import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-mo
 import { NewLocationModal } from '@/components/inventory/new-location-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 
-export type InventoryViewTab =
-  | 'materials'
-  | 'ready_products'
-  | 'rolls'
-  | 'requests'
-  | 'remnants'
-  | 'locations'
-  | 'purchases'
-  | 'receiving'
-  | 'ledger'
+// Upgraded UI Components
+import { InventoryKpiBar } from '@/components/inventory/inventory-kpi-bar'
+import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
+import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
 
 function UnifiedInventoryContent() {
   const router = useRouter()
@@ -117,6 +111,7 @@ function UnifiedInventoryContent() {
   const { company } = useTenant()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan } = useSubscription()
   const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
   const slug = company?.slug || 'my-company'
   const companyId = company?.id || 'default'
 
@@ -614,104 +609,17 @@ function UnifiedInventoryContent() {
           icon={Package}
           iconColor="text-emerald-600"
           actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
-                  <Cpu className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="hidden sm:inline">Machineries</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/production', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
-                  <Printer className="h-3.5 w-3.5 text-indigo-600" />
-                  <span className="hidden sm:inline">Printing Floor</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/finishing', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
-                  <Scissors className="h-3.5 w-3.5 text-indigo-600" />
-                  <span className="hidden sm:inline">Finishing</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
-                  <Building2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span className="hidden sm:inline">Suppliers</span>
-                </Button>
-              </Link>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsAdjustmentOpen(true)}
-                className="text-xs h-9 cursor-pointer"
-                title="Audit and adjust stock"
-              >
-                <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                Audit / Adjust
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsTransferOpen(true)}
-                className="text-xs h-9 cursor-pointer"
-                title="Transfer stock between locations"
-              >
-                <ArrowRightLeft className="mr-1.5 h-3.5 w-3.5" />
-                Transfer
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  setSelectedMaterialForAction(null)
-                  setIsIssueOpen(true)
-                }}
-                className="text-xs h-9 cursor-pointer"
-                title="Issue material to production floor"
-              >
-                <Scissors className="mr-1.5 h-3.5 w-3.5" />
-                Floor Issue
-              </Button>
-
+            <div className="flex items-center gap-2">
               <Button
                 size="sm"
                 onClick={() => {
                   setSelectedMaterialForAction(null)
                   setIsReceiveStockOpen(true)
                 }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer"
+                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer gap-1.5"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                + Receive Stock (GRN)
-              </Button>
-
-              <Link href={getTenantNavHref('/trash?tab=materials', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs h-9 text-slate-600 dark:text-slate-300 font-semibold cursor-pointer"
-                >
-                  <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
-                  <span className="hidden sm:inline">Trash Bin</span>
-                </Button>
-              </Link>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadAllData()}
-                disabled={loading}
-                className="text-xs h-9 cursor-pointer"
-                title="Refresh all inventory data"
-              >
-                <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
-                <span className="hidden sm:inline">Refresh</span>
+                <Plus className="h-4 w-4" />
+                <span>{isBn ? 'স্টক রিসিভ (GRN)' : 'Receive Stock'}</span>
               </Button>
             </div>
           }
@@ -726,96 +634,65 @@ function UnifiedInventoryContent() {
         )}
 
         {/* ========================================================= */}
-        {/* KPI METRICS HUD SUMMARY CARDS */}
+        {/* INTERACTIVE KPI METRICS HUD COMMAND BAR */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-          <Card className="p-3.5 border-l-4 border-l-emerald-600 bg-emerald-50/10">
-            <span className="text-[11px] font-semibold text-slate-500">Total Stock Value</span>
-            <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5 font-numeric">
-              <CurrencyDisplay amount={summary.totalAvailableStockValue} />
-            </div>
-            <span className="text-[10px] text-emerald-600 font-medium">{materials.length} Materials • {readyProducts.length} Products</span>
-          </Card>
-
-          <Card className={cn('p-3.5 border-l-4', lowStockMaterials.length > 0 ? 'border-l-amber-500 bg-amber-50/10' : 'border-l-slate-300')}>
-            <span className="text-[11px] font-semibold text-slate-500">Low Stock Warning</span>
-            <div className="text-xl font-black text-amber-600 mt-0.5 font-numeric">{lowStockMaterials.length}</div>
-            <span className="text-[10px] text-amber-600 font-medium">Below reorder point</span>
-          </Card>
-
-          <Card className={cn('p-3.5 border-l-4', outOfStockMaterials.length > 0 ? 'border-l-red-500 bg-red-50/10' : 'border-l-slate-300')}>
-            <span className="text-[11px] font-semibold text-slate-500">Out of Stock</span>
-            <div className="text-xl font-black text-red-600 mt-0.5 font-numeric">{outOfStockMaterials.length}</div>
-            <span className="text-[10px] text-red-600 font-medium">Zero warehouse stock</span>
-          </Card>
-
-          <Card className="p-3.5 border-l-4 border-l-indigo-600 bg-indigo-50/10">
-            <span className="text-[11px] font-semibold text-slate-500">Active Rolls</span>
-            <div className="text-xl font-black text-indigo-600 mt-0.5 font-numeric">{rolls.length}</div>
-            <span className="text-[10px] text-indigo-600 font-medium">Discrete large media</span>
-          </Card>
-
-          <Card className={cn('p-3.5 border-l-4', pendingInwardPOs.length > 0 ? 'border-l-blue-500 bg-blue-50/10' : 'border-l-slate-300')}>
-            <span className="text-[11px] font-semibold text-slate-500">Pending Inward</span>
-            <div className="text-xl font-black text-blue-600 mt-0.5 font-numeric">{pendingInwardPOs.length} POs</div>
-            <span className="text-[10px] text-blue-600 font-medium">Awaiting GRN receipt</span>
-          </Card>
-
-          <Card className="p-3.5 border-l-4 border-l-purple-500 bg-purple-50/10">
-            <span className="text-[11px] font-semibold text-slate-500">Usable Remnants</span>
-            <div className="text-xl font-black text-purple-600 mt-0.5 font-numeric">{remnants.length}</div>
-            <span className="text-[10px] text-purple-600 font-medium">Available offcuts</span>
-          </Card>
-        </div>
+        <InventoryKpiBar
+          summary={summary}
+          materials={materials}
+          readyProducts={readyProducts}
+          lowStockMaterials={lowStockMaterials}
+          outOfStockMaterials={outOfStockMaterials}
+          rolls={rolls}
+          pendingInwardPOs={pendingInwardPOs}
+          remnants={remnants}
+          activeFilter={currentView}
+          onFilterClick={(key) => {
+            if (key === 'rolls' || key === 'receiving' || key === 'remnants') {
+              setViewTab(key as any)
+            } else if (key === 'low_stock' || key === 'out_of_stock' || key === 'all') {
+              setViewTab('materials')
+            }
+          }}
+        />
 
         {/* ========================================================= */}
-        {/* 9-TAB PRIMARY WORKSPACE NAVIGATION (URL ADDRESSABLE) */}
+        {/* OPERATIONS COMMAND BAR & CONNECTED DEPARTMENTS */}
         {/* ========================================================= */}
-        <div className="flex items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 overflow-x-auto pb-2 scrollbar-thin">
-          {[
-            { id: 'materials', label: 'Raw Materials', labelBn: 'কাঁচামাল ও রোল মিডিয়া', icon: Layers, count: materials.length },
-            { id: 'ready_products', label: 'Ready Products', labelBn: 'রেডি প্রোডাক্ট স্টক', icon: Package, count: readyProducts.length },
-            { id: 'rolls', label: 'Physical Rolls', labelBn: 'রোল তালিকা', icon: Disc, count: rolls.length },
-            { id: 'requests', label: 'Material Requests', labelBn: 'রিকুইজিশন', icon: Send, count: requests.length, alert: pendingRequestsCount > 0 },
-            { id: 'remnants', label: 'Off-Cuts & Remnants', labelBn: 'অফ-কাট ও অবশিষ্টাংশ', icon: Scissors, count: remnants.length },
-            { id: 'locations', label: 'Locations & Stores', labelBn: 'স্টোর ও ওয়্যারহাউস', icon: MapPin, count: locations.length },
-            { id: 'purchases', label: 'Purchase Orders', labelBn: 'কেনাকাটা (PO)', icon: ShoppingBag, count: orders.length },
-            { id: 'receiving', label: 'Receiving (GRN)', labelBn: 'রিসিভিং (GRN)', icon: Truck, count: pendingInwardPOs.length, alert: pendingInwardPOs.length > 0 },
-            { id: 'ledger', label: 'Stock Ledger', labelBn: 'স্টক খতিয়ান', icon: FileText, count: ledger.length },
-          ].map((tab) => {
-            const Icon = tab.icon
-            const isActive = currentView === tab.id
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setViewTab(tab.id as InventoryViewTab)}
-                className={cn(
-                  'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer border shrink-0',
-                  isActive
-                    ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900 dark:border-white shadow-xs'
-                    : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
-                )}
-              >
-                <Icon className={cn('h-3.5 w-3.5', isActive ? 'text-emerald-400 dark:text-emerald-600' : 'text-slate-400')} />
-                <span>{tBilingual(tab.label, tab.labelBn)}</span>
-                {tab.count !== undefined && (
-                  <span
-                    className={cn(
-                      'px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold',
-                      tab.alert
-                        ? 'bg-amber-500 text-white animate-pulse'
-                        : isActive
-                        ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
-                        : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                    )}
-                  >
-                    {tab.count}
-                  </span>
-                )}
-              </button>
-            )
-          })}
-        </div>
+        <InventoryActionBar
+          pathname={pathname}
+          slug={slug}
+          loading={loading}
+          onReceiveStock={() => {
+            setSelectedMaterialForAction(null)
+            setIsReceiveStockOpen(true)
+          }}
+          onFloorIssue={() => {
+            setSelectedMaterialForAction(null)
+            setIsIssueOpen(true)
+          }}
+          onTransfer={() => setIsTransferOpen(true)}
+          onAdjustment={() => setIsAdjustmentOpen(true)}
+          onNewPurchase={() => setIsNewPurchaseOpen(true)}
+          onRefresh={() => loadAllData()}
+        />
+
+        {/* ========================================================= */}
+        {/* 9-TAB PRIMARY WORKSPACE NAVIGATION */}
+        {/* ========================================================= */}
+        <InventoryTabsNavigation
+          currentView={currentView}
+          onSelectTab={(tab) => setViewTab(tab)}
+          materialsCount={materials.length}
+          readyProductsCount={readyProducts.length}
+          rollsCount={rolls.length}
+          requestsCount={requests.length}
+          pendingRequestsCount={pendingRequestsCount}
+          remnantsCount={remnants.length}
+          locationsCount={locations.length}
+          ordersCount={orders.length}
+          pendingInwardCount={pendingInwardPOs.length}
+          ledgerCount={ledger.length}
+        />
 
         {/* ========================================================= */}
         {/* VIEW 1: RAW MATERIALS & MEDIA SUBSTRATES TAB */}
