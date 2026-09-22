@@ -33,7 +33,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(workSection.title, 'Factory & Floor')
     assert.equal(workSection.titleBn, 'কারখানা ও প্রোডাকশন')
     const workItems = workSection.items.map((i) => i.key)
-    assert.deepEqual(workItems, ['design', 'production', 'finishing', 'operator', 'machineries', 'delivery'])
+    assert.deepEqual(workItems, ['design', 'production', 'floor_consumption', 'finishing', 'operator', 'machineries', 'delivery'])
 
     // Section 3: Materials & Finance
     const mgmtSection = navSections.find((s) => s.id === 'management')!
@@ -199,6 +199,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       'Tag',
       'Trash2',
       'Scissors',
+      'Flame',
     ]
 
     for (const section of navSections) {

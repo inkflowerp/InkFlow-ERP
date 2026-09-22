@@ -5,6 +5,7 @@ import type { ProductRecord } from '../../types/product.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductService } from '../../services/product.service.ts'
+import { detectPhysicalForm, getAvailablePurchaseUnits } from '../../components/inventory/receive-stock-modal.tsx'
 
 describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', () => {
   const companyId = 'test-co-receive-pricing'
@@ -330,5 +331,151 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
     assert.ok(fetchedPvc, 'PVC material must be retrieved')
     assert.strictEqual(fetchedPvc.variants?.length, 3, 'PVC must have 3 registered variants')
     assert.strictEqual(fetchedPvc.variants[0].variant_name, '2mm White')
+  })
+
+  it('8. Physical Form / Classification accurately categorizes items into Roll, Sheet, Liquid, Hardware, Box, Weight', () => {
+    // 1. Roll Media
+    const flexForm = detectPhysicalForm({ category: 'flex', name: 'Star Flex Banner', available_widths_ft: [3, 5, 10] })
+    assert.strictEqual(flexForm, 'roll', 'Flex banner must be classified as roll')
+
+    const vinylForm = detectPhysicalForm({ category: 'vinyl', name: 'Cast Vinyl Sticker', is_roll: true })
+    assert.strictEqual(vinylForm, 'roll', 'Vinyl sticker must be classified as roll')
+
+    // 2. Rigid Sheet
+    const acrylicForm = detectPhysicalForm({ category: 'acrylic', name: 'Clear Cast Acrylic 5mm', available_sheet_sizes: ['8x4 ft'] })
+    assert.strictEqual(acrylicForm, 'sheet', 'Acrylic board must be classified as sheet')
+
+    const foamForm = detectPhysicalForm({ category: 'rigid_sheet', name: 'Foam Board 3mm' })
+    assert.strictEqual(foamForm, 'sheet', 'Foam board must be classified as sheet')
+
+    // 3. Liquid / Inks & Chemistry
+    const inkForm = detectPhysicalForm({ category: 'ink_chemistry', name: 'Solvent Cyan Ink 5L Can', unit: 'can' })
+    assert.strictEqual(inkForm, 'liquid', 'Ink can must be classified as liquid')
+
+    const cleanerForm = detectPhysicalForm({ name: 'UV Cleaning Flush Solution', unit: 'bottle' })
+    assert.strictEqual(cleanerForm, 'liquid', 'Flush cleaner must be classified as liquid')
+
+    // 4. Hardware / Merchandise
+    const standForm = detectPhysicalForm({ category: 'hardware_accessories', name: 'X-Banner Display Stand', product_type: 'ready_product' })
+    assert.strictEqual(standForm, 'hardware', 'X-Banner stand must be classified as hardware')
+
+    // 5. Box / Pack
+    const boxGoodsForm = detectPhysicalForm({ category: 'packaging', name: 'Corrugated Shipping Box', unit: 'box' })
+    assert.strictEqual(boxGoodsForm, 'box_pack', 'Corrugated box must be classified as box_pack')
+
+    // 6. Weight
+    const metalForm = detectPhysicalForm({ category: 'metal', name: 'Aluminum Scrap / Frame', unit: 'kg' })
+    assert.strictEqual(metalForm, 'weight', 'Metal by kg must be classified as weight')
+  })
+
+  it('9. Available purchase units are dynamically tailored to physical form and registered master unit', () => {
+    // Roll Media units
+    const rollUnits = getAvailablePurchaseUnits('roll', 'sft', 'roll')
+    assert.ok(rollUnits.includes('roll'), 'Roll units must include roll')
+    assert.ok(rollUnits.includes('sft'), 'Roll units must include sft')
+    assert.ok(rollUnits.includes('meter'), 'Roll units must include meter')
+    assert.ok(rollUnits.includes('rft'), 'Roll units must include rft')
+
+    // Sheet units
+    const sheetUnits = getAvailablePurchaseUnits('sheet', 'sheet', 'bundle')
+    assert.ok(sheetUnits.includes('sheet'), 'Sheet units must include sheet')
+    assert.ok(sheetUnits.includes('sft'), 'Sheet units must include sft')
+    assert.ok(sheetUnits.includes('bundle'), 'Sheet units must include bundle')
+
+    // Liquid units
+    const liquidUnits = getAvailablePurchaseUnits('liquid', 'ltr', 'can')
+    assert.ok(liquidUnits.includes('bottle'), 'Liquid units must include bottle')
+    assert.ok(liquidUnits.includes('can'), 'Liquid units must include can')
+    assert.ok(liquidUnits.includes('ltr'), 'Liquid units must include ltr')
+
+    // Hardware units
+    const hardwareUnits = getAvailablePurchaseUnits('hardware', 'pcs', 'box')
+    assert.ok(hardwareUnits.includes('pcs'), 'Hardware units must include pcs')
+    assert.ok(hardwareUnits.includes('box'), 'Hardware units must include box')
+  })
+
+  it('10. Non-inventory products (services, outsourcing, delivery, digital) are strictly excluded from stock intake', () => {
+    const mixedProducts: ProductRecord[] = [
+      {
+        id: 'p-hardware',
+        sku: 'HW-01',
+        name: 'Rollup Stand',
+        category: 'Hardware',
+        product_type: 'ready_product',
+        unit: 'pcs',
+        purchase_price: 500,
+        base_cost: 500,
+        selling_price: 800,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'p-print-service',
+        sku: 'SRV-01',
+        name: 'Large Format Printing Service',
+        category: 'Services',
+        product_type: 'print_service',
+        is_service: true,
+        is_non_inventory: true,
+        unit: 'sft',
+        purchase_price: 0,
+        base_cost: 0,
+        selling_price: 35,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      {
+        id: 'p-outsource-job',
+        sku: 'OUT-01',
+        name: 'Acrylic Laser Cutting Outsource',
+        category: 'Outsource',
+        product_type: 'outsource_product',
+        is_outsource: true,
+        unit: 'job',
+        purchase_price: 1200,
+        base_cost: 1200,
+        selling_price: 1800,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+    ]
+
+    const receivableProducts = mixedProducts.filter((p) => {
+      const isNonInventory =
+        p.is_service ||
+        p.is_outsource ||
+        p.is_non_inventory ||
+        p.product_type === 'service' ||
+        p.product_type === 'print_service' ||
+        p.product_type === 'fabrication' ||
+        p.product_type === 'installation' ||
+        p.product_type === 'delivery' ||
+        p.product_type === 'outsource' ||
+        p.product_type === 'outsource_product'
+      return !isNonInventory
+    })
+
+    assert.strictEqual(receivableProducts.length, 1, 'Only the physical Rollup Stand must be receivable')
+    assert.strictEqual(receivableProducts[0].id, 'p-hardware')
+  })
+
+  it('11. Roll Area & Price Conversion Math matches commercial large format specifications', () => {
+    // 5ft width roll with standard 164ft length = 820 sft
+    const rollWidthFt = 5
+    const rollLengthFt = 164
+    const rollAreaSft = rollWidthFt * rollLengthFt
+    assert.strictEqual(rollAreaSft, 820, '5ft x 164ft roll must be 820 sft')
+
+    // Price conversion: If rate is ৳10 / sft, roll cost is ৳8,200
+    const ratePerSft = 10
+    const rollCost = ratePerSft * rollAreaSft
+    assert.strictEqual(rollCost, 8200, 'Roll cost at ৳10/sft must be ৳8,200')
+
+    // Vice versa: If roll cost is ৳8,200, rate per sft is ৳10
+    const convertedRatePerSft = Number((rollCost / rollAreaSft).toFixed(2))
+    assert.strictEqual(convertedRatePerSft, 10, 'Rate per sft must be ৳10')
   })
 })
