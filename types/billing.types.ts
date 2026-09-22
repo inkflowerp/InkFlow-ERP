@@ -338,3 +338,56 @@ export interface CustomerReconciliationReport {
   reconciled: boolean
   items: CustomerBalanceReconciliationItem[]
 }
+
+export interface CreateInvoiceItemInput {
+  product_id?: string
+  item_kind?: 'service' | 'ready_product' | 'material' | 'custom' | 'custom_manufacturing' | 'outsource'
+  product_type?: string
+  category_preset?: 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'custom' | string | null
+  item_name: string
+  item_description?: string
+  description_bn?: string | null
+  material_spec?: string | null
+  dimensions_spec?: string
+  width?: number
+  height?: number
+  dimension_unit?: 'ft' | 'inch' | 'm' | string
+  area_sft?: number
+  quantity: number
+  unit?: string
+  unit_price: number
+  rate_source?: 'custom' | 'last_invoice' | 'default' | 'override' | string | null
+  tier_applied?: string
+  moq?: number
+  unit_cost?: number
+  finishing?: string
+  add_on?: string
+  add_on_rate?: number
+  selected_finishing?: Array<{ id: string; name: string; rate?: number; cost?: number }>
+  selected_add_ons?: Array<{ id: string; name: string; rate?: number; cost?: number }>
+  selected_installation?: { id: string; name: string; rate?: number; cost?: number } | null
+  artwork_required?: boolean
+  installation_required?: boolean
+  offset_specs?: {
+    paper_gsm?: number | string | null
+    color_mode?: string | null
+    binding_type?: string | null
+    numbering_required?: boolean | null
+    numbering_range?: string | null
+    ncr_parts?: number | null
+    plates_count?: number | null
+  } | null
+  signage_specs?: {
+    letter_height_inch?: number | null
+    led_module_type?: string | null
+    led_count?: number | null
+    power_supply_watts?: number | null
+    frame_structure?: string | null
+    installation_type?: string | null
+  } | null
+  design_required?: boolean
+  customer_approval_required?: boolean
+  workflow_routing?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | string
+  total_price?: number
+}
+

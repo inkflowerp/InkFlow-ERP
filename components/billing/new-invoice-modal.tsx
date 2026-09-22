@@ -45,10 +45,10 @@ import {
   createInvoiceAction,
   sendInvoiceAction,
   getInvoiceProductsAction,
-  CreateInvoiceItemInput,
 } from '@/actions/billing.actions'
 import { getCustomerFinancialSummaryAction } from '@/actions/customer.actions'
-import { evaluateStockAvailability, StockAvailabilityResult } from '@/lib/domain/stock-availability'
+import { evaluateStockAvailability, type StockAvailabilityResult } from '@/lib/domain/stock-availability'
+import type { CreateInvoiceItemInput } from '@/types/billing.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import type { MaterialRecord, InventoryRollRecord, InventoryStockBalanceRecord, InventoryRemnantRecord } from '@/types/inventory.types'
 import { isServiceProduct, isReadyProduct, isMaterialProduct } from '@/lib/units'
