@@ -295,6 +295,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
       setIsInviteOpen(false)
       setInviteEmail('')
       showNotification(`Invitation sent to ${inviteEmail}`)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+        window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+      }
     } else {
       showNotification(res.message || 'Failed to send invitation')
     }
@@ -333,6 +337,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
       setAddPhone('')
       setAddPassword('')
       showNotification(`User ${addFullName} created successfully!`)
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+        window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+      }
     } else {
       showNotification(res.message || 'Failed to create user')
     }
@@ -354,6 +362,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
         ? `Access disabled for ${user.profile?.full_name || 'user'}. RLS blocked.`
         : `Access restored for ${user.profile?.full_name || 'user'}.`
     )
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+    }
   }
 
   const handleChangeRole = async () => {
@@ -367,6 +379,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
     )
     setIsChangeRoleOpen(false)
     showNotification(`Role updated to ${newRole?.name}`)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+    }
   }
 
   const handleAssignBranch = async () => {
@@ -380,6 +396,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
     )
     setIsAssignBranchOpen(false)
     showNotification(`Branch assigned: ${newBranch?.name || 'All Branches'}`)
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+      window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+    }
   }
 
   const handleResetAccess = async (user: CompanyUserWithProfile) => {
@@ -1415,6 +1435,10 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
           setIsPermissionsDrawerOpen(false)
           setSelectedUserForPermissions(null)
           showNotification('User access and permissions saved successfully!')
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:company_users'))
+            window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+          }
         }}
         companyId={company?.id || ''}
         allBranches={branches}
