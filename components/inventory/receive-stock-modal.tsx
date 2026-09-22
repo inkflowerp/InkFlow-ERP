@@ -10,10 +10,11 @@ import { MaterialRecord, InventoryLocationRecord } from '@/types/inventory.types
 import type { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.types'
 import type { ProductRecord } from '@/types/product.types'
 import { SupplierRecord } from '@/types/crm.types'
-import { receiveStockAction } from '@/actions/inventory.actions'
+import { receiveStockAction, getMaterialsAction } from '@/actions/inventory.actions'
 import { receiveGoodsAction } from '@/actions/purchase.actions'
 import { updateProductPriceAction, getProductsAction } from '@/actions/product.actions'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { isMaterialProduct, isReadyProduct, isServiceProduct, isOutsourceProduct } from '@/lib/units'
 import {
   Truck,
   Package,
@@ -135,8 +136,16 @@ export function ReceiveStockModal({
   const [mode, setMode] = useState<'po' | 'direct' | 'opening'>('direct')
   const [selectedPoId, setSelectedPoId] = useState<string>('')
 
-  // Catalog products state
+  // Catalog materials & products state
+  const [catalogMaterials, setCatalogMaterials] = useState<MaterialRecord[]>(materials)
   const [catalogProducts, setCatalogProducts] = useState<ProductRecord[]>(initialProducts)
+
+  // Keep catalogMaterials synced with materials prop
+  useEffect(() => {
+    if (materials && materials.length > 0) {
+      setCatalogMaterials(materials)
+    }
+  }, [materials])
 
   // Suppliers list for direct receipts
   const [suppliers, setSuppliers] = useState<SupplierRecord[]>([])
@@ -163,7 +172,7 @@ export function ReceiveStockModal({
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // Load products & suppliers from store
+  // Load products & suppliers & materials from store/server
   useEffect(() => {
     if (open) {
       const supList = PrintERPDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, companyId) || []
@@ -175,6 +184,12 @@ export function ReceiveStockModal({
       }
       setCatalogProducts(prods)
 
+      let mats = materials
+      if (!mats || mats.length === 0) {
+        mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+        if (mats.length > 0) setCatalogMaterials(mats)
+      }
+
       // Background fetch products from server if needed
       getProductsAction(companyId, false)
         .then((res) => {
@@ -183,31 +198,43 @@ export function ReceiveStockModal({
           }
         })
         .catch(() => {})
+
+      // Background fetch materials from server if needed
+      getMaterialsAction(companyId)
+        .then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            setCatalogMaterials(res.data)
+          }
+        })
+        .catch(() => {})
     }
-  }, [open, initialProducts, companyId])
+  }, [open, initialProducts, materials, companyId])
 
   // Build unified items catalog merging materials and registered products
   const unifiedCatalog = useMemo<UnifiedStockItem[]>(() => {
     const list: UnifiedStockItem[] = []
     const seenIds = new Set<string>()
+    const seenSkus = new Set<string>()
 
     // 1. Process Materials (Raw Materials & Substrates)
-    for (const m of materials) {
+    for (const m of catalogMaterials) {
       if (!m || !m.id) continue
       seenIds.add(m.id)
-      const cost = Number(m.average_cost || m.last_purchase_price || 0)
+      if (m.sku) seenSkus.add(m.sku.toLowerCase())
+
+      const cost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
       const estimatedSellingPrice = Math.round(cost > 0 ? cost * 1.35 : 0)
       const cat = m.category || 'General Substrates'
 
       let catGroup = 'Raw Materials & Substrates'
       const catLower = (cat + ' ' + (m.name || '')).toLowerCase()
-      if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit')) {
+      if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit') || catLower.includes('media')) {
         catGroup = 'Digital & Large Format Media'
-      } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum')) {
+      } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum') || catLower.includes('sheet')) {
         catGroup = '3D Signage & Structural Media'
-      } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical')) {
+      } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical') || catLower.includes('eyelet') || catLower.includes('grommet') || catLower.includes('lamination')) {
         catGroup = 'Inks & Finishing Consumables'
-      } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset')) {
+      } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset') || catLower.includes('card')) {
         catGroup = 'Paper & Offset Sheets'
       }
 
@@ -226,19 +253,11 @@ export function ReceiveStockModal({
       })
     }
 
-    // 2. Process Catalog Products (Strictly Physical Inventory Items: Ready Products)
+    // 2. Process Catalog Products (Raw Materials & Ready Merchandise)
     for (const p of catalogProducts) {
       if (!p || !p.id) continue
       if (seenIds.has(p.id)) continue
-
-      // Filter: Strictly ONLY physical inventory items (Ready products)
-      const isReadyProd =
-        p.entity_type === 'product' ||
-        p.is_ready_product ||
-        p.product_type === 'ready_product' ||
-        p.product_type === 'PRODUCT' ||
-        (p.product_type as any) === 'product' ||
-        p.commercial_type === 'ready_product'
+      if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
 
       const isNonInventory =
         p.is_service ||
@@ -255,11 +274,23 @@ export function ReceiveStockModal({
         p.product_type === 'delivery' ||
         p.product_type === 'outsource' ||
         p.product_type === 'outsource_product' ||
-        p.product_type === 'custom_job'
+        p.product_type === 'custom_job' ||
+        isServiceProduct(p) ||
+        isOutsourceProduct(p)
 
-      if (!isReadyProd || isNonInventory) continue
+      if (isNonInventory) continue
+
+      const isMat =
+        isMaterialProduct(p) ||
+        p.entity_type === 'material' ||
+        p.product_type === 'material' ||
+        (p.product_type as any) === 'raw_material' ||
+        p.commercial_type === 'material' ||
+        ['materials', 'roll_media', 'rigid_sheets', 'inks', 'raw_materials'].includes(p.category || '') ||
+        (p.sku && (p.sku.startsWith('MAT-') || p.sku.startsWith('RM-')))
 
       seenIds.add(p.id)
+      if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
       const cost = Number(p.purchase_price || p.base_cost || 0)
       const sellPrice = Number(p.selling_price || 0)
@@ -267,34 +298,47 @@ export function ReceiveStockModal({
       if (margin <= 0 && sellPrice > cost && sellPrice > 0) {
         margin = Math.round(((sellPrice - cost) / sellPrice) * 100)
       }
-      if (margin <= 0) margin = 40
+      if (margin <= 0) margin = 35
 
-      const cat = p.category || 'Ready Product'
-      let catGroup = 'Ready Merchandise & Display Hardware'
+      const cat = p.category || (isMat ? 'Raw Material' : 'Ready Product')
+      let catGroup = isMat ? 'Raw Materials & Substrates' : 'Ready Merchandise & Display Hardware'
       const catLower = (cat + ' ' + (p.name || '')).toLowerCase()
-      if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready') || catLower.includes('frame')) {
-        catGroup = 'Ready Merchandise & Display Hardware'
+
+      if (isMat) {
+        if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit') || catLower.includes('media')) {
+          catGroup = 'Digital & Large Format Media'
+        } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum') || catLower.includes('sheet')) {
+          catGroup = '3D Signage & Structural Media'
+        } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical') || catLower.includes('eyelet') || catLower.includes('grommet') || catLower.includes('lamination')) {
+          catGroup = 'Inks & Finishing Consumables'
+        } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset') || catLower.includes('card')) {
+          catGroup = 'Paper & Offset Sheets'
+        }
       } else {
-        catGroup = 'Commercial Ready Products'
+        if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready') || catLower.includes('frame')) {
+          catGroup = 'Ready Merchandise & Display Hardware'
+        } else {
+          catGroup = 'Commercial Ready Products'
+        }
       }
 
       list.push({
         id: p.id,
-        sku: p.sku || 'RP',
+        sku: p.sku || (isMat ? 'MAT' : 'RP'),
         name: p.name,
-        item_type: 'product',
+        item_type: isMat ? 'material' : 'product',
         category: cat,
         category_group: catGroup,
         unit: String(p.unit || p.selling_unit || 'pcs'),
         current_stock: Number((p as any).current_stock ?? (p as any).stock ?? 0),
         previous_cost: cost,
-        previous_selling_price: sellPrice,
+        previous_selling_price: sellPrice > 0 ? sellPrice : Math.round(cost * 1.35),
         target_margin_percent: margin,
       })
     }
 
     return list
-  }, [materials, catalogProducts])
+  }, [catalogMaterials, catalogProducts])
 
   // Group items by category_group for clean UX dropdown
   const groupedCatalog = useMemo(() => {
@@ -310,16 +354,16 @@ export function ReceiveStockModal({
   // Initialize or populate Direct Items
   const createInitialDirectRow = (itemId?: string): DirectReceiptItemRow => {
     const target = (itemId ? unifiedCatalog.find((x) => x.id === itemId) : unifiedCatalog[0]) || {
-      id: materials[0]?.id || 'item-1',
-      sku: materials[0]?.sku || 'MAT',
-      name: materials[0]?.name || 'Select Item',
+      id: catalogMaterials[0]?.id || 'item-1',
+      sku: catalogMaterials[0]?.sku || 'MAT',
+      name: catalogMaterials[0]?.name || 'Select Item',
       item_type: 'material' as const,
-      category: materials[0]?.category || 'General',
+      category: catalogMaterials[0]?.category || 'General',
       category_group: 'General',
-      unit: materials[0]?.unit || 'pcs',
+      unit: catalogMaterials[0]?.unit || 'pcs',
       current_stock: 0,
-      previous_cost: Number(materials[0]?.average_cost || 0),
-      previous_selling_price: Math.round(Number(materials[0]?.average_cost || 0) * 1.35),
+      previous_cost: Number(catalogMaterials[0]?.average_cost || 0),
+      previous_selling_price: Math.round(Number(catalogMaterials[0]?.average_cost || 0) * 1.35),
       target_margin_percent: 35,
     }
 

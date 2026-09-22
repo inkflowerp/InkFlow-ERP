@@ -115,6 +115,28 @@ export async function updateMaterialAction(
   }
 }
 
+export async function getMaterialsAction(
+  requestedCompanyId?: string,
+  options?: {
+    branchId?: string | null
+    category?: string
+    search?: string
+    lowStockOnly?: boolean
+  }
+): Promise<ServerActionResult<MaterialRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+    const data = await InventoryService.getMaterials(companyId, options)
+    return { success: true, data: data || [] }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch materials' }
+  }
+}
+
 // ==========================================
 // LOCATION ACTIONS
 // ==========================================
@@ -978,7 +1000,7 @@ export async function getInventoryDashboardDataAction(
       InventoryService.getInventoryRolls(companyId).catch(() => []),
       PurchaseService.getPurchaseOrders(companyId).catch(() => []),
       PurchaseService.getGoodsReceivedNotes(companyId).catch(() => []),
-      ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
+      ProductRepository.getProducts(companyId, false, 'all').catch(() => []),
     ])
 
     return {

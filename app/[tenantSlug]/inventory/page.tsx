@@ -79,6 +79,7 @@ import type { ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { isMaterialProduct, isReadyProduct } from '@/lib/units'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   approveMaterialRequestAction,
@@ -152,7 +153,37 @@ function UnifiedInventoryContent() {
   // Core Data States with Zero-Latency SWR Initial Cache Hydration
   const [materials, setMaterials] = useState<MaterialRecord[]>(() => {
     try {
-      return PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+      const mats = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+      const prods = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+      const matProds = prods.filter(isMaterialProduct)
+      const seen = new Set(mats.map((m) => m.id))
+      const combined = [...mats]
+      for (const p of matProds) {
+        if (!seen.has(p.id)) {
+          seen.add(p.id)
+          combined.push({
+            id: p.id,
+            company_id: p.company_id || 'default',
+            sku: p.sku || 'MAT',
+            name: p.name,
+            name_bn: p.name_bn || null,
+            category: (p.category as any) || 'raw_materials',
+            unit: (p.selling_unit || p.unit || 'pcs') as any,
+            current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
+            min_stock_level: Number((p as any).min_stock_level ?? 0),
+            average_cost: Number(p.purchase_price ?? p.base_cost ?? 0),
+            last_purchase_price: Number(p.purchase_price ?? p.base_cost ?? 0),
+            cost_per_unit: Number(p.purchase_price ?? p.base_cost ?? 0),
+            is_roll: Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll'))),
+            roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
+            roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
+            is_active: p.is_active !== false,
+            created_at: p.created_at || new Date().toISOString(),
+            updated_at: p.updated_at || new Date().toISOString(),
+          })
+        }
+      }
+      return combined
     } catch {
       return []
     }
@@ -167,7 +198,8 @@ function UnifiedInventoryContent() {
           (p.product_type as any) === 'product' ||
           p.product_type === 'PRODUCT' ||
           p.product_type === 'ready_product' ||
-          p.commercial_type === 'ready_product'
+          p.commercial_type === 'ready_product' ||
+          isReadyProduct(p)
       )
     } catch {
       return []

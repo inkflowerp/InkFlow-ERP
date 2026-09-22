@@ -23,6 +23,8 @@ import type {
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
+import type { ProductRecord } from '../../types/product.types.ts'
+import { isMaterialProduct } from '../units.ts'
 
 export class InventoryRepository {
   // ==========================================
@@ -103,35 +105,200 @@ export class InventoryRepository {
     search?: string
     lowStockOnly?: boolean
   }): Promise<MaterialRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('materials')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('name', { ascending: true })
+    return measureAsync(`InventoryRepository.getMaterials(${companyId})`, async () => {
+      const list: MaterialRecord[] = []
+      const seenIds = new Set<string>()
+      const seenSkus = new Set<string>()
 
-    if (options?.category && options.category !== 'all') {
-      query = query.eq('category', options.category)
-    }
+      const normTarget = companyId ? companyId.toLowerCase() : ''
+      const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
 
-    if (options?.search) {
-      const q = `%${options.search}%`
-      query = query.or(`name.ilike.${q},sku.ilike.${q},name_bn.ilike.${q},brand.ilike.${q}`)
-    }
+      const matchesTenant = (cId?: string | null) => {
+        if (!companyId) return true
+        if (!cId) return true
+        const c = cId.toLowerCase()
+        return c === normTarget || c === cleanTarget || c === `comp-${cleanTarget}` || c === `co-${cleanTarget}`
+      }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch materials: ${error.message}`)
-    }
+      try {
+        const supabase = await createClient()
 
-    let results = (data || []) as unknown as MaterialRecord[]
-    if (options?.lowStockOnly) {
-      results = results.filter((m) => {
-        const threshold = Number(m.reorder_level || m.min_stock_level || 0)
-        return threshold > 0 && Number(m.current_stock || 0) <= threshold
-      })
-    }
-    return results
+        // 1. Fetch materials from materials table
+        let query = (supabase as any)
+          .from('materials')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('name', { ascending: true })
+
+        if (options?.category && options.category !== 'all') {
+          query = query.eq('category', options.category)
+        }
+
+        const { data: matData } = await query
+        if (matData && Array.isArray(matData)) {
+          for (const m of matData) {
+            if (m && m.id && !seenIds.has(m.id)) {
+              seenIds.add(m.id)
+              if (m.sku) seenSkus.add(m.sku.toLowerCase())
+              list.push(m as MaterialRecord)
+            }
+          }
+        }
+
+        // 2. Fetch raw materials from products table in Supabase
+        let prodQuery = (supabase as any)
+          .from('products')
+          .select('*')
+          .eq('company_id', companyId)
+
+        const { data: prodData } = await prodQuery
+        if (prodData && Array.isArray(prodData)) {
+          for (const p of prodData) {
+            if (!p || !p.id || seenIds.has(p.id)) continue
+            if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
+
+            const isMat =
+              isMaterialProduct(p) ||
+              p.entity_type === 'material' ||
+              p.product_type === 'material' ||
+              (p.product_type as any) === 'raw_material' ||
+              p.commercial_type === 'material' ||
+              ['materials', 'roll_media', 'rigid_sheets', 'inks', 'raw_materials'].includes(p.category || '') ||
+              (p.sku && (p.sku.startsWith('MAT-') || p.sku.startsWith('RM-')))
+
+            if (!isMat) continue
+
+            seenIds.add(p.id)
+            if (p.sku) seenSkus.add(p.sku.toLowerCase())
+
+            const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
+            const matRec: MaterialRecord = {
+              id: p.id,
+              company_id: p.company_id || companyId,
+              branch_id: p.branch_id || null,
+              sku: p.sku || `MAT-${p.id.substring(0, 6).toUpperCase()}`,
+              name: p.name,
+              name_bn: p.name_bn || null,
+              category: p.category || 'raw_materials',
+              unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
+              current_stock: Number(p.current_stock ?? p.stock ?? 0),
+              min_stock_level: Number(p.min_stock_level ?? 0),
+              average_cost: cost,
+              last_purchase_price: cost,
+              cost_per_unit: cost,
+              is_roll: Boolean(p.roll_width_ft || p.is_roll || (p.category && p.category.includes('roll'))),
+              roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
+              roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
+              available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+              standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
+              is_active: p.is_active !== false,
+              created_at: p.created_at || new Date().toISOString(),
+              updated_at: p.updated_at || new Date().toISOString(),
+            }
+            list.push(matRec)
+          }
+        }
+      } catch {}
+
+      // 3. Merge Local DataStore items (materials & material products)
+      const localMats: MaterialRecord[] = [
+        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
+        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
+      ]
+
+      for (const m of localMats) {
+        if (!m || !m.id || seenIds.has(m.id)) continue
+        if (m.sku && seenSkus.has(m.sku.toLowerCase())) continue
+        if (!matchesTenant(m.company_id)) continue
+
+        seenIds.add(m.id)
+        if (m.sku) seenSkus.add(m.sku.toLowerCase())
+        list.push(m)
+      }
+
+      const localProds: ProductRecord[] = [
+        ...(PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+        ...(PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS) || []),
+        ...(PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []),
+        ...(PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []),
+      ]
+
+      for (const p of localProds) {
+        if (!p || !p.id || seenIds.has(p.id)) continue
+        if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
+        if (!matchesTenant(p.company_id)) continue
+
+        const isMat =
+          isMaterialProduct(p) ||
+          p.entity_type === 'material' ||
+          p.product_type === 'material' ||
+          (p.product_type as any) === 'raw_material' ||
+          p.commercial_type === 'material' ||
+          ['materials', 'roll_media', 'rigid_sheets', 'inks', 'raw_materials'].includes(p.category || '') ||
+          (p.sku && (p.sku.startsWith('MAT-') || p.sku.startsWith('RM-')))
+
+        if (!isMat) continue
+
+        seenIds.add(p.id)
+        if (p.sku) seenSkus.add(p.sku.toLowerCase())
+
+        const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
+        list.push({
+          id: p.id,
+          company_id: p.company_id || companyId,
+          branch_id: p.branch_id || null,
+          sku: p.sku || `MAT-${p.id.substring(0, 6).toUpperCase()}`,
+          name: p.name,
+          name_bn: p.name_bn || null,
+          category: p.category || 'raw_materials',
+          unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
+          current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
+          min_stock_level: Number((p as any).min_stock_level ?? 0),
+          average_cost: cost,
+          last_purchase_price: cost,
+          cost_per_unit: cost,
+          is_roll: Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll'))),
+          roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
+          roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
+          available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+          standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
+          is_active: p.is_active !== false,
+          created_at: p.created_at || new Date().toISOString(),
+          updated_at: p.updated_at || new Date().toISOString(),
+        })
+      }
+
+      // Apply Filters
+      let results = list
+
+      if (options?.category && options.category !== 'all') {
+        const cat = options.category.toLowerCase()
+        results = results.filter((m) => (m.category || '').toLowerCase() === cat)
+      }
+
+      if (options?.search && options.search.trim()) {
+        const q = options.search.trim().toLowerCase()
+        results = results.filter(
+          (m) =>
+            m.name.toLowerCase().includes(q) ||
+            (m.name_bn && m.name_bn.toLowerCase().includes(q)) ||
+            (m.sku && m.sku.toLowerCase().includes(q)) ||
+            (m.brand && m.brand.toLowerCase().includes(q)) ||
+            (m.specification && m.specification.toLowerCase().includes(q))
+        )
+      }
+
+      if (options?.lowStockOnly) {
+        results = results.filter((m) => {
+          const threshold = Number(m.reorder_level || m.min_stock_level || 0)
+          return threshold > 0 && Number(m.current_stock || 0) <= threshold
+        })
+      }
+
+      return results.sort((a, b) => a.name.localeCompare(b.name))
+    })
   }
 
   static async getMaterialById(id: string, companyId: string): Promise<MaterialRecord | null> {
