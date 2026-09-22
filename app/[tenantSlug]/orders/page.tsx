@@ -41,6 +41,7 @@ import { OrderWhatsAppModal } from '@/components/orders/modals/order-whatsapp-mo
 import { OrderJobTicketModal } from '@/components/orders/modals/order-job-ticket-modal'
 import { OrderQuickStatusModal } from '@/components/orders/modals/order-quick-status-modal'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { PageHeader } from '@/components/shared/page-header'
 
 export default function OrdersPage() {
   const params = useParams()
@@ -518,29 +519,25 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Top Header & New Order Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Briefcase className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-            <span>Orders & Job Floor Hub (অর্ডার ও প্রোডাকশন হাব)</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো ও ডেলিভারি ব্যবস্থাপনা
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Commercial Orders & Job Hub"
+        titleBn="অর্ডার ও প্রোডাকশন হাব"
+        descriptionEn="End-to-end commercial order intake, payment gating, design proofing, production routing, and customer dispatch."
+        descriptionBn="প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো, ডিজাইন অনুমোদন ও কারখানা ডেলিভারি ব্যবস্থাপনা।"
+        icon={Briefcase}
+        iconColor="text-indigo-600 dark:text-indigo-400"
+        actions={
           <Button
             type="button"
             onClick={() => setIsWorkOrderModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 shadow-md"
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            <span>+ নতুন অর্ডার বুকিং (New Order)</span>
+            <span>{tBilingual('+ New Order Booking', '+ নতুন অর্ডার বুকিং')}</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Top Metrics KPI Bar */}
       <OrdersMetricsBar

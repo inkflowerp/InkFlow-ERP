@@ -36,6 +36,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { PaginationControls } from '@/components/shared/pagination-controls'
+import { PageHeader } from '@/components/shared/page-header'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import {
@@ -270,53 +271,51 @@ export default function CustomersPage() {
   return (
     <div className="space-y-6 max-w-7xl pb-16">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Users className="h-6 w-6 text-blue-600" />
-            <span>Customers & Accounts</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-1">
-            Complete client directory with individualized price tiers, credit management, and 360° analytics.
-          </p>
-        </div>
+      <PageHeader
+        titleEn="Customers & Accounts Directory"
+        titleBn="গ্রাহক ও ক্লায়েন্ট খতিয়ান"
+        descriptionEn="Complete client directory with individualized price tiers, credit management, and 360° analytics."
+        descriptionBn="গ্রাহক ডিরেক্টরি, কাস্টম দর তালিকা, বকেয়া বাকি ট্র্যাকিং ও ৩৬০ ডিগ্রি ব্যবসায়িক বিশ্লেষণ।"
+        icon={Users}
+        iconColor="text-blue-600 dark:text-blue-400"
+        actions={
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href={getTenantNavHref('/trash?tab=customers', pathname, slug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold h-9 text-slate-600 dark:text-slate-300"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Trash Bin</span>
+              </Button>
+            </Link>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Link href={getTenantNavHref('/trash?tab=customers', pathname, slug)}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs font-semibold h-9 text-slate-600 dark:text-slate-300"
-            >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Trash Bin</span>
-            </Button>
-          </Link>
+            {can('export', 'customers') && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                className="text-xs font-semibold h-9"
+              >
+                <Download className="mr-1.5 h-3.5 w-3.5" />
+                Export
+              </Button>
+            )}
 
-          {can('export', 'customers') && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="text-xs font-semibold h-9"
-            >
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              Export
-            </Button>
-          )}
-
-          {can('create', 'customers') && (
-            <Button
-              size="sm"
-              onClick={handleOpenAddCustomer}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 px-4 shadow-sm"
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              + New Customer
-            </Button>
-          )}
-        </div>
-      </div>
+            {can('create', 'customers') && (
+              <Button
+                size="sm"
+                onClick={handleOpenAddCustomer}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 px-4 shadow-sm"
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                + New Customer
+              </Button>
+            )}
+          </div>
+        }
+      />
 
       {/* Notification Banner */}
       {notification && (

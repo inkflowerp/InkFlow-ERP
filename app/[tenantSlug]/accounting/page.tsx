@@ -364,55 +364,50 @@ export default function AccountingPage() {
       )}
 
       {/* Page Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <Landmark className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
-            <span>{tBilingual('Finance 360', 'ফাইন্যান্স ৩৬০ ও হিসাব ব্যবস্থাপনা')}</span>
-          </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {tBilingual(
-              'Money management, cash closing, General Ledger, Balance Sheet, Trial Balance, and Profitability.',
-              'দৈনন্দিন টাকা গ্রহণ, খরচ এন্ট্রি, সাধারণ খতিয়ান, ব্যালেন্স শিট, রেওয়ামিল ও আর্থিক বিবরণী।'
-            )}
-          </p>
-        </div>
+      <PageHeader
+        titleEn="Finance 360 & General Ledger"
+        titleBn="ফাইন্যান্স ৩৬০ ও হিসাব ব্যবস্থাপনা"
+        descriptionEn="Money management, cash closing, General Ledger, Balance Sheet, Trial Balance, and Profitability statements."
+        descriptionBn="দৈনন্দিন টাকা গ্রহণ, খরচ এন্ট্রি, সাধারণ খতিয়ান, ব্যালেন্স শিট, রেওয়ামিল ও আর্থিক বিবরণী।"
+        icon={Landmark}
+        iconColor="text-indigo-600 dark:text-indigo-400"
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={getTenantNavHref('/billing', pathname, slug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <Receipt className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{tBilingual('Billing & Collections', 'বিলিং ও কালেকশন')}</span>
+              </Button>
+            </Link>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={getTenantNavHref('/billing', pathname, slug)}>
+            <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+              >
+                <Building className="w-3.5 h-3.5 text-teal-600" />
+                <span>{tBilingual('Suppliers & Mahajan', 'মহাজন খাতা')}</span>
+              </Button>
+            </Link>
+
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+              onClick={loadAllData}
+              disabled={isLoading}
+              className="rounded-xl flex items-center gap-1.5 text-xs h-9"
             >
-              <Receipt className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{tBilingual('Billing & Collections', 'বিলিং ও কালেকশন')}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>{tBilingual('Refresh Data', 'রিফ্রেশ')}</span>
             </Button>
-          </Link>
-
-          <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
-            >
-              <Building className="w-3.5 h-3.5 text-teal-600" />
-              <span>{tBilingual('Suppliers & Mahajan', 'মহাজন খাতা')}</span>
-            </Button>
-          </Link>
-
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={loadAllData}
-            disabled={isLoading}
-            className="rounded-xl flex items-center gap-1.5 text-xs h-9"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>{tBilingual('Refresh Data', 'রিফ্রেশ')}</span>
-          </Button>
-        </div>
-      </div>
+          </div>
+        }
+      />
 
       {/* Top Financial KPI Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

@@ -21,6 +21,8 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/shared/page-header'
+import { useI18n } from '@/i18n/context'
 import { getAuditLogsAction } from '@/actions/audit.actions'
 import { AuditLogEntry, AUDIT_ACTIONS } from '@/types/audit.types'
 import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
@@ -38,6 +40,7 @@ const CATEGORY_GROUPS: Record<string, { label: string; actions: string[] }> = {
 
 export default function TenantAuditLogsPage() {
   const params = useParams()
+  const { tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || 'my-company'
 
   const [logs, setLogs] = useState<AuditLogEntry[]>([])
@@ -88,43 +91,37 @@ export default function TenantAuditLogsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
-            <ShieldCheck className="h-4 w-4" />
-            <span>Organization Security & Compliance</span>
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Audit Trail & Security Event Logs"
+        titleBn="অডিট ট্রেইল ও নিরাপত্তা লগ"
+        descriptionEn="Immutable organizational activity records capturing pricing overrides, order cancellations, financial modifications, and user logins."
+        descriptionBn="মূল্য পরিবর্তন, অর্ডার বাতিল, আর্থিক ট্রানজাকশন ও ইউজার লগইন সংক্রান্ত অপরিবর্তনীয় ডিজিটাল প্রমাণপত্র।"
+        icon={FileClock}
+        iconColor="text-indigo-600 dark:text-indigo-400"
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleExportJSON}
+              className="h-9 text-xs"
+            >
+              <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5 text-indigo-500" />
+              <span>{tBilingual('Export JSON', 'এক্সপোর্ট লগ')}</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={loadLogs}
+              className="h-9 text-xs"
+            >
+              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
+            </Button>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3">
-            <FileClock className="h-7 w-7 text-indigo-400" />
-            Audit Trail & Event Logs
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Immutable organizational activity records capturing pricing overrides, order cancellations, financial modifications, and user logins.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleExportJSON}
-            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
-          >
-            <ArrowDownToLine className="h-3.5 w-3.5 mr-1.5 text-indigo-400" />
-            Export Audit Log
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={loadLogs}
-            className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-800 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
-          >
-            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-            Refresh
-          </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Security Architecture Compliance Banner */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/30 border border-slate-800 flex items-start gap-3.5">

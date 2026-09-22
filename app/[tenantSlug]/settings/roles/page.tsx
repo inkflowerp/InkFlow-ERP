@@ -450,6 +450,8 @@ export default function RolesMatrixPage() {
           titleBn="অনুমতি ও ভূমিকা ম্যাট্রিক্স"
           descriptionEn="Configure server-authoritative operational roles, granular permission templates, and high-risk action guards."
           descriptionBn="সার্ভার-অথরিটেটিভ ভূমিকা, প্রতিটি মডিউলের জন্য অ্যাকশন অনুমতি এবং উচ্চ-ঝুঁকির নিরাপত্তা কনফিগার করুন।"
+          icon={ShieldCheck}
+          iconColor="text-indigo-600 dark:text-indigo-400"
           actions={
             <div className="flex items-center gap-2">
               <Button

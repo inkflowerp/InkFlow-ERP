@@ -31,6 +31,7 @@ import {
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { SettingsNav } from '@/components/settings/settings-nav'
+import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -266,36 +267,24 @@ export default function DocumentDesignerPage() {
     <div className="space-y-6 max-w-6xl print:max-w-none print:m-0 print:p-0">
       {/* Non-Print Action Bar */}
       <div className="print:hidden space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <Link
-                href={getTenantNavHref('/settings', pathname, slug)}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Link>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
-                <FileText className="h-6 w-6 text-blue-600" />
-                Document Studio &amp; Message Templates
-              </h1>
-            </div>
-            <p className="text-sm text-slate-500 mt-1">
-              Customize print layouts, quotation &amp; invoice email subjects, HTML email bodies, WhatsApp messages, and PDF attachments.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
+        <PageHeader
+          titleEn="Document Studio & Message Templates"
+          titleBn="ডকুমেন্ট ডিজাইন ও মেসেজ টেমপ্লেট"
+          descriptionEn="Customize print layouts, quotation & invoice email subjects, HTML email bodies, WhatsApp messages, and PDF attachments."
+          descriptionBn="প্রিন্ট লেআউট, কোটেশন ও ইনভয়েস পিডিএফ স্টাইল, ইমেইল বডি এবং হোয়াটসঅ্যাপ নোটিফিকেশন টেমপ্লেট পরিচালনা করুন।"
+          icon={FileText}
+          iconColor="text-blue-600 dark:text-blue-400"
+          actions={
             <Button
               size="sm"
               onClick={() => window.print()}
               className="bg-slate-900 hover:bg-slate-800 text-xs text-white"
             >
               <Printer className="mr-1.5 h-3.5 w-3.5" />
-              Print Preview
+              {tBilingual('Print Preview', 'প্রিন্ট প্রিভিউ')}
             </Button>
-          </div>
-        </div>
+          }
+        />
 
         <SettingsNav />
 

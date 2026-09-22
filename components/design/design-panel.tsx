@@ -10,10 +10,13 @@ import {
   Printer,
   PlusCircle,
   RefreshCw,
+  Palette,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
+import { useI18n } from '@/i18n/context'
+import { PageHeader } from '@/components/shared/page-header'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import type { DesignJobRecord } from '@/types/design.types'
@@ -44,6 +47,7 @@ export interface DesignPanelProps {
 export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const params = useParams()
   const { company } = useTenant()
+  const { tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const { user } = useAuth()
   const companyId = company?.id || tenantSlug
@@ -604,29 +608,25 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         </div>
       )}
 
-      {/* Top Header & Fast Walk-in Entry Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-        <div>
-          <h1 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-            <Layers className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
-            <span>Design Studio & Pre-Press Quality Panel</span>
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
-            গ্রাফিক ডিজাইন ওয়ার্কবেঞ্চ, প্রি-ফ্লাইট কোয়ালিটি ও হোয়াটসঅ্যাপ প্রুফ অনুমোদন হাব
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
+      {/* Page Header */}
+      <PageHeader
+        titleEn="Design Studio & Pre-Press Quality Panel"
+        titleBn="ডিজাইন স্টুডিও ও প্রি-প্রেস কোয়ালিটি"
+        descriptionEn="Graphic design workbench, preflight verification, proof versions, and WhatsApp customer approval hub."
+        descriptionBn="গ্রাফিক ডিজাইন ওয়ার্কবেঞ্চ, প্রি-ফ্লাইট কোয়ালিটি চেক, প্রুফ ভার্সন ও গ্রাহক হোয়াটসঅ্যাপ অনুমোদন হাব।"
+        icon={Palette}
+        iconColor="text-pink-600 dark:text-pink-400"
+        actions={
           <Button
             type="button"
             onClick={() => setIsNewJobModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 shadow-md"
           >
             <PlusCircle className="h-4 w-4 mr-1.5" />
-            <span>+ নতুন ডিজাইন / ওয়াক-ইন কাজ (New Artwork)</span>
+            <span>{tBilingual('+ New Artwork / Walk-In Job', '+ নতুন ডিজাইন / ওয়াক-ইন কাজ')}</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* Top Metrics KPI Bar */}
       <DesignMetricsBar
