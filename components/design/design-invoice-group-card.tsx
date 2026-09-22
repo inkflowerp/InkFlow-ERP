@@ -1,6 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Sparkles,
   Phone,
@@ -67,8 +71,12 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
   onRequestRevision,
 }: DesignInvoiceGroupCardProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const pathname = usePathname() || ''
+  const { company } = useTenant()
+  const tenantSlug = company?.slug || 'my-company'
 
-  const { invoiceNumber, customerName, customerPhone, jobs, allInvoiceItems } = group
+  const { invoiceId, invoiceNumber, customerName, customerPhone, jobs, allInvoiceItems } = group
+  const invoiceHref = getTenantNavHref(`/billing/${invoiceId || invoiceNumber}`, pathname, tenantSlug)
 
   // Extract all items from invoice or fallback to the jobs' data
   const rawItems: any[] = allInvoiceItems && allInvoiceItems.length > 0
@@ -100,9 +108,13 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-sm font-bold text-indigo-950 dark:text-indigo-200">
-                Invoice #{invoiceNumber}
-              </span>
+              <Link
+                href={invoiceHref}
+                className="font-mono text-sm font-bold text-indigo-950 dark:text-indigo-200 hover:underline inline-flex items-center gap-1"
+              >
+                <span>Invoice #{invoiceNumber}</span>
+                <ExternalLink className="h-3 w-3 opacity-60" />
+              </Link>
               <span className="bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
                 {jobs.length} Design Work(s) (ডিজাইন কাজ)
               </span>

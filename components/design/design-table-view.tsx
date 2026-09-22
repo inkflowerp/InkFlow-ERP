@@ -1,6 +1,8 @@
-'use client'
-
 import React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Sparkles,
   Phone,
@@ -12,6 +14,7 @@ import {
   PauseCircle,
   PlayCircle,
   RotateCcw,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
@@ -48,6 +51,10 @@ export const DesignTableView = React.memo(function DesignTableView({
   onResumeProduction,
   onRequestRevision,
 }: DesignTableViewProps) {
+  const pathname = usePathname() || ''
+  const { company } = useTenant()
+  const tenantSlug = company?.slug || 'my-company'
+
   if (jobs.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
@@ -79,6 +86,11 @@ export const DesignTableView = React.memo(function DesignTableView({
                 latestVer?.preview_url ||
                 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=150&q=80'
 
+              const workbenchHref = getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)
+              const invoiceHref = job.invoice_number
+                ? getTenantNavHref(`/billing/${job.invoice_id || job.invoice_number}`, pathname, tenantSlug)
+                : null
+
               return (
                 <tr
                   key={job.id}
@@ -86,12 +98,22 @@ export const DesignTableView = React.memo(function DesignTableView({
                 >
                   {/* Job ID & Invoice */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
-                      #{job.design_number}
-                    </div>
+                    <Link
+                      href={workbenchHref}
+                      className="font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-1"
+                    >
+                      <span>#{job.design_number}</span>
+                      <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                    </Link>
                     {job.invoice_number && (
                       <div className="font-mono text-[10px] text-slate-500">
-                        Inv: #{job.invoice_number}
+                        {invoiceHref ? (
+                          <Link href={invoiceHref} className="hover:underline hover:text-slate-800 dark:hover:text-slate-200">
+                            Inv: #{job.invoice_number}
+                          </Link>
+                        ) : (
+                          <span>Inv: #{job.invoice_number}</span>
+                        )}
                       </div>
                     )}
                   </td>
@@ -115,9 +137,12 @@ export const DesignTableView = React.memo(function DesignTableView({
 
                   {/* Title & Dimensions */}
                   <td className="py-3 px-4 align-middle">
-                    <div className="font-bold text-slate-800 dark:text-slate-200 line-clamp-1">
+                    <Link
+                      href={workbenchHref}
+                      className="font-bold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 line-clamp-1 transition-colors block"
+                    >
                       {job.title}
-                    </div>
+                    </Link>
                     <div className="text-[10px] text-slate-500 font-mono">
                       {job.dimensions_spec || 'Standard Spec'} | {job.quantity || 1} {job.unit || 'pcs'}
                     </div>
@@ -191,6 +216,18 @@ export const DesignTableView = React.memo(function DesignTableView({
                   {/* Actions Column */}
                   <td className="py-3 px-4 align-middle text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="secondary"
+                        asChild
+                        className="h-7 px-2 text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:hover:bg-indigo-900 dark:text-indigo-300 font-semibold"
+                      >
+                        <Link href={workbenchHref}>
+                          <span>Workbench</span>
+                        </Link>
+                      </Button>
+
                       <Button
                         type="button"
                         size="sm"

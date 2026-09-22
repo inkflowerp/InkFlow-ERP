@@ -63,6 +63,7 @@ import {
   Flame,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -213,7 +214,7 @@ function DesignDetailContent() {
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
-  const backHref = pathname.startsWith(`/${slug}`) ? `/${slug}/design` : '/design'
+  const backHref = getTenantNavHref('/design', pathname, slug)
 
   const [mounted, setMounted] = useState(false)
   const [isPending, startTransition] = useTransition()
@@ -1266,7 +1267,7 @@ function DesignDetailContent() {
               {/* Commercial Invoice Gate */}
               {hasInvoice ? (
                 <Link
-                  href={`/${slug}/invoices/${linkedInvoice?.id || job.invoice_id}`}
+                  href={getTenantNavHref(`/billing/${linkedInvoice?.id || job.invoice_id}`, pathname, slug)}
                   className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 hover:bg-emerald-200 transition-colors"
                 >
                   <Receipt className="h-3.5 w-3.5" />
@@ -1430,7 +1431,7 @@ function DesignDetailContent() {
                   key={work.id}
                   onClick={() => {
                     if (!isActive) {
-                      router.push(`/${slug}/design/${work.id}`)
+                      router.push(getTenantNavHref(`/design/${work.id}`, pathname, slug))
                     }
                   }}
                   className={cn(
@@ -2177,7 +2178,7 @@ function DesignDetailContent() {
                           key={sw.id}
                           onClick={() => {
                             if (!sw.isCurrent) {
-                              router.push(`/${slug}/design/${sw.id}`)
+                              router.push(getTenantNavHref(`/design/${sw.id}`, pathname, slug))
                             }
                           }}
                           className={cn(

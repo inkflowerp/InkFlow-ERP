@@ -48,6 +48,9 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const { user } = useAuth()
   const companyId = company?.id || tenantSlug
 
+  // Hydration Mount State
+  const [mounted, setMounted] = useState(false)
+
   // Data States
   const [jobs, setJobs] = useState<DesignJobRecord[]>([])
   const [, setProductionJobs] = useState<ProductionJobRecord[]>([])
@@ -55,6 +58,10 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [, startTransition] = useTransition()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Notification Banner
   const [notification, setNotification] = useState<{

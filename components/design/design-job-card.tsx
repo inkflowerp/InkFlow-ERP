@@ -1,6 +1,8 @@
-'use client'
-
 import React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Sparkles,
   Phone,
@@ -18,6 +20,7 @@ import {
   PlayCircle,
   SplitSquareVertical,
   RotateCcw,
+  ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
@@ -56,6 +59,10 @@ export const DesignJobCard = React.memo(function DesignJobCard({
   onResumeProduction,
   onRequestRevision,
 }: DesignJobCardProps) {
+  const pathname = usePathname() || ''
+  const { company } = useTenant()
+  const tenantSlug = company?.slug || 'my-company'
+
   const versions = job.versions || []
   const currentVer = versions[versions.length - 1]
   const previewUrl =
@@ -72,6 +79,11 @@ export const DesignJobCard = React.memo(function DesignJobCard({
 
   const allPreflightPassed =
     preflight.cmyk && preflight.dpi300 && preflight.bleed && preflight.curves
+
+  const workbenchHref = getTenantNavHref(`/design/${job.id}`, pathname, tenantSlug)
+  const invoiceHref = job.invoice_number
+    ? getTenantNavHref(`/billing/${job.invoice_id || job.invoice_number}`, pathname, tenantSlug)
+    : null
 
   return (
     <div
@@ -115,13 +127,20 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             {/* Header / Badges */}
             <div className="flex items-center justify-between gap-2 mb-1.5">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
-                  #{job.design_number}
-                </span>
-                {job.invoice_number && (
-                  <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
+                <Link
+                  href={workbenchHref}
+                  className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
+                >
+                  <span>#{job.design_number}</span>
+                  <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+                </Link>
+                {job.invoice_number && invoiceHref && (
+                  <Link
+                    href={invoiceHref}
+                    className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                  >
                     Inv: #{job.invoice_number}
-                  </span>
+                  </Link>
                 )}
                 {job.workflow_routing === 'design_ok' ? (
                   <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded flex items-center gap-1">
@@ -135,14 +154,24 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                   </span>
                 )}
               </div>
-              <span className="text-[11px] font-mono text-slate-400">
-                v{job.current_version || versions.length || 1}
-              </span>
+              <div className="flex items-center gap-1.5">
+                <Link
+                  href={workbenchHref}
+                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
+                >
+                  <span>Workbench ➔</span>
+                </Link>
+                <span className="text-[11px] font-mono text-slate-400">
+                  v{job.current_version || versions.length || 1}
+                </span>
+              </div>
             </div>
 
             {/* Title & Customer Name */}
             <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 leading-snug">
-              {job.title}
+              <Link href={workbenchHref} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                {job.title}
+              </Link>
             </h3>
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-1">
               <span className="font-semibold text-slate-800 dark:text-slate-200 truncate">
