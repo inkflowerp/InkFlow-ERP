@@ -73,14 +73,14 @@ describe('Tenant Complete Purge & Deletion Verification', () => {
     const resetCompanyId = 'comp-reset-test-tenant'
 
     // 1. Seed company profile & users (SHOULD REMAIN SAFE)
-    const existingCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANIES) || []
-    PrintERPDataStore.set(STORAGE_KEYS.COMPANIES, [
+    const existingCompanies = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+    PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_COMPANIES, [
       ...existingCompanies,
       { id: resetCompanyId, slug: resetSlug, name: 'Reset Test Printing Press' },
     ])
 
-    const existingUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
-    PrintERPDataStore.set(STORAGE_KEYS.USERS, [
+    const existingUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+    PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, [
       ...existingUsers,
       { id: 'usr-reset-owner', company_id: resetCompanyId, email: 'owner@resettest.com', role: 'business_owner' },
       { id: 'usr-reset-staff', company_id: resetCompanyId, email: 'staff@resettest.com', role: 'operator' },
@@ -126,13 +126,59 @@ describe('Tenant Complete Purge & Deletion Verification', () => {
     assert.deepStrictEqual(attendanceAfter || [], [])
 
     // 5. Verify company and staff accounts are preserved intact
-    const companiesAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANIES) || []
+    const companiesAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
     assert.strictEqual(companiesAfter.some((c) => c.id === resetCompanyId), true)
 
-    const usersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.USERS) || []
+    const usersAfter = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
     const resetUsers = usersAfter.filter((u) => u.company_id === resetCompanyId)
     assert.strictEqual(resetUsers.length, 2)
     assert.strictEqual(resetUsers.some((u) => u.id === 'usr-reset-owner'), true)
     assert.strictEqual(resetUsers.some((u) => u.id === 'usr-reset-staff'), true)
+  })
+
+  it('4. resetTenantData comprehensively resets all operational keys across all aliases and prevents resurrection', () => {
+    const multiAliasSlug = 'alpha-press'
+    const multiAliasCompId = 'comp-alpha-press'
+
+    // 1. Seed global operational collections across various entities
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, [
+      { id: 'job-1', company_id: multiAliasCompId, title: 'Banner Printing' },
+      { id: 'job-2', company_id: 'comp-beta-press', title: 'Sticker Printing' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.DELIVERY_CHALLANS, [
+      { id: 'dc-1', company_id: multiAliasCompId, challan_number: 'DC-001' },
+      { id: 'dc-2', company_id: 'comp-beta-press', challan_number: 'DC-002' },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [
+      { id: 'sl-1', company_id: multiAliasCompId, quantity: 100 },
+      { id: 'sl-2', company_id: 'comp-beta-press', quantity: 250 },
+    ])
+
+    PrintERPDataStore.set(STORAGE_KEYS.IN_APP_NOTIFICATIONS, [
+      { id: 'notif-1', company_id: multiAliasCompId, title: 'Order Dispatched' },
+      { id: 'notif-2', company_id: 'comp-beta-press', title: 'Payment Due' },
+    ])
+
+    // 2. Execute reset using clean slug alias
+    PrintERPDataStore.resetTenantData(multiAliasSlug, [multiAliasCompId, 'co-alpha-press'])
+
+    // 3. Verify all operational collections return empty for alpha-press and intact for beta-press
+    const jobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    assert.strictEqual(jobs.some((j) => j.company_id === multiAliasCompId), false)
+    assert.strictEqual(jobs.some((j) => j.company_id === 'comp-beta-press'), true)
+
+    const challans = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+    assert.strictEqual(challans.some((c) => c.company_id === multiAliasCompId), false)
+    assert.strictEqual(challans.some((c) => c.company_id === 'comp-beta-press'), true)
+
+    const stock = PrintERPDataStore.get<any[]>(STORAGE_KEYS.STOCK_LEDGER) || []
+    assert.strictEqual(stock.some((s) => s.company_id === multiAliasCompId), false)
+    assert.strictEqual(stock.some((s) => s.company_id === 'comp-beta-press'), true)
+
+    const notifs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.IN_APP_NOTIFICATIONS) || []
+    assert.strictEqual(notifs.some((n) => n.company_id === multiAliasCompId), false)
+    assert.strictEqual(notifs.some((n) => n.company_id === 'comp-beta-press'), true)
   })
 })

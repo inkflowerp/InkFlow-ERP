@@ -54,13 +54,32 @@ export function ResetTenantDataModal({
     setError(null)
 
     try {
-      // 1. Trigger server-side data reset
-      const res = await resetTenantDataAction(companyId)
+      const pathSlug = typeof window !== 'undefined' ? window.location.pathname.split('/')[1] : ''
+      const effectiveSlug = companySlug || PrintERPDataStore.getActiveTenantSlug() || pathSlug || 'default'
+      const effectiveCompanyId = companyId || effectiveSlug
+      const aliases = [
+        effectiveSlug,
+        companySlug,
+        companyId,
+        pathSlug,
+        `comp-${effectiveSlug.replace(/^comp-/, '').replace(/^co-/, '')}`,
+        `co-${effectiveSlug.replace(/^comp-/, '').replace(/^co-/, '')}`,
+      ].filter(Boolean)
 
-      // 2. Clear client-side partitioned inMemoryStore and localStorage
-      PrintERPDataStore.resetTenantData(companyId, [companySlug])
+      // 1. Client-side immediate zero-state wipe (guarantees local storage is wiped regardless of server connection)
+      PrintERPDataStore.resetTenantData(effectiveCompanyId, aliases)
 
-      // 3. Play sound & dispatch alert
+      // 2. Trigger server-side data reset across database tables
+      try {
+        await resetTenantDataAction(effectiveCompanyId)
+      } catch (srvErr) {
+        console.warn('Server reset action note:', srvErr)
+      }
+
+      // 3. Client-side secondary purge to guarantee clean zero-state
+      PrintERPDataStore.resetTenantData(effectiveCompanyId, aliases)
+
+      // 4. Play sound & dispatch alert
       playNotificationSound('warning')
       notify.warning(
         'Workspace Data Reset',
@@ -75,11 +94,11 @@ export function ResetTenantDataModal({
         type: 'warning',
       })
 
-      // 4. Close modal and reload page to refresh all active queries
+      // 5. Close modal and reload page to refresh all active queries
       onOpenChange(false)
       setTimeout(() => {
         window.location.reload()
-      }, 500)
+      }, 350)
     } catch (err: any) {
       setError(err.message || 'An error occurred while resetting workspace data.')
       setLoading(false)

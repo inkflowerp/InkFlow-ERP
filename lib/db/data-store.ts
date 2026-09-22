@@ -837,9 +837,10 @@ export class PrintERPDataStore {
    * Resets all operational & transactional records for a tenant while preserving company profile, users & branches
    */
   static resetTenantData(companyIdOrSlug: string, additionalAliases: string[] = []): void {
-    if (!companyIdOrSlug) return
+    const rawTarget = companyIdOrSlug || this.getActiveTenantSlug() || ''
+    if (!rawTarget) return
 
-    const norm = companyIdOrSlug.toLowerCase()
+    const norm = rawTarget.toLowerCase()
     const cleanSlug = norm.replace(/^comp-/, '').replace(/^co-/, '')
     const compSlug = `comp-${cleanSlug}`
     const coSlug = `co-${cleanSlug}`
@@ -849,31 +850,61 @@ export class PrintERPDataStore {
       cleanSlug,
       compSlug,
       coSlug,
-      companyIdOrSlug,
-      ...additionalAliases.map((a) => a.toLowerCase()),
-      ...additionalAliases.map((a) => a.replace(/^comp-/, '').replace(/^co-/, '')),
+      rawTarget,
+      ...additionalAliases.map((a) => (a ? a.toLowerCase() : '')).filter(Boolean),
+      ...additionalAliases.map((a) => (a ? a.toLowerCase().replace(/^comp-/, '').replace(/^co-/, '') : '')).filter(Boolean),
     ])
 
-    // Operational & transactional keys that will be reset
-    const operationalKeys = [
+    // Complete list of operational & transactional keys
+    const operationalKeys: string[] = [
       STORAGE_KEYS.CUSTOMERS,
       STORAGE_KEYS.COMMUNICATIONS,
       STORAGE_KEYS.COMMUNICATION_LOGS,
+      STORAGE_KEYS.COMMUNICATION_MESSAGES,
+      STORAGE_KEYS.COMMUNICATION_TEMPLATES,
       STORAGE_KEYS.SUPPLIERS,
       STORAGE_KEYS.SUPPLIER_PRICES,
+      STORAGE_KEYS.SUPPLIER_ITEMS,
+      STORAGE_KEYS.SUPPLIER_RETURNS,
+      STORAGE_KEYS.SUPPLIER_RETURN_ITEMS,
+      STORAGE_KEYS.SUPPLIER_LEDGER_ENTRIES,
       STORAGE_KEYS.ORDERS,
       STORAGE_KEYS.JOB_ORDERS,
       STORAGE_KEYS.TIMELINE_EVENTS,
       STORAGE_KEYS.QUOTATIONS,
       STORAGE_KEYS.QUOTATION_ACTIVITIES,
+      STORAGE_KEYS.PRODUCTS,
+      STORAGE_KEYS.PRODUCT_VARIANTS,
+      STORAGE_KEYS.PRODUCT_FORMULAS,
+      STORAGE_KEYS.PRODUCT_CATEGORIES,
       STORAGE_KEYS.PRICE_HISTORY,
+      STORAGE_KEYS.PRICE_LISTS,
+      STORAGE_KEYS.PRICE_LIST_ITEMS,
+      STORAGE_KEYS.CUSTOMER_RATES,
+      STORAGE_KEYS.PRICING_RULES,
+      STORAGE_KEYS.PRICE_OVERRIDES,
+      STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES,
       STORAGE_KEYS.MATERIALS,
       STORAGE_KEYS.MOUNTED_ROLLS,
       STORAGE_KEYS.STOCK_LEDGER,
       STORAGE_KEYS.REMNANTS,
+      STORAGE_KEYS.LOCATIONS,
+      STORAGE_KEYS.INVENTORY_LOCATIONS,
+      STORAGE_KEYS.INVENTORY_STOCK_BALANCES,
+      STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS,
+      STORAGE_KEYS.MATERIAL_REQUESTS,
+      STORAGE_KEYS.MATERIAL_ISSUES,
+      STORAGE_KEYS.INVENTORY_REMNANTS,
+      STORAGE_KEYS.INVENTORY_TRANSFERS,
+      STORAGE_KEYS.INVENTORY_ADJUSTMENTS,
       STORAGE_KEYS.PRODUCTION_JOBS,
       STORAGE_KEYS.PRODUCTION_TASKS,
+      STORAGE_KEYS.OPERATOR_JOBS,
       STORAGE_KEYS.REWORKS,
+      STORAGE_KEYS.MACHINERIES,
+      STORAGE_KEYS.MACHINERY_ASSIGNMENTS,
+      STORAGE_KEYS.MACHINERY_MAINTENANCES,
+      STORAGE_KEYS.MACHINERY_BREAKDOWNS,
       STORAGE_KEYS.INVOICES,
       STORAGE_KEYS.INVOICE_REQUESTS,
       STORAGE_KEYS.PAYMENTS,
@@ -881,60 +912,193 @@ export class PrintERPDataStore {
       STORAGE_KEYS.BANK_ACCOUNTS,
       STORAGE_KEYS.CASH_BOOK,
       STORAGE_KEYS.PURCHASE_ORDERS,
+      STORAGE_KEYS.PURCHASE_REQUESTS,
+      STORAGE_KEYS.PURCHASE_REQUEST_ITEMS,
+      STORAGE_KEYS.GOODS_RECEIVED_NOTES,
+      STORAGE_KEYS.GOODS_RECEIVED_NOTE_ITEMS,
       STORAGE_KEYS.DELIVERY_CHALLANS,
       STORAGE_KEYS.INSTALLATIONS,
       STORAGE_KEYS.JOB_COSTINGS,
       STORAGE_KEYS.DESIGN_JOBS,
+      STORAGE_KEYS.EMPLOYEES,
       STORAGE_KEYS.ATTENDANCE,
       STORAGE_KEYS.SALARY_ADVANCES,
       STORAGE_KEYS.DAILY_LABOR_LOGS,
       STORAGE_KEYS.PAYROLL,
       STORAGE_KEYS.PAYROLL_PERIODS,
+      STORAGE_KEYS.SHIFTS,
+      STORAGE_KEYS.EMPLOYEE_SHIFTS,
+      STORAGE_KEYS.ACCOUNTS,
+      STORAGE_KEYS.FINANCIAL_TRANSACTIONS,
+      STORAGE_KEYS.JOURNAL_ENTRY_LINES,
+      STORAGE_KEYS.CASH_CLOSINGS,
+      STORAGE_KEYS.ACCOUNT_TRANSFERS,
+      STORAGE_KEYS.FINANCIAL_PERIODS,
+      STORAGE_KEYS.TAX_TRANSACTION_LINES,
       STORAGE_KEYS.IN_APP_NOTIFICATIONS,
       STORAGE_KEYS.TRASH_ITEMS,
+      STORAGE_KEYS.AUDIT_LOGS,
+      STORAGE_KEYS.USER_OVERRIDES,
+      STORAGE_KEYS.SYNC_OUTBOX,
+      STORAGE_KEYS.CLIENT_DEVICES,
+      STORAGE_KEYS.BRANCH_TRANSFERS,
+      STORAGE_KEYS.INTER_BRANCH_FINANCIAL_TRANSFERS,
+      STORAGE_KEYS.EMPLOYEE_BRANCH_ASSIGNMENTS,
+      STORAGE_KEYS.SAVED_VIEWS,
+      STORAGE_KEYS.BANK_STATEMENTS,
+      STORAGE_KEYS.GATEWAY_TRANSACTIONS,
+      STORAGE_KEYS.SAAS_INVOICES,
+      STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES,
+      STORAGE_KEYS.WF_OVERTIME_RECORDS,
+      STORAGE_KEYS.WF_SALARY_PAYMENTS,
+      STORAGE_KEYS.WF_AUDIT_LOGS,
     ]
 
-    // 1. Purge partitioned keys for operational collections from inMemoryStore
+    // 1. Reset all partitioned keys in inMemoryStore
+    for (const opKey of operationalKeys) {
+      for (const t of targets) {
+        const partKey = `${opKey}__${t}`
+        inMemoryStore[partKey] = []
+      }
+    }
+
+    // Also clean any dynamic partitioned in-memory keys
     for (const inMemKey of Object.keys(inMemoryStore)) {
-      for (const opKey of operationalKeys) {
-        for (const t of targets) {
-          if (inMemKey === `${opKey}__${t}`) {
-            delete inMemoryStore[inMemKey]
+      for (const t of targets) {
+        if (inMemKey.endsWith(`__${t}`)) {
+          // If not protected identity key, set to []
+          if (
+            !inMemKey.startsWith(STORAGE_KEYS.PLATFORM_COMPANIES) &&
+            !inMemKey.startsWith(STORAGE_KEYS.COMPANY_PROFILE) &&
+            !inMemKey.startsWith(STORAGE_KEYS.COMPANY_USERS) &&
+            !inMemKey.startsWith(STORAGE_KEYS.REGISTERED_USERS) &&
+            !inMemKey.startsWith(STORAGE_KEYS.PLATFORM_USERS) &&
+            !inMemKey.startsWith(STORAGE_KEYS.ROLES) &&
+            !inMemKey.startsWith(STORAGE_KEYS.ROLE_MATRICES) &&
+            !inMemKey.startsWith(STORAGE_KEYS.BRANCHES) &&
+            !inMemKey.startsWith(STORAGE_KEYS.NOTIFICATION_SETTINGS) &&
+            !inMemKey.startsWith(STORAGE_KEYS.BRANDING_SETTINGS) &&
+            !inMemKey.startsWith(STORAGE_KEYS.DOCUMENT_NUMBERING) &&
+            !inMemKey.startsWith(STORAGE_KEYS.DOCUMENT_TEMPLATES) &&
+            !inMemKey.startsWith(STORAGE_KEYS.TAX_SETTINGS)
+          ) {
+            inMemoryStore[inMemKey] = []
           }
         }
       }
     }
 
-    // 2. Purge partitioned operational keys from localStorage in browser environment
+    // 2. Clear browser LocalStorage partitions and global collections
     if (typeof window !== 'undefined') {
       try {
-        const keysToRemove: string[] = []
+        // Set all partitioned operational keys to empty array in localStorage
+        for (const opKey of operationalKeys) {
+          for (const t of targets) {
+            const partKey = `${opKey}__${t}`
+            try {
+              localStorage.setItem(partKey, '[]')
+            } catch {}
+          }
+        }
+
+        // Iterate through all localStorage keys
         for (let i = 0; i < localStorage.length; i++) {
           const lsKey = localStorage.key(i)
-          if (lsKey) {
-            for (const opKey of operationalKeys) {
-              for (const t of targets) {
-                if (lsKey === `${opKey}__${t}`) {
-                  keysToRemove.push(lsKey)
+          if (!lsKey) continue
+
+          // Handle partitioned keys ending with target
+          for (const t of targets) {
+            if (lsKey.endsWith(`__${t}`)) {
+              if (
+                !lsKey.startsWith(STORAGE_KEYS.PLATFORM_COMPANIES) &&
+                !lsKey.startsWith(STORAGE_KEYS.COMPANY_PROFILE) &&
+                !lsKey.startsWith(STORAGE_KEYS.COMPANY_USERS) &&
+                !lsKey.startsWith(STORAGE_KEYS.REGISTERED_USERS) &&
+                !lsKey.startsWith(STORAGE_KEYS.PLATFORM_USERS) &&
+                !lsKey.startsWith(STORAGE_KEYS.ROLES) &&
+                !lsKey.startsWith(STORAGE_KEYS.ROLE_MATRICES) &&
+                !lsKey.startsWith(STORAGE_KEYS.BRANCHES) &&
+                !lsKey.startsWith(STORAGE_KEYS.NOTIFICATION_SETTINGS) &&
+                !lsKey.startsWith(STORAGE_KEYS.BRANDING_SETTINGS) &&
+                !lsKey.startsWith(STORAGE_KEYS.DOCUMENT_NUMBERING) &&
+                !lsKey.startsWith(STORAGE_KEYS.DOCUMENT_TEMPLATES) &&
+                !lsKey.startsWith(STORAGE_KEYS.TAX_SETTINGS)
+              ) {
+                try {
+                  localStorage.setItem(lsKey, '[]')
+                } catch {}
+              }
+            }
+          }
+
+          // Handle offline sync queue
+          if (lsKey === 'printerp_offline_sync_queue') {
+            try {
+              const raw = localStorage.getItem(lsKey)
+              if (raw) {
+                const parsed = JSON.parse(raw)
+                if (Array.isArray(parsed)) {
+                  const filtered = parsed.filter((item: any) => {
+                    const cId = String(item.companyId || item.company_id || '').toLowerCase()
+                    return !targets.has(cId)
+                  })
+                  localStorage.setItem(lsKey, JSON.stringify(filtered))
                 }
+              }
+            } catch {}
+          }
+
+          // Handle offline drafts
+          if (lsKey === 'printerp_offline_drafts') {
+            try {
+              const raw = localStorage.getItem(lsKey)
+              if (raw) {
+                const parsed = JSON.parse(raw)
+                if (Array.isArray(parsed)) {
+                  const filtered = parsed.filter((draft: any) => {
+                    const cId = String(draft.companyId || draft.company_id || '').toLowerCase()
+                    return !targets.has(cId)
+                  })
+                  localStorage.setItem(lsKey, JSON.stringify(filtered))
+                }
+              }
+            } catch {}
+          }
+
+          // Handle client outbox
+          if (lsKey.startsWith('inkflow_client_outbox_')) {
+            for (const t of targets) {
+              if (lsKey.includes(t)) {
+                try {
+                  localStorage.setItem(lsKey, '[]')
+                } catch {}
               }
             }
           }
         }
-        for (const k of keysToRemove) {
-          localStorage.removeItem(k)
-        }
       } catch {}
     }
 
-    // 3. Purge matching items from global collection arrays for operational keys
+    // 3. Purge matching items from global collection arrays for ALL operational keys
     for (const key of operationalKeys) {
-      const list = inMemoryStore[key]
+      let list = inMemoryStore[key]
+
+      // If not in inMemoryStore, check localStorage directly
+      if (!list && typeof window !== 'undefined') {
+        try {
+          const raw = localStorage.getItem(key)
+          if (raw) {
+            list = JSON.parse(raw)
+          }
+        } catch {}
+      }
+
       if (Array.isArray(list)) {
-        inMemoryStore[key] = list.filter((item: any) => {
+        const filtered = list.filter((item: any) => {
           if (!item || typeof item !== 'object') return true
-          const cId = String(item.company_id || item.companyId || item.id || '').toLowerCase()
+          const cId = String(item.company_id || item.companyId || item.id || item.tenant_id || '').toLowerCase()
           const cSlug = String(item.company_slug || item.companySlug || item.slug || '').toLowerCase()
+
           for (const t of targets) {
             if (cId === t || cSlug === t) return false
             const cleanCId = cId.replace(/^comp-/, '').replace(/^co-/, '')
@@ -944,26 +1108,38 @@ export class PrintERPDataStore {
           return true
         })
 
+        inMemoryStore[key] = filtered
+
         if (typeof window !== 'undefined') {
           try {
-            localStorage.setItem(key, JSON.stringify(inMemoryStore[key]))
+            localStorage.setItem(key, JSON.stringify(filtered))
           } catch {}
         }
       }
     }
 
-    // 4. Broadcast cross-tab reset notification
-    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+    // 4. Invalidate query cache across the server/client
+    try {
+      invalidateQueryCache()
+    } catch {}
+
+    // 5. Broadcast cross-tab reset notification
+    if (typeof window !== 'undefined') {
       try {
-        const channel = new BroadcastChannel('printerp_realtime_bus')
-        channel.postMessage({
-          type: 'LOCAL_STORE_MUTATION',
-          mutationType: 'RESET_DATA',
-          tenantSlug: companyIdOrSlug,
-          senderId: CLIENT_TAB_ID,
-          timestamp: Date.now(),
-        })
-        channel.close()
+        if ('BroadcastChannel' in window) {
+          const channel = new BroadcastChannel('printerp_realtime_bus')
+          channel.postMessage({
+            type: 'LOCAL_STORE_MUTATION',
+            mutationType: 'RESET_DATA',
+            tenantSlug: rawTarget,
+            senderId: CLIENT_TAB_ID,
+            timestamp: Date.now(),
+          })
+          channel.close()
+        }
+
+        window.dispatchEvent(new Event('storage'))
+        window.dispatchEvent(new Event('printerp_data_reset'))
       } catch {}
     }
   }
