@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useParams, useRouter, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Wallet,
   Plus,
@@ -31,6 +33,8 @@ import {
   ShoppingBag,
   RefreshCw,
   Landmark,
+  Receipt,
+  Users,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -96,9 +100,17 @@ import {
 } from '@/actions/finance.actions'
 
 export default function AccountingPage() {
+  const params = useParams()
+  const router = useRouter()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Data State
   const [accounts, setAccounts] = useState<AccountRecord[]>([])
@@ -327,6 +339,20 @@ export default function AccountingPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 pb-20 animate-pulse">
+        <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-20 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+          ))}
+        </div>
+        <div className="h-96 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 pb-20">
       {/* Toast Notification */}
@@ -352,7 +378,29 @@ export default function AccountingPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={getTenantNavHref('/billing', pathname, slug)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+            >
+              <Receipt className="w-3.5 h-3.5 text-emerald-600" />
+              <span>{tBilingual('Billing & Collections', 'বিলিং ও কালেকশন')}</span>
+            </Button>
+          </Link>
+
+          <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+            >
+              <Building className="w-3.5 h-3.5 text-teal-600" />
+              <span>{tBilingual('Suppliers & Mahajan', 'মহাজন খাতা')}</span>
+            </Button>
+          </Link>
+
           <Button
             variant="outline"
             size="sm"
@@ -426,8 +474,8 @@ export default function AccountingPage() {
       {/* Quick Action Toolbar */}
       <FinanceQuickActions
         onReceiveMoney={() => {
-          // Open customer payment modal or invoice link
-          window.location.href = '/billing'
+          // Open customer billing & collections
+          router.push(getTenantNavHref('/billing', pathname, slug))
         }}
         onSpendMoney={() => setIsSpendModalOpen(true)}
         onTransferMoney={() => setIsTransferModalOpen(true)}
@@ -579,7 +627,7 @@ export default function AccountingPage() {
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
                   <span>{tBilingual('Top Overdue Customers (তাগাদা দিন)', 'বাকি তাগাদা')}</span>
                 </CardTitle>
-                <Link href="/customers">
+                <Link href={getTenantNavHref('/customers', pathname, slug)}>
                   <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-800">
                     {tBilingual('View All', 'সব দেখুন')}
                   </Button>
@@ -600,7 +648,7 @@ export default function AccountingPage() {
                         size="sm"
                         variant="outline"
                         className="h-6 text-[10px] px-2 mt-1 rounded-md"
-                        onClick={() => window.location.href = '/billing'}
+                        onClick={() => router.push(getTenantNavHref('/billing', pathname, slug))}
                       >
                         {tBilingual('Receive', 'পেমেন্ট')}
                       </Button>
