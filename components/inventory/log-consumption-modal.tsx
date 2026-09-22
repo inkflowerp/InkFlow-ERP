@@ -1,14 +1,20 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Scissors, Sparkles, Printer, Layers, Info } from 'lucide-react'
-import { MaterialRecord, InventoryLocationRecord, FloorConsumptionRecord } from '@/types/inventory.types'
+import { Plus, Trash2, Scissors, Sparkles, Printer, Layers, Info, Disc } from 'lucide-react'
+import { MaterialRecord, InventoryLocationRecord, FloorConsumptionRecord, InventoryRollRecord } from '@/types/inventory.types'
 import { ProductionTaskRecord } from '@/types/production.types'
-import { logProductionConsumptionAction, logFloorConsumptionAction } from '@/actions/inventory.actions'
+import {
+  logProductionConsumptionAction,
+  logFloorConsumptionAction,
+  consumeRollWithBleedAndWastageAction,
+} from '@/actions/inventory.actions'
+import { formatFloorPieceDisplay } from '@/lib/units'
+import { Badge } from '@/components/ui/badge'
 
 interface LogConsumptionModalProps {
   open: boolean
@@ -16,8 +22,10 @@ interface LogConsumptionModalProps {
   materials: MaterialRecord[]
   locations: InventoryLocationRecord[]
   tasks?: ProductionTaskRecord[]
+  rolls?: InventoryRollRecord[]
   selectedTaskId?: string
   selectedMaterialId?: string
+  selectedRollId?: string
   selectedFloorRecord?: FloorConsumptionRecord | null
   onSuccess?: () => void
   companyId?: string
@@ -29,14 +37,18 @@ export function LogConsumptionModal({
   materials,
   locations,
   tasks = [],
+  rolls = [],
   selectedTaskId,
   selectedMaterialId,
+  selectedRollId,
   selectedFloorRecord,
   onSuccess,
   companyId,
 }: LogConsumptionModalProps) {
   const [taskId, setTaskId] = useState(selectedTaskId || (tasks[0]?.id || ''))
   const [materialId, setMaterialId] = useState(selectedMaterialId || (materials[0]?.id || ''))
+  const [rollId, setRollId] = useState<string>(selectedRollId || '')
+  const [bleedAllowanceIn, setBleedAllowanceIn] = useState<number>(3)
   const [consumedQty, setConsumedQty] = useState<number>(1)
   const [returnedQty, setReturnedQty] = useState<number>(0)
   const [returnLocationId, setReturnLocationId] = useState(locations[0]?.id || '')
@@ -61,6 +73,25 @@ export function LogConsumptionModal({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Matching active rolls/pieces on floor
+  const availableRollsOnFloor = useMemo(() => {
+    return (rolls || []).filter((r) => {
+      const matchMat = !materialId || r.material_id === materialId
+      const matchStatus = r.status === 'mounted' || r.status === 'available' || r.status === 'in_use'
+      const len = Number(r.current_length_ft ?? r.remaining_area_sft)
+      return matchMat && matchStatus && len > 0
+    })
+  }, [rolls, materialId])
+
+  const selectedActiveRoll = useMemo(() => {
+    if (rollId) return (rolls || []).find((r) => r.id === rollId) || null
+    if (selectedFloorRecord?.id) {
+      const byId = (rolls || []).find((r) => r.id === selectedFloorRecord.id)
+      if (byId) return byId
+    }
+    return availableRollsOnFloor[0] || null
+  }, [rolls, rollId, selectedFloorRecord, availableRollsOnFloor])
+
   // Sync state when floor record is passed
   useEffect(() => {
     if (selectedFloorRecord) {
@@ -71,16 +102,26 @@ export function LogConsumptionModal({
       setConsumedQty(Math.min(initialRemaining, Math.max(1, initialRemaining)))
       setReturnedQty(0)
       setWastageQty(0)
+    } else if (selectedRollId) {
+      const r = (rolls || []).find((x) => x.id === selectedRollId)
+      if (r) {
+        setRollId(r.id)
+        setMaterialId(r.material_id)
+        setConsumedQty(1)
+      }
     } else if (selectedMaterialId) {
       setMaterialId(selectedMaterialId)
     }
-  }, [selectedFloorRecord, selectedMaterialId])
+  }, [selectedFloorRecord, selectedMaterialId, selectedRollId, rolls])
 
   const activeMat = materials.find((m) => m.id === materialId) || (selectedFloorRecord?.material ? (selectedFloorRecord.material as MaterialRecord) : undefined)
-  const floorUnit = activeMat?.unit || selectedFloorRecord?.unit || 'pcs'
-  const floorMaxBalance = selectedFloorRecord ? Number(selectedFloorRecord.remaining_floor_balance) : null
+  const floorUnit = selectedActiveRoll ? 'ft' : (activeMat?.unit || selectedFloorRecord?.unit || 'pcs')
+  const floorMaxBalance = selectedActiveRoll
+    ? Number(selectedActiveRoll.current_length_ft ?? (selectedActiveRoll.remaining_area_sft / (selectedActiveRoll.width_ft || 1)))
+    : (selectedFloorRecord ? Number(selectedFloorRecord.remaining_floor_balance) : null)
 
-  const totalActionQty = Number(consumedQty || 0) + Number(returnedQty || 0) + Number(wastageQty || 0)
+  const bleedFt = selectedActiveRoll ? (Number(bleedAllowanceIn) || 0) / 12 : 0
+  const totalActionQty = Number(consumedQty || 0) + Number(returnedQty || 0) + Number(wastageQty || 0) + bleedFt
   const isOverFloorBalance = floorMaxBalance !== null && totalActionQty > floorMaxBalance + 0.001
 
   const handleAddRemnant = () => {
@@ -112,20 +153,40 @@ export function LogConsumptionModal({
     e.preventDefault()
     setError(null)
 
-    if (!materialId && !selectedFloorRecord) {
+    if (!materialId && !selectedFloorRecord && !selectedActiveRoll) {
       setError('Please select a material substrate.')
       return
     }
 
     if (isOverFloorBalance) {
-      setError(`Total Quantity (${totalActionQty} ${floorUnit}) exceeds remaining floor balance (${floorMaxBalance} ${floorUnit}).`)
+      setError(`Total Quantity (${totalActionQty.toFixed(2)} ${floorUnit}) exceeds remaining floor balance (${floorMaxBalance?.toFixed(2)} ${floorUnit}).`)
       return
     }
 
     setLoading(true)
 
     try {
-      if (selectedFloorRecord) {
+      if (selectedActiveRoll) {
+        // Direct Active Physical Piece Consumption
+        const res = await consumeRollWithBleedAndWastageAction(
+          {
+            roll_id: selectedActiveRoll.id,
+            linear_length_consumed_ft: Number(consumedQty) || 0,
+            bleed_allowance_ft: (Number(bleedAllowanceIn) || 0) / 12,
+            wastage_length_ft: Number(wastageQty) || 0,
+            wastage_reason: wastageQty > 0 ? wastageReason.trim() : null,
+            production_task_id: taskId || null,
+            job_order_id: null,
+            notes: notes.trim() || `Consumed ${consumedQty} ft from ${selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag}`,
+          },
+          companyId
+        )
+
+        if (!res.success) {
+          setError(res.error || 'Failed to consume from active roll.')
+          return
+        }
+      } else if (selectedFloorRecord) {
         // Direct Floor Consumption Sign-off
         const res = await logFloorConsumptionAction(
           {
@@ -212,7 +273,7 @@ export function LogConsumptionModal({
     <ModalDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={selectedFloorRecord ? "Print Floor Material Consumption Sign-Off" : "Production Consumption & Scrap Sign-Off"}
+      title={selectedActiveRoll ? "Print Floor Piece Consumption Sign-Off" : selectedFloorRecord ? "Print Floor Material Consumption Sign-Off" : "Production Consumption & Scrap Sign-Off"}
       description="Record actual substrate used, return unused stock, log scrap reasons, and register reusable remnants."
       hideFooter
     >
@@ -223,8 +284,43 @@ export function LogConsumptionModal({
           </div>
         )}
 
+        {/* Selected Active Floor Piece Card */}
+        {selectedActiveRoll && (
+          <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2 text-xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 font-black text-blue-900 dark:text-blue-200 font-mono">
+                <Disc className="w-4 h-4 text-blue-600" />
+                <span>Piece: {selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag}</span>
+              </div>
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold uppercase text-[10px]">
+                {selectedActiveRoll.status} (1 Pcs)
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-blue-500/10 text-slate-700 dark:text-slate-300">
+              <div>
+                <span className="text-slate-400 block text-[10px]">Substrate</span>
+                <span className="font-semibold truncate block">{selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Roll Width</span>
+                <span className="font-bold block">{selectedActiveRoll.width_ft} ft</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Initial Spec</span>
+                <span className="font-semibold block">{selectedActiveRoll.initial_length_ft} ft</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[10px]">Available Length</span>
+                <span className="font-black text-emerald-600 dark:text-emerald-400 block">
+                  {Number(selectedActiveRoll.current_length_ft ?? 0).toFixed(2)} ft — 1 Pcs
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Floor Record Context Card */}
-        {selectedFloorRecord && (
+        {!selectedActiveRoll && selectedFloorRecord && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg space-y-2 text-xs">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
@@ -258,8 +354,29 @@ export function LogConsumptionModal({
           </div>
         )}
 
+        {/* Active Floor Piece Selection Dropdown */}
+        {availableRollsOnFloor.length > 0 && (
+          <div className="space-y-1.5 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+            <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Disc className="w-3.5 h-3.5 text-blue-600" />
+              Select Active Piece on Print Floor ({availableRollsOnFloor.length} active pieces)
+            </Label>
+            <select
+              value={rollId || selectedActiveRoll?.id || ''}
+              onChange={(e) => setRollId(e.target.value)}
+              className="w-full h-10 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono font-semibold text-slate-900 dark:text-white"
+            >
+              {availableRollsOnFloor.map((r: InventoryRollRecord) => (
+                <option key={r.id} value={r.id}>
+                  {formatFloorPieceDisplay(r)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {!selectedFloorRecord && (
+          {!selectedFloorRecord && !selectedActiveRoll && (
             <div className="space-y-1.5">
               <Label htmlFor="cTask" required>
                 Production Task
@@ -281,13 +398,19 @@ export function LogConsumptionModal({
             </div>
           )}
 
-          <div className={`space-y-1.5 ${selectedFloorRecord ? 'col-span-1 sm:col-span-2' : ''}`}>
+          <div className={`space-y-1.5 ${selectedFloorRecord || selectedActiveRoll ? 'col-span-1 sm:col-span-2' : ''}`}>
             <Label htmlFor="cMat" required>
               Material Substrate
             </Label>
             {selectedFloorRecord ? (
               <Input
                 value={`${selectedFloorRecord.material_name} (${selectedFloorRecord.sku || selectedFloorRecord.material_id.slice(0, 8)})`}
+                disabled
+                className="bg-slate-100 dark:bg-slate-800 font-semibold text-xs"
+              />
+            ) : selectedActiveRoll ? (
+              <Input
+                value={`${selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'} (${selectedActiveRoll.width_ft}ft Wide • Piece #${selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag})`}
                 disabled
                 className="bg-slate-100 dark:bg-slate-800 font-semibold text-xs"
               />
@@ -310,29 +433,6 @@ export function LogConsumptionModal({
           </div>
         </div>
 
-        {selectedFloorRecord && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Job / Customer Reference</Label>
-              <Input
-                placeholder="e.g. JOB-8921 / Banner Print"
-                value={jobRef}
-                onChange={(e) => setJobRef(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Operator / Sign-Off Tech</Label>
-              <Input
-                placeholder="Operator name"
-                value={operatorName}
-                onChange={(e) => setOperatorName(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-          </div>
-        )}
-
         {/* Consumption & Return Breakdown */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border text-xs">
           <div className="space-y-1">
@@ -347,16 +447,29 @@ export function LogConsumptionModal({
             />
           </div>
 
-          <div className="space-y-1">
-            <Label>Return Unused ({floorUnit})</Label>
-            <Input
-              type="number"
-              step="0.01"
-              min="0"
-              value={returnedQty}
-              onChange={(e) => setReturnedQty(Number(e.target.value))}
-            />
-          </div>
+          {selectedActiveRoll ? (
+            <div className="space-y-1">
+              <Label>Bleed Margin (inches)</Label>
+              <Input
+                type="number"
+                step="0.5"
+                min="0"
+                value={bleedAllowanceIn}
+                onChange={(e) => setBleedAllowanceIn(Number(e.target.value))}
+              />
+            </div>
+          ) : (
+            <div className="space-y-1">
+              <Label>Return Unused ({floorUnit})</Label>
+              <Input
+                type="number"
+                step="0.01"
+                min="0"
+                value={returnedQty}
+                onChange={(e) => setReturnedQty(Number(e.target.value))}
+              />
+            </div>
+          )}
 
           <div className="space-y-1">
             <Label>Scrap / Wastage ({floorUnit})</Label>
@@ -369,6 +482,7 @@ export function LogConsumptionModal({
             />
           </div>
         </div>
+
 
         {/* Live Balance Calculation Alert */}
         {floorMaxBalance !== null && (

@@ -40,6 +40,7 @@ import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { issueMasterRollsBatchAction } from '@/actions/inventory.actions'
+import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 
 export interface IssueMasterRollModalProps {
   open: boolean
@@ -163,7 +164,11 @@ export function IssueMasterRollModal({
     return quantityRolls > 1 ? `${tag}-01` : tag
   }, [selectedMaterial, widthFt, lotNumber, customRollTag, quantityRolls])
 
-  // Calculated Telemetry
+  // Warehouse Stock Breakdown in Purchase Units
+  const warehouseBreakdown = useMemo(() => {
+    return getMaterialWarehouseStockBreakdown(selectedMaterial)
+  }, [selectedMaterial])
+
   const singleRollAreaSft = useMemo(() => {
     return Math.round(widthFt * lengthFt * 100) / 100
   }, [widthFt, lengthFt])
@@ -171,6 +176,20 @@ export function IssueMasterRollModal({
   const totalBatchAreaSft = useMemo(() => {
     return Math.round(singleRollAreaSft * quantityRolls * 100) / 100
   }, [singleRollAreaSft, quantityRolls])
+
+  // Store Stock Check
+  const currentStoreStock = useMemo(() => {
+    return Number(selectedMaterial?.current_stock || 0)
+  }, [selectedMaterial])
+
+  const currentAvailableRollsForWidth = useMemo(() => {
+    if (singleRollAreaSft <= 0) return 0
+    return Math.floor(currentStoreStock / singleRollAreaSft)
+  }, [currentStoreStock, singleRollAreaSft])
+
+  const projectedRollsRemaining = useMemo(() => {
+    return Math.max(0, currentAvailableRollsForWidth - quantityRolls)
+  }, [currentAvailableRollsForWidth, quantityRolls])
 
   const unitCost = useMemo(() => {
     if (!selectedMaterial) return 0
@@ -185,11 +204,6 @@ export function IssueMasterRollModal({
   const totalValuation = useMemo(() => {
     return Math.round(totalBatchAreaSft * unitCost * 100) / 100
   }, [totalBatchAreaSft, unitCost])
-
-  // Store Stock Check
-  const currentStoreStock = useMemo(() => {
-    return Number(selectedMaterial?.current_stock || 0)
-  }, [selectedMaterial])
 
   const projectedStoreBalance = useMemo(() => {
     return currentStoreStock - totalBatchAreaSft
@@ -313,23 +327,25 @@ export function IssueMasterRollModal({
         {/* STEP 1: SUBSTRATE MATERIAL & SOURCE WAREHOUSE */}
         {/* ========================================================= */}
         <div className="space-y-3 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               1. {tBilingual('Material Substrate & Warehouse Source', 'কাঁচামাল ও সোর্স গুদাম')}
             </span>
             {selectedMaterial && (
-              <Badge
-                variant="outline"
-                className={cn(
-                  'text-[10px] font-mono font-bold py-0.5',
-                  currentStoreStock > 500
-                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                    : 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-                )}
-              >
-                Store Stock: {currentStoreStock.toLocaleString()} {selectedMaterial.unit}
-              </Badge>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'text-[10px] font-mono font-bold py-0.5',
+                    currentAvailableRollsForWidth > 0
+                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                      : 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
+                  )}
+                >
+                  Store Stock: {currentAvailableRollsForWidth} Roll(s) ({widthFt}ft × {lengthFt}ft) • {currentStoreStock.toLocaleString()} SFT
+                </Badge>
+              </div>
             )}
           </div>
 
@@ -347,11 +363,14 @@ export function IssueMasterRollModal({
                 required
               >
                 <option value="">-- Select Material Substrate --</option>
-                {materials.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.name} ({m.sku || 'No SKU'}) • {m.current_stock} {m.unit} avail
-                  </option>
-                ))}
+                {materials.map((m) => {
+                  const bd = getMaterialWarehouseStockBreakdown(m)
+                  return (
+                    <option key={m.id} value={m.id}>
+                      {m.name} ({m.sku || 'No SKU'}) • {bd.purchase_unit_display} ({m.current_stock} {m.unit} avail)
+                    </option>
+                  )
+                })}
               </select>
             </div>
 
@@ -383,10 +402,15 @@ export function IssueMasterRollModal({
         {/* STEP 2: ROLL DIMENSIONS (WIDTH & LENGTH PRESETS) */}
         {/* ========================================================= */}
         <div className="space-y-3 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-          <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
-            <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            2. {tBilingual('Master Roll Dimensions', 'মাস্টার রোলের সাইজ ও মাপ')}
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
+              <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              2. {tBilingual('Master Roll Dimensions', 'মাস্টার রোলের সাইজ ও মাপ')}
+            </span>
+            <span className="text-[10px] text-slate-500 font-mono">
+              Store Unit: <strong>Purchase Unit (Full Rolls)</strong>
+            </span>
+          </div>
 
           {/* Width Section */}
           <div>
@@ -395,28 +419,33 @@ export function IssueMasterRollModal({
                 {tBilingual('Roll Width (Feed Axis)', 'রোলের প্রস্থ')} <span className="text-rose-500">*</span>
               </Label>
               <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
-                Current: {widthFt} ft ({Math.round(widthFt * 12)}&quot;)
+                Current: {widthFt} ft ({Math.round(widthFt * 12)}&quot;) • {currentAvailableRollsForWidth} Rolls Avail in Store
               </span>
             </div>
             <div className="grid grid-cols-3 sm:grid-cols-7 gap-1.5">
-              {DEFAULT_WIDTH_PRESETS.map((p) => (
-                <Button
-                  key={p.label}
-                  type="button"
-                  size="sm"
-                  variant={!isCustomWidth && widthFt === p.value ? 'default' : 'outline'}
-                  onClick={() => handleWidthSelect(p.value)}
-                  className="h-8 text-xs font-bold px-1"
-                >
-                  {p.label}
-                </Button>
-              ))}
+              {DEFAULT_WIDTH_PRESETS.map((p) => {
+                const area = p.value * lengthFt
+                const availRolls = area > 0 ? Math.floor(currentStoreStock / area) : 0
+                return (
+                  <Button
+                    key={p.label}
+                    type="button"
+                    size="sm"
+                    variant={!isCustomWidth && widthFt === p.value ? 'default' : 'outline'}
+                    onClick={() => handleWidthSelect(p.value)}
+                    className="h-10 text-xs font-bold px-1 flex flex-col items-center justify-center leading-none gap-0.5"
+                  >
+                    <span>{p.label}</span>
+                    <span className="text-[9px] font-mono opacity-80">{availRolls} Roll</span>
+                  </Button>
+                )
+              })}
               <Button
                 type="button"
                 size="sm"
                 variant={isCustomWidth ? 'default' : 'outline'}
                 onClick={() => setIsCustomWidth(true)}
-                className="h-8 text-xs font-bold px-1"
+                className="h-10 text-xs font-bold px-1"
               >
                 Custom
               </Button>
@@ -495,9 +524,14 @@ export function IssueMasterRollModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {/* Multi-Roll Quantity */}
           <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-            <Label className="text-xs font-semibold block">
-              {tBilingual('Requisition Quantity (Number of Rolls)', 'ইস্যুকৃত রোলের সংখ্যা')}
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold block">
+                {tBilingual('Requisition Quantity (Purchase Units / Full Rolls)', 'ইস্যুকৃত রোলের সংখ্যা')}
+              </Label>
+              <Badge variant="secondary" className="text-[10px] font-mono">
+                {quantityRolls} Roll(s) = {totalBatchAreaSft} SFT
+              </Badge>
+            </div>
             <div className="flex items-center gap-2">
               <Button
                 type="button"
@@ -527,7 +561,7 @@ export function IssueMasterRollModal({
               </Button>
             </div>
             <div className="flex items-center gap-1.5 justify-center pt-1">
-              {[1, 2, 3, 5].map((q) => (
+              {[1, 2, 3, 5, 10].map((q) => (
                 <Button
                   key={q}
                   type="button"
@@ -656,12 +690,12 @@ export function IssueMasterRollModal({
 
           <Card className="p-2.5 bg-white dark:bg-slate-900 border shadow-xs">
             <span className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 block">
-              Total Batch Area
+              Requisition / Issue
             </span>
             <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 font-mono">
-              {totalBatchAreaSft} SFT
+              {quantityRolls} Roll(s)
             </span>
-            <span className="text-[9px] text-slate-400 block">{quantityRolls} roll(s) total</span>
+            <span className="text-[9px] text-slate-400 block">{totalBatchAreaSft} SFT total</span>
           </Card>
 
           <Card className="p-2.5 bg-white dark:bg-slate-900 border shadow-xs">
@@ -689,10 +723,10 @@ export function IssueMasterRollModal({
                 isStoreShortage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
               )}
             >
-              {projectedStoreBalance.toLocaleString()} SFT
+              {projectedRollsRemaining} Rolls ({projectedStoreBalance.toLocaleString()} SFT)
             </span>
             <span className="text-[9px] text-slate-400 block">
-              {isStoreShortage ? '⚠️ Shortage Warning' : 'Stock Sufficient'}
+              {isStoreShortage ? '⚠️ Store Shortage' : `Dispatched as ${quantityRolls} Active Piece(s)`}
             </span>
           </Card>
         </div>

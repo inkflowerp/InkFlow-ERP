@@ -81,7 +81,7 @@ import type { ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { isMaterialProduct, isReadyProduct } from '@/lib/units'
+import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay } from '@/lib/units'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   approveMaterialRequestAction,
@@ -855,6 +855,7 @@ function UnifiedInventoryContent() {
                         const isLow = stockQty <= reorder && stockQty > 0
                         const isOut = stockQty <= 0
                         const avgCost = Number(mat.average_cost || mat.last_purchase_price || 0)
+                        const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
 
                         return (
                           <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
@@ -878,10 +879,26 @@ function UnifiedInventoryContent() {
                               )}
                             </td>
                             <td className="p-3 text-right font-black font-mono text-sm text-slate-900 dark:text-white">
-                              {stockQty.toLocaleString()}
+                              {breakdown.total_rolls > 0 ? (
+                                <div>
+                                  <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{breakdown.purchase_unit_display}</span>
+                                  <div className="text-[10px] font-medium text-slate-500 font-sans mt-0.5">
+                                    {stockQty.toLocaleString()} {mat.unit}
+                                  </div>
+                                </div>
+                              ) : (
+                                <span>{stockQty.toLocaleString()}</span>
+                              )}
                             </td>
-                            <td className="p-3 text-slate-500 uppercase font-mono font-bold text-[11px]">
-                              {mat.unit}
+                            <td className="p-3">
+                              <span className="text-slate-500 uppercase font-mono font-bold text-[11px] block">
+                                {breakdown.total_rolls > 0 ? 'Rolls (Purchase Unit)' : mat.unit}
+                              </span>
+                              {breakdown.total_rolls > 0 && breakdown.formatted_summary && (
+                                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium block whitespace-normal mt-0.5 font-sans">
+                                  {breakdown.formatted_summary}
+                                </span>
+                              )}
                             </td>
                             <td className="p-3 text-right font-mono text-slate-600 dark:text-slate-300">
                               <CurrencyDisplay amount={avgCost} />
@@ -1286,7 +1303,8 @@ function UnifiedInventoryContent() {
                               {roll.width_ft} ft
                             </td>
                             <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                              {currentLen.toFixed(1)} ft / {roll.initial_length_ft} ft
+                              <div>{currentLen.toFixed(2)} ft <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">— 1 Pcs</span></div>
+                              <div className="text-[10px] text-slate-400 font-normal">Initial: {roll.initial_length_ft} ft</div>
                             </td>
                             <td className="p-3 text-right font-mono text-emerald-600 font-black">
                               {area.toFixed(1)} SFT
@@ -2141,6 +2159,8 @@ function UnifiedInventoryContent() {
           }}
           materials={materials}
           locations={locations}
+          rolls={rolls}
+          selectedRollId={selectedRollForAction?.id}
           selectedMaterialId={selectedRollForAction?.material_id || selectedMaterialForAction?.id || selectedFloorRecordForConsumption?.material_id}
           selectedFloorRecord={selectedFloorRecordForConsumption}
           onSuccess={() => {

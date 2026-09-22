@@ -47,6 +47,7 @@ import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { returnFloorStockToStoreAction } from '@/actions/inventory.actions'
 import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
+import { formatFloorPieceDisplay } from '@/lib/units'
 
 export interface PrintFloorConsumptionUnitProps {
   floorConsumptions: FloorConsumptionRecord[]
@@ -360,12 +361,12 @@ export function PrintFloorConsumptionUnit({
       {/* ========================================================= */}
       {/* ACTIVE MASTER ROLLS ON PRINT FLOOR SECTION */}
       {/* ========================================================= */}
-      <Card className="p-3.5 border-blue-200 dark:border-blue-900/60 bg-blue-50/20 dark:bg-blue-950/10">
-        <div className="flex items-center justify-between gap-2 flex-wrap mb-2.5">
+      <Card className="p-3.5 border-blue-200 dark:border-blue-900/60 bg-blue-50/20 dark:bg-blue-950/10 space-y-3">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
             <span className="text-xs font-black uppercase text-blue-900 dark:text-blue-200 tracking-wider">
-              {tBilingual('Active Physical Rolls on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় মাস্টার রোল বহর')} ({activeFloorRolls.length})
+              {tBilingual('Active Physical Rolls & Substrates on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় পিস ও রোল বহর')} ({activeFloorRolls.length} Pcs)
             </span>
           </div>
           <Button
@@ -378,6 +379,25 @@ export function PrintFloorConsumptionUnit({
           </Button>
         </div>
 
+        {/* Piece-Level Fleet Overview Ribbon */}
+        {activeFloorRolls.length > 0 && (
+          <div className="p-2.5 bg-blue-100/60 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900/60 flex items-center gap-2 overflow-x-auto text-[11px] font-mono text-blue-900 dark:text-blue-200 scrollbar-thin">
+            <span className="font-bold shrink-0 uppercase text-[10px] tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
+              <Layers className="h-3 w-3" />
+              Floor Pieces:
+            </span>
+            {activeFloorRolls.map((r) => (
+              <Badge
+                key={r.id}
+                variant="outline"
+                className="bg-white/90 dark:bg-slate-900/90 shrink-0 font-bold border-blue-300 text-blue-900 dark:text-blue-200 text-[10px] py-0.5"
+              >
+                {formatFloorPieceDisplay(r)}
+              </Badge>
+            ))}
+          </div>
+        )}
+
         {activeFloorRolls.length === 0 ? (
           <div className="p-4 text-center text-xs text-slate-500 border border-dashed rounded-lg bg-white/60 dark:bg-slate-900/60">
             <span>No master rolls currently mounted or active on the floor. Click &quot;Issue Master Roll to Floor&quot; to mount a roll.</span>
@@ -388,30 +408,34 @@ export function PrintFloorConsumptionUnit({
               const currentLen = Number(roll.current_length_ft ?? (roll.remaining_area_sft / (roll.width_ft || 1)))
               const initialLen = Number(roll.initial_length_ft || 164)
               const percentLeft = initialLen > 0 ? Math.round((currentLen / initialLen) * 100) : 0
+              const remainingArea = Number(roll.remaining_area_sft ?? (currentLen * (roll.width_ft || 1)))
 
               return (
                 <div
                   key={roll.id}
-                  className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-2"
+                  className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between space-y-2.5 hover:border-blue-400 transition-colors"
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-xs text-slate-900 dark:text-white font-mono">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="font-black text-xs text-slate-900 dark:text-white font-mono">
                           {roll.roll_code || roll.roll_tag}
                         </span>
                         <Badge className="text-[9px] bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
                           {roll.width_ft} ft Wide
                         </Badge>
+                        <Badge variant="outline" className="text-[9px] font-mono font-bold py-0 text-slate-600 dark:text-slate-400">
+                          1 Pcs
+                        </Badge>
                       </div>
-                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                      <span className="text-[11px] text-slate-600 dark:text-slate-400 block mt-0.5 font-medium">
                         {roll.material?.name || 'Raw Material Roll'}
                       </span>
                     </div>
 
                     <Badge
                       variant="outline"
-                      className={`text-[9px] uppercase font-bold py-0 ${
+                      className={`text-[9px] uppercase font-bold py-0 shrink-0 ${
                         roll.status === 'mounted'
                           ? 'border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40'
                           : 'border-blue-400 text-blue-700 bg-blue-50 dark:bg-blue-950/40'
@@ -421,20 +445,20 @@ export function PrintFloorConsumptionUnit({
                     </Badge>
                   </div>
 
-                  {/* Machine Mount */}
+                  {/* Machine Mount / Staging */}
                   <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
-                    <Cpu className="h-3 w-3 text-slate-400 shrink-0" />
-                    <span className="truncate">
+                    <Cpu className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <span className="truncate font-medium">
                       {roll.mounted_machine_name || roll.location_name || 'General Press Workstation'}
                     </span>
                   </div>
 
                   {/* Length Ticker & Progress Bar */}
-                  <div className="space-y-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <div className="space-y-1 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-slate-500 text-[11px]">Remaining Length:</span>
+                      <span className="text-slate-500 text-[11px]">Available Length:</span>
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black">
-                        {currentLen.toFixed(2)} ft / {initialLen} ft
+                        {currentLen.toFixed(2)} ft — 1 Pcs
                       </strong>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -444,16 +468,46 @@ export function PrintFloorConsumptionUnit({
                       />
                     </div>
                     <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-0.5">
-                      <span>Area: <strong>{roll.remaining_area_sft} SFT</strong></span>
-                      <span>{percentLeft}% remaining</span>
+                      <span>Area: <strong>{remainingArea.toFixed(2)} SFT</strong></span>
+                      <span>{percentLeft}% remaining ({initialLen}ft initial)</span>
                     </div>
                   </div>
+
+                  {/* Action Button: Consume from this Piece */}
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      const matchingFloorRec = floorConsumptions.find(
+                        (fc) => fc.material_id === roll.material_id && fc.remaining_floor_balance > 0
+                      )
+                      onOpenLogConsumption(
+                        matchingFloorRec || ({
+                          id: roll.id,
+                          material_id: roll.material_id,
+                          material_name: roll.material?.name || 'Substrate',
+                          sku: roll.material?.sku,
+                          machine_name: roll.mounted_machine_name,
+                          machine_id: roll.mounted_machine_id,
+                          remaining_floor_balance: currentLen,
+                          issued_quantity: initialLen,
+                          consumed_quantity: initialLen - currentLen,
+                          unit: 'ft',
+                          status: 'on_floor',
+                        } as any)
+                      )
+                    }}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold h-7.5 cursor-pointer shadow-xs gap-1 mt-1"
+                  >
+                    <Scissors className="h-3.5 w-3.5" />
+                    <span>{tBilingual('Consume from this Piece', 'এই রোল থেকে কনজাম্পশন করুন')}</span>
+                  </Button>
                 </div>
               )
             })}
           </div>
         )}
       </Card>
+
 
       {/* ========================================================= */}
       {/* FILTER & SEARCH BAR */}

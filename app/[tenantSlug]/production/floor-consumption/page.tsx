@@ -69,6 +69,7 @@ export default function FloorConsumptionPage() {
   // Modal States
   const [isLogConsumptionOpen, setIsLogConsumptionOpen] = useState(false)
   const [selectedFloorRecord, setSelectedFloorRecord] = useState<FloorConsumptionRecord | null>(null)
+  const [selectedRollId, setSelectedRollId] = useState<string | undefined>(undefined)
   const [isIssueMasterRollOpen, setIsIssueMasterRollOpen] = useState(false)
 
   const loadFloorData = useCallback(async () => {
@@ -209,7 +210,14 @@ export default function FloorConsumptionPage() {
         issues={issues}
         rolls={rolls}
         onOpenLogConsumption={(record) => {
-          setSelectedFloorRecord(record || null)
+          if (record && (record as any).width_ft) {
+            // It's a roll piece
+            setSelectedRollId(record.id)
+            setSelectedFloorRecord(null)
+          } else {
+            setSelectedFloorRecord(record || null)
+            setSelectedRollId(undefined)
+          }
           setIsLogConsumptionOpen(true)
         }}
         onRefresh={() => loadFloorData()}
@@ -222,15 +230,21 @@ export default function FloorConsumptionPage() {
           open={isLogConsumptionOpen}
           onOpenChange={(open) => {
             setIsLogConsumptionOpen(open)
-            if (!open) setSelectedFloorRecord(null)
+            if (!open) {
+              setSelectedFloorRecord(null)
+              setSelectedRollId(undefined)
+            }
           }}
           materials={materials}
           locations={locations}
           tasks={tasks}
+          rolls={rolls}
+          selectedRollId={selectedRollId}
           selectedFloorRecord={selectedFloorRecord}
           onSuccess={() => {
             setIsLogConsumptionOpen(false)
             setSelectedFloorRecord(null)
+            setSelectedRollId(undefined)
             loadFloorData()
           }}
           companyId={companyId}

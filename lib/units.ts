@@ -1879,4 +1879,167 @@ export function calculateSignageStructureBOM(
   }
 }
 
+export interface WarehouseRollStockItem {
+  width_ft: number
+  length_ft: number
+  roll_count: number
+  total_sft: number
+}
+
+export interface MaterialWarehouseStockBreakdown {
+  purchase_unit_display: string
+  roll_items: WarehouseRollStockItem[]
+  total_rolls: number
+  total_stock_display: string
+  formatted_summary: string
+}
+
+/**
+ * Calculates and formats warehouse stock in Purchase Units (Rolls, Sheets, Cans, Boxes)
+ * e.g. "10 Roll (3ft × 164ft) • 8 Roll (5ft × 164ft)"
+ */
+export function getMaterialWarehouseStockBreakdown(
+  material: any,
+  warehouseRolls?: any[]
+): MaterialWarehouseStockBreakdown {
+  if (!material) {
+    return {
+      purchase_unit_display: '0 units',
+      roll_items: [],
+      total_rolls: 0,
+      total_stock_display: '0',
+      formatted_summary: '0',
+    }
+  }
+
+  const currentStock = Number(material.current_stock || 0)
+  const isRoll =
+    Boolean(material.is_roll) ||
+    material.category === 'roll_media' ||
+    material.category === 'flex' ||
+    material.category === 'vinyl' ||
+    material.category === 'sticker_paper' ||
+    material.category === 'pvc' ||
+    material.category === 'fabric' ||
+    material.category === 'lamination_film'
+
+  if (isRoll) {
+    // If specific warehouse rolls exist for this material
+    const matRolls = (warehouseRolls || []).filter(
+      (r) =>
+        r.material_id === material.id &&
+        (r.status === 'in_warehouse' || (r.status === 'available' && r.location_name !== 'Print Floor')) &&
+        (!r.mounted_machine_id && !r.mounted_machine_name)
+    )
+
+    if (matRolls.length > 0) {
+      const map = new Map<string, WarehouseRollStockItem>()
+      let totalRolls = 0
+      let totalSft = 0
+
+      for (const r of matRolls) {
+        const w = Number(r.width_ft) || 3
+        const l = Number(r.current_length_ft ?? r.initial_length_ft) || 164
+        const key = `${w}x${l}`
+        const sft = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (w * l))
+
+        if (!map.has(key)) {
+          map.set(key, { width_ft: w, length_ft: l, roll_count: 0, total_sft: 0 })
+        }
+        const item = map.get(key)!
+        item.roll_count += 1
+        item.total_sft += sft
+        totalRolls += 1
+        totalSft += sft
+      }
+
+      const rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft)
+      const summaryParts = rollItems.map(
+        (it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`
+      )
+
+      return {
+        purchase_unit_display: `${totalRolls} Roll${totalRolls !== 1 ? 's' : ''}`,
+        roll_items: rollItems,
+        total_rolls: totalRolls,
+        total_stock_display: `${totalSft.toLocaleString()} SFT`,
+        formatted_summary: summaryParts.join(' • '),
+      }
+    }
+
+    // Default or configured roll breakdown based on standard widths
+    const standardLength = Number(material.standard_roll_length_ft || material.roll_length_ft || 164)
+    const widths: number[] =
+      Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0
+        ? material.available_widths_ft
+        : material.roll_width_ft
+        ? [material.roll_width_ft]
+        : [3, 5]
+
+    if (widths.length === 1) {
+      const w = widths[0]
+      const areaPerRoll = w * standardLength
+      const rollCount = areaPerRoll > 0 ? Math.floor(currentStock / areaPerRoll) : 0
+      const rollItems: WarehouseRollStockItem[] = [
+        { width_ft: w, length_ft: standardLength, roll_count: rollCount, total_sft: rollCount * areaPerRoll },
+      ]
+      return {
+        purchase_unit_display: `${rollCount} Roll${rollCount !== 1 ? 's' : ''}`,
+        roll_items: rollItems,
+        total_rolls: rollCount,
+        total_stock_display: `${currentStock.toLocaleString()} SFT`,
+        formatted_summary: `${rollCount} Roll (${w}ft × ${standardLength}ft)`,
+      }
+    } else {
+      // Divide stock across available widths proportionally
+      const items: WarehouseRollStockItem[] = widths.map((w) => {
+        const areaPerRoll = w * standardLength
+        const rollCount = areaPerRoll > 0 ? Math.floor((currentStock / widths.length) / areaPerRoll) : 0
+        return {
+          width_ft: w,
+          length_ft: standardLength,
+          roll_count: rollCount,
+          total_sft: rollCount * areaPerRoll,
+        }
+      })
+      const totalRolls = items.reduce((acc, it) => acc + it.roll_count, 0)
+      const summaryParts = items.map((it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`)
+
+      return {
+        purchase_unit_display: `${totalRolls} Roll${totalRolls !== 1 ? 's' : ''}`,
+        roll_items: items,
+        total_rolls: totalRolls,
+        total_stock_display: `${currentStock.toLocaleString()} SFT`,
+        formatted_summary: summaryParts.join(' • '),
+      }
+    }
+  }
+
+  // Non-roll items
+  const unit = (material.unit || 'pcs').toLowerCase()
+  return {
+    purchase_unit_display: `${currentStock.toLocaleString()} ${unit}`,
+    roll_items: [],
+    total_rolls: 0,
+    total_stock_display: `${currentStock.toLocaleString()} ${unit}`,
+    formatted_summary: `${currentStock.toLocaleString()} ${unit}`,
+  }
+}
+
+/**
+ * Formats an on-floor active roll / substrate piece in Consumption Unit format
+ * e.g. "PVC Width 3ft Available Length 143.75ft - 1 Pcs"
+ */
+export function formatFloorPieceDisplay(roll: any): string {
+  if (!roll) return ''
+  const matName = roll.material?.name || roll.material_name || 'Substrate'
+  const width = Number(roll.width_ft || 3)
+  const currentLen = Number(
+    roll.current_length_ft ?? (roll.remaining_area_sft ? roll.remaining_area_sft / width : 0)
+  )
+  const tag = roll.roll_code || roll.roll_tag || ''
+  return `${matName} Width ${width}ft Available Length ${currentLen.toFixed(2)}ft - 1 Pcs${tag ? ` [${tag}]` : ''}`
+}
+
+
 
