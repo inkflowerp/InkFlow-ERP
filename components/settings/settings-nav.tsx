@@ -19,6 +19,7 @@ import {
   FileText,
   Workflow,
   Crown,
+  Trash2,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -128,6 +129,12 @@ export function SettingsNav() {
       titleBn: 'সাবস্ক্রিপশন',
       href: '/settings/subscription',
       icon: Crown,
+    },
+    {
+      title: 'Trash & Recycle Bin',
+      titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
+      href: '/settings/trash',
+      icon: Trash2,
     },
   ]
 

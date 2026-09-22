@@ -32,6 +32,7 @@ import {
   Hash,
   Globe2,
   RefreshCw,
+  Trash2,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
@@ -392,6 +393,15 @@ export default function CompanySettingsPage() {
             icon: Crown,
             color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
             badge: 'Tier Status',
+          },
+          {
+            title: 'Trash & Recycle Bin',
+            titleBn: 'রিসাইকেল বিন ও ট্র্যাশ',
+            desc: '30-day auto-retention, restore or permanently purge deleted items',
+            path: '/settings/trash',
+            icon: Trash2,
+            color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/50',
+            badge: '30d Retention',
           },
         ].map((item) => {
           const Icon = item.icon
