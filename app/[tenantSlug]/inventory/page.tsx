@@ -46,11 +46,14 @@ import {
   XCircle,
   Trash2,
   Cpu,
+  Printer,
+  LayoutGrid,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -116,6 +119,11 @@ function UnifiedInventoryContent() {
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
   const companyId = company?.id || 'default'
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // URL-addressable view tab
   const rawView = searchParams.get('view')
@@ -573,6 +581,25 @@ function UnifiedInventoryContent() {
     )
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl pb-16 p-4 sm:p-6 animate-pulse">
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+        <div className="space-y-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-16 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <FeatureGate feature="inventory">
       <div className="space-y-6 max-w-7xl pb-16">
@@ -588,6 +615,34 @@ function UnifiedInventoryContent() {
           iconColor="text-emerald-600"
           actions={
             <div className="flex flex-wrap items-center gap-2">
+              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Cpu className="h-3.5 w-3.5 text-blue-600" />
+                  <span className="hidden sm:inline">Machineries</span>
+                </Button>
+              </Link>
+
+              <Link href={getTenantNavHref('/production', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Printer className="h-3.5 w-3.5 text-indigo-600" />
+                  <span className="hidden sm:inline">Printing Floor</span>
+                </Button>
+              </Link>
+
+              <Link href={getTenantNavHref('/finishing', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Scissors className="h-3.5 w-3.5 text-indigo-600" />
+                  <span className="hidden sm:inline">Finishing</span>
+                </Button>
+              </Link>
+
+              <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
+                <Button variant="outline" size="sm" className="text-xs h-9 gap-1.5 border-slate-200 dark:border-slate-800">
+                  <Building2 className="h-3.5 w-3.5 text-emerald-600" />
+                  <span className="hidden sm:inline">Suppliers</span>
+                </Button>
+              </Link>
+
               <Button
                 size="sm"
                 variant="outline"
@@ -636,7 +691,7 @@ function UnifiedInventoryContent() {
                 + Receive Stock (GRN)
               </Button>
 
-              <Link href="/trash?tab=materials">
+              <Link href={getTenantNavHref('/trash?tab=materials', pathname, slug)}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -849,7 +904,7 @@ function UnifiedInventoryContent() {
                           <tr key={mat.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                             <td className="p-3">
                               <Link
-                                href={`/inventory/${mat.id}`}
+                                href={getTenantNavHref(`/inventory/${mat.id}`, pathname, slug)}
                                 className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 flex items-center gap-1.5"
                               >
                                 <span>{mat.name}</span>
@@ -1035,7 +1090,7 @@ function UnifiedInventoryContent() {
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                <Link href={`/products/${p.id}`}>
+                                <Link href={getTenantNavHref(`/products/${p.id}`, pathname, slug)}>
                                   <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]">
                                     <Eye className="h-3.5 w-3.5 mr-1" />
                                     View
@@ -1627,7 +1682,7 @@ function UnifiedInventoryContent() {
                       filteredOrders.map((po) => (
                         <tr key={po.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
                           <td className="p-3 font-mono font-bold text-slate-900 dark:text-white">
-                            <Link href={`/purchases/${po.id}`} className="hover:underline text-indigo-600 dark:text-indigo-400">
+                            <Link href={getTenantNavHref(`/purchases/${po.id}`, pathname, slug)} className="hover:underline text-indigo-600 dark:text-indigo-400">
                               {po.po_number}
                             </Link>
                           </td>
@@ -1673,7 +1728,7 @@ function UnifiedInventoryContent() {
                                 </Button>
                               )}
                               <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-[11px]">
-                                <Link href={`/purchases/${po.id}`}>
+                                <Link href={getTenantNavHref(`/purchases/${po.id}`, pathname, slug)}>
                                   <Eye className="h-3.5 w-3.5" />
                                 </Link>
                               </Button>

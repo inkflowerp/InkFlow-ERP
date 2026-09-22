@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import {
   Package,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -41,11 +42,17 @@ import { cn } from '@/lib/utils'
 export default function MaterialDetailPage() {
   const params = useParams()
   const router = useRouter()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
   const companyId = company?.id || 'default'
   const materialId = params.id as string
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [material, setMaterial] = useState<MaterialRecord | null>(null)
   const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
@@ -81,11 +88,16 @@ export default function MaterialDetailPage() {
     loadData()
   }, [materialId, companyId])
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="p-8 text-center text-xs text-slate-500">
-        <RefreshCw className="h-6 w-6 animate-spin mx-auto mb-2 text-emerald-600" />
-        Loading material details...
+      <div className="space-y-6 max-w-6xl p-6 animate-pulse">
+        <div className="h-8 bg-slate-200 dark:bg-slate-800 rounded w-1/3" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-xl" />
       </div>
     )
   }
@@ -94,7 +106,7 @@ export default function MaterialDetailPage() {
     return (
       <div className="p-8 text-center space-y-3">
         <p className="text-sm font-bold text-slate-700">Material not found.</p>
-        <Link href="/inventory">
+        <Link href={getTenantNavHref('/inventory', pathname, slug)}>
           <Button size="sm" variant="outline">
             <ArrowLeft className="h-4 w-4 mr-1" /> Back to Inventory Hub
           </Button>
@@ -114,7 +126,7 @@ export default function MaterialDetailPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <Link href="/inventory">
+            <Link href={getTenantNavHref('/inventory', pathname, slug)}>
               <Button size="sm" variant="outline" className="h-9 w-9 p-0">
                 <ArrowLeft className="h-4 w-4" />
               </Button>
