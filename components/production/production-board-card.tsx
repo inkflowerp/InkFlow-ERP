@@ -19,6 +19,8 @@ import {
   Lock,
   MoreVertical,
   ExternalLink,
+  FileCheck2,
+  MessageSquare,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
@@ -38,6 +40,8 @@ interface ProductionBoardCardProps {
   onHold?: (task: ProductionTaskRecord) => void
   onResume?: (task: ProductionTaskRecord) => void
   onRework?: (task: ProductionTaskRecord) => void
+  onPrintTicket?: (task: ProductionTaskRecord) => void
+  onSendWhatsApp?: (task: ProductionTaskRecord) => void
 }
 
 export function ProductionBoardCard({
@@ -49,6 +53,8 @@ export function ProductionBoardCard({
   onHold,
   onResume,
   onRework,
+  onPrintTicket,
+  onSendWhatsApp,
 }: ProductionBoardCardProps) {
   const pathname = usePathname() || ''
   const { company } = useTenant()
@@ -204,7 +210,33 @@ export function ProductionBoardCard({
         </div>
 
         {/* Action Controls */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-1.5">
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1">
+            {onPrintTicket && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onPrintTicket(task)}
+                title="Print Job Ticket"
+                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900"
+              >
+                <FileCheck2 className="h-3.5 w-3.5" />
+              </Button>
+            )}
+            {onSendWhatsApp && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => onSendWhatsApp(task)}
+                title="Send WhatsApp Update"
+                className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5">
           {task.status === 'on_hold' && onResume && (
             <Button
               size="sm"
@@ -289,6 +321,7 @@ export function ProductionBoardCard({
               Rework
             </Button>
           )}
+          </div>
         </div>
       </CardContent>
     </Card>

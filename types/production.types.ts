@@ -209,7 +209,12 @@ export interface ProductionTaskRecord {
   // Computed/Hydrated fields
   job_number?: string | null
   customer_name?: string | null
+  customer_phone?: string | null
   product_name?: string | null
+  dimension_unit?: string | null
+  scheduled_date?: string | null
+  completed_at?: string | null
+  operator_name?: string | null
   job_deadline?: string | null
   is_blocked_by_dependency?: boolean
   blocking_dependency_task_name?: string | null
