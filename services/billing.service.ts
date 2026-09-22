@@ -260,8 +260,13 @@ export class BillingService {
     actorName?: string
     companyName?: string
     tenantSlug?: string
-  }): Promise<{ success: boolean; whatsappUrl?: string; error?: string }> {
-    const { companyId, invoiceId, companyName } = params
+    paymentAccounts?: {
+      bkash?: string
+      nagad?: string
+      bank?: string
+    }
+  }): Promise<{ success: boolean; whatsappUrl?: string; reminderText?: string; error?: string }> {
+    const { companyId, invoiceId, companyName, paymentAccounts } = params
     const invoice = await this.getInvoiceById(invoiceId, companyId)
     if (!invoice) {
       return { success: false, error: 'Invoice not found in company context.' }
@@ -274,21 +279,29 @@ export class BillingService {
 
     const compName = companyName || 'InkFlow'
     const daysOverdue = calculateDaysOverdue(invoice.due_date)
-    const overdueNotice = daysOverdue > 0 ? ` (${daysOverdue} days overdue)` : ''
+    const overdueNotice = daysOverdue > 0 ? ` (⚠️ ${daysOverdue} দিন অতিবাহিত / Overdue)` : ''
+
+    const bkashNumber = paymentAccounts?.bkash || '01700-000000 (Merchant)'
+    const nagadNumber = paymentAccounts?.nagad || '01800-000000 (Merchant)'
+    const bankDetails = paymentAccounts?.bank || 'Dutch-Bangla Bank / City Bank'
 
     const reminderText =
-      `*PAYMENT REMINDER / বকেয়া বিল তাগাদা — ${compName}*\n\n` +
-      `Dear ${invoice.customer_name},\n` +
-      `This is a gentle reminder regarding Invoice #${invoice.invoice_number}.\n\n` +
-      `📄 *Invoice No:* ${invoice.invoice_number}\n` +
-      `📅 *Invoice Date:* ${invoice.invoice_date}\n` +
-      `⏰ *Due Date:* ${invoice.due_date}${overdueNotice}\n` +
-      `💵 *Total Bill:* ৳ ${invoice.grand_total.toLocaleString()}\n` +
-      `✅ *Paid Amount:* ৳ ${invoice.paid_amount.toLocaleString()}\n` +
-      `❗ *Outstanding Due:* ৳ ${invoice.due_amount.toLocaleString()}\n\n` +
-      `We kindly request you to settle the outstanding due amount at your earliest convenience.\n\n` +
-      `Thank you,\n` +
-      `_${compName}_`
+      `আসসালামু আলাইকুম / আদাব ${invoice.customer_name} ভাই/ম্যাডাম,\n` +
+      `আশা করি ভালো আছেন। *${compName}* থেকে বকেয়া বিল সংক্রান্ত একটি সদয় তাগাদা—\n\n` +
+      `📄 *ইনভয়েস নম্বর (Invoice No):* #${invoice.invoice_number}\n` +
+      `📅 *ইস্যুর তারিখ (Date):* ${invoice.invoice_date}\n` +
+      `⏰ *পরিশোধের শেষ তারিখ (Due Date):* ${invoice.due_date}${overdueNotice}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `• সর্বমোট বিল (Total Bill): ৳${invoice.grand_total.toLocaleString('en-BD')}\n` +
+      `• পরিশোধিত অগ্রিম (Paid Amount): ৳${(invoice.paid_amount || 0).toLocaleString('en-BD')}\n` +
+      `*• প্রদেয় অবশিষ্ট বকেয়া (Due Balance): ৳${invoice.due_amount.toLocaleString('en-BD')} BDT*\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `📱 *মূল্য পরিশোধের অফিশিয়াল মাধ্যমসমূহ (Official Accounts):*\n` +
+      `• bKash: ${bkashNumber}\n` +
+      `• Nagad: ${nagadNumber}\n` +
+      `• Bank A/C: ${bankDetails} (A/C Name: ${compName})\n\n` +
+      `অনুগ্রহপূর্বক বকেয়া বিলটি পরিশোধ করে ট্রানজেকশন আইডি বা রিসিট শেয়ার করার জন্য অনুরোধ জানাচ্ছি। আপনার ব্যবসার উত্তরোত্তর সাফল্য কামনায়—\n` +
+      `*${compName}*`
 
     const cleanPhone = waPhone.replace(/\D/g, '')
     const formattedPhone = cleanPhone.startsWith('880')
@@ -301,7 +314,109 @@ export class BillingService {
     return {
       success: true,
       whatsappUrl,
+      reminderText,
     }
+  }
+
+  /**
+   * Generates customer-facing text message for WhatsApp Invoice Dispatch
+   */
+  static generateInvoiceTextMessage(
+    invoice: InvoiceRecord,
+    companyName: string | null = 'InkFlow',
+    paymentAccounts?: { bkash?: string | null; nagad?: string | null; bank?: string | null }
+  ): string {
+    const effectiveCompanyName = companyName || 'InkFlow'
+    const bkash = paymentAccounts?.bkash || '01700-000000'
+    const nagad = paymentAccounts?.nagad || '01800-000000'
+    const bank = paymentAccounts?.bank || 'Dutch-Bangla Bank / City Bank'
+
+    const itemsSummary = (invoice.items || [])
+      .slice(0, 4)
+      .map((it, idx) => `  ${idx + 1}. ${it.item_name || it.item_description} (${it.quantity} ${it.unit || 'pcs'}) - ৳${(it.total_price || 0).toLocaleString('en-BD')}`)
+      .join('\n')
+    const moreItems = (invoice.items || []).length > 4 ? `\n  ...এবং আরও ${(invoice.items || []).length - 4}টি আইটেম` : ''
+
+    return `আসসালামু আলাইকুম / আদাব ${invoice.customer_name} ভাই/ম্যাডাম,
+*${effectiveCompanyName}* থেকে আপনার ইনভয়েস ও বিল কপি প্রস্তুত করা হয়েছে।
+
+📄 *ইনভয়েস নম্বর (Invoice No):* #${invoice.invoice_number}
+📅 *তারিখ (Date):* ${invoice.invoice_date}
+⏰ *পরিশোধের শেষ তারিখ (Due Date):* ${invoice.due_date}
+
+📦 *আইটেম ও স্পেসিফিকেশন:*
+${itemsSummary}${moreItems}
+
+━━━━━━━━━━━━━━━━━━━━
+• উপমোট (Subtotal): ৳${Number(invoice.subtotal).toLocaleString('en-BD')}
+${invoice.discount_amount > 0 ? `• বিশেষ ছাড় (Discount): -৳${Number(invoice.discount_amount).toLocaleString('en-BD')}\n` : ''}${invoice.vat_amount > 0 ? `• মূসক/ভ্যাট (${invoice.vat_percentage}%): +৳${Number(invoice.vat_amount).toLocaleString('en-BD')}\n` : ''}*• সর্বমোট বিল (Grand Total): ৳${Number(invoice.grand_total).toLocaleString('en-BD')} BDT*
+• পরিশোধিত (Paid): ৳${Number(invoice.paid_amount || 0).toLocaleString('en-BD')}
+*• প্রদেয় বকেয়া (Due Balance): ৳${Number(invoice.due_amount).toLocaleString('en-BD')} BDT*
+
+📱 *মূল্য পরিশোধের অফিশিয়াল মাধ্যম:*
+• bKash / Nagad: ${bkash} / ${nagad}
+• Bank: ${bank}
+
+ধন্যবাদান্তে,
+*${effectiveCompanyName}*`
+  }
+
+  /**
+   * Resolves the primary industrial printing sector of an invoice
+   */
+  static getSectorForInvoice(
+    invoice: InvoiceRecord
+  ): 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'other' {
+    if (!invoice.items || invoice.items.length === 0) return 'digital_print'
+
+    const hasDigital = invoice.items.some(
+      (it: any) =>
+        it.category_preset === 'digital_print' ||
+        it.category_preset === 'digital' ||
+        it.category_preset === 'flex' ||
+        (it.item_name && /(flex|banner|vinyl|sticker|mesh|eco-solvent|solvent|backlight vinyl|frosted|rollup|x-banner)/i.test(it.item_name)) ||
+        (it.item_description && /(flex|banner|vinyl|sticker|mesh|eco-solvent|solvent|backlight vinyl|frosted|rollup|x-banner)/i.test(it.item_description))
+    )
+
+    const hasSignage = invoice.items.some(
+      (it: any) =>
+        it.category_preset === 'signage_fabrication' ||
+        it.category_preset === 'signage' ||
+        it.product_type === 'fabrication_service' ||
+        Boolean(it.signage_specs) ||
+        (it.item_name && /(acrylic|signboard|neon|3d letter|channel letter|box pipe|ss letter|metal letter|glow sign|light box)/i.test(it.item_name)) ||
+        (it.item_description && /(acrylic|signboard|neon|3d letter|channel letter|box pipe|ss letter|metal letter|glow sign|light box)/i.test(it.item_description))
+    )
+
+    const hasOffset = invoice.items.some(
+      (it: any) =>
+        it.category_preset === 'offset_print' ||
+        it.category_preset === 'offset' ||
+        Boolean(it.offset_specs) ||
+        (it.item_name && /(visiting card|cash memo|challan|pad|leaflet|flyer|brochure|carton|book|calendar|envelope|folder|gsm|ncr|ctp plate)/i.test(it.item_name)) ||
+        (it.item_description && /(visiting card|cash memo|challan|pad|leaflet|flyer|brochure|carton|book|calendar|envelope|folder|gsm|ncr|ctp plate)/i.test(it.item_description))
+    )
+
+    const hasMerchandise = invoice.items.some(
+      (it: any) =>
+        it.category_preset === 'ready_merchandise' ||
+        it.category_preset === 'merchandise' ||
+        it.category_preset === 'ready' ||
+        it.item_kind === 'ready_product' ||
+        (it.item_name && /(mug|t-shirt|crest|trophy|id card|lanyard|cap|gift|wooden base)/i.test(it.item_name)) ||
+        (it.item_description && /(mug|t-shirt|crest|trophy|id card|lanyard|cap|gift|wooden base)/i.test(it.item_description))
+    )
+
+    if (hasDigital && !Boolean(invoice.items.some((it: any) => Boolean(it.signage_specs)))) {
+      return 'digital_print'
+    }
+
+    if (hasSignage) return 'signage_fabrication'
+    if (hasOffset) return 'offset_print'
+    if (hasMerchandise) return 'ready_merchandise'
+    if (hasDigital) return 'digital_print'
+
+    return 'digital_print'
   }
 
   static async sendInvoice(params: {

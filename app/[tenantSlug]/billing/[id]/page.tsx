@@ -26,6 +26,8 @@ import {
   Truck,
   Layers,
   FileSpreadsheet,
+  Copy,
+  Phone,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -40,6 +42,7 @@ import {
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPaymentReminderAction } from '@/actions/billing.actions'
+import { BillingService } from '@/services/billing.service'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
@@ -126,6 +129,17 @@ export default function InvoiceCockpitPage() {
     } else {
       showNotification(`Reminder error: ${res.error}`)
     }
+  }
+
+  const handleCopyWhatsAppText = () => {
+    if (!invoice) return
+    const text = BillingService.generateInvoiceTextMessage(invoice, company?.name, {
+      bkash: company?.phone,
+      nagad: company?.phone,
+      bank: 'Dutch-Bangla Bank / City Bank',
+    })
+    navigator.clipboard.writeText(text)
+    showNotification('Invoice summary copied for WhatsApp / SMS!')
   }
 
   if (!isMounted || isLoading) {
@@ -249,6 +263,17 @@ export default function InvoiceCockpitPage() {
                 </Button>
               </>
             )}
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleCopyWhatsAppText}
+              className="h-9 text-xs font-semibold text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+              title="Copy formatted invoice message for WhatsApp/SMS"
+            >
+              <Copy className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+              Copy Text
+            </Button>
 
             <Button
               size="sm"
@@ -490,7 +515,20 @@ export default function InvoiceCockpitPage() {
                 <div className="font-bold text-sm text-slate-900 dark:text-white">{invoice.customer_name}</div>
                 {invoice.customer_name_bn && <div className="text-xs text-slate-500">{invoice.customer_name_bn}</div>}
                 {invoice.customer_company && <div className="text-xs text-slate-600 dark:text-slate-300 font-semibold">{invoice.customer_company}</div>}
-                <div className="text-slate-600 dark:text-slate-300 font-mono mt-0.5">📞 {invoice.customer_phone}</div>
+                <div className="text-slate-600 dark:text-slate-300 font-mono mt-0.5">
+                  {invoice.customer_phone ? (
+                    <a
+                      href={`tel:${invoice.customer_phone}`}
+                      className="text-blue-600 dark:text-blue-400 hover:underline inline-flex items-center gap-1 font-bold"
+                      title="Call Customer"
+                    >
+                      <span>📞</span>
+                      <span>{invoice.customer_phone}</span>
+                    </a>
+                  ) : (
+                    <span>📞 No phone</span>
+                  )}
+                </div>
                 {invoice.customer_address && <div className="text-slate-500 mt-0.5">📍 {invoice.customer_address}</div>}
                 {invoice.customer_bin && <div className="text-slate-500 font-mono text-[11px] mt-0.5">BIN: {invoice.customer_bin}</div>}
               </div>
