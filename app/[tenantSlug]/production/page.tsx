@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Printer,
   Play,
@@ -72,31 +74,25 @@ const DEPARTMENTS = [
 ]
 
 export default function AdvancedProductionPage() {
+  const params = useParams()
+  const pathname = usePathname() || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
+  const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'board' | 'terminal' | 'machine_queues' | 'table'>('board')
-  const [tasks, setTasks] = useState<ProductionTaskRecord[]>(() => {
-    try {
-      return PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-    } catch {
-      return []
-    }
-  })
+  const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
   const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
   const [selectedDept, setSelectedDept] = useState<string>('all')
   const [selectedMachineFilter, setSelectedMachineFilter] = useState<string>('all')
   const [search, setSearch] = useState('')
-  const [loading, setLoading] = useState(() => {
-    try {
-      const cached = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS)
-      return !cached || cached.length === 0
-    } catch {
-      return true
-    }
-  })
+  const [loading, setLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Interactive Modals State
   const [scheduleTaskTarget, setScheduleTaskTarget] = useState<ProductionTaskRecord | null>(null)
@@ -341,13 +337,13 @@ export default function AdvancedProductionPage() {
                 <Sparkles className="h-3.5 w-3.5 text-blue-600" />
                 {tBilingual('Auto-Generate Tasks from Order', 'অর্ডার থেকে টাস্ক জেনারেট')}
               </Button>
-              <Link href={`/${slug}/finishing`}>
+              <Link href={getTenantNavHref('/finishing', pathname, slug)}>
                 <Button variant="default" size="sm" className="text-xs bangla-text flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs">
                   <Scissors className="h-3.5 w-3.5 text-white" />
                   {tBilingual('Finishing & Fabrication Floor', 'ফিনিশিং ও ফেব্রিকেশন')}
                 </Button>
               </Link>
-              <Link href={`/${slug}/production/machineries`}>
+              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
                 <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
                   <Cpu className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Machinery Fleet', 'মেশিনারি বহর')}

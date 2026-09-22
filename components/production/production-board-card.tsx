@@ -1,6 +1,10 @@
 'use client'
 
 import React from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useTenant } from '@/hooks/use-tenant'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Calendar,
   Clock,
@@ -14,6 +18,7 @@ import {
   AlertOctagon,
   Lock,
   MoreVertical,
+  ExternalLink,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
@@ -45,7 +50,13 @@ export function ProductionBoardCard({
   onResume,
   onRework,
 }: ProductionBoardCardProps) {
+  const pathname = usePathname() || ''
+  const { company } = useTenant()
+  const tenantSlug = company?.slug || 'my-company'
   const { tBilingual } = useI18n()
+
+  const jobTargetId = task.job_order_id || task.production_job_id || task.job_number || task.id
+  const jobHref = getTenantNavHref(`/production/${jobTargetId}`, pathname, tenantSlug)
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
@@ -97,9 +108,13 @@ export function ProductionBoardCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             {getPriorityBadge(task.priority)}
-            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
-              Job #{task.job_number || 'N/A'}
-            </span>
+            <Link
+              href={jobHref}
+              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
+            >
+              <span>Job #{task.job_number || 'N/A'}</span>
+              <ExternalLink className="h-2.5 w-2.5 opacity-60" />
+            </Link>
           </div>
           {getStatusBadge(task.status)}
         </div>
@@ -107,7 +122,9 @@ export function ProductionBoardCard({
         {/* Task Title & Product */}
         <div>
           <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 leading-snug">
-            {task.task_name}
+            <Link href={jobHref} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+              {task.task_name}
+            </Link>
           </h4>
           <p className="text-[11px] text-slate-500 truncate">
             {task.customer_name} • {task.product_name || 'Standard Print'}

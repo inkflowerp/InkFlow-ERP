@@ -2,6 +2,8 @@
 
 import React from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Cpu,
   Clock,
@@ -13,6 +15,7 @@ import {
   Layers,
   Flame,
   ArrowRight,
+  ExternalLink,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +37,7 @@ export function MachineQueueView({
   tenantSlug,
   onScheduleClick,
 }: MachineQueueViewProps) {
+  const pathname = usePathname() || ''
   const { tBilingual } = useI18n()
 
   const getStatusBadge = (status: string) => {
@@ -71,7 +75,7 @@ export function MachineQueueView({
           )}
         </p>
         <div className="mt-4">
-          <Link href={`/${tenantSlug}/production/machineries`}>
+          <Link href={getTenantNavHref('/production/machineries', pathname, tenantSlug)}>
             <Button size="sm" variant="outline" className="text-xs">
               {tBilingual('Manage Machineries Fleet', 'মেশিনারি বহর পরিচালনা')}
             </Button>
@@ -97,7 +101,7 @@ export function MachineQueueView({
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/${tenantSlug}/production/machineries/${group.machine_id}`}
+                    href={getTenantNavHref(`/production/machineries/${group.machine_id}`, pathname, tenantSlug)}
                     className="font-bold text-sm text-slate-900 dark:text-slate-100 hover:text-blue-600 transition-colors"
                   >
                     {group.machine_name}
@@ -113,7 +117,7 @@ export function MachineQueueView({
                   <span className="capitalize">{group.department}</span>
                   <span>•</span>
                   <Link
-                    href={`/${tenantSlug}/operator?machine=${group.machine_id}`}
+                    href={getTenantNavHref(`/operator?machine=${group.machine_id}`, pathname, tenantSlug)}
                     className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
                   >
                     Floor Terminal
@@ -145,17 +149,24 @@ export function MachineQueueView({
                     NOW (চলমান কাজ)
                   </span>
                   {group.now && (
-                    <Badge variant="outline" className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200">
-                      Job #{group.now.job_number}
-                    </Badge>
+                    <Link
+                      href={getTenantNavHref(`/production/${group.now.task_id || group.now.job_number}`, pathname, tenantSlug)}
+                    >
+                      <Badge variant="outline" className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 hover:bg-blue-200 cursor-pointer">
+                        Job #{group.now.job_number}
+                      </Badge>
+                    </Link>
                   )}
                 </div>
 
                 {group.now ? (
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                    <Link
+                      href={getTenantNavHref(`/production/${group.now.task_id || group.now.job_number}`, pathname, tenantSlug)}
+                      className="text-xs font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 block transition-colors"
+                    >
                       {group.now.task_name}
-                    </p>
+                    </Link>
                     <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-slate-400" />
@@ -180,17 +191,24 @@ export function MachineQueueView({
                     NEXT (পরবর্তী কাজ)
                   </span>
                   {group.next && (
-                    <Badge variant="outline" className="text-[10px] font-mono">
-                      Job #{group.next.job_number}
-                    </Badge>
+                    <Link
+                      href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
+                    >
+                      <Badge variant="outline" className="text-[10px] font-mono hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
+                        Job #{group.next.job_number}
+                      </Badge>
+                    </Link>
                   )}
                 </div>
 
                 {group.next ? (
                   <div className="space-y-1">
-                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">
+                    <Link
+                      href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
+                      className="text-xs font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 block transition-colors"
+                    >
                       {group.next.task_name}
-                    </p>
+                    </Link>
                     <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-slate-400" />

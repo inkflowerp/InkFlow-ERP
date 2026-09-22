@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Printer,
   ArrowLeft,
@@ -49,6 +50,7 @@ const ALL_FABRICATION_TASKS: FabricationTask[] = [
 
 export default function ProductionJobDetailPage() {
   const params = useParams()
+  const pathname = usePathname() || ''
   const jobId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
@@ -90,10 +92,12 @@ export default function ProductionJobDetailPage() {
   }
 
   if (!job) {
+    const backHref = getTenantNavHref('/production', pathname, slug)
+
     return (
       <div className="space-y-6 max-w-6xl">
         <Link
-          href={`/${slug}/production`}
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -106,19 +110,21 @@ export default function ProductionJobDetailPage() {
             The production job record you are looking for does not exist in your queue.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href={`/${slug}/production`}>View All Production Jobs</Link>
+            <Link href={backHref}>View All Production Jobs</Link>
           </Button>
         </Card>
       </div>
     )
   }
 
+  const backHref = getTenantNavHref('/production', pathname, slug)
+
   return (
     <div className="space-y-6 max-w-6xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
       {/* Header & Back Link */}
       <div>
         <Link
-          href={`/${slug}/production`}
+          href={backHref}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

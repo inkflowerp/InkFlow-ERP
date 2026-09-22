@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams, useRouter, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Cpu,
   ArrowLeft,
@@ -57,10 +58,10 @@ import { StatusChangeModal } from '@/components/machinery/status-change-modal'
 export default function MachineryDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const tenantSlug = (params?.tenantSlug as string) || 'app'
-  const machineId = params?.id as string
-
+  const pathname = usePathname() || ''
   const { company } = useTenant()
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'my-company'
+  const machineId = params?.id as string
   const { can, isOwner } = usePermissions()
 
   const [machine, setMachine] = useState<MachineryRecord | null>(null)
@@ -178,7 +179,7 @@ export default function MachineryDetailPage() {
       {/* Top Breadcrumb Navigation */}
       <div className="flex items-center justify-between">
         <Link
-          href={`/${tenantSlug}/production/machineries`}
+          href={getTenantNavHref('/production/machineries', pathname, tenantSlug)}
           className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
