@@ -42,6 +42,7 @@ import {
   Tag,
   Info,
   Layers3,
+  Ruler,
 } from 'lucide-react'
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
@@ -84,7 +85,10 @@ export interface ItemReceiveRow {
 
 export interface DirectReceiptItemRow {
   id: string
-  material_id: string // Material ID or Product ID
+  material_id: string // Material ID or Product ID or composite variant ID
+  parent_id?: string // Underlying base material or product ID
+  variant_id?: string
+  variant_name?: string
   material_name: string
   sku: string
   unit: string
@@ -102,10 +106,25 @@ export interface DirectReceiptItemRow {
   quantity: number
   batch_lot_number: string
   total_cost: number
+  // Sizing & variety properties
+  is_roll?: boolean
+  roll_width_ft?: number | null
+  roll_length_ft?: number | null
+  roll_area_sft?: number | null
+  sheet_size?: string | null
+  sheet_area_sft?: number | null
+  thickness_mm?: number | null
+  available_widths_ft?: number[]
+  available_sheet_sizes?: string[]
+  variants?: any[]
+  size_spec?: string | null
 }
 
 export interface UnifiedStockItem {
   id: string
+  parent_id?: string
+  variant_id?: string
+  variant_name?: string
   sku: string
   name: string
   item_type: 'material' | 'product'
@@ -116,6 +135,18 @@ export interface UnifiedStockItem {
   previous_cost: number
   previous_selling_price: number
   target_margin_percent: number
+  is_variant?: boolean
+  is_roll?: boolean
+  roll_width_ft?: number | null
+  roll_length_ft?: number | null
+  roll_area_sft?: number | null
+  sheet_size?: string | null
+  sheet_area_sft?: number | null
+  thickness_mm?: number | null
+  available_widths_ft?: number[]
+  available_sheet_sizes?: string[]
+  variants?: any[]
+  size_spec?: string | null
 }
 
 export function ReceiveStockModal({
@@ -210,11 +241,248 @@ export function ReceiveStockModal({
     }
   }, [open, initialProducts, materials, companyId])
 
-  // Build unified items catalog merging materials and registered products
+  // Build unified items catalog merging materials and registered products with expanded size & variety options
   const unifiedCatalog = useMemo<UnifiedStockItem[]>(() => {
     const list: UnifiedStockItem[] = []
     const seenIds = new Set<string>()
     const seenSkus = new Set<string>()
+
+    const processItem = (
+      rawId: string,
+      sku: string,
+      name: string,
+      isMat: boolean,
+      cat: string,
+      unit: string,
+      cost: number,
+      sellPrice: number,
+      targetMargin: number,
+      currentStock: number,
+      variants?: any[],
+      available_widths_ft?: number[],
+      standard_roll_length_ft?: number,
+      available_sheet_sizes?: any[],
+      roll_width_ft?: number | null,
+      roll_length_ft?: number | null,
+      thickness_mm?: number | null
+    ) => {
+      const catLower = (cat + ' ' + name).toLowerCase()
+      let catGroup = isMat ? 'Raw Materials & Substrates' : 'Ready Merchandise & Display Hardware'
+
+      const isRoll = Boolean(
+        roll_width_ft ||
+        (available_widths_ft && available_widths_ft.length > 0) ||
+        catLower.includes('flex') ||
+        catLower.includes('vinyl') ||
+        catLower.includes('banner') ||
+        catLower.includes('sticker') ||
+        catLower.includes('canvas') ||
+        catLower.includes('backlit') ||
+        catLower.includes('media') ||
+        catLower.includes('lamination') ||
+        catLower.includes('film') ||
+        catLower.includes('mesh') ||
+        catLower.includes('roll')
+      )
+
+      const isSheet = Boolean(
+        (available_sheet_sizes && available_sheet_sizes.length > 0) ||
+        catLower.includes('acrylic') ||
+        catLower.includes('acp') ||
+        catLower.includes('foam') ||
+        catLower.includes('board') ||
+        catLower.includes('pvc') ||
+        catLower.includes('aluminum') ||
+        catLower.includes('sheet') ||
+        catLower.includes('sunboard')
+      )
+
+      if (isMat) {
+        if (isRoll) {
+          catGroup = 'Digital & Large Format Media'
+        } else if (isSheet) {
+          catGroup = '3D Signage & Structural Media'
+        } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical') || catLower.includes('eyelet') || catLower.includes('grommet') || catLower.includes('lamination')) {
+          catGroup = 'Inks & Finishing Consumables'
+        } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset') || catLower.includes('card')) {
+          catGroup = 'Paper & Offset Sheets'
+        }
+      } else {
+        if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready') || catLower.includes('frame')) {
+          catGroup = 'Ready Merchandise & Display Hardware'
+        } else {
+          catGroup = 'Commercial Ready Products'
+        }
+      }
+
+      const rollLength = Number(standard_roll_length_ft || roll_length_ft || 164)
+      const widths = (available_widths_ft && available_widths_ft.length > 0)
+        ? available_widths_ft
+        : (isRoll ? [3, 3.2, 4, 5, 6, 10] : (roll_width_ft ? [Number(roll_width_ft)] : []))
+
+      const sheets: string[] = (available_sheet_sizes && available_sheet_sizes.length > 0)
+        ? available_sheet_sizes.map((s: any) =>
+            typeof s === 'string'
+              ? s
+              : s && typeof s === 'object' && s.label
+              ? s.label
+              : s && typeof s === 'object' && s.width && s.length
+              ? `${s.width}x${s.length} ft`
+              : String(s)
+          )
+        : (isSheet ? ['8x4 ft (32 sft)', '6x4 ft (24 sft)', '4x4 ft (16 sft)'] : [])
+
+      const vars = variants && Array.isArray(variants) ? variants : []
+
+      // 1. Base Master Item
+      list.push({
+        id: rawId,
+        parent_id: rawId,
+        sku: sku || (isMat ? 'MAT' : 'PRD'),
+        name: name,
+        item_type: isMat ? 'material' : 'product',
+        category: cat,
+        category_group: catGroup,
+        unit: unit || 'pcs',
+        current_stock: currentStock,
+        previous_cost: cost,
+        previous_selling_price: sellPrice > 0 ? sellPrice : Math.round(cost * 1.35),
+        target_margin_percent: targetMargin,
+        is_roll: isRoll,
+        roll_width_ft: roll_width_ft || (widths[0] ?? null),
+        roll_length_ft: rollLength,
+        available_widths_ft: widths.length > 0 ? widths : undefined,
+        available_sheet_sizes: sheets.length > 0 ? sheets : undefined,
+        variants: vars,
+        thickness_mm: thickness_mm || null,
+      })
+
+      // 2. Expand explicit variants if registered
+      if (vars.length > 0) {
+        for (const v of vars) {
+          const varId = `${rawId}__var__${v.id}`
+          const varCost = Math.max(0, cost + Number(v.cost_adjustment || 0))
+          const varSell = Math.max(0, (sellPrice > 0 ? sellPrice : Math.round(cost * 1.35)) + Number(v.price_adjustment || 0))
+          const varMargin = (varSell > varCost && varSell > 0) ? Math.round(((varSell - varCost) / varSell) * 100) : targetMargin
+
+          const varNameParts = [name, '—', v.variant_name]
+          if (v.size_spec) varNameParts.push(`(${v.size_spec})`)
+          if (v.thickness_mm) varNameParts.push(`[${v.thickness_mm}mm]`)
+
+          list.push({
+            id: varId,
+            parent_id: rawId,
+            variant_id: v.id,
+            variant_name: v.variant_name,
+            sku: `${sku || 'MAT'}${v.sku_suffix ? (v.sku_suffix.startsWith('-') ? v.sku_suffix : `-${v.sku_suffix}`) : `-${v.variant_name.substring(0, 4).toUpperCase()}`}`,
+            name: varNameParts.join(' '),
+            item_type: isMat ? 'material' : 'product',
+            category: cat,
+            category_group: catGroup,
+            unit: unit || 'pcs',
+            current_stock: currentStock,
+            previous_cost: varCost,
+            previous_selling_price: varSell,
+            target_margin_percent: varMargin,
+            is_variant: true,
+            is_roll: isRoll,
+            roll_width_ft: roll_width_ft || (widths[0] ?? null),
+            roll_length_ft: rollLength,
+            available_widths_ft: widths.length > 0 ? widths : undefined,
+            available_sheet_sizes: sheets.length > 0 ? sheets : undefined,
+            variants: vars,
+            thickness_mm: v.thickness_mm || thickness_mm || null,
+            size_spec: v.size_spec || null,
+          })
+        }
+      }
+
+      // 3. Expand roll width options if roll material with multiple widths
+      if (isRoll && widths.length > 0) {
+        for (const w of widths) {
+          const rollArea = Math.round(w * rollLength)
+          const rollId = `${rawId}__width__${w}`
+
+          let calculatedRollCost = cost
+          let calculatedRollSell = sellPrice
+          if (unit.toLowerCase() === 'sft' || (cost > 0 && cost < 100)) {
+            calculatedRollCost = Math.round(cost * rollArea)
+            calculatedRollSell = Math.round((sellPrice || cost * 1.35) * rollArea)
+          } else if (cost >= 100) {
+            const baseW = Number(roll_width_ft) || 5
+            calculatedRollCost = Math.round(cost * (w / baseW))
+            calculatedRollSell = Math.round((sellPrice || cost * 1.35) * (w / baseW))
+          }
+
+          list.push({
+            id: rollId,
+            parent_id: rawId,
+            sku: `${sku || 'MAT'}-${w}FT`,
+            name: `${name} — ${w} ft × ${rollLength} ft Roll (${rollArea} sft)`,
+            item_type: isMat ? 'material' : 'product',
+            category: cat,
+            category_group: catGroup,
+            unit: 'roll',
+            current_stock: currentStock,
+            previous_cost: calculatedRollCost,
+            previous_selling_price: calculatedRollSell,
+            target_margin_percent: targetMargin,
+            is_variant: true,
+            is_roll: true,
+            roll_width_ft: w,
+            roll_length_ft: rollLength,
+            roll_area_sft: rollArea,
+            available_widths_ft: widths,
+            available_sheet_sizes: sheets.length > 0 ? sheets : undefined,
+            variants: vars,
+            thickness_mm: thickness_mm || null,
+            size_spec: `${w}ft x ${rollLength}ft Roll`,
+          })
+        }
+      }
+
+      // 4. Expand sheet size options if sheet material
+      if (isSheet && sheets.length > 0) {
+        for (const s of sheets) {
+          const sheetId = `${rawId}__sheet__${encodeURIComponent(s.replace(/[^a-zA-Z0-9]/g, ''))}`
+          let areaSft = 32
+          const match = s.match(/(\d+(?:\.\d+)?)\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
+          if (match) {
+            areaSft = Number(match[1]) * Number(match[2])
+          }
+
+          let calculatedSheetCost = cost
+          let calculatedSheetSell = sellPrice
+          if (unit.toLowerCase() === 'sft' || (cost > 0 && cost < 100)) {
+            calculatedSheetCost = Math.round(cost * areaSft)
+            calculatedSheetSell = Math.round((sellPrice || cost * 1.35) * areaSft)
+          }
+
+          list.push({
+            id: sheetId,
+            parent_id: rawId,
+            sku: `${sku || 'MAT'}-${s.split(' ')[0].replace(/[^a-zA-Z0-9]/g, '')}`,
+            name: `${name} — Sheet (${s})`,
+            item_type: isMat ? 'material' : 'product',
+            category: cat,
+            category_group: catGroup,
+            unit: 'sheet',
+            current_stock: currentStock,
+            previous_cost: calculatedSheetCost,
+            previous_selling_price: calculatedSheetSell,
+            target_margin_percent: targetMargin,
+            is_variant: true,
+            sheet_size: s,
+            sheet_area_sft: areaSft,
+            available_widths_ft: widths.length > 0 ? widths : undefined,
+            available_sheet_sizes: sheets,
+            variants: vars,
+            thickness_mm: thickness_mm || null,
+            size_spec: `Sheet ${s}`,
+          })
+        }
+      }
+    }
 
     // 1. Process Materials (Raw Materials & Substrates)
     for (const m of catalogMaterials) {
@@ -225,32 +493,27 @@ export function ReceiveStockModal({
       const cost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
       const estimatedSellingPrice = Math.round(cost > 0 ? cost * 1.35 : 0)
       const cat = m.category || 'General Substrates'
+      const thicknessNum = m.thickness ? Number(m.thickness.replace(/[^0-9.]/g, '')) : null
 
-      let catGroup = 'Raw Materials & Substrates'
-      const catLower = (cat + ' ' + (m.name || '')).toLowerCase()
-      if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit') || catLower.includes('media')) {
-        catGroup = 'Digital & Large Format Media'
-      } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum') || catLower.includes('sheet')) {
-        catGroup = '3D Signage & Structural Media'
-      } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical') || catLower.includes('eyelet') || catLower.includes('grommet') || catLower.includes('lamination')) {
-        catGroup = 'Inks & Finishing Consumables'
-      } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset') || catLower.includes('card')) {
-        catGroup = 'Paper & Offset Sheets'
-      }
-
-      list.push({
-        id: m.id,
-        sku: m.sku || 'MAT',
-        name: m.name,
-        item_type: 'material',
-        category: cat,
-        category_group: catGroup,
-        unit: m.unit || 'pcs',
-        current_stock: Number(m.current_stock || 0),
-        previous_cost: cost,
-        previous_selling_price: estimatedSellingPrice,
-        target_margin_percent: 35,
-      })
+      processItem(
+        m.id,
+        m.sku || 'MAT',
+        m.name,
+        true,
+        cat,
+        m.unit || 'pcs',
+        cost,
+        estimatedSellingPrice,
+        35,
+        Number(m.current_stock || 0),
+        m.variants,
+        m.available_widths_ft,
+        m.standard_roll_length_ft,
+        m.available_sheet_sizes,
+        m.roll_width_ft,
+        m.roll_length_ft,
+        thicknessNum
+      )
     }
 
     // 2. Process Catalog Products (Raw Materials & Ready Merchandise)
@@ -280,7 +543,7 @@ export function ReceiveStockModal({
 
       if (isNonInventory) continue
 
-      const isMat =
+      const isMat = Boolean(
         isMaterialProduct(p) ||
         p.entity_type === 'material' ||
         p.product_type === 'material' ||
@@ -288,6 +551,7 @@ export function ReceiveStockModal({
         p.commercial_type === 'material' ||
         ['materials', 'roll_media', 'rigid_sheets', 'inks', 'raw_materials'].includes(p.category || '') ||
         (p.sku && (p.sku.startsWith('MAT-') || p.sku.startsWith('RM-')))
+      )
 
       seenIds.add(p.id)
       if (p.sku) seenSkus.add(p.sku.toLowerCase())
@@ -301,40 +565,27 @@ export function ReceiveStockModal({
       if (margin <= 0) margin = 35
 
       const cat = p.category || (isMat ? 'Raw Material' : 'Ready Product')
-      let catGroup = isMat ? 'Raw Materials & Substrates' : 'Ready Merchandise & Display Hardware'
-      const catLower = (cat + ' ' + (p.name || '')).toLowerCase()
+      const thicknessNum = (p as any).thickness_mm ? Number((p as any).thickness_mm) : ((p as any).thickness ? Number(String((p as any).thickness).replace(/[^0-9.]/g, '')) : null)
 
-      if (isMat) {
-        if (catLower.includes('flex') || catLower.includes('vinyl') || catLower.includes('banner') || catLower.includes('sticker') || catLower.includes('canvas') || catLower.includes('backlit') || catLower.includes('media')) {
-          catGroup = 'Digital & Large Format Media'
-        } else if (catLower.includes('acrylic') || catLower.includes('acp') || catLower.includes('foam') || catLower.includes('board') || catLower.includes('pvc') || catLower.includes('aluminum') || catLower.includes('sheet')) {
-          catGroup = '3D Signage & Structural Media'
-        } else if (catLower.includes('ink') || catLower.includes('solvent') || catLower.includes('ribbon') || catLower.includes('cartridge') || catLower.includes('chemical') || catLower.includes('eyelet') || catLower.includes('grommet') || catLower.includes('lamination')) {
-          catGroup = 'Inks & Finishing Consumables'
-        } else if (catLower.includes('paper') || catLower.includes('art card') || catLower.includes('offset') || catLower.includes('card')) {
-          catGroup = 'Paper & Offset Sheets'
-        }
-      } else {
-        if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready') || catLower.includes('frame')) {
-          catGroup = 'Ready Merchandise & Display Hardware'
-        } else {
-          catGroup = 'Commercial Ready Products'
-        }
-      }
-
-      list.push({
-        id: p.id,
-        sku: p.sku || (isMat ? 'MAT' : 'RP'),
-        name: p.name,
-        item_type: isMat ? 'material' : 'product',
-        category: cat,
-        category_group: catGroup,
-        unit: String(p.unit || p.selling_unit || 'pcs'),
-        current_stock: Number((p as any).current_stock ?? (p as any).stock ?? 0),
-        previous_cost: cost,
-        previous_selling_price: sellPrice > 0 ? sellPrice : Math.round(cost * 1.35),
-        target_margin_percent: margin,
-      })
+      processItem(
+        p.id,
+        p.sku || (isMat ? 'MAT' : 'RP'),
+        p.name,
+        isMat,
+        cat,
+        String(p.unit || p.selling_unit || 'pcs'),
+        cost,
+        sellPrice,
+        margin,
+        Number((p as any).current_stock ?? (p as any).stock ?? 0),
+        p.variants,
+        p.available_widths_ft,
+        p.standard_roll_length_ft,
+        p.available_sheet_sizes,
+        p.roll_width_ft,
+        p.roll_length_ft,
+        thicknessNum
+      )
     }
 
     return list
@@ -353,8 +604,9 @@ export function ReceiveStockModal({
 
   // Initialize or populate Direct Items
   const createInitialDirectRow = (itemId?: string): DirectReceiptItemRow => {
-    const target = (itemId ? unifiedCatalog.find((x) => x.id === itemId) : unifiedCatalog[0]) || {
+    const target = (itemId ? unifiedCatalog.find((x) => x.id === itemId || x.parent_id === itemId) : unifiedCatalog[0]) || {
       id: catalogMaterials[0]?.id || 'item-1',
+      parent_id: catalogMaterials[0]?.id || 'item-1',
       sku: catalogMaterials[0]?.sku || 'MAT',
       name: catalogMaterials[0]?.name || 'Select Item',
       item_type: 'material' as const,
@@ -375,6 +627,9 @@ export function ReceiveStockModal({
     return {
       id: `dir-item-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       material_id: target.id,
+      parent_id: target.parent_id || target.id,
+      variant_id: target.variant_id,
+      variant_name: target.variant_name,
       material_name: target.name,
       sku: target.sku,
       unit: target.unit,
@@ -390,6 +645,17 @@ export function ReceiveStockModal({
       quantity: 1,
       batch_lot_number: '',
       total_cost: prevCost * 1,
+      is_roll: target.is_roll,
+      roll_width_ft: target.roll_width_ft,
+      roll_length_ft: target.roll_length_ft,
+      roll_area_sft: target.roll_area_sft,
+      sheet_size: target.sheet_size,
+      sheet_area_sft: target.sheet_area_sft,
+      thickness_mm: target.thickness_mm,
+      available_widths_ft: target.available_widths_ft,
+      available_sheet_sizes: target.available_sheet_sizes,
+      variants: target.variants,
+      size_spec: target.size_spec,
     }
   }
 
@@ -537,6 +803,20 @@ export function ReceiveStockModal({
           current.unit = item.unit
           current.item_type = item.item_type
           current.category = item.category
+          current.parent_id = item.parent_id || item.id
+          current.variant_id = item.variant_id
+          current.variant_name = item.variant_name
+          current.is_roll = item.is_roll
+          current.roll_width_ft = item.roll_width_ft
+          current.roll_length_ft = item.roll_length_ft
+          current.roll_area_sft = item.roll_area_sft
+          current.sheet_size = item.sheet_size
+          current.sheet_area_sft = item.sheet_area_sft
+          current.thickness_mm = item.thickness_mm
+          current.available_widths_ft = item.available_widths_ft
+          current.available_sheet_sizes = item.available_sheet_sizes
+          current.variants = item.variants
+          current.size_spec = item.size_spec
           current.previous_cost = item.previous_cost
           current.unit_cost = item.previous_cost > 0 ? item.previous_cost : 0
           current.cost_variance_percent = 0
@@ -596,6 +876,135 @@ export function ReceiveStockModal({
       const cost = Number(field === 'unit_cost' ? val : current.unit_cost) || 0
       current.total_cost = Math.round(qty * cost)
 
+      updated[index] = current
+      return updated
+    })
+  }
+
+  // Quick-switch variant for a direct item line
+  const handleSelectVariant = (index: number, variant: any) => {
+    const row = directItems[index]
+    if (!row) return
+    const baseId = row.parent_id || row.material_id.split('__')[0]
+
+    if (!variant) {
+      const baseItem = unifiedCatalog.find((x) => x.id === baseId)
+      if (baseItem) {
+        handleDirectItemChange(index, 'material_id', baseItem.id)
+      }
+      return
+    }
+
+    const varCompoundId = `${baseId}__var__${variant.id}`
+    const matched = unifiedCatalog.find((x) => x.id === varCompoundId)
+    if (matched) {
+      handleDirectItemChange(index, 'material_id', matched.id)
+    } else {
+      setDirectItems((prev) => {
+        const updated = [...prev]
+        const current = { ...updated[index] }
+        current.variant_id = variant.id
+        current.variant_name = variant.variant_name
+        current.thickness_mm = variant.thickness_mm || current.thickness_mm
+        current.size_spec = variant.size_spec || null
+        if (variant.cost_adjustment) {
+          current.unit_cost = Math.max(0, current.previous_cost + Number(variant.cost_adjustment))
+          current.total_cost = Math.round(current.unit_cost * current.quantity)
+        }
+        updated[index] = current
+        return updated
+      })
+    }
+  }
+
+  // Quick-switch roll width for a direct item line
+  const handleSelectRollWidth = (index: number, widthFt: number) => {
+    const row = directItems[index]
+    if (!row) return
+    const baseId = row.parent_id || row.material_id.split('__')[0]
+    const widthCompoundId = `${baseId}__width__${widthFt}`
+    const matched = unifiedCatalog.find((x) => x.id === widthCompoundId)
+    if (matched) {
+      handleDirectItemChange(index, 'material_id', matched.id)
+    } else {
+      setDirectItems((prev) => {
+        const updated = [...prev]
+        const current = { ...updated[index] }
+        current.roll_width_ft = widthFt
+        const len = current.roll_length_ft || 164
+        const area = Math.round(widthFt * len)
+        current.roll_area_sft = area
+        current.size_spec = `${widthFt}ft x ${len}ft Roll`
+        updated[index] = current
+        return updated
+      })
+    }
+  }
+
+  // Quick-switch sheet size for a direct item line
+  const handleSelectSheetSize = (index: number, sheetSize: string) => {
+    const row = directItems[index]
+    if (!row) return
+    const baseId = row.parent_id || row.material_id.split('__')[0]
+    const sheetCompoundId = `${baseId}__sheet__${encodeURIComponent(sheetSize.replace(/[^a-zA-Z0-9]/g, ''))}`
+    const matched = unifiedCatalog.find((x) => x.id === sheetCompoundId)
+    if (matched) {
+      handleDirectItemChange(index, 'material_id', matched.id)
+    } else {
+      setDirectItems((prev) => {
+        const updated = [...prev]
+        const current = { ...updated[index] }
+        current.sheet_size = sheetSize
+        current.unit = 'sheet'
+        current.size_spec = `Sheet ${sheetSize}`
+        updated[index] = current
+        return updated
+      })
+    }
+  }
+
+  // Quick-switch unit for a direct item line
+  const handleSelectUnit = (index: number, newUnit: string) => {
+    setDirectItems((prev) => {
+      const updated = [...prev]
+      const current = { ...updated[index] }
+      const oldUnit = current.unit
+      current.unit = newUnit
+
+      const rollArea = current.roll_area_sft || (current.roll_width_ft ? current.roll_width_ft * (current.roll_length_ft || 164) : 820)
+      const sheetArea = current.sheet_area_sft || 32
+
+      if (oldUnit === 'sft' && newUnit === 'roll') {
+        if (current.unit_cost > 0 && current.unit_cost < 100) {
+          current.unit_cost = Math.round(current.unit_cost * rollArea)
+          current.previous_cost = Math.round(current.previous_cost * rollArea)
+          current.new_selling_price = Math.round(current.new_selling_price * rollArea)
+          current.previous_selling_price = Math.round(current.previous_selling_price * rollArea)
+        }
+      } else if (oldUnit === 'roll' && newUnit === 'sft') {
+        if (current.unit_cost >= 100) {
+          current.unit_cost = Number((current.unit_cost / rollArea).toFixed(2))
+          current.previous_cost = Number((current.previous_cost / rollArea).toFixed(2))
+          current.new_selling_price = Number((current.new_selling_price / rollArea).toFixed(2))
+          current.previous_selling_price = Number((current.previous_selling_price / rollArea).toFixed(2))
+        }
+      } else if (oldUnit === 'sft' && newUnit === 'sheet') {
+        if (current.unit_cost > 0 && current.unit_cost < 100) {
+          current.unit_cost = Math.round(current.unit_cost * sheetArea)
+          current.previous_cost = Math.round(current.previous_cost * sheetArea)
+          current.new_selling_price = Math.round(current.new_selling_price * sheetArea)
+          current.previous_selling_price = Math.round(current.previous_selling_price * sheetArea)
+        }
+      } else if (oldUnit === 'sheet' && newUnit === 'sft') {
+        if (current.unit_cost >= 100) {
+          current.unit_cost = Number((current.unit_cost / sheetArea).toFixed(2))
+          current.previous_cost = Number((current.previous_cost / sheetArea).toFixed(2))
+          current.new_selling_price = Number((current.new_selling_price / sheetArea).toFixed(2))
+          current.previous_selling_price = Number((current.previous_selling_price / sheetArea).toFixed(2))
+        }
+      }
+
+      current.total_cost = Math.round(current.quantity * current.unit_cost)
       updated[index] = current
       return updated
     })
@@ -784,15 +1193,35 @@ export function ReceiveStockModal({
 
         // Process each direct item sequentially
         for (const item of directItems) {
+          const effectiveMaterialId = item.parent_id || item.material_id.split('__')[0]
+
+          let sizeSpecNotes = ''
+          if (item.variant_name) {
+            sizeSpecNotes = `Variant: ${item.variant_name}${item.size_spec ? ` (${item.size_spec})` : ''}`
+          } else if (item.roll_width_ft) {
+            const area = item.roll_area_sft || item.roll_width_ft * (item.roll_length_ft || 164)
+            sizeSpecNotes = `Roll Size: ${item.roll_width_ft}ft × ${item.roll_length_ft || 164}ft (${area} sft)`
+          } else if (item.sheet_size) {
+            sizeSpecNotes = `Sheet Size: ${item.sheet_size}`
+          }
+
+          const itemNotesArr = [
+            fullNotes,
+            item.batch_lot_number ? `Lot: ${item.batch_lot_number}` : null,
+            sizeSpecNotes ? `[${sizeSpecNotes}]` : null,
+          ].filter(Boolean)
+
+          const combinedItemNotes = itemNotesArr.join(' | ')
+
           const res = await receiveStockAction(
             {
-              material_id: item.material_id,
+              material_id: effectiveMaterialId,
               location_id: effectiveLocationId || locations[0]?.id,
               quantity: Number(item.quantity),
               unit_cost: Number(item.unit_cost) || 0,
               is_opening_balance: mode === 'opening',
               supplier_reference: supplierRef,
-              notes: item.batch_lot_number ? `${fullNotes} [Lot: ${item.batch_lot_number}]` : fullNotes,
+              notes: combinedItemNotes || fullNotes,
             },
             companyId
           )
@@ -807,9 +1236,9 @@ export function ReceiveStockModal({
           if (item.update_master_pricing) {
             try {
               await updateProductPriceAction(
-                item.material_id,
+                effectiveMaterialId,
                 item.new_selling_price || item.previous_selling_price || Math.round(item.unit_cost * 1.35),
-                `Updated during Direct Stock Intake (${mode === 'opening' ? 'Opening Balance' : 'Spot Inward'})`,
+                `Updated during Direct Stock Intake (${mode === 'opening' ? 'Opening Balance' : 'Spot Inward'}${sizeSpecNotes ? ' - ' + sizeSpecNotes : ''})`,
                 companyId,
                 {
                   newPurchasePrice: item.unit_cost,
@@ -1421,11 +1850,18 @@ export function ReceiveStockModal({
             )}
 
             {/* Direct Items List */}
-            <div className="space-y-3.5 max-h-[46vh] overflow-y-auto pr-1">
+            <div className="space-y-3.5 max-h-[48vh] overflow-y-auto pr-1">
               {directItems.map((item, idx) => {
                 const isVariancePositive = item.cost_variance_percent > 0
                 const isVarianceNegative = item.cost_variance_percent < 0
                 const grossProfitPerUnit = Math.max(0, (item.new_selling_price || 0) - (item.unit_cost || 0))
+
+                const hasVariants = item.variants && item.variants.length > 0
+                const hasRollWidths = Boolean(item.is_roll || (item.available_widths_ft && item.available_widths_ft.length > 0))
+                const hasSheetSizes = Boolean(item.available_sheet_sizes && item.available_sheet_sizes.length > 0)
+                const rollLen = item.roll_length_ft || 164
+                const rollArea = item.roll_area_sft || (item.roll_width_ft ? Math.round(item.roll_width_ft * rollLen) : 820)
+                const sheetArea = item.sheet_area_sft || 32
 
                 return (
                   <div
@@ -1455,6 +1891,14 @@ export function ReceiveStockModal({
                         >
                           {item.item_type === 'product' ? 'Commercial Product' : 'Raw Material'}
                         </Badge>
+                        {(item.variant_name || item.size_spec || item.roll_width_ft || item.sheet_size) && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-2 py-0 bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-semibold"
+                          >
+                            📏 {item.variant_name || item.size_spec || (item.roll_width_ft ? `${item.roll_width_ft}ft Roll (${rollArea} sft)` : item.sheet_size)}
+                          </Badge>
+                        )}
                       </div>
 
                       {directItems.length > 1 && (
@@ -1482,7 +1926,7 @@ export function ReceiveStockModal({
                           className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
                           required
                         >
-                          <option value="">-- Choose Product / Material --</option>
+                          <option value="">-- Choose Product / Material / Size --</option>
                           {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
                             <optgroup key={grpName} label={`📂 ${grpName}`}>
                               {grpItems.map((m) => (
@@ -1522,6 +1966,154 @@ export function ReceiveStockModal({
                         />
                       </div>
                     </div>
+
+                    {/* SIZE & VARIETY QUICK-SWITCH PILL BAR */}
+                    {(hasVariants || hasRollWidths || hasSheetSizes) && (
+                      <div className="p-2.5 rounded-lg bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 space-y-2">
+                        {/* 1. Explicit Product Variants */}
+                        {hasVariants && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
+                              <Layers3 className="h-3 w-3 text-emerald-600" />
+                              Variety:
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleSelectVariant(idx, null)}
+                              className={cn(
+                                'text-[11px] py-0.5 px-2 rounded-md font-medium transition-all cursor-pointer',
+                                !item.variant_id
+                                  ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                                  : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                              )}
+                            >
+                              Default Master
+                            </button>
+                            {item.variants!.map((v: any) => {
+                              const isSelected = item.variant_id === v.id
+                              return (
+                                <button
+                                  key={v.id}
+                                  type="button"
+                                  onClick={() => handleSelectVariant(idx, v)}
+                                  className={cn(
+                                    'text-[11px] py-0.5 px-2 rounded-md font-medium transition-all cursor-pointer',
+                                    isSelected
+                                      ? 'bg-emerald-600 text-white font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                  )}
+                                >
+                                  {v.variant_name}
+                                  {v.thickness_mm ? ` (${v.thickness_mm}mm)` : ''}
+                                  {v.size_spec ? ` - ${v.size_spec}` : ''}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* 2. Roll Width Pills (for roll media) */}
+                        {hasRollWidths && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
+                              <Ruler className="h-3 w-3 text-blue-600" />
+                              Roll Width:
+                            </span>
+                            {(item.available_widths_ft && item.available_widths_ft.length > 0 ? item.available_widths_ft : [3, 3.2, 4, 5, 6, 10]).map((w) => {
+                              const isSelected = item.roll_width_ft === w
+                              const sftArea = Math.round(w * rollLen)
+                              return (
+                                <button
+                                  key={w}
+                                  type="button"
+                                  onClick={() => handleSelectRollWidth(idx, w)}
+                                  className={cn(
+                                    'text-[11px] py-0.5 px-2 rounded-md font-mono transition-all cursor-pointer',
+                                    isSelected
+                                      ? 'bg-blue-600 text-white font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                  )}
+                                >
+                                  {w} ft ({sftArea} sft)
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* 3. Sheet Size Pills (for rigid sheets) */}
+                        {hasSheetSizes && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 shrink-0 mr-1">
+                              <Layers className="h-3 w-3 text-amber-600" />
+                              Sheet Dimensions:
+                            </span>
+                            {item.available_sheet_sizes!.map((s) => {
+                              const isSelected = item.sheet_size === s
+                              return (
+                                <button
+                                  key={s}
+                                  type="button"
+                                  onClick={() => handleSelectSheetSize(idx, s)}
+                                  className={cn(
+                                    'text-[11px] py-0.5 px-2 rounded-md font-mono transition-all cursor-pointer',
+                                    isSelected
+                                      ? 'bg-amber-600 text-white font-bold shadow-xs'
+                                      : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                                  )}
+                                >
+                                  {s}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+
+                        {/* 4. Unit Switcher & Live Intel Bar */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pt-1 border-t border-slate-200/60 dark:border-slate-800/80">
+                          <div className="flex items-center gap-1 flex-wrap">
+                            <span className="text-[10px] uppercase font-bold text-slate-400 mr-1">Intake Unit:</span>
+                            {['sft', 'roll', 'sheet', 'pcs', 'meter'].map((u) => (
+                              <button
+                                key={u}
+                                type="button"
+                                onClick={() => handleSelectUnit(idx, u)}
+                                className={cn(
+                                  'text-[10px] py-0.5 px-1.5 rounded uppercase font-mono font-bold transition-all cursor-pointer',
+                                  item.unit === u
+                                    ? 'bg-slate-800 text-white dark:bg-slate-200 dark:text-slate-900 shadow-xs'
+                                    : 'bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                                )}
+                              >
+                                {u}
+                              </button>
+                            ))}
+                          </div>
+
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">
+                            {hasRollWidths ? (
+                              <span>
+                                📏 1 Roll = {item.roll_width_ft || 5}ft × {rollLen}ft ({rollArea} sft)
+                                {item.unit === 'roll' && (
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
+                                    (৳ {(item.unit_cost / rollArea).toFixed(2)} / sft)
+                                  </span>
+                                )}
+                              </span>
+                            ) : hasSheetSizes ? (
+                              <span>
+                                📏 1 Sheet = {item.sheet_size || '8x4 ft'} ({sheetArea} sft)
+                                {item.unit === 'sheet' && (
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1">
+                                    (৳ {(item.unit_cost / sheetArea).toFixed(2)} / sft)
+                                  </span>
+                                )}
+                              </span>
+                            ) : null}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* COST & PRICE INTELLIGENCE HUD (Previous vs New Pricing) */}
                     <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5">

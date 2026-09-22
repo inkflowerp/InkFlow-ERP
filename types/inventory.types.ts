@@ -306,6 +306,9 @@ export interface MaterialRecord {
   is_active?: boolean
   notes?: string | null
   active_rolls?: InventoryRollRecord[]
+  variants?: any[]
+  available_sheet_sizes?: string[] | any[]
+  roll_sizes?: any[]
   created_by?: string | null
   created_at: string
   updated_at: string

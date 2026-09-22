@@ -276,4 +276,59 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
     assert.strictEqual(cost, 200, 'Unit base cost must be 200')
     assert.strictEqual(totalValuation, 10000, 'Total valuation must be 10,000 BDT')
   })
+
+  it('7. Multi-Dimensional Size & Variant Expansion for Roll Media and Rigid Sheets', async () => {
+    // Material 1: Vinyl with registered roll widths [3, 4, 5, 6, 10]
+    const vinylMat: MaterialRecord = {
+      id: 'mat-vinyl-multi',
+      company_id: companyId,
+      sku: 'MAT-09883',
+      name: 'Vinyl (Self Adhesive)',
+      category: 'vinyl' as any,
+      unit: 'sft',
+      current_stock: 1200,
+      average_cost: 9.0,
+      last_purchase_price: 9.0,
+      is_roll: true,
+      available_widths_ft: [3, 4, 5, 6, 10],
+      standard_roll_length_ft: 164,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    // Material 2: PVC Sheet with registered variants [2mm, 3mm, 5mm]
+    const pvcMat: MaterialRecord = {
+      id: 'mat-pvc-multi',
+      company_id: companyId,
+      sku: 'MAT-47483',
+      name: 'PVC Sheet',
+      category: 'pvc' as any,
+      unit: 'sheet',
+      current_stock: 45,
+      average_cost: 12226.2,
+      last_purchase_price: 12226.2,
+      available_sheet_sizes: ['8x4 ft (32 sft)', '6x4 ft (24 sft)'],
+      variants: [
+        { id: 'var-2mm', variant_name: '2mm White', thickness_mm: 2, size_spec: '8x4 ft', cost_adjustment: -3000, price_adjustment: -4000 },
+        { id: 'var-3mm', variant_name: '3mm White', thickness_mm: 3, size_spec: '8x4 ft', cost_adjustment: 0, price_adjustment: 0 },
+        { id: 'var-5mm', variant_name: '5mm White', thickness_mm: 5, size_spec: '8x4 ft', cost_adjustment: 4500, price_adjustment: 6000 },
+      ],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    // Seed materials in DataStore
+    const existingMaterials = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []
+    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false, companyId)
+    PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [...existingMaterials, vinylMat, pvcMat], false)
+
+    const mats = await InventoryRepository.getMaterials(companyId)
+    const fetchedVinyl = mats.find((m) => m.id === 'mat-vinyl-multi')
+    assert.ok(fetchedVinyl, 'Vinyl material must be retrieved')
+    assert.deepStrictEqual(fetchedVinyl.available_widths_ft, [3, 4, 5, 6, 10], 'Vinyl roll widths must match')
+
+    const fetchedPvc = mats.find((m) => m.id === 'mat-pvc-multi')
+    assert.ok(fetchedPvc, 'PVC material must be retrieved')
+    assert.strictEqual(fetchedPvc.variants?.length, 3, 'PVC must have 3 registered variants')
+    assert.strictEqual(fetchedPvc.variants[0].variant_name, '2mm White')
+  })
 })

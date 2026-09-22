@@ -148,7 +148,7 @@ export class InventoryRepository {
         // 2. Fetch raw materials from products table in Supabase
         let prodQuery = (supabase as any)
           .from('products')
-          .select('*')
+          .select('*, variants:product_variants(*)')
           .eq('company_id', companyId)
 
         const { data: prodData } = await prodQuery
@@ -191,6 +191,10 @@ export class InventoryRepository {
               roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
               available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
               standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
+              available_sheet_sizes: p.available_sheet_sizes,
+              roll_sizes: p.roll_sizes,
+              variants: p.variants || [],
+              thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : undefined,
               is_active: p.is_active !== false,
               created_at: p.created_at || new Date().toISOString(),
               updated_at: p.updated_at || new Date().toISOString(),
@@ -225,6 +229,12 @@ export class InventoryRepository {
         ...(PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []),
       ]
 
+      const allLocalVars = [
+        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
+        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS, companyId) || []),
+        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCT_VARIANTS) || []),
+      ]
+
       for (const p of localProds) {
         if (!p || !p.id || seenIds.has(p.id)) continue
         if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
@@ -245,6 +255,8 @@ export class InventoryRepository {
         if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
         const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
+        const itemVars = (p.variants && p.variants.length > 0) ? p.variants : allLocalVars.filter((v) => v.product_id === p.id)
+
         list.push({
           id: p.id,
           company_id: p.company_id || companyId,
@@ -264,6 +276,20 @@ export class InventoryRepository {
           roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
           available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
           standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
+          available_sheet_sizes: Array.isArray(p.available_sheet_sizes)
+            ? p.available_sheet_sizes.map((s: any) =>
+                typeof s === 'string'
+                  ? s
+                  : s && typeof s === 'object' && s.label
+                  ? s.label
+                  : s && typeof s === 'object' && s.width && s.length
+                  ? `${s.width}x${s.length} ft`
+                  : String(s)
+              )
+            : undefined,
+          roll_sizes: p.roll_sizes,
+          variants: itemVars,
+          thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : undefined,
           is_active: p.is_active !== false,
           created_at: p.created_at || new Date().toISOString(),
           updated_at: p.updated_at || new Date().toISOString(),
