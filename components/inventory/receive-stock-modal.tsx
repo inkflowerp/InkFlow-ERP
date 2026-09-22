@@ -226,10 +226,39 @@ export function ReceiveStockModal({
       })
     }
 
-    // 2. Process Catalog Products (Commercial Masters)
+    // 2. Process Catalog Products (Strictly Physical Inventory Items: Ready Products)
     for (const p of catalogProducts) {
       if (!p || !p.id) continue
       if (seenIds.has(p.id)) continue
+
+      // Filter: Strictly ONLY physical inventory items (Ready products)
+      const isReadyProd =
+        p.entity_type === 'product' ||
+        p.is_ready_product ||
+        p.product_type === 'ready_product' ||
+        p.product_type === 'PRODUCT' ||
+        (p.product_type as any) === 'product' ||
+        p.commercial_type === 'ready_product'
+
+      const isNonInventory =
+        p.is_service ||
+        p.is_outsource ||
+        p.is_non_inventory ||
+        p.product_type === 'service' ||
+        p.product_type === 'SERVICE' ||
+        p.product_type === 'print_service' ||
+        p.product_type === 'fabrication' ||
+        p.product_type === 'fabrication_service' ||
+        p.product_type === 'finishing' ||
+        p.product_type === 'installation' ||
+        p.product_type === 'installation_service' ||
+        p.product_type === 'delivery' ||
+        p.product_type === 'outsource' ||
+        p.product_type === 'outsource_product' ||
+        p.product_type === 'custom_job'
+
+      if (!isReadyProd || isNonInventory) continue
+
       seenIds.add(p.id)
 
       const cost = Number(p.purchase_price || p.base_cost || 0)
@@ -240,28 +269,24 @@ export function ReceiveStockModal({
       }
       if (margin <= 0) margin = 40
 
-      const cat = p.category || 'Commercial Product'
-      let catGroup = 'Commercial Finished Products'
+      const cat = p.category || 'Ready Product'
+      let catGroup = 'Ready Merchandise & Display Hardware'
       const catLower = (cat + ' ' + (p.name || '')).toLowerCase()
-      if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready')) {
+      if (catLower.includes('roll-up') || catLower.includes('stand') || catLower.includes('x-banner') || catLower.includes('display') || catLower.includes('pop') || catLower.includes('hardware') || catLower.includes('ready') || catLower.includes('frame')) {
         catGroup = 'Ready Merchandise & Display Hardware'
-      } else if (catLower.includes('digital') || catLower.includes('large format') || catLower.includes('print') || catLower.includes('banner')) {
-        catGroup = 'Digital & Large Format Media'
-      } else if (catLower.includes('signage') || catLower.includes('letter') || catLower.includes('acrylic') || catLower.includes('fabrication')) {
-        catGroup = '3D Signage & Structural Media'
-      } else if (catLower.includes('offset') || catLower.includes('flyer') || catLower.includes('brochure') || catLower.includes('card')) {
-        catGroup = 'Paper & Offset Sheets'
+      } else {
+        catGroup = 'Commercial Ready Products'
       }
 
       list.push({
         id: p.id,
-        sku: p.sku || 'PRD',
+        sku: p.sku || 'RP',
         name: p.name,
         item_type: 'product',
         category: cat,
         category_group: catGroup,
         unit: String(p.unit || p.selling_unit || 'pcs'),
-        current_stock: 0,
+        current_stock: Number((p as any).current_stock ?? (p as any).stock ?? 0),
         previous_cost: cost,
         previous_selling_price: sellPrice,
         target_margin_percent: margin,

@@ -304,10 +304,23 @@ export interface MaterialIssueItemRecord {
   issue_id: string
   request_item_id?: string | null
   material_id: string
+  material_name?: string
   issued_quantity: number
+  consumed_quantity?: number
+  returned_quantity?: number
+  wastage_quantity?: number
+  wastage_reason?: string | null
+  remaining_floor_balance?: number
   unit: MaterialUnit
   unit_cost?: number
   total_cost?: number
+  roll_id?: string | null
+  roll_code?: string | null
+  machine_id?: string | null
+  machine_name?: string | null
+  job_reference?: string | null
+  status?: 'on_floor' | 'partially_consumed' | 'fully_consumed' | 'returned'
+  last_consumption_at?: string | null
   material?: Partial<MaterialRecord>
 }
 
@@ -323,10 +336,53 @@ export interface MaterialIssueRecord {
   issued_by_id?: string | null
   issued_by_name: string
   received_by_name?: string | null
-  status: 'completed' | 'cancelled'
+  assigned_machine?: string | null
+  job_reference?: string | null
+  status: 'completed' | 'cancelled' | 'in_use' | 'closed'
   notes?: string | null
   items?: MaterialIssueItemRecord[]
   created_at: string
+}
+
+export interface FloorConsumptionRecord {
+  id: string
+  company_id: string
+  branch_id?: string | null
+  issue_id?: string | null
+  issue_number?: string | null
+  issue_item_id?: string | null
+  material_id: string
+  material_name: string
+  sku?: string | null
+  roll_id?: string | null
+  roll_code?: string | null
+  machine_id?: string | null
+  machine_name?: string | null
+  job_order_id?: string | null
+  job_reference?: string | null
+  production_task_id?: string | null
+  operator_id?: string | null
+  operator_name: string
+  issued_quantity: number
+  consumed_quantity: number
+  unit: MaterialUnit
+  unit_cost: number
+  total_cost: number
+  wastage_quantity: number
+  wastage_reason?: string | null
+  wastage_cost: number
+  returned_quantity: number
+  return_location_id?: string | null
+  return_location_name?: string | null
+  remnants_count: number
+  remnants_area_sft?: number
+  remaining_floor_balance: number
+  status: 'on_floor' | 'partially_consumed' | 'fully_consumed' | 'returned'
+  notes?: string | null
+  created_at: string
+  updated_at: string
+  material?: Partial<MaterialRecord>
+  location?: Partial<InventoryLocationRecord>
 }
 
 export interface InventoryRemnantRecord {

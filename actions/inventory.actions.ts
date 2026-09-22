@@ -11,6 +11,7 @@ import {
   InventoryLocationRecord,
   MaterialRequestRecord,
   MaterialIssueRecord,
+  FloorConsumptionRecord,
   InventoryRemnantRecord,
   InventoryTransferRecord,
   InventoryAdjustmentRecord,
@@ -394,6 +395,113 @@ export async function logProductionConsumptionAction(
 }
 
 // ==========================================
+// PRINT FLOOR CONSUMPTION UNIT ACTIONS
+// ==========================================
+
+export async function getFloorConsumptionsAction(
+  options?: { machineId?: string; status?: string; search?: string },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<FloorConsumptionRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const data = await InventoryService.getFloorConsumptions(companyId, options)
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to load floor consumptions' }
+  }
+}
+
+export async function logFloorConsumptionAction(
+  params: {
+    issue_id?: string | null
+    issue_item_id?: string | null
+    material_id: string
+    consumed_quantity: number
+    unit: string
+    wastage_quantity?: number
+    wastage_reason?: string | null
+    returned_quantity?: number
+    return_location_id?: string | null
+    machine_id?: string | null
+    machine_name?: string | null
+    job_reference?: string | null
+    production_task_id?: string | null
+    operator_name?: string
+    operator_id?: string | null
+    remnants?: Array<{
+      width: number
+      length: number
+      dimension_unit?: string
+      quantity?: number
+      location_id: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }>
+    notes?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<FloorConsumptionRecord>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await InventoryService.logFloorConsumption({
+      ...params,
+      company_id: companyId,
+      branch_id: tenant.branchId || null,
+      operator_id: params.operator_id || tenant.userId,
+      operator_name: params.operator_name || tenant.fullName || 'Operator',
+      actor_email: tenant.userEmail,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    return { success: true, data: result.floorRecord }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to log floor consumption' }
+  }
+}
+
+export async function returnFloorStockToStoreAction(
+  params: {
+    issue_id: string
+    material_id: string
+    quantity: number
+    return_location_id: string
+    notes?: string | null
+  },
+  requestedCompanyId?: string
+): Promise<ServerActionResult<{ remainingFloorBalance: number }>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const result = await InventoryService.returnFloorStockToStore({
+      ...params,
+      company_id: companyId,
+      operator_name: tenant.fullName || 'Store Keeper',
+      actor_email: tenant.userEmail,
+    })
+
+    revalidatePath('/[tenantSlug]/inventory', 'page')
+    return { success: true, data: result }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to return floor stock to store' }
+  }
+}
+
+// ==========================================
 // REMNANTS & TRANSFERS & ADJUSTMENT ACTIONS
 // ==========================================
 
@@ -680,6 +788,7 @@ export interface InventoryDashboardData {
   balances: any[]
   requests: MaterialRequestRecord[]
   issues: MaterialIssueRecord[]
+  floorConsumptions: FloorConsumptionRecord[]
   remnants: InventoryRemnantRecord[]
   ledger: StockLedgerRecord[]
   rolls: InventoryRollRecord[]
@@ -702,12 +811,13 @@ export async function getInventoryDashboardDataAction(
     }
     const companyId = tenant.companyId
 
-    const [matData, locData, balData, reqData, issData, remData, ledData, sumData, rollsData, posData, grnData, prodsData] = await Promise.all([
+    const [matData, locData, balData, reqData, issData, floorData, remData, ledData, sumData, rollsData, posData, grnData, prodsData] = await Promise.all([
       InventoryService.getMaterials(companyId).catch(() => []),
       InventoryService.getLocations(companyId).catch(() => []),
       InventoryService.getStockBalances(companyId).catch(() => []),
       InventoryService.getRequests(companyId).catch(() => []),
       InventoryService.getIssues(companyId).catch(() => []),
+      InventoryService.getFloorConsumptions(companyId).catch(() => []),
       InventoryService.getRemnants(companyId).catch(() => []),
       InventoryService.getStockLedger(companyId).catch(() => []),
       InventoryService.getInventorySummary(companyId).catch(() => ({})),
@@ -725,6 +835,7 @@ export async function getInventoryDashboardDataAction(
         balances: balData || [],
         requests: reqData || [],
         issues: issData || [],
+        floorConsumptions: floorData || [],
         remnants: remData || [],
         ledger: ledData || [],
         rolls: rollsData || [],

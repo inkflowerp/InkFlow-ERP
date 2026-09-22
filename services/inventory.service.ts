@@ -10,6 +10,7 @@ import type {
   TaskMaterialRequirementRecord,
   MaterialRequestRecord,
   MaterialIssueRecord,
+  FloorConsumptionRecord,
   InventoryRemnantRecord,
   InventoryTransferRecord,
   InventoryAdjustmentRecord,
@@ -19,6 +20,7 @@ import type {
 } from '../types/inventory.types.ts'
 import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
 import { AuditRepository } from '../lib/repositories/audit.repository.ts'
+import { ProductRepository } from '../lib/repositories/product.repository.ts'
 
 export class InventoryService {
   // ==========================================
@@ -516,6 +518,98 @@ export class InventoryService {
   }
 
   // ==========================================
+  // PRINT FLOOR CONSUMPTION UNIT
+  // ==========================================
+
+  static async getFloorConsumptions(
+    companyId: string,
+    options?: { machineId?: string; status?: string; search?: string }
+  ): Promise<FloorConsumptionRecord[]> {
+    if (!companyId) return []
+    return await InventoryRepository.getFloorConsumptions(companyId, options)
+  }
+
+  static async logFloorConsumption(params: {
+    company_id: string
+    branch_id?: string | null
+    issue_id?: string | null
+    issue_item_id?: string | null
+    material_id: string
+    consumed_quantity: number
+    unit: string
+    wastage_quantity?: number
+    wastage_reason?: string | null
+    returned_quantity?: number
+    return_location_id?: string | null
+    machine_id?: string | null
+    machine_name?: string | null
+    job_reference?: string | null
+    production_task_id?: string | null
+    operator_name?: string
+    operator_id?: string | null
+    remnants?: Array<{
+      width: number
+      length: number
+      dimension_unit?: string
+      quantity?: number
+      location_id: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }>
+    notes?: string | null
+    actor_email?: string
+  }): Promise<{ success: boolean; floorRecord: FloorConsumptionRecord; remnantsCreated?: number }> {
+    const res = await InventoryRepository.logFloorConsumption(params)
+
+    await AuditRepository.logEvent({
+      companyId: params.company_id,
+      userEmail: params.actor_email || params.operator_name || 'operator',
+      action: 'inventory.floor_consumption_logged',
+      entity: 'floor_consumption',
+      entityId: res.floorRecord.id,
+      newValue: {
+        material_id: params.material_id,
+        consumed: params.consumed_quantity,
+        wastage: params.wastage_quantity || 0,
+        returned: params.returned_quantity || 0,
+        machine: params.machine_name,
+      },
+      description: `Logged floor consumption for ${res.floorRecord.material_name}: Consumed ${params.consumed_quantity} ${params.unit}, Scrap: ${params.wastage_quantity || 0} ${params.unit}`,
+    })
+
+    return res
+  }
+
+  static async returnFloorStockToStore(params: {
+    company_id: string
+    issue_id: string
+    material_id: string
+    quantity: number
+    return_location_id: string
+    operator_name?: string
+    notes?: string | null
+    actor_email?: string
+  }): Promise<{ success: boolean; remainingFloorBalance: number }> {
+    const res = await InventoryRepository.returnFloorStockToStore(params)
+
+    await AuditRepository.logEvent({
+      companyId: params.company_id,
+      userEmail: params.actor_email || params.operator_name || 'store_keeper',
+      action: 'inventory.floor_stock_returned',
+      entity: 'material_issue',
+      entityId: params.issue_id,
+      newValue: {
+        material_id: params.material_id,
+        returned_quantity: params.quantity,
+        remaining_floor_balance: res.remainingFloorBalance,
+      },
+      description: `Returned ${params.quantity} units of floor stock to store location`,
+    })
+
+    return res
+  }
+
+  // ==========================================
   // REMNANTS & TRANSFERS & ADJUSTMENTS
   // ==========================================
 
@@ -706,11 +800,12 @@ export class InventoryService {
       }
     }
 
-    const [materials, requests, remnants, ledger] = await Promise.all([
+    const [materials, requests, remnants, ledger, readyProducts] = await Promise.all([
       InventoryRepository.getMaterials(companyId),
       InventoryRepository.getRequests(companyId, { status: 'requested' }),
       InventoryRepository.getRemnants(companyId, { status: 'available' }),
       InventoryRepository.getStockLedger(companyId),
+      ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
     ])
 
     const lowStockCount = materials.filter((m) => {
@@ -718,16 +813,26 @@ export class InventoryService {
       return threshold > 0 && Number(m.current_stock || 0) <= threshold
     }).length
 
-    const totalValue = materials.reduce((sum, m) => {
+    const materialsValue = materials.reduce((sum, m) => {
       const stock = Number(m.current_stock || 0)
       const cost = Number(m.average_cost || m.last_purchase_price || 0)
       return sum + (stock > 0 ? stock * cost : 0)
     }, 0)
 
+    const matIds = new Set(materials.map((m) => m.id))
+    const productsValue = readyProducts.reduce((sum, p) => {
+      if (matIds.has(p.id)) return sum
+      const stock = Number((p as any).current_stock ?? (p as any).stock ?? 0)
+      const cost = Number(p.base_cost || p.purchase_price || 0)
+      return sum + (stock > 0 ? stock * cost : 0)
+    }, 0)
+
+    const totalValue = materialsValue + productsValue
+
     const wastageCount = ledger.filter((l) => l.transaction_type === 'WASTAGE' || l.transaction_type === 'wastage').length
 
     return {
-      totalMaterials: materials.length,
+      totalMaterials: materials.length + readyProducts.length,
       totalAvailableStockValue: totalValue,
       lowStockCount,
       pendingRequestsCount: requests.length,

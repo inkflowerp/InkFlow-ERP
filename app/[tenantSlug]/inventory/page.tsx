@@ -72,6 +72,7 @@ import {
   InventorySummaryStats,
   InventoryRollRecord,
   InventoryTransactionType,
+  FloorConsumptionRecord,
 } from '@/types/inventory.types'
 import type { PurchaseOrderRecord, GoodsReceivedNoteRecord } from '@/types/purchase.types'
 import type { ProductRecord } from '@/types/product.types'
@@ -103,6 +104,7 @@ import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { InventoryKpiBar } from '@/components/inventory/inventory-kpi-bar'
 import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
 import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
+import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 
 function UnifiedInventoryContent() {
   const router = useRouter()
@@ -124,6 +126,7 @@ function UnifiedInventoryContent() {
   const rawView = searchParams.get('view')
   const currentView: InventoryViewTab = useMemo(() => {
     if (rawView === 'ready_products' || rawView === 'products') return 'ready_products'
+    if (rawView === 'floor_consumption' || rawView === 'floor' || rawView === 'consumption') return 'floor_consumption'
     if (rawView === 'rolls') return 'rolls'
     if (rawView === 'requests') return 'requests'
     if (rawView === 'remnants') return 'remnants'
@@ -153,7 +156,22 @@ function UnifiedInventoryContent() {
       return []
     }
   })
-  const [readyProducts, setReadyProducts] = useState<ProductRecord[]>([])
+  const [readyProducts, setReadyProducts] = useState<ProductRecord[]>(() => {
+    try {
+      const allProds = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS) || []
+      return allProds.filter(
+        (p) =>
+          p.entity_type === 'product' ||
+          p.is_ready_product ||
+          (p.product_type as any) === 'product' ||
+          p.product_type === 'PRODUCT' ||
+          p.product_type === 'ready_product' ||
+          p.commercial_type === 'ready_product'
+      )
+    } catch {
+      return []
+    }
+  })
   const [locations, setLocations] = useState<InventoryLocationRecord[]>(() => {
     try {
       return PrintERPDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
@@ -164,6 +182,13 @@ function UnifiedInventoryContent() {
   const [balances, setBalances] = useState<InventoryStockBalanceRecord[]>([])
   const [requests, setRequests] = useState<MaterialRequestRecord[]>([])
   const [issues, setIssues] = useState<MaterialIssueRecord[]>([])
+  const [floorConsumptions, setFloorConsumptions] = useState<FloorConsumptionRecord[]>(() => {
+    try {
+      return PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []
+    } catch {
+      return []
+    }
+  })
   const [remnants, setRemnants] = useState<InventoryRemnantRecord[]>([])
   const [ledger, setLedger] = useState<StockLedgerRecord[]>([])
   const [rolls, setRolls] = useState<InventoryRollRecord[]>(() => {
@@ -212,6 +237,7 @@ function UnifiedInventoryContent() {
   // Target items for contextual actions
   const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
   const [selectedRollForAction, setSelectedRollForAction] = useState<InventoryRollRecord | null>(null)
+  const [selectedFloorRecordForConsumption, setSelectedFloorRecordForConsumption] = useState<FloorConsumptionRecord | null>(null)
   const [selectedPoForReceive, setSelectedPoForReceive] = useState<PurchaseOrderRecord | null>(null)
   const [selectedRequestForIssue, setSelectedRequestForIssue] = useState<MaterialRequestRecord | null>(null)
 
@@ -293,6 +319,7 @@ function UnifiedInventoryContent() {
         setBalances(res.data.balances || [])
         setRequests(res.data.requests || [])
         setIssues(res.data.issues || [])
+        setFloorConsumptions(res.data.floorConsumptions || [])
         setRemnants(res.data.remnants || [])
         setLedger(res.data.ledger || [])
         setRolls(res.data.rolls || [])
@@ -306,6 +333,7 @@ function UnifiedInventoryContent() {
           if (res.data.materials) PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, res.data.materials, false)
           if (res.data.rolls) PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, res.data.rolls, false)
           if (res.data.locations) PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, res.data.locations, false)
+          if (res.data.floorConsumptions) PrintERPDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, res.data.floorConsumptions, false)
           const mList = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
           setMachines(mList)
         } catch {}
@@ -326,22 +354,30 @@ function UnifiedInventoryContent() {
 
     if (typeof window !== 'undefined') {
       window.addEventListener('printerp_table_synced:materials', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
       window.addEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
       window.addEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
       window.addEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
       window.addEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:material_issues', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:floor_consumption', handleRealtimeSync)
       window.addEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:goods_received_notes', handleRealtimeSync)
       window.addEventListener('printerp_table_synced', handleRealtimeSync)
       window.addEventListener('printerp_data_sync', handleRealtimeSync)
       window.addEventListener('storage', handleRealtimeSync)
 
       return () => {
         window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:stock_ledger', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:inventory_locations', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:material_requests', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:material_issues', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:floor_consumption', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:purchase_orders', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:goods_received_notes', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced', handleRealtimeSync)
         window.removeEventListener('printerp_data_sync', handleRealtimeSync)
         window.removeEventListener('storage', handleRealtimeSync)
@@ -670,6 +706,10 @@ function UnifiedInventoryContent() {
             setSelectedMaterialForAction(null)
             setIsIssueOpen(true)
           }}
+          onLogConsumption={() => {
+            setSelectedFloorRecordForConsumption(null)
+            setIsConsumptionOpen(true)
+          }}
           onTransfer={() => setIsTransferOpen(true)}
           onAdjustment={() => setIsAdjustmentOpen(true)}
           onNewPurchase={() => setIsNewPurchaseOpen(true)}
@@ -677,7 +717,7 @@ function UnifiedInventoryContent() {
         />
 
         {/* ========================================================= */}
-        {/* 9-TAB PRIMARY WORKSPACE NAVIGATION */}
+        {/* 10-TAB PRIMARY WORKSPACE NAVIGATION */}
         {/* ========================================================= */}
         <InventoryTabsNavigation
           currentView={currentView}
@@ -685,6 +725,8 @@ function UnifiedInventoryContent() {
           materialsCount={materials.length}
           readyProductsCount={readyProducts.length}
           rollsCount={rolls.length}
+          floorConsumptionsCount={floorConsumptions.length}
+          activeFloorCount={floorConsumptions.filter((f) => f.status === 'on_floor' || f.status === 'partially_consumed').length}
           requestsCount={requests.length}
           pendingRequestsCount={pendingRequestsCount}
           remnantsCount={remnants.length}
@@ -880,6 +922,24 @@ function UnifiedInventoryContent() {
         )}
 
         {/* ========================================================= */}
+        {/* VIEW: PRINT FLOOR CONSUMPTION & SCRAP UNIT TAB */}
+        {/* ========================================================= */}
+        {currentView === 'floor_consumption' && (
+          <PrintFloorConsumptionUnit
+            floorConsumptions={floorConsumptions}
+            materials={materials}
+            locations={locations}
+            issues={issues}
+            onOpenLogConsumption={(record) => {
+              setSelectedFloorRecordForConsumption(record || null)
+              setIsConsumptionOpen(true)
+            }}
+            onRefresh={() => loadAllData()}
+            companyId={companyId}
+          />
+        )}
+
+        {/* ========================================================= */}
         {/* VIEW 2: READY PRODUCTS STOCK TAB */}
         {/* ========================================================= */}
         {currentView === 'ready_products' && (
@@ -923,12 +983,40 @@ function UnifiedInventoryContent() {
                           <p className="text-[11px] text-slate-400 mt-1">
                             Ready products like roll-up standees and POP hardware are managed here.
                           </p>
+                          <Button
+                            size="sm"
+                            onClick={() => setIsReceiveStockOpen(true)}
+                            className="mt-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                          >
+                            <Plus className="h-3.5 w-3.5 mr-1" />
+                            Receive Stock (GRN)
+                          </Button>
                         </td>
                       </tr>
                     ) : (
                       filteredReadyProducts.map((p) => {
-                        const stockQty = Number((p as any).current_stock || p.usage_stats?.jobCount || 0)
-                        const cost = Number(p.base_cost || 0)
+                        const matchingMat = materials.find(
+                          (m) => m.id === p.id || (p.sku && m.sku?.toLowerCase() === p.sku?.toLowerCase())
+                        )
+                        const locBalances = balances.filter(
+                          (b) => b.material_id === p.id || (matchingMat && b.material_id === matchingMat.id)
+                        )
+                        const totalBalanceQty = locBalances.reduce((sum, b) => sum + (Number(b.available_quantity || (b as any).quantity) || 0), 0)
+
+                        const stockQty = Number(
+                          (p as any).current_stock !== undefined && (p as any).current_stock !== null
+                            ? (p as any).current_stock
+                            : matchingMat?.current_stock !== undefined && matchingMat?.current_stock !== null
+                            ? matchingMat.current_stock
+                            : totalBalanceQty > 0
+                            ? totalBalanceQty
+                            : (p as any).stock || 0
+                        )
+                        const cost = Number(
+                          p.base_cost || p.purchase_price || matchingMat?.average_cost || matchingMat?.last_purchase_price || 0
+                        )
+                        const sellingRate = Number(p.selling_price || 0)
+                        const totalValuation = stockQty * cost
 
                         return (
                           <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors">
@@ -955,18 +1043,52 @@ function UnifiedInventoryContent() {
                               <CurrencyDisplay amount={cost} />
                             </td>
                             <td className="p-3 text-right font-mono font-bold text-blue-600 dark:text-blue-400">
-                              <CurrencyDisplay amount={p.selling_price || 0} />
+                              <CurrencyDisplay amount={sellingRate} />
                             </td>
                             <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-white">
-                              <CurrencyDisplay amount={stockQty * cost} />
+                              <CurrencyDisplay amount={totalValuation} />
                             </td>
                             <td className="p-3">
-                              <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300">
-                                Active Catalog
-                              </Badge>
+                              {stockQty <= 0 ? (
+                                <Badge variant="destructive" className="text-[10px]">
+                                  Out of Stock
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-[10px] bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                  In Stock
+                                </Badge>
+                              )}
                             </td>
                             <td className="p-3 text-right">
                               <div className="flex items-center justify-end gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedMaterialForAction({
+                                      id: p.id,
+                                      company_id: p.company_id,
+                                      sku: p.sku,
+                                      name: p.name,
+                                      name_bn: p.name_bn || null,
+                                      category: (p.category || 'ready_product') as any,
+                                      unit: (p.selling_unit || p.unit || 'pcs') as any,
+                                      current_stock: stockQty,
+                                      average_cost: cost,
+                                      last_purchase_price: cost,
+                                      selling_price: sellingRate,
+                                      is_active: p.is_active !== false,
+                                      is_roll: false,
+                                      min_stock_level: 0,
+                                      created_at: p.created_at || new Date().toISOString(),
+                                      updated_at: p.updated_at || new Date().toISOString(),
+                                    } as unknown as MaterialRecord)
+                                    setIsReceiveStockOpen(true)
+                                  }}
+                                  className="h-7 px-2 text-[11px] text-emerald-600 hover:bg-emerald-50"
+                                >
+                                  Receive
+                                </Button>
                                 <Link href={getTenantNavHref(`/products/${p.id}`, pathname, slug)}>
                                   <Button size="sm" variant="outline" className="h-7 px-2 text-[11px]">
                                     <Eye className="h-3.5 w-3.5 mr-1" />
@@ -1925,11 +2047,15 @@ function UnifiedInventoryContent() {
           open={isConsumptionOpen}
           onOpenChange={(open) => {
             setIsConsumptionOpen(open)
-            if (!open) setSelectedRollForAction(null)
+            if (!open) {
+              setSelectedRollForAction(null)
+              setSelectedFloorRecordForConsumption(null)
+            }
           }}
           materials={materials}
           locations={locations}
-          selectedMaterialId={selectedRollForAction?.material_id || selectedMaterialForAction?.id}
+          selectedMaterialId={selectedRollForAction?.material_id || selectedMaterialForAction?.id || selectedFloorRecordForConsumption?.material_id}
+          selectedFloorRecord={selectedFloorRecordForConsumption}
           onSuccess={() => {
             showNotification('Actual consumption recorded and remnants evaluated.')
             loadAllData()

@@ -27,6 +27,7 @@ export interface InventoryActionBarProps {
   loading: boolean
   onReceiveStock: () => void
   onFloorIssue: () => void
+  onLogConsumption?: () => void
   onTransfer: () => void
   onAdjustment: () => void
   onNewPurchase: () => void
@@ -39,6 +40,7 @@ export function InventoryActionBar({
   loading,
   onReceiveStock,
   onFloorIssue,
+  onLogConsumption,
   onTransfer,
   onAdjustment,
   onNewPurchase,
@@ -56,7 +58,7 @@ export function InventoryActionBar({
           size="sm"
           onClick={onReceiveStock}
           className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 px-3.5 shadow-xs font-bold cursor-pointer gap-1.5"
-          title="Receive raw materials or stock into warehouse"
+          title="Receive raw materials or ready products into warehouse"
         >
           <Plus className="h-4 w-4" />
           <span>{isBn ? '+ মালামাল গ্রহণ (GRN)' : '+ Receive Stock (GRN)'}</span>
@@ -73,6 +75,20 @@ export function InventoryActionBar({
           <Scissors className="h-3.5 w-3.5 text-indigo-600" />
           <span>{isBn ? 'ফ্লোরে ইস্যু' : 'Floor Issue'}</span>
         </Button>
+
+        {/* Log Floor Consumption */}
+        {onLogConsumption && (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onLogConsumption}
+            className="text-xs h-9 px-3 border-amber-300 dark:border-amber-700 bg-amber-500/10 text-amber-800 dark:text-amber-300 hover:bg-amber-500/20 cursor-pointer gap-1.5 font-semibold"
+            title="Log actual floor consumption, scrap, and remnants"
+          >
+            <Printer className="h-3.5 w-3.5 text-amber-600" />
+            <span>{isBn ? 'কনজাম্পশন হিসাব' : 'Log Consumption'}</span>
+          </Button>
+        )}
 
         {/* Store Transfer */}
         <Button

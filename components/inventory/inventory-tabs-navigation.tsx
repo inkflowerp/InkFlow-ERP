@@ -11,6 +11,7 @@ import {
   ShoppingBag,
   Truck,
   FileText,
+  Flame,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
@@ -19,6 +20,7 @@ export type InventoryViewTab =
   | 'materials'
   | 'ready_products'
   | 'rolls'
+  | 'floor_consumption'
   | 'requests'
   | 'remnants'
   | 'locations'
@@ -41,6 +43,8 @@ export interface InventoryTabsNavigationProps {
   materialsCount: number
   readyProductsCount: number
   rollsCount: number
+  floorConsumptionsCount?: number
+  activeFloorCount?: number
   requestsCount: number
   pendingRequestsCount: number
   remnantsCount: number
@@ -56,6 +60,8 @@ export function InventoryTabsNavigation({
   materialsCount,
   readyProductsCount,
   rollsCount,
+  floorConsumptionsCount = 0,
+  activeFloorCount = 0,
   requestsCount,
   pendingRequestsCount,
   remnantsCount,
@@ -81,6 +87,14 @@ export function InventoryTabsNavigation({
       labelBn: 'রেডি প্রোডাক্ট স্টক',
       icon: Package,
       count: readyProductsCount,
+    },
+    {
+      id: 'floor_consumption',
+      labelEn: 'Print Floor Consumption',
+      labelBn: 'প্রিন্ট ফ্লোর কনজাম্পশন',
+      icon: Flame,
+      count: floorConsumptionsCount,
+      alert: activeFloorCount > 0,
     },
     {
       id: 'rolls',
@@ -180,3 +194,4 @@ export function InventoryTabsNavigation({
     </div>
   )
 }
+

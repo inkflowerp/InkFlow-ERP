@@ -16,6 +16,7 @@ import type {
   InventoryTransactionType,
   MaterialUnit,
   MaterialWastageRecord,
+  FloorConsumptionRecord,
 } from '../../types/inventory.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
@@ -396,24 +397,35 @@ export class InventoryRepository {
     materialId?: string
     branchId?: string | null
   }): Promise<InventoryStockBalanceRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('inventory_stock_balances')
-      .select('*, material:materials(id, name, sku, unit, min_stock_level, reorder_level), location:inventory_locations(id, location_name, location_code)')
-      .eq('company_id', companyId)
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('inventory_stock_balances')
+        .select('*, material:materials(id, name, sku, unit, min_stock_level, reorder_level), location:inventory_locations(id, location_name, location_code)')
+        .eq('company_id', companyId)
 
+      if (options?.locationId) {
+        query = query.eq('location_id', options.locationId)
+      }
+      if (options?.materialId) {
+        query = query.eq('material_id', options.materialId)
+      }
+
+      const { data, error } = await query
+      if (!error && data) {
+        return data as unknown as InventoryStockBalanceRecord[]
+      }
+    } catch {}
+
+    const localBalances = PrintERPDataStore.get<InventoryStockBalanceRecord[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, companyId) || []
+    let filtered = localBalances
     if (options?.locationId) {
-      query = query.eq('location_id', options.locationId)
+      filtered = filtered.filter((b) => b.location_id === options.locationId)
     }
     if (options?.materialId) {
-      query = query.eq('material_id', options.materialId)
+      filtered = filtered.filter((b) => b.material_id === options.materialId)
     }
-
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch stock balances: ${error.message}`)
-    }
-    return (data || []) as unknown as InventoryStockBalanceRecord[]
+    return filtered
   }
 
   /**
@@ -441,7 +453,7 @@ export class InventoryRepository {
       throw new Error(`Material with ID ${params.material_id} not found.`)
     }
 
-    const currentStock = Number(material.current_stock ?? (material as any).total_stock ?? 1000) || 0
+    const currentStock = Number(material.current_stock ?? (material as any).stock ?? 0) || 0
     const newStock = currentStock + params.quantity_change
 
     // 2. Strict non-negative stock verification
@@ -524,7 +536,7 @@ export class InventoryRepository {
         .select()
         .single()
 
-      // Also update products table if product exists
+      // Also update products table if product exists (by id or sku)
       try {
         await (supabase as any)
           .from('products')
@@ -535,8 +547,34 @@ export class InventoryRepository {
             base_cost: unitCost > 0 ? unitCost : undefined,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', material.id)
+          .or(`id.eq.${material.id},sku.eq.${material.sku}`)
       } catch {}
+
+      // Update location stock balance if location specified
+      if (params.location_id) {
+        try {
+          const { data: existingBal } = await (supabase as any)
+            .from('inventory_stock_balances')
+            .select('*')
+            .eq('company_id', params.company_id)
+            .eq('material_id', material.id)
+            .eq('location_id', params.location_id)
+            .maybeSingle()
+
+          const prevLocQty = Number(existingBal?.quantity || 0)
+          const newLocQty = Math.max(0, prevLocQty + params.quantity_change)
+
+          await (supabase as any).from('inventory_stock_balances').upsert({
+            id: existingBal?.id || `bal-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            company_id: params.company_id,
+            branch_id: params.branch_id || null,
+            material_id: material.id,
+            location_id: params.location_id,
+            quantity: newLocQty,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: 'id' })
+        } catch {}
+      }
 
       if (!ledgerErr && ledgerEntry) {
         return {
@@ -553,21 +591,56 @@ export class InventoryRepository {
       last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
     }) || { ...material, current_stock: newStock }
 
-    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, {
+    if (params.company_id) {
+      try {
+        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+          current_stock: newStock,
+          average_cost: unitCost > 0 ? unitCost : material.average_cost,
+          last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
+        }, params.company_id)
+      } catch {}
+    }
+
+    const prodUpdatePayload = {
       current_stock: newStock,
       stock: newStock,
       base_cost: unitCost > 0 ? unitCost : undefined,
       purchase_price: unitCost > 0 ? unitCost : undefined,
-    })
+    }
+
+    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
+    PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
 
     if (params.company_id) {
       try {
-        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, {
-          current_stock: newStock,
-          stock: newStock,
-          base_cost: unitCost > 0 ? unitCost : undefined,
-          purchase_price: unitCost > 0 ? unitCost : undefined,
-        }, params.company_id)
+        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
+        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
+      } catch {}
+    }
+
+    if (params.location_id) {
+      try {
+        const allBalances = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, params.company_id) || []
+        const existingIdx = allBalances.findIndex(
+          (b) => (b.material_id === material.id || (material.sku && b.sku === material.sku)) && b.location_id === params.location_id
+        )
+        if (existingIdx >= 0) {
+          const prevQ = Number(allBalances[existingIdx].quantity || 0)
+          allBalances[existingIdx].quantity = Math.max(0, prevQ + params.quantity_change)
+          allBalances[existingIdx].updated_at = new Date().toISOString()
+        } else {
+          allBalances.push({
+            id: `bal-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            company_id: params.company_id,
+            branch_id: params.branch_id || null,
+            material_id: material.id,
+            location_id: params.location_id,
+            quantity: Math.max(0, params.quantity_change),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, allBalances, false, params.company_id)
       } catch {}
     }
 
@@ -873,6 +946,16 @@ export class InventoryRepository {
     const issueId = `iss-${Date.now()}`
     const issueNumber = `ISS-${Date.now().toString().slice(-6)}`
 
+    // Parse assigned machine and job ref from notes if structured
+    let assignedMach = (params as any).assigned_machine || null
+    let jobRef = (params as any).job_reference || null
+    if (params.notes) {
+      const machMatch = params.notes.match(/Machine:\s*([^|]+)/i)
+      if (machMatch && machMatch[1]) assignedMach = machMatch[1].trim()
+      const jobMatch = params.notes.match(/Job Ref:\s*([^|]+)/i)
+      if (jobMatch && jobMatch[1]) jobRef = jobMatch[1].trim()
+    }
+
     let createdIssue: MaterialIssueRecord = {
       id: issueId,
       company_id: params.company_id,
@@ -885,20 +968,34 @@ export class InventoryRepository {
       issued_by_id: params.issued_by_id || null,
       issued_by_name: params.issued_by_name,
       received_by_name: params.received_by_name || null,
-      status: 'completed',
+      assigned_machine: assignedMach,
+      job_reference: jobRef,
+      status: 'in_use',
       notes: params.notes?.trim() || null,
       created_at: new Date().toISOString(),
-      items: params.items.map((it) => ({
-        id: `isi-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        issue_id: issueId,
-        request_item_id: it.request_item_id || null,
-        material_id: it.material_id,
-        issued_quantity: it.issued_quantity,
-        unit: it.unit as any,
-        unit_cost: it.unit_cost || 0,
-        total_cost: it.issued_quantity * (it.unit_cost || 0),
-        created_at: new Date().toISOString(),
-      })),
+      items: params.items.map((it) => {
+        const cost = it.unit_cost || 0
+        const qty = Number(it.issued_quantity) || 0
+        return {
+          id: `isi-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+          issue_id: issueId,
+          request_item_id: it.request_item_id || null,
+          material_id: it.material_id,
+          issued_quantity: qty,
+          consumed_quantity: 0,
+          returned_quantity: 0,
+          wastage_quantity: 0,
+          wastage_reason: null,
+          remaining_floor_balance: qty,
+          unit: it.unit as any,
+          unit_cost: cost,
+          total_cost: qty * cost,
+          machine_name: assignedMach,
+          job_reference: jobRef,
+          status: 'on_floor',
+          created_at: new Date().toISOString(),
+        }
+      }),
     }
 
     try {
@@ -943,6 +1040,7 @@ export class InventoryRepository {
       }
     } catch {}
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue, params.company_id)
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue)
 
     // Deduct stock and log ledger entry
@@ -966,6 +1064,479 @@ export class InventoryRepository {
 
     return createdIssue
   }
+
+  // ==========================================
+  // PRINT FLOOR CONSUMPTION & DISPATCH TRACKING
+  // ==========================================
+
+  static async getFloorConsumptions(
+    companyId: string,
+    options?: { machineId?: string; status?: string; search?: string }
+  ): Promise<FloorConsumptionRecord[]> {
+    const normTarget = companyId ? companyId.toLowerCase() : ''
+    const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
+
+    // 1. Load all material issues
+    const allIssues = [
+      ...(PrintERPDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES, companyId) || []),
+      ...(PrintERPDataStore.getAll<MaterialIssueRecord>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+    ].filter((iss) => {
+      if (!iss) return false
+      if (!companyId || !iss.company_id) return true
+      const cId = (iss.company_id || '').toLowerCase()
+      return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
+    })
+
+    // Deduplicate issues by ID
+    const uniqueIssuesMap = new Map<string, MaterialIssueRecord>()
+    for (const iss of allIssues) {
+      if (iss && iss.id && !uniqueIssuesMap.has(iss.id)) {
+        uniqueIssuesMap.set(iss.id, iss)
+      }
+    }
+
+    // 2. Load all explicit floor consumption records
+    const explicitConsumptions = [
+      ...(PrintERPDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) || []),
+      ...(PrintERPDataStore.getAll<FloorConsumptionRecord>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) || []),
+    ].filter((c) => {
+      if (!c) return false
+      if (!companyId || !c.company_id) return true
+      const cId = (c.company_id || '').toLowerCase()
+      return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
+    })
+
+    const results: FloorConsumptionRecord[] = []
+    const processedItemKeys = new Set<string>()
+
+    // Merge synthesized floor records from material issue items
+    for (const iss of Array.from(uniqueIssuesMap.values())) {
+      let machName = iss.assigned_machine || null
+      let jobRef = iss.job_reference || null
+      if (iss.notes) {
+        if (!machName) {
+          const mMatch = iss.notes.match(/Machine:\s*([^|]+)/i)
+          if (mMatch && mMatch[1]) machName = mMatch[1].trim()
+        }
+        if (!jobRef) {
+          const jMatch = iss.notes.match(/Job Ref:\s*([^|]+)/i)
+          if (jMatch && jMatch[1]) jobRef = jMatch[1].trim()
+        }
+      }
+
+      for (const item of iss.items || []) {
+        const itemKey = `${iss.id}_${item.id || item.material_id}`
+        processedItemKeys.add(itemKey)
+
+        const mat = await this.getMaterialById(item.material_id, companyId)
+        const unitCost = Number(item.unit_cost || mat?.average_cost || mat?.last_purchase_price || 0)
+        const issuedQty = Number(item.issued_quantity) || 0
+        const consumedQty = Number(item.consumed_quantity) || 0
+        const wastageQty = Number(item.wastage_quantity) || 0
+        const returnedQty = Number(item.returned_quantity) || 0
+        const remaining = Math.max(0, issuedQty - consumedQty - wastageQty - returnedQty)
+
+        let status: 'on_floor' | 'partially_consumed' | 'fully_consumed' | 'returned' = 'on_floor'
+        if (remaining <= 0) {
+          status = returnedQty >= issuedQty ? 'returned' : 'fully_consumed'
+        } else if (consumedQty > 0 || wastageQty > 0 || returnedQty > 0) {
+          status = 'partially_consumed'
+        }
+
+        results.push({
+          id: `fc-${iss.id}-${item.id || item.material_id}`,
+          company_id: companyId,
+          branch_id: iss.branch_id || null,
+          issue_id: iss.id,
+          issue_number: iss.issue_number,
+          issue_item_id: item.id,
+          material_id: item.material_id,
+          material_name: item.material_name || mat?.name || 'Raw Material',
+          sku: mat?.sku || 'MAT',
+          roll_id: item.roll_id || null,
+          roll_code: item.roll_code || null,
+          machine_id: item.machine_id || null,
+          machine_name: item.machine_name || machName || 'General Production Floor',
+          job_order_id: null,
+          job_reference: item.job_reference || jobRef || iss.production_task_id || null,
+          production_task_id: iss.production_task_id || null,
+          operator_id: iss.issued_by_id || null,
+          operator_name: iss.received_by_name || iss.issued_by_name || 'Floor Operator',
+          issued_quantity: issuedQty,
+          consumed_quantity: consumedQty,
+          unit: (item.unit || mat?.unit || 'pcs') as MaterialUnit,
+          unit_cost: unitCost,
+          total_cost: issuedQty * unitCost,
+          wastage_quantity: wastageQty,
+          wastage_reason: item.wastage_reason || null,
+          wastage_cost: wastageQty * unitCost,
+          returned_quantity: returnedQty,
+          return_location_id: null,
+          return_location_name: null,
+          remnants_count: 0,
+          remaining_floor_balance: remaining,
+          status,
+          notes: iss.notes || null,
+          created_at: iss.created_at || new Date().toISOString(),
+          updated_at: item.last_consumption_at || iss.created_at || new Date().toISOString(),
+          material: mat || undefined,
+        })
+      }
+    }
+
+    // Add any standalone explicit consumption records not mapped to issues
+    for (const exp of explicitConsumptions) {
+      if (!results.some((r) => r.id === exp.id || (exp.issue_id && r.issue_id === exp.issue_id))) {
+        results.push(exp)
+      }
+    }
+
+    // Apply filtering
+    let filtered = results
+    if (options?.machineId && options.machineId !== 'all') {
+      const mId = options.machineId.toLowerCase()
+      filtered = filtered.filter(
+        (r) =>
+          (r.machine_id && r.machine_id.toLowerCase().includes(mId)) ||
+          (r.machine_name && r.machine_name.toLowerCase().includes(mId))
+      )
+    }
+
+    if (options?.status && options.status !== 'all') {
+      filtered = filtered.filter((r) => r.status === options.status)
+    }
+
+    if (options?.search) {
+      const q = options.search.trim().toLowerCase()
+      filtered = filtered.filter(
+        (r) =>
+          r.material_name.toLowerCase().includes(q) ||
+          (r.sku && r.sku.toLowerCase().includes(q)) ||
+          (r.issue_number && r.issue_number.toLowerCase().includes(q)) ||
+          (r.operator_name && r.operator_name.toLowerCase().includes(q)) ||
+          (r.machine_name && r.machine_name.toLowerCase().includes(q)) ||
+          (r.job_reference && r.job_reference.toLowerCase().includes(q))
+      )
+    }
+
+    return filtered.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+
+  /**
+   * Log consumption against an issued floor item or direct production floor run
+   */
+  static async logFloorConsumption(params: {
+    company_id: string
+    branch_id?: string | null
+    issue_id?: string | null
+    issue_item_id?: string | null
+    material_id: string
+    consumed_quantity: number
+    unit: string
+    wastage_quantity?: number
+    wastage_reason?: string | null
+    returned_quantity?: number
+    return_location_id?: string | null
+    machine_id?: string | null
+    machine_name?: string | null
+    job_reference?: string | null
+    production_task_id?: string | null
+    operator_name?: string
+    operator_id?: string | null
+    remnants?: Array<{
+      width: number
+      length: number
+      dimension_unit?: string
+      quantity?: number
+      location_id: string
+      condition?: 'excellent' | 'usable' | 'minor_defect'
+      notes?: string | null
+    }>
+    notes?: string | null
+  }): Promise<{ success: boolean; floorRecord: FloorConsumptionRecord; remnantsCreated?: number }> {
+    const mat = await this.getMaterialById(params.material_id, params.company_id)
+    if (!mat) {
+      throw new Error(`Material with ID ${params.material_id} not found.`)
+    }
+
+    const unitCost = Number(mat.average_cost || mat.last_purchase_price || 0)
+    const consumedQty = Number(params.consumed_quantity) || 0
+    const wastageQty = Number(params.wastage_quantity) || 0
+    const returnedQty = Number(params.returned_quantity) || 0
+    const wastageCost = wastageQty * unitCost
+
+    let totalIssued = consumedQty + wastageQty + returnedQty
+    let cumulativeConsumed = consumedQty
+    let cumulativeWastage = wastageQty
+    let cumulativeReturned = returnedQty
+    let remainingBalance = 0
+    let floorStatus: FloorConsumptionRecord['status'] = 'fully_consumed'
+    let targetIssueItem: MaterialIssueItemRecord | undefined
+
+    // 1. Update Material Issue in DataStore if issue_id is supplied
+    if (params.issue_id) {
+      const allIssues = [
+        ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
+        ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+      ]
+      const targetIssue = allIssues.find((iss) => iss.id === params.issue_id)
+      if (targetIssue && targetIssue.items) {
+        for (const item of targetIssue.items) {
+          if (!params.issue_item_id || item.id === params.issue_item_id || item.material_id === params.material_id) {
+            item.consumed_quantity = (Number(item.consumed_quantity) || 0) + consumedQty
+            item.wastage_quantity = (Number(item.wastage_quantity) || 0) + wastageQty
+            if (params.wastage_reason) item.wastage_reason = params.wastage_reason
+            item.returned_quantity = (Number(item.returned_quantity) || 0) + returnedQty
+            const issued = Number(item.issued_quantity) || 0
+            const rem = Math.max(0, issued - (item.consumed_quantity || 0) - (item.wastage_quantity || 0) - (item.returned_quantity || 0))
+            item.remaining_floor_balance = rem
+            item.status = rem <= 0 ? (item.returned_quantity >= issued ? 'returned' : 'fully_consumed') : ((item.consumed_quantity || 0) > 0 || (item.wastage_quantity || 0) > 0 ? 'partially_consumed' : 'on_floor')
+            item.last_consumption_at = new Date().toISOString()
+            targetIssueItem = item
+          }
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
+        PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
+      }
+    }
+
+    if (targetIssueItem) {
+      totalIssued = Number(targetIssueItem.issued_quantity) || 0
+      cumulativeConsumed = Number(targetIssueItem.consumed_quantity) || 0
+      cumulativeWastage = Number(targetIssueItem.wastage_quantity) || 0
+      cumulativeReturned = Number(targetIssueItem.returned_quantity) || 0
+      remainingBalance = Number(targetIssueItem.remaining_floor_balance) || 0
+      floorStatus = targetIssueItem.status as FloorConsumptionRecord['status']
+    } else {
+      remainingBalance = Math.max(0, totalIssued - consumedQty - wastageQty - returnedQty)
+      floorStatus = remainingBalance <= 0 ? (returnedQty >= totalIssued ? 'returned' : 'fully_consumed') : (consumedQty > 0 || wastageQty > 0 ? 'partially_consumed' : 'on_floor')
+    }
+
+    // 2. Log Consumption in Stock Ledger
+    if (consumedQty > 0) {
+      const ledgerEntry: StockLedgerRecord = {
+        id: `led-cons-${Date.now()}`,
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        material_id: mat.id,
+        location_id: null,
+        transaction_type: 'CONSUMPTION',
+        quantity_change: 0,
+        unit: (params.unit || mat.unit) as MaterialUnit,
+        balance_after: Number(mat.current_stock || 0),
+        unit_cost: unitCost,
+        total_cost: consumedQty * unitCost,
+        reference_type: 'PRINT_FLOOR_CONSUMPTION',
+        reference_id: params.issue_id || null,
+        production_task_id: params.production_task_id || null,
+        notes: `Print Floor consumed ${consumedQty} ${params.unit} on ${params.machine_name || 'Press Machine'} ${params.job_reference ? `[Job: ${params.job_reference}]` : ''}`,
+        performed_by_id: params.operator_id || null,
+        performed_by_name: params.operator_name || 'Floor Operator',
+        created_at: new Date().toISOString(),
+      }
+      PrintERPDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, ledgerEntry)
+    }
+
+    // 3. Log Scrap / Wastage in Stock Ledger
+    if (wastageQty > 0) {
+      const wastageEntry: StockLedgerRecord = {
+        id: `led-wst-${Date.now()}`,
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        material_id: mat.id,
+        location_id: null,
+        transaction_type: 'WASTAGE',
+        quantity_change: 0,
+        unit: (params.unit || mat.unit) as MaterialUnit,
+        balance_after: Number(mat.current_stock || 0),
+        unit_cost: unitCost,
+        total_cost: wastageCost,
+        reference_type: 'PRINT_FLOOR_SCRAP',
+        reference_id: params.issue_id || null,
+        production_task_id: params.production_task_id || null,
+        notes: `Print Floor Scrap logged: ${wastageQty} ${params.unit}. Reason: ${params.wastage_reason || 'Cutting/Head Error'} (৳${Number(wastageCost || 0).toLocaleString('en-IN')})`,
+        performed_by_id: params.operator_id || null,
+        performed_by_name: params.operator_name || 'Floor Operator',
+        created_at: new Date().toISOString(),
+      }
+      PrintERPDataStore.addItem(STORAGE_KEYS.STOCK_LEDGER, wastageEntry)
+    }
+
+    // 4. Return Unused Material back to Warehouse Store
+    if (returnedQty > 0 && params.return_location_id) {
+      await this.recordStockAdjustment({
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        material_id: mat.id,
+        location_id: params.return_location_id,
+        quantity_change: Math.abs(returnedQty),
+        transaction_type: 'RETURN',
+        unit_cost: unitCost,
+        reference_type: 'FLOOR_RETURN_TO_STORE',
+        reference_id: params.issue_id || null,
+        production_task_id: params.production_task_id || null,
+        notes: `Unused floor material returned to store: +${returnedQty} ${params.unit}`,
+        performed_by_id: params.operator_id || null,
+        performed_by_name: params.operator_name || 'Floor Operator',
+      })
+    }
+
+    // 5. Register Reusable Remnants
+    let remnantsCount = 0
+    let remnantsArea = 0
+    if (params.remnants && params.remnants.length > 0) {
+      for (const rem of params.remnants) {
+        await this.createRemnant({
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          parent_material_id: mat.id,
+          production_task_id: params.production_task_id || null,
+          location_id: rem.location_id,
+          width: rem.width,
+          length: rem.length,
+          dimension_unit: rem.dimension_unit || 'ft',
+          quantity: rem.quantity || 1,
+          condition: rem.condition || 'usable',
+          notes: rem.notes || `Salvaged from Floor Run [${params.machine_name || 'Press'}]`,
+          created_by_name: params.operator_name || 'Floor Operator',
+        })
+        remnantsCount++
+        remnantsArea += (Number(rem.width) || 0) * (Number(rem.length) || 0)
+      }
+    }
+
+    // Construct response record
+    const floorRecord: FloorConsumptionRecord = {
+      id: `fc-run-${Date.now()}`,
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      issue_id: params.issue_id || null,
+      issue_item_id: params.issue_item_id || null,
+      material_id: mat.id,
+      material_name: mat.name,
+      sku: mat.sku,
+      machine_id: params.machine_id || null,
+      machine_name: params.machine_name || 'General Production Floor',
+      job_reference: params.job_reference || null,
+      production_task_id: params.production_task_id || null,
+      operator_id: params.operator_id || null,
+      operator_name: params.operator_name || 'Floor Operator',
+      issued_quantity: totalIssued,
+      consumed_quantity: cumulativeConsumed,
+      unit: (params.unit || mat.unit) as MaterialUnit,
+      unit_cost: unitCost,
+      total_cost: (cumulativeConsumed + cumulativeWastage) * unitCost,
+      wastage_quantity: cumulativeWastage,
+      wastage_reason: params.wastage_reason || null,
+      wastage_cost: cumulativeWastage * unitCost,
+      returned_quantity: cumulativeReturned,
+      return_location_id: params.return_location_id || null,
+      remnants_count: remnantsCount,
+      remnants_area_sft: remnantsArea,
+      remaining_floor_balance: remainingBalance,
+      status: floorStatus,
+      notes: params.notes || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      material: mat,
+    }
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+
+    return { success: true, floorRecord, remnantsCreated: remnantsCount }
+  }
+
+  static async returnFloorStockToStore(params: {
+    company_id: string
+    issue_id: string
+    material_id: string
+    quantity: number
+    return_location_id: string
+    operator_name?: string
+    notes?: string | null
+  }): Promise<{ success: boolean; remainingFloorBalance: number; floorRecord: FloorConsumptionRecord }> {
+    const mat = await this.getMaterialById(params.material_id, params.company_id)
+    if (!mat) throw new Error('Material not found.')
+
+    const allIssues = [
+      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES, params.company_id) || []),
+      ...(PrintERPDataStore.get<MaterialIssueRecord[]>(STORAGE_KEYS.MATERIAL_ISSUES) || []),
+    ]
+    const targetIssue = allIssues.find((iss) => iss.id === params.issue_id)
+    let remaining = 0
+    let totalIssued = Number(params.quantity)
+    let totalConsumed = 0
+    let totalWastage = 0
+    let totalReturned = Number(params.quantity)
+    let status: FloorConsumptionRecord['status'] = 'returned'
+
+    if (targetIssue && targetIssue.items) {
+      for (const item of targetIssue.items) {
+        if (item.material_id === params.material_id) {
+          item.returned_quantity = (Number(item.returned_quantity) || 0) + Number(params.quantity)
+          const issued = Number(item.issued_quantity) || 0
+          totalIssued = issued
+          totalConsumed = Number(item.consumed_quantity) || 0
+          totalWastage = Number(item.wastage_quantity) || 0
+          totalReturned = Number(item.returned_quantity) || 0
+          remaining = Math.max(0, issued - totalConsumed - totalWastage - totalReturned)
+          item.remaining_floor_balance = remaining
+          status = remaining <= 0 ? 'returned' : 'partially_consumed'
+          item.status = status
+          item.last_consumption_at = new Date().toISOString()
+        }
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, true, params.company_id)
+      PrintERPDataStore.set(STORAGE_KEYS.MATERIAL_ISSUES, allIssues, false)
+    }
+
+    // Add stock back to store location
+    await this.recordStockAdjustment({
+      company_id: params.company_id,
+      material_id: mat.id,
+      location_id: params.return_location_id,
+      quantity_change: Math.abs(params.quantity),
+      transaction_type: 'RETURN',
+      unit_cost: Number(mat.average_cost || mat.last_purchase_price || 0),
+      reference_type: 'FLOOR_RETURN_TO_STORE',
+      reference_id: params.issue_id,
+      notes: `Floor leftover stock returned to warehouse: +${params.quantity} ${mat.unit} ${params.notes ? `(${params.notes})` : ''}`,
+      performed_by_name: params.operator_name || 'Store Keeper',
+    })
+
+    const unitCost = Number(mat.average_cost || mat.last_purchase_price || 0)
+    const floorRecord: FloorConsumptionRecord = {
+      id: `fc-ret-${Date.now()}`,
+      company_id: params.company_id,
+      issue_id: params.issue_id,
+      material_id: mat.id,
+      material_name: mat.name,
+      sku: mat.sku,
+      operator_name: params.operator_name || 'Store Keeper',
+      issued_quantity: totalIssued,
+      consumed_quantity: totalConsumed,
+      unit: mat.unit as MaterialUnit,
+      unit_cost: unitCost,
+      total_cost: (totalConsumed + totalWastage) * unitCost,
+      wastage_quantity: totalWastage,
+      wastage_cost: totalWastage * unitCost,
+      returned_quantity: totalReturned,
+      return_location_id: params.return_location_id,
+      remnants_count: 0,
+      remaining_floor_balance: remaining,
+      status: status,
+      notes: params.notes || 'Unused material returned to store',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      material: mat,
+    }
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+
+    return { success: true, remainingFloorBalance: remaining, floorRecord }
+  }
+
+
 
   // ==========================================
   // INVENTORY REMNANTS

@@ -226,6 +226,7 @@ export const STORAGE_KEYS = {
   WF_OVERTIME_RECORDS: 'printerp_tenant_wf_ot_records',
   WF_SALARY_PAYMENTS: 'printerp_tenant_wf_salary_payments',
   WF_AUDIT_LOGS: 'printerp_tenant_wf_audit_logs',
+  FLOOR_CONSUMPTIONS: 'printerp_tenant_floor_consumptions',
 } as const
 
 export type StorageKey = (typeof STORAGE_KEYS)[keyof typeof STORAGE_KEYS]
@@ -346,7 +347,8 @@ export function isTransactionalKey(key: string): boolean {
     key === STORAGE_KEYS.WF_ATTENDANCE_SUMMARIES ||
     key === STORAGE_KEYS.WF_OVERTIME_RECORDS ||
     key === STORAGE_KEYS.WF_SALARY_PAYMENTS ||
-    key === STORAGE_KEYS.WF_AUDIT_LOGS
+    key === STORAGE_KEYS.WF_AUDIT_LOGS ||
+    key === STORAGE_KEYS.FLOOR_CONSUMPTIONS
   )
 }
 

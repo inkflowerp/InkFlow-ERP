@@ -204,5 +204,76 @@ describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', ()
     assert.strictEqual(res.ledgerEntry.quantity_change, 25)
     assert.strictEqual(res.ledgerEntry.unit_cost, 950)
     assert.strictEqual(res.ledgerEntry.total_cost, 23750)
+
+    // Check that product current_stock in DataStore was updated
+    const productsInStore = PrintERPDataStore.get<ProductRecord[]>(STORAGE_KEYS.PRODUCTS, companyId) || []
+    const updatedRollup = productsInStore.find((p) => p.id === 'prod-rollup-301')
+    assert.ok(updatedRollup, 'Product must be found in products store')
+    assert.strictEqual(updatedRollup.current_stock, 25, 'Product current_stock must be updated to 25')
+  })
+
+  it('6. Ready product stock on hand and total valuation calculation for X-Stand (RP-09470)', async () => {
+    const xStandProduct: ProductRecord = {
+      id: 'prod-xstand-09470',
+      company_id: companyId,
+      sku: 'RP-09470',
+      name: 'X-Stand',
+      name_bn: 'এক্স-স্ট্যান্ড',
+      category: 'Ready Merchandise & Hardware',
+      product_type: 'ready_product',
+      entity_type: 'product',
+      unit: 'pcs',
+      selling_unit: 'PIECE',
+      purchase_price: 200.0,
+      base_cost: 200.0,
+      selling_price: 300.0,
+      target_margin_percentage: 33,
+      dimensions_spec: '2ft × 5ft (60 × 160 cm)',
+      min_order_quantity: 1,
+      current_stock: 0,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false)
+    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [xStandProduct], false, companyId)
+
+    // Initially: Stock On Hand is 0, Total Valuation is 0
+    let prods = await ProductService.getProducts(companyId, false, 'all', undefined, 'product')
+    let stand = prods.find((p) => p.sku === 'RP-09470')
+    assert.ok(stand, 'X-Stand product must be retrieved')
+    assert.strictEqual(stand.current_stock, 0)
+    assert.strictEqual(Number(stand.current_stock || 0) * Number(stand.base_cost || 0), 0)
+
+    // Inward Receive Stock: Receive 50 units @ 200 BDT
+    const adjResult = await InventoryRepository.recordStockAdjustment({
+      company_id: companyId,
+      material_id: xStandProduct.id,
+      location_id: 'loc-main-store',
+      quantity_change: 50,
+      transaction_type: 'RECEIPT',
+      unit_cost: 200,
+      reference_type: 'STOCK_RECEIPT',
+      reference_id: 'GRN-2026-XSTAND',
+      notes: 'Direct Stock Inward for X-Stand display hardware',
+      performed_by_id: 'usr-store-1',
+      performed_by_name: 'Store Keeper',
+    })
+
+    assert.ok(adjResult, 'Adjustment must succeed')
+    assert.strictEqual(adjResult.material.current_stock, 50)
+
+    // After Receipt: Stock On Hand is 50, Total Valuation is 50 * 200 = 10,000 BDT
+    prods = await ProductService.getProducts(companyId, false, 'all', undefined, 'product')
+    stand = prods.find((p) => p.sku === 'RP-09470')
+    assert.ok(stand)
+    const stockQty = Number((stand as any).current_stock ?? (stand as any).stock ?? 0)
+    const cost = Number(stand.base_cost || stand.purchase_price || 0)
+    const totalValuation = stockQty * cost
+
+    assert.strictEqual(stockQty, 50, 'Stock on hand must now be 50')
+    assert.strictEqual(cost, 200, 'Unit base cost must be 200')
+    assert.strictEqual(totalValuation, 10000, 'Total valuation must be 10,000 BDT')
   })
 })

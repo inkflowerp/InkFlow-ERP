@@ -64,6 +64,8 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'target_margin_percentage',
     'minimum_charge',
     'min_order_quantity',
+    'current_stock',
+    'stock',
     'min_billable_quantity',
     'min_allowed_margin_percent',
     'pricing_method',
@@ -287,6 +289,8 @@ export function enrichProductRecord(p: any): ProductRecord {
     cost_basis_type: costBasisType,
     suggested_selling_price: suggestedPrice,
     gross_margin_percent: marginCalc.grossMarginPercent,
+    current_stock: p.current_stock !== undefined && p.current_stock !== null ? Number(p.current_stock) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0),
+    stock: p.current_stock !== undefined && p.current_stock !== null ? Number(p.current_stock) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0),
   }
 }
 
@@ -331,6 +335,8 @@ export class ProductRepository {
         if (entityType && entityType !== 'all') {
           if (entityType === 'outsource') {
             filtered = filtered.filter((p) => p.entity_type === 'outsource' || p.is_outsource || p.is_non_inventory || isOutsourceProduct(p))
+          } else if (entityType === 'product') {
+            filtered = filtered.filter((p) => p.entity_type === 'product' || (p.product_type as any) === 'product' || p.product_type === 'PRODUCT' || p.product_type === 'ready_product' || p.commercial_type === 'ready_product' || p.is_ready_product)
           } else {
             filtered = filtered.filter((p) => p.entity_type === entityType)
           }
@@ -381,6 +387,8 @@ export class ProductRepository {
         if (entityType && entityType !== 'all') {
           if (entityType === 'outsource') {
             enriched = enriched.filter((p) => p.entity_type === 'outsource' || p.is_outsource || p.is_non_inventory || isOutsourceProduct(p))
+          } else if (entityType === 'product') {
+            enriched = enriched.filter((p) => p.entity_type === 'product' || (p.product_type as any) === 'product' || p.product_type === 'PRODUCT' || p.product_type === 'ready_product' || p.commercial_type === 'ready_product' || p.is_ready_product)
           } else {
             enriched = enriched.filter((p) => p.entity_type === entityType)
           }

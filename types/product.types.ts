@@ -519,6 +519,8 @@ export interface ProductRecord {
   target_margin_percentage?: number
   minimum_charge?: number
   min_order_quantity?: number
+  current_stock?: number
+  stock?: number
   // Commercial Master 2.1 additions
   pricing_method?: PricingMethod
   min_billable_quantity?: number
