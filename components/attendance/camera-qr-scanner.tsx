@@ -298,16 +298,32 @@ export function CameraQrScanner({
 
           {/* Scanning Reticle & Corner Brackets */}
           {cameraStatus === 'active' && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="relative w-56 h-56 sm:w-64 sm:h-64 border-2 border-indigo-500/40 rounded-2xl bg-indigo-500/5 backdrop-contrast-125">
-                {/* Animated Laser Bar */}
-                <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-indigo-400 to-transparent shadow-[0_0_12px_rgba(99,102,241,1)] animate-[scan_2s_ease-in-out_infinite]" />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="relative w-60 h-60 sm:w-64 sm:h-64 border-2 border-indigo-500/40 rounded-2xl bg-indigo-500/5 backdrop-contrast-125 overflow-hidden shadow-2xl">
+                {/* Animated Laser Bar with Trailing Glow Sweep */}
+                <div
+                  className="animate-qr-scan absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-cyan-400 via-indigo-400 to-transparent shadow-[0_0_16px_rgba(56,189,248,1)] z-10"
+                  style={{ animation: 'qr-scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+                >
+                  <div className="absolute left-1/2 -translate-x-1/2 -top-1.5 h-4 w-12 rounded-full bg-cyan-300/30 blur-xs" />
+                </div>
+
+                {/* Vertical Sweep Light Wave */}
+                <div
+                  className="animate-qr-scan absolute left-0 right-0 h-16 -mt-8 bg-gradient-to-b from-cyan-400/0 via-cyan-400/10 to-transparent pointer-events-none"
+                  style={{ animation: 'qr-scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite' }}
+                />
 
                 {/* Glowing Corner Accents */}
-                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-indigo-400 rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-indigo-400 rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-indigo-400 rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-indigo-400 rounded-br-lg" />
+                <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-cyan-400 rounded-tl-lg shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-cyan-400 rounded-tr-lg shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-cyan-400 rounded-bl-lg shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+                <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-cyan-400 rounded-br-lg shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+
+                {/* Center Target Crosshairs */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-40 pointer-events-none">
+                  <div className="h-8 w-8 border border-dashed border-cyan-300/60 rounded-full animate-pulse-subtle" />
+                </div>
               </div>
             </div>
           )}

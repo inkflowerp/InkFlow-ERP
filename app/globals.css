@@ -520,6 +520,48 @@ input[data-numeric],
   animation: pulse-subtle 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* QR Code & Barcode Laser Scanning Bar Animation */
+@keyframes qr-scan-laser {
+  0% {
+    top: 5%;
+    opacity: 0.7;
+  }
+  50% {
+    top: 92%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.7;
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 5%;
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  50% {
+    top: 92%;
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+}
+
+.animate-qr-scan {
+  animation: qr-scan-laser 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-scan {
+  animation: scan 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
 /* ==============================================================================
    Recharts Dark Theme Global Overrides
    ============================================================================== */
