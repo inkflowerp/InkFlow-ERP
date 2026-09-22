@@ -383,4 +383,109 @@ ${quote.discount_amount > 0 ? `Discount: -৳${Number(quote.discount_amount).toL
 
 ${quote.notes ? `*Notes:* ${quote.notes}\n` : ''}Thank you for your business.`
   }
+
+  /**
+   * Generates culturally-aware, respectful Bangladeshi WhatsApp quotation proposal
+   * Includes universal greetings, BDT formatting, Advance Required (50%), and Payment Remittance Accounts
+   */
+  static generateBangladeshiQuotationWhatsAppMessage(
+    quote: QuotationRecord,
+    companyName: string = 'InkFlow Printing & Signage Solutions',
+    options?: {
+      bkashNumber?: string
+      bankDetails?: string
+    }
+  ): string {
+    const itemsSummary = (quote.items || [])
+      .map((it, idx) => {
+        const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
+        const specDetails: string[] = []
+        if (it.material_spec) specDetails.push(it.material_spec)
+        if ((it as any).offset_specs?.paper_gsm) specDetails.push(`${(it as any).offset_specs.paper_gsm} GSM`)
+        if ((it as any).signage_specs?.frame_structure) specDetails.push((it as any).signage_specs.frame_structure)
+        const specStr = specDetails.length > 0 ? ` [${specDetails.join(', ')}]` : ''
+        return `${idx + 1}. ${it.description}${dim}${specStr} - ৳${Number(it.item_total).toLocaleString('en-BD')}`
+      })
+      .slice(0, 5)
+      .join('\n')
+
+    const moreItems = quote.items && quote.items.length > 5 ? `\n...এবং আরও ${quote.items.length - 5} টি আইটেম` : ''
+    const advPct = quote.advance_percentage ?? 50
+    const advAmt = quote.advance_amount ?? Math.round((quote.grand_total * advPct) / 100)
+    const dueAmt = quote.due_on_delivery ?? Math.max(0, quote.grand_total - advAmt)
+
+    const bkash = options?.bkashNumber || '01711-000000 (Merchant/Personal)'
+    const bank = options?.bankDetails || 'City Bank / DBBL, A/C: 1102938471001'
+
+    return `*আসসালামু আলাইকুম / আদাব*
+সম্মানিত *${quote.customer_name}*${quote.customer_company ? ` (${quote.customer_company})` : ''},
+আপনার চাহিদানুযায়ী *${companyName}*-এর বাণিজ্যিক প্রাক্কলন/কোটেশন পত্র নিম্নরূপ:
+
+━━━━━━━━━━━━━━━━━━━━
+📄 *কোটেশন নম্বর:* #${quote.quotation_number}
+📅 *তারিখ:* ${quote.quotation_date}
+⏳ *মেয়াদ (Valid Until):* ${quote.valid_until}
+${quote.reference_no ? `📌 *রেফারেন্স/পিও:* ${quote.reference_no}\n` : ''}━━━━━━━━━━━━━━━━━━━━
+
+📦 *আইটেম ও স্পেসিফিকেশন:*
+${itemsSummary}${moreItems}
+
+━━━━━━━━━━━━━━━━━━━━
+• উপমোট (Subtotal): ৳${Number(quote.subtotal).toLocaleString('en-BD')}
+${quote.discount_amount > 0 ? `• বিশেষ ছাড় (Discount): -৳${Number(quote.discount_amount).toLocaleString('en-BD')}\n` : ''}${quote.vat_amount > 0 ? `• ভ্যাট (${quote.vat_rate}%): +৳${Number(quote.vat_amount).toLocaleString('en-BD')}\n` : ''}*• সর্বমোট প্রাক্কলন: ৳${Number(quote.grand_total).toLocaleString('en-BD')} BDT*
+
+💵 *পেমেন্ট ও অগ্রিম শর্তাবলী:*
+• প্রয়োজনীয় অগ্রিম (${advPct}% Advance): *৳${Number(advAmt).toLocaleString('en-BD')}*
+• অবশিষ্ট টাকা ডেলিভারির সময় প্রদেয়: ৳${Number(dueAmt).toLocaleString('en-BD')}
+
+📱 *পেমেন্ট মাধ্যম (Official Payment Accounts):*
+• bKash / Nagad: ${bkash}
+• Bank: ${bank}
+
+${quote.notes ? `📝 *বিশেষ দ্রষ্টব্য:* ${quote.notes}\n\n` : ''}উদ্ধৃতিটি পর্যালোচনা করে অনুগ্রহপূর্বক অর্ডারটি কনফার্ম করুন। আপনার ব্যবসার সার্বিক সাফল্য কামনায়—
+*${companyName}*
+বিক্রয় ও কাস্টমার সার্ভিস প্রতিনিধি: ${quote.salesperson_name}`
+  }
+
+  /**
+   * Resolves the primary industrial printing sector of a quotation
+   */
+  static getSectorForQuotation(
+    quote: QuotationRecord
+  ): 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise' | 'other' {
+    if (!quote.items || quote.items.length === 0) return 'digital_print'
+    
+    // Check if any item matches specific sector
+    const hasSignage = quote.items.some(
+      (it) =>
+        (it as any).category_preset === 'signage_fabrication' ||
+        (it as any).category_preset === 'signage' ||
+        it.product_type === 'fabrication_service' ||
+        Boolean((it as any).signage_specs) ||
+        (it.description && /(acrylic|signboard|led|letter|neon|3d|box pipe|ss letter)/i.test(it.description))
+    )
+    if (hasSignage) return 'signage_fabrication'
+
+    const hasOffset = quote.items.some(
+      (it) =>
+        (it as any).category_preset === 'offset_print' ||
+        (it as any).category_preset === 'offset' ||
+        Boolean((it as any).offset_specs) ||
+        (it.description && /(visiting card|cash memo|challan|pad|leaflet|flyer|brochure|carton|book|calendar|envelope|folder|gsm|ncr)/i.test(it.description))
+    )
+    if (hasOffset) return 'offset_print'
+
+    const hasMerchandise = quote.items.some(
+      (it) =>
+        (it as any).category_preset === 'ready_merchandise' ||
+        (it as any).category_preset === 'merchandise' ||
+        (it as any).category_preset === 'ready' ||
+        it.item_kind === 'ready_product' ||
+        (it.description && /(mug|t-shirt|crest|trophy|id card|lanyard|cap|gift)/i.test(it.description))
+    )
+    if (hasMerchandise) return 'ready_merchandise'
+
+    return 'digital_print'
+  }
 }
+

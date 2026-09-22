@@ -351,36 +351,10 @@ function QuotationDetailContent() {
       ? `88${cleanPhone}`
       : `880${cleanPhone}`
 
-    const itemsSummary = (quote.items || [])
-      .map((it, idx) => {
-        const dim = it.width > 0 && it.height > 0 ? ` (${it.width}ft × ${it.height}ft)` : ''
-        return `${idx + 1}. ${it.description}${dim} - ৳${Number(it.item_total).toLocaleString('en-BD')}`
-      })
-      .slice(0, 4)
-      .join('\n')
-
-    const moreItems = quote.items && quote.items.length > 4 ? `\n...এবং আরও ${quote.items.length - 4} টি আইটেম` : ''
-    const advReq = quote.advance_amount ? `\n*অগ্রিম জমা (Advance Required - ${quote.advance_percentage || 50}%): ৳${Number(quote.advance_amount).toLocaleString('en-BD')}*` : ''
-
-    const messageText = `*উদ্ধৃতিপত্র / Quotation #${quote.quotation_number}*
-প্রতিষ্ঠান: *${company?.name || 'InkFlow Printing & Signage'}*
-সম্মানিত গ্রাহক: *${quote.customer_name}*${quote.customer_company ? ` (${quote.customer_company})` : ''}
-তারিখ: ${quote.quotation_date}
-মেয়াদ (Valid Until): ${quote.valid_until}
-
-*পণ্যের বিবরণ:*
-${itemsSummary}${moreItems}
-
-উপমোট: ৳${Number(quote.subtotal).toLocaleString('en-BD')}
-${quote.discount_amount > 0 ? `বিশেষ ছাড়: -৳${Number(quote.discount_amount).toLocaleString('en-BD')}\n` : ''}ভ্যাট (${quote.vat_rate}%): ৳${Number(quote.vat_amount).toLocaleString('en-BD')}
-*সর্বমোট প্রাক্কলন: ৳${Number(quote.grand_total).toLocaleString('en-BD')} BDT*${advReq}
-বাকি টাকা ডেলিভারির সময় প্রদেয়।
-
-*পেমেন্ট মাধ্যম (Payment Accounts):*
-• bKash/Nagad (Merchant): 01711-000000
-• Bank: City Bank / Dutch-Bangla Bank, A/C: 1102938471001
-
-উদ্ধৃতিটি পর্যালোচনা করে অনুগ্রহপূর্বক অর্ডারটি কনফার্ম করুন। ধন্যবাদ!`
+    const messageText = QuotationService.generateBangladeshiQuotationWhatsAppMessage(
+      quote,
+      company?.name || 'InkFlow Printing & Signage Solutions'
+    )
 
     window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageText)}`, '_blank')
 

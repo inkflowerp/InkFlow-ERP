@@ -121,7 +121,20 @@ export function QuotationTable({
             {quotations.map((q) => {
               const nextAction = QuotationService.calculateNextAction(q)
               const primaryItem = q.items?.[0]
+              const sector = QuotationService.getSectorForQuotation(q)
               const cleanPhone = (q.customer_whatsapp || q.customer_phone || '').replace(/\D/g, '')
+              const formattedPhone = cleanPhone.startsWith('880')
+                ? cleanPhone
+                : cleanPhone.startsWith('0')
+                ? `88${cleanPhone}`
+                : `880${cleanPhone}`
+
+              const waMessage = QuotationService.generateBangladeshiQuotationWhatsAppMessage(q, companyName)
+              const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
+
+              const advPct = q.advance_percentage ?? 50
+              const advAmt = q.advance_amount ?? Math.round(((Number(q.grand_total) || 0) * advPct) / 100)
+              const dueAmt = q.due_on_delivery ?? Math.max(0, (Number(q.grand_total) || 0) - advAmt)
 
               return (
                 <tr key={q.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
@@ -146,17 +159,36 @@ export function QuotationTable({
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] font-mono text-slate-400">{q.customer_phone}</div>
+                    <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
+                      {q.customer_phone && (
+                        <a href={`tel:${q.customer_phone}`} className="hover:text-blue-600 hover:underline">
+                          {q.customer_phone}
+                        </a>
+                      )}
+                    </div>
                   </td>
 
                   {/* Primary Item */}
                   <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300 max-w-[220px]">
                     <div className="flex items-center gap-1.5 truncate font-medium">
-                      {primaryItem?.category_preset && (
-                        <span className="text-[9px] font-bold uppercase px-1 py-0.2 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 shrink-0">
-                          {primaryItem.category_preset}
-                        </span>
-                      )}
+                      <span className={cn(
+                        'text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border shrink-0',
+                        sector === 'offset_print'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300'
+                          : sector === 'signage_fabrication'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300'
+                          : sector === 'ready_merchandise'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300'
+                      )}>
+                        {sector === 'offset_print'
+                          ? 'Offset'
+                          : sector === 'signage_fabrication'
+                          ? 'Signage'
+                          : sector === 'ready_merchandise'
+                          ? 'Merch'
+                          : 'Digital'}
+                      </span>
                       <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
                     <div className="text-[11px] text-slate-400">
@@ -180,15 +212,9 @@ export function QuotationTable({
                     <div className="font-mono font-bold text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
-                    {q.advance_amount ? (
-                      <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
-                        Adv: ৳{Number(q.advance_amount).toLocaleString()} ({q.advance_percentage || 50}%)
-                      </div>
-                    ) : q.discount_amount > 0 ? (
-                      <div className="text-[10px] text-rose-600">
-                        -{formatBDT(q.discount_amount)} disc
-                      </div>
-                    ) : null}
+                    <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                      Adv: ৳{Number(advAmt).toLocaleString()} ({advPct}%)
+                    </div>
                   </td>
 
                   {/* Status */}
@@ -213,7 +239,29 @@ export function QuotationTable({
 
                   {/* Actions */}
                   <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-1">
+                      {cleanPhone ? (
+                        <a
+                          href={waUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center h-7 px-1.5 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
+                          title="Share Proposal on WhatsApp"
+                        >
+                          <MessageSquare className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
+
+                      {q.customer_phone ? (
+                        <a
+                          href={`tel:${q.customer_phone}`}
+                          className="inline-flex items-center justify-center h-7 px-1.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                          title="Call Customer"
+                        >
+                          <Phone className="h-3.5 w-3.5" />
+                        </a>
+                      ) : null}
+
                       <Button
                         size="sm"
                         variant="ghost"
@@ -225,7 +273,7 @@ export function QuotationTable({
                       </Button>
                       <Link
                         href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                        className="inline-flex items-center px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+                        className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
                       >
                         Cockpit →
                       </Link>
@@ -254,23 +302,43 @@ export function QuotationTable({
         {quotations.map((q) => {
           const nextAction = QuotationService.calculateNextAction(q)
           const primaryItem = q.items?.[0]
+          const sector = QuotationService.getSectorForQuotation(q)
           const cleanPhone = (q.customer_whatsapp || q.customer_phone || '').replace(/\D/g, '')
-          const waText = encodeURIComponent(
-            `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed.`
-          )
-          const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('880') ? cleanPhone : `880${cleanPhone.replace(/^0/, '')}`}?text=${waText}` : '#'
+          const formattedPhone = cleanPhone.startsWith('880')
+            ? cleanPhone
+            : cleanPhone.startsWith('0')
+            ? `88${cleanPhone}`
+            : `880${cleanPhone}`
+
+          const waMessage = QuotationService.generateBangladeshiQuotationWhatsAppMessage(q, companyName)
+          const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
+
+          const advPct = q.advance_percentage ?? 50
+          const advAmt = q.advance_amount ?? Math.round(((Number(q.grand_total) || 0) * advPct) / 100)
 
           return (
             <div key={q.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 transition-colors">
               {/* Header: Quote #, Status & Expiry */}
               <div className="flex items-center justify-between gap-2">
-                <Link
-                  href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                  className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  <span>{q.quotation_number}</span>
-                  <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                </Link>
+                <div className="flex items-center gap-1.5">
+                  <Link
+                    href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
+                    className="font-mono font-bold text-sm text-blue-600 hover:underline flex items-center gap-1"
+                  >
+                    <span>{q.quotation_number}</span>
+                    <ExternalLink className="h-3.5 w-3.5 opacity-70" />
+                  </Link>
+                  <span className={cn(
+                    'text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border',
+                    sector === 'offset_print'
+                      ? 'bg-purple-50 text-purple-700 border-purple-200'
+                      : sector === 'signage_fabrication'
+                      ? 'bg-amber-50 text-amber-700 border-amber-200'
+                      : 'bg-blue-50 text-blue-700 border-blue-200'
+                  )}>
+                    {sector === 'offset_print' ? 'Offset' : sector === 'signage_fabrication' ? 'Signage' : 'Digital'}
+                  </span>
+                </div>
                 <div className="flex items-center gap-1.5">
                   {getStatusBadge(q.status)}
                 </div>
@@ -292,6 +360,9 @@ export function QuotationTable({
                   <span className="text-[10px] uppercase font-semibold text-slate-400 block">Grand Total</span>
                   <span className="text-base font-black text-slate-900 dark:text-white font-mono">
                     {formatBDT(q.grand_total)}
+                  </span>
+                  <span className="text-[10px] text-amber-600 block">
+                    Adv ({advPct}%): ৳{Number(advAmt).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -325,6 +396,7 @@ export function QuotationTable({
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center gap-1 h-9 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800"
+                    title="Send Proposal on WhatsApp"
                   >
                     <MessageSquare className="h-3.5 w-3.5" />
                     <span>WA</span>
@@ -373,3 +445,4 @@ export function QuotationTable({
     </div>
   )
 }
+

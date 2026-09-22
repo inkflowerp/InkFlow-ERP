@@ -42,6 +42,7 @@ import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { formatBDT } from '@/lib/formatters'
 
 export default function QuotationsPage() {
   const params = useParams()
@@ -64,6 +65,7 @@ export default function QuotationsPage() {
   // Filtering & Search
   const [search, setSearch] = useState('')
   const [selectedFilter, setSelectedFilter] = useState<string>('all')
+  const [sectorFilter, setSectorFilter] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
 
   // Modals state
   const [isNewOpen, setIsNewOpen] = useState(false)
@@ -191,21 +193,68 @@ export default function QuotationsPage() {
 
     // 5. Clean, deduplicate and sort
     return deduplicateQuotations(rawList, companyId)
-  }, [serverQuotations, localQuotations, slug, companyId, localTick])
+  }, [serverQuotations, localQuotations, slug, companyId, localTick, isMounted])
 
+  // Sector Counts for Tab Badges
+  const sectorCounts = useMemo(() => {
+    const counts = {
+      all: quotations.length,
+      digital_print: 0,
+      offset_print: 0,
+      signage_fabrication: 0,
+      ready_merchandise: 0,
+    }
+    quotations.forEach((q) => {
+      const sec = QuotationService.getSectorForQuotation(q)
+      if (sec === 'digital_print') counts.digital_print++
+      else if (sec === 'offset_print') counts.offset_print++
+      else if (sec === 'signage_fabrication') counts.signage_fabrication++
+      else if (sec === 'ready_merchandise') counts.ready_merchandise++
+      else counts.digital_print++
+    })
+    return counts
+  }, [quotations])
 
   // KPI Metrics Calculation
   const kpiMetrics = useMemo(() => {
     return QuotationService.getKpiMetrics(quotations)
   }, [quotations])
 
-  // Filtered quotations based on search & action-oriented filters
+  // Commercial Pipeline Summary
+  const pipelineSummary = useMemo(() => {
+    const active = quotations.filter(
+      (q) => q.status !== 'converted' && q.status !== 'rejected' && q.status !== 'expired'
+    )
+    const totalPipelineValue = active.reduce((sum, q) => sum + (Number(q.grand_total) || 0), 0)
+    const expectedAdvance = active.reduce((sum, q) => {
+      const pct = q.advance_percentage ?? 50
+      const amt = q.advance_amount ?? Math.round(((Number(q.grand_total) || 0) * pct) / 100)
+      return sum + amt
+    }, 0)
+    const avgMargin = active.length > 0
+      ? Math.round(active.reduce((sum, q) => sum + (q.margin_percent || 40), 0) / active.length)
+      : 40
+    return {
+      activeCount: active.length,
+      totalPipelineValue,
+      expectedAdvance,
+      avgMargin,
+    }
+  }, [quotations])
+
+  // Filtered quotations based on search, sector, & status filters
   const filteredQuotations = useMemo(() => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
     return quotations.filter((q) => {
-      // 1. Search filter with null-safe defensive checks
+      // 1. Sector filter
+      if (sectorFilter !== 'all') {
+        const sec = QuotationService.getSectorForQuotation(q)
+        if (sec !== sectorFilter) return false
+      }
+
+      // 2. Search filter with null-safe defensive checks
       const term = search.toLowerCase().trim()
       const qNum = (q.quotation_number || '').toLowerCase()
       const qCust = (q.customer_name || '').toLowerCase()
@@ -223,7 +272,7 @@ export default function QuotationsPage() {
 
       if (!matchSearch) return false
 
-      // 2. Action & Status filters
+      // 3. Action & Status filters
       if (selectedFilter === 'all') return true
       if (selectedFilter === 'active') {
         return q.status !== 'converted' && q.status !== 'rejected' && q.status !== 'expired'
@@ -246,7 +295,7 @@ export default function QuotationsPage() {
 
       return q.status === selectedFilter
     })
-  }, [quotations, search, selectedFilter])
+  }, [quotations, search, selectedFilter, sectorFilter])
 
   const handleOpenFollowUp = (quote: QuotationRecord) => {
     setFollowUpQuote(quote)
@@ -402,6 +451,64 @@ export default function QuotationsPage() {
           selectedFilter={selectedFilter}
           onSelectFilter={setSelectedFilter}
         />
+
+        {/* Sector Streams Filter & Executive Pipeline Highlights */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 border border-slate-800 shadow-md">
+          {/* Sector Filter Pills */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+            <span className="text-[11px] uppercase font-bold text-slate-400 mr-1 hidden md:inline">
+              Sector:
+            </span>
+            {[
+              { id: 'all', labelEn: 'All Sectors', labelBn: 'সকল সেক্টর', count: sectorCounts.all, icon: '🖨️' },
+              { id: 'digital_print', labelEn: 'Digital Flex/Vinyl', labelBn: 'ডিজিটাল ব্যানার', count: sectorCounts.digital_print, icon: '🎨' },
+              { id: 'offset_print', labelEn: 'Offset Press', labelBn: 'অফসেট প্রেস', count: sectorCounts.offset_print, icon: '📑' },
+              { id: 'signage_fabrication', labelEn: '3D Signage', labelBn: '৩ডি সাইনেজ', count: sectorCounts.signage_fabrication, icon: '💡' },
+              { id: 'ready_merchandise', labelEn: 'Merchandise', labelBn: 'মার্চেন্ডাইজ', count: sectorCounts.ready_merchandise, icon: '🎁' },
+            ].map((sec) => {
+              const isSelected = sectorFilter === sec.id
+              return (
+                <button
+                  key={sec.id}
+                  type="button"
+                  onClick={() => setSectorFilter(sec.id as any)}
+                  className={`h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                    isSelected
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white/10 text-slate-300 hover:bg-white/20'
+                  }`}
+                >
+                  <span>{sec.icon}</span>
+                  <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-400'}`}>
+                    {sec.count}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Aggregate Numbers: Active Value & Advance Expected */}
+          <div className="flex items-center gap-3 shrink-0 text-xs border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-semibold text-slate-400 block">
+                {locale === 'bn' ? 'চলতি পাইপলাইন' : 'Active Pipeline'}
+              </span>
+              <span className="font-mono font-bold text-cyan-300">
+                ৳ {formatBDT(pipelineSummary.totalPipelineValue)}
+              </span>
+            </div>
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
+            <div className="text-right">
+              <span className="text-[10px] uppercase font-semibold text-amber-400 block">
+                {locale === 'bn' ? 'প্রত্যাশিত অগ্রিম (৫০%)' : 'Est. Advance (50%)'}
+              </span>
+              <span className="font-mono font-bold text-amber-300">
+                ৳ {formatBDT(pipelineSummary.expectedAdvance)}
+              </span>
+            </div>
+          </div>
+        </div>
 
         {/* 2. Needs Attention Triage Section */}
         <NeedsAttentionPanel

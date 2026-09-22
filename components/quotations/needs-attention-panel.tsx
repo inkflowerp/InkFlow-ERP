@@ -121,11 +121,16 @@ export function NeedsAttentionPanel({
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2.5">
           {urgentQuotes.map((q) => {
             const reason = getAttentionReason(q)
+            const sector = QuotationService.getSectorForQuotation(q)
             const cleanPhone = (q.customer_whatsapp || q.customer_phone || '').replace(/\D/g, '')
-            const waText = encodeURIComponent(
-              `Hello ${q.customer_name},\nRegarding quotation #${q.quotation_number} (${formatBDT(q.grand_total)}) from ${companyName}. Please let us know if you'd like us to proceed with production.`
-            )
-            const waUrl = cleanPhone ? `https://wa.me/${cleanPhone.startsWith('880') ? cleanPhone : `880${cleanPhone.replace(/^0/, '')}`}?text=${waText}` : '#'
+            const formattedPhone = cleanPhone.startsWith('880')
+              ? cleanPhone
+              : cleanPhone.startsWith('0')
+              ? `88${cleanPhone}`
+              : `880${cleanPhone}`
+
+            const waMessage = QuotationService.generateBangladeshiQuotationWhatsAppMessage(q, companyName)
+            const waUrl = cleanPhone ? `https://wa.me/${formattedPhone}?text=${encodeURIComponent(waMessage)}` : '#'
 
             return (
               <div
@@ -135,12 +140,24 @@ export function NeedsAttentionPanel({
                 {/* Header: Quote # & Value */}
                 <div>
                   <div className="flex items-center justify-between gap-1 mb-1">
-                    <Link
-                      href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                      className="font-mono font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <span>{q.quotation_number}</span>
-                    </Link>
+                    <div className="flex items-center gap-1.5">
+                      <Link
+                        href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
+                        className="font-mono font-bold text-xs text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <span>{q.quotation_number}</span>
+                      </Link>
+                      <span className={cn(
+                        'text-[8px] font-bold uppercase px-1 py-0.2 rounded border',
+                        sector === 'offset_print'
+                          ? 'bg-purple-50 text-purple-700 border-purple-200'
+                          : sector === 'signage_fabrication'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : 'bg-blue-50 text-blue-700 border-blue-200'
+                      )}>
+                        {sector === 'offset_print' ? 'Offset' : sector === 'signage_fabrication' ? 'Signage' : 'Digital'}
+                      </span>
+                    </div>
                     <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">
                       {formatBDT(q.grand_total)}
                     </span>
