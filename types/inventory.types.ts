@@ -138,7 +138,8 @@ export interface InventoryRollRecord {
   consumed_area_sft: number
   remaining_area_sft: number
   current_area_sft?: number
-  status: 'available' | 'reserved' | 'mounted' | 'in_use' | 'depleted' | 'scrapped' | 'in_warehouse'
+  is_remnant?: boolean
+  status: 'available' | 'reserved' | 'mounted' | 'in_use' | 'depleted' | 'scrapped' | 'in_warehouse' | 'remnant'
   mounted_press_name?: string | null
   mounted_machine_id?: string | null
   mounted_machine_name?: string | null

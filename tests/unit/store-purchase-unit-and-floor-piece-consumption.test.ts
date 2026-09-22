@@ -1,12 +1,12 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
-import { InventoryRepository } from '../../lib/repositories/inventory.repository'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import {
   getMaterialWarehouseStockBreakdown,
   formatFloorPieceDisplay,
-} from '../../lib/units'
-import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine'
+} from '../../lib/units.ts'
+import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine.ts'
 
 test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) => {
   const companyId = 'tenant-purchase-unit-test-corp'

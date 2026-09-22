@@ -1,4 +1,8 @@
-import { RollFeedCalculationInput, RollFeedCalculationResult } from '@/types/inventory.types'
+import type {
+  RollFeedCalculationInput,
+  RollFeedCalculationResult,
+  InventoryRollRecord,
+} from '@/types/inventory.types'
 
 export class RollConsumptionEngine {
   /**
@@ -122,7 +126,7 @@ export class RollConsumptionEngine {
   ): 'purchased_full_roll' | 'partial_active_roll' | 'remnant' | 'depleted' {
     if (!roll) return 'depleted'
     if (roll.status === 'depleted' || roll.status === 'scrapped') return 'depleted'
-    if ((roll as any).is_remnant || roll.status === 'remnant') return 'remnant'
+    if (roll.is_remnant || roll.status === 'remnant') return 'remnant'
 
     const curLen = Number(
       roll.current_length_ft ??

@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine'
-import { InventoryRepository } from '../../lib/repositories/inventory.repository'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
+import { RollConsumptionEngine } from '../../lib/domain/roll-consumption-engine.ts'
+import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 test('Roll Dimensional Consumption Engine - User Specific Scenarios', async (t) => {
   const companyId = 'tenant-test-roll-corp'

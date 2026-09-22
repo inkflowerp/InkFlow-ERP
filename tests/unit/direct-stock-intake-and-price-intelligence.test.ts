@@ -1,10 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine'
-import { InventoryService } from '../../services/inventory.service'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
-import type { MaterialRecord } from '../../types/inventory.types'
-import type { PriceIntelligenceRecord } from '../../types/price-intelligence.types'
+import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
+import { InventoryService } from '../../services/inventory.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import type { MaterialRecord } from '../../types/inventory.types.ts'
+import type { PriceIntelligenceRecord } from '../../types/price-intelligence.types.ts'
 
 describe('Direct Stock Intake & Price Intelligence Engine', () => {
   const testCompanyId = `test-company-price-intel-${Date.now()}`

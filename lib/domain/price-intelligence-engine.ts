@@ -1,10 +1,10 @@
-import {
+import type {
   MasterPhysicalClassification,
   ConfiguredMaterialSize,
   PriceIntelligenceRecord,
   PriceIntelligenceSummary,
   SupplierPriceComparisonItem,
-} from '../../types/price-intelligence.types'
+} from '@/types/price-intelligence.types'
 
 export class PriceIntelligenceEngine {
   /**

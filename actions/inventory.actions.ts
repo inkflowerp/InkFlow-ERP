@@ -6,6 +6,7 @@ import { AuditService } from '@/services/audit.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { PurchaseService } from '@/services/purchase.service'
 import { ProductRepository } from '@/lib/repositories/product.repository'
+import { EntitlementService } from '@/services/entitlement.service'
 import {
   MaterialRecord,
   InventoryLocationRecord,
@@ -48,8 +49,6 @@ function checkInventoryPermission(tenant: any, requiredPerm: string): boolean {
 // ==========================================
 // MATERIAL MASTER ACTIONS
 // ==========================================
-
-import { EntitlementService } from '@/services/entitlement.service'
 
 export async function createMaterialAction(
   data: Partial<MaterialRecord> & {
