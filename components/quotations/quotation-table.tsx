@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Trash2,
 } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
@@ -41,24 +42,27 @@ export function QuotationTable({
   onTrash,
 }: QuotationTableProps) {
   const pathname = usePathname()
+  const { language } = useI18n()
+  const isBn = language === 'bn'
+
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
       case 'draft':
-        return <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-300">Draft</Badge>
+        return <Badge variant="outline" className="bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300">{isBn ? 'খসড়া' : 'Draft'}</Badge>
       case 'sent':
-        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Sent</Badge>
+        return <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">{isBn ? 'পাঠানো হয়েছে' : 'Sent'}</Badge>
       case 'viewed':
-        return <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200">Viewed</Badge>
+        return <Badge variant="outline" className="bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800">{isBn ? 'দেখা হয়েছে' : 'Viewed'}</Badge>
       case 'negotiation':
-        return <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 font-bold">Negotiation</Badge>
+        return <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 font-bold dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">{isBn ? 'আলোচনা চলছে' : 'Negotiation'}</Badge>
       case 'approved':
-        return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold">Approved</Badge>
+        return <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 font-bold dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">{isBn ? 'অনুমোদিত' : 'Approved'}</Badge>
       case 'converted':
-        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 font-bold">Converted</Badge>
+        return <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 font-bold dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800">{isBn ? 'অর্ডারে রূপান্তর' : 'Converted'}</Badge>
       case 'rejected':
-        return <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200">Rejected</Badge>
+        return <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800">{isBn ? 'বাতিল' : 'Rejected'}</Badge>
       case 'expired':
-        return <Badge variant="outline" className="bg-slate-100 text-slate-500">Expired</Badge>
+        return <Badge variant="outline" className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">{isBn ? 'মেয়াদোত্তীর্ণ' : 'Expired'}</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -91,12 +95,12 @@ export function QuotationTable({
       return <span className="text-[11px] text-slate-400 font-medium">{exp.label}</span>
     }
     if (exp.urgency === 'critical') {
-      return <span className="text-[11px] text-rose-600 font-bold">{exp.label}</span>
+      return <span className="text-[11px] text-rose-600 dark:text-rose-400 font-bold">{exp.label}</span>
     }
     if (exp.urgency === 'warning') {
-      return <span className="text-[11px] text-amber-700 font-semibold">{exp.label}</span>
+      return <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">{exp.label}</span>
     }
-    return <span className="text-[11px] text-slate-500">{exp.label}</span>
+    return <span className="text-[11px] text-slate-500 dark:text-slate-400">{exp.label}</span>
   }
 
   return (
@@ -106,15 +110,15 @@ export function QuotationTable({
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
             <tr>
-              <th className="py-3 px-4">Quote #</th>
-              <th className="py-3 px-4">Customer</th>
-              <th className="py-3 px-4">Primary Job / Item</th>
-              <th className="py-3 px-4">Total (৳)</th>
-              <th className="py-3 px-4">Status</th>
-              <th className="py-3 px-4">Next Action</th>
-              <th className="py-3 px-4">Validity</th>
-              <th className="py-3 px-4">Salesperson</th>
-              <th className="py-3 px-4 text-right">Actions</th>
+              <th className="py-3 px-4">{isBn ? 'কোটেশন নং' : 'Quote #'}</th>
+              <th className="py-3 px-4">{isBn ? 'কাস্টমার' : 'Customer'}</th>
+              <th className="py-3 px-4">{isBn ? 'কাজের বিবরণ' : 'Primary Job / Item'}</th>
+              <th className="py-3 px-4">{isBn ? 'মোট ও অগ্রিম (৳)' : 'Total & Adv (৳)'}</th>
+              <th className="py-3 px-4">{isBn ? 'অবস্থা' : 'Status'}</th>
+              <th className="py-3 px-4">{isBn ? 'পরবর্তী করণীয়' : 'Next Action'}</th>
+              <th className="py-3 px-4">{isBn ? 'মেয়াদ' : 'Validity'}</th>
+              <th className="py-3 px-4">{isBn ? 'প্রতিনিধি' : 'Salesperson'}</th>
+              <th className="py-3 px-4 text-right">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

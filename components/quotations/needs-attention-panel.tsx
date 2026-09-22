@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Sparkles,
 } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -37,6 +38,8 @@ export function NeedsAttentionPanel({
   onOpenFollowUp,
 }: NeedsAttentionPanelProps) {
   const pathname = usePathname()
+  const { language } = useI18n()
+  const isBn = language === 'bn'
   const urgentQuotes = QuotationService.getNeedsAttentionQuotes(quotations)
 
   if (urgentQuotes.length === 0) {
@@ -46,7 +49,7 @@ export function NeedsAttentionPanel({
   const getAttentionReason = (q: QuotationRecord) => {
     if (q.status === 'approved') {
       return {
-        label: 'Approved • Ready to Convert to Job Order',
+        label: isBn ? 'অনুমোদিত • জব অর্ডারে রূপান্তর করুন' : 'Approved • Ready to Convert to Job Order',
         urgency: 'success',
       }
     }
@@ -54,7 +57,7 @@ export function NeedsAttentionPanel({
     const expiry = QuotationService.calculateExpiryUrgency(q.valid_until)
     if (expiry.urgency === 'critical') {
       return {
-        label: expiry.label,
+        label: isBn ? `মেয়াদ শেষ: ${expiry.label}` : expiry.label,
         urgency: 'critical',
       }
     }
@@ -66,7 +69,7 @@ export function NeedsAttentionPanel({
       today.setHours(0, 0, 0, 0)
       if (fDate <= today) {
         return {
-          label: 'Follow-up Scheduled Today',
+          label: isBn ? 'আজকের নির্ধারিত ফলো-আপ' : 'Follow-up Scheduled Today',
           urgency: 'warning',
         }
       }
@@ -74,46 +77,49 @@ export function NeedsAttentionPanel({
 
     if (expiry.urgency === 'warning') {
       return {
-        label: expiry.label,
+        label: isBn ? `সতর্কতা: ${expiry.label}` : expiry.label,
         urgency: 'warning',
       }
     }
 
     if (q.status === 'sent') {
       return {
-        label: 'Sent • Awaiting Customer Response',
+        label: isBn ? 'পাঠানো হয়েছে • উত্তরের অপেক্ষায়' : 'Sent • Awaiting Customer Response',
         urgency: 'normal',
       }
     }
 
     if (q.status === 'negotiation') {
       return {
-        label: 'Customer is Negotiating Margin',
+        label: isBn ? 'কাস্টমার দাম আলোচনা করছেন' : 'Customer is Negotiating Margin',
         urgency: 'warning',
       }
     }
 
     return {
-      label: 'Action Required',
+      label: isBn ? 'জরুরি দৃষ্টি আকর্ষণ' : 'Action Required',
       urgency: 'normal',
     }
   }
 
   return (
-    <Card className="border-amber-200/80 dark:border-amber-900/60 bg-gradient-to-r from-amber-50/40 via-white to-orange-50/30 dark:from-amber-950/20 dark:via-slate-900/80 dark:to-orange-950/20 shadow-xs overflow-hidden">
-      <CardHeader className="py-3 px-4 border-b border-amber-200/60 dark:border-amber-900/40 flex flex-row items-center justify-between">
+    <Card className="border-amber-200/90 dark:border-amber-900/60 bg-gradient-to-r from-amber-50/50 via-white to-orange-50/40 dark:from-amber-950/20 dark:via-slate-900/80 dark:to-orange-950/20 shadow-xs overflow-hidden">
+      <CardHeader className="py-3 px-4 border-b border-amber-200/70 dark:border-amber-900/40 flex flex-row items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-6 w-6 rounded-md bg-amber-500/20 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold">
             <AlertCircle className="h-4 w-4" />
           </div>
           <div>
-            <CardTitle className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200">
-              Needs Attention ({urgentQuotes.length})
+            <CardTitle className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
+              <span>{isBn ? 'জরুরি দৃষ্টি প্রয়োজন' : 'Needs Attention'}</span>
+              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] bg-amber-200/80 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 font-bold">
+                {urgentQuotes.length}
+              </Badge>
             </CardTitle>
           </div>
         </div>
-        <span className="text-[11px] font-medium text-amber-800/80 dark:text-amber-400/80 hidden sm:inline">
-          High-priority commercial follow-ups & approvals
+        <span className="text-[11px] font-medium text-amber-800/90 dark:text-amber-400/90 hidden sm:inline">
+          {isBn ? 'উচ্চ অগ্রাধিকার বাণিজ্যিক ফলো-আপ ও অনুমোদন' : 'High-priority commercial follow-ups & approvals'}
         </span>
       </CardHeader>
 

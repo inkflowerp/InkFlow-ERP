@@ -353,17 +353,17 @@ export default function QuotationsPage() {
   }
 
   const filterTabs = [
-    { id: 'all', label: 'All', count: quotations.length },
-    { id: 'active', label: 'Active Pipeline', count: kpiMetrics.activeCount },
-    { id: 'follow_up_today', label: 'Follow-Up Today', count: kpiMetrics.followUpToday, badgeColor: 'bg-amber-100 text-amber-900 font-bold' },
-    { id: 'expiring_soon', label: 'Expiring Soon', count: kpiMetrics.expiringSoon, badgeColor: 'bg-rose-100 text-rose-900 font-bold' },
-    { id: 'draft', label: 'Draft', count: quotations.filter((q) => q.status === 'draft').length },
-    { id: 'sent', label: 'Sent', count: quotations.filter((q) => q.status === 'sent').length },
-    { id: 'negotiation', label: 'Negotiation', count: quotations.filter((q) => q.status === 'negotiation').length },
-    { id: 'approved', label: 'Approved', count: quotations.filter((q) => q.status === 'approved').length },
-    { id: 'converted', label: 'Converted', count: kpiMetrics.wonCount },
-    { id: 'rejected', label: 'Rejected', count: quotations.filter((q) => q.status === 'rejected').length },
-    { id: 'expired', label: 'Expired', count: quotations.filter((q) => q.status === 'expired').length },
+    { id: 'all', labelEn: 'All', labelBn: 'সকল কোটেশন', count: quotations.length },
+    { id: 'active', labelEn: 'Active Pipeline', labelBn: 'চলতি পাইপলাইন', count: kpiMetrics.activeCount },
+    { id: 'follow_up_today', labelEn: 'Follow-Up Today', labelBn: 'আজকের ফলো-আপ', count: kpiMetrics.followUpToday, badgeColor: 'bg-amber-100 text-amber-900 font-bold dark:bg-amber-950 dark:text-amber-200' },
+    { id: 'expiring_soon', labelEn: 'Expiring Soon', labelBn: 'মেয়াদ শেষের পথে', count: kpiMetrics.expiringSoon, badgeColor: 'bg-rose-100 text-rose-900 font-bold dark:bg-rose-950 dark:text-rose-200' },
+    { id: 'draft', labelEn: 'Draft', labelBn: 'খসড়া', count: quotations.filter((q) => q.status === 'draft').length },
+    { id: 'sent', labelEn: 'Sent', labelBn: 'পাঠানো হয়েছে', count: quotations.filter((q) => q.status === 'sent').length },
+    { id: 'negotiation', labelEn: 'Negotiation', labelBn: 'দরকষাকষি', count: quotations.filter((q) => q.status === 'negotiation').length },
+    { id: 'approved', labelEn: 'Approved', labelBn: 'অনুমোদিত', count: quotations.filter((q) => q.status === 'approved').length },
+    { id: 'converted', labelEn: 'Converted', labelBn: 'অর্ডারে রূপান্তর', count: kpiMetrics.wonCount },
+    { id: 'rejected', labelEn: 'Rejected', labelBn: 'বাতিল', count: quotations.filter((q) => q.status === 'rejected').length },
+    { id: 'expired', labelEn: 'Expired', labelBn: 'মেয়াদোত্তীর্ণ', count: quotations.filter((q) => q.status === 'expired').length },
   ]
 
   return (
@@ -547,7 +547,7 @@ export default function QuotationsPage() {
                         : 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                     }`}
                   >
-                    <span>{tab.label}</span>
+                    <span className="bangla-text">{tBilingual(tab.labelEn, tab.labelBn)}</span>
                     {tab.count > 0 && (
                       <span
                         className={`text-[10px] px-1.5 py-0.2 rounded-full ${
