@@ -102,4 +102,137 @@ export class RollConsumptionEngine {
   static formatRollDimensions(widthFt: number, lengthFt: number): string {
     return `${widthFt}ft × ${lengthFt.toFixed(2)}ft`
   }
+
+  /**
+   * Calculates derived economic area in sqft from physical dimensions (width × length)
+   */
+  static calculateDerivedAreaSft(widthFt: number, lengthFt: number): number {
+    return Math.round(Math.max(0, widthFt) * Math.max(0, lengthFt) * 100) / 100
+  }
+
+  /**
+   * Classifies a physical roll into its operational inventory state:
+   * - 'purchased_full_roll' (pristine/full purchase roll e.g. 3ft × 164ft)
+   * - 'partial_active_roll' (partially consumed roll actively on floor e.g. 3ft × 143.75ft)
+   * - 'remnant' (physically separated offcut or short piece e.g. 3ft × 18ft)
+   * - 'depleted' (length <= 0.5ft)
+   */
+  static classifyRollState(
+    roll: Partial<InventoryRollRecord>
+  ): 'purchased_full_roll' | 'partial_active_roll' | 'remnant' | 'depleted' {
+    if (!roll) return 'depleted'
+    if (roll.status === 'depleted' || roll.status === 'scrapped') return 'depleted'
+    if ((roll as any).is_remnant || roll.status === 'remnant') return 'remnant'
+
+    const curLen = Number(
+      roll.current_length_ft ??
+        roll.remaining_length_ft ??
+        (roll.remaining_area_sft ? roll.remaining_area_sft / (roll.width_ft || 1) : 0)
+    )
+    const initLen = Number(roll.initial_length_ft ?? roll.original_length_ft ?? 164)
+
+    if (curLen <= 0.5) return 'depleted'
+    if (curLen >= initLen - 0.05 && (Number(roll.consumed_area_sft) || 0) === 0) {
+      return 'purchased_full_roll'
+    }
+    return 'partial_active_roll'
+  }
+
+  /**
+   * Evaluates active on-floor physical rolls against a production job's linear length and width requirements.
+   * Recommends eligible rolls that can fulfill the linear run without stock shortage.
+   */
+  static findEligibleRollsForJobRequirement(
+    rolls: InventoryRollRecord[],
+    requiredWidthFt: number,
+    requiredLengthFt: number,
+    materialId?: string
+  ): {
+    eligible_rolls: Array<{
+      roll: InventoryRollRecord
+      can_fulfill: boolean
+      available_length_ft: number
+      required_length_ft: number
+      shortage_ft: number
+      remaining_after_job_ft: number
+      derived_remaining_area_sft: number
+    }>
+    ineligible_rolls: Array<{
+      roll: InventoryRollRecord
+      can_fulfill: boolean
+      available_length_ft: number
+      required_length_ft: number
+      shortage_ft: number
+      remaining_after_job_ft: number
+      derived_remaining_area_sft: number
+      reason: string
+    }>
+    recommended_roll: InventoryRollRecord | null
+  } {
+    const eligible_rolls: any[] = []
+    const ineligible_rolls: any[] = []
+
+    const targetRolls = (rolls || []).filter((r) => {
+      if (materialId && r.material_id !== materialId) return false
+      return r.status === 'mounted' || r.status === 'available' || r.status === 'in_use'
+    })
+
+    for (const roll of targetRolls) {
+      const rollW = Number(roll.width_ft || 0)
+      const availL = Number(
+        roll.current_length_ft ??
+          roll.remaining_length_ft ??
+          (roll.remaining_area_sft ? roll.remaining_area_sft / (rollW || 1) : 0)
+      )
+
+      const widthFits = requiredWidthFt <= rollW + 0.001
+      const lengthFits = availL >= requiredLengthFt
+
+      if (!widthFits) {
+        ineligible_rolls.push({
+          roll,
+          can_fulfill: false,
+          available_length_ft: availL,
+          required_length_ft: requiredLengthFt,
+          shortage_ft: 0,
+          remaining_after_job_ft: availL,
+          derived_remaining_area_sft: Math.round(availL * rollW * 100) / 100,
+          reason: `Width insufficient: required ${requiredWidthFt}ft but roll is ${rollW}ft wide`,
+        })
+      } else if (!lengthFits) {
+        const shortage = Math.round((requiredLengthFt - availL) * 100) / 100
+        ineligible_rolls.push({
+          roll,
+          can_fulfill: false,
+          available_length_ft: availL,
+          required_length_ft: requiredLengthFt,
+          shortage_ft: shortage,
+          remaining_after_job_ft: 0,
+          derived_remaining_area_sft: 0,
+          reason: `Length insufficient: available ${availL}ft < required ${requiredLengthFt}ft (shortage: ${shortage}ft)`,
+        })
+      } else {
+        const remAfter = Math.round((availL - requiredLengthFt) * 100) / 100
+        eligible_rolls.push({
+          roll,
+          can_fulfill: true,
+          available_length_ft: availL,
+          required_length_ft: requiredLengthFt,
+          shortage_ft: 0,
+          remaining_after_job_ft: remAfter,
+          derived_remaining_area_sft: Math.round(remAfter * rollW * 100) / 100,
+        })
+      }
+    }
+
+    // Recommend the tightest fitting eligible roll to prevent fragmentation
+    eligible_rolls.sort((a, b) => a.available_length_ft - b.available_length_ft)
+    const recommended_roll = eligible_rolls[0]?.roll || null
+
+    return {
+      eligible_rolls,
+      ineligible_rolls,
+      recommended_roll,
+    }
+  }
 }

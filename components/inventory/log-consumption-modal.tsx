@@ -486,20 +486,38 @@ export function LogConsumptionModal({
 
         {/* Live Balance Calculation Alert */}
         {floorMaxBalance !== null && (
-          <div className={`p-2.5 rounded-lg border text-xs flex items-center justify-between ${
+          <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${
             isOverFloorBalance 
               ? 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300' 
               : 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
           }`}>
-            <div className="flex items-center gap-1.5">
-              <Info className="w-4 h-4" />
-              <span>
-                Reconciling: <strong>{totalActionQty.toFixed(2)}</strong> / {floorMaxBalance.toFixed(2)} {floorUnit}
-              </span>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div className="flex items-center gap-1.5 font-medium">
+                <Info className="w-4 h-4 text-blue-600" />
+                <span>
+                  Deducting: <strong>{totalActionQty.toFixed(2)}</strong> {floorUnit}
+                  {selectedActiveRoll && (
+                    <span className="text-slate-500 ml-1 font-mono">
+                      ({Math.round(totalActionQty * (selectedActiveRoll.width_ft || 3) * 100) / 100} sqft)
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="font-bold text-slate-900 dark:text-white">
+                Remaining Length: {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)} {floorUnit} — 1 Pcs
+              </div>
             </div>
-            <span className="font-bold">
-              Floor Balance Post Sign-Off: {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)} {floorUnit}
-            </span>
+
+            {selectedActiveRoll && (
+              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                <span>
+                  Physical Spec: {selectedActiveRoll.width_ft}ft × {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)}ft
+                </span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  Derived Area: {Math.round(Math.max(0, floorMaxBalance - totalActionQty) * (selectedActiveRoll.width_ft || 3) * 100) / 100} sqft
+                </span>
+              </div>
+            )}
           </div>
         )}
 
