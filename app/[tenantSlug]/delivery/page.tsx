@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Truck,
   Plus,
@@ -24,6 +25,9 @@ import {
   Sparkles,
   Layers,
   RefreshCw,
+  LayoutGrid,
+  Scissors,
+  Printer,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -56,10 +60,16 @@ import {
 
 export default function DeliveryLogisticsPage() {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const routeSlug = (params?.tenantSlug as string) || ''
   const slug = routeSlug || company?.slug || company?.id || 'my-company'
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [challans, setChallans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   const [installations, setInstallations] = useDataStore<InstallationRecord[]>(STORAGE_KEYS.INSTALLATIONS, [])
@@ -602,6 +612,25 @@ export default function DeliveryLogisticsPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl pb-12 p-4 sm:p-6 animate-pulse">
+        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <FeatureGate feature="delivery_challan">
       <div className="space-y-6 max-w-7xl">
@@ -614,7 +643,28 @@ export default function DeliveryLogisticsPage() {
         icon={Truck}
         iconColor="text-blue-600"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={getTenantNavHref('/production', pathname, slug)}>
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
+                <span className="hidden sm:inline">Production</span>
+              </Button>
+            </Link>
+
+            <Link href={getTenantNavHref('/finishing', pathname, slug)}>
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <Scissors className="h-3.5 w-3.5 text-indigo-600" />
+                <span className="hidden sm:inline">Finishing</span>
+              </Button>
+            </Link>
+
+            <Link href={getTenantNavHref('/operator', pathname, slug)}>
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-slate-200 dark:border-slate-800">
+                <Printer className="h-3.5 w-3.5 text-blue-600" />
+                <span className="hidden sm:inline">Terminal</span>
+              </Button>
+            </Link>
+
             <Button
               size="sm"
               variant="outline"
@@ -639,7 +689,7 @@ export default function DeliveryLogisticsPage() {
             <Button
               size="sm"
               onClick={() => setIsNewChallanOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text"
+              className="bg-blue-600 hover:bg-blue-700 text-xs text-white bangla-text font-bold"
             >
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('New Delivery Challan', 'নতুন ডেলিভারি চালান')}
@@ -779,7 +829,7 @@ export default function DeliveryLogisticsPage() {
                         {/* Challan & Invoice ID */}
                         <td className="py-3.5 px-4">
                           <Link
-                            href={`/delivery/${ch.id}`}
+                            href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
                             className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 group"
                           >
                             <span>{ch.challan_number}</span>
@@ -862,7 +912,7 @@ export default function DeliveryLogisticsPage() {
                         <td className="py-3.5 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5 flex-wrap">
                             <Link
-                              href={`/delivery/${ch.id}`}
+                              href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
                               className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300"
                             >
                               PDF
@@ -915,7 +965,7 @@ export default function DeliveryLogisticsPage() {
                       {/* Top: Challan # & Status */}
                       <div className="flex items-center justify-between gap-2">
                         <Link
-                          href={`/delivery/${ch.id}`}
+                          href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
                           className="font-mono font-bold text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
                           <span>{ch.challan_number}</span>
@@ -992,7 +1042,7 @@ export default function DeliveryLogisticsPage() {
                       {/* Actions */}
                       <div className="flex items-center justify-end gap-2 pt-1">
                         <Link
-                          href={`/delivery/${ch.id}`}
+                          href={getTenantNavHref(`/delivery/${ch.id}`, pathname, slug)}
                           className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 min-h-[36px]"
                         >
                           Challan PDF

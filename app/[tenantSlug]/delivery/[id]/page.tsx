@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Truck,
   ArrowLeft,
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -32,11 +33,17 @@ import { getChallanByIdAction } from '@/actions/logistics.actions'
 
 export default function DeliveryChallanDetailPage() {
   const params = useParams()
+  const pathname = usePathname()
   const chId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const routeSlug = (params?.tenantSlug as string) || ''
   const slug = routeSlug || company?.slug || company?.id || 'my-company'
+
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [challans] = useDataStore<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS, [])
   const [fetchedChallan, setFetchedChallan] = useState<DeliveryChallanRecord | null>(null)
@@ -64,12 +71,21 @@ export default function DeliveryChallanDetailPage() {
   const storeChallan = challans.find((c: DeliveryChallanRecord) => c.id === chId || c.challan_number === chId)
   const challan = fetchedChallan || storeChallan
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-4xl p-6 animate-pulse">
+        <div className="h-6 bg-slate-200 dark:bg-slate-800 rounded w-48" />
+        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+      </div>
+    )
+  }
+
   if (!challan) {
     return (
       <FeatureGate feature="delivery_challan">
         <div className="space-y-6 max-w-4xl">
           <Link
-            href="/delivery"
+            href={getTenantNavHref('/delivery', pathname, slug)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
@@ -82,7 +98,7 @@ export default function DeliveryChallanDetailPage() {
               The delivery challan record you are looking for does not exist in your organization.
             </p>
             <Button asChild className="mt-4" size="sm">
-              <Link href="/delivery">View All Challans</Link>
+              <Link href={getTenantNavHref('/delivery', pathname, slug)}>View All Challans</Link>
             </Button>
           </Card>
         </div>
@@ -96,7 +112,7 @@ export default function DeliveryChallanDetailPage() {
         {/* Non-Print Action Bar */}
       <div className="print:hidden flex items-center justify-between">
         <Link
-          href="/delivery"
+          href={getTenantNavHref('/delivery', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
