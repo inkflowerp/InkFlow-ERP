@@ -59,16 +59,20 @@ export default function NotificationSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { showToast } = useToast()
+  const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   // Sound and browser notification state
-  const [soundMuted, setSoundMutedState] = useState(isSoundMuted())
-  const [volume, setVolumeState] = useState(Math.round(getSoundVolume() * 100))
+  const [soundMuted, setSoundMutedState] = useState(false)
+  const [volume, setVolumeState] = useState(80)
   const [browserPerm, setBrowserPerm] = useState<BrowserPermissionStatus>('default')
   const [browserEnabled, setBrowserEnabledState] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    setSoundMutedState(isSoundMuted())
+    setVolumeState(Math.round(getSoundVolume() * 100))
     setBrowserPerm(getBrowserNotificationPermission())
     setBrowserEnabledState(isBrowserNotificationEnabled())
   }, [])
@@ -245,6 +249,17 @@ export default function NotificationSettingsPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+        <div className="h-48 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+        <div className="h-48 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+      </div>
+    )
   }
 
   return (

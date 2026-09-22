@@ -1,9 +1,10 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useParams } from 'next/navigation'
 import {
+  LayoutDashboard,
   Building2,
   Palette,
   Globe2,
@@ -22,13 +23,28 @@ import {
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export function SettingsNav() {
   const pathname = usePathname()
+  const params = useParams()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const [mounted, setMounted] = useState(false)
+  const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'rangao'
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const links = [
+    {
+      title: 'Overview',
+      titleBn: 'মূল সেটিংস',
+      href: '/settings',
+      icon: LayoutDashboard,
+      exact: true,
+    },
     {
       title: 'Company Profile',
       titleBn: 'প্রতিষ্ঠান তথ্য',
@@ -122,8 +138,15 @@ export function SettingsNav() {
         const cleanPath = (company?.slug && pathname?.startsWith(`/${company.slug}`))
           ? pathname.slice(`/${company.slug}`.length) || '/'
           : (pathname || '')
-        const isActive = pathname === link.href || cleanPath === link.href
-        const targetHref = company?.slug ? `/${company.slug}${link.href}` : link.href
+
+        let isActive = false
+        if (link.exact) {
+          isActive = pathname === link.href || cleanPath === link.href || cleanPath === '/settings' || pathname === `/${company?.slug}/settings`
+        } else {
+          isActive = pathname === link.href || cleanPath === link.href || cleanPath.startsWith(`${link.href}/`) || pathname.endsWith(link.href)
+        }
+
+        const targetHref = getTenantNavHref(link.href, pathname, tenantSlug)
 
         return (
           <Link
@@ -144,3 +167,4 @@ export function SettingsNav() {
     </div>
   )
 }
+

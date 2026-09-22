@@ -64,12 +64,17 @@ export default function AttendanceSettingsPage() {
   const { locale, tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || ''
 
+  const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'locations' | 'qr_management' | 'corrections' | 'audit'>('locations')
   const [locations, setLocations] = useState<AttendanceLocationRecord[]>([])
   const [branches, setBranches] = useState<Array<{ id: string; name: string; code: string; is_main?: boolean }>>([])
   const [corrections, setCorrections] = useState<AttendanceCorrectionRecord[]>([])
   const [auditLogs, setAuditLogs] = useState<AttendanceAuditLogRecord[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Filters & Search
   const [searchTerm, setSearchTerm] = useState('')
@@ -460,6 +465,16 @@ export default function AttendanceSettingsPage() {
   const activeLocationsCount = locations.filter((l) => l.is_active).length
   const activeQrCount = locations.filter((l) => l.active_qr_token && l.active_qr_token.is_active).length
   const pendingCorrectionsCount = corrections.filter((c) => c.status === 'pending').length
+
+  if (!mounted) {
+    return (
+      <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 sm:px-0 animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-20 px-4 sm:px-0">

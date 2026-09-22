@@ -115,6 +115,7 @@ export default function RolesMatrixPage() {
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'app'
   const companyId = company?.id || ''
 
+  const [mounted, setMounted] = useState(false)
   const [roles, setRoles] = useState<RoleItem[]>([])
   const [selectedRoleId, setSelectedRoleId] = useState<string>('')
   const [currentPermissions, setCurrentPermissions] = useState<Set<string>>(new Set())
@@ -155,7 +156,19 @@ export default function RolesMatrixPage() {
   }
 
   useEffect(() => {
+    setMounted(true)
     loadRoles()
+
+    const handleSync = () => {
+      loadRoles()
+    }
+    window.addEventListener('printerp_table_synced:roles', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:roles', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
   }, [companyId])
 
   // When selected role changes, update local permission set
@@ -414,6 +427,19 @@ export default function RolesMatrixPage() {
       )
     })
   }, [selectedCategory, searchQuery])
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="h-80 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+          <div className="lg:col-span-3 h-80 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <FeatureGate feature="advanced_permissions">

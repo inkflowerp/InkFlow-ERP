@@ -83,6 +83,7 @@ export default function TenantSubscriptionPage() {
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
 
+  const [mounted, setMounted] = useState(false)
   const [events, setEvents] = useState<SubscriptionEventRecord[]>([])
   const [invoices, setInvoices] = useState<SubscriptionInvoiceRecord[]>([])
   const [loadingEvents, setLoadingEvents] = useState(true)
@@ -99,6 +100,7 @@ export default function TenantSubscriptionPage() {
   }
 
   useEffect(() => {
+    setMounted(true)
     async function loadData() {
       if (company?.id) {
         setLoadingEvents(true)
@@ -121,6 +123,18 @@ export default function TenantSubscriptionPage() {
       }
     }
     loadData()
+
+    const handleSync = () => {
+      loadData()
+      refreshSubscription()
+    }
+    window.addEventListener('printerp_table_synced:tenant_subscriptions', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:tenant_subscriptions', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
+    }
   }, [company?.id, subscription.status, subscription.plan_code])
 
   const handleScheduleDowngrade = async () => {
@@ -173,6 +187,21 @@ export default function TenantSubscriptionPage() {
   const isCancelScheduled = Boolean(subscription.cancel_at_period_end)
   const isDowngradeScheduled = Boolean(subscription.next_plan_id && subscription.change_effective_at)
   const nextPlanRecord = subscription.next_plan_id ? allPlans.find((p) => p.id === subscription.next_plan_id) : null
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-6xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+        <div className="h-44 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="h-28 bg-slate-100 dark:bg-slate-800/40 rounded-xl" />
+          <div className="h-28 bg-slate-100 dark:bg-slate-800/40 rounded-xl" />
+          <div className="h-28 bg-slate-100 dark:bg-slate-800/40 rounded-xl" />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">

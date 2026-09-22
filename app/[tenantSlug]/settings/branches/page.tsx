@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   GitBranch,
   Plus,
@@ -57,11 +57,16 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 export default function BranchesSettingsPage() {
   const { company, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const [mounted, setMounted] = useState(false)
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, refreshUsage } = useSubscription()
   const [branches, setBranches] = useDataStore<BranchItem[]>(STORAGE_KEYS.BRANCHES, DEFAULT_MAIN_BRANCH)
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [notification, setNotification] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const loadLiveBranches = React.useCallback(async () => {
     try {
@@ -180,6 +185,16 @@ export default function BranchesSettingsPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
   }
 
   return (

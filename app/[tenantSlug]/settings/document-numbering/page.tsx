@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Hash,
   Save,
@@ -45,9 +45,14 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 export default function DocumentNumberingSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const [mounted, setMounted] = useState(false)
   const [sequences, setSequences] = useDataStore<SequenceConfig[]>(STORAGE_KEYS.DOCUMENT_NUMBERING, INITIAL_SEQUENCES)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Sync with company_settings on load
   React.useEffect(() => {
@@ -108,6 +113,16 @@ export default function DocumentNumberingSettingsPage() {
 
   const formatPreview = (s: SequenceConfig) => {
     return `${s.prefix}-${String(s.current_val).padStart(s.padding, '0')}`
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
   }
 
   return (

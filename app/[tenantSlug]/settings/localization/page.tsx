@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Globe2,
   Save,
@@ -23,6 +23,7 @@ import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tena
 export default function LocalizationSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, setLocale, tBilingual } = useI18n()
+  const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -31,6 +32,10 @@ export default function LocalizationSettingsPage() {
   )
   const [currency, setCurrency] = useState(company?.currency || settings?.default_currency || 'BDT')
   const [dateFormat, setDateFormat] = useState('DD/MM/YYYY')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   React.useEffect(() => {
     if (company || settings) {
@@ -83,6 +88,15 @@ export default function LocalizationSettingsPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">

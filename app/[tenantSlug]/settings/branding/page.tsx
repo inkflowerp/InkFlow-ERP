@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Palette,
   Save,
@@ -35,8 +35,13 @@ const COLOR_PRESETS = [
 export default function BrandingSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
+  const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [branding, setBranding] = useDataStore(STORAGE_KEYS.BRANDING_SETTINGS, {
     company_name: company?.name || '',
@@ -85,6 +90,16 @@ export default function BrandingSettingsPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
   }
 
   return (

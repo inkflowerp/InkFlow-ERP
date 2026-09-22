@@ -18,11 +18,13 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -51,10 +53,16 @@ export default function CompanyProfileSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { accountTypeMeta, isTrial, daysRemainingInTrial } = useSubscription()
   const { locale, tBilingual } = useI18n()
+  const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  const slug = company?.slug || ''
+  const slug = company?.slug || 'rangao'
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [profile, setProfile] = useDataStore(STORAGE_KEYS.COMPANY_PROFILE, {
     name: company?.name || '',
     name_bn: company?.name_bn || '',
@@ -159,6 +167,16 @@ export default function CompanyProfileSettingsPage() {
     }
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-5xl">
       <PageHeader
@@ -197,7 +215,7 @@ export default function CompanyProfileSettingsPage() {
             </div>
           </div>
 
-          <Link href="/settings/subscription">
+          <Link href={getTenantNavHref('/settings/subscription', pathname, slug)}>
             <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs shrink-0">
               <span>{isTrial ? 'Upgrade Account' : 'Manage Subscription'}</span>
               <ArrowRight className="ml-1 h-3.5 w-3.5" />

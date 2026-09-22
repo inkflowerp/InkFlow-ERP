@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   FileText,
   Save,
@@ -36,12 +37,19 @@ import {
 } from '@/services/tax-and-docs.service'
 import { CompanyTaxSettingsRecord, VatPricingMode } from '@/types/tax-and-docs.types'
 import { formatBDT } from '@/lib/formatters'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function TaxSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const pathname = usePathname()
+  const slug = company?.slug || 'rangao'
+  const [mounted, setMounted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   const [taxSettings, setTaxSettings] = useDataStore<CompanyTaxSettingsRecord>(
     STORAGE_KEYS.TAX_SETTINGS,
@@ -131,6 +139,16 @@ export default function TaxSettingsPage() {
 
   const testCalcResult = calculateVat(testAmount, testRate, testMode)
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-48 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-5xl">
       {/* Header */}
@@ -143,7 +161,7 @@ export default function TaxSettingsPage() {
         iconColor="text-emerald-600"
         actions={
           <Link
-            href="/settings/documents"
+            href={getTenantNavHref('/settings/documents', pathname, slug)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-300 bangla-text"
           >
             <FileText className="h-3.5 w-3.5 text-blue-600" />

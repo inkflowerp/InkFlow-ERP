@@ -68,6 +68,7 @@ export default function TenantEmailSettingsPage() {
   const { locale, tBilingual } = useI18n()
   const companyId = company?.id || ''
 
+  const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'gateway' | 'templates' | 'logs'>('gateway')
   const [gateway, setGateway] = useState<EmailGatewayRecord | null>(null)
   const [hasConfiguredGateway, setHasConfiguredGateway] = useState(false)
@@ -178,7 +179,15 @@ export default function TenantEmailSettingsPage() {
   }
 
   useEffect(() => {
+    setMounted(true)
     loadTenantData()
+
+    // Realtime broadcast sync listeners
+    const handleSync = () => {
+      loadTenantData()
+    }
+    window.addEventListener('printerp_table_synced:email_gateways', handleSync)
+    window.addEventListener('printerp_data_sync', handleSync)
 
     // Inspect URL for OAuth success or errors
     if (typeof window !== 'undefined') {
@@ -196,6 +205,11 @@ export default function TenantEmailSettingsPage() {
         url.searchParams.delete('error')
         window.history.replaceState({}, document.title, url.toString())
       }
+    }
+
+    return () => {
+      window.removeEventListener('printerp_table_synced:email_gateways', handleSync)
+      window.removeEventListener('printerp_data_sync', handleSync)
     }
   }, [companyId])
 
@@ -315,6 +329,17 @@ export default function TenantEmailSettingsPage() {
       showNotification(res.error || 'Failed to save template', 'error')
     }
     setSaving(false)
+  }
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-5xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+        <div className="h-48 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+        <div className="h-48 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+      </div>
+    )
   }
 
   return (

@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import {
   Users,
   Users2,
@@ -56,9 +58,11 @@ interface UsersManagementViewProps {
 }
 
 export function UsersManagementView({ hideHeader = false }: UsersManagementViewProps) {
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const { checkCanCreate, openLimitExceededModal, openUpgradeModal, currentPlan, isTrial, refreshUsage, usage } = useSubscription()
+  const [mounted, setMounted] = useState(false)
   const [users, setUsers] = useState<CompanyUserWithProfile[]>([])
   const [employees, setEmployees] = useState<EmployeeRecord[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])
@@ -197,6 +201,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
         setAddBranchId((prev) => prev || bRes[0].id)
       }
       setIsLoading(false)
+      setMounted(true)
     }
 
     loadData()
@@ -384,6 +389,16 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
     showNotification(`Password reset dispatch sent to ${email}`)
   }
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl" />
+        <div className="h-12 bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+        <div className="h-64 bg-slate-100 dark:bg-slate-800/40 rounded-2xl" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header & Main CTAs */}
@@ -397,7 +412,7 @@ export function UsersManagementView({ hideHeader = false }: UsersManagementViewP
           iconColor="text-blue-600"
           actions={
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Link href={`/${company?.slug || ''}/hr`}>
+              <Link href={getTenantNavHref('/hr', pathname, company?.slug)}>
                 <Button
                   variant="outline"
                   className="text-xs border-blue-300 text-blue-800 bg-blue-50/70 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 font-semibold bangla-text"

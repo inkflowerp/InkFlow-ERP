@@ -61,11 +61,16 @@ export default function WorkflowAutomationsPage() {
   const { tBilingual } = useI18n()
   const activeCompanyId = company?.id || 'c-01'
 
+  const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'rules' | 'logs'>('rules')
   const [rules, setRules] = useState<WorkflowRule[]>([])
   const [logs, setLogs] = useState<WorkflowExecutionLog[]>([])
   const [selectedTriggerFilter, setSelectedTriggerFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Modal editor state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -154,6 +159,16 @@ export default function WorkflowAutomationsPage() {
       (r.description && r.description.toLowerCase().includes(searchQuery.toLowerCase()))
     return matchesTrigger && matchesSearch
   })
+
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-64 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
 
   return (
     <FeatureGate feature="custom_workflows">

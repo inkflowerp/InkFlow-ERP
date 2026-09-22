@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   FileText,
   Printer,
@@ -54,15 +55,22 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function DocumentDesignerPage() {
   const { company } = useTenant()
-  const { locale } = useI18n()
-  const slug = company?.slug || 'my-company'
+  const { locale, tBilingual } = useI18n()
+  const pathname = usePathname()
+  const slug = company?.slug || 'rangao'
 
+  const [mounted, setMounted] = useState(false)
   const [selectedDoc, setSelectedDoc] = useState<DocumentType>('quotation')
   const [langMode, setLangMode] = useState<DocumentLanguageMode>('bengali')
   const [activeControlTab, setActiveControlTab] = useState<'pdf' | 'communication'>('pdf')
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
   const [previewMode, setPreviewMode] = useState<'pdf' | 'email' | 'whatsapp' | 'variables'>('pdf')
   const [copiedVar, setCopiedVar] = useState<string | null>(null)
   const [variableCategory, setVariableCategory] = useState<'all' | 'company' | 'customer' | 'doc' | 'user'>('all')
@@ -244,6 +252,16 @@ export default function DocumentDesignerPage() {
     { tag: '{{document_link}}', desc: 'Online Approval / View Link' },
   ]
 
+  if (!mounted) {
+    return (
+      <div className="space-y-6 max-w-6xl animate-pulse">
+        <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
+        <div className="h-96 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 max-w-6xl print:max-w-none print:m-0 print:p-0">
       {/* Non-Print Action Bar */}
@@ -252,7 +270,7 @@ export default function DocumentDesignerPage() {
           <div>
             <div className="flex items-center gap-2">
               <Link
-                href="/settings"
+                href={getTenantNavHref('/settings', pathname, slug)}
                 className="text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <ArrowLeft className="h-4 w-4" />
