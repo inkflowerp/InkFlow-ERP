@@ -579,6 +579,8 @@ export function ReceiveStockModal({
       const primaryActiveSize = activeSizesForCost[0]
       const effectivePrevCost = (isRoll && primaryActiveSize?.default_supplier_price)
         ? primaryActiveSize.default_supplier_price
+        : (isSheet && primaryActiveSize?.default_supplier_price)
+        ? primaryActiveSize.default_supplier_price
         : cost
 
       // Strictly register the single registered master item from Products & Commercial Masters
@@ -2372,11 +2374,21 @@ export function ReceiveStockModal({
                           <option value="">-- Select Registered Material Master --</option>
                           {Object.entries(groupedCatalog).map(([grpName, grpItems]) => (
                             <optgroup key={grpName} label={`📂 ${grpName}`}>
-                              {grpItems.map((m) => (
-                                <option key={m.id} value={m.id}>
-                                  [{m.sku}] {m.name} — Prev: {formatBDT(m.previous_cost)} ({m.master_purchase_unit || m.unit})
-                                </option>
-                              ))}
+                              {grpItems.map((m) => {
+                                let subRate = ''
+                                if (m.physical_form === 'roll' && m.roll_area_sft && m.roll_area_sft > 0 && m.previous_cost > 0) {
+                                  const sftRate = Math.round((m.previous_cost / m.roll_area_sft) * 10) / 10
+                                  subRate = ` (৳${sftRate}/sqft)`
+                                } else if (m.physical_form === 'sheet' && m.sheet_area_sft && m.sheet_area_sft > 0 && m.previous_cost > 0) {
+                                  const sftRate = Math.round((m.previous_cost / m.sheet_area_sft) * 10) / 10
+                                  subRate = ` (৳${sftRate}/sqft)`
+                                }
+                                return (
+                                  <option key={m.id} value={m.id}>
+                                    [{m.sku}] {m.name} — Prev: {formatBDT(m.previous_cost)}/{m.master_purchase_unit || m.unit}{subRate}
+                                  </option>
+                                )
+                              })}
                             </optgroup>
                           ))}
                         </select>
@@ -2393,12 +2405,25 @@ export function ReceiveStockModal({
                             onChange={(e) => handleSelectConfiguredSize(idx, e.target.value)}
                             className="w-full h-9 rounded-lg border border-indigo-200 dark:border-indigo-800 bg-indigo-50/40 dark:bg-indigo-950/30 px-2.5 text-xs font-semibold text-indigo-950 dark:text-indigo-200"
                           >
-                            {item.configured_sizes.map((sz) => (
-                              <option key={sz.id} value={sz.id}>
-                                {sz.label}
-                                {sz.default_supplier_price ? ` — ৳${sz.default_supplier_price.toLocaleString()}` : ''}
-                              </option>
-                            ))}
+                            {item.configured_sizes.map((sz) => {
+                              let ecoDetail = ''
+                              if (sz.default_supplier_price && sz.default_supplier_price > 0) {
+                                if (sz.physical_form === 'roll' && sz.standard_area_sft && sz.standard_area_sft > 0) {
+                                  const ratePerSft = Math.round((sz.default_supplier_price / sz.standard_area_sft) * 10) / 10
+                                  ecoDetail = ` — ৳${sz.default_supplier_price.toLocaleString()}/roll (৳${ratePerSft}/sqft)`
+                                } else if (sz.physical_form === 'sheet' && sz.standard_area_sft && sz.standard_area_sft > 0) {
+                                  const ratePerSft = Math.round((sz.default_supplier_price / sz.standard_area_sft) * 10) / 10
+                                  ecoDetail = ` — ৳${sz.default_supplier_price.toLocaleString()}/sheet (৳${ratePerSft}/sqft)`
+                                } else {
+                                  ecoDetail = ` — ৳${sz.default_supplier_price.toLocaleString()}/${item.unit || 'unit'}`
+                                }
+                              }
+                              return (
+                                <option key={sz.id} value={sz.id}>
+                                  {sz.label}{ecoDetail}
+                                </option>
+                              )
+                            })}
                           </select>
                         ) : (
                           <Input
@@ -2420,6 +2445,10 @@ export function ReceiveStockModal({
                         </span>
                         {item.configured_sizes.map((sz) => {
                           const isSelected = item.selected_size_id === sz.id
+                          let pillPrice = ''
+                          if (sz.default_supplier_price && sz.default_supplier_price > 0) {
+                            pillPrice = ` (৳${sz.default_supplier_price.toLocaleString()})`
+                          }
                           return (
                             <button
                               key={sz.id}
@@ -2432,8 +2461,7 @@ export function ReceiveStockModal({
                                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                               )}
                             >
-                              {sz.label}
-                              {sz.default_supplier_price ? ` (৳${sz.default_supplier_price.toLocaleString()})` : ''}
+                              {sz.label}{pillPrice}
                             </button>
                           )
                         })}

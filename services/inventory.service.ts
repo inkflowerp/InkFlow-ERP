@@ -196,8 +196,18 @@ export class InventoryService {
 
     // Quantity conversion: If purchase unit is Roll and material stock is kept in SFT, convert quantity
     let stockChangeQty = params.quantity
+    let effectiveUnitCost = params.unit_cost
     if (isRoll && pUnit === 'roll' && material.unit.toLowerCase() === 'sft') {
       stockChangeQty = Math.round(params.quantity * areaPerUnitSft * 100) / 100
+      if (effectiveUnitCost && effectiveUnitCost > 150 && areaPerUnitSft > 0) {
+        effectiveUnitCost = Math.round((effectiveUnitCost / areaPerUnitSft) * 100) / 100
+      }
+    } else if (physicalForm === 'sheet' && pUnit === 'sheet' && material.unit.toLowerCase() === 'sft') {
+      const sheetArea = (params.width_ft && params.length_ft) ? params.width_ft * params.length_ft : 32
+      stockChangeQty = Math.round(params.quantity * sheetArea * 100) / 100
+      if (effectiveUnitCost && effectiveUnitCost > 150 && sheetArea > 0) {
+        effectiveUnitCost = Math.round((effectiveUnitCost / sheetArea) * 100) / 100
+      }
     }
 
     const transactionType = params.is_opening_balance ? 'opening_stock' : 'RECEIPT'
@@ -208,7 +218,7 @@ export class InventoryService {
       location_id: params.location_id,
       quantity_change: Math.abs(stockChangeQty),
       transaction_type: transactionType,
-      unit_cost: params.unit_cost,
+      unit_cost: effectiveUnitCost,
       reference_type: params.is_opening_balance ? 'OPENING_BALANCE' : 'STOCK_RECEIPT',
       reference_id: params.challan_number || params.supplier_invoice_number || params.supplier_reference || null,
       notes: params.notes || (params.is_opening_balance ? 'Opening balance recorded' : 'Stock received'),

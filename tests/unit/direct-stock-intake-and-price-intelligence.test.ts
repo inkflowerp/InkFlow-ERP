@@ -327,4 +327,56 @@ test('Direct Stock Intake & Price Intelligence — Registered Masters, Units, & 
     assert.equal(sizes[0].label, 'Standard Container (1 liter)')
     assert.equal(sizes[0].default_supplier_price, 1050)
   })
+
+  await t.test('9. MAT-11925 PVC with base cost ৳10/sqft resolves accurate roll prices for 3ft, 4ft, 5ft', () => {
+    const pvc11925 = {
+      id: 'mat-pvc-11925',
+      sku: 'MAT-11925',
+      name: 'PVC',
+      category: 'roll_media',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      average_cost: 10, // ৳10 per sqft
+      standard_roll_length_ft: 164,
+      available_widths_ft: [3, 4, 5],
+    }
+
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(pvc11925), 'roll')
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(pvc11925)
+    assert.equal(sizes.length, 3)
+
+    // 3ft × 164ft = 492 sqft @ ৳10 = ৳4,920
+    assert.equal(sizes[0].label, '3ft × 164ft (492 sqft)')
+    assert.equal(sizes[0].standard_area_sft, 492)
+    assert.equal(sizes[0].default_supplier_price, 4920)
+
+    // 4ft × 164ft = 656 sqft @ ৳10 = ৳6,560
+    assert.equal(sizes[1].label, '4ft × 164ft (656 sqft)')
+    assert.equal(sizes[1].standard_area_sft, 656)
+    assert.equal(sizes[1].default_supplier_price, 6560)
+
+    // 5ft × 164ft = 820 sqft @ ৳10 = ৳8,200
+    assert.equal(sizes[2].label, '5ft × 164ft (820 sqft)')
+    assert.equal(sizes[2].standard_area_sft, 820)
+    assert.equal(sizes[2].default_supplier_price, 8200)
+
+    // Intake of 50 rolls of 3ft: Total Valuation = 50 * 4920 = 246,000 BDT
+    const quantity = 50
+    const rollUnitPrice = sizes[0].default_supplier_price!
+    const totalValuation = quantity * rollUnitPrice
+    assert.equal(totalValuation, 246000)
+
+    // Normalized Economics verifies ৳10/sqft
+    const econ = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
+      physical_form: 'roll',
+      width_ft: 3,
+      length_ft: 164,
+      standard_area_sft: 492,
+      unit_purchase_price: rollUnitPrice,
+      purchase_unit: 'roll',
+    })
+    assert.equal(econ.normalized_cost_per_sft, 10)
+  })
 })
+
