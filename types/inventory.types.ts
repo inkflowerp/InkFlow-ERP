@@ -314,6 +314,14 @@ export interface MaterialRecord {
   variants?: any[]
   available_sheet_sizes?: string[] | any[]
   roll_sizes?: any[]
+  material_config?: any
+  purchase_price_per_sft?: number | null
+  production_width_allowance?: number | null
+  extra_width_allowance_ft?: number | null
+  liquid_volume_capacity?: string | null
+  pack_quantity?: number | null
+  physical_form?: string | null
+  pricing_formula?: any
   created_by?: string | null
   created_at: string
   updated_at: string

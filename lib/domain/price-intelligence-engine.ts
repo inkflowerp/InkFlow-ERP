@@ -13,43 +13,17 @@ export class PriceIntelligenceEngine {
   static detectMaterialPhysicalForm(material: any): MasterPhysicalClassification {
     if (!material) return 'general'
 
+    // If physical_form is already explicitly provided
+    if (material.physical_form && material.physical_form !== 'general') {
+      return material.physical_form as MasterPhysicalClassification
+    }
+
     const cat = (material.category || '').toLowerCase()
     const name = (material.name || '').toLowerCase()
     const unit = (material.purchase_unit || material.unit || '').toLowerCase()
     const combined = `${cat} ${name} ${unit}`
 
-    // 1. Explicit Flags & Category Checks
-    if (
-      material.is_roll === true ||
-      cat === 'roll_media' ||
-      cat === 'flex' ||
-      cat === 'vinyl' ||
-      cat === 'sticker_paper' ||
-      cat === 'lamination_film' ||
-      cat === 'banner' ||
-      cat === 'fabric' ||
-      unit === 'roll' ||
-      (Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0) ||
-      (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0)
-    ) {
-      return 'roll'
-    }
-
-    if (
-      cat === 'rigid_sheet' ||
-      cat === 'pvc' ||
-      cat === 'acrylic' ||
-      cat === 'acp' ||
-      cat === 'foam_board' ||
-      cat === 'paper' ||
-      cat === 'wood' ||
-      unit === 'sheet' ||
-      (Array.isArray(material.available_sheet_sizes) && material.available_sheet_sizes.length > 0) ||
-      (Array.isArray(material.sheet_sizes) && material.sheet_sizes.length > 0)
-    ) {
-      return 'sheet'
-    }
-
+    // 1. Inks & Chemistry (Check first so ink items are never misclassified)
     if (
       cat === 'ink_chemistry' ||
       cat === 'ink' ||
@@ -60,16 +34,38 @@ export class PriceIntelligenceEngine {
       unit === 'bottle' ||
       unit === 'can' ||
       unit === 'gallon' ||
-      unit === 'ml'
+      unit === 'ml' ||
+      name.includes('ink') ||
+      name.includes('cleaning solution') ||
+      name.includes('flush') ||
+      name.includes('primer') ||
+      name.includes('glue') ||
+      name.includes('adhesive') ||
+      name.includes('solvent ink') ||
+      name.includes('eco-solvent') ||
+      name.includes('varnish')
     ) {
       return 'liquid'
     }
 
+    // 2. Hardware / Accessories / Ready Products / Stands
     if (
       cat === 'hardware_accessories' ||
       cat === 'metal_framing' ||
       cat === 'led_electrical' ||
-      material.product_type === 'ready_product'
+      material.product_type === 'ready_product' ||
+      name.includes('stand') ||
+      name.includes('roll-up') ||
+      name.includes('rollup') ||
+      name.includes('x-banner') ||
+      name.includes('x-stand') ||
+      name.includes('pop-up') ||
+      name.includes('popup') ||
+      name.includes('snap frame') ||
+      name.includes('grommet') ||
+      name.includes('standoff') ||
+      name.includes('screw') ||
+      name.includes('power supply')
     ) {
       if (unit === 'pcs' || unit === 'piece' || name.includes('eyelet') || name.includes('led')) {
         return 'piece'
@@ -77,8 +73,48 @@ export class PriceIntelligenceEngine {
       return 'hardware'
     }
 
-    // 2. Keyword Heuristics for Roll Media
+    // 3. Rigid Sheet Sizes & Boards
     if (
+      cat === 'rigid_sheet' ||
+      cat === 'pvc_board' ||
+      cat === 'pvc_sheet' ||
+      cat === 'acrylic' ||
+      cat === 'acp' ||
+      cat === 'foam_board' ||
+      cat === 'paper' ||
+      cat === 'wood' ||
+      unit === 'sheet' ||
+      (Array.isArray(material.available_sheet_sizes) && material.available_sheet_sizes.length > 0) ||
+      (Array.isArray(material.sheet_sizes) && material.sheet_sizes.length > 0) ||
+      name.includes('sheet') ||
+      name.includes('pvc board') ||
+      name.includes('pvc sheet') ||
+      name.includes('foam board') ||
+      name.includes('forex') ||
+      name.includes('art card') ||
+      name.includes('offset paper') ||
+      name.includes('swedish') ||
+      name.includes('box board') ||
+      name.includes('kraft') ||
+      name.includes('sunboard')
+    ) {
+      return 'sheet'
+    }
+
+    // 4. Roll Media Substrates
+    if (
+      material.is_roll === true ||
+      cat === 'roll_media' ||
+      cat === 'flex' ||
+      cat === 'vinyl' ||
+      cat === 'sticker_paper' ||
+      cat === 'lamination_film' ||
+      cat === 'banner' ||
+      cat === 'fabric' ||
+      cat === 'pvc' ||
+      unit === 'roll' ||
+      (Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0) ||
+      (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0) ||
       name.includes('flex') ||
       name.includes('vinyl') ||
       name.includes('banner') ||
@@ -97,58 +133,7 @@ export class PriceIntelligenceEngine {
       return 'roll'
     }
 
-    // 3. Keyword Heuristics for Rigid Sheet
-    if (
-      name.includes('sheet') ||
-      name.includes('pvc board') ||
-      name.includes('pvc sheet') ||
-      name.includes('acrylic') ||
-      name.includes('acp') ||
-      name.includes('foam board') ||
-      name.includes('forex') ||
-      name.includes('art card') ||
-      name.includes('offset paper') ||
-      name.includes('swedish') ||
-      name.includes('box board') ||
-      name.includes('kraft') ||
-      name.includes('sunboard')
-    ) {
-      return 'sheet'
-    }
-
-    // 4. Keyword Heuristics for Liquid / Inks & Chemistry
-    if (
-      name.includes('ink') ||
-      name.includes('cleaning solution') ||
-      name.includes('flush') ||
-      name.includes('primer') ||
-      name.includes('glue') ||
-      name.includes('adhesive') ||
-      name.includes('solvent ink') ||
-      name.includes('eco-solvent ink') ||
-      name.includes('varnish')
-    ) {
-      return 'liquid'
-    }
-
-    // 5. Hardware / Stand / Piece Items
-    if (
-      name.includes('stand') ||
-      name.includes('roll-up') ||
-      name.includes('rollup') ||
-      name.includes('x-banner') ||
-      name.includes('x-stand') ||
-      name.includes('pop-up') ||
-      name.includes('popup') ||
-      name.includes('snap frame') ||
-      name.includes('grommet') ||
-      name.includes('standoff') ||
-      name.includes('screw') ||
-      name.includes('power supply')
-    ) {
-      return 'hardware'
-    }
-
+    // 5. Piece items
     if (
       name.includes('eyelet') ||
       name.includes('led module') ||
@@ -174,6 +159,73 @@ export class PriceIntelligenceEngine {
   }
 
   /**
+   * Retrieves available purchase units based on physical classification and master unit.
+   */
+  static getAvailablePurchaseUnits(
+    form: MasterPhysicalClassification,
+    masterUnit: string,
+    masterPurchaseUnit?: string
+  ): string[] {
+    const units = new Set<string>()
+    if (masterUnit) units.add(masterUnit.toLowerCase())
+    if (masterPurchaseUnit) units.add(masterPurchaseUnit.toLowerCase())
+
+    switch (form) {
+      case 'roll':
+        units.add('roll')
+        units.add('sft')
+        units.add('meter')
+        units.add('rft')
+        break
+      case 'sheet':
+        units.add('sheet')
+        units.add('sft')
+        units.add('bundle')
+        units.add('box')
+        units.add('pcs')
+        break
+      case 'liquid':
+        units.add('bottle')
+        units.add('can')
+        units.add('ltr')
+        units.add('gallon')
+        units.add('ml')
+        break
+      case 'hardware':
+      case 'piece':
+        units.add('pcs')
+        units.add('piece')
+        units.add('box')
+        units.add('pack')
+        units.add('set')
+        units.add('pair')
+        break
+      case 'box_pack':
+        units.add('box')
+        units.add('pack')
+        units.add('pcs')
+        units.add('piece')
+        units.add('bundle')
+        break
+      case 'weight':
+        units.add('kg')
+        units.add('box')
+        units.add('bag')
+        units.add('ton')
+        units.add('pcs')
+        break
+      default:
+        units.add('pcs')
+        units.add('piece')
+        units.add('box')
+        units.add('set')
+        break
+    }
+
+    return Array.from(units)
+  }
+
+  /**
    * Retrieves active, preconfigured physical sizes with discrete economic characteristics.
    * Strictly derives options from user-registered master configurations (no synthetic placeholders).
    */
@@ -190,35 +242,79 @@ export class PriceIntelligenceEngine {
       material.cost_price ??
       0
     )
+    const perSftCost = Number(
+      material.purchase_price_per_sft ??
+      material.material_config?.purchase_price_per_sft ??
+      material.pricing_formula?.purchase_price_per_sft ??
+      (material.unit === 'sft' || material.selling_unit === 'sft' ? material.base_cost : undefined) ??
+      0
+    )
 
     // 1. Roll Media Sizes (Width × Length & Discrete Economics)
     if (form === 'roll') {
-      const standardLengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || 164)
-      const lengthDisplay = standardLengthFt === 164 ? '50 m' : `${standardLengthFt} ft`
+      const standardLengthFt = Number(
+        material.standard_roll_length_ft ||
+        material.material_config?.standard_roll_length_ft ||
+        material.roll_length_ft ||
+        164
+      )
+      const globalAllowance = Number(
+        material.production_width_allowance ??
+        material.material_config?.extra_width_allowance_ft ??
+        material.extra_width_allowance_ft ??
+        0
+      )
+
+      const rawRollSizes = (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0)
+        ? material.roll_sizes
+        : (material.material_config?.roll_sizes && Array.isArray(material.material_config.roll_sizes) && material.material_config.roll_sizes.length > 0)
+        ? material.material_config.roll_sizes
+        : (material.pricing_formula?.roll_sizes && Array.isArray(material.pricing_formula.roll_sizes) && material.pricing_formula.roll_sizes.length > 0)
+        ? material.pricing_formula.roll_sizes
+        : null
 
       // Explicit configured roll sizes if defined on master
-      if (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0) {
-        for (const rs of material.roll_sizes) {
-          if (rs.is_active !== false) {
-            const w = Number(rs.width_ft || 3)
-            const l = Number(rs.length_ft || standardLengthFt)
-            const area = Math.round(w * l * 10) / 10
-            let price = rs.default_supplier_price
+      if (rawRollSizes && rawRollSizes.length > 0) {
+        for (const rs of rawRollSizes) {
+          if (rs && (rs.is_active !== false)) {
+            const w = Number(rs.width !== undefined ? rs.width : (rs.width_ft !== undefined ? rs.width_ft : 3))
+            const l = Number(rs.length !== undefined ? rs.length : (rs.length_ft !== undefined ? rs.length_ft : standardLengthFt))
+            const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : globalAllowance))
+            const effectiveW = w + allowance
+            const physicalArea = Math.round(effectiveW * l * 10) / 10
+            const nominalArea = Math.round(w * l * 10) / 10
+
+            let price = rs.default_supplier_price || rs.purchase_price
             if (!price || price <= 0) {
-              if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.unit === 'sqft') && material.purchase_unit !== 'roll') {
-                price = Math.round(baseCost * area)
+              if (perSftCost > 0) {
+                price = Math.round(perSftCost * physicalArea)
+              } else if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.selling_unit === 'sft') && material.purchase_unit !== 'roll') {
+                price = Math.round(baseCost * physicalArea)
+              } else if (baseCost > 50) {
+                // If baseCost is full-roll cost for a reference width, scale proportionally by effective area or width
+                const referenceW = Number(material.roll_width_ft) || (rawRollSizes.length > 0 ? Math.max(...rawRollSizes.map((r: any) => Number(r.width || r.width_ft || 0))) : 10)
+                const refEffectiveW = referenceW + globalAllowance
+                if (refEffectiveW > 0) {
+                  price = Math.round(baseCost * (effectiveW / refEffectiveW))
+                } else {
+                  price = baseCost
+                }
               } else {
                 price = baseCost
               }
             }
 
+            const lengthLabel = l === 164 ? '164ft' : `${l}ft`
+            const allowanceLabel = allowance > 0 ? ` (+${allowance}ft)` : ''
+            const label = rs.label || `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`
+
             activeSizes.push({
-              id: rs.id || `roll-size-${w}x${l}`,
-              label: rs.label || `${w} ft × ${l === 164 ? '50 m' : `${l} ft`} (${area.toLocaleString()} sqft)`,
+              id: rs.id || `roll-size-${w}x${l}${allowance > 0 ? `-${allowance}` : ''}`,
+              label: label,
               physical_form: 'roll',
               width_ft: w,
               length_ft: l,
-              standard_area_sft: area,
+              standard_area_sft: physicalArea,
               default_supplier_price: price > 0 ? price : undefined,
               is_active: true,
               sku_suffix: rs.sku_suffix || `${w}FT`,
@@ -231,24 +327,31 @@ export class PriceIntelligenceEngine {
       if (activeSizes.length === 0 && Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0) {
         const widths: number[] = material.available_widths_ft
         const baseW = Number(material.roll_width_ft) || (widths.includes(5) ? 5 : Math.max(...widths))
+        const refEffectiveW = baseW + globalAllowance
 
         for (const w of widths) {
-          const area = Math.round(w * standardLengthFt * 10) / 10
+          const effectiveW = w + globalAllowance
+          const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
 
           let defaultPrice = baseCost
-          if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.unit === 'sqft') && material.purchase_unit !== 'roll') {
-            defaultPrice = Math.round(baseCost * area)
-          } else if (baseCost > 50 && widths.length > 1 && baseW > 0) {
-            defaultPrice = Math.round(baseCost * (w / baseW))
+          if (perSftCost > 0) {
+            defaultPrice = Math.round(perSftCost * physicalArea)
+          } else if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.selling_unit === 'sft') && material.purchase_unit !== 'roll') {
+            defaultPrice = Math.round(baseCost * physicalArea)
+          } else if (baseCost > 50 && widths.length > 1 && refEffectiveW > 0) {
+            defaultPrice = Math.round(baseCost * (effectiveW / refEffectiveW))
           }
+
+          const lengthLabel = standardLengthFt === 164 ? '164ft' : `${standardLengthFt}ft`
+          const allowanceLabel = globalAllowance > 0 ? ` (+${globalAllowance}ft)` : ''
 
           activeSizes.push({
             id: `width-${w}ft`,
-            label: `${w} ft × ${lengthDisplay} (${area.toLocaleString()} sqft)`,
+            label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
             physical_form: 'roll',
             width_ft: w,
             length_ft: standardLengthFt,
-            standard_area_sft: area,
+            standard_area_sft: physicalArea,
             default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
             is_active: true,
             sku_suffix: `${w}FT`,
@@ -259,19 +362,25 @@ export class PriceIntelligenceEngine {
       // If single roll_width_ft is registered
       if (activeSizes.length === 0 && material.roll_width_ft) {
         const w = Number(material.roll_width_ft)
-        const area = Math.round(w * standardLengthFt * 10) / 10
+        const effectiveW = w + globalAllowance
+        const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
         let defaultPrice = baseCost
-        if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.unit === 'sqft') && material.purchase_unit !== 'roll') {
-          defaultPrice = Math.round(baseCost * area)
+        if (perSftCost > 0) {
+          defaultPrice = Math.round(perSftCost * physicalArea)
+        } else if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.selling_unit === 'sft') && material.purchase_unit !== 'roll') {
+          defaultPrice = Math.round(baseCost * physicalArea)
         }
+
+        const lengthLabel = standardLengthFt === 164 ? '164ft' : `${standardLengthFt}ft`
+        const allowanceLabel = globalAllowance > 0 ? ` (+${globalAllowance}ft)` : ''
 
         activeSizes.push({
           id: `width-${w}ft`,
-          label: `${w} ft × ${lengthDisplay} (${area.toLocaleString()} sqft)`,
+          label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
           physical_form: 'roll',
           width_ft: w,
           length_ft: standardLengthFt,
-          standard_area_sft: area,
+          standard_area_sft: physicalArea,
           default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
           is_active: true,
           sku_suffix: `${w}FT`,
@@ -282,7 +391,7 @@ export class PriceIntelligenceEngine {
       if (activeSizes.length === 0) {
         activeSizes.push({
           id: 'standard-roll',
-          label: `Standard Roll (1 ${material.purchase_unit || material.unit || 'Roll'})`,
+          label: `Standard Roll (1 ${material.purchase_unit || material.master_purchase_unit || 'Roll'})`,
           physical_form: 'roll',
           width_ft: 5,
           length_ft: standardLengthFt,
@@ -297,48 +406,46 @@ export class PriceIntelligenceEngine {
 
     // 2. Rigid Sheet Sizes (Width × Length & Thickness)
     if (form === 'sheet') {
-      if (Array.isArray(material.sheet_sizes) && material.sheet_sizes.length > 0) {
-        for (const ss of material.sheet_sizes) {
-          if (ss.is_active !== false) {
+      const rawSheetSizes = (Array.isArray(material.sheet_sizes) && material.sheet_sizes.length > 0)
+        ? material.sheet_sizes
+        : (material.material_config?.available_sheet_sizes && Array.isArray(material.material_config.available_sheet_sizes) && material.material_config.available_sheet_sizes.length > 0)
+        ? material.material_config.available_sheet_sizes
+        : (Array.isArray(material.available_sheet_sizes) && material.available_sheet_sizes.length > 0)
+        ? material.available_sheet_sizes
+        : null
+
+      if (rawSheetSizes && rawSheetSizes.length > 0) {
+        for (const ss of rawSheetSizes) {
+          if (ss) {
+            const labelStr = typeof ss === 'string' ? ss : ss.label || `${ss.width || 8}ft × ${ss.length || 4}ft`
+            let w = typeof ss === 'object' && ss.width ? Number(ss.width) : 8
+            let l = typeof ss === 'object' && ss.length ? Number(ss.length) : 4
+            let area = typeof ss === 'object' && ss.standard_area_sft ? Number(ss.standard_area_sft) : (w * l)
+
+            const match = labelStr.match(/(\d+(?:\.\d+)?)\s*(?:ft|')?\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
+            if (match) {
+              w = Number(match[1])
+              l = Number(match[2])
+              area = w * l
+            }
+
+            let defaultPrice = typeof ss === 'object' && ss.default_supplier_price ? ss.default_supplier_price : baseCost
+            if ((!defaultPrice || defaultPrice <= 0 || defaultPrice === baseCost) && perSftCost > 0) {
+              defaultPrice = Math.round(perSftCost * area)
+            }
+
             activeSizes.push({
-              id: ss.id || `sheet-size-${ss.label}`,
-              label: ss.label,
+              id: (typeof ss === 'object' && ss.id) ? ss.id : `sheet-${encodeURIComponent(labelStr.replace(/[^a-zA-Z0-9]/g, ''))}`,
+              label: labelStr.includes('sqft') || labelStr.includes('sft') ? labelStr : `${labelStr} (${area} sqft)`,
               physical_form: 'sheet',
-              width_ft: ss.width_ft || 4,
-              length_ft: ss.length_ft || 8,
-              standard_area_sft: ss.standard_area_sft || (ss.width_ft && ss.length_ft ? ss.width_ft * ss.length_ft : 32),
-              thickness_mm: ss.thickness_mm,
-              default_supplier_price: ss.default_supplier_price || baseCost,
+              width_ft: w,
+              length_ft: l,
+              standard_area_sft: area,
+              thickness_mm: typeof ss === 'object' ? ss.thickness_mm || material.thickness_mm : material.thickness_mm,
+              default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
               is_active: true,
             })
           }
-        }
-      }
-
-      if (activeSizes.length === 0 && Array.isArray(material.available_sheet_sizes) && material.available_sheet_sizes.length > 0) {
-        for (const raw of material.available_sheet_sizes) {
-          const labelStr = typeof raw === 'string' ? raw : raw?.label || '8 ft × 4 ft'
-          let area = 32
-          const match = labelStr.match(/(\d+(?:\.\d+)?)\s*(?:ft|')?\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
-          if (match) {
-            area = Number(match[1]) * Number(match[2])
-          }
-
-          let defaultPrice = baseCost
-          if (baseCost > 0 && baseCost <= 50 && (material.unit === 'sft' || material.unit === 'sqft') && material.purchase_unit !== 'sheet') {
-            defaultPrice = Math.round(baseCost * area)
-          }
-
-          activeSizes.push({
-            id: `sheet-${encodeURIComponent(labelStr.replace(/[^a-zA-Z0-9]/g, ''))}`,
-            label: labelStr.includes('sqft') || labelStr.includes('sft') ? labelStr : `${labelStr} (${area} sqft)`,
-            physical_form: 'sheet',
-            width_ft: match ? Number(match[1]) : 8,
-            length_ft: match ? Number(match[2]) : 4,
-            standard_area_sft: area,
-            default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
-            is_active: true,
-          })
         }
       }
 
@@ -354,7 +461,7 @@ export class PriceIntelligenceEngine {
           length_ft: l,
           standard_area_sft: area,
           thickness_mm: material.thickness_mm,
-          default_supplier_price: baseCost > 0 ? baseCost : undefined,
+          default_supplier_price: (perSftCost > 0 ? Math.round(perSftCost * area) : baseCost) > 0 ? (perSftCost > 0 ? Math.round(perSftCost * area) : baseCost) : undefined,
           is_active: true,
         })
       }
@@ -362,7 +469,7 @@ export class PriceIntelligenceEngine {
       if (activeSizes.length === 0) {
         activeSizes.push({
           id: 'standard-sheet',
-          label: `Standard Sheet (1 ${material.purchase_unit || material.unit || 'Sheet'})`,
+          label: `Standard Sheet (1 ${material.purchase_unit || material.master_purchase_unit || 'Sheet'})`,
           physical_form: 'sheet',
           width_ft: 8,
           length_ft: 4,
@@ -391,7 +498,7 @@ export class PriceIntelligenceEngine {
       } else if (material.liquid_volume_capacity) {
         activeSizes.push({
           id: 'configured-liquid',
-          label: `${material.liquid_volume_capacity} (${material.purchase_unit || material.unit || 'Bottle'})`,
+          label: `${material.liquid_volume_capacity} (${material.purchase_unit || material.master_purchase_unit || material.unit || 'Bottle'})`,
           physical_form: 'liquid',
           capacity_liters: 1,
           default_supplier_price: baseCost > 0 ? baseCost : undefined,
@@ -400,7 +507,7 @@ export class PriceIntelligenceEngine {
       } else {
         activeSizes.push({
           id: 'standard-liquid',
-          label: `Standard Container (1 ${material.purchase_unit || material.unit || 'Liter'})`,
+          label: `Standard Container (1 ${material.purchase_unit || material.master_purchase_unit || material.unit || 'Liter'})`,
           physical_form: 'liquid',
           capacity_liters: 1,
           default_supplier_price: baseCost > 0 ? baseCost : undefined,
@@ -429,7 +536,7 @@ export class PriceIntelligenceEngine {
     return [
       {
         id: 'standard-piece',
-        label: `Standard Master Unit (1 ${material.purchase_unit || material.unit || 'Pcs'})`,
+        label: `Standard Master Unit (1 ${material.purchase_unit || material.master_purchase_unit || material.unit || 'Pcs'})`,
         physical_form: form,
         pack_quantity: 1,
         default_supplier_price: baseCost > 0 ? baseCost : undefined,

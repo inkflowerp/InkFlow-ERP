@@ -5,7 +5,10 @@ import type { ProductRecord } from '../../types/product.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductService } from '../../services/product.service.ts'
-import { detectPhysicalForm, getAvailablePurchaseUnits } from '../../components/inventory/receive-stock-modal.tsx'
+import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
+
+const detectPhysicalForm = (item: any) => PriceIntelligenceEngine.detectMaterialPhysicalForm(item)
+const getAvailablePurchaseUnits = (form: any, unit: string, pUnit?: string) => PriceIntelligenceEngine.getAvailablePurchaseUnits(form, unit, pUnit)
 
 describe('Receive Stock Unified Catalog & Pricing Update Intelligence Tests', () => {
   const companyId = 'test-co-receive-pricing'

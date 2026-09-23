@@ -172,7 +172,10 @@ export class InventoryRepository {
             seenIds.add(p.id)
             if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
-            const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
+            const cost = Number(p.purchase_price || p.base_cost || 0)
+            const isRoll = Boolean(p.roll_width_ft || p.is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
+            const purchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit || (isRoll ? 'roll' : p.unit)
+
             const matRec: MaterialRecord = {
               id: p.id,
               company_id: p.company_id || companyId,
@@ -182,18 +185,25 @@ export class InventoryRepository {
               name_bn: p.name_bn || null,
               category: p.category || 'raw_materials',
               unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
+              purchase_unit: purchaseUnit,
+              master_purchase_unit: purchaseUnit,
               current_stock: Number(p.current_stock ?? p.stock ?? 0),
               min_stock_level: Number(p.min_stock_level ?? 0),
               average_cost: cost,
               last_purchase_price: cost,
               cost_per_unit: cost,
-              is_roll: Boolean(p.roll_width_ft || p.is_roll || (p.category && p.category.includes('roll'))),
+              is_roll: isRoll,
               roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
               roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
-              available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
-              standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
-              available_sheet_sizes: p.available_sheet_sizes,
-              roll_sizes: p.roll_sizes,
+              available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+              standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : undefined),
+              available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes,
+              roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes,
+              material_config: p.material_config || (p.pricing_formula as any)?.material_config || null,
+              purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || null,
+              production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || 0,
+              liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : null,
+              pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || null,
               variants: p.variants || [],
               thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : undefined,
               is_active: p.is_active !== false,
@@ -257,6 +267,8 @@ export class InventoryRepository {
 
         const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
         const itemVars = (p.variants && p.variants.length > 0) ? p.variants : allLocalVars.filter((v) => v.product_id === p.id)
+        const isRoll = Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
+        const purchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit || (isRoll ? 'roll' : p.unit)
 
         list.push({
           id: p.id,
@@ -267,16 +279,18 @@ export class InventoryRepository {
           name_bn: p.name_bn || null,
           category: p.category || 'raw_materials',
           unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
+          purchase_unit: purchaseUnit,
+          master_purchase_unit: purchaseUnit,
           current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
           min_stock_level: Number((p as any).min_stock_level ?? 0),
           average_cost: cost,
           last_purchase_price: cost,
           cost_per_unit: cost,
-          is_roll: Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll'))),
+          is_roll: isRoll,
           roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
           roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
-          available_widths_ft: p.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
-          standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : undefined,
+          available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+          standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : undefined),
           available_sheet_sizes: Array.isArray(p.available_sheet_sizes)
             ? p.available_sheet_sizes.map((s: any) =>
                 typeof s === 'string'
@@ -287,8 +301,13 @@ export class InventoryRepository {
                   ? `${s.width}x${s.length} ft`
                   : String(s)
               )
-            : undefined,
-          roll_sizes: p.roll_sizes,
+            : (p.material_config as any)?.available_sheet_sizes,
+          roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes,
+          material_config: p.material_config || (p.pricing_formula as any)?.material_config || null,
+          purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || null,
+          production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || 0,
+          liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : null,
+          pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || null,
           variants: itemVars,
           thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : undefined,
           is_active: p.is_active !== false,

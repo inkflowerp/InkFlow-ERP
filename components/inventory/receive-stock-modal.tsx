@@ -145,6 +145,10 @@ export interface DirectReceiptItemRow {
   size_spec?: string | null
   liquid_volume_capacity?: string | null
   pack_quantity?: number | null
+  roll_sizes?: any[]
+  material_config?: any
+  purchase_price_per_sft?: number | null
+  production_width_allowance?: number | null
 }
 
 export interface UnifiedStockItem {
@@ -180,6 +184,10 @@ export interface UnifiedStockItem {
   size_spec?: string | null
   liquid_volume_capacity?: string | null
   pack_quantity?: number | null
+  roll_sizes?: any[]
+  material_config?: any
+  purchase_price_per_sft?: number | null
+  production_width_allowance?: number | null
 }
 
 export function detectPhysicalForm(item: {
@@ -194,128 +202,9 @@ export function detectPhysicalForm(item: {
   entity_type?: string
   thickness?: string
   variants?: any[]
+  material_config?: any
 }): MasterPhysicalForm {
-  const cat = (item.category || '').toLowerCase()
-  const name = (item.name || '').toLowerCase()
-  const unit = (item.unit || item.purchase_unit || '').toLowerCase()
-  const combined = `${cat} ${name} ${unit}`
-
-  // 1. Hardware / Merchandise / Display Stands
-  if (
-    cat === 'hardware_accessories' ||
-    cat === 'metal_framing' ||
-    cat === 'led_electrical' ||
-    item.product_type === 'ready_product' ||
-    combined.includes('stand') ||
-    combined.includes('roll-up') ||
-    combined.includes('rollup') ||
-    combined.includes('x-banner') ||
-    combined.includes('x-stand') ||
-    combined.includes('pop-up') ||
-    combined.includes('popup') ||
-    combined.includes('snap frame') ||
-    combined.includes('display') ||
-    combined.includes('grommet') ||
-    combined.includes('eyelet') ||
-    combined.includes('standoff') ||
-    combined.includes('screw') ||
-    combined.includes('led') ||
-    combined.includes('power supply')
-  ) {
-    return 'hardware'
-  }
-
-  // 2. Liquid / Inks & Chemistry
-  if (
-    cat === 'ink_chemistry' ||
-    cat === 'ink' ||
-    cat === 'adhesive' ||
-    unit === 'ltr' ||
-    unit === 'liter' ||
-    unit === 'litre' ||
-    unit === 'bottle' ||
-    unit === 'can' ||
-    unit === 'gallon' ||
-    unit === 'ml' ||
-    combined.includes('ink') ||
-    combined.includes('solvent') ||
-    combined.includes('eco-solvent') ||
-    combined.includes('uv ink') ||
-    combined.includes('dtf ink') ||
-    combined.includes('sublimation') ||
-    combined.includes('cleaning solution') ||
-    combined.includes('flush') ||
-    combined.includes('primer') ||
-    combined.includes('glue')
-  ) {
-    return 'liquid'
-  }
-
-  // 3. Roll Media
-  if (
-    item.is_roll ||
-    (item.available_widths_ft && item.available_widths_ft.length > 0) ||
-    cat === 'roll_media' ||
-    cat === 'flex' ||
-    cat === 'vinyl' ||
-    cat === 'sticker_paper' ||
-    cat === 'lamination_film' ||
-    cat === 'fabric' ||
-    combined.includes('roll') ||
-    combined.includes('flex') ||
-    combined.includes('vinyl') ||
-    combined.includes('banner') ||
-    combined.includes('canvas') ||
-    combined.includes('backlit') ||
-    combined.includes('frontlit') ||
-    combined.includes('sticker') ||
-    combined.includes('frosted') ||
-    combined.includes('mesh') ||
-    combined.includes('one way vision') ||
-    combined.includes('one-way') ||
-    combined.includes('lamination')
-  ) {
-    return 'roll'
-  }
-
-  // 4. Rigid Sheet
-  if (
-    (item.available_sheet_sizes && item.available_sheet_sizes.length > 0) ||
-    cat === 'rigid_sheet' ||
-    cat === 'pvc' ||
-    cat === 'acrylic' ||
-    cat === 'acp' ||
-    cat === 'foam_board' ||
-    cat === 'paper' ||
-    cat === 'wood' ||
-    unit === 'sheet' ||
-    combined.includes('sheet') ||
-    combined.includes('pvc') ||
-    combined.includes('acrylic') ||
-    combined.includes('acp') ||
-    combined.includes('foam board') ||
-    combined.includes('forex') ||
-    combined.includes('art card') ||
-    combined.includes('offset paper') ||
-    combined.includes('swedish') ||
-    combined.includes('box board') ||
-    combined.includes('kraft') ||
-    combined.includes('sunboard')
-  ) {
-    return 'sheet'
-  }
-
-  // 5. Box / Pack
-  if (unit === 'box' || unit === 'pack' || unit === 'packet' || unit === 'bundle' || unit === 'set' || unit === 'pair') {
-    return 'box_pack'
-  }
-
-  // 6. Weight
-  if (unit === 'kg' || unit === 'gram' || unit === 'ton' || cat === 'metal') {
-    return 'weight'
-  }
-
-  return 'general'
+  return PriceIntelligenceEngine.detectMaterialPhysicalForm(item) as MasterPhysicalForm
 }
 
 export function getAvailablePurchaseUnits(
@@ -564,7 +453,11 @@ export function ReceiveStockModal({
       liquid_volume_capacity?: string | null,
       pack_quantity?: number | null,
       product_type?: string,
-      entity_type?: string
+      entity_type?: string,
+      roll_sizes?: any[],
+      material_config?: any,
+      purchase_price_per_sft?: number | null,
+      production_width_allowance?: number | null
     ) => {
       const catLower = (cat + ' ' + name).toLowerCase()
       let catGroup = isMat ? 'Raw Materials & Substrates' : 'Ready Merchandise & Display Hardware'
@@ -574,12 +467,13 @@ export function ReceiveStockModal({
         name: name,
         unit: unit,
         purchase_unit: purchase_unit,
-        is_roll: Boolean(roll_width_ft || (available_widths_ft && available_widths_ft.length > 0)),
+        is_roll: Boolean(roll_width_ft || (available_widths_ft && available_widths_ft.length > 0) || (roll_sizes && roll_sizes.length > 0)),
         available_widths_ft: available_widths_ft,
         available_sheet_sizes: available_sheet_sizes,
         product_type: product_type,
         entity_type: entity_type,
         variants: variants,
+        material_config: material_config,
       })
 
       const isRoll = physicalForm === 'roll'
@@ -625,14 +519,32 @@ export function ReceiveStockModal({
       const defaultRollArea = defaultWidth ? Math.round(defaultWidth * rollLength) : (isRoll ? 820 : null)
 
       const computedPurchaseUnit = purchase_unit || (
-        physicalForm === 'roll' ? (unit.toLowerCase() === 'roll' ? 'roll' : (unit.toLowerCase() === 'sft' && cost > 100 ? 'roll' : unit || 'roll')) :
-        physicalForm === 'sheet' ? (unit.toLowerCase() === 'sheet' ? 'sheet' : (unit.toLowerCase() === 'sft' && cost > 100 ? 'sheet' : unit || 'sheet')) :
+        physicalForm === 'roll' ? 'roll' :
+        physicalForm === 'sheet' ? 'sheet' :
         physicalForm === 'liquid' ? (['ltr', 'liter', 'litre', 'bottle', 'can', 'gallon', 'ml'].includes(unit.toLowerCase()) ? unit : 'liter') :
         physicalForm === 'hardware' || physicalForm === 'piece' ? 'piece' :
         unit || 'pcs'
       )
 
       const availablePurchaseUnits = getAvailablePurchaseUnits(physicalForm, unit, computedPurchaseUnit)
+
+      const activeSizesForCost = PriceIntelligenceEngine.getMaterialActiveSizes({
+        physical_form: physicalForm,
+        roll_sizes: roll_sizes || (material_config as any)?.roll_sizes,
+        material_config: material_config,
+        available_widths_ft: widths,
+        roll_width_ft: defaultWidth,
+        roll_length_ft: isRoll ? rollLength : null,
+        purchase_price_per_sft: purchase_price_per_sft ?? (material_config as any)?.purchase_price_per_sft,
+        production_width_allowance: production_width_allowance ?? (material_config as any)?.extra_width_allowance_ft ?? (material_config as any)?.production_width_allowance,
+        average_cost: cost,
+        unit: unit,
+        purchase_unit: computedPurchaseUnit,
+      })
+      const primaryActiveSize = activeSizesForCost[0]
+      const effectivePrevCost = (isRoll && primaryActiveSize?.default_supplier_price)
+        ? primaryActiveSize.default_supplier_price
+        : cost
 
       // Strictly register the single registered master item from Products & Commercial Masters
       list.push({
@@ -649,8 +561,8 @@ export function ReceiveStockModal({
         available_purchase_units: availablePurchaseUnits,
         physical_form: physicalForm,
         current_stock: currentStock,
-        previous_cost: cost,
-        previous_selling_price: sellPrice > 0 ? sellPrice : Math.round(cost * 1.35),
+        previous_cost: effectivePrevCost,
+        previous_selling_price: sellPrice > 0 ? sellPrice : Math.round(effectivePrevCost * 1.35),
         target_margin_percent: targetMargin,
         is_roll: isRoll,
         roll_width_ft: defaultWidth,
@@ -663,6 +575,10 @@ export function ReceiveStockModal({
         size_spec: dimensions_spec || null,
         liquid_volume_capacity: liquid_volume_capacity || null,
         pack_quantity: pack_quantity || null,
+        roll_sizes: roll_sizes || (material_config as any)?.roll_sizes,
+        material_config: material_config,
+        purchase_price_per_sft: purchase_price_per_sft ?? (material_config as any)?.purchase_price_per_sft,
+        production_width_allowance: production_width_allowance ?? (material_config as any)?.extra_width_allowance_ft ?? (material_config as any)?.production_width_allowance,
       })
     }
 
@@ -700,7 +616,11 @@ export function ReceiveStockModal({
         (m as any).liquid_volume_capacity,
         (m as any).pack_quantity,
         (m as any).product_type,
-        'material'
+        'material',
+        m.roll_sizes || (m as any).material_config?.roll_sizes,
+        (m as any).material_config,
+        m.purchase_price_per_sft || (m as any).material_config?.purchase_price_per_sft,
+        m.production_width_allowance || (m as any).material_config?.extra_width_allowance_ft
       )
     }
 
@@ -778,7 +698,10 @@ export function ReceiveStockModal({
         (p as any).liquid_volume_capacity,
         (p as any).pack_quantity || p.min_order_quantity,
         p.product_type,
-        p.entity_type
+        (p as any).roll_sizes || (p as any).material_config?.roll_sizes,
+        (p as any).material_config,
+        (p as any).purchase_price_per_sft || (p as any).material_config?.purchase_price_per_sft,
+        (p as any).production_width_allowance || (p as any).material_config?.extra_width_allowance_ft
       )
     }
 

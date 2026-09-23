@@ -163,6 +163,9 @@ function UnifiedInventoryContent() {
       for (const p of matProds) {
         if (!seen.has(p.id)) {
           seen.add(p.id)
+          const isRoll = Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
+          const purchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit || (isRoll ? 'roll' : p.unit)
+
           combined.push({
             id: p.id,
             company_id: p.company_id || 'default',
@@ -171,14 +174,26 @@ function UnifiedInventoryContent() {
             name_bn: p.name_bn || null,
             category: (p.category as any) || 'raw_materials',
             unit: (p.selling_unit || p.unit || 'pcs') as any,
+            purchase_unit: purchaseUnit,
+            master_purchase_unit: purchaseUnit,
             current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
             min_stock_level: Number((p as any).min_stock_level ?? 0),
             average_cost: Number(p.purchase_price ?? p.base_cost ?? 0),
             last_purchase_price: Number(p.purchase_price ?? p.base_cost ?? 0),
             cost_per_unit: Number(p.purchase_price ?? p.base_cost ?? 0),
-            is_roll: Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll'))),
+            is_roll: isRoll,
             roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : null,
             roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
+            available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft,
+            standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : undefined),
+            available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes,
+            roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes,
+            material_config: p.material_config || (p.pricing_formula as any)?.material_config || null,
+            purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || null,
+            production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || 0,
+            liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : null,
+            pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || null,
+            variants: p.variants || [],
             is_active: p.is_active !== false,
             created_at: p.created_at || new Date().toISOString(),
             updated_at: p.updated_at || new Date().toISOString(),

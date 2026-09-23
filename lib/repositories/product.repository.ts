@@ -605,16 +605,18 @@ export class ProductRepository {
         roll_length_ft: product.roll_length_ft !== undefined && product.roll_length_ft !== null ? Number(product.roll_length_ft) : null,
         sheet_width_ft: product.sheet_width_ft !== undefined && product.sheet_width_ft !== null ? Number(product.sheet_width_ft) : null,
         sheet_length_ft: product.sheet_length_ft !== undefined && product.sheet_length_ft !== null ? Number(product.sheet_length_ft) : null,
+        roll_sizes: product.roll_sizes || product.material_config?.roll_sizes || null,
         available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
         standard_roll_length_ft: product.standard_roll_length_ft || product.material_config?.standard_roll_length_ft || null,
         available_sheet_sizes: product.available_sheet_sizes || product.material_config?.available_sheet_sizes || null,
-        production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : 0,
+        production_width_allowance: product.production_width_allowance !== undefined && product.production_width_allowance !== null ? Number(product.production_width_allowance) : (product.material_config?.extra_width_allowance_ft !== undefined ? Number(product.material_config.extra_width_allowance_ft) : 0),
         production_length_allowance: product.production_length_allowance !== undefined && product.production_length_allowance !== null ? Number(product.production_length_allowance) : 0,
         allowance_unit: product.allowance_unit || 'ft',
         material_spec: product.material_spec?.trim() || null,
         description: product.description?.trim() || null,
         description_bn: product.description_bn?.trim() || null,
         dimensions_spec: product.dimensions_spec?.trim() || null,
+        material_config: product.material_config || null,
         base_cost: calculatedBaseCost,
         selling_price: Math.max(0, Number(product.selling_price) || 0),
         min_price: Math.max(0, Number(product.min_price) || 0),
@@ -636,6 +638,7 @@ export class ProductRepository {
           outsource_category: product.outsource_category || (isOutsource ? product.category : null),
           service_config: product.service_config || null,
           material_config: product.material_config || null,
+          roll_sizes: product.roll_sizes || product.material_config?.roll_sizes || null,
           available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
           standard_roll_length_ft: product.standard_roll_length_ft || product.material_config?.standard_roll_length_ft || null,
           available_sheet_sizes: product.available_sheet_sizes || product.material_config?.available_sheet_sizes || null,
@@ -653,7 +656,6 @@ export class ProductRepository {
         requires_delivery: Boolean(product.requires_delivery),
         entity_type: product.entity_type || (isOutsource ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : product.product_type === 'ready_product' || product.sku?.startsWith('RP-') ? 'product' : getProductEntityKind(product)),
         service_config: product.service_config || {},
-        material_config: product.material_config || {},
         outsource_config: outsourceConfig,
         is_outsource: isOutsource,
         is_non_inventory: isNonInventory,
@@ -837,9 +839,13 @@ export class ProductRepository {
         payload.outsource_notes = updates.outsource_notes
         formulaUpdates.outsource_notes = updates.outsource_notes
       }
-      if (updates.outsource_category !== undefined) {
-        payload.outsource_category = updates.outsource_category
-        formulaUpdates.outsource_category = updates.outsource_category
+      if (updates.roll_sizes !== undefined || updates.material_config?.roll_sizes !== undefined) {
+        payload.roll_sizes = updates.roll_sizes !== undefined ? updates.roll_sizes : updates.material_config?.roll_sizes
+        formulaUpdates.roll_sizes = payload.roll_sizes
+      }
+      if (updates.material_config !== undefined) {
+        payload.material_config = updates.material_config
+        formulaUpdates.material_config = updates.material_config
       }
       if (updates.available_widths_ft !== undefined) {
         payload.available_widths_ft = updates.available_widths_ft

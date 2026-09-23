@@ -230,4 +230,101 @@ test('Direct Stock Intake & Price Intelligence — Registered Masters, Units, & 
     assert.equal(sizes[1].label, '6x4 ft (24 sft)')
     assert.equal(sizes[1].standard_area_sft, 24)
   })
+
+  await t.test('6. PVC with 10 configured roll variants and extra allowance produces exact discrete economics', () => {
+    const pvcRecord = {
+      id: 'mat-pvc-user',
+      name: 'PVC Flex Banner',
+      sku: 'MAT-47483',
+      category: 'roll_media',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      material_config: {
+        material_category: 'roll_media',
+        standard_roll_length_ft: 164,
+        purchase_price_per_sft: 7.1,
+        production_width_allowance: 0.25,
+        roll_sizes: [
+          { width: 2, extra_allowance: 0.25, length: 164, purchase_price: 2620 },
+          { width: 2.5, extra_allowance: 0.25, length: 164, purchase_price: 3202 },
+          { width: 3, extra_allowance: 0.25, length: 164, purchase_price: 3784 },
+          { width: 3.5, extra_allowance: 0.25, length: 164, purchase_price: 4367 },
+          { width: 4, extra_allowance: 0.25, length: 164, purchase_price: 4949 },
+          { width: 5, extra_allowance: 0.25, length: 164, purchase_price: 6113 },
+          { width: 6, extra_allowance: 0.25, length: 164, purchase_price: 7278 },
+          { width: 7, extra_allowance: 0.25, length: 164, purchase_price: 8442 },
+          { width: 8, extra_allowance: 0.25, length: 164, purchase_price: 9606 },
+          { width: 10, extra_allowance: 0.5, length: 164, purchase_price: 12226 },
+        ],
+      },
+    }
+
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(pvcRecord), 'roll')
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(pvcRecord)
+    assert.equal(sizes.length, 10)
+    assert.equal(sizes[0].label, '2ft (+0.25ft) × 164ft (369 sqft)')
+    assert.equal(sizes[0].default_supplier_price, 2620)
+    assert.equal(sizes[5].label, '5ft (+0.25ft) × 164ft (861 sqft)')
+    assert.equal(sizes[5].default_supplier_price, 6113)
+    assert.equal(sizes[9].label, '10ft (+0.5ft) × 164ft (1722 sqft)')
+    assert.equal(sizes[9].default_supplier_price, 12226)
+  })
+
+  await t.test('7. Vinyl with 3 configured roll sizes without allowance produces exact discrete economics', () => {
+    const vinylRecord = {
+      id: 'mat-vinyl-user',
+      name: 'Vinyl Sticker',
+      sku: 'MAT-09883',
+      category: 'vinyl',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      material_config: {
+        material_category: 'roll_media',
+        standard_roll_length_ft: 164,
+        purchase_price_per_sft: 9.0,
+        roll_sizes: [
+          { width: 3, extra_allowance: 0, length: 164, purchase_price: 4428 },
+          { width: 4, extra_allowance: 0, length: 164, purchase_price: 5904 },
+          { width: 5, extra_allowance: 0, length: 164, purchase_price: 7380 },
+        ],
+      },
+    }
+
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(vinylRecord), 'roll')
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(vinylRecord)
+    assert.equal(sizes.length, 3)
+    assert.equal(sizes[0].label, '3ft × 164ft (492 sqft)')
+    assert.equal(sizes[0].default_supplier_price, 4428)
+    assert.equal(sizes[1].label, '4ft × 164ft (656 sqft)')
+    assert.equal(sizes[1].default_supplier_price, 5904)
+    assert.equal(sizes[2].label, '5ft × 164ft (820 sqft)')
+    assert.equal(sizes[2].default_supplier_price, 7380)
+  })
+
+  await t.test('8. Liquid Inks & Solvents are strictly detected as liquid and never display roll sizes', () => {
+    const inkRecord = {
+      id: 'mat-ink-user',
+      name: 'Eco Solvent Ink (Black)',
+      sku: 'MAT-40355',
+      category: 'ink_chemistry',
+      unit: 'liter',
+      purchase_unit: 'liter',
+      average_cost: 1050,
+      material_config: {
+        material_category: 'inks',
+        ink_type: 'eco_solvent',
+        color: 'black',
+        bottle_volume_liters: 1,
+      },
+    }
+
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(inkRecord), 'liquid')
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(inkRecord)
+    assert.equal(sizes.length, 1)
+    assert.equal(sizes[0].physical_form, 'liquid')
+    assert.equal(sizes[0].label, 'Standard Container (1 liter)')
+    assert.equal(sizes[0].default_supplier_price, 1050)
+  })
 })
