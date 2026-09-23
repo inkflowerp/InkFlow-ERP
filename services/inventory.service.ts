@@ -194,6 +194,15 @@ export class InventoryService {
       ? (material.material_config as any).roll_sizes
       : []
 
+    const globalAllowance = Number(
+      material.production_width_allowance ??
+      (material.material_config as any)?.extra_width_allowance_ft ??
+      (material.material_config as any)?.production_width_allowance ??
+      (material.pricing_formula as any)?.extra_width_allowance_ft ??
+      (material.pricing_formula as any)?.production_width_allowance ??
+      0
+    )
+
     // Width & Length extraction
     let widthFt = Number(params.width_ft || 0)
     if (!widthFt && params.size_label) {
@@ -211,6 +220,9 @@ export class InventoryService {
         material.width ||
         4
       )
+    }
+    if (isRoll && globalAllowance > 0 && Math.floor(widthFt) === widthFt) {
+      widthFt = Math.round((widthFt + globalAllowance) * 100) / 100
     }
 
     let lengthFt = Number(params.length_ft || 0)

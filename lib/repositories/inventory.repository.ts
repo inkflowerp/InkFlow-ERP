@@ -2657,6 +2657,15 @@ export class InventoryRepository {
         const lot = Date.now().toString().slice(-4)
         const rawCost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
 
+        const globalAllowance = Number(
+          m.production_width_allowance ??
+          (m.material_config as any)?.extra_width_allowance_ft ??
+          (m.material_config as any)?.production_width_allowance ??
+          (m.pricing_formula as any)?.extra_width_allowance_ft ??
+          (m.pricing_formula as any)?.production_width_allowance ??
+          0
+        )
+
         if (rawRollSizes.length > 0) {
           // Check if explicit stock counts exist on configured sizes
           const sizesWithQty = rawRollSizes.filter(
@@ -2666,7 +2675,9 @@ export class InventoryRepository {
           if (sizesWithQty.length > 0) {
             let rollCounter = 1
             for (const rs of sizesWithQty) {
-              const w = Number(rs.width || rs.width_ft || rs.size || widthFt || 4)
+              const baseW = Number(rs.width || rs.width_ft || rs.size || widthFt || 4)
+              const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : globalAllowance))
+              const w = (allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW
               const l = Number(rs.length || rs.length_ft || lengthFt)
               const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1)
               const rollArea = Math.round(w * l * 100) / 100
@@ -2726,7 +2737,9 @@ export class InventoryRepository {
           } else {
             // Sizes are configured types (without item quantities): allocate stockNum to the primary configured size
             const primarySize = rawRollSizes[0]
-            const w = Number(primarySize.width || primarySize.width_ft || primarySize.size || widthFt || 4)
+            const primaryBaseW = Number(primarySize.width || primarySize.width_ft || primarySize.size || widthFt || 4)
+            const allowance = Number(primarySize.extra_allowance !== undefined ? primarySize.extra_allowance : (primarySize.allowance !== undefined ? primarySize.allowance : globalAllowance))
+            const w = (allowance > 0 && Math.floor(primaryBaseW) === primaryBaseW) ? Math.round((primaryBaseW + allowance) * 100) / 100 : primaryBaseW
             const l = Number(primarySize.length || primarySize.length_ft || lengthFt)
             const rollArea = Math.round(w * l * 100) / 100
             const numRolls = rollArea > 0 ? Math.max(1, Math.round(stockNum / rollArea)) : Math.max(1, Math.round(stockNum))
@@ -2785,7 +2798,8 @@ export class InventoryRepository {
           existingMaterialIdsWithRolls.add(m.id)
         } else {
           // Standard single-size inferred roll auto-generation
-          const rollArea = Math.round(widthFt * lengthFt * 100) / 100
+          const effectiveWidthFt = (globalAllowance > 0 && Math.floor(widthFt) === widthFt) ? Math.round((widthFt + globalAllowance) * 100) / 100 : widthFt
+          const rollArea = Math.round(effectiveWidthFt * lengthFt * 100) / 100
 
           let numRolls = 1
           if (m.unit === 'roll') {
@@ -2800,8 +2814,8 @@ export class InventoryRepository {
 
           for (let i = 1; i <= numRolls; i++) {
             const rollCode = numRolls === 1
-              ? `ROL-${cleanSku}-${widthFt}FT`
-              : `ROL-${cleanSku}-${widthFt}FT-${String(i).padStart(2, '0')}`
+              ? `ROL-${cleanSku}-${effectiveWidthFt}FT`
+              : `ROL-${cleanSku}-${effectiveWidthFt}FT-${String(i).padStart(2, '0')}`
 
             const rollPayload: InventoryRollRecord = {
               id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
@@ -2812,7 +2826,7 @@ export class InventoryRepository {
               material_id: m.id,
               roll_code: rollCode,
               roll_tag: rollCode,
-              width_ft: widthFt,
+              width_ft: effectiveWidthFt,
               initial_length_ft: lengthFt,
               current_length_ft: lengthFt,
               original_length_ft: lengthFt,

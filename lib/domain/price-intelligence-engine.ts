@@ -319,7 +319,9 @@ export class PriceIntelligenceEngine {
               id: rs.id || `roll-size-${w}x${l}${allowance > 0 ? `-${allowance}` : ''}`,
               label: label,
               physical_form: 'roll',
-              width_ft: w,
+              width_ft: effectiveW,
+              nominal_width_ft: w,
+              allowance_ft: allowance,
               length_ft: l,
               standard_area_sft: physicalArea,
               default_supplier_price: price > 0 ? price : undefined,
@@ -346,7 +348,7 @@ export class PriceIntelligenceEngine {
         const refArea = refEffectiveW * standardLengthFt
 
         for (const w of widths) {
-          const effectiveW = w + globalAllowance
+          const effectiveW = (globalAllowance > 0 && Math.floor(w) === w) ? Math.round((w + globalAllowance) * 100) / 100 : w
           const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
 
           let defaultPrice = 0
@@ -368,7 +370,9 @@ export class PriceIntelligenceEngine {
             id: `width-${w}ft`,
             label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
             physical_form: 'roll',
-            width_ft: w,
+            width_ft: effectiveW,
+            nominal_width_ft: w,
+            allowance_ft: globalAllowance,
             length_ft: standardLengthFt,
             standard_area_sft: physicalArea,
             default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
@@ -381,7 +385,7 @@ export class PriceIntelligenceEngine {
       // If single roll_width_ft is registered
       if (activeSizes.length === 0 && material.roll_width_ft) {
         const w = Number(material.roll_width_ft)
-        const effectiveW = w + globalAllowance
+        const effectiveW = (globalAllowance > 0 && Math.floor(w) === w) ? Math.round((w + globalAllowance) * 100) / 100 : w
         const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
         let defaultPrice = 0
         if (perSftCost > 0) {
@@ -399,7 +403,9 @@ export class PriceIntelligenceEngine {
           id: `width-${w}ft`,
           label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
           physical_form: 'roll',
-          width_ft: w,
+          width_ft: effectiveW,
+          nominal_width_ft: w,
+          allowance_ft: globalAllowance,
           length_ft: standardLengthFt,
           standard_area_sft: physicalArea,
           default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,

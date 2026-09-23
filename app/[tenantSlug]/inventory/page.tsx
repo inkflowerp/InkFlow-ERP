@@ -578,11 +578,19 @@ function UnifiedInventoryContent() {
           (mat.sku && r.material?.sku && r.material.sku.toLowerCase() === mat.sku.toLowerCase())
       )
 
+      const allowance = Number(
+        mat.production_width_allowance ||
+        (mat.material_config as any)?.extra_width_allowance_ft ||
+        (mat.pricing_formula as any)?.production_width_allowance ||
+        0
+      )
+
       if (matRolls.length > 0) {
         // Group by width, length, location
         const map = new Map<string, { width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
         for (const r of matRolls) {
-          const w = Number(r.width_ft || mat.roll_width_ft || 3)
+          const baseW = Number(r.width_ft || mat.roll_width_ft || 3)
+          const w = (allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW
           const l = Number(r.current_length_ft ?? r.initial_length_ft ?? mat.standard_roll_length_ft ?? 164)
           const loc = r.location_name || mat.location || 'Main Store'
           const k = `${w}_${l}_${loc}`
@@ -594,7 +602,13 @@ function UnifiedInventoryContent() {
 
         for (const [_, grp] of map) {
           const totalArea = grp.items.reduce(
-            (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * grp.length)),
+            (sum, r) => {
+              const curLen = Number(r.current_length_ft ?? r.initial_length_ft ?? grp.length)
+              const storedArea = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * curLen))
+              const baseW = Number(r.width_ft || grp.width)
+              const isOldNominal = (grp.width !== baseW && Math.round(storedArea) === Math.round(baseW * curLen))
+              return sum + (isOldNominal ? (grp.width * curLen) : storedArea)
+            },
             0
           )
           const hasMounted = grp.items.some((r) => r.status === 'mounted')

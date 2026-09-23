@@ -13,6 +13,8 @@ export interface ConfiguredMaterialSize {
   label: string
   physical_form: MasterPhysicalClassification
   width_ft?: number
+  nominal_width_ft?: number
+  allowance_ft?: number
   length_ft?: number
   length_unit?: 'ft' | 'm'
   standard_area_sft?: number
