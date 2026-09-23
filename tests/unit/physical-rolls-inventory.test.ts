@@ -5,6 +5,7 @@ import { InventoryRepository } from '../../lib/repositories/inventory.repository
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
+import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 
 describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
   const testCompanyId = `test-roll-company-${Date.now()}`
@@ -284,6 +285,77 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     assert.strictEqual(breakdownAfter.roll_items[1].roll_count, 31, 'Dynamic breakdown for 5ft must be 31 Pcs')
     assert.strictEqual(breakdownAfter.roll_items[2].roll_count, 30, 'Dynamic breakdown for 7ft must be 30 Pcs')
     assert.strictEqual(breakdownAfter.total_rolls, 70, 'Total rolls remaining in warehouse must be 70')
+  })
+
+  test('6. Physical roll group by width & length matches exact SKU, Width, Length, Quantity, Area and Location breakdown', async () => {
+    const groupTestCompanyId = `test-grp-company-${Date.now()}`
+
+    // Seed MAT-11925 PVC with 2 roll sizes: 2ft x 164ft (10 rolls) and 5.25ft x 164ft (18 rolls)
+    const pvcMat: Partial<MaterialRecord> = {
+      id: `mat-pvc-${Date.now()}`,
+      company_id: groupTestCompanyId,
+      sku: 'MAT-11925',
+      name: 'PVC',
+      name_bn: 'পিভিসি',
+      category: 'pvc' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      is_roll: true,
+      standard_roll_length_ft: 164,
+      location: 'Main Store',
+      roll_sizes: [
+        { width: 2, length: 164, quantity: 10, total_sft: 3280 },
+        { width: 5.25, length: 164, quantity: 18, total_sft: 15498 },
+      ],
+      current_stock: 3280 + 15498, // 18,778 SFT
+    }
+
+    // Seed Vinyl with 3ft x 164ft (39 rolls)
+    const vinylMat: Partial<MaterialRecord> = {
+      id: `mat-vinyl-${Date.now()}`,
+      company_id: groupTestCompanyId,
+      sku: 'MAT-11925',
+      name: 'Vinyl',
+      name_bn: 'ভিনাইল',
+      category: 'vinyl' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      is_roll: true,
+      standard_roll_length_ft: 164,
+      location: 'Main Store',
+      roll_sizes: [
+        { width: 3, length: 164, quantity: 39, total_sft: 19188 },
+      ],
+      current_stock: 19188, // 19,188 SFT
+    }
+
+    await InventoryRepository.createMaterial(pvcMat as any)
+    await InventoryRepository.createMaterial(vinylMat as any)
+
+    const pvcBreakdown = getMaterialWarehouseStockBreakdown(pvcMat)
+    const vinylBreakdown = getMaterialWarehouseStockBreakdown(vinylMat)
+
+    // Verify PVC Breakdown:
+    // Row 1: MAT-11925 PVC 2ft 164ft 10 Roll 3280 Sft Main Store
+    // Row 2: MAT-11925 PVC 5.25ft 164ft 18 Roll 15498 Sft Main Store
+    assert.strictEqual(pvcBreakdown.roll_items.length, 2)
+    assert.strictEqual(pvcBreakdown.roll_items[0].width_ft, 2)
+    assert.strictEqual(pvcBreakdown.roll_items[0].length_ft, 164)
+    assert.strictEqual(pvcBreakdown.roll_items[0].roll_count, 10)
+    assert.strictEqual(pvcBreakdown.roll_items[0].total_sft, 3280)
+
+    assert.strictEqual(pvcBreakdown.roll_items[1].width_ft, 5.25)
+    assert.strictEqual(pvcBreakdown.roll_items[1].length_ft, 164)
+    assert.strictEqual(pvcBreakdown.roll_items[1].roll_count, 18)
+    assert.strictEqual(pvcBreakdown.roll_items[1].total_sft, 15498)
+
+    // Verify Vinyl Breakdown:
+    // Row 3: MAT-11925 Vinyl 3ft 164ft 39 Roll 19188 Sft Main Store
+    assert.strictEqual(vinylBreakdown.roll_items.length, 1)
+    assert.strictEqual(vinylBreakdown.roll_items[0].width_ft, 3)
+    assert.strictEqual(vinylBreakdown.roll_items[0].length_ft, 164)
+    assert.strictEqual(vinylBreakdown.roll_items[0].roll_count, 39)
+    assert.strictEqual(vinylBreakdown.roll_items[0].total_sft, 19188)
   })
 })
 

@@ -50,6 +50,9 @@ import {
   Cpu,
   Printer,
   LayoutGrid,
+  ChevronDown,
+  ChevronRight,
+  Building,
 } from 'lucide-react'
 import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useTenant } from '@/hooks/use-tenant'
@@ -282,6 +285,10 @@ function UnifiedInventoryContent() {
   const [isRequestOpen, setIsRequestOpen] = useState(false)
   const [isFloorIssueOpen, setIsFloorIssueOpen] = useState(false)
   const [floorIssueMaterialId, setFloorIssueMaterialId] = useState<string>('')
+  const [floorIssueWidthFt, setFloorIssueWidthFt] = useState<number | undefined>(undefined)
+  const [floorIssueLengthFt, setFloorIssueLengthFt] = useState<number | undefined>(undefined)
+  const [rollViewMode, setRollViewMode] = useState<'grouped' | 'serialized'>('grouped')
+  const [expandedGroupKeys, setExpandedGroupKeys] = useState<Set<string>>(new Set())
   const [isConsumptionOpen, setIsConsumptionOpen] = useState(false)
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
@@ -499,7 +506,7 @@ function UnifiedInventoryContent() {
     })
   }, [readyProducts, search])
 
-  // Filtered Rolls
+  // Filtered Rolls (Serialized individual items)
   const filteredRolls = useMemo(() => {
     return rolls.filter((r) => {
       const matchStatus =
@@ -523,6 +530,202 @@ function UnifiedInventoryContent() {
       return matchStatus && matchSearch
     })
   }, [rolls, selectedRollStatus, search])
+
+  // Grouped Physical Rolls by Width & Length
+  const groupedRolls = useMemo(() => {
+    const list: {
+      key: string
+      sku: string
+      material_id: string
+      material_name: string
+      material_name_bn?: string | null
+      category?: string
+      width_ft: number
+      length_ft: number
+      quantity_rolls: number
+      total_area_sft: number
+      location_name: string
+      status: string
+      material?: MaterialRecord
+      rolls: InventoryRollRecord[]
+    }[] = []
+    const processedMatIds = new Set<string>()
+
+    const isRollMaterial = (m: MaterialRecord) => {
+      const cat = String(m.category || '').toLowerCase()
+      const name = String(m.name || '').toLowerCase()
+      const pUnit = String(m.purchase_unit || m.master_purchase_unit || (m.material_config as any)?.purchase_unit || '').toLowerCase()
+      const unit = String(m.unit || '').toLowerCase()
+      return Boolean(
+        m.is_roll ||
+        pUnit === 'roll' ||
+        unit === 'roll' ||
+        ['sft', 'sqft'].includes(unit) ||
+        (m.roll_width_ft && Number(m.roll_width_ft) > 0) ||
+        ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll', 'pvc', 'flex_banner'].some((c) => cat.includes(c)) ||
+        ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'roll', 'sav', 'pvc'].some((c) => name.includes(c))
+      )
+    }
+
+    // 1. Process materials that are roll media
+    const rollMats = materials.filter(isRollMaterial)
+
+    for (const mat of rollMats) {
+      processedMatIds.add(mat.id)
+      const matRolls = rolls.filter(
+        (r) =>
+          r.material_id === mat.id ||
+          (mat.sku && r.material?.sku && r.material.sku.toLowerCase() === mat.sku.toLowerCase())
+      )
+
+      if (matRolls.length > 0) {
+        // Group by width, length, location
+        const map = new Map<string, { width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
+        for (const r of matRolls) {
+          const w = Number(r.width_ft || mat.roll_width_ft || 3)
+          const l = Number(r.current_length_ft ?? r.initial_length_ft ?? mat.standard_roll_length_ft ?? 164)
+          const loc = r.location_name || mat.location || 'Main Store'
+          const k = `${w}_${l}_${loc}`
+          if (!map.has(k)) {
+            map.set(k, { width: w, length: l, loc, items: [] })
+          }
+          map.get(k)!.items.push(r)
+        }
+
+        for (const [_, grp] of map) {
+          const totalArea = grp.items.reduce(
+            (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * grp.length)),
+            0
+          )
+          const hasMounted = grp.items.some((r) => r.status === 'mounted')
+          const hasAvailable = grp.items.some((r) => r.status === 'available' || r.status === 'in_warehouse' || !r.status)
+          const hasDepleted = grp.items.some((r) => r.status === 'depleted')
+          const st = hasMounted && hasAvailable ? 'mixed' : hasMounted ? 'mounted' : hasDepleted && !hasAvailable ? 'depleted' : 'available'
+
+          list.push({
+            key: `grp-${mat.id}-${grp.width}-${grp.length}-${grp.loc}`,
+            sku: mat.sku || 'MAT',
+            material_id: mat.id,
+            material_name: mat.name,
+            material_name_bn: mat.name_bn || null,
+            category: mat.category,
+            width_ft: grp.width,
+            length_ft: grp.length,
+            quantity_rolls: grp.items.length,
+            total_area_sft: totalArea,
+            location_name: grp.loc,
+            status: st,
+            material: mat,
+            rolls: grp.items,
+          })
+        }
+      } else {
+        // Derive from stock breakdown (configured roll sizes e.g. 2ft 10 rolls, 5.25ft 18 rolls)
+        const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
+        if (breakdown.roll_items && breakdown.roll_items.length > 0) {
+          for (const item of breakdown.roll_items) {
+            const count = item.roll_count || (item.total_sft > 0 && item.width_ft * item.length_ft > 0 ? Math.round(item.total_sft / (item.width_ft * item.length_ft)) : 0)
+            const area = item.total_sft || (count * item.width_ft * item.length_ft)
+            if (count > 0 || area > 0) {
+              list.push({
+                key: `grp-${mat.id}-${item.width_ft}-${item.length_ft}-${mat.location || 'Main Store'}`,
+                sku: mat.sku || 'MAT',
+                material_id: mat.id,
+                material_name: mat.name,
+                material_name_bn: mat.name_bn || null,
+                category: mat.category,
+                width_ft: item.width_ft,
+                length_ft: item.length_ft,
+                quantity_rolls: count,
+                total_area_sft: area,
+                location_name: mat.location || 'Main Store',
+                status: 'available',
+                material: mat,
+                rolls: [],
+              })
+            }
+          }
+        }
+      }
+    }
+
+    // 2. Process any remaining physical rolls not linked to the above materials
+    const remainingRolls = rolls.filter((r) => r.material_id && !processedMatIds.has(r.material_id))
+    if (remainingRolls.length > 0) {
+      const map = new Map<string, { sku: string; name: string; name_bn?: string | null; matId: string; width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
+      for (const r of remainingRolls) {
+        const sku = r.material?.sku || 'MAT'
+        const name = r.material?.name || 'Roll Media'
+        const name_bn = r.material?.name_bn || null
+        const matId = r.material_id
+        const w = Number(r.width_ft || 3)
+        const l = Number(r.current_length_ft ?? r.initial_length_ft ?? 164)
+        const loc = r.location_name || 'Main Store'
+        const k = `${matId}_${w}_${l}_${loc}`
+        if (!map.has(k)) {
+          map.set(k, { sku, name, name_bn, matId, width: w, length: l, loc, items: [] })
+        }
+        map.get(k)!.items.push(r)
+      }
+
+      for (const [_, grp] of map) {
+        const totalArea = grp.items.reduce(
+          (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * grp.length)),
+          0
+        )
+        const hasMounted = grp.items.some((r) => r.status === 'mounted')
+        const hasAvailable = grp.items.some((r) => r.status === 'available' || r.status === 'in_warehouse' || !r.status)
+        const hasDepleted = grp.items.some((r) => r.status === 'depleted')
+        const st = hasMounted && hasAvailable ? 'mixed' : hasMounted ? 'mounted' : hasDepleted && !hasAvailable ? 'depleted' : 'available'
+
+        list.push({
+          key: `grp-${grp.matId}-${grp.width}-${grp.length}-${grp.loc}`,
+          sku: grp.sku,
+          material_id: grp.matId,
+          material_name: grp.name,
+          material_name_bn: grp.name_bn,
+          width_ft: grp.width,
+          length_ft: grp.length,
+          quantity_rolls: grp.items.length,
+          total_area_sft: totalArea,
+          location_name: grp.loc,
+          status: st,
+          rolls: grp.items,
+        })
+      }
+    }
+
+    return list
+  }, [materials, rolls])
+
+  // Total count of physical rolls across all sizes
+  const totalPhysicalRollsCount = useMemo(() => {
+    return groupedRolls.reduce((sum, g) => sum + (g.quantity_rolls || 0), 0)
+  }, [groupedRolls])
+
+  // Filtered Grouped Rolls by Search & Status
+  const filteredGroupedRolls = useMemo(() => {
+    return groupedRolls.filter((g) => {
+      const matchStatus =
+        selectedRollStatus === 'all' ||
+        g.status === selectedRollStatus ||
+        (selectedRollStatus === 'available' && (g.status === 'available' || g.status === 'in_warehouse' || g.status === 'mixed' || !g.status)) ||
+        (selectedRollStatus === 'mounted' && (g.status === 'mounted' || g.status === 'in_use' || g.status === 'on_floor' || g.rolls.some((r) => r.status === 'mounted'))) ||
+        (selectedRollStatus === 'depleted' && (g.status === 'depleted' || g.quantity_rolls === 0))
+      const q = search.trim().toLowerCase()
+      const matchSearch =
+        !q ||
+        g.sku.toLowerCase().includes(q) ||
+        g.material_name.toLowerCase().includes(q) ||
+        (g.material_name_bn && g.material_name_bn.includes(q)) ||
+        `${g.width_ft}ft`.includes(q) ||
+        `${g.width_ft}`.includes(q) ||
+        `${g.length_ft}ft`.includes(q) ||
+        `${g.length_ft}`.includes(q) ||
+        g.location_name.toLowerCase().includes(q)
+      return matchStatus && matchSearch
+    })
+  }, [groupedRolls, selectedRollStatus, search])
 
   // Filtered Requests
   const filteredRequests = useMemo(() => {
@@ -823,7 +1026,7 @@ function UnifiedInventoryContent() {
           onSelectTab={(tab) => setViewTab(tab)}
           materialsCount={materials.length}
           readyProductsCount={readyProducts.length}
-          rollsCount={rolls.length}
+          rollsCount={totalPhysicalRollsCount || rolls.length}
           floorConsumptionsCount={floorConsumptions.length}
           activeFloorCount={floorConsumptions.filter((f) => f.status === 'on_floor' || f.status === 'partially_consumed').length}
           requestsCount={requests.length}
@@ -1367,213 +1570,479 @@ function UnifiedInventoryContent() {
         {/* ========================================================= */}
         {currentView === 'rolls' && (
           <div className="space-y-4">
-            {/* Rolls Filter Bar */}
+            {/* Rolls Filter & Control Bar */}
             <Card className="p-3.5">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <Input
-                    placeholder="Search roll code, material name, tag, location..."
+                    placeholder={isBn ? 'এসকেইউ, মেটেরিয়াল, সাইজ (উদাঃ 2ft, 5.25ft, 164ft) বা লোকেশন খুঁজুন...' : 'Search SKU, material, width (e.g. 2ft, 5.25ft, 3ft), length or location...'}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 text-xs h-9"
                   />
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                  {[
-                    { id: 'all', label: 'All Rolls' },
-                    { id: 'available', label: 'Available' },
-                    { id: 'mounted', label: 'Mounted / In Use' },
-                    { id: 'depleted', label: 'Depleted' },
-                  ].map((st) => (
-                    <Button
-                      key={st.id}
-                      size="sm"
-                      variant={selectedRollStatus === st.id ? 'default' : 'outline'}
-                      onClick={() => setSelectedRollStatus(st.id)}
-                      className="text-xs h-8 px-3 cursor-pointer shrink-0"
+                <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto">
+                  {/* View Mode Toggle: Grouped vs Serialized */}
+                  <div className="flex items-center bg-slate-100 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setRollViewMode('grouped')}
+                      className={cn(
+                        'px-2.5 py-1 rounded-md font-bold transition-all text-xs cursor-pointer',
+                        rollViewMode === 'grouped'
+                          ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-2xs'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      )}
                     >
-                      {st.label}
-                    </Button>
-                  ))}
+                      {isBn ? 'গ্রুপ অনুযায়ী সাইজ' : 'Grouped by Size'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRollViewMode('serialized')}
+                      className={cn(
+                        'px-2.5 py-1 rounded-md font-bold transition-all text-xs cursor-pointer',
+                        rollViewMode === 'serialized'
+                          ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-2xs'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      )}
+                    >
+                      {isBn ? 'সিরিয়ালাইজড রোল' : 'Serialized Rolls'}
+                    </button>
+                  </div>
+
+                  {/* Status Filters */}
+                  <div className="flex items-center gap-1 overflow-x-auto shrink-0">
+                    {[
+                      { id: 'all', label: isBn ? 'সকল' : 'All Rolls' },
+                      { id: 'available', label: isBn ? 'স্টকে আছে' : 'Available' },
+                      { id: 'mounted', label: isBn ? 'মাউন্ট' : 'Mounted' },
+                      { id: 'depleted', label: isBn ? 'শেষ' : 'Depleted' },
+                    ].map((st) => (
+                      <Button
+                        key={st.id}
+                        size="sm"
+                        variant={selectedRollStatus === st.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedRollStatus(st.id)}
+                        className="text-xs h-8 px-2.5 cursor-pointer shrink-0"
+                      >
+                        {st.label}
+                      </Button>
+                    ))}
+                  </div>
+
                   <Button
                     size="sm"
                     onClick={() => {
                       setSelectedMaterialForAction(null)
                       setFloorIssueMaterialId('')
+                      setFloorIssueWidthFt(undefined)
+                      setFloorIssueLengthFt(undefined)
                       setSelectedRequestForIssue(null)
                       setIsFloorIssueOpen(true)
                     }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8 px-3 cursor-pointer shrink-0 gap-1"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold h-8 px-3 cursor-pointer shrink-0 gap-1 shadow-2xs"
                   >
                     <Plus className="h-3.5 w-3.5" />
-                    <span>Issue Roll to Floor</span>
+                    <span>{isBn ? 'ফ্লোরে রোল ইস্যু' : 'Issue Roll to Floor'}</span>
                   </Button>
                 </div>
               </div>
             </Card>
 
-            {/* Rolls Table */}
-            <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
-                    <tr>
-                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'রোল আইডি / কোড' : 'Roll ID / Code'}</th>
-                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল নাম' : 'Material Name'}</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ' : 'Nominal Width'}</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অবশিষ্ট দৈর্ঘ্য' : 'Remaining Length'}</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'বর্তমান এরিয়া' : 'Current Area'}</th>
-                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'লোকেশন / প্রেস' : 'Location / Press'}</th>
-                      <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'স্ট্যাটাস' : 'Status'}</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredRolls.length === 0 ? (
+            {/* ROLLS TABLE: GROUPED BY WIDTH & LENGTH (Default View) */}
+            {rollViewMode === 'grouped' ? (
+              <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
                       <tr>
-                        <td colSpan={8} className="p-8 text-center text-slate-500">
-                          <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                          <p className="font-bold">{isBn ? 'কোনো ফিজিক্যাল রোল পাওয়া যায়নি।' : 'No physical rolls registered yet.'}</p>
-                          <p className="text-[11px] text-slate-400 mt-1">
-                            {isBn ? 'ওয়্যারহাউস স্টক থেকে মাস্টার রোল ইস্যু করুন অথবা জিআরএন-এ নতুন রোল রিসিভ করুন।' : 'Issue a master roll from warehouse stock or receive new roll media in GRN.'}
-                          </p>
-                          <div className="flex items-center justify-center gap-2 mt-3">
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setSelectedMaterialForAction(null)
-                                setFloorIssueMaterialId('')
-                                setSelectedRequestForIssue(null)
-                                setIsFloorIssueOpen(true)
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer"
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" />
-                              {isBn ? 'ফ্লোরে রোল ইস্যু' : 'Issue Roll to Floor'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setIsReceiveStockOpen(true)}
-                              className="text-xs cursor-pointer font-semibold"
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" />
-                              {isBn ? 'জিআরএন দিয়ে রিসিভ' : 'Receive Roll via GRN'}
-                            </Button>
-                          </div>
-                        </td>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'এসকেইউ (SKU)' : 'SKU'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল নাম' : 'Material Name'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ (Width)' : 'Width'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'দৈর্ঘ্য (Length)' : 'Length'}</th>
+                        <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'পরিমাণ (Quantity)' : 'Quantity'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'মোট এরিয়া (Area)' : 'Area'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'লোকেশন' : 'Location'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                       </tr>
-                    ) : (
-                      filteredRolls.map((roll) => {
-                        const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / (roll.width_ft || 1))
-                        const area = Number(roll.remaining_area_sft || currentLen * roll.width_ft)
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredGroupedRolls.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-slate-500">
+                            <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                            <p className="font-bold">{isBn ? 'কোনো রোল পাওয়া যায়নি।' : 'No physical roll stock found.'}</p>
+                            <p className="text-[11px] text-slate-400 mt-1">
+                              {isBn ? 'নতুন রোল মেটেরিয়াল তৈরি করুন অথবা জিআরএন দিয়ে রিসিভ করুন।' : 'Add roll media materials with configured sizes or receive rolls via GRN.'}
+                            </p>
+                            <div className="flex items-center justify-center gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMaterialForAction(null)
+                                  setFloorIssueMaterialId('')
+                                  setFloorIssueWidthFt(undefined)
+                                  setFloorIssueLengthFt(undefined)
+                                  setSelectedRequestForIssue(null)
+                                  setIsFloorIssueOpen(true)
+                                }}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer"
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                {isBn ? 'ফ্লোরে রোল ইস্যু' : 'Issue Roll to Floor'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setIsReceiveStockOpen(true)}
+                                className="text-xs cursor-pointer font-semibold"
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                {isBn ? 'জিআরএন দিয়ে রিসিভ' : 'Receive Stock via GRN'}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredGroupedRolls.map((group) => {
+                          const isExpanded = expandedGroupKeys.has(group.key)
+                          const hasSerializedRolls = group.rolls && group.rolls.length > 0
 
-                        return (
-                          <tr key={roll.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
-                            <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                              {roll.roll_code || roll.roll_tag || roll.id.slice(0, 8)}
-                            </td>
-                            <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
-                              <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
-                              {roll.material?.sku && <div className="text-[10px] text-slate-400 font-mono font-normal">{roll.material.sku}</div>}
-                            </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                              {roll.width_ft} ft
-                            </td>
-                            <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                              <div>{currentLen.toFixed(2)} ft <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">— 1 Pcs</span></div>
-                              <div className="text-[10px] text-slate-400 font-normal font-sans">Initial: {roll.initial_length_ft} ft</div>
-                            </td>
-                            <td className="py-3.5 px-4 text-right font-mono text-emerald-600 font-black whitespace-nowrap">
-                              {area.toFixed(1)} SFT
-                            </td>
-                            <td className="py-3.5 px-4">
-                              {roll.mounted_machine_name || roll.mounted_press_name ? (
-                                <span className="inline-flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 whitespace-nowrap text-xs">
-                                  <Cpu className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                                  {roll.mounted_machine_name || roll.mounted_press_name}
-                                </span>
-                              ) : (
-                                <span className="text-slate-600 dark:text-slate-400 font-medium">
-                                  {roll.location_name || 'Main Warehouse'}
-                                </span>
+                          return (
+                            <React.Fragment key={group.key}>
+                              <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
+                                <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                                    {group.sku}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
+                                  <div className="flex items-center gap-2">
+                                    <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                      <Disc className="h-3.5 w-3.5" />
+                                    </div>
+                                    <div>
+                                      <span className="font-bold text-xs">{isBn && group.material_name_bn ? group.material_name_bn : group.material_name}</span>
+                                      {group.material_name_bn && !isBn && (
+                                        <div className="text-[10px] text-slate-400 font-normal">{group.material_name_bn}</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                  {group.width_ft}ft
+                                </td>
+                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                  {group.length_ft}ft
+                                </td>
+                                <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 font-mono shadow-2xs">
+                                    {group.quantity_rolls} {group.quantity_rolls === 1 ? 'Roll' : 'Roll'}
+                                  </span>
+                                </td>
+                                <td className="py-3.5 px-4 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap text-xs">
+                                  {Math.round(group.total_area_sft).toLocaleString()} Sft
+                                </td>
+                                <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">
+                                  <div className="flex items-center gap-1.5">
+                                    <Building className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                                    <span>{group.location_name}</span>
+                                  </div>
+                                </td>
+                                <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        const mat = group.material || materials.find((m) => m.id === group.material_id) || null
+                                        setSelectedMaterialForAction(mat)
+                                        setFloorIssueMaterialId(group.material_id)
+                                        setFloorIssueWidthFt(group.width_ft)
+                                        setFloorIssueLengthFt(group.length_ft)
+                                        setSelectedRequestForIssue(null)
+                                        setIsFloorIssueOpen(true)
+                                      }}
+                                      className="h-7 px-2.5 text-[11px] text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 font-bold cursor-pointer gap-1"
+                                    >
+                                      <Send className="h-3 w-3" />
+                                      <span>{isBn ? 'ইস্যু' : 'Issue'}</span>
+                                    </Button>
+
+                                    {hasSerializedRolls && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        onClick={() => {
+                                          setExpandedGroupKeys((prev) => {
+                                            const next = new Set(prev)
+                                            if (next.has(group.key)) next.delete(group.key)
+                                            else next.add(group.key)
+                                            return next
+                                          })
+                                        }}
+                                        className="h-7 px-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
+                                        title={isExpanded ? 'Collapse serialized rolls' : 'Expand serialized rolls'}
+                                      >
+                                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                      </Button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+
+                              {/* EXPANDABLE SERIALIZED ROLLS SUB-TABLE */}
+                              {isExpanded && hasSerializedRolls && (
+                                <tr className="bg-slate-50/80 dark:bg-slate-900/60">
+                                  <td colSpan={8} className="py-3 px-6">
+                                    <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
+                                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                        <span>Serialized Master Rolls ({group.rolls.length} items registered):</span>
+                                        <span className="font-mono text-emerald-600 dark:text-emerald-400">{group.width_ft}ft × {group.length_ft}ft</span>
+                                      </div>
+                                      <div className="overflow-x-auto">
+                                        <table className="w-full text-[11px]">
+                                          <thead>
+                                            <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 text-left">
+                                              <th className="py-1 px-2 font-semibold">Roll Code / Tag</th>
+                                              <th className="py-1 px-2 text-right font-semibold">Remaining Length</th>
+                                              <th className="py-1 px-2 text-right font-semibold">Current Area</th>
+                                              <th className="py-1 px-2 font-semibold">Machine / Location</th>
+                                              <th className="py-1 px-2 text-center font-semibold">Status</th>
+                                              <th className="py-1 px-2 text-right font-semibold">Action</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-mono">
+                                            {group.rolls.map((r) => {
+                                              const curLen = Number(r.current_length_ft ?? r.remaining_area_sft / (r.width_ft || 1))
+                                              const area = Number(r.remaining_area_sft || curLen * r.width_ft)
+                                              return (
+                                                <tr key={r.id} className="hover:bg-slate-50 dark:hover:bg-slate-900">
+                                                  <td className="py-1.5 px-2 font-bold text-slate-900 dark:text-white">
+                                                    {r.roll_code || r.roll_tag || r.id.slice(0, 8)}
+                                                  </td>
+                                                  <td className="py-1.5 px-2 text-right">
+                                                    {curLen.toFixed(1)} ft
+                                                  </td>
+                                                  <td className="py-1.5 px-2 text-right text-emerald-600 font-bold">
+                                                    {area.toFixed(1)} SFT
+                                                  </td>
+                                                  <td className="py-1.5 px-2 font-sans">
+                                                    {r.mounted_machine_name || r.mounted_press_name ? (
+                                                      <span className="text-blue-600 font-bold flex items-center gap-1">
+                                                        <Cpu className="h-3 w-3" /> {r.mounted_machine_name || r.mounted_press_name}
+                                                      </span>
+                                                    ) : (
+                                                      r.location_name || 'Main Warehouse'
+                                                    )}
+                                                  </td>
+                                                  <td className="py-1.5 px-2 text-center font-sans">
+                                                    <span className={cn(
+                                                      'px-1.5 py-0.5 rounded text-[10px] font-bold',
+                                                      r.status === 'mounted' ? 'bg-blue-50 text-blue-700' :
+                                                      r.status === 'depleted' ? 'bg-rose-50 text-rose-700' :
+                                                      'bg-emerald-50 text-emerald-700'
+                                                    )}>
+                                                      {r.status || 'available'}
+                                                    </span>
+                                                  </td>
+                                                  <td className="py-1.5 px-2 text-right font-sans">
+                                                    {r.status === 'mounted' ? (
+                                                      <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => handleUnmountRoll(r)}
+                                                        className="h-6 px-2 text-[10px] text-amber-700 hover:bg-amber-50"
+                                                      >
+                                                        Unmount
+                                                      </Button>
+                                                    ) : (
+                                                      <Button
+                                                        size="sm"
+                                                        variant="outline"
+                                                        onClick={() => {
+                                                          setRollToMount(r)
+                                                          setSelectedMachineForMount(machines[0]?.id || '')
+                                                          setIsMountModalOpen(true)
+                                                        }}
+                                                        className="h-6 px-2 text-[10px] text-blue-600 hover:bg-blue-50"
+                                                      >
+                                                        Mount
+                                                      </Button>
+                                                    )}
+                                                  </td>
+                                                </tr>
+                                              )
+                                            })}
+                                          </tbody>
+                                        </table>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
                               )}
-                            </td>
-                            <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              {roll.status === 'available' || roll.status === 'in_warehouse' || !roll.status ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap shadow-2xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                                  <span>{isBn ? 'অ্যাভেইলেবল' : 'Available'}</span>
-                                </span>
-                              ) : roll.status === 'mounted' || roll.status === 'in_use' || roll.status === 'on_floor' ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 whitespace-nowrap shadow-2xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 animate-pulse" />
-                                  <span>{isBn ? 'মেশিনে মাউন্ট' : 'Mounted / In Use'}</span>
-                                </span>
-                              ) : roll.status === 'depleted' ? (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 whitespace-nowrap shadow-2xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
-                                  <span>{isBn ? 'শেষ হয়েছে' : 'Depleted'}</span>
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 whitespace-nowrap shadow-2xs">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
-                                  <span>{roll.status}</span>
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {roll.status === 'mounted' || roll.mounted_machine_id ? (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleUnmountRoll(roll)}
-                                    className="h-7 px-2.5 text-[11px] text-amber-700 dark:text-amber-300 hover:bg-amber-50 border-amber-300 dark:border-amber-700 font-semibold cursor-pointer"
-                                    title="Unmount from machine back to warehouse"
-                                  >
-                                    {isBn ? 'আনমাউন্ট' : 'Unmount'}
-                                  </Button>
+                            </React.Fragment>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            ) : (
+              /* SERIALIZED INDIVIDUAL ROLLS TABLE */
+              <Card className="overflow-hidden border border-slate-200 dark:border-slate-800 shadow-xs">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
+                      <tr>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'রোল আইডি / কোড' : 'Roll ID / Code'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল নাম' : 'Material Name'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ' : 'Nominal Width'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অবশিষ্ট দৈর্ঘ্য' : 'Remaining Length'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'বর্তমান এরিয়া' : 'Current Area'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'লোকেশন / প্রেস' : 'Location / Press'}</th>
+                        <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'স্ট্যাটাস' : 'Status'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {filteredRolls.length === 0 ? (
+                        <tr>
+                          <td colSpan={8} className="p-8 text-center text-slate-500">
+                            <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                            <p className="font-bold">{isBn ? 'কোনো সিরিয়ালাইজড রোল পাওয়া যায়নি।' : 'No individual serialized rolls registered yet.'}</p>
+                            <div className="flex items-center justify-center gap-2 mt-3">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedMaterialForAction(null)
+                                  setFloorIssueMaterialId('')
+                                  setFloorIssueWidthFt(undefined)
+                                  setFloorIssueLengthFt(undefined)
+                                  setSelectedRequestForIssue(null)
+                                  setIsFloorIssueOpen(true)
+                                }}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold cursor-pointer"
+                              >
+                                <Plus className="h-3.5 w-3.5 mr-1" />
+                                {isBn ? 'ফ্লোরে রোল ইস্যু' : 'Issue Roll to Floor'}
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredRolls.map((roll) => {
+                          const currentLen = Number(roll.current_length_ft ?? roll.remaining_area_sft / (roll.width_ft || 1))
+                          const area = Number(roll.remaining_area_sft || currentLen * roll.width_ft)
+
+                          return (
+                            <tr key={roll.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                              <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                {roll.roll_code || roll.roll_tag || roll.id.slice(0, 8)}
+                              </td>
+                              <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
+                                <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
+                                {roll.material?.sku && <div className="text-[10px] text-slate-400 font-mono font-normal">{roll.material.sku}</div>}
+                              </td>
+                              <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                {roll.width_ft} ft
+                              </td>
+                              <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                                <div>{currentLen.toFixed(2)} ft <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 font-sans">— 1 Pcs</span></div>
+                                <div className="text-[10px] text-slate-400 font-normal font-sans">Initial: {roll.initial_length_ft} ft</div>
+                              </td>
+                              <td className="py-3.5 px-4 text-right font-mono text-emerald-600 font-black whitespace-nowrap">
+                                {area.toFixed(1)} SFT
+                              </td>
+                              <td className="py-3.5 px-4">
+                                {roll.mounted_machine_name || roll.mounted_press_name ? (
+                                  <span className="inline-flex items-center gap-1.5 font-bold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded border border-blue-200 dark:border-blue-800 whitespace-nowrap text-xs">
+                                    <Cpu className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+                                    {roll.mounted_machine_name || roll.mounted_press_name}
+                                  </span>
                                 ) : (
+                                  <span className="text-slate-600 dark:text-slate-400 font-medium">
+                                    {roll.location_name || 'Main Warehouse'}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                                {roll.status === 'available' || roll.status === 'in_warehouse' || !roll.status ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span>{isBn ? 'অ্যাভেইলেবল' : 'Available'}</span>
+                                  </span>
+                                ) : roll.status === 'mounted' || roll.status === 'in_use' || roll.status === 'on_floor' ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 whitespace-nowrap shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 animate-pulse" />
+                                    <span>{isBn ? 'মেশিনে মাউন্ট' : 'Mounted / In Use'}</span>
+                                  </span>
+                                ) : roll.status === 'depleted' ? (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 whitespace-nowrap shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                                    <span>{isBn ? 'শেষ হয়েছে' : 'Depleted'}</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 whitespace-nowrap shadow-2xs">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                                    <span>{roll.status}</span>
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  {roll.status === 'mounted' || roll.mounted_machine_id ? (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleUnmountRoll(roll)}
+                                      className="h-7 px-2.5 text-[11px] text-amber-700 dark:text-amber-300 hover:bg-amber-50 border-amber-300 dark:border-amber-700 font-semibold cursor-pointer"
+                                      title="Unmount from machine back to warehouse"
+                                    >
+                                      {isBn ? 'আনমাউন্ট' : 'Unmount'}
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setRollToMount(roll)
+                                        setSelectedMachineForMount(machines[0]?.id || '')
+                                        setIsMountModalOpen(true)
+                                      }}
+                                      className="h-7 px-2.5 text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 border-blue-300 dark:border-blue-700 font-semibold cursor-pointer"
+                                      title="Mount onto printing or fabrication machine"
+                                    >
+                                      <Cpu className="h-3 w-3 mr-1" />
+                                      {isBn ? 'মাউন্ট' : 'Mount'}
+                                    </Button>
+                                  )}
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => {
-                                      setRollToMount(roll)
-                                      setSelectedMachineForMount(machines[0]?.id || '')
-                                      setIsMountModalOpen(true)
+                                      setSelectedRollForAction(roll)
+                                      setIsConsumptionOpen(true)
                                     }}
-                                    className="h-7 px-2.5 text-[11px] text-blue-600 dark:text-blue-400 hover:bg-blue-50 border-blue-300 dark:border-blue-700 font-semibold cursor-pointer"
-                                    title="Mount onto printing or fabrication machine"
+                                    className="h-7 px-2.5 text-[11px] text-purple-600 hover:bg-purple-50 border-purple-200 dark:border-purple-800 font-semibold cursor-pointer"
                                   >
-                                    <Cpu className="h-3 w-3 mr-1" />
-                                    {isBn ? 'মাউন্ট' : 'Mount'}
+                                    <Scissors className="h-3 w-3 mr-1" />
+                                    {isBn ? 'কাট / সাইন-অফ' : 'Cut / Sign-Off'}
                                   </Button>
-                                )}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    setSelectedRollForAction(roll)
-                                    setIsConsumptionOpen(true)
-                                  }}
-                                  className="h-7 px-2.5 text-[11px] text-purple-600 hover:bg-purple-50 border-purple-200 dark:border-purple-800 font-semibold cursor-pointer"
-                                >
-                                  <Scissors className="h-3 w-3 mr-1" />
-                                  {isBn ? 'কাট / সাইন-অফ' : 'Cut / Sign-Off'}
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </Card>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
           </div>
         )}
 
@@ -2352,6 +2821,8 @@ function UnifiedInventoryContent() {
           request={selectedRequestForIssue}
           initialMaterialId={floorIssueMaterialId || selectedMaterialForAction?.id}
           selectedMaterialId={floorIssueMaterialId || selectedMaterialForAction?.id}
+          initialWidthFt={floorIssueWidthFt}
+          initialLengthFt={floorIssueLengthFt}
           companyId={companyId}
           onSuccess={() => {
             showNotification('Material issued to print floor successfully.')

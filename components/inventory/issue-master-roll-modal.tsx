@@ -189,7 +189,10 @@ export function IssueMasterRollModal({
 
   // Auto-inferred dimensions
   const widthFt = useMemo(() => {
-    if (!selectedMaterial) return initialWidthFt || 3
+    if (initialWidthFt && initialWidthFt > 0) {
+      return initialWidthFt
+    }
+    if (!selectedMaterial) return 3
     if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
       return warehouseBreakdown.roll_items[0].width_ft
     }
@@ -204,7 +207,10 @@ export function IssueMasterRollModal({
   }, [selectedMaterial, warehouseBreakdown, initialWidthFt])
 
   const lengthFt = useMemo(() => {
-    if (!selectedMaterial) return initialLengthFt || 164
+    if (initialLengthFt && initialLengthFt > 0) {
+      return initialLengthFt
+    }
+    if (!selectedMaterial) return 164
     if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
       return warehouseBreakdown.roll_items[0].length_ft
     }
