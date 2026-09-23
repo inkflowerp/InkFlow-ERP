@@ -43,10 +43,13 @@ import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { createPurchaseOrderAction } from '@/actions/purchase.actions'
+import { getMaterialsAction } from '@/actions/inventory.actions'
+import { getProductsAction } from '@/actions/product.actions'
 import { SupplierRecord } from '@/types/crm.types'
 import { MaterialRecord, InventoryLocationRecord } from '@/types/inventory.types'
 import { PurchaseOrderRecord, PurchaseOrderItemRecord } from '@/types/purchase.types'
-import { ProductRecord, MaterialPurchaseConfig } from '@/types/product.types'
+import { ProductRecord, MaterialPurchaseConfig, isMaterialProduct, isServiceProduct, isOutsourceProduct } from '@/types/product.types'
+import { PriceIntelligenceEngine } from '@/lib/domain/price-intelligence-engine'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -60,6 +63,7 @@ export interface NewPurchaseModalProps {
 
 export interface PurchaseItemFormState {
   id: string
+  selection_key?: string
   item_type: 'material' | 'ready_product' | 'custom'
   material_id: string
   material_name: string
@@ -102,6 +106,25 @@ const QUICK_NOTE_TEMPLATES = [
   'Batch test ink viscosity and curing speed upon delivery.',
   'Deliver during morning receiving window (10:00 AM - 1:00 PM).',
 ]
+
+// Purchasable item option structure
+export interface PurchasableOption {
+  key: string
+  label: string
+  group: 'roll_media' | 'rigid_sheet' | 'ink_chemistry' | 'raw_material' | 'ready_product'
+  item_type: 'material' | 'ready_product' | 'custom'
+  material_id: string
+  material_name: string
+  category?: string
+  config_description?: string
+  roll_width_ft?: number
+  roll_length_ft?: number
+  roll_sqft?: number
+  current_stock_hint?: number
+  reorder_level_hint?: number
+  unit: string
+  unit_cost: number
+}
 
 export function NewPurchaseModal({
   open,
@@ -184,7 +207,7 @@ export function NewPurchaseModal({
       const supList = PrintERPDataStore.getAll<SupplierRecord>(STORAGE_KEYS.SUPPLIERS, company?.id) || []
       const matList = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
       const prodList = (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
-        .filter((p) => p.is_active !== false && p.entity_type !== 'service')
+        .filter((p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service')
       const configList = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
       const locList = PrintERPDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, company?.id) || []
 
@@ -195,6 +218,27 @@ export function NewPurchaseModal({
       setLocations(locList)
       setFieldErrors({})
       setIsSubmitting(false)
+
+      // Fetch fresh active materials from server in background
+      getMaterialsAction(company?.id)
+        .then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            setMaterials(res.data)
+          }
+        })
+        .catch(() => {})
+
+      // Fetch fresh active products from server in background
+      getProductsAction(company?.id, false)
+        .then((res) => {
+          if (res.success && res.data && res.data.length > 0) {
+            const valid = res.data.filter(
+              (p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service'
+            )
+            setReadyProducts(valid)
+          }
+        })
+        .catch(() => {})
 
       if (locList.length > 0 && !targetLocationId) {
         const defaultLoc = locList.find((l) => l.location_type === 'raw_material_store' || l.location_type === 'main_store') || locList[0]
@@ -220,6 +264,37 @@ export function NewPurchaseModal({
     }
   }, [open, defaultSupplierId, company?.id])
 
+  // Real-time table listener for materials & products sync
+  useEffect(() => {
+    const handleSync = () => {
+      const mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, company?.id) || []
+      const prods = (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, company?.id) || [])
+        .filter((p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service')
+      const configs = PrintERPDataStore.getAll<MaterialPurchaseConfig>(STORAGE_KEYS.MATERIAL_PURCHASE_CONFIGS, company?.id) || []
+      if (mats.length > 0) setMaterials(mats)
+      if (prods.length > 0) setReadyProducts(prods)
+      if (configs.length > 0) setPurchaseConfigs(configs)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:materials', handleSync)
+      window.addEventListener('printerp_table_synced:products', handleSync)
+      window.addEventListener('printerp_table_synced', handleSync)
+      window.addEventListener('materials_updated', handleSync)
+      window.addEventListener('products_updated', handleSync)
+      window.addEventListener('storage', handleSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:materials', handleSync)
+        window.removeEventListener('printerp_table_synced:products', handleSync)
+        window.removeEventListener('printerp_table_synced', handleSync)
+        window.removeEventListener('materials_updated', handleSync)
+        window.removeEventListener('products_updated', handleSync)
+        window.removeEventListener('storage', handleSync)
+      }
+    }
+  }, [company?.id])
+
   // Sync supplier details when dropdown changes
   const handleSupplierChange = (supId: string) => {
     setSelectedSupplierId(supId)
@@ -237,6 +312,286 @@ export function NewPurchaseModal({
     return suppliers.find((s) => s.id === selectedSupplierId) || null
   }, [suppliers, selectedSupplierId])
 
+  // Memoized comprehensive catalog of active materials, roll sizes, sheets, inks, hardware & ready products
+  const { purchasableOptions, groupedCatalog, purchasableOptionsMap } = useMemo(() => {
+    const options: PurchasableOption[] = []
+    const seenOptionKeys = new Set<string>()
+    const seenMaterialIds = new Set<string>()
+
+    const addOption = (opt: PurchasableOption) => {
+      if (!seenOptionKeys.has(opt.key)) {
+        seenOptionKeys.add(opt.key)
+        options.push(opt)
+      }
+    }
+
+    // 1. Process Active Registered Materials
+    const activeMaterials = materials.filter((m) => m && m.is_active !== false)
+
+    for (const mat of activeMaterials) {
+      if (!mat.id) continue
+      seenMaterialIds.add(mat.id)
+
+      const form = PriceIntelligenceEngine.detectMaterialPhysicalForm(mat)
+      const activeSizes = PriceIntelligenceEngine.getMaterialActiveSizes(mat)
+      const baseCost = Number(mat.last_purchase_price || mat.average_cost || 0)
+      const stock = Number(mat.current_stock || 0)
+      const minStock = mat.min_stock_level
+
+      if (form === 'roll') {
+        // Expand each configured roll size with its specific supplier price and dimensions
+        if (activeSizes.length > 0) {
+          for (const sz of activeSizes) {
+            const sizePrice = Number(sz.default_supplier_price || baseCost)
+            addOption({
+              key: `mat_size:${mat.id}:${sz.id}`,
+              label: `${mat.name} — ${sz.label}${sizePrice > 0 ? ` (@ ৳${sizePrice.toLocaleString()})` : ''}`,
+              group: 'roll_media',
+              item_type: 'material',
+              material_id: mat.id,
+              material_name: `${mat.name} (${sz.width_ft}ft × ${sz.length_ft}ft)`,
+              category: mat.category || 'Roll Media Substrate',
+              config_description: `${sz.width_ft}ft × ${sz.length_ft}ft Roll (${Math.round(sz.standard_area_sft || 0)} sqft/roll)`,
+              roll_width_ft: sz.width_ft,
+              roll_length_ft: sz.length_ft,
+              roll_sqft: sz.standard_area_sft,
+              current_stock_hint: stock,
+              reorder_level_hint: minStock,
+              unit: 'roll',
+              unit_cost: sizePrice,
+            })
+          }
+        }
+
+        // Master item option
+        addOption({
+          key: `mat:${mat.id}`,
+          label: `${mat.name} (${mat.sku || 'MAT'}) — Master Roll (Stock: ${stock} ${mat.unit || 'roll'})`,
+          group: 'roll_media',
+          item_type: 'material',
+          material_id: mat.id,
+          material_name: mat.name,
+          category: mat.category || 'Roll Media Substrate',
+          config_description: mat.roll_width_ft ? `${mat.roll_width_ft}ft Master Roll` : undefined,
+          roll_width_ft: mat.roll_width_ft || mat.width || undefined,
+          roll_length_ft: mat.roll_length_ft || mat.length || 164,
+          roll_sqft: (mat.roll_width_ft || mat.width) ? (mat.roll_width_ft || mat.width)! * (mat.roll_length_ft || mat.length || 164) : undefined,
+          current_stock_hint: stock,
+          reorder_level_hint: minStock,
+          unit: mat.unit || 'roll',
+          unit_cost: baseCost,
+        })
+      } else if (form === 'sheet') {
+        // Expand each configured sheet size
+        if (activeSizes.length > 0) {
+          for (const sz of activeSizes) {
+            const sizePrice = Number(sz.default_supplier_price || baseCost)
+            addOption({
+              key: `mat_size:${mat.id}:${sz.id}`,
+              label: `${mat.name} — ${sz.label}${sizePrice > 0 ? ` (@ ৳${sizePrice.toLocaleString()})` : ''}`,
+              group: 'rigid_sheet',
+              item_type: 'material',
+              material_id: mat.id,
+              material_name: `${mat.name} (${sz.width_ft}ft × ${sz.length_ft}ft)`,
+              category: mat.category || 'Rigid Sheet & Board',
+              config_description: `${sz.width_ft}ft × ${sz.length_ft}ft Sheet (${Math.round(sz.standard_area_sft || 0)} sqft)`,
+              roll_width_ft: sz.width_ft,
+              roll_length_ft: sz.length_ft,
+              roll_sqft: sz.standard_area_sft,
+              current_stock_hint: stock,
+              reorder_level_hint: minStock,
+              unit: 'sheet',
+              unit_cost: sizePrice,
+            })
+          }
+        }
+
+        // Master sheet option
+        addOption({
+          key: `mat:${mat.id}`,
+          label: `${mat.name} (${mat.sku || 'MAT'}) — Master Sheet (Stock: ${stock} ${mat.unit || 'sheet'})`,
+          group: 'rigid_sheet',
+          item_type: 'material',
+          material_id: mat.id,
+          material_name: mat.name,
+          category: mat.category || 'Rigid Sheet & Board',
+          config_description: mat.dimension_unit ? `${mat.width || 4} × ${mat.length || 8} ${mat.dimension_unit}` : undefined,
+          current_stock_hint: stock,
+          reorder_level_hint: minStock,
+          unit: mat.unit || 'sheet',
+          unit_cost: baseCost,
+        })
+      } else if (form === 'liquid') {
+        addOption({
+          key: `mat:${mat.id}`,
+          label: `${mat.name} (${mat.sku || 'INK'}) — Stock: ${stock} ${mat.unit || 'liter'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
+          group: 'ink_chemistry',
+          item_type: 'material',
+          material_id: mat.id,
+          material_name: mat.name,
+          category: mat.category || 'Inks & Consumables',
+          current_stock_hint: stock,
+          reorder_level_hint: minStock,
+          unit: mat.unit || 'liter',
+          unit_cost: baseCost,
+        })
+      } else {
+        addOption({
+          key: `mat:${mat.id}`,
+          label: `${mat.name} (${mat.sku || 'RM'}) — Stock: ${stock} ${mat.unit || 'pcs'}${baseCost > 0 ? ` (@ ৳${baseCost.toLocaleString()})` : ''}`,
+          group: 'raw_material',
+          item_type: 'material',
+          material_id: mat.id,
+          material_name: mat.name,
+          category: mat.category || 'Raw Materials & Hardware',
+          current_stock_hint: stock,
+          reorder_level_hint: minStock,
+          unit: mat.unit || 'pcs',
+          unit_cost: baseCost,
+        })
+      }
+    }
+
+    // 2. Process Material Purchase Configs (if any defined)
+    for (const cfg of purchaseConfigs) {
+      if (!cfg || !cfg.id) continue
+      const parentMat = materials.find((m) => m.id === cfg.material_id)
+      const sqft = Number(cfg.width_ft) * Number(cfg.length_ft)
+      const cost = Number(cfg.purchase_price) || 0
+      addOption({
+        key: `mpc:${cfg.id}`,
+        label: `${parentMat?.name || 'Material'} — ${cfg.config_name} (@ ৳${cost.toLocaleString()})`,
+        group: 'roll_media',
+        item_type: 'material',
+        material_id: cfg.material_id,
+        material_name: `${parentMat?.name || 'Material'} (${cfg.width_ft}ft × ${cfg.length_ft}ft)`,
+        category: parentMat?.category || 'Roll Media Substrate',
+        config_description: `${cfg.width_ft}ft × ${cfg.length_ft}ft Roll (${sqft} sft/roll)`,
+        roll_width_ft: cfg.width_ft,
+        roll_length_ft: cfg.length_ft,
+        roll_sqft: sqft,
+        current_stock_hint: parentMat?.current_stock,
+        reorder_level_hint: parentMat?.min_stock_level,
+        unit: cfg.unit || 'roll',
+        unit_cost: cost,
+      })
+    }
+
+    // 3. Process Active Products & Ready Merchandise (excluding already processed materials)
+    for (const prod of readyProducts) {
+      if (!prod || !prod.id || seenMaterialIds.has(prod.id)) continue
+
+      const isMat = Boolean(
+        isMaterialProduct(prod) ||
+        prod.entity_type === 'material' ||
+        prod.product_type === 'material' ||
+        (prod.product_type as any) === 'raw_material' ||
+        prod.commercial_type === 'material'
+      )
+
+      if (isMat) {
+        const form = PriceIntelligenceEngine.detectMaterialPhysicalForm(prod)
+        const activeSizes = PriceIntelligenceEngine.getMaterialActiveSizes(prod)
+        const cost = Number(prod.purchase_price || prod.base_cost || 0)
+        const stock = Number((prod as any).current_stock || 0)
+
+        if (form === 'roll' && activeSizes.length > 0) {
+          for (const sz of activeSizes) {
+            const sizePrice = Number(sz.default_supplier_price || cost)
+            addOption({
+              key: `mat_size:${prod.id}:${sz.id}`,
+              label: `${prod.name} — ${sz.label}${sizePrice > 0 ? ` (@ ৳${sizePrice.toLocaleString()})` : ''}`,
+              group: 'roll_media',
+              item_type: 'material',
+              material_id: prod.id,
+              material_name: `${prod.name} (${sz.width_ft}ft × ${sz.length_ft}ft)`,
+              category: prod.category || 'Roll Media Substrate',
+              config_description: `${sz.width_ft}ft × ${sz.length_ft}ft Roll (${Math.round(sz.standard_area_sft || 0)} sqft/roll)`,
+              roll_width_ft: sz.width_ft,
+              roll_length_ft: sz.length_ft,
+              roll_sqft: sz.standard_area_sft,
+              current_stock_hint: stock,
+              unit: 'roll',
+              unit_cost: sizePrice,
+            })
+          }
+        } else if (form === 'sheet' && activeSizes.length > 0) {
+          for (const sz of activeSizes) {
+            const sizePrice = Number(sz.default_supplier_price || cost)
+            addOption({
+              key: `mat_size:${prod.id}:${sz.id}`,
+              label: `${prod.name} — ${sz.label}${sizePrice > 0 ? ` (@ ৳${sizePrice.toLocaleString()})` : ''}`,
+              group: 'rigid_sheet',
+              item_type: 'material',
+              material_id: prod.id,
+              material_name: `${prod.name} (${sz.width_ft}ft × ${sz.length_ft}ft)`,
+              category: prod.category || 'Rigid Sheet & Board',
+              config_description: `${sz.width_ft}ft × ${sz.length_ft}ft Sheet (${Math.round(sz.standard_area_sft || 0)} sqft)`,
+              roll_width_ft: sz.width_ft,
+              roll_length_ft: sz.length_ft,
+              roll_sqft: sz.standard_area_sft,
+              current_stock_hint: stock,
+              unit: 'sheet',
+              unit_cost: sizePrice,
+            })
+          }
+        } else {
+          const group = form === 'roll' ? 'roll_media' : form === 'sheet' ? 'rigid_sheet' : form === 'liquid' ? 'ink_chemistry' : 'raw_material'
+          addOption({
+            key: `mat:${prod.id}`,
+            label: `${prod.name} (${prod.sku || 'MAT'}) — Stock: ${stock} ${prod.unit || 'pcs'}`,
+            group: group,
+            item_type: 'material',
+            material_id: prod.id,
+            material_name: prod.name,
+            category: prod.category || 'Raw Materials',
+            current_stock_hint: stock,
+            unit: prod.unit || 'pcs',
+            unit_cost: cost,
+          })
+        }
+      } else {
+        // Ready Merchandise / Finished Display Product / Stand
+        const cost =
+          Number((prod as any).cost_price) ||
+          Number((prod as any).purchase_price) ||
+          Number(prod.base_cost) ||
+          Math.round(Number(prod.selling_price || 0) * 0.6) ||
+          0
+        const stock = Number((prod as any).current_stock || prod.usage_stats?.jobCount || 0)
+        addOption({
+          key: `prod:${prod.id}`,
+          label: `${prod.name} (${prod.sku || 'PRD'}) — MOQ: ${prod.min_order_quantity || 1} (Stock: ${stock} ${prod.selling_unit || prod.unit || 'pcs'})`,
+          group: 'ready_product',
+          item_type: 'ready_product',
+          material_id: prod.id,
+          material_name: prod.name,
+          category: prod.category || 'Ready Display Products & Merchandise',
+          config_description: prod.sku ? `SKU: ${prod.sku} | ${prod.dimensions_spec || 'Hardware'}` : 'Ready Product',
+          current_stock_hint: stock,
+          reorder_level_hint: prod.min_order_quantity || 5,
+          unit: prod.selling_unit || (prod as any).sell_unit || prod.unit || 'pcs',
+          unit_cost: cost,
+        })
+      }
+    }
+
+    const grouped = {
+      roll_media: options.filter((o) => o.group === 'roll_media'),
+      rigid_sheet: options.filter((o) => o.group === 'rigid_sheet'),
+      ink_chemistry: options.filter((o) => o.group === 'ink_chemistry'),
+      raw_material: options.filter((o) => o.group === 'raw_material'),
+      ready_product: options.filter((o) => o.group === 'ready_product'),
+    }
+
+    const map = new Map<string, PurchasableOption>()
+    for (const opt of options) {
+      map.set(opt.key, opt)
+    }
+
+    return { purchasableOptions: options, groupedCatalog: grouped, purchasableOptionsMap: map }
+  }, [materials, readyProducts, purchaseConfigs])
+
   // Handle Item Selection (Material, Roll Config, Ready Product, or Custom)
   const handleItemSelect = (index: number, selectionKey: string) => {
     setItems((prev) => {
@@ -246,6 +601,7 @@ export function NewPurchaseModal({
       if (!selectionKey) {
         next[index] = {
           ...current,
+          selection_key: '',
           material_id: '',
           material_name: '',
           category: undefined,
@@ -265,6 +621,7 @@ export function NewPurchaseModal({
       if (selectionKey === 'custom_new') {
         next[index] = {
           ...current,
+          selection_key: 'custom_new',
           item_type: 'custom',
           material_id: `custom-${Date.now()}`,
           material_name: 'Custom Ad-hoc Material',
@@ -276,94 +633,32 @@ export function NewPurchaseModal({
         return next
       }
 
-      // Check Material Purchase Configuration (e.g. "mpc:mpc-id")
-      if (selectionKey.startsWith('mpc:')) {
-        const configId = selectionKey.replace('mpc:', '')
-        const config = purchaseConfigs.find((c) => c.id === configId)
-        const parentMat = materials.find((m) => m.id === config?.material_id)
-        if (config && parentMat) {
-          const cost = Number(config.purchase_price) || 0
-          const qty = Number(current.quantity) || 1
-          const discount = Number(current.discount_percent) || 0
-          const sqft = Number(config.width_ft) * Number(config.length_ft)
-          const lineCost = Math.round(qty * cost * (1 - discount / 100))
-
-          next[index] = {
-            ...current,
-            item_type: 'material',
-            material_id: parentMat.id,
-            material_name: `${parentMat.name} (${config.width_ft}ft × ${config.length_ft}ft)`,
-            category: parentMat.category,
-            config_description: `${config.width_ft}ft × ${config.length_ft}ft Roll (${sqft} sft/roll)`,
-            roll_width_ft: config.width_ft,
-            roll_length_ft: config.length_ft,
-            roll_sqft: sqft,
-            current_stock_hint: parentMat.current_stock,
-            reorder_level_hint: parentMat.min_stock_level,
-            unit: config.unit || 'roll',
-            unit_cost: cost,
-            total_cost: lineCost,
-          }
-          return next
-        }
-      }
-
-      // Check Ready Product (e.g. "prod:prod-id")
-      if (selectionKey.startsWith('prod:')) {
-        const prodId = selectionKey.replace('prod:', '')
-        const prod = readyProducts.find((p) => p.id === prodId)
-        if (prod) {
-          const cost =
-            Number((prod as any).cost_price) ||
-            Number((prod as any).purchase_price) ||
-            Number(prod.base_cost) ||
-            Math.round(Number(prod.selling_price || 0) * 0.6) ||
-            0
-          const qty = Number(current.quantity) || 1
-          const discount = Number(current.discount_percent) || 0
-          const lineCost = Math.round(qty * cost * (1 - discount / 100))
-
-          next[index] = {
-            ...current,
-            item_type: 'ready_product',
-            material_id: prod.id,
-            material_name: prod.name,
-            category: 'Ready Products & Hardware',
-            config_description: prod.sku ? `SKU: ${prod.sku} | ${prod.dimensions_spec || 'Hardware'}` : 'Ready Product',
-            current_stock_hint: Number((prod as any).current_stock || prod.usage_stats?.jobCount || 0),
-            reorder_level_hint: prod.min_order_quantity || 5,
-            unit: prod.selling_unit || (prod as any).sell_unit || prod.unit || 'pcs',
-            unit_cost: cost,
-            total_cost: lineCost,
-          }
-          return next
-        }
-      }
-
-      // Check standard Material (e.g. "mat:mat-id")
-      const matId = selectionKey.replace('mat:', '')
-      const mat = materials.find((m) => m.id === matId)
-      if (mat) {
-        const cost = Number(mat.last_purchase_price) || Number(mat.average_cost) || 0
+      // Check in purchasableOptionsMap
+      const opt = purchasableOptionsMap.get(selectionKey)
+      if (opt) {
+        const cost = Number(opt.unit_cost) || 0
         const qty = Number(current.quantity) || 1
         const discount = Number(current.discount_percent) || 0
         const lineCost = Math.round(qty * cost * (1 - discount / 100))
 
         next[index] = {
           ...current,
-          item_type: 'material',
-          material_id: mat.id,
-          material_name: mat.name,
-          category: mat.category,
-          config_description: mat.dimension_unit
-            ? `${mat.width || 4} × ${mat.length || 164} ${mat.dimension_unit}`
-            : undefined,
-          current_stock_hint: mat.current_stock,
-          reorder_level_hint: mat.min_stock_level,
-          unit: mat.unit || 'pcs',
+          selection_key: selectionKey,
+          item_type: opt.item_type,
+          material_id: opt.material_id,
+          material_name: opt.material_name,
+          category: opt.category,
+          config_description: opt.config_description,
+          roll_width_ft: opt.roll_width_ft,
+          roll_length_ft: opt.roll_length_ft,
+          roll_sqft: opt.roll_sqft,
+          current_stock_hint: opt.current_stock_hint,
+          reorder_level_hint: opt.reorder_level_hint,
+          unit: opt.unit,
           unit_cost: cost,
           total_cost: lineCost,
         }
+        return next
       }
 
       return next
@@ -622,6 +917,10 @@ export function NewPurchaseModal({
         material_id: it.material_id || `mat-${Date.now()}`,
         material_name: it.material_name,
         supplier_sku: it.config_description || null,
+        roll_width_ft: it.roll_width_ft ?? null,
+        roll_length_ft: it.roll_length_ft ?? null,
+        roll_id: null,
+        batch_lot_number: null,
         quantity_ordered: it.quantity,
         quantity_received: 0,
         quantity_remaining: it.quantity,
@@ -1263,48 +1562,66 @@ export function NewPurchaseModal({
                       </Label>
                       <select
                         value={
-                          item.item_type === 'custom'
+                          item.selection_key ||
+                          (item.item_type === 'custom'
                             ? 'custom_new'
                             : item.item_type === 'ready_product'
                             ? `prod:${item.material_id}`
-                            : item.config_description && purchaseConfigs.some((c) => c.material_id === item.material_id)
-                            ? `mpc:${purchaseConfigs.find((c) => c.material_id === item.material_id)?.id}`
-                            : `mat:${item.material_id}`
+                            : item.roll_width_ft && item.roll_length_ft
+                            ? `mat_size:${item.material_id}:roll-size-${item.roll_width_ft}x${item.roll_length_ft}`
+                            : `mat:${item.material_id}`)
                         }
                         onChange={(e) => handleItemSelect(idx, e.target.value)}
                         className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
                         required
                       >
                         <option value="">-- Choose Item from Catalog --</option>
-                        {purchaseConfigs.length > 0 && (
-                          <optgroup label="🌀 Roll Media Specific Configurations">
-                            {purchaseConfigs.map((c) => {
-                              const parentMat = materials.find((m) => m.id === c.material_id)
-                              return (
-                                <option key={c.id} value={`mpc:${c.id}`}>
-                                  {parentMat?.name || 'Material'} — {c.config_name} (@ ৳{c.purchase_price})
-                                </option>
-                              )
-                            })}
-                          </optgroup>
-                        )}
-                        <optgroup label="🧵 Raw Materials & Media Catalog">
-                          {materials.map((m) => (
-                            <option key={m.id} value={`mat:${m.id}`}>
-                              {m.name} ({m.sku}) — Stock: {m.current_stock} {m.unit}
-                            </option>
-                          ))}
-                        </optgroup>
-                        {readyProducts.length > 0 && (
-                          <optgroup label="✨ Ready Display Products & Hardware">
-                            {readyProducts.map((p) => (
-                              <option key={p.id} value={`prod:${p.id}`}>
-                                {p.name} ({p.sku || 'HW'}) — MOQ: {p.min_order_quantity || 1}
+                        {groupedCatalog.roll_media && groupedCatalog.roll_media.length > 0 && (
+                          <optgroup label="🌀 Large Format Roll Media Substrates">
+                            {groupedCatalog.roll_media.map((opt) => (
+                              <option key={opt.key} value={opt.key}>
+                                {opt.label}
                               </option>
                             ))}
                           </optgroup>
                         )}
-                        <optgroup label="🛠️ Ad-hoc Non-Catalog Items">
+                        {groupedCatalog.rigid_sheet && groupedCatalog.rigid_sheet.length > 0 && (
+                          <optgroup label="📐 Rigid Sheet Media & Boards">
+                            {groupedCatalog.rigid_sheet.map((opt) => (
+                              <option key={opt.key} value={opt.key}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {groupedCatalog.ink_chemistry && groupedCatalog.ink_chemistry.length > 0 && (
+                          <optgroup label="🧪 Inks & Chemical Consumables">
+                            {groupedCatalog.ink_chemistry.map((opt) => (
+                              <option key={opt.key} value={opt.key}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {groupedCatalog.raw_material && groupedCatalog.raw_material.length > 0 && (
+                          <optgroup label="🧵 Raw Materials & Finishing Hardware">
+                            {groupedCatalog.raw_material.map((opt) => (
+                              <option key={opt.key} value={opt.key}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {groupedCatalog.ready_product && groupedCatalog.ready_product.length > 0 && (
+                          <optgroup label="✨ Ready Display Products & Merchandise">
+                            {groupedCatalog.ready_product.map((opt) => (
+                              <option key={opt.key} value={opt.key}>
+                                {opt.label}
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        <optgroup label="🛠️ Ad-hoc Spot Purchase Items">
                           <option value="custom_new">+ Add Custom / Spot Purchase Item</option>
                         </optgroup>
                       </select>

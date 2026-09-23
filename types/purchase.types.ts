@@ -124,6 +124,10 @@ export interface PurchaseOrderItemRecord {
   material_id: string
   material_name: string
   supplier_sku?: string | null
+  roll_width_ft?: number | null
+  roll_length_ft?: number | null
+  roll_id?: string | null
+  batch_lot_number?: string | null
   quantity_ordered: number
   quantity_received: number
   quantity_remaining: number

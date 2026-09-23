@@ -113,4 +113,104 @@ describe('V5 Unit: Purchasing & Procurement Engine Calculations', () => {
     assert.strictEqual(currentBalance, 15000)
     assert.strictEqual(entries[entries.length - 1].running_balance, 15000)
   })
+
+  test('surfaces all active inventory materials with discrete configured roll sizes and economics', async () => {
+    const { PriceIntelligenceEngine } = await import('../../lib/domain/price-intelligence-engine.ts')
+
+    // 1. Roll Media with configured roll sizes (e.g. Black PVC)
+    const rollMaterial = {
+      id: 'mat-black-pvc',
+      name: 'Black PVC Substrate',
+      sku: 'MAT-43550',
+      category: 'roll_media',
+      unit: 'roll',
+      is_active: true,
+      current_stock: 0,
+      material_config: {
+        roll_sizes: [
+          { id: 'rs-4ft', width_ft: 4, length_ft: 164, default_supplier_price: 6560, is_active: true },
+          { id: 'rs-5ft', width_ft: 5.25, length_ft: 164, default_supplier_price: 8610, is_active: true },
+        ],
+      },
+    }
+
+    const rollSizes = PriceIntelligenceEngine.getMaterialActiveSizes(rollMaterial)
+    assert.strictEqual(rollSizes.length, 2)
+    assert.strictEqual(rollSizes[0].width_ft, 4)
+    assert.strictEqual(rollSizes[0].length_ft, 164)
+    assert.strictEqual(rollSizes[0].default_supplier_price, 6560)
+    assert.strictEqual(rollSizes[0].standard_area_sft, 656)
+
+    assert.strictEqual(rollSizes[1].width_ft, 5.25)
+    assert.strictEqual(rollSizes[1].length_ft, 164)
+    assert.strictEqual(rollSizes[1].default_supplier_price, 8610)
+    assert.strictEqual(rollSizes[1].standard_area_sft, 861)
+
+    // 2. Rigid Sheet (e.g. Forex Board)
+    const sheetMaterial = {
+      id: 'mat-forex-board',
+      name: 'Forex 5mm PVC Sheet',
+      sku: 'MAT-FX5MM',
+      category: 'rigid_sheet',
+      unit: 'sheet',
+      is_active: true,
+      average_cost: 1400,
+      available_sheet_sizes: [{ id: 'sz-4x8', width: 4, length: 8, label: '4ft x 8ft', default_supplier_price: 1400 }],
+    }
+    const formSheet = PriceIntelligenceEngine.detectMaterialPhysicalForm(sheetMaterial)
+    assert.strictEqual(formSheet, 'sheet')
+
+    // 3. Liquid / Inks
+    const inkMaterial = {
+      id: 'mat-cyan-ink',
+      name: 'Eco-Solvent Cyan Ink 1L',
+      sku: 'INK-CYAN',
+      category: 'ink_chemistry',
+      unit: 'bottle',
+      is_active: true,
+      last_purchase_price: 2200,
+    }
+    const formInk = PriceIntelligenceEngine.detectMaterialPhysicalForm(inkMaterial)
+    assert.strictEqual(formInk, 'liquid')
+  })
+
+  test('PurchaseRepository creates PO items preserving roll dimensions (width_ft, length_ft)', async () => {
+    const { PurchaseRepository } = await import('../../lib/repositories/purchase.repository.ts')
+
+    const po = await PurchaseRepository.createPurchaseOrder({
+      company_id: 'c-test-procure',
+      supplier_id: 'sup-star-media',
+      supplier_name: 'Star Media BD',
+      supplier_phone: '+8801711000000',
+      po_date: '2026-09-23',
+      expected_delivery_date: '2026-09-28',
+      items: [
+        {
+          id: 'poi-1',
+          material_id: 'mat-black-pvc',
+          material_name: 'Black PVC (4ft × 164ft)',
+          supplier_sku: '4ft × 164ft Roll (656 sqft/roll)',
+          roll_width_ft: 4,
+          roll_length_ft: 164,
+          quantity_ordered: 5,
+          quantity_received: 0,
+          quantity_remaining: 5,
+          unit: 'roll',
+          unit_cost: 6560,
+          discount_percent: 0,
+          tax_percent: 0,
+          total_cost: 32800,
+        },
+      ],
+    })
+
+    assert.strictEqual(po.items.length, 1)
+    assert.strictEqual(po.items[0].roll_width_ft, 4)
+    assert.strictEqual(po.items[0].roll_length_ft, 164)
+    assert.strictEqual(po.items[0].unit, 'roll')
+    assert.strictEqual(po.items[0].unit_cost, 6560)
+    assert.strictEqual(po.items[0].total_cost, 32800)
+    assert.strictEqual(po.grand_total, 32800)
+  })
 })
+
