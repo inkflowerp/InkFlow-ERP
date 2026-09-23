@@ -182,5 +182,108 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     const summary = await InventoryService.getInventorySummary(pvcCompanyId)
     assert.strictEqual(summary.totalAvailableStockValue, 11480, 'Inventory summary valuation must reflect normalized ৳ 11,480')
   })
+
+  test('5. Groups inventory items by width and length (e.g. PVC 3ft X 164ft 10pcs, PVC 5ft X 164ft 31pcs, PVC 7ft X 100ft 30pcs) and dynamically deducts specific size when issued to floor', async () => {
+    const multiSizeCompanyId = `test-multi-size-${Date.now()}`
+    const { getMaterialWarehouseStockBreakdown } = await import('../../lib/units.ts')
+
+    // 1. Define PVC Material with 3 distinct width & length specifications
+    const pvcMultiSizeMat: Partial<MaterialRecord> = {
+      id: `mat-pvc-multi-${Date.now()}`,
+      company_id: multiSizeCompanyId,
+      sku: 'MAT-PVC-MULTI',
+      name: 'PVC Banner Media',
+      category: 'flex_banner' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      is_roll: true,
+      current_stock: 51340, // 10*(3*164) + 31*(5*164) + 30*(7*100) = 4920 + 25420 + 21000 = 51340 SFT
+      average_cost: 10, // ৳ 10 / SFT
+      roll_sizes: [
+        { width: 3, length: 164, quantity: 10, stock_qty: 10 },
+        { width: 5, length: 164, quantity: 31, stock_qty: 31 },
+        { width: 7, length: 100, quantity: 30, stock_qty: 30 },
+      ],
+    }
+
+    await InventoryRepository.createMaterial(pvcMultiSizeMat as any)
+
+    // 2. Query physical rolls — should auto-create discrete rolls for all 3 size configurations
+    const initialRolls = await InventoryRepository.getInventoryRolls(multiSizeCompanyId)
+    assert.strictEqual(initialRolls.length, 71, 'Total physical rolls should be 71 (10 + 31 + 30)')
+
+    const rolls3ft = initialRolls.filter((r) => r.width_ft === 3)
+    const rolls5ft = initialRolls.filter((r) => r.width_ft === 5)
+    const rolls7ft = initialRolls.filter((r) => r.width_ft === 7)
+
+    assert.strictEqual(rolls3ft.length, 10, 'Should have 10 rolls of 3ft width')
+    assert.strictEqual(rolls3ft[0].initial_length_ft, 164, '3ft roll length should be 164ft')
+    assert.strictEqual(rolls5ft.length, 31, 'Should have 31 rolls of 5ft width')
+    assert.strictEqual(rolls5ft[0].initial_length_ft, 164, '5ft roll length should be 164ft')
+    assert.strictEqual(rolls7ft.length, 30, 'Should have 30 rolls of 7ft width')
+    assert.strictEqual(rolls7ft[0].initial_length_ft, 100, '7ft roll length should be 100ft')
+
+    // 3. Inspect multi-dimensional warehouse stock breakdown before issue
+    const breakdownBefore = getMaterialWarehouseStockBreakdown(pvcMultiSizeMat, initialRolls)
+    assert.strictEqual(breakdownBefore.roll_items.length, 3, 'Should have 3 size groups')
+    assert.strictEqual(breakdownBefore.roll_items[0].width_ft, 3)
+    assert.strictEqual(breakdownBefore.roll_items[0].roll_count, 10, '3ft size group should have 10 pcs')
+    assert.strictEqual(breakdownBefore.roll_items[1].width_ft, 5)
+    assert.strictEqual(breakdownBefore.roll_items[1].roll_count, 31, '5ft size group should have 31 pcs')
+    assert.strictEqual(breakdownBefore.roll_items[2].width_ft, 7)
+    assert.strictEqual(breakdownBefore.roll_items[2].roll_count, 30, '7ft size group should have 30 pcs')
+    assert.strictEqual(breakdownBefore.total_rolls, 71, 'Total rolls should be 71')
+
+    // 4. Issue 1 pc of PVC 3ft X 164ft to Print Floor / Roland Press
+    const issueResult = await InventoryRepository.issueMasterRollsBatch({
+      company_id: multiSizeCompanyId,
+      material_id: pvcMultiSizeMat.id!,
+      width_ft: 3,
+      length_ft: 164,
+      quantity_rolls: 1,
+      destination: 'machine',
+      machine_id: 'mach-roland',
+      machine_name: 'Roland Eco-Solvent 64"',
+      operator_name: 'Imran',
+    })
+
+    assert.strictEqual(issueResult.quantity_issued, 1)
+    assert.strictEqual(issueResult.total_area_sft, 492, '1 roll of 3ft × 164ft is 492 SFT')
+    assert.strictEqual(issueResult.roll.status, 'mounted')
+    assert.strictEqual(issueResult.roll.mounted_machine_id, 'mach-roland')
+
+    // 5. Query updated warehouse rolls after issue
+    const rollsAfter = await InventoryRepository.getInventoryRolls(multiSizeCompanyId)
+    const warehouseRollsAfter = rollsAfter.filter((r) => (r.status === 'available' || r.status === 'in_warehouse') && r.location_name !== 'Print Floor' && !r.mounted_machine_id)
+
+    const warehouse3ftAfter = warehouseRollsAfter.filter((r) => r.width_ft === 3)
+    const warehouse5ftAfter = warehouseRollsAfter.filter((r) => r.width_ft === 5)
+    const warehouse7ftAfter = warehouseRollsAfter.filter((r) => r.width_ft === 7)
+
+    // Verification of user requirement:
+    // PVC 3ft X 164ft 10pcs - 1pcs = 9pcs
+    // PVC 5ft X 164ft 31pcs remains 31pcs
+    // PVC 7ft X 100ft 30pcs remains 30pcs
+    assert.strictEqual(warehouse3ftAfter.length, 9, 'PVC 3ft X 164ft warehouse stock must be reduced from 10pcs to 9pcs')
+    assert.strictEqual(warehouse5ftAfter.length, 31, 'PVC 5ft X 164ft warehouse stock must remain 31pcs')
+    assert.strictEqual(warehouse7ftAfter.length, 30, 'PVC 7ft X 100ft warehouse stock must remain 30pcs')
+
+    // Verify Floor Active Roll
+    const floorMountedRolls = rollsAfter.filter((r) => r.status === 'mounted' && r.mounted_machine_id === 'mach-roland')
+    assert.strictEqual(floorMountedRolls.length, 1, 'Print floor must have 1 active mounted roll')
+    assert.strictEqual(floorMountedRolls[0].width_ft, 3)
+    assert.strictEqual(floorMountedRolls[0].initial_length_ft, 164)
+
+    // 6. Check updated warehouse stock breakdown reflects 9pcs, 31pcs, 30pcs dynamically
+    const updatedMat = await InventoryRepository.getMaterialById(pvcMultiSizeMat.id!, multiSizeCompanyId)
+    assert.ok(updatedMat)
+    assert.strictEqual(updatedMat!.current_stock, 51340 - 492, 'Warehouse stock in SFT should be 50,848')
+
+    const breakdownAfter = getMaterialWarehouseStockBreakdown(updatedMat, warehouseRollsAfter)
+    assert.strictEqual(breakdownAfter.roll_items[0].roll_count, 9, 'Dynamic breakdown for 3ft must be 9 Pcs')
+    assert.strictEqual(breakdownAfter.roll_items[1].roll_count, 31, 'Dynamic breakdown for 5ft must be 31 Pcs')
+    assert.strictEqual(breakdownAfter.roll_items[2].roll_count, 30, 'Dynamic breakdown for 7ft must be 30 Pcs')
+    assert.strictEqual(breakdownAfter.total_rolls, 70, 'Total rolls remaining in warehouse must be 70')
+  })
 })
 

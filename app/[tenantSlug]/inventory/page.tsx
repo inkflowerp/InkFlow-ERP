@@ -945,6 +945,19 @@ function UnifiedInventoryContent() {
                                 <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
                                   {breakdown.purchase_unit_display || `${stockQty.toLocaleString()} ${mat.unit}`}
                                 </span>
+                                {breakdown.is_roll && breakdown.roll_items.length > 1 && (
+                                  <div className="flex flex-wrap items-center justify-end gap-1 mt-1 max-w-[240px] ml-auto">
+                                    {breakdown.roll_items.map((item) => (
+                                      <span
+                                        key={item.label}
+                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-2xs"
+                                        title={`${item.width_ft}ft × ${item.length_ft}ft: ${item.roll_count} Pcs (${item.total_sft.toLocaleString()} SFT)`}
+                                      >
+                                        {item.width_ft}ft×{item.length_ft}ft: <strong className="ml-1 text-blue-900 dark:text-blue-100">{item.roll_count} Pcs</strong>
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                                 {breakdown.purchase_unit_display && breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
                                   <div className="text-[10px] font-medium text-slate-500 font-sans mt-0.5">
                                     {breakdown.consumption_unit_display}
@@ -1013,7 +1026,12 @@ function UnifiedInventoryContent() {
                                   variant="outline"
                                   onClick={() => {
                                     setSelectedMaterialForAction(mat)
-                                    setIsIssueOpen(true)
+                                    if (mat.is_roll || breakdown.is_roll) {
+                                      setInitialRollMaterialId(mat.id)
+                                      setIsIssueMasterRollOpen(true)
+                                    } else {
+                                      setIsIssueOpen(true)
+                                    }
                                   }}
                                   className="h-7 px-2 text-[11px] text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 font-medium cursor-pointer"
                                 >

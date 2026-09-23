@@ -29,7 +29,7 @@ import type {
   MasterPhysicalClassification,
 } from '../types/price-intelligence.types.ts'
 import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
-import { getMaterialWarehouseStockBreakdown } from '../lib/units.ts'
+import { getMaterialWarehouseStockBreakdown, isMaterialProduct } from '../lib/units.ts'
 
 export class InventoryService {
   // ==========================================
@@ -1070,8 +1070,11 @@ export class InventoryService {
     }, 0)
 
     const matIds = new Set(materials.map((m) => m.id))
+    const matSkus = new Set(materials.map((m) => (m.sku || '').toLowerCase()).filter(Boolean))
     const productsValue = readyProducts.reduce((sum, p) => {
       if (matIds.has(p.id)) return sum
+      if (p.sku && matSkus.has(p.sku.toLowerCase())) return sum
+      if (isMaterialProduct(p) || p.entity_type === 'material' || p.product_type === 'material') return sum
       const rawFormula = (p as any).pricing_formula
       const formula =
         typeof rawFormula === 'object' && rawFormula !== null

@@ -412,6 +412,63 @@ export function IssueMasterRollModal({
             </span>
           </div>
 
+          {/* Dynamic Available Warehouse Sizes Selector */}
+          {warehouseBreakdown.roll_items.length > 0 && (
+            <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                  <Disc className="h-3.5 w-3.5 text-blue-600" />
+                  {tBilingual('Available Warehouse Roll Sizes', 'গুদামে বিদ্যমান রোলের সাইজ বহর')}
+                </span>
+                <span className="text-[10px] text-blue-700 dark:text-blue-300 font-mono font-semibold">
+                  {warehouseBreakdown.roll_items.length} Sizes in Stock
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {warehouseBreakdown.roll_items.map((item) => {
+                  const isSelected = widthFt === item.width_ft && lengthFt === item.length_ft
+                  const availCount = item.roll_count
+                  const remainingCount = Math.max(0, availCount - (isSelected ? quantityRolls : 0))
+                  return (
+                    <button
+                      key={`${item.width_ft}x${item.length_ft}`}
+                      type="button"
+                      onClick={() => {
+                        setWidthFt(item.width_ft)
+                        setLengthFt(item.length_ft)
+                        setIsCustomWidth(false)
+                        setIsCustomLength(false)
+                      }}
+                      className={cn(
+                        'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 shadow-2xs',
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+                      )}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className={cn('font-mono font-black text-xs', isSelected ? 'text-white' : 'text-slate-900 dark:text-white')}>
+                          {item.width_ft}ft × {item.length_ft}ft
+                        </span>
+                        <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded font-mono', isSelected ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300')}>
+                          {item.roll_count} Pcs
+                        </span>
+                      </div>
+                      <div className={cn('text-[10px]', isSelected ? 'text-blue-100' : 'text-slate-500')}>
+                        {item.total_sft.toLocaleString()} SFT
+                      </div>
+                      {isSelected && (
+                        <div className="text-[10px] font-semibold text-emerald-200 mt-0.5 font-mono">
+                          {item.roll_count} Pcs - {quantityRolls} Pcs = {remainingCount} Pcs remaining
+                        </div>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Width Section */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
