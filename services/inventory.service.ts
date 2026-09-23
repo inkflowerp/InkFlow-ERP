@@ -524,6 +524,32 @@ export class InventoryService {
           })
         }
 
+        // If there was previously existing unallocated stock on other configured sizes, preserve their stock counts
+        const prevStockBeforeIntake = Math.max(0, Number(freshMaterial.current_stock || 0) - stockChangeQty)
+        if (prevStockBeforeIntake > 0) {
+          const zeroSizes = updatedSizes.filter((sz: any) => Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) === 0)
+          if (zeroSizes.length > 0) {
+            const exactPrevMatchIdx = zeroSizes.findIndex((sz: any) => {
+              const szW = Number(sz.width_ft || sz.width || sz.nominal_width_ft || 4)
+              const szL = Number(sz.length_ft || sz.length || 164)
+              const szArea = szW * szL
+              return szArea > 0 && Math.abs(prevStockBeforeIntake % szArea) < 0.5
+            })
+            if (exactPrevMatchIdx !== -1) {
+              const targetZero = zeroSizes[exactPrevMatchIdx]
+              const szW = Number(targetZero.width_ft || targetZero.width || targetZero.nominal_width_ft || 4)
+              const szL = Number(targetZero.length_ft || targetZero.length || 164)
+              const szArea = szW * szL
+              const prevCount = Math.max(1, Math.round(prevStockBeforeIntake / szArea))
+              targetZero.quantity = prevCount
+              targetZero.roll_count = prevCount
+              targetZero.stock_qty = prevCount
+              targetZero.stock = prevCount
+              targetZero.total_sft = prevCount * szArea
+            }
+          }
+        }
+
         await InventoryRepository.updateMaterial(
           material.id,
           {

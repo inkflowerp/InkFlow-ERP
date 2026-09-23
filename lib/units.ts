@@ -2440,6 +2440,46 @@ export function getMaterialWarehouseStockBreakdown(
         }
       }
 
+      // If currentStock is greater than physical rolls SFT and there are configured sizes with 0 rolls, allocate the unallocated stock
+      const initialMapRollsSft = Array.from(map.values()).reduce((sum, it) => sum + (it.total_sft || 0), 0)
+      if (currentStock > initialMapRollsSft + 1) {
+        const unallocatedStock = currentStock - initialMapRollsSft
+        const zeroItems = Array.from(map.values()).filter((it) => it.roll_count === 0)
+        if (zeroItems.length > 0) {
+          const exactMatchIdx = zeroItems.findIndex(
+            (it) => (it.width_ft * it.length_ft > 0) && (Math.abs(unallocatedStock % (it.width_ft * it.length_ft)) < 0.5)
+          )
+          if (exactMatchIdx !== -1) {
+            const item = zeroItems[exactMatchIdx]
+            const area = item.width_ft * item.length_ft
+            const count = Math.max(1, Math.round(unallocatedStock / area))
+            item.roll_count = count
+            item.total_sft = count * area
+            const price = Number(item.purchase_price || 0)
+            const rollCost = price > 0
+              ? (price > 150 ? price : price * area)
+              : (rawCost > 150 ? rawCost : rawCost * area)
+            item.total_valuation = count * rollCost
+          } else {
+            const sumZeroArea = zeroItems.reduce((sum, it) => sum + (it.width_ft * it.length_ft), 0)
+            if (sumZeroArea > 0) {
+              const sets = Math.floor(unallocatedStock / sumZeroArea)
+              for (const item of zeroItems) {
+                const area = item.width_ft * item.length_ft
+                const count = sets
+                item.roll_count = count
+                item.total_sft = count * area
+                const price = Number(item.purchase_price || 0)
+                const rollCost = price > 0
+                  ? (price > 150 ? price : price * area)
+                  : (rawCost > 150 ? rawCost : rawCost * area)
+                item.total_valuation = count * rollCost
+              }
+            }
+          }
+        }
+      }
+
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft || (a.purchase_price || 0) - (b.purchase_price || 0))
       totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
       totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
@@ -2508,8 +2548,10 @@ export function getMaterialWarehouseStockBreakdown(
         })
       }
 
-      // Allocate general currentStock to configured sizes if explicit counts were not provided
+      // Allocate general currentStock to configured sizes if explicit counts were not provided or unallocated stock remains
       const currentExplicitRolls = Array.from(map.values()).reduce((sum, it) => sum + (it.roll_count || 0), 0)
+      const explicitSft = Array.from(map.values()).reduce((sum, it) => sum + (it.roll_count * it.width_ft * it.length_ft), 0)
+
       if (currentExplicitRolls === 0 && currentStock > 0) {
         const configuredList = Array.from(map.values())
         
@@ -2566,6 +2608,43 @@ export function getMaterialWarehouseStockBreakdown(
                 const rollCost = price > 0
                   ? (price > 150 ? price : price * itemArea)
                   : (rawCost > 150 ? rawCost : rawCost * itemArea)
+                item.total_valuation = count * rollCost
+              }
+            }
+          }
+        }
+      } else if (currentStock > explicitSft + 1) {
+        // Partial explicit allocation: unallocated stock remains to be assigned to zero-count sizes
+        const unallocatedStock = currentStock - explicitSft
+        const zeroItems = Array.from(map.values()).filter((it) => it.roll_count === 0)
+        if (zeroItems.length > 0) {
+          const exactMatchIdx = zeroItems.findIndex(
+            (it) => (it.width_ft * it.length_ft > 0) && (Math.abs(unallocatedStock % (it.width_ft * it.length_ft)) < 0.5)
+          )
+          if (exactMatchIdx !== -1) {
+            const item = zeroItems[exactMatchIdx]
+            const area = item.width_ft * item.length_ft
+            const count = Math.max(1, Math.round(unallocatedStock / area))
+            item.roll_count = count
+            item.total_sft = count * area
+            const price = Number(item.purchase_price || 0)
+            const rollCost = price > 0
+              ? (price > 150 ? price : price * area)
+              : (rawCost > 150 ? rawCost : rawCost * area)
+            item.total_valuation = count * rollCost
+          } else {
+            const sumZeroArea = zeroItems.reduce((sum, it) => sum + (it.width_ft * it.length_ft), 0)
+            if (sumZeroArea > 0) {
+              const sets = Math.floor(unallocatedStock / sumZeroArea)
+              for (const item of zeroItems) {
+                const area = item.width_ft * item.length_ft
+                const count = sets
+                item.roll_count = count
+                item.total_sft = count * area
+                const price = Number(item.purchase_price || 0)
+                const rollCost = price > 0
+                  ? (price > 150 ? price : price * area)
+                  : (rawCost > 150 ? rawCost : rawCost * area)
                 item.total_valuation = count * rollCost
               }
             }

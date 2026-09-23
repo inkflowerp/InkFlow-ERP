@@ -2687,8 +2687,6 @@ export class InventoryRepository {
         })
       }
 
-      const existingMaterialIdsWithRolls = new Set(rolls.map((r) => r.material_id))
-
       const isRollMaterial = (m: MaterialRecord) => {
         const cat = String(m.category || '').toLowerCase()
         const name = String(m.name || '').toLowerCase()
@@ -2711,11 +2709,21 @@ export class InventoryRepository {
       for (const m of rollMaterials) {
         if (options?.materialId && m.id !== options.materialId) continue
 
-        // If rolls already exist for this material, do not duplicate
-        if (existingMaterialIdsWithRolls.has(m.id)) continue
-
         const lengthFt = Number(m.roll_length_ft || m.length || m.standard_roll_length_ft || 164)
-        const stockNum = Number(m.current_stock || 0)
+        const totalMatStock = Number(m.current_stock || 0)
+        if (totalMatStock <= 0) continue
+
+        const isUnitRolls = m.unit === 'roll' || m.unit === 'rolls'
+        const existingMatRolls = rolls.filter((r) => r.material_id === m.id)
+        const existingRollsCount = existingMatRolls.length
+        const existingRollsSft = existingMatRolls.reduce(
+          (sum, r) => sum + (Number(r.remaining_area_sft ?? r.initial_area_sft ?? (r.width_ft * (r.current_length_ft ?? r.initial_length_ft))) || 0),
+          0
+        )
+        if (isUnitRolls && existingRollsCount >= totalMatStock) continue
+        if (!isUnitRolls && existingRollsSft >= totalMatStock - 1) continue
+
+        const stockNum = isUnitRolls ? (totalMatStock - existingRollsCount) : (totalMatStock - existingRollsSft)
         if (stockNum <= 0) continue
 
         const rawRollSizes: any[] = Array.isArray(m.roll_sizes) && m.roll_sizes.length > 0
@@ -2789,14 +2797,23 @@ export class InventoryRepository {
                 ? Number(rs.width_ft)
                 : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
               const l = Number(rs.length || rs.length_ft || lengthFt)
-              const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1)
+              const totalCountForSize = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1)
+
+              // Only generate rolls for the count not already covered by existing physical rolls
+              const existingSizeCount = existingMatRolls.filter(
+                (r) => Math.abs(r.width_ft - w) < 0.05 && Math.abs((r.current_length_ft ?? r.initial_length_ft) - l) <= 5
+              ).length
+              const countToGenerate = Math.max(0, totalCountForSize - existingSizeCount)
+              if (countToGenerate <= 0) continue
+
               const rollArea = Math.round(w * l * 100) / 100
               const rollCost = rs.price || rs.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost))
 
-              for (let i = 1; i <= count; i++) {
-                const rollCode = count === 1
+              for (let i = 1; i <= countToGenerate; i++) {
+                const rollNum = existingSizeCount + i
+                const rollCode = totalCountForSize === 1 && rollNum === 1
                   ? `ROL-${cleanSku}-${w}FT`
-                  : `ROL-${cleanSku}-${w}FT-${String(i).padStart(2, '0')}`
+                  : `ROL-${cleanSku}-${w}FT-${String(rollNum).padStart(2, '0')}`
 
                 const rollPayload: InventoryRollRecord = {
                   id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
@@ -2872,11 +2889,17 @@ export class InventoryRepository {
 
             if (exactIdx !== -1) {
               const item = configuredList[exactIdx]
-              const count = Math.max(1, Math.round(stockNum / item.area))
-              for (let i = 1; i <= count; i++) {
-                const rollCode = count === 1
+              const totalCountForSize = Math.max(1, Math.round(stockNum / item.area))
+              const existingSizeCount = existingMatRolls.filter(
+                (r) => Math.abs(r.width_ft - item.w) < 0.05 && Math.abs((r.current_length_ft ?? r.initial_length_ft) - item.l) <= 5
+              ).length
+              const countToGenerate = Math.max(0, totalCountForSize - existingSizeCount)
+
+              for (let i = 1; i <= countToGenerate; i++) {
+                const rollNum = existingSizeCount + i
+                const rollCode = totalCountForSize === 1 && rollNum === 1
                   ? `ROL-${cleanSku}-${item.w}FT`
-                  : `ROL-${cleanSku}-${item.w}FT-${String(i).padStart(2, '0')}`
+                  : `ROL-${cleanSku}-${item.w}FT-${String(rollNum).padStart(2, '0')}`
 
                 const rollPayload: InventoryRollRecord = {
                   id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
@@ -2952,12 +2975,17 @@ export class InventoryRepository {
                     const extra = (idx === remainderTargetIdx && remainder > (item.area / 4))
                       ? Math.max(1, Math.round(remainder / item.area))
                       : 0
-                    const count = sets + extra
+                    const totalCountForSize = sets + extra
+                    const existingSizeCount = existingMatRolls.filter(
+                      (r) => Math.abs(r.width_ft - item.w) < 0.05 && Math.abs((r.current_length_ft ?? r.initial_length_ft) - item.l) <= 5
+                    ).length
+                    const countToGenerate = Math.max(0, totalCountForSize - existingSizeCount)
 
-                    for (let i = 1; i <= count; i++) {
-                      const rollCode = count === 1
+                    for (let i = 1; i <= countToGenerate; i++) {
+                      const rollNum = existingSizeCount + i
+                      const rollCode = totalCountForSize === 1 && rollNum === 1
                         ? `ROL-${cleanSku}-${item.w}FT`
-                        : `ROL-${cleanSku}-${item.w}FT-${String(i).padStart(2, '0')}`
+                        : `ROL-${cleanSku}-${item.w}FT-${String(rollNum).padStart(2, '0')}`
 
                       const rollPayload: InventoryRollRecord = {
                         id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
@@ -3009,30 +3037,33 @@ export class InventoryRepository {
               }
             }
           }
-          existingMaterialIdsWithRolls.add(m.id)
         } else {
           // Standard single-size inferred roll auto-generation
           const effectiveWidthFt = (globalAllowance > 0 && Math.floor(widthFt) === widthFt) ? Math.round((widthFt + globalAllowance) * 100) / 100 : widthFt
           const rollArea = Math.round(effectiveWidthFt * lengthFt * 100) / 100
 
-          let numRolls = 1
-          if (m.unit === 'roll') {
-            numRolls = Math.max(1, Math.round(stockNum))
+          let totalRollsForMat = 1
+          if (m.unit === 'roll' || m.unit === 'rolls') {
+            totalRollsForMat = Math.max(1, Math.round(totalMatStock))
           } else if (rollArea > 0) {
-            numRolls = Math.max(1, Math.round(stockNum / rollArea))
+            totalRollsForMat = Math.max(1, Math.round(totalMatStock / rollArea))
           } else if (m.purchase_unit === 'roll') {
-            numRolls = Math.max(1, Math.round(stockNum))
+            totalRollsForMat = Math.max(1, Math.round(totalMatStock))
           }
+
+          const countToGenerate = Math.max(0, totalRollsForMat - existingRollsCount)
+          if (countToGenerate <= 0) continue
 
           const rollCost = rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost)
 
-          for (let i = 1; i <= numRolls; i++) {
-            const rollCode = numRolls === 1
+          for (let i = 1; i <= countToGenerate; i++) {
+            const rollNum = existingRollsCount + i
+            const rollCode = totalRollsForMat === 1 && rollNum === 1
               ? `ROL-${cleanSku}-${effectiveWidthFt}FT`
-              : `ROL-${cleanSku}-${effectiveWidthFt}FT-${String(i).padStart(2, '0')}`
+              : `ROL-${cleanSku}-${effectiveWidthFt}FT-${String(rollNum).padStart(2, '0')}`
 
             const rollPayload: InventoryRollRecord = {
-              id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
+              id: `rol-init-${m.id.slice(0, 8)}-${rollNum}-${lot}`,
               company_id: companyId,
               branch_id: m.branch_id || null,
               location_id: null,
@@ -3075,7 +3106,6 @@ export class InventoryRepository {
             PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
             rolls.push(rollPayload)
           }
-          existingMaterialIdsWithRolls.add(m.id)
         }
       }
     } catch {}
