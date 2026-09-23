@@ -1937,7 +1937,27 @@ export function getMaterialWarehouseStockBreakdown(
     material.average_cost ||
     material.last_purchase_price ||
     material.cost_per_unit ||
+    material.purchase_price ||
+    material.base_cost ||
+    material.cost ||
+    material.unit_cost ||
+    material.purchase_price_per_sft ||
     (material.material_config as any)?.purchase_price ||
+    (material.material_config as any)?.cost_per_unit ||
+    (material.material_config as any)?.average_cost ||
+    (material.material_config as any)?.last_purchase_price ||
+    (material.material_config as any)?.purchase_price_per_sft ||
+    (material.material_config as any)?.base_cost ||
+    (material.pricing_formula as any)?.material_rate ||
+    (material.pricing_formula as any)?.base_cost ||
+    (material.pricing_formula as any)?.base_rate ||
+    (material.pricing_formula as any)?.cost_breakdown?.material ||
+    (material.pricing_formula as any)?.cost_breakdown?.material_cost ||
+    (material.pricing_formula as any)?.material_config?.purchase_price ||
+    (material.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
+    (material.cost_breakdown as any)?.material ||
+    (material.cost_breakdown as any)?.material_cost ||
+    material.selling_price ||
     0
   )
   const consumptionUnit = String(material.unit || material.selling_unit || 'pcs').toLowerCase()
@@ -1950,12 +1970,18 @@ export function getMaterialWarehouseStockBreakdown(
     ''
   ).toLowerCase()
 
+  const isExplicitSheet =
+    rawPurchaseUnit === 'sheet' ||
+    ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some(c => matCategory.includes(c)) ||
+    (material.is_roll === false && (matName.includes('sheet') || matName.includes('board') || matName.includes('acrylic') || matName.includes('foam')))
+
   const isRoll =
-    Boolean(material.is_roll) ||
-    rawPurchaseUnit === 'roll' ||
-    ['sft', 'sqft'].includes(consumptionUnit) ||
-    ['roll_media', 'flex', 'flex_banner', 'banner', 'vinyl', 'sticker_paper', 'pvc', 'fabric', 'lamination_film', 'mesh', 'canvas', 'paper_roll'].some(c => matCategory.includes(c)) ||
-    (['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'sav'].some(c => matName.includes(c)) && !matName.includes('stand') && !matName.includes('standee') && !matName.includes('frame') && !matName.includes('hardware'))
+    !isExplicitSheet &&
+    (Boolean(material.is_roll) ||
+      rawPurchaseUnit === 'roll' ||
+      ['roll_media', 'flex', 'flex_banner', 'banner', 'vinyl', 'sticker_paper', 'pvc', 'fabric', 'lamination_film', 'mesh', 'canvas', 'paper_roll'].some(c => matCategory.includes(c)) ||
+      (['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'sav'].some(c => matName.includes(c)) && !matName.includes('stand') && !matName.includes('standee') && !matName.includes('frame') && !matName.includes('hardware') && !matName.includes('sheet') && !matName.includes('board')) ||
+      (material.is_roll !== false && !['box', 'pack', 'carton', 'bottle', 'can', 'sheet', 'pcs', 'piece'].includes(rawPurchaseUnit) && ['sft', 'sqft'].includes(consumptionUnit)))
 
   if (isRoll) {
     // 1. Check if explicit physical rolls exist in warehouse
@@ -2103,7 +2129,19 @@ export function getMaterialWarehouseStockBreakdown(
     let costPerSft = 0
     let totalValuation = 0
 
-    if (rawCost > 0) {
+    const explicitPerSft = Number(
+      material.purchase_price_per_sft ||
+      (material.material_config as any)?.purchase_price_per_sft ||
+      (material.pricing_formula as any)?.purchase_price_per_sft ||
+      (material.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
+      0
+    )
+
+    if (explicitPerSft > 0) {
+      costPerSft = explicitPerSft
+      costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 492)
+      totalValuation = effectiveStockSft * costPerSft
+    } else if (rawCost > 0) {
       if (rawCost > 100) {
         // rawCost is per-Roll (e.g. ৳ 11,480 / Roll)
         costPerRoll = rawCost
@@ -2112,7 +2150,7 @@ export function getMaterialWarehouseStockBreakdown(
       } else {
         // rawCost is per-SFT (e.g. ৳ 10.00 / SFT)
         costPerSft = rawCost
-        costPerRoll = areaPerStandardRoll > 0 ? (rawCost * areaPerStandardRoll) : (rawCost * 1148)
+        costPerRoll = areaPerStandardRoll > 0 ? (rawCost * areaPerStandardRoll) : (rawCost * 492)
         totalValuation = effectiveStockSft * costPerSft
       }
     }
@@ -2142,7 +2180,51 @@ export function getMaterialWarehouseStockBreakdown(
     }
   }
 
-  // 2. Check for Pack / Box / Discrete Items with conversion
+  // 2. Check for Rigid Sheets with SFT or Sheet consumption
+  if (
+    rawPurchaseUnit === 'sheet' ||
+    ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some(c => matCategory.includes(c))
+  ) {
+    const sheetW = Number(material.sheet_width_ft || material.width || 4)
+    const sheetL = Number(material.sheet_length_ft || material.length || 8)
+    const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
+    const isSftCons = ['sft', 'sqft'].includes(consumptionUnit)
+    const totalSheets = isSftCons && sheetArea > 0 ? Math.floor(currentStock / sheetArea) : currentStock
+    const remainderSft = isSftCons && sheetArea > 0 ? currentStock % sheetArea : 0
+    const sheetDisplay = `${totalSheets} ${totalSheets === 1 ? 'Sheet' : 'Sheets'}${remainderSft > 0 ? ` + ${remainderSft} SFT` : ''}`
+
+    let costPerSheet = rawCost
+    let costPerCons = rawCost
+    if (isSftCons) {
+      if (rawCost > 150) {
+        costPerSheet = rawCost
+        costPerCons = sheetArea > 0 ? rawCost / sheetArea : rawCost
+      } else {
+        costPerCons = rawCost
+        costPerSheet = rawCost * sheetArea
+      }
+    }
+    const totalValuation = currentStock * costPerCons
+
+    return {
+      is_roll: false,
+      purchase_unit_display: totalSheets > 0 ? sheetDisplay : `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      roll_items: [],
+      total_rolls: 0,
+      total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      formatted_summary: isSftCons ? `${sheetW}ft × ${sheetL}ft (${sheetArea} SFT/Sheet)` : `1 Sheet`,
+      purchase_unit: 'sheet',
+      consumption_unit: consumptionUnit,
+      cost_per_purchase_unit: costPerSheet,
+      cost_per_consumption_unit: costPerCons,
+      cost_display_primary: costPerSheet > 0 ? `৳ ${costPerSheet.toLocaleString()} / Sheet` : '—',
+      cost_display_secondary: costPerCons > 0 && isSftCons ? `(৳ ${costPerCons.toFixed(2)} / SFT)` : null,
+      total_valuation: totalValuation,
+    }
+  }
+
+  // 3. Check for Pack / Box / Discrete Items with conversion
   const packQuantity = Number(
     material.pack_quantity ||
     (material.material_config as any)?.pack_quantity ||
@@ -2181,7 +2263,7 @@ export function getMaterialWarehouseStockBreakdown(
     }
   }
 
-  // 3. General item
+  // 4. General item
   const displayUnit = rawPurchaseUnit || consumptionUnit || 'pcs'
   const totalValuation = currentStock * rawCost
 

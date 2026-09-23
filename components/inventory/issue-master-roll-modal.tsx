@@ -70,6 +70,31 @@ const DEFAULT_PRODUCTION_MACHINES = [
   { id: 'finishing', name: 'Finishing & Eyelet Workstation' },
 ]
 
+export function formatUnitPlural(count: number, unit: string): string {
+  if (!unit) return ''
+  const lower = unit.trim().toLowerCase()
+  if (count <= 1) {
+    if (lower === 'rolls') return 'Roll'
+    if (lower === 'boxes') return 'Box'
+    if (lower === 'sheets') return 'Sheet'
+    if (lower === 'packs' || lower === 'packets') return 'Pack'
+    if (lower === 'bottles') return 'Bottle'
+    if (lower === 'pieces') return 'Pcs'
+    return unit.charAt(0).toUpperCase() + unit.slice(1).toLowerCase()
+  }
+  if (lower === 'roll') return 'Rolls'
+  if (lower === 'box') return 'Boxes'
+  if (lower === 'sheet') return 'Sheets'
+  if (lower === 'pack' || lower === 'packet') return 'Packs'
+  if (lower === 'bottle') return 'Bottles'
+  if (lower === 'pcs' || lower === 'piece' || lower === 'pieces') return 'Pcs'
+  if (lower === 'sft' || lower === 'sqft') return 'SFT'
+  if (lower === 'kg') return 'Kg'
+  if (lower === 'ltr' || lower === 'liter') return 'Ltr'
+  if (lower === 'ml') return 'ML'
+  return `${unit}s`
+}
+
 export function IssueMasterRollModal({
   open,
   onOpenChange,
@@ -249,22 +274,90 @@ export function IssueMasterRollModal({
     }
   }, [open, initialMaterialId, initialMachineId, availableMaterials, effectiveLocations])
 
+  // Material Physical Form & Unit Classifications
   const isRollMedia = Boolean(warehouseBreakdown.is_roll)
-  const purchaseUnitName = warehouseBreakdown.purchase_unit || selectedMaterial?.purchase_unit || 'pcs'
-  const consumptionUnitName = warehouseBreakdown.consumption_unit || selectedMaterial?.unit || 'pcs'
+  const rawPurchaseUnit = (
+    warehouseBreakdown.purchase_unit ||
+    selectedMaterial?.purchase_unit ||
+    (selectedMaterial?.material_config as any)?.purchase_unit ||
+    'pcs'
+  ).toLowerCase()
 
-  // Single unit quantity / area in consumption units
-  const singleUnitQuantity = useMemo(() => {
-    if (isRollMedia) {
-      return Math.round(widthFt * lengthFt * 100) / 100
-    }
-    const packQty = Number(
-      (selectedMaterial as any)?.pack_quantity ||
-        (selectedMaterial?.material_config as any)?.pack_quantity ||
-        1
+  const purchaseUnitName = formatUnitPlural(1, rawPurchaseUnit)
+  const consumptionUnitName = (
+    warehouseBreakdown.consumption_unit ||
+    selectedMaterial?.unit ||
+    (selectedMaterial as any)?.selling_unit ||
+    'pcs'
+  ).toLowerCase()
+
+  const isRigidSheet =
+    rawPurchaseUnit === 'sheet' ||
+    ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some((c) =>
+      (selectedMaterial?.category || '').toLowerCase().includes(c)
     )
-    return packQty > 1 ? packQty : 1
-  }, [isRollMedia, widthFt, lengthFt, selectedMaterial])
+
+  const isPackBox = ['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit)
+
+  const isFluid =
+    ['bottle', 'can', 'liter', 'ltr'].includes(rawPurchaseUnit) ||
+    ['ink', 'fluid', 'solvent'].some((c) => (selectedMaterial?.category || '').toLowerCase().includes(c))
+
+  // Single unit quantity / area in consumption units & human-friendly measure string
+  const { singleUnitQuantity, unitMeasureDisplay } = useMemo(() => {
+    if (isRollMedia) {
+      const area = Math.round(widthFt * lengthFt * 100) / 100
+      return {
+        singleUnitQuantity: area,
+        unitMeasureDisplay: `${widthFt}ft × ${lengthFt}ft (${area.toLocaleString()} SFT)`,
+      }
+    }
+
+    if (isRigidSheet) {
+      const sheetW = Number((selectedMaterial as any)?.sheet_width_ft || selectedMaterial?.width || 4)
+      const sheetL = Number((selectedMaterial as any)?.sheet_length_ft || selectedMaterial?.length || 8)
+      const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
+      const isSft = ['sft', 'sqft'].includes(consumptionUnitName)
+      return {
+        singleUnitQuantity: isSft ? sheetArea : 1,
+        unitMeasureDisplay: isSft ? `${sheetW}ft × ${sheetL}ft (${sheetArea} SFT)` : `1 Sheet`,
+      }
+    }
+
+    if (isPackBox) {
+      const packQty = Number(
+        (selectedMaterial as any)?.pack_quantity ||
+          (selectedMaterial?.material_config as any)?.pack_quantity ||
+          (selectedMaterial as any)?.conversion_factor ||
+          (selectedMaterial as any)?.conversion_ratio ||
+          1
+      )
+      const effectiveQty = packQty > 1 ? packQty : 1
+      return {
+        singleUnitQuantity: effectiveQty,
+        unitMeasureDisplay: `${effectiveQty.toLocaleString()} ${consumptionUnitName.toUpperCase()}`,
+      }
+    }
+
+    if (isFluid) {
+      const isMl = consumptionUnitName === 'ml'
+      const vol = Number(
+        (selectedMaterial as any)?.liquid_volume_capacity
+          ? String((selectedMaterial as any).liquid_volume_capacity).replace(/[^0-9.]/g, '')
+          : (selectedMaterial?.material_config as any)?.liquid_volume_ml || 1000
+      )
+      const effectiveVol = isMl ? (vol > 0 ? vol : 1000) : 1
+      return {
+        singleUnitQuantity: effectiveVol,
+        unitMeasureDisplay: isMl ? `${effectiveVol.toLocaleString()} ML` : `1 LTR`,
+      }
+    }
+
+    return {
+      singleUnitQuantity: 1,
+      unitMeasureDisplay: `1 ${consumptionUnitName.toUpperCase()}`,
+    }
+  }, [isRollMedia, widthFt, lengthFt, isRigidSheet, isPackBox, isFluid, selectedMaterial, consumptionUnitName])
 
   const totalBatchQuantity = useMemo(() => {
     return Math.round(singleUnitQuantity * quantityRolls * 100) / 100
@@ -272,7 +365,7 @@ export function IssueMasterRollModal({
 
   // Store Stock Check
   const currentStoreStock = useMemo(() => {
-    return Number(selectedMaterial?.current_stock || 0)
+    return Number(selectedMaterial?.current_stock ?? (selectedMaterial as any)?.stock ?? 0)
   }, [selectedMaterial])
 
   const currentAvailablePurchaseUnits = useMemo(() => {
@@ -287,31 +380,124 @@ export function IssueMasterRollModal({
     return Math.max(0, currentAvailablePurchaseUnits - quantityRolls)
   }, [currentAvailablePurchaseUnits, quantityRolls])
 
-  const unitCostPerPurchaseUnit = useMemo(() => {
-    if (!selectedMaterial) return 0
-    if (warehouseBreakdown.cost_per_purchase_unit > 0) {
-      return warehouseBreakdown.cost_per_purchase_unit
-    }
-    const costPerCons = Number(
-      warehouseBreakdown.cost_per_consumption_unit ||
-        (selectedMaterial as any).unit_cost ||
-        selectedMaterial.average_cost ||
-        selectedMaterial.last_purchase_price ||
-        0
-    )
-    return Math.round(costPerCons * singleUnitQuantity * 100) / 100
-  }, [selectedMaterial, warehouseBreakdown, singleUnitQuantity])
-
-  const totalValuation = useMemo(() => {
-    return Math.round(unitCostPerPurchaseUnit * quantityRolls * 100) / 100
-  }, [unitCostPerPurchaseUnit, quantityRolls])
-
   const projectedStoreBalance = useMemo(() => {
     return currentStoreStock - totalBatchQuantity
   }, [currentStoreStock, totalBatchQuantity])
 
   const isStoreShortage =
     currentStoreStock < totalBatchQuantity || currentAvailablePurchaseUnits < quantityRolls
+
+  // Robust Pricing & Total Valuation Resolver
+  const { unitCostPerPurchaseUnit, costPerConsumptionUnit } = useMemo(() => {
+    if (!selectedMaterial) {
+      return { unitCostPerPurchaseUnit: 0, costPerConsumptionUnit: 0 }
+    }
+
+    if (warehouseBreakdown.cost_per_purchase_unit > 0 && warehouseBreakdown.cost_per_consumption_unit > 0) {
+      return {
+        unitCostPerPurchaseUnit: warehouseBreakdown.cost_per_purchase_unit,
+        costPerConsumptionUnit: warehouseBreakdown.cost_per_consumption_unit,
+      }
+    }
+
+    const explicitPerSft = Number(
+      selectedMaterial.purchase_price_per_sft ||
+      (selectedMaterial.material_config as any)?.purchase_price_per_sft ||
+      (selectedMaterial.pricing_formula as any)?.purchase_price_per_sft ||
+      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
+      0
+    )
+
+    const rawCostCandidates = [
+      warehouseBreakdown.cost_per_purchase_unit,
+      warehouseBreakdown.cost_per_consumption_unit,
+      selectedMaterial.cost_per_unit,
+      selectedMaterial.average_cost,
+      selectedMaterial.last_purchase_price,
+      selectedMaterial.manual_cost,
+      (selectedMaterial as any).purchase_price_per_sft,
+      (selectedMaterial as any).unit_cost,
+      (selectedMaterial as any).purchase_price,
+      (selectedMaterial as any).base_cost,
+      (selectedMaterial as any).cost_price,
+      (selectedMaterial as any).cost,
+      (selectedMaterial.material_config as any)?.purchase_price_per_sft,
+      (selectedMaterial.material_config as any)?.cost_per_unit,
+      (selectedMaterial.material_config as any)?.purchase_price,
+      (selectedMaterial.material_config as any)?.average_cost,
+      (selectedMaterial.material_config as any)?.last_purchase_price,
+      (selectedMaterial.material_config as any)?.base_cost,
+      (selectedMaterial.pricing_formula as any)?.material_rate,
+      (selectedMaterial.pricing_formula as any)?.base_cost,
+      (selectedMaterial.pricing_formula as any)?.base_rate,
+      (selectedMaterial.pricing_formula as any)?.cost_breakdown?.material,
+      (selectedMaterial.pricing_formula as any)?.cost_breakdown?.material_cost,
+      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price,
+      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price_per_sft,
+      (selectedMaterial as any).cost_breakdown?.material,
+      (selectedMaterial as any).cost_breakdown?.material_cost,
+      (selectedMaterial as any).selling_price,
+    ]
+
+    let resolvedRaw = 0
+    for (const c of rawCostCandidates) {
+      const val = Number(c)
+      if (!isNaN(val) && val > 0) {
+        resolvedRaw = val
+        break
+      }
+    }
+
+    let costPerPur = 0
+    let costPerCons = 0
+
+    if (explicitPerSft > 0) {
+      costPerCons = explicitPerSft
+      costPerPur = Math.round(explicitPerSft * singleUnitQuantity * 100) / 100
+    } else if (resolvedRaw > 0) {
+      if (isRollMedia && singleUnitQuantity > 1) {
+        if (resolvedRaw > 100) {
+          costPerPur = resolvedRaw
+          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
+        } else {
+          costPerCons = resolvedRaw
+          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
+        }
+      } else if (isRigidSheet && singleUnitQuantity > 1) {
+        if (resolvedRaw > 150) {
+          costPerPur = resolvedRaw
+          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
+        } else {
+          costPerCons = resolvedRaw
+          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
+        }
+      } else if (isPackBox && singleUnitQuantity > 1) {
+        if (resolvedRaw > 50) {
+          costPerPur = resolvedRaw
+          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
+        } else {
+          costPerCons = resolvedRaw
+          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
+        }
+      } else {
+        costPerPur = resolvedRaw
+        costPerCons = singleUnitQuantity > 1 ? Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100 : resolvedRaw
+      }
+    }
+
+    return {
+      unitCostPerPurchaseUnit: costPerPur,
+      costPerConsumptionUnit: costPerCons,
+    }
+  }, [selectedMaterial, warehouseBreakdown, singleUnitQuantity, isRollMedia, isRigidSheet, isPackBox])
+
+  const totalValuation = useMemo(() => {
+    return Math.round(unitCostPerPurchaseUnit * quantityRolls * 100) / 100
+  }, [unitCostPerPurchaseUnit, quantityRolls])
+
+  const sourceLocationName = useMemo(() => {
+    return effectiveLocations.find((l) => l.id === sourceLocationId)?.location_name || 'Warehouse Store'
+  }, [effectiveLocations, sourceLocationId])
 
   // Auto-Generated Identifier Tag
   const generatedRollCode = useMemo(() => {
@@ -361,8 +547,8 @@ export function IssueMasterRollModal({
         operator_name: operatorName.trim() || 'Floor Operator',
         notes:
           notes.trim() ||
-          `Requisitioned ${quantityRolls} ${purchaseUnitName}(s) for Print Floor`,
-        unit_cost: warehouseBreakdown.cost_per_consumption_unit || Number(selectedMaterial?.average_cost || 0),
+          `Requisitioned ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} for Print Floor`,
+        unit_cost: costPerConsumptionUnit > 0 ? costPerConsumptionUnit : (singleUnitQuantity > 0 ? Math.round((unitCostPerPurchaseUnit / singleUnitQuantity) * 100) / 100 : unitCostPerPurchaseUnit),
       }
 
       const res = await issueMasterRollsBatchAction(payload, companyId)
@@ -374,7 +560,7 @@ export function IssueMasterRollModal({
 
       const result = res.data
       setSuccess(
-        `Successfully issued ${quantityRolls} ${purchaseUnitName}(s) (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName}, ${formatBDT(totalValuation)}) to Print Floor!`
+        `Successfully issued ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName.toUpperCase()}, ${formatBDT(totalValuation)}) to Print Floor!`
       )
 
       if (onSuccess) {
@@ -532,9 +718,9 @@ export function IssueMasterRollModal({
                 )}
               </Label>
               <Badge variant="secondary" className="text-[10px] font-mono font-bold">
-                {quantityRolls} {purchaseUnitName}
-                {purchaseUnitName !== consumptionUnitName &&
-                  ` = ${totalBatchQuantity} ${consumptionUnitName.toUpperCase()}`}
+                {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
+                {(purchaseUnitName.toLowerCase() !== consumptionUnitName.toLowerCase() || singleUnitQuantity > 1) &&
+                  ` = ${totalBatchQuantity.toLocaleString()} ${consumptionUnitName.toUpperCase()}`}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -575,7 +761,7 @@ export function IssueMasterRollModal({
                   onClick={() => setQuantityRolls(q)}
                   className="h-7 text-[11px] px-2.5 font-bold cursor-pointer"
                 >
-                  {q} {purchaseUnitName}
+                  {q} {formatUnitPlural(q, purchaseUnitName)}
                 </Button>
               ))}
             </div>
@@ -654,6 +840,7 @@ export function IssueMasterRollModal({
             </Badge>
             <span className="text-[11px] text-slate-500 font-medium font-mono">
               Unit Rate: {formatBDT(unitCostPerPurchaseUnit)} / {purchaseUnitName}
+              {costPerConsumptionUnit > 0 && ` (${formatBDT(costPerConsumptionUnit)} / ${consumptionUnitName.toUpperCase()})`}
             </span>
           </div>
 
@@ -687,8 +874,8 @@ export function IssueMasterRollModal({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Size / Measure</span>
-            <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
-              {singleUnitQuantity} {consumptionUnitName.toUpperCase()}
+            <span className="text-sm font-black text-slate-900 dark:text-white font-mono truncate block" title={unitMeasureDisplay}>
+              {unitMeasureDisplay}
             </span>
             <span className="text-[10px] text-slate-500 block">per {purchaseUnitName}</span>
           </Card>
@@ -698,10 +885,10 @@ export function IssueMasterRollModal({
               Requisition Batch
             </span>
             <span className="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">
-              {quantityRolls} {purchaseUnitName}
+              {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
             </span>
             <span className="text-[10px] text-slate-500 block">
-              {totalBatchQuantity} {consumptionUnitName.toUpperCase()} total
+              {totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()} total
             </span>
           </Card>
 
@@ -713,7 +900,7 @@ export function IssueMasterRollModal({
               {formatBDT(totalValuation)}
             </span>
             <span className="text-[10px] text-slate-500 block">
-              @{formatBDT(unitCostPerPurchaseUnit)}/{purchaseUnitName}
+              @{formatBDT(unitCostPerPurchaseUnit)} / {purchaseUnitName}
             </span>
           </Card>
 
@@ -732,11 +919,11 @@ export function IssueMasterRollModal({
                 isStoreShortage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
               )}
             >
-              {projectedRemainingUnits} {purchaseUnitName} ({projectedStoreBalance.toLocaleString()}{' '}
+              {projectedRemainingUnits} {formatUnitPlural(projectedRemainingUnits, purchaseUnitName)} ({Math.max(0, projectedStoreBalance).toLocaleString()}{' '}
               {consumptionUnitName.toUpperCase()})
             </span>
             <span className="text-[10px] text-slate-500 block">
-              {isStoreShortage ? '⚠️ Stock Shortage' : `Dispatched to Production`}
+              {isStoreShortage ? `⚠️ Stock Shortage (${Math.abs(projectedStoreBalance).toLocaleString()} ${consumptionUnitName.toUpperCase()} deficit)` : `Remaining in ${sourceLocationName}`}
             </span>
           </Card>
         </div>
@@ -781,20 +968,18 @@ export function IssueMasterRollModal({
                 <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-t border-b py-2">
                   <div>
                     <span className="text-slate-400 block">UNIT MEASURE:</span>
-                    <strong>
-                      {singleUnitQuantity} {consumptionUnitName.toUpperCase()}
-                    </strong>
+                    <strong>{unitMeasureDisplay}</strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block">QUANTITY:</span>
                     <strong>
-                      {quantityRolls} {purchaseUnitName.toUpperCase()}
+                      {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName).toUpperCase()}
                     </strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block">TOTAL STOCK:</span>
                     <strong>
-                      {totalBatchQuantity} {consumptionUnitName.toUpperCase()}
+                      {totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()}
                     </strong>
                   </div>
                   <div>
@@ -843,7 +1028,7 @@ export function IssueMasterRollModal({
       <div className="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono text-xs font-bold py-1 px-2.5">
-            {quantityRolls} {purchaseUnitName} ({totalBatchQuantity} {consumptionUnitName.toUpperCase()})
+            {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)} ({totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()})
           </Badge>
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">
             {formatBDT(totalValuation)}
@@ -872,8 +1057,8 @@ export function IssueMasterRollModal({
                 <Package className="h-4 w-4" />
                 <span>
                   {tBilingual(
-                    `Confirm Issue (${quantityRolls} ${purchaseUnitName})`,
-                    `ইস্যু নিশ্চিত করুন (${quantityRolls} ${purchaseUnitName})`
+                    `Confirm Issue (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)})`,
+                    `ইস্যু নিশ্চিত করুন (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)})`
                   )}
                 </span>
                 <ArrowRight className="h-3.5 w-3.5 ml-0.5" />

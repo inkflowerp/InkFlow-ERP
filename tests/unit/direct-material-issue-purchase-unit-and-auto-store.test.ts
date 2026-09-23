@@ -187,4 +187,53 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
     const updatedEyelet = await InventoryRepository.getMaterialById(eyeletMatId, companyId)
     assert.strictEqual(updatedEyelet?.current_stock, 4000)
   })
+
+  await t.test('4. Rigid Sheet breakdown accurately computes sheet purchase units, SFT measure, and pricing', async () => {
+    const sheetMat: MaterialRecord = {
+      id: `mat-acrylic-${Date.now()}`,
+      company_id: companyId,
+      sku: 'MAT-ACR-03',
+      name: 'Cast Clear Acrylic Sheet (3mm)',
+      category: 'rigid_sheet',
+      unit: 'sft',
+      purchase_unit: 'sheet',
+      current_stock: 320, // 10 sheets of 4x8 ft (32 sft each)
+      purchase_price: 1600, // ৳1,600 / sheet (৳50/sft)
+      is_roll: false,
+      sheet_width_ft: 4,
+      sheet_length_ft: 8,
+      is_active: true,
+    }
+
+    const breakdown = getMaterialWarehouseStockBreakdown(sheetMat)
+    assert.strictEqual(breakdown.purchase_unit, 'sheet')
+    assert.strictEqual(breakdown.consumption_unit, 'sft')
+    assert.strictEqual(breakdown.cost_per_purchase_unit, 1600)
+    assert.strictEqual(breakdown.cost_per_consumption_unit, 50)
+    assert.strictEqual(breakdown.total_valuation, 16000) // 320 sft * ৳50
+  })
+
+  await t.test('5. Pricing fallback resolver recovers costs from purchase_price_per_sft and base_cost', async () => {
+    const bannerWithPerSft: MaterialRecord = {
+      id: `mat-banner-sft-${Date.now()}`,
+      company_id: companyId,
+      sku: 'MAT-FLEX-2026',
+      name: 'Panagraphics Flex Banner',
+      category: 'roll_media',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      current_stock: 4920,
+      purchase_price_per_sft: 18,
+      is_roll: true,
+      roll_width_ft: 3,
+      standard_roll_length_ft: 164,
+      is_active: true,
+    }
+
+    const breakdown = getMaterialWarehouseStockBreakdown(bannerWithPerSft)
+    assert.strictEqual(breakdown.cost_per_consumption_unit, 18)
+    assert.strictEqual(breakdown.cost_per_purchase_unit, 18 * 492) // ৳8,856 / roll
+    assert.strictEqual(breakdown.total_valuation, 4920 * 18)
+  })
 })
+
