@@ -19,6 +19,7 @@ import type {
 import { measureAsync } from '../performance/logger.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { TrashRepository } from './trash.repository.ts'
+import type { MaterialRecord } from '../../types/inventory.types.ts'
 import {
   calculateEffectiveUnitCost,
   calculateGrossMargin,
@@ -716,6 +717,58 @@ export class ProductRepository {
           PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched, product.company_id)
         }
 
+        // Auto-sync into MATERIALS store if product is a raw material / substrate
+        const isMat =
+          isMaterialProduct(enriched) ||
+          enriched.entity_type === 'material' ||
+          enriched.product_type === 'material' ||
+          Boolean((enriched.material_config as any)?.roll_sizes) ||
+          Boolean(enriched.roll_sizes)
+
+        if (isMat) {
+          const isRoll = Boolean(enriched.roll_width_ft || (enriched as any).is_roll || (enriched.material_config as any)?.material_type === 'roll' || enriched.purchase_unit === 'roll')
+          const rawPurchaseUnit = enriched.purchase_unit || (enriched.material_config as any)?.purchase_unit
+          const computedPurchaseUnit = isRoll
+            ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+            : rawPurchaseUnit || enriched.unit || 'pcs'
+
+          const matRec = {
+            id: enriched.id,
+            company_id: enriched.company_id || product.company_id,
+            sku: enriched.sku,
+            name: enriched.name,
+            name_bn: enriched.name_bn || null,
+            category: enriched.category,
+            unit: enriched.unit,
+            purchase_unit: computedPurchaseUnit,
+            master_purchase_unit: computedPurchaseUnit,
+            average_cost: Number(enriched.purchase_price || enriched.base_cost || 0),
+            last_purchase_price: Number(enriched.purchase_price || enriched.base_cost || 0),
+            cost_per_unit: Number(enriched.purchase_price || enriched.base_cost || 0),
+            is_roll: isRoll,
+            roll_width_ft: enriched.roll_width_ft ? Number(enriched.roll_width_ft) : null,
+            roll_length_ft: enriched.roll_length_ft ? Number(enriched.roll_length_ft) : null,
+            available_widths_ft: enriched.available_widths_ft || (enriched.material_config as any)?.available_widths_ft,
+            standard_roll_length_ft: enriched.standard_roll_length_ft ? Number(enriched.standard_roll_length_ft) : ((enriched.material_config as any)?.standard_roll_length_ft ? Number((enriched.material_config as any).standard_roll_length_ft) : undefined),
+            available_sheet_sizes: enriched.available_sheet_sizes || (enriched.material_config as any)?.available_sheet_sizes,
+            roll_sizes: enriched.roll_sizes || (enriched.material_config as any)?.roll_sizes || (enriched.pricing_formula as any)?.roll_sizes,
+            material_config: enriched.material_config || (enriched.pricing_formula as any)?.material_config || null,
+            purchase_price_per_sft: (enriched.material_config as any)?.purchase_price_per_sft || (enriched.pricing_formula as any)?.purchase_price_per_sft || null,
+            production_width_allowance: enriched.production_width_allowance || (enriched.material_config as any)?.extra_width_allowance_ft || (enriched.pricing_formula as any)?.production_width_allowance || 0,
+            is_active: enriched.is_active !== false,
+          }
+          try {
+            PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, matRec, product.company_id)
+          } catch {}
+        }
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('products_updated'))
+          window.dispatchEvent(new CustomEvent('materials_updated'))
+        }
+
         return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already exists')) {
@@ -724,6 +777,55 @@ export class ProductRepository {
             ...payload,
           })
           PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
+
+          const isMat =
+            isMaterialProduct(testRecord) ||
+            testRecord.entity_type === 'material' ||
+            testRecord.product_type === 'material' ||
+            Boolean((testRecord.material_config as any)?.roll_sizes) ||
+            Boolean(testRecord.roll_sizes)
+
+          if (isMat) {
+            const isRoll = Boolean(testRecord.roll_width_ft || (testRecord as any).is_roll || (testRecord.material_config as any)?.material_type === 'roll' || testRecord.purchase_unit === 'roll')
+            const rawPurchaseUnit = testRecord.purchase_unit || (testRecord.material_config as any)?.purchase_unit
+            const computedPurchaseUnit = isRoll
+              ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+              : rawPurchaseUnit || testRecord.unit || 'pcs'
+
+            PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, {
+              id: testRecord.id,
+              company_id: testRecord.company_id,
+              sku: testRecord.sku,
+              name: testRecord.name,
+              name_bn: testRecord.name_bn || null,
+              category: testRecord.category,
+              unit: testRecord.unit,
+              purchase_unit: computedPurchaseUnit,
+              master_purchase_unit: computedPurchaseUnit,
+              average_cost: Number(testRecord.purchase_price || testRecord.base_cost || 0),
+              last_purchase_price: Number(testRecord.purchase_price || testRecord.base_cost || 0),
+              cost_per_unit: Number(testRecord.purchase_price || testRecord.base_cost || 0),
+              is_roll: isRoll,
+              roll_width_ft: testRecord.roll_width_ft ? Number(testRecord.roll_width_ft) : null,
+              roll_length_ft: testRecord.roll_length_ft ? Number(testRecord.roll_length_ft) : null,
+              available_widths_ft: testRecord.available_widths_ft || (testRecord.material_config as any)?.available_widths_ft,
+              standard_roll_length_ft: testRecord.standard_roll_length_ft ? Number(testRecord.standard_roll_length_ft) : ((testRecord.material_config as any)?.standard_roll_length_ft ? Number((testRecord.material_config as any).standard_roll_length_ft) : undefined),
+              available_sheet_sizes: testRecord.available_sheet_sizes || (testRecord.material_config as any)?.available_sheet_sizes,
+              roll_sizes: testRecord.roll_sizes || (testRecord.material_config as any)?.roll_sizes || (testRecord.pricing_formula as any)?.roll_sizes,
+              material_config: testRecord.material_config || (testRecord.pricing_formula as any)?.material_config || null,
+              purchase_price_per_sft: (testRecord.material_config as any)?.purchase_price_per_sft || (testRecord.pricing_formula as any)?.purchase_price_per_sft || null,
+              production_width_allowance: testRecord.production_width_allowance || (testRecord.material_config as any)?.extra_width_allowance_ft || (testRecord.pricing_formula as any)?.production_width_allowance || 0,
+              is_active: testRecord.is_active !== false,
+            }, product.company_id)
+          }
+
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+            window.dispatchEvent(new CustomEvent('products_updated'))
+            window.dispatchEvent(new CustomEvent('materials_updated'))
+          }
+
           return testRecord
         }
         throw err
@@ -911,6 +1013,58 @@ export class ProductRepository {
           PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, enriched, companyId)
         }
 
+        // Auto-sync into MATERIALS store if product is a raw material / substrate
+        const isMat =
+          isMaterialProduct(enriched) ||
+          enriched.entity_type === 'material' ||
+          enriched.product_type === 'material' ||
+          Boolean((enriched.material_config as any)?.roll_sizes) ||
+          Boolean(enriched.roll_sizes)
+
+        if (isMat) {
+          const isRoll = Boolean(enriched.roll_width_ft || (enriched as any).is_roll || (enriched.material_config as any)?.material_type === 'roll' || enriched.purchase_unit === 'roll')
+          const rawPurchaseUnit = enriched.purchase_unit || (enriched.material_config as any)?.purchase_unit
+          const computedPurchaseUnit = isRoll
+            ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+            : rawPurchaseUnit || enriched.unit || 'pcs'
+
+          const matRec = {
+            id: enriched.id,
+            company_id: enriched.company_id || companyId,
+            sku: enriched.sku,
+            name: enriched.name,
+            name_bn: enriched.name_bn || null,
+            category: enriched.category,
+            unit: enriched.unit,
+            purchase_unit: computedPurchaseUnit,
+            master_purchase_unit: computedPurchaseUnit,
+            average_cost: Number(enriched.purchase_price || enriched.base_cost || 0),
+            last_purchase_price: Number(enriched.purchase_price || enriched.base_cost || 0),
+            cost_per_unit: Number(enriched.purchase_price || enriched.base_cost || 0),
+            is_roll: isRoll,
+            roll_width_ft: enriched.roll_width_ft ? Number(enriched.roll_width_ft) : null,
+            roll_length_ft: enriched.roll_length_ft ? Number(enriched.roll_length_ft) : null,
+            available_widths_ft: enriched.available_widths_ft || (enriched.material_config as any)?.available_widths_ft,
+            standard_roll_length_ft: enriched.standard_roll_length_ft ? Number(enriched.standard_roll_length_ft) : ((enriched.material_config as any)?.standard_roll_length_ft ? Number((enriched.material_config as any).standard_roll_length_ft) : undefined),
+            available_sheet_sizes: enriched.available_sheet_sizes || (enriched.material_config as any)?.available_sheet_sizes,
+            roll_sizes: enriched.roll_sizes || (enriched.material_config as any)?.roll_sizes || (enriched.pricing_formula as any)?.roll_sizes,
+            material_config: enriched.material_config || (enriched.pricing_formula as any)?.material_config || null,
+            purchase_price_per_sft: (enriched.material_config as any)?.purchase_price_per_sft || (enriched.pricing_formula as any)?.purchase_price_per_sft || null,
+            production_width_allowance: enriched.production_width_allowance || (enriched.material_config as any)?.extra_width_allowance_ft || (enriched.pricing_formula as any)?.production_width_allowance || 0,
+            is_active: enriched.is_active !== false,
+          }
+          try {
+            PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, matRec, companyId)
+          } catch {}
+        }
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('products_updated'))
+          window.dispatchEvent(new CustomEvent('materials_updated'))
+        }
+
         return enriched
       } catch (err: any) {
         if (isTestMode() && !err.message.includes('already assigned')) {
@@ -918,7 +1072,58 @@ export class ProductRepository {
           const existing = prods.find((p) => p.id === id)
           if (!existing) throw new Error(`Product ${id} not found in tenant catalog.`)
           const updated = PrintERPDataStore.updateItem<ProductRecord>(STORAGE_KEYS.PRODUCTS, id, payload, companyId)
-          if (updated) return enrichProductRecord(updated)
+          if (updated) {
+            const enrichedTest = enrichProductRecord(updated)
+            const isMat =
+              isMaterialProduct(enrichedTest) ||
+              enrichedTest.entity_type === 'material' ||
+              enrichedTest.product_type === 'material' ||
+              Boolean((enrichedTest.material_config as any)?.roll_sizes) ||
+              Boolean(enrichedTest.roll_sizes)
+
+            if (isMat) {
+              const isRoll = Boolean(enrichedTest.roll_width_ft || (enrichedTest as any).is_roll || (enrichedTest.material_config as any)?.material_type === 'roll' || enrichedTest.purchase_unit === 'roll')
+              const rawPurchaseUnit = enrichedTest.purchase_unit || (enrichedTest.material_config as any)?.purchase_unit
+              const computedPurchaseUnit = isRoll
+                ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+                : rawPurchaseUnit || enrichedTest.unit || 'pcs'
+
+              PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, {
+                id: enrichedTest.id,
+                company_id: enrichedTest.company_id,
+                sku: enrichedTest.sku,
+                name: enrichedTest.name,
+                name_bn: enrichedTest.name_bn || null,
+                category: enrichedTest.category,
+                unit: enrichedTest.unit,
+                purchase_unit: computedPurchaseUnit,
+                master_purchase_unit: computedPurchaseUnit,
+                average_cost: Number(enrichedTest.purchase_price || enrichedTest.base_cost || 0),
+                last_purchase_price: Number(enrichedTest.purchase_price || enrichedTest.base_cost || 0),
+                cost_per_unit: Number(enrichedTest.purchase_price || enrichedTest.base_cost || 0),
+                is_roll: isRoll,
+                roll_width_ft: enrichedTest.roll_width_ft ? Number(enrichedTest.roll_width_ft) : null,
+                roll_length_ft: enrichedTest.roll_length_ft ? Number(enrichedTest.roll_length_ft) : null,
+                available_widths_ft: enrichedTest.available_widths_ft || (enrichedTest.material_config as any)?.available_widths_ft,
+                standard_roll_length_ft: enrichedTest.standard_roll_length_ft ? Number(enrichedTest.standard_roll_length_ft) : ((enrichedTest.material_config as any)?.standard_roll_length_ft ? Number((enrichedTest.material_config as any).standard_roll_length_ft) : undefined),
+                available_sheet_sizes: enrichedTest.available_sheet_sizes || (enrichedTest.material_config as any)?.available_sheet_sizes,
+                roll_sizes: enrichedTest.roll_sizes || (enrichedTest.material_config as any)?.roll_sizes || (enrichedTest.pricing_formula as any)?.roll_sizes,
+                material_config: enrichedTest.material_config || (enrichedTest.pricing_formula as any)?.material_config || null,
+                purchase_price_per_sft: (enrichedTest.material_config as any)?.purchase_price_per_sft || (enrichedTest.pricing_formula as any)?.purchase_price_per_sft || null,
+                production_width_allowance: enrichedTest.production_width_allowance || (enrichedTest.material_config as any)?.extra_width_allowance_ft || (enrichedTest.pricing_formula as any)?.production_width_allowance || 0,
+                is_active: enrichedTest.is_active !== false,
+              }, companyId)
+            }
+
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
+              window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+              window.dispatchEvent(new CustomEvent('products_updated'))
+              window.dispatchEvent(new CustomEvent('materials_updated'))
+            }
+
+            return enrichedTest
+          }
         }
         throw err
       }

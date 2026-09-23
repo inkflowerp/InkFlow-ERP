@@ -424,6 +424,34 @@ export function ReceiveStockModal({
     }
   }, [open, initialProducts, materials, companyId])
 
+  // Real-time dynamic sync: auto-refresh catalog whenever materials or products change
+  useEffect(() => {
+    const handleRealtimeSync = () => {
+      const mats = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+      const prods = PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []
+      if (mats.length > 0) setCatalogMaterials(mats)
+      if (prods.length > 0) setCatalogProducts(prods)
+    }
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('printerp_table_synced:materials', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced:products', handleRealtimeSync)
+      window.addEventListener('printerp_table_synced', handleRealtimeSync)
+      window.addEventListener('materials_updated', handleRealtimeSync)
+      window.addEventListener('products_updated', handleRealtimeSync)
+      window.addEventListener('storage', handleRealtimeSync)
+
+      return () => {
+        window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
+        window.removeEventListener('printerp_table_synced', handleRealtimeSync)
+        window.removeEventListener('materials_updated', handleRealtimeSync)
+        window.removeEventListener('products_updated', handleRealtimeSync)
+        window.removeEventListener('storage', handleRealtimeSync)
+      }
+    }
+  }, [companyId])
+
   // Build unified items catalog merging materials and registered products with expanded size & variety options
   const unifiedCatalog = useMemo<UnifiedStockItem[]>(() => {
     const list: UnifiedStockItem[] = []
@@ -518,13 +546,20 @@ export function ReceiveStockModal({
       const defaultWidth = roll_width_ft || (widths && widths.length > 0 ? widths[0] : (isRoll ? 5 : null))
       const defaultRollArea = defaultWidth ? Math.round(defaultWidth * rollLength) : (isRoll ? 820 : null)
 
-      const computedPurchaseUnit = purchase_unit || (
-        physicalForm === 'roll' ? 'roll' :
-        physicalForm === 'sheet' ? 'sheet' :
-        physicalForm === 'liquid' ? (['ltr', 'liter', 'litre', 'bottle', 'can', 'gallon', 'ml'].includes(unit.toLowerCase()) ? unit : 'liter') :
-        physicalForm === 'hardware' || physicalForm === 'piece' ? 'piece' :
-        unit || 'pcs'
-      )
+      const rawPurchaseUnit = purchase_unit || (material_config as any)?.purchase_unit
+      let computedPurchaseUnit: string
+      if (physicalForm === 'roll') {
+        computedPurchaseUnit = (rawPurchaseUnit && !['sft', 'sqft', 'sq.ft', 'sq_ft'].includes(rawPurchaseUnit.toLowerCase())) ? rawPurchaseUnit : 'roll'
+      } else if (physicalForm === 'sheet') {
+        computedPurchaseUnit = (rawPurchaseUnit && !['sft', 'sqft', 'sq.ft', 'sq_ft'].includes(rawPurchaseUnit.toLowerCase())) ? rawPurchaseUnit : 'sheet'
+      } else if (physicalForm === 'liquid') {
+        const cand = (rawPurchaseUnit || unit || '').toLowerCase()
+        computedPurchaseUnit = ['ltr', 'liter', 'litre', 'bottle', 'can', 'gallon', 'ml'].includes(cand) ? cand : 'liter'
+      } else if (physicalForm === 'hardware' || physicalForm === 'piece') {
+        computedPurchaseUnit = rawPurchaseUnit || 'piece'
+      } else {
+        computedPurchaseUnit = rawPurchaseUnit || unit || 'pcs'
+      }
 
       const availablePurchaseUnits = getAvailablePurchaseUnits(physicalForm, unit, computedPurchaseUnit)
 
@@ -588,39 +623,52 @@ export function ReceiveStockModal({
       seenIds.add(m.id)
       if (m.sku) seenSkus.add(m.sku.toLowerCase())
 
-      const cost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
-      const estimatedSellingPrice = Math.round(cost > 0 ? cost * 1.35 : 0)
-      const cat = m.category || 'General Substrates'
-      const thicknessNum = m.thickness ? Number(m.thickness.replace(/[^0-9.]/g, '')) : null
+      const matchProd =
+        catalogProducts.find((p) => p.id === m.id || (p.sku && m.sku && p.sku.toLowerCase() === m.sku.toLowerCase())) ||
+        (PrintERPDataStore.getAll<ProductRecord>(STORAGE_KEYS.PRODUCTS, companyId) || []).find((p) => p.id === m.id || (p.sku && m.sku && p.sku.toLowerCase() === m.sku.toLowerCase()))
+
+      const rollSizes = m.roll_sizes || (m as any).material_config?.roll_sizes || matchProd?.roll_sizes || (matchProd?.material_config as any)?.roll_sizes || (matchProd?.pricing_formula as any)?.roll_sizes || (matchProd?.pricing_formula as any)?.material_config?.roll_sizes
+      const matConfig = (m as any).material_config || matchProd?.material_config || (matchProd?.pricing_formula as any)?.material_config
+      const perSftCost = m.purchase_price_per_sft ?? (m as any).material_config?.purchase_price_per_sft ?? (matchProd?.material_config as any)?.purchase_price_per_sft ?? (matchProd?.pricing_formula as any)?.purchase_price_per_sft ?? (matchProd?.pricing_formula as any)?.material_config?.purchase_price_per_sft
+      const allowance = m.production_width_allowance ?? (m as any).material_config?.extra_width_allowance_ft ?? (matchProd?.material_config as any)?.extra_width_allowance_ft ?? matchProd?.production_width_allowance ?? (matchProd?.pricing_formula as any)?.production_width_allowance ?? (matchProd?.pricing_formula as any)?.material_config?.extra_width_allowance_ft ?? 0
+      const availableWidths = m.available_widths_ft || (m as any).material_config?.available_widths_ft || matchProd?.available_widths_ft || (matchProd?.material_config as any)?.available_widths_ft
+      const stdRollLength = m.standard_roll_length_ft || (m as any).material_config?.standard_roll_length_ft || matchProd?.standard_roll_length_ft || (matchProd?.material_config as any)?.standard_roll_length_ft
+      const sheetSizes = m.available_sheet_sizes || (m as any).material_config?.available_sheet_sizes || matchProd?.available_sheet_sizes || (matchProd?.material_config as any)?.available_sheet_sizes
+      const purchaseUnit = (m as any).purchase_unit || (m as any).material_config?.purchase_unit || matchProd?.purchase_unit || (matchProd?.material_config as any)?.purchase_unit || m.unit
+
+      const cost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || matchProd?.purchase_price || matchProd?.base_cost || 0)
+      const estimatedSellingPrice = Math.round(Number(matchProd?.selling_price || (cost > 0 ? cost * 1.35 : 0)))
+      const cat = m.category || matchProd?.category || 'General Substrates'
+      const thicknessNum = m.thickness ? Number(m.thickness.replace(/[^0-9.]/g, '')) : (matchProd as any)?.thickness_mm ? Number((matchProd as any).thickness_mm) : null
 
       processItem(
         m.id,
-        m.sku || 'MAT',
-        m.name,
+        m.sku || matchProd?.sku || 'MAT',
+        m.name || matchProd?.name || 'Material',
         true,
         cat,
-        m.unit || 'pcs',
+        m.unit || matchProd?.unit || 'pcs',
         cost,
         estimatedSellingPrice,
-        35,
-        Number(m.current_stock || 0),
-        m.variants,
-        m.available_widths_ft,
-        m.standard_roll_length_ft,
-        m.available_sheet_sizes,
-        m.roll_width_ft,
-        m.roll_length_ft,
+        Number(matchProd?.target_margin_percentage || 35),
+        Number(m.current_stock || (matchProd as any)?.current_stock || 0),
+        m.variants || matchProd?.variants,
+        availableWidths,
+        stdRollLength,
+        sheetSizes,
+        m.roll_width_ft || matchProd?.roll_width_ft,
+        m.roll_length_ft || matchProd?.roll_length_ft,
         thicknessNum,
-        (m as any).purchase_unit || m.unit,
-        (m as any).dimensions_spec || (m as any).size_spec,
-        (m as any).liquid_volume_capacity,
-        (m as any).pack_quantity,
-        (m as any).product_type,
+        purchaseUnit,
+        (m as any).dimensions_spec || (m as any).size_spec || matchProd?.dimensions_spec,
+        (m as any).liquid_volume_capacity || (matchProd as any)?.liquid_volume_capacity,
+        (m as any).pack_quantity || (matchProd as any)?.pack_quantity,
+        (m as any).product_type || matchProd?.product_type,
         'material',
-        m.roll_sizes || (m as any).material_config?.roll_sizes,
-        (m as any).material_config,
-        m.purchase_price_per_sft || (m as any).material_config?.purchase_price_per_sft,
-        m.production_width_allowance || (m as any).material_config?.extra_width_allowance_ft
+        rollSizes,
+        matConfig,
+        perSftCost,
+        allowance
       )
     }
 
@@ -911,6 +959,84 @@ export function ReceiveStockModal({
       }
     }
   }, [open, purchaseOrder, selectedMaterialId, companyId, unifiedCatalog.length])
+
+  // Dynamic live sync: update active directItems rows whenever catalog configuration or pricing changes
+  useEffect(() => {
+    if (!open || directItems.length === 0) return
+    setDirectItems((prev) => {
+      let hasChanges = false
+      const next = prev.map((row) => {
+        const matched = unifiedCatalog.find(
+          (u) => u.id === row.material_id || u.parent_id === row.material_id || (row.sku && u.sku && u.sku.toLowerCase() === row.sku.toLowerCase())
+        )
+        if (!matched) return row
+
+        const newConfiguredSizes = PriceIntelligenceEngine.getMaterialActiveSizes(matched)
+        const existingSize = newConfiguredSizes.find((s) => s.id === row.selected_size_id)
+        const activeSize = existingSize || newConfiguredSizes[0]
+
+        const activeCost =
+          activeSize?.default_supplier_price && activeSize.default_supplier_price > 0
+            ? activeSize.default_supplier_price
+            : matched.previous_cost || row.unit_cost
+
+        const availUnits =
+          matched.available_purchase_units ||
+          getAvailablePurchaseUnits(matched.physical_form || 'general', matched.unit, matched.master_purchase_unit)
+
+        const targetMargin = row.target_margin_percent || matched.target_margin_percent || 35
+        const newSell =
+          targetMargin > 0 && targetMargin < 95 && activeCost > 0
+            ? Math.ceil(activeCost / (1 - targetMargin / 100))
+            : Math.round(activeCost * 1.4)
+
+        const updatedRow: DirectReceiptItemRow = {
+          ...row,
+          material_name: matched.name,
+          sku: matched.sku,
+          category: matched.category,
+          physical_form: matched.physical_form,
+          master_unit: matched.master_unit,
+          master_purchase_unit: matched.master_purchase_unit,
+          available_purchase_units: availUnits,
+          configured_sizes: newConfiguredSizes,
+          selected_size_id: activeSize?.id,
+          size_spec: activeSize?.label || matched.size_spec,
+          roll_width_ft: activeSize?.width_ft || matched.roll_width_ft,
+          roll_length_ft: activeSize?.length_ft || matched.roll_length_ft,
+          roll_area_sft: activeSize?.standard_area_sft || matched.roll_area_sft,
+          sheet_size: activeSize?.physical_form === 'sheet' ? activeSize.label : matched.sheet_size,
+          sheet_area_sft: activeSize?.standard_area_sft || matched.sheet_area_sft,
+          thickness_mm: activeSize?.thickness_mm || matched.thickness_mm,
+          unit: row.unit && availUnits.includes(row.unit.toLowerCase()) ? row.unit : (matched.master_purchase_unit || matched.unit),
+          previous_cost: activeCost,
+          roll_sizes: matched.roll_sizes,
+          material_config: matched.material_config,
+          purchase_price_per_sft: matched.purchase_price_per_sft,
+          production_width_allowance: matched.production_width_allowance,
+        }
+
+        updatedRow.price_intelligence_summary = computePriceIntelligence(
+          matched,
+          activeSize?.label,
+          row.unit_cost === row.previous_cost || row.unit_cost <= 0 ? activeCost : row.unit_cost,
+          selectedSupplierId,
+          activeSize
+        )
+
+        if (row.unit_cost === row.previous_cost || row.unit_cost <= 0) {
+          updatedRow.unit_cost = activeCost
+          updatedRow.new_selling_price = newSell
+          updatedRow.total_cost = Math.round(row.quantity * activeCost)
+        }
+
+        hasChanges = true
+        return updatedRow
+      })
+
+      return hasChanges ? next : prev
+    })
+  }, [unifiedCatalog, selectedSupplierId, open])
 
   const handlePoChange = (poId: string) => {
     setSelectedPoId(poId)

@@ -155,8 +155,7 @@ export class InventoryRepository {
         const { data: prodData } = await prodQuery
         if (prodData && Array.isArray(prodData)) {
           for (const p of prodData) {
-            if (!p || !p.id || seenIds.has(p.id)) continue
-            if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
+            if (!p || !p.id) continue
 
             const isMat =
               isMaterialProduct(p) ||
@@ -169,12 +168,48 @@ export class InventoryRepository {
 
             if (!isMat) continue
 
-            seenIds.add(p.id)
-            if (p.sku) seenSkus.add(p.sku.toLowerCase())
-
             const cost = Number(p.purchase_price || p.base_cost || 0)
             const isRoll = Boolean(p.roll_width_ft || p.is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
-            const purchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit || (isRoll ? 'roll' : p.unit)
+            const rawPurchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit
+            const computedPurchaseUnit = isRoll
+              ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+              : rawPurchaseUnit || p.unit
+
+            const existingIndex = list.findIndex((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))
+
+            if (existingIndex >= 0) {
+              const existing = list[existingIndex]
+              list[existingIndex] = {
+                ...existing,
+                name: p.name || existing.name,
+                name_bn: p.name_bn || existing.name_bn,
+                category: p.category || existing.category,
+                unit: (p.selling_unit || p.unit || existing.unit || 'pcs') as MaterialUnit,
+                purchase_unit: computedPurchaseUnit || existing.purchase_unit,
+                master_purchase_unit: computedPurchaseUnit || existing.master_purchase_unit,
+                average_cost: cost > 0 ? cost : existing.average_cost,
+                last_purchase_price: cost > 0 ? cost : existing.last_purchase_price,
+                cost_per_unit: cost > 0 ? cost : existing.cost_per_unit,
+                is_roll: isRoll || existing.is_roll,
+                roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : existing.roll_width_ft,
+                roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : existing.roll_length_ft,
+                available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || existing.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+                standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : existing.standard_roll_length_ft),
+                available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes || existing.available_sheet_sizes,
+                roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes || existing.roll_sizes,
+                material_config: p.material_config || (p.pricing_formula as any)?.material_config || existing.material_config || null,
+                purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || existing.purchase_price_per_sft || null,
+                production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || existing.production_width_allowance || 0,
+                liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : existing.liquid_volume_capacity,
+                pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || existing.pack_quantity,
+                variants: (p.variants && p.variants.length > 0) ? p.variants : existing.variants,
+                thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : existing.thickness,
+              }
+              continue
+            }
+
+            seenIds.add(p.id)
+            if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
             const matRec: MaterialRecord = {
               id: p.id,
@@ -185,8 +220,8 @@ export class InventoryRepository {
               name_bn: p.name_bn || null,
               category: p.category || 'raw_materials',
               unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
-              purchase_unit: purchaseUnit,
-              master_purchase_unit: purchaseUnit,
+              purchase_unit: computedPurchaseUnit,
+              master_purchase_unit: computedPurchaseUnit,
               current_stock: Number(p.current_stock ?? p.stock ?? 0),
               min_stock_level: Number(p.min_stock_level ?? 0),
               average_cost: cost,
@@ -224,9 +259,23 @@ export class InventoryRepository {
       ]
 
       for (const m of localMats) {
-        if (!m || !m.id || seenIds.has(m.id)) continue
-        if (m.sku && seenSkus.has(m.sku.toLowerCase())) continue
+        if (!m || !m.id) continue
         if (!matchesTenant(m.company_id)) continue
+
+        const existingIndex = list.findIndex((x) => x.id === m.id || (m.sku && x.sku && x.sku.toLowerCase() === m.sku.toLowerCase()))
+        if (existingIndex >= 0) {
+          const existing = list[existingIndex]
+          list[existingIndex] = {
+            ...existing,
+            ...m,
+            roll_sizes: m.roll_sizes || (m as any).material_config?.roll_sizes || existing.roll_sizes,
+            material_config: (m as any).material_config || existing.material_config,
+            available_widths_ft: m.available_widths_ft || (m as any).material_config?.available_widths_ft || existing.available_widths_ft,
+            purchase_price_per_sft: m.purchase_price_per_sft || (m as any).material_config?.purchase_price_per_sft || existing.purchase_price_per_sft,
+            production_width_allowance: m.production_width_allowance || (m as any).material_config?.extra_width_allowance_ft || existing.production_width_allowance,
+          }
+          continue
+        }
 
         seenIds.add(m.id)
         if (m.sku) seenSkus.add(m.sku.toLowerCase())
@@ -247,8 +296,7 @@ export class InventoryRepository {
       ]
 
       for (const p of localProds) {
-        if (!p || !p.id || seenIds.has(p.id)) continue
-        if (p.sku && seenSkus.has(p.sku.toLowerCase())) continue
+        if (!p || !p.id) continue
         if (!matchesTenant(p.company_id)) continue
 
         const isMat =
@@ -262,13 +310,58 @@ export class InventoryRepository {
 
         if (!isMat) continue
 
-        seenIds.add(p.id)
-        if (p.sku) seenSkus.add(p.sku.toLowerCase())
-
         const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
         const itemVars = (p.variants && p.variants.length > 0) ? p.variants : allLocalVars.filter((v) => v.product_id === p.id)
         const isRoll = Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
-        const purchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit || (isRoll ? 'roll' : p.unit)
+        const rawPurchaseUnit = p.purchase_unit || (p.material_config as any)?.purchase_unit || (p.pricing_formula as any)?.material_config?.purchase_unit
+        const computedPurchaseUnit = isRoll
+          ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+          : rawPurchaseUnit || p.unit
+
+        const existingIndex = list.findIndex((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))
+        if (existingIndex >= 0) {
+          const existing = list[existingIndex]
+          list[existingIndex] = {
+            ...existing,
+            name: p.name || existing.name,
+            name_bn: p.name_bn || existing.name_bn,
+            category: p.category || existing.category,
+            unit: (p.selling_unit || p.unit || existing.unit || 'pcs') as MaterialUnit,
+            purchase_unit: computedPurchaseUnit || existing.purchase_unit,
+            master_purchase_unit: computedPurchaseUnit || existing.master_purchase_unit,
+            average_cost: cost > 0 ? cost : existing.average_cost,
+            last_purchase_price: cost > 0 ? cost : existing.last_purchase_price,
+            cost_per_unit: cost > 0 ? cost : existing.cost_per_unit,
+            is_roll: isRoll || existing.is_roll,
+            roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : existing.roll_width_ft,
+            roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : existing.roll_length_ft,
+            available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || existing.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
+            standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : existing.standard_roll_length_ft),
+            available_sheet_sizes: Array.isArray(p.available_sheet_sizes)
+              ? p.available_sheet_sizes.map((s: any) =>
+                  typeof s === 'string'
+                    ? s
+                    : s && typeof s === 'object' && s.label
+                    ? s.label
+                    : s && typeof s === 'object' && s.width && s.length
+                    ? `${s.width}x${s.length} ft`
+                    : String(s)
+                )
+              : (p.material_config as any)?.available_sheet_sizes || existing.available_sheet_sizes,
+            roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes || existing.roll_sizes,
+            material_config: p.material_config || (p.pricing_formula as any)?.material_config || existing.material_config || null,
+            purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || existing.purchase_price_per_sft || null,
+            production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || existing.production_width_allowance || 0,
+            liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : existing.liquid_volume_capacity,
+            pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || existing.pack_quantity,
+            variants: itemVars.length > 0 ? itemVars : existing.variants,
+            thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : existing.thickness,
+          }
+          continue
+        }
+
+        seenIds.add(p.id)
+        if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
         list.push({
           id: p.id,
@@ -279,8 +372,8 @@ export class InventoryRepository {
           name_bn: p.name_bn || null,
           category: p.category || 'raw_materials',
           unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
-          purchase_unit: purchaseUnit,
-          master_purchase_unit: purchaseUnit,
+          purchase_unit: computedPurchaseUnit,
+          master_purchase_unit: computedPurchaseUnit,
           current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
           min_stock_level: Number((p as any).min_stock_level ?? 0),
           average_cost: cost,
@@ -395,6 +488,41 @@ export class InventoryRepository {
       }
 
       if (prodData) {
+        const isRoll = Boolean(prodData.roll_width_ft || prodData.is_roll || (prodData.category && prodData.category.includes('roll')) || (prodData.material_config as any)?.material_type === 'roll' || prodData.purchase_unit === 'roll')
+        const rawPurchaseUnit = prodData.purchase_unit || (prodData.material_config as any)?.purchase_unit || (prodData.pricing_formula as any)?.material_config?.purchase_unit
+        const computedPurchaseUnit = isRoll
+          ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+          : rawPurchaseUnit || prodData.unit
+
+        const bridgedObj: MaterialRecord = {
+          id: prodData.id,
+          company_id: prodData.company_id || companyId,
+          sku: prodData.sku || `PRD-${cleanId.substring(0, 8).toUpperCase()}`,
+          name: prodData.name,
+          name_bn: prodData.name_bn || null,
+          category: prodData.category || 'ready_product',
+          unit: (prodData.selling_unit || prodData.unit || 'pcs') as MaterialUnit,
+          purchase_unit: computedPurchaseUnit,
+          master_purchase_unit: computedPurchaseUnit,
+          current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
+          average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+          last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+          cost_per_unit: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
+          selling_price: Number(prodData.selling_price) || 0,
+          is_roll: isRoll,
+          roll_width_ft: prodData.roll_width_ft ? Number(prodData.roll_width_ft) : null,
+          roll_length_ft: prodData.roll_length_ft ? Number(prodData.roll_length_ft) : null,
+          available_widths_ft: prodData.available_widths_ft || (prodData.material_config as any)?.available_widths_ft || (prodData.roll_width_ft ? [Number(prodData.roll_width_ft)] : undefined),
+          standard_roll_length_ft: prodData.standard_roll_length_ft ? Number(prodData.standard_roll_length_ft) : ((prodData.material_config as any)?.standard_roll_length_ft ? Number((prodData.material_config as any).standard_roll_length_ft) : undefined),
+          available_sheet_sizes: prodData.available_sheet_sizes || (prodData.material_config as any)?.available_sheet_sizes,
+          roll_sizes: prodData.roll_sizes || (prodData.material_config as any)?.roll_sizes || (prodData.pricing_formula as any)?.roll_sizes,
+          material_config: prodData.material_config || (prodData.pricing_formula as any)?.material_config || null,
+          purchase_price_per_sft: (prodData.material_config as any)?.purchase_price_per_sft || (prodData.pricing_formula as any)?.purchase_price_per_sft || null,
+          production_width_allowance: prodData.production_width_allowance || (prodData.material_config as any)?.extra_width_allowance_ft || (prodData.pricing_formula as any)?.production_width_allowance || 0,
+          variants: prodData.variants || [],
+          is_active: prodData.is_active !== false,
+        } as unknown as MaterialRecord
+
         // Ensure product has a corresponding row in materials table for foreign key integrity
         try {
           const { data: bridgedMat } = await (supabase as any)
@@ -420,24 +548,21 @@ export class InventoryRepository {
             .maybeSingle()
 
           if (bridgedMat) {
-            return bridgedMat as unknown as MaterialRecord
+            return {
+              ...bridgedObj,
+              ...(bridgedMat as any),
+              roll_sizes: bridgedObj.roll_sizes,
+              material_config: bridgedObj.material_config,
+              available_widths_ft: bridgedObj.available_widths_ft,
+              purchase_price_per_sft: bridgedObj.purchase_price_per_sft,
+              production_width_allowance: bridgedObj.production_width_allowance,
+              purchase_unit: bridgedObj.purchase_unit,
+              master_purchase_unit: bridgedObj.master_purchase_unit,
+            } as unknown as MaterialRecord
           }
         } catch {}
 
-        return {
-          id: prodData.id,
-          company_id: prodData.company_id || companyId,
-          sku: prodData.sku,
-          name: prodData.name,
-          name_bn: prodData.name_bn || null,
-          category: prodData.category || 'ready_product',
-          unit: prodData.selling_unit || prodData.unit || 'pcs',
-          current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
-          average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
-          last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
-          selling_price: Number(prodData.selling_price) || 0,
-          is_active: prodData.is_active !== false,
-        } as unknown as MaterialRecord
+        return bridgedObj as unknown as MaterialRecord
       }
     } catch {}
 
@@ -480,6 +605,12 @@ export class InventoryRepository {
     })
 
     if (foundProd) {
+      const isRoll = Boolean(foundProd.roll_width_ft || foundProd.is_roll || (foundProd.category && String(foundProd.category).includes('roll')) || (foundProd.material_config as any)?.material_type === 'roll' || foundProd.purchase_unit === 'roll')
+      const rawPurchaseUnit = foundProd.purchase_unit || (foundProd.material_config as any)?.purchase_unit || (foundProd.pricing_formula as any)?.material_config?.purchase_unit
+      const computedPurchaseUnit = isRoll
+        ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
+        : rawPurchaseUnit || foundProd.unit
+
       const bridged: MaterialRecord = {
         id: foundProd.id,
         company_id: foundProd.company_id || companyId,
@@ -487,11 +618,24 @@ export class InventoryRepository {
         name: foundProd.name,
         name_bn: foundProd.name_bn || null,
         category: foundProd.category || 'ready_product',
-        unit: foundProd.selling_unit || foundProd.unit || 'pcs',
+        unit: (foundProd.selling_unit || foundProd.unit || 'pcs') as MaterialUnit,
+        purchase_unit: computedPurchaseUnit,
+        master_purchase_unit: computedPurchaseUnit,
         current_stock: Number(foundProd.current_stock ?? foundProd.stock ?? 0),
         average_cost: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
         last_purchase_price: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
+        cost_per_unit: Number(foundProd.purchase_price ?? foundProd.base_cost ?? foundProd.cost_price ?? 0),
         selling_price: Number(foundProd.selling_price) || 0,
+        is_roll: isRoll,
+        roll_width_ft: foundProd.roll_width_ft ? Number(foundProd.roll_width_ft) : null,
+        roll_length_ft: foundProd.roll_length_ft ? Number(foundProd.roll_length_ft) : null,
+        available_widths_ft: foundProd.available_widths_ft || (foundProd.material_config as any)?.available_widths_ft || (foundProd.roll_width_ft ? [Number(foundProd.roll_width_ft)] : undefined),
+        standard_roll_length_ft: foundProd.standard_roll_length_ft ? Number(foundProd.standard_roll_length_ft) : ((foundProd.material_config as any)?.standard_roll_length_ft ? Number((foundProd.material_config as any).standard_roll_length_ft) : undefined),
+        available_sheet_sizes: foundProd.available_sheet_sizes || (foundProd.material_config as any)?.available_sheet_sizes,
+        roll_sizes: foundProd.roll_sizes || (foundProd.material_config as any)?.roll_sizes || (foundProd.pricing_formula as any)?.roll_sizes,
+        material_config: foundProd.material_config || (foundProd.pricing_formula as any)?.material_config || null,
+        purchase_price_per_sft: (foundProd.material_config as any)?.purchase_price_per_sft || (foundProd.pricing_formula as any)?.purchase_price_per_sft || null,
+        production_width_allowance: foundProd.production_width_allowance || (foundProd.material_config as any)?.extra_width_allowance_ft || (foundProd.pricing_formula as any)?.production_width_allowance || 0,
         is_active: foundProd.is_active !== false,
       } as unknown as MaterialRecord
 

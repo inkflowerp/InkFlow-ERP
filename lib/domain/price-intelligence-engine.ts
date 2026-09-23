@@ -246,6 +246,7 @@ export class PriceIntelligenceEngine {
       material.purchase_price_per_sft ??
       material.material_config?.purchase_price_per_sft ??
       material.pricing_formula?.purchase_price_per_sft ??
+      material.pricing_formula?.material_config?.purchase_price_per_sft ??
       (material.unit === 'sft' || material.selling_unit === 'sft' ? material.base_cost : undefined) ??
       0
     )
@@ -255,12 +256,17 @@ export class PriceIntelligenceEngine {
       const standardLengthFt = Number(
         material.standard_roll_length_ft ||
         material.material_config?.standard_roll_length_ft ||
+        material.pricing_formula?.standard_roll_length_ft ||
+        material.pricing_formula?.material_config?.standard_roll_length_ft ||
         material.roll_length_ft ||
         164
       )
       const globalAllowance = Number(
         material.production_width_allowance ??
+        material.material_config?.production_width_allowance ??
         material.material_config?.extra_width_allowance_ft ??
+        material.pricing_formula?.production_width_allowance ??
+        material.pricing_formula?.material_config?.extra_width_allowance_ft ??
         material.extra_width_allowance_ft ??
         0
       )
@@ -271,6 +277,8 @@ export class PriceIntelligenceEngine {
         ? material.material_config.roll_sizes
         : (material.pricing_formula?.roll_sizes && Array.isArray(material.pricing_formula.roll_sizes) && material.pricing_formula.roll_sizes.length > 0)
         ? material.pricing_formula.roll_sizes
+        : (material.pricing_formula?.material_config?.roll_sizes && Array.isArray(material.pricing_formula.material_config.roll_sizes) && material.pricing_formula.material_config.roll_sizes.length > 0)
+        ? material.pricing_formula.material_config.roll_sizes
         : null
 
       // Explicit configured roll sizes if defined on master
@@ -284,7 +292,7 @@ export class PriceIntelligenceEngine {
             const physicalArea = Math.round(effectiveW * l * 10) / 10
             const nominalArea = Math.round(w * l * 10) / 10
 
-            let price = rs.default_supplier_price || rs.purchase_price
+            let price = rs.default_supplier_price || rs.purchase_price || rs.supplier_price || rs.price
             if (!price || price <= 0) {
               if (perSftCost > 0) {
                 price = Math.round(perSftCost * physicalArea)
@@ -324,8 +332,16 @@ export class PriceIntelligenceEngine {
       }
 
       // If no explicit roll_sizes array, derive from configured available_widths_ft
-      if (activeSizes.length === 0 && Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0) {
-        const widths: number[] = material.available_widths_ft
+      const availableWidths = (Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0)
+        ? material.available_widths_ft
+        : (material.material_config?.available_widths_ft && Array.isArray(material.material_config.available_widths_ft) && material.material_config.available_widths_ft.length > 0)
+        ? material.material_config.available_widths_ft
+        : (material.pricing_formula?.available_widths_ft && Array.isArray(material.pricing_formula.available_widths_ft) && material.pricing_formula.available_widths_ft.length > 0)
+        ? material.pricing_formula.available_widths_ft
+        : null
+
+      if (activeSizes.length === 0 && availableWidths && availableWidths.length > 0) {
+        const widths: number[] = availableWidths
         const baseW = Number(material.roll_width_ft) || (widths.includes(5) ? 5 : Math.max(...widths))
         const refEffectiveW = baseW + globalAllowance
 
