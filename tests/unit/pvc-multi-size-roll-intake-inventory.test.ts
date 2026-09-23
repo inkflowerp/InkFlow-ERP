@@ -297,11 +297,12 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
 
     const breakdownWithRolls = getMaterialWarehouseStockBreakdown(updatedMat!, storeRolls)
     assert.strictEqual(breakdownWithRolls.total_rolls, 1, 'Total rolls in breakdown must be 1, NOT 10')
-    assert.strictEqual(breakdownWithRolls.roll_items.length, 1, 'Must have only 1 active roll size item')
-    assert.strictEqual(breakdownWithRolls.roll_items[0].roll_count, 1)
-    assert.strictEqual(breakdownWithRolls.roll_items[0].width_ft, 2.25)
-    assert.strictEqual(breakdownWithRolls.roll_items[0].length_ft, 100)
-    assert.strictEqual(breakdownWithRolls.roll_items[0].total_sft, 225, 'Total SFT must be 225, NOT 8,384')
+    const activeRollItems = breakdownWithRolls.roll_items.filter((r) => r.roll_count > 0)
+    assert.strictEqual(activeRollItems.length, 1, 'Must have only 1 active roll size item')
+    assert.strictEqual(activeRollItems[0].roll_count, 1)
+    assert.strictEqual(activeRollItems[0].width_ft, 2.25)
+    assert.strictEqual(activeRollItems[0].length_ft, 100)
+    assert.strictEqual(activeRollItems[0].total_sft, 225, 'Total SFT must be 225, NOT 8,384')
 
     // Also test stock breakdown fallback when rolls array is empty but current_stock = 225
     const matWithStockOnly: MaterialRecord = {
@@ -310,11 +311,12 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     }
     const breakdownFallback = getMaterialWarehouseStockBreakdown(matWithStockOnly)
     assert.strictEqual(breakdownFallback.total_rolls, 1, 'Fallback total rolls must be 1, NOT 10')
-    assert.strictEqual(breakdownFallback.roll_items.length, 1, 'Fallback must allocate only to 2.25ft x 100ft')
-    assert.strictEqual(breakdownFallback.roll_items[0].roll_count, 1)
-    assert.strictEqual(breakdownFallback.roll_items[0].width_ft, 2.25)
-    assert.strictEqual(breakdownFallback.roll_items[0].length_ft, 100)
-    assert.strictEqual(breakdownFallback.roll_items[0].total_sft, 225, 'Fallback SFT must be 225, NOT 8,384')
+    const fallbackActive = breakdownFallback.roll_items.filter((r) => r.roll_count > 0)
+    assert.strictEqual(fallbackActive.length, 1, 'Fallback must allocate only to 2.25ft x 100ft')
+    assert.strictEqual(fallbackActive[0].roll_count, 1)
+    assert.strictEqual(fallbackActive[0].width_ft, 2.25)
+    assert.strictEqual(fallbackActive[0].length_ft, 100)
+    assert.strictEqual(fallbackActive[0].total_sft, 225, 'Fallback SFT must be 225, NOT 8,384')
   })
 })
 

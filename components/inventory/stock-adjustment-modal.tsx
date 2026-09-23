@@ -30,6 +30,7 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
+import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 
 export interface StockAdjustmentModalProps {
   open: boolean
@@ -132,6 +133,10 @@ export function StockAdjustmentModal({
   const activeMaterial = useMemo(() => {
     return materials.find((m) => m.id === materialId) || null
   }, [materials, materialId])
+
+  const stockBreakdown = useMemo(() => {
+    return activeMaterial ? getMaterialWarehouseStockBreakdown(activeMaterial) : null
+  }, [activeMaterial])
 
   const currentSysStock = Number(activeMaterial?.current_stock || 0)
   const unitCost = Number(activeMaterial?.average_cost || activeMaterial?.last_purchase_price || 0)
@@ -420,6 +425,35 @@ export function StockAdjustmentModal({
               </select>
             </div>
           </div>
+
+          {/* Configured Roll Sizes Breakdown Display */}
+          {stockBreakdown && stockBreakdown.roll_items && stockBreakdown.roll_items.length > 0 && (
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+                Active Configured Sizes & SFT Breakdown ({stockBreakdown.purchase_unit_display}):
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {stockBreakdown.roll_items.map((item, idx) => (
+                  <Badge
+                    key={idx}
+                    variant="outline"
+                    className="text-[11px] font-mono py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
+                  >
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
+                      {item.width_ft}ft × {item.length_ft}ft:
+                    </span>
+                    <span className="font-semibold">{item.roll_count} Roll(s)</span>
+                    <span className="text-slate-400 text-[10px]">({item.total_sft.toLocaleString()} SFT)</span>
+                    {item.purchase_price ? (
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
+                        @ ৳{item.purchase_price}
+                      </span>
+                    ) : null}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* VARIANCE CALCULATOR & AUDIT COUNT */}

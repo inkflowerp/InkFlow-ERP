@@ -149,6 +149,9 @@ export interface DirectReceiptItemRow {
   material_config?: any
   purchase_price_per_sft?: number | null
   production_width_allowance?: number | null
+  allowance_ft?: number | null
+  gsm?: number | null
+  finishing?: string | null
 }
 
 export interface UnifiedStockItem {
@@ -188,6 +191,9 @@ export interface UnifiedStockItem {
   material_config?: any
   purchase_price_per_sft?: number | null
   production_width_allowance?: number | null
+  allowance_ft?: number | null
+  gsm?: number | null
+  finishing?: string | null
 }
 
 export function detectPhysicalForm(item: {
@@ -485,7 +491,9 @@ export function ReceiveStockModal({
       roll_sizes?: any[],
       material_config?: any,
       purchase_price_per_sft?: number | null,
-      production_width_allowance?: number | null
+      production_width_allowance?: number | null,
+      gsm?: number | null,
+      finishing?: string | null
     ) => {
       const catLower = (cat + ' ' + name).toLowerCase()
       let catGroup = isMat ? 'Raw Materials & Substrates' : 'Ready Merchandise & Display Hardware'
@@ -616,6 +624,9 @@ export function ReceiveStockModal({
         material_config: material_config,
         purchase_price_per_sft: purchase_price_per_sft ?? (material_config as any)?.purchase_price_per_sft,
         production_width_allowance: production_width_allowance ?? (material_config as any)?.extra_width_allowance_ft ?? (material_config as any)?.production_width_allowance,
+        allowance_ft: production_width_allowance ?? (material_config as any)?.extra_width_allowance_ft ?? null,
+        gsm: gsm ?? (material_config as any)?.gsm ?? null,
+        finishing: finishing ?? (material_config as any)?.finishing ?? (material_config as any)?.default_finishing ?? null,
       })
     }
 
@@ -670,7 +681,9 @@ export function ReceiveStockModal({
         rollSizes,
         matConfig,
         perSftCost,
-        allowance
+        allowance,
+        m.gsm ?? (matchProd as any)?.gsm ?? (matConfig as any)?.gsm ?? null,
+        m.default_finishing ?? (m as any)?.finishing ?? (matchProd as any)?.finishing ?? (matConfig as any)?.finishing ?? null
       )
     }
 
@@ -751,7 +764,9 @@ export function ReceiveStockModal({
         (p as any).roll_sizes || (p as any).material_config?.roll_sizes,
         (p as any).material_config,
         (p as any).purchase_price_per_sft || (p as any).material_config?.purchase_price_per_sft,
-        (p as any).production_width_allowance || (p as any).material_config?.extra_width_allowance_ft
+        (p as any).production_width_allowance || (p as any).material_config?.extra_width_allowance_ft,
+        (p as any).gsm ?? (p as any).material_config?.gsm ?? null,
+        (p as any).finishing ?? (p as any).default_finishing ?? (p as any).material_config?.finishing ?? null
       )
     }
 
@@ -1640,6 +1655,9 @@ export function ReceiveStockModal({
               size_label: item.size_spec || (item.roll_width_ft ? `${item.roll_width_ft} ft × ${item.roll_length_ft || 164} ft` : item.sheet_size) || null,
               width_ft: item.roll_width_ft || null,
               length_ft: item.roll_length_ft || null,
+              allowance_ft: item.allowance_ft ?? item.production_width_allowance ?? (item.material_config as any)?.extra_width_allowance_ft ?? null,
+              gsm: item.gsm ?? (item.material_config as any)?.gsm ?? null,
+              finishing: item.finishing ?? (item.material_config as any)?.finishing ?? (item.material_config as any)?.default_finishing ?? null,
               physical_form: item.physical_form as any,
               purchase_unit: item.unit || item.master_purchase_unit || 'pcs',
               challan_number: challanNumber.trim() || null,

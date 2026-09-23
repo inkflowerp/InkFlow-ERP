@@ -2291,62 +2291,6 @@ export function getMaterialWarehouseStockBreakdown(
 
     const map = new Map<string, WarehouseRollStockItem>()
 
-    // Pre-populate all configured roll sizes from rawRollSizes so no configured size is lost
-    if (rawRollSizes.length > 0) {
-      for (const rs of rawRollSizes) {
-        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
-        const allowance = rs.extra_allowance !== undefined
-          ? Number(rs.extra_allowance)
-          : rs.allowance !== undefined
-          ? Number(rs.allowance)
-          : rs.allowance_ft !== undefined
-          ? Number(rs.allowance_ft)
-          : globalAllowance
-        const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
-          ? Number(rs.width_ft)
-          : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
-        const l = Number(rs.length || rs.length_ft || standardLength)
-        const explicitCount = matRolls.length > 0 ? 0 : Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
-        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
-        const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
-        const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
-
-        const attrs = normalizeInventoryGroupAttributes({
-          name: material.name,
-          width_ft: w,
-          length_ft: l,
-          allowance_ft: allowance,
-          purchase_price: price,
-          gsm: gsm,
-          finishing: fin,
-          specification: material.specification,
-          material_spec: (material as any)?.material_spec,
-        })
-        const key = createInventoryGroupingKey(attrs)
-        const sft = explicitCount > 0 ? explicitCount * attrs.width_ft * attrs.length_ft : (Number(rs.total_sft ?? rs.sft) || 0)
-        const rollCost = attrs.purchase_price > 0
-          ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
-          : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
-        const itemVal = explicitCount * rollCost
-
-        map.set(key, {
-          key,
-          name: attrs.name,
-          width_ft: attrs.width_ft,
-          length_ft: attrs.length_ft,
-          allowance_ft: attrs.allowance_ft,
-          purchase_price: attrs.purchase_price,
-          gsm: attrs.gsm,
-          finishing: attrs.finishing,
-          roll_count: explicitCount,
-          total_sft: sft,
-          unit_cost: attrs.purchase_price,
-          total_valuation: itemVal,
-          label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
-        })
-      }
-    }
-
     if (matRolls.length > 0) {
       // Group discrete warehouse physical rolls strictly using the 7 canonical attributes
       for (const r of matRolls) {
@@ -2399,11 +2343,120 @@ export function getMaterialWarehouseStockBreakdown(
         item.total_valuation = (item.total_valuation || 0) + itemValuation
       }
 
+      // If there are configured sizes not represented in physical rolls, add them with 0 count
+      if (rawRollSizes.length > 0) {
+        for (const rs of rawRollSizes) {
+          const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+          const allowance = rs.extra_allowance !== undefined
+            ? Number(rs.extra_allowance)
+            : rs.allowance !== undefined
+            ? Number(rs.allowance)
+            : rs.allowance_ft !== undefined
+            ? Number(rs.allowance_ft)
+            : globalAllowance
+          const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
+            ? Number(rs.width_ft)
+            : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+          const l = Number(rs.length || rs.length_ft || standardLength)
+          const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+          const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+          const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+          const attrs = normalizeInventoryGroupAttributes({
+            name: material.name,
+            width_ft: w,
+            length_ft: l,
+            allowance_ft: allowance,
+            purchase_price: price,
+            gsm: gsm,
+            finishing: fin,
+            specification: material.specification,
+            material_spec: (material as any)?.material_spec,
+          })
+          const key = createInventoryGroupingKey(attrs)
+
+          const alreadyRepresented = Array.from(map.values()).some(
+            (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - baseW) < 0.05) && Math.abs(item.length_ft - attrs.length_ft) < 0.05
+          )
+
+          if (!alreadyRepresented && !map.has(key)) {
+            map.set(key, {
+              key,
+              name: attrs.name,
+              width_ft: attrs.width_ft,
+              length_ft: attrs.length_ft,
+              allowance_ft: attrs.allowance_ft,
+              purchase_price: attrs.purchase_price,
+              gsm: attrs.gsm,
+              finishing: attrs.finishing,
+              roll_count: 0,
+              total_sft: 0,
+              unit_cost: attrs.purchase_price,
+              total_valuation: 0,
+              label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+            })
+          }
+        }
+      }
+
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft || (a.purchase_price || 0) - (b.purchase_price || 0))
       totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
       totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
       totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
     } else if (rawRollSizes.length > 0) {
+      for (const rs of rawRollSizes) {
+        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+        const allowance = rs.extra_allowance !== undefined
+          ? Number(rs.extra_allowance)
+          : rs.allowance !== undefined
+          ? Number(rs.allowance)
+          : rs.allowance_ft !== undefined
+          ? Number(rs.allowance_ft)
+          : globalAllowance
+        const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
+          ? Number(rs.width_ft)
+          : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+        const l = Number(rs.length || rs.length_ft || standardLength)
+        const explicitCount = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
+        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+        const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+        const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allowance,
+          purchase_price: price,
+          gsm: gsm,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+        const sft = explicitCount > 0 ? explicitCount * attrs.width_ft * attrs.length_ft : (Number(rs.total_sft ?? rs.sft) || 0)
+        const rollCost = attrs.purchase_price > 0
+          ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
+          : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
+        const itemVal = explicitCount * rollCost
+
+        map.set(key, {
+          key,
+          name: attrs.name,
+          width_ft: attrs.width_ft,
+          length_ft: attrs.length_ft,
+          allowance_ft: attrs.allowance_ft,
+          purchase_price: attrs.purchase_price,
+          gsm: attrs.gsm,
+          finishing: attrs.finishing,
+          roll_count: explicitCount,
+          total_sft: sft,
+          unit_cost: attrs.purchase_price,
+          total_valuation: itemVal,
+          label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+        })
+      }
+
       // Allocate general currentStock among configured sizes if explicit counts were not provided
       const currentExplicitRolls = Array.from(map.values()).reduce((sum, it) => sum + (it.roll_count || 0), 0)
       if (currentExplicitRolls === 0 && currentStock > 0) {
@@ -2492,6 +2545,12 @@ export function getMaterialWarehouseStockBreakdown(
       }
 
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
+      if (currentStock > 0) {
+        const activeItems = rollItems.filter((it) => it.roll_count > 0)
+        if (activeItems.length > 0 && activeItems.reduce((s, it) => s + it.total_sft, 0) >= currentStock - 1) {
+          rollItems = activeItems
+        }
+      }
       totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
       totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
       totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
@@ -2540,11 +2599,16 @@ export function getMaterialWarehouseStockBreakdown(
 
     // Format summary string
     let formattedSummary = ''
-    if (rollItems.length > 1) {
-      formattedSummary = rollItems
-        .map((it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`)
-        .join(' • ')
-    } else if (rollItems.length === 1) {
+    if (totalRolls > 0) {
+      const activeItems = rollItems.filter((it) => it.roll_count > 0)
+      if (activeItems.length > 1) {
+        formattedSummary = activeItems
+          .map((it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`)
+          .join(' • ')
+      } else if (activeItems.length === 1) {
+        formattedSummary = `(${activeItems[0].width_ft}ft × ${activeItems[0].length_ft}ft)`
+      }
+    } else if (rollItems.length > 0) {
       formattedSummary = `(${rollItems[0].width_ft}ft × ${rollItems[0].length_ft}ft)`
     } else if (rawRollSizes.length > 0) {
       const primaryBaseW = Number(rawRollSizes[0].nominal_width_ft || rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)

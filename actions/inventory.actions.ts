@@ -195,6 +195,9 @@ export async function receiveStockAction(
     size_label?: string | null
     width_ft?: number | null
     length_ft?: number | null
+    allowance_ft?: number | null
+    gsm?: number | null
+    finishing?: string | null
     physical_form?: MasterPhysicalClassification
     purchase_unit?: string | null
     challan_number?: string | null
