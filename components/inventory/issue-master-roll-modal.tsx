@@ -119,10 +119,58 @@ export function IssueMasterRollModal({
 }: IssueMasterRollModalProps) {
   const { locale, tBilingual } = useI18n()
 
-  // 1. Show ALL available inventory materials (not strictly filtered)
+  // 1. Show ALL available inventory materials (including fallback discovery from storage & inventory products)
   const availableMaterials = useMemo(() => {
-    return materials.filter((m) => m && m.is_active !== false)
-  }, [materials])
+    let all: MaterialRecord[] = []
+
+    if (Array.isArray(materials) && materials.length > 0) {
+      all = [...materials]
+    }
+
+    if (all.length === 0 && companyId) {
+      try {
+        const stored = PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []
+        if (stored.length > 0) all = stored
+      } catch {}
+    }
+    if (all.length === 0) {
+      try {
+        const storedGlobal = PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []
+        if (storedGlobal.length > 0) all = storedGlobal
+      } catch {}
+    }
+
+    // Also include any stocked items / products registered in inventory
+    try {
+      const allProds = companyId
+        ? PrintERPDataStore.getAll<any>(STORAGE_KEYS.PRODUCTS, companyId) || []
+        : PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+      for (const p of allProds) {
+        if (!all.some((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))) {
+          all.push({
+            id: p.id,
+            company_id: p.company_id || companyId || '',
+            sku: p.sku || 'PROD',
+            name: p.name,
+            name_bn: p.name_bn || null,
+            category: p.category || 'raw_material',
+            unit: p.unit || p.selling_unit || 'pcs',
+            current_stock: Number(p.current_stock ?? p.stock ?? p.opening_stock ?? 0),
+            average_cost: Number(p.cost_per_unit ?? p.base_cost ?? p.purchase_price ?? 0),
+            last_purchase_price: Number(p.purchase_price ?? p.cost_per_unit ?? p.base_cost ?? 0),
+            is_roll: Boolean(p.is_roll || ['roll', 'flex', 'vinyl', 'banner', 'canvas', 'mesh', 'pvc', 'sticker'].some((c) => String(p.category || '').toLowerCase().includes(c))),
+            roll_width_ft: p.roll_width_ft || p.width || null,
+            standard_roll_length_ft: p.standard_roll_length_ft || p.length || 164,
+            is_active: p.is_active !== false,
+            created_at: p.created_at || new Date().toISOString(),
+            updated_at: p.updated_at || new Date().toISOString(),
+          } as MaterialRecord)
+        }
+      }
+    } catch {}
+
+    return all.filter((m) => m && m.is_active !== false && !(m as any).is_deleted)
+  }, [materials, companyId])
 
   // Material Selection
   const effectiveInitialMatId = initialMaterialId || selectedMaterialId || request?.items?.[0]?.material_id || (request as any)?.material_id
@@ -136,6 +184,22 @@ export function IssueMasterRollModal({
   const selectedMaterial = useMemo(() => {
     return availableMaterials.find((m) => m.id === materialId) || materials.find((m) => m.id === materialId) || null
   }, [availableMaterials, materials, materialId])
+
+  // Effective rolls fallback if rolls prop is not provided
+  const effectiveRolls = useMemo(() => {
+    if (Array.isArray(rolls) && rolls.length > 0) return rolls
+    if (companyId) {
+      try {
+        const stored = PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []
+        if (stored.length > 0) return stored
+      } catch {}
+    }
+    try {
+      const storedGlobal = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+      if (storedGlobal.length > 0) return storedGlobal
+    } catch {}
+    return []
+  }, [rolls, companyId])
 
   // Effective Locations with fallback and auto discovery
   const effectiveLocations = useMemo(() => {
@@ -184,18 +248,155 @@ export function IssueMasterRollModal({
 
   // Warehouse Stock Breakdown in Purchase Units
   const warehouseBreakdown = useMemo(() => {
-    return getMaterialWarehouseStockBreakdown(selectedMaterial, rolls)
-  }, [selectedMaterial, rolls])
+    return getMaterialWarehouseStockBreakdown(selectedMaterial, effectiveRolls)
+  }, [selectedMaterial, effectiveRolls])
 
-  // Auto-inferred dimensions
+  // Active Configured Sizes & Economics Resolver for Selected Material
+  const configuredSizeOptions = useMemo(() => {
+    if (!selectedMaterial) return []
+
+    const list: {
+      key: string
+      label: string
+      width_ft: number
+      length_ft: number
+      allowance_ft: number
+      purchase_price: number
+      gsm: number
+      finishing: string
+      roll_count: number
+      total_sft: number
+      unit_cost: number
+      cost_display: string
+      stock_display: string
+      economics_display: string
+      is_custom?: boolean
+    }[] = []
+
+    const globalAllowance = Number(
+      selectedMaterial.production_width_allowance ??
+      (selectedMaterial.material_config as any)?.extra_width_allowance_ft ??
+      0
+    )
+    const baseCost = Number(
+      selectedMaterial.average_cost ||
+      selectedMaterial.last_purchase_price ||
+      selectedMaterial.cost_per_unit ||
+      0
+    )
+
+    if (warehouseBreakdown.is_roll) {
+      if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
+        for (const item of warehouseBreakdown.roll_items) {
+          const w = Number(item.width_ft || 0)
+          const l = Number(item.length_ft || 0)
+          const singleArea = Math.round(w * l * 100) / 100
+          const area = Number(item.total_sft || (singleArea * (item.roll_count || 0)))
+          const itemPrice = Number(item.purchase_price ?? 0)
+          const price = itemPrice > 0 ? itemPrice : baseCost
+          const pricePerRoll = price > 150 ? price : (price > 0 && singleArea > 0 ? Math.round(price * singleArea * 100) / 100 : 0)
+          const pricePerSft = singleArea > 0 && pricePerRoll > 0 ? Math.round((pricePerRoll / singleArea) * 100) / 100 : 0
+
+          const costDisp = pricePerRoll > 0
+            ? `৳ ${pricePerRoll.toLocaleString()} / Roll${pricePerSft > 0 ? ` (৳ ${pricePerSft.toFixed(2)}/SFT)` : ''}`
+            : '—'
+          const stockDisp = `${item.roll_count} ${item.roll_count === 1 ? 'Roll' : 'Rolls'} (${area.toLocaleString()} SFT)`
+          const economicsDisp = `${w}ft × ${l}ft (${singleArea} SFT/Roll) — Stock: ${stockDisp} — Rate: ${costDisp}`
+
+          list.push({
+            key: item.key || `${w}x${l}|p:${price}|gsm:${item.gsm || 0}|f:${item.finishing || 'none'}`,
+            label: `${w}ft × ${l}ft (${singleArea} SFT/Roll)`,
+            width_ft: w,
+            length_ft: l,
+            allowance_ft: Number(item.allowance_ft ?? globalAllowance),
+            purchase_price: price,
+            gsm: Number(item.gsm ?? selectedMaterial.gsm ?? 0),
+            finishing: String(item.finishing ?? selectedMaterial.default_finishing ?? 'none'),
+            roll_count: Number(item.roll_count || 0),
+            total_sft: area,
+            unit_cost: pricePerRoll,
+            cost_display: costDisp,
+            stock_display: stockDisp,
+            economics_display: economicsDisp,
+          })
+        }
+      } else {
+        const defW = Number(selectedMaterial.roll_width_ft || selectedMaterial.width || 4)
+        const defL = Number(selectedMaterial.standard_roll_length_ft || selectedMaterial.roll_length_ft || selectedMaterial.length || 164)
+        const singleArea = Math.round(defW * defL * 100) / 100
+        const stockRolls = singleArea > 0 ? Math.floor(Number(selectedMaterial.current_stock || 0) / singleArea) : 0
+        const pricePerRoll = baseCost > 150 ? baseCost : (baseCost > 0 && singleArea > 0 ? Math.round(baseCost * singleArea * 100) / 100 : 0)
+        const pricePerSft = singleArea > 0 && pricePerRoll > 0 ? Math.round((pricePerRoll / singleArea) * 100) / 100 : 0
+
+        const costDisp = pricePerRoll > 0
+          ? `৳ ${pricePerRoll.toLocaleString()} / Roll${pricePerSft > 0 ? ` (৳ ${pricePerSft.toFixed(2)}/SFT)` : ''}`
+          : '—'
+        const stockDisp = `${stockRolls} Rolls (${Number(selectedMaterial.current_stock || 0).toLocaleString()} SFT)`
+        const economicsDisp = `${defW}ft × ${defL}ft (${singleArea} SFT/Roll) — Stock: ${stockDisp} — Rate: ${costDisp}`
+
+        list.push({
+          key: `${defW}x${defL}`,
+          label: `${defW}ft × ${defL}ft (${singleArea} SFT/Roll)`,
+          width_ft: defW,
+          length_ft: defL,
+          allowance_ft: globalAllowance,
+          purchase_price: baseCost,
+          gsm: Number(selectedMaterial.gsm || 0),
+          finishing: String(selectedMaterial.default_finishing || 'none'),
+          roll_count: stockRolls,
+          total_sft: Number(selectedMaterial.current_stock || 0),
+          unit_cost: pricePerRoll,
+          cost_display: costDisp,
+          stock_display: stockDisp,
+          economics_display: economicsDisp,
+        })
+      }
+    } else {
+      const unitName = (selectedMaterial.purchase_unit || selectedMaterial.unit || 'pcs').toUpperCase()
+      const stock = Number(selectedMaterial.current_stock || 0)
+      const costDisp = baseCost > 0 ? `৳ ${baseCost.toLocaleString()} / ${unitName}` : '—'
+      const stockDisp = `${stock.toLocaleString()} ${unitName}`
+      const economicsDisp = `Standard Unit (${unitName}) — Available: ${stockDisp} — Rate: ${costDisp}`
+
+      list.push({
+        key: 'standard',
+        label: `Standard ${unitName}`,
+        width_ft: 0,
+        length_ft: 0,
+        allowance_ft: 0,
+        purchase_price: baseCost,
+        gsm: Number(selectedMaterial.gsm || 0),
+        finishing: String(selectedMaterial.default_finishing || 'none'),
+        roll_count: stock,
+        total_sft: stock,
+        unit_cost: baseCost,
+        cost_display: costDisp,
+        stock_display: stockDisp,
+        economics_display: economicsDisp,
+      })
+    }
+
+    return list
+  }, [selectedMaterial, warehouseBreakdown])
+
+  // Active Selected Size & Custom Dimensions State
+  const [selectedSizeKey, setSelectedSizeKey] = useState<string>('')
+  const [customWidthFt, setCustomWidthFt] = useState<number | undefined>(initialWidthFt && initialWidthFt > 0 ? initialWidthFt : undefined)
+  const [customLengthFt, setCustomLengthFt] = useState<number | undefined>(initialLengthFt && initialLengthFt > 0 ? initialLengthFt : undefined)
+
+  const activeSelectedSizeOption = useMemo(() => {
+    return configuredSizeOptions.find((o) => o.key === selectedSizeKey) || configuredSizeOptions[0] || null
+  }, [configuredSizeOptions, selectedSizeKey])
+
+  // Effective dimensions for issue
   const widthFt = useMemo(() => {
-    if (initialWidthFt && initialWidthFt > 0) {
-      return initialWidthFt
+    if (customWidthFt !== undefined && customWidthFt > 0) {
+      return customWidthFt
+    }
+    if (activeSelectedSizeOption && activeSelectedSizeOption.width_ft > 0) {
+      return activeSelectedSizeOption.width_ft
     }
     if (!selectedMaterial) return 3
-    if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
-      return warehouseBreakdown.roll_items[0].width_ft
-    }
     return Number(
       selectedMaterial.roll_width_ft ||
         selectedMaterial.width ||
@@ -204,23 +405,23 @@ export function IssueMasterRollModal({
           : 0) ||
         3
     )
-  }, [selectedMaterial, warehouseBreakdown, initialWidthFt])
+  }, [customWidthFt, activeSelectedSizeOption, selectedMaterial])
 
   const lengthFt = useMemo(() => {
-    if (initialLengthFt && initialLengthFt > 0) {
-      return initialLengthFt
+    if (customLengthFt !== undefined && customLengthFt > 0) {
+      return customLengthFt
+    }
+    if (activeSelectedSizeOption && activeSelectedSizeOption.length_ft > 0) {
+      return activeSelectedSizeOption.length_ft
     }
     if (!selectedMaterial) return 164
-    if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
-      return warehouseBreakdown.roll_items[0].length_ft
-    }
     return Number(
       selectedMaterial.standard_roll_length_ft ||
         selectedMaterial.roll_length_ft ||
         selectedMaterial.length ||
         164
     )
-  }, [selectedMaterial, warehouseBreakdown, initialLengthFt])
+  }, [customLengthFt, activeSelectedSizeOption, selectedMaterial])
 
   // Batch Quantity (Number of purchase units / rolls to issue)
   const [quantityRolls, setQuantityRolls] = useState<number>(1)
@@ -268,6 +469,13 @@ export function IssueMasterRollModal({
         setMaterialId(availableMaterials[0].id)
       }
 
+      if (initialWidthFt && initialWidthFt > 0) {
+        setCustomWidthFt(initialWidthFt)
+      }
+      if (initialLengthFt && initialLengthFt > 0) {
+        setCustomLengthFt(initialLengthFt)
+      }
+
       if (request) {
         const reqQty = Number(request.items?.[0]?.requested_quantity || (request as any)?.requested_quantity || 1)
         if (reqQty > 0) {
@@ -301,7 +509,24 @@ export function IssueMasterRollModal({
       setSuccess(null)
       setLoading(false)
     }
-  }, [open, initialMaterialId, selectedMaterialId, initialMachineId, request, availableMaterials, effectiveLocations])
+  }, [open, initialMaterialId, selectedMaterialId, initialMachineId, initialWidthFt, initialLengthFt, request, availableMaterials, effectiveLocations])
+
+  // Sync selected size key when material changes or configuredSizeOptions update
+  useEffect(() => {
+    if (configuredSizeOptions.length > 0) {
+      const matched = configuredSizeOptions.find((o) =>
+        (customWidthFt && customLengthFt && o.width_ft === customWidthFt && o.length_ft === customLengthFt) ||
+        (initialWidthFt && initialLengthFt && o.width_ft === initialWidthFt && o.length_ft === initialLengthFt)
+      )
+      if (matched) {
+        setSelectedSizeKey(matched.key)
+      } else {
+        setSelectedSizeKey(configuredSizeOptions[0].key)
+        setCustomWidthFt(configuredSizeOptions[0].width_ft)
+        setCustomLengthFt(configuredSizeOptions[0].length_ft)
+      }
+    }
+  }, [materialId, configuredSizeOptions])
 
   // Material Physical Form & Unit Classifications
   const isRollMedia = Boolean(warehouseBreakdown.is_roll)
@@ -398,12 +623,15 @@ export function IssueMasterRollModal({
   }, [selectedMaterial])
 
   const currentAvailablePurchaseUnits = useMemo(() => {
+    if (activeSelectedSizeOption && activeSelectedSizeOption.roll_count > 0) {
+      return activeSelectedSizeOption.roll_count
+    }
     if (warehouseBreakdown.total_rolls > 0) {
       return warehouseBreakdown.total_rolls
     }
     if (singleUnitQuantity <= 0) return 0
     return Math.floor(currentStoreStock / singleUnitQuantity)
-  }, [warehouseBreakdown, currentStoreStock, singleUnitQuantity])
+  }, [activeSelectedSizeOption, warehouseBreakdown, currentStoreStock, singleUnitQuantity])
 
   const projectedRemainingUnits = useMemo(() => {
     return Math.max(0, currentAvailablePurchaseUnits - quantityRolls)
@@ -420,6 +648,15 @@ export function IssueMasterRollModal({
   const { unitCostPerPurchaseUnit, costPerConsumptionUnit } = useMemo(() => {
     if (!selectedMaterial) {
       return { unitCostPerPurchaseUnit: 0, costPerConsumptionUnit: 0 }
+    }
+
+    if (activeSelectedSizeOption && activeSelectedSizeOption.unit_cost > 0) {
+      const uCost = activeSelectedSizeOption.unit_cost
+      const cCost = singleUnitQuantity > 0 ? Math.round((uCost / singleUnitQuantity) * 100) / 100 : uCost
+      return {
+        unitCostPerPurchaseUnit: uCost,
+        costPerConsumptionUnit: cCost,
+      }
     }
 
     if (warehouseBreakdown.cost_per_purchase_unit > 0 && warehouseBreakdown.cost_per_consumption_unit > 0) {
@@ -518,7 +755,7 @@ export function IssueMasterRollModal({
       unitCostPerPurchaseUnit: costPerPur,
       costPerConsumptionUnit: costPerCons,
     }
-  }, [selectedMaterial, warehouseBreakdown, singleUnitQuantity, isRollMedia, isRigidSheet, isPackBox])
+  }, [selectedMaterial, activeSelectedSizeOption, warehouseBreakdown, singleUnitQuantity, isRollMedia, isRigidSheet, isPackBox])
 
   const totalValuation = useMemo(() => {
     return Math.round(unitCostPerPurchaseUnit * quantityRolls * 100) / 100
@@ -656,7 +893,7 @@ export function IssueMasterRollModal({
         {/* ========================================================= */}
         {/* STEP 1: SUBSTRATE MATERIAL & SOURCE WAREHOUSE */}
         {/* ========================================================= */}
-        <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
+        <div className="space-y-3.5 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
@@ -679,29 +916,42 @@ export function IssueMasterRollModal({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {/* Substrate Select (Shows ALL Available Materials) */}
+            {/* Substrate Select (Shows ALL Available Materials with Sizes & Economics) */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center justify-between">
                 <span>
                   {tBilingual('Inventory Material Item', 'গুদামের কাঁচামাল')}{' '}
                   <span className="text-rose-500">*</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-normal">
-                  ({availableMaterials.length} Available Materials)
+                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
+                  ({availableMaterials.length} Available Items)
                 </span>
               </Label>
               <select
                 value={materialId}
-                onChange={(e) => setMaterialId(e.target.value)}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                onChange={(e) => {
+                  setMaterialId(e.target.value)
+                  setCustomWidthFt(undefined)
+                  setCustomLengthFt(undefined)
+                }}
+                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
                 required
               >
                 <option value="">-- Select Inventory Material --</option>
                 {availableMaterials.map((m) => {
-                  const bd = getMaterialWarehouseStockBreakdown(m)
+                  const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
+                  const sizesSummary = bd.is_roll && bd.roll_items.length > 0
+                    ? bd.roll_items.map((it) => `${it.width_ft}×${it.length_ft}ft`).join(', ')
+                    : `${m.unit || 'pcs'}`
+                  const rateSummary = bd.cost_display_primary && bd.cost_display_primary !== '—'
+                    ? `Rate: ${bd.cost_display_primary}`
+                    : ''
+                  const valSummary = bd.total_valuation > 0 ? `Val: ৳${bd.total_valuation.toLocaleString()}` : ''
+                  const economicsPart = [rateSummary, valSummary].filter(Boolean).join(' • ')
+
                   return (
                     <option key={m.id} value={m.id}>
-                      {m.name} ({m.sku || 'No SKU'}) — {bd.purchase_unit_display} ({m.current_stock} {m.unit})
+                      {m.name} ({m.sku || 'No SKU'}) | Sizes: {sizesSummary} | Stock: {bd.purchase_unit_display} {economicsPart ? `| ${economicsPart}` : ''}
                     </option>
                   )
                 })}
@@ -730,6 +980,78 @@ export function IssueMasterRollModal({
                 ))}
               </select>
             </div>
+
+            {/* Dedicated Option: Material Name, Active Configured Size & Economics */}
+            {configuredSizeOptions.length > 0 && (
+              <div className="sm:col-span-2 p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 space-y-2.5 shadow-2xs">
+                <div className="flex items-center justify-between flex-wrap gap-1">
+                  <Label className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                    <Disc className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                    <span>{tBilingual('Active Configured Size & Economics', 'সক্রিয় কনফিগার করা সাইজ ও মূল্য/রেট')}</span>
+                    <span className="text-rose-500">*</span>
+                  </Label>
+                  <span className="text-[11px] text-blue-700 dark:text-blue-300 font-mono font-medium">
+                    {configuredSizeOptions.length} {configuredSizeOptions.length === 1 ? 'Size Group Available' : 'Size Groups Available'}
+                  </span>
+                </div>
+
+                <select
+                  value={selectedSizeKey}
+                  onChange={(e) => {
+                    const k = e.target.value
+                    setSelectedSizeKey(k)
+                    const opt = configuredSizeOptions.find((o) => o.key === k)
+                    if (opt) {
+                      setCustomWidthFt(opt.width_ft)
+                      setCustomLengthFt(opt.length_ft)
+                    }
+                  }}
+                  className="w-full h-10 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs font-mono"
+                >
+                  {configuredSizeOptions.map((opt) => (
+                    <option key={opt.key} value={opt.key}>
+                      {selectedMaterial?.name}: {opt.economics_display}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Quick Select Chips for Multiple Size Groups */}
+                {configuredSizeOptions.length > 1 && (
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    {configuredSizeOptions.map((opt) => {
+                      const isSelected = selectedSizeKey === opt.key
+                      return (
+                        <button
+                          key={opt.key}
+                          type="button"
+                          onClick={() => {
+                            setSelectedSizeKey(opt.key)
+                            setCustomWidthFt(opt.width_ft)
+                            setCustomLengthFt(opt.length_ft)
+                          }}
+                          className={cn(
+                            'px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border shadow-2xs text-left',
+                            isSelected
+                              ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-xs'
+                              : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/40'
+                          )}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span>{opt.label}</span>
+                            <span className={cn('text-[10px] font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
+                              • {opt.stock_display}
+                            </span>
+                          </div>
+                          <div className={cn('text-[11px] font-extrabold', isSelected ? 'text-blue-100' : 'text-emerald-600 dark:text-emerald-400')}>
+                            {opt.cost_display}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
