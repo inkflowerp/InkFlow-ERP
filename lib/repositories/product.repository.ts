@@ -65,8 +65,6 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     'target_margin_percentage',
     'minimum_charge',
     'min_order_quantity',
-    'current_stock',
-    'stock',
     'min_billable_quantity',
     'min_allowed_margin_percent',
     'pricing_method',

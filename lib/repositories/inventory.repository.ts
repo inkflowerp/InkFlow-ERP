@@ -897,15 +897,32 @@ export class InventoryRepository {
 
       // Also update products table if product exists (by id or sku)
       try {
-        await (supabase as any)
+        const prodPayload: any = {
+          updated_at: new Date().toISOString(),
+        }
+        if (unitCost > 0) {
+          prodPayload.purchase_price = unitCost
+          prodPayload.base_cost = unitCost
+        }
+
+        const { data: existingProd } = await (supabase as any)
           .from('products')
-          .update({
+          .select('pricing_formula')
+          .or(`id.eq.${material.id},sku.eq.${material.sku}`)
+          .maybeSingle()
+
+        if (existingProd) {
+          const formula = (typeof existingProd.pricing_formula === 'object' && existingProd.pricing_formula !== null ? existingProd.pricing_formula : {}) as any
+          prodPayload.pricing_formula = {
+            ...formula,
             current_stock: newStock,
             stock: newStock,
-            purchase_price: unitCost > 0 ? unitCost : undefined,
-            base_cost: unitCost > 0 ? unitCost : undefined,
-            updated_at: new Date().toISOString(),
-          })
+          }
+        }
+
+        await (supabase as any)
+          .from('products')
+          .update(prodPayload)
           .or(`id.eq.${material.id},sku.eq.${material.sku}`)
       } catch {}
 

@@ -211,4 +211,38 @@ describe('Unit: Product Entity Type Classification (Ready Product vs Raw Materia
     assert.deepStrictEqual(sanitized.components, [], 'components must default to empty array, never null')
     assert.deepStrictEqual(sanitized.pricing_formula, {}, 'pricing_formula must default to empty object, never null')
   })
+
+  it('8. sanitizeProductDbPayload strips non-existent columns (current_stock, stock, opening_stock) from Supabase products payload', () => {
+    const rawPayload = {
+      name: 'Roll-Up Standee 3x6 ft',
+      sku: 'RP-STAND-3X6',
+      unit: 'piece',
+      selling_price: 1850,
+      current_stock: 50,
+      stock: 50,
+      opening_stock: 50,
+      reorder_level: 10,
+      warehouse_location: 'Shelf B-12',
+      pricing_formula: {
+        opening_stock: 50,
+        current_stock: 50,
+        stock: 50,
+        reorder_level: 10,
+      },
+    }
+
+    const sanitized = sanitizeProductDbPayload(rawPayload)
+    assert.strictEqual(sanitized.current_stock, undefined, 'current_stock must NOT be in DB payload')
+    assert.strictEqual(sanitized.stock, undefined, 'stock must NOT be in DB payload')
+    assert.strictEqual(sanitized.opening_stock, undefined, 'opening_stock must NOT be in DB payload')
+    assert.strictEqual(sanitized.reorder_level, undefined, 'reorder_level must NOT be in DB payload')
+    assert.strictEqual(sanitized.name, 'Roll-Up Standee 3x6 ft')
+    assert.deepStrictEqual(sanitized.pricing_formula, {
+      opening_stock: 50,
+      current_stock: 50,
+      stock: 50,
+      reorder_level: 10,
+    }, 'Stock data must be safely preserved in pricing_formula JSONB column')
+  })
 })
+
