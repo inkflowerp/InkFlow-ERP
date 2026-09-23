@@ -53,33 +53,28 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
     assert.strictEqual(byTaskNumber.id, taskUuid)
   })
 
-  it('2. Synthesizes task from existing Invoice if not in production store', async () => {
-    const invoice: Partial<InvoiceRecord> = {
-      id: 'inv-4444',
-      company_id: TENANT_ID,
-      invoice_number: 'INV-000004',
-      customer_name: 'kkk',
-      due_date: '2026-09-25',
-      items: [
-        {
-          id: 'item-44',
-          invoice_id: 'inv-4444',
-          item_name: 'Pana Flex Banner Print',
-          item_description: 'Pana Flex Banner Print for kkk',
-          quantity: 10,
-          unit: 'sft',
-          unit_price: 15,
-          total_price: 150,
-        },
-      ],
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-    PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+  it('2. Does not synthesize phantom tasks from invoice and returns created task accurately', async () => {
+    // Lookup non-existent task before creation -> must return null (no fake tasks synthesized)
+    const notFound = await ProductionPlanningService.getTaskById('TSK-NONEXISTENT', TENANT_ID)
+    assert.strictEqual(notFound, null, 'Querying non-existent task should return null without fabricating phantom task')
 
-    // Attempt to lookup task using task number based on invoice
+    // Create a genuine production task
+    const createdTask = await ProductionTaskRepository.createTask({
+      company_id: TENANT_ID,
+      task_number: 'TSK-000004-1',
+      task_name: 'Pana Flex Banner Print for kkk',
+      customer_name: 'kkk',
+      job_number: 'INV-000004',
+      task_type: 'printing',
+      department: 'printing',
+      quantity: 10,
+      unit: 'sft',
+      status: 'queued',
+    } as any)
+
+    // Lookup task using task number
     const foundTask = await ProductionPlanningService.getTaskById('TSK-000004-1', TENANT_ID)
-    assert.ok(foundTask, 'Must synthesize and find task from Invoice')
+    assert.ok(foundTask, 'Must find created task')
     assert.strictEqual(foundTask.customer_name, 'kkk')
     assert.ok(foundTask.task_name.includes('Pana Flex Banner Print'))
     assert.strictEqual(foundTask.job_number, 'INV-000004')

@@ -187,6 +187,23 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
 
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [mixedInvoice])
 
+    // Create genuine design job for custom item
+    await DesignRepository.createDesignJob({
+      id: 'dsn-banner-201',
+      company_id: companyId,
+      invoice_id: mixedInvoice.id,
+      invoice_number: mixedInvoice.invoice_number,
+      customer_id: mixedInvoice.customer_id,
+      customer_name: mixedInvoice.customer_name,
+      customer_phone: mixedInvoice.customer_phone,
+      design_number: 'DSN-000201-A',
+      title: 'Backlit Signboard Flex Banner (10ft × 4ft)',
+      quantity: 1,
+      workflow_routing: 'design_required',
+      status: 'received',
+      all_invoice_items: mixedInvoice.items,
+    } as any)
+
     // Fetch design jobs
     const designJobs = await DesignRepository.getDesignJobs(companyId)
     assert.strictEqual(designJobs.length, 1, 'Only 1 design job generated for custom banner')
@@ -258,6 +275,21 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
     }
 
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [invoice])
+
+    await DesignRepository.createDesignJob({
+      id: 'dsn-prod-301',
+      company_id: companyId,
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      customer_id: invoice.customer_id,
+      customer_name: invoice.customer_name,
+      customer_phone: invoice.customer_phone,
+      title: 'Store Vinyl Sticker with Gloss Lamination (8ft × 3ft)',
+      workflow_routing: 'ready_production',
+      status: 'approved',
+      finishing_spec: 'Gloss Lamination & Board Pasting',
+      all_invoice_items: invoice.items,
+    } as any)
 
     const tasks = await ProductionTaskRepository.getTasks(companyId)
     assert.strictEqual(tasks.length, 2, '2 tasks generated: 1 Printing + 1 Finishing')
@@ -367,8 +399,46 @@ describe('Full Tenant End-to-End Workflow: Quotation -> Invoice -> Orders -> Des
 
     PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [invoiceWithDue])
 
+    const createdChallan = await LogisticsRepository.createChallan({
+      company_id: companyId,
+      challan_number: 'CHL-000501',
+      invoice_id: invoiceWithDue.id,
+      invoice_number: invoiceWithDue.invoice_number,
+      recipient_name: 'Walton Hi-Tech Industries PLC',
+      recipient_phone: '+8801711223344',
+      grand_total: 30000,
+      paid_amount: 10000,
+      due_amount: 20000,
+      payment_status: 'partial',
+      status: 'pending',
+      items: [
+        {
+          id: 'chl-item-1',
+          product_name: 'Outdoor Panaflex Billboard',
+          product_description: 'Outdoor Panaflex Billboard 20ft × 10ft',
+          quantity: 1,
+          delivered_quantity: 0,
+          remaining_quantity: 1,
+          unit: 'pcs',
+          item_kind: 'custom_manufacturing',
+          status: 'pending',
+        },
+        {
+          id: 'chl-item-2',
+          product_name: 'Luxury Rollup Stand',
+          product_description: 'Luxury Rollup Stand 3ft × 6.5ft',
+          quantity: 2,
+          delivered_quantity: 0,
+          remaining_quantity: 2,
+          unit: 'pcs',
+          item_kind: 'ready_product',
+          status: 'ready_for_delivery',
+        },
+      ],
+    } as any)
+
     const challans = await LogisticsRepository.getChallans(companyId)
-    assert.strictEqual(challans.length, 1, 'Synthesizes 1 unified challan')
+    assert.strictEqual(challans.length, 1, 'Finds 1 delivery challan')
 
     const ch = challans[0]
     assert.strictEqual(ch.challan_number, 'CHL-000501')

@@ -64,8 +64,8 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
     assert.equal(found?.title, 'PVC Print')
   })
 
-  it('3. Dynamically synthesizes design job from invoices when not present in DESIGN_JOBS', async () => {
-    // Only invoice exists in storage
+  it('3. Returns null for non-existent design job and finds genuine created design jobs without synthesizing phantom data', async () => {
+    // Only invoice exists in storage, no design job created yet
     const invoice = {
       id: 'inv-000003',
       company_id: companyId,
@@ -88,9 +88,26 @@ describe('Graphic Design Studio - Design Job Lookup & Print Dispatch Hardening',
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
-    // Attempt to lookup DSN-000003
+    // Attempt to lookup non-existent DSN-999999 must return null (no synthetic fallback)
+    const notFound = await DesignRepository.getDesignJobById('DSN-999999', companyId)
+    assert.equal(notFound, null, 'Should return null for non-existent design job without synthesizing phantom data')
+
+    // Create genuine design job linked to invoice
+    const createdJob = await DesignRepository.createDesignJob({
+      id: 'uuid-genuine-300',
+      company_id: companyId,
+      design_number: 'DSN-000003',
+      customer_id: 'cust-3',
+      customer_name: 'Square Textiles',
+      title: 'PVC Print',
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      workflow_routing: 'ready_production',
+      status: 'received',
+    } as any)
+
     const found = await DesignRepository.getDesignJobById('DSN-000003', companyId)
-    assert.ok(found, 'Should synthesize and return design job for DSN-000003 from invoice')
+    assert.ok(found, 'Should find genuine created design job by design_number')
     assert.equal(found?.design_number, 'DSN-000003')
     assert.equal(found?.invoice_number, 'INV-000003')
     assert.equal(found?.customer_name, 'Square Textiles')

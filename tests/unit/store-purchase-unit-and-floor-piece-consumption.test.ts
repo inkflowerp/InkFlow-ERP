@@ -91,6 +91,7 @@ test('Purchase Unit Store & Piece-Based Floor Consumption Lifecycle', async (t) 
     const issuedRoll = warehouseRolls[0]
     issuedRoll.status = 'available'
     issuedRoll.location_name = 'Print Floor'
+    pvcMaterial.current_stock -= (issuedRoll.width_ft * issuedRoll.initial_length_ft)
 
     PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, warehouseRolls, true, companyId)
 

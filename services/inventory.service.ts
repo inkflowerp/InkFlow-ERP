@@ -325,12 +325,13 @@ export class InventoryService {
     // Quantity conversion: If purchase unit is Roll and material stock is kept in SFT, convert quantity
     let stockChangeQty = params.quantity
     let effectiveUnitCost = params.unit_cost
-    if (isRoll && (material.unit.toLowerCase() === 'sft' || material.unit.toLowerCase() === 'sqft') && (pUnit === 'roll' || pUnit === 'rolls') && areaPerUnitSft > 0) {
+    const matUnit = (material.unit || 'pcs').toLowerCase()
+    if (isRoll && (matUnit === 'sft' || matUnit === 'sqft') && (pUnit === 'roll' || pUnit === 'rolls') && areaPerUnitSft > 0) {
       stockChangeQty = Math.round(params.quantity * areaPerUnitSft * 100) / 100
       if (effectiveUnitCost && effectiveUnitCost > 150) {
         effectiveUnitCost = Math.round((effectiveUnitCost / areaPerUnitSft) * 100) / 100
       }
-    } else if (isSheet && (pUnit === 'sheet' || pUnit === 'sheets') && (material.unit.toLowerCase() === 'sft' || material.unit.toLowerCase() === 'sqft')) {
+    } else if (isSheet && (pUnit === 'sheet' || pUnit === 'sheets') && (matUnit === 'sft' || matUnit === 'sqft')) {
       const sheetArea = (widthFt && lengthFt) ? widthFt * lengthFt : 32
       stockChangeQty = Math.round(params.quantity * sheetArea * 100) / 100
       if (effectiveUnitCost && effectiveUnitCost > 150 && sheetArea > 0) {

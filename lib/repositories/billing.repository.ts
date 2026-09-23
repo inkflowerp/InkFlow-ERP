@@ -288,7 +288,7 @@ export class BillingRepository {
           }
         }
 
-        if (!res.error && res.data) {
+        if (!res.error && res.data && res.data.length > 0) {
           const dbInvoices = (res.data || []) as unknown as InvoiceRecord[]
           // Ensure items, payments, write_offs defaults
           const formatted = dbInvoices.map((inv) => ({

@@ -41,6 +41,20 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
+    await DesignRepository.createDesignJob({
+      id: 'dsn-test-req-01',
+      company_id: companyId,
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      customer_id: invoice.customer_id,
+      customer_name: invoice.customer_name,
+      customer_phone: invoice.customer_phone,
+      title: 'Tri-fold glossy brochure (A4)',
+      workflow_routing: 'design_required',
+      status: 'received',
+      all_invoice_items: invoice.items,
+    } as any)
+
     const jobs = await DesignRepository.getDesignJobs(companyId)
     assert.equal(jobs.length, 1, 'Should find 1 design job from invoice')
     assert.equal(jobs[0].title, 'Tri-fold glossy brochure (A4)')
@@ -75,6 +89,20 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
       created_at: new Date().toISOString(),
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+
+    await DesignRepository.createDesignJob({
+      id: 'dsn-test-ok-02',
+      company_id: companyId,
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      customer_id: invoice.customer_id,
+      customer_name: invoice.customer_name,
+      customer_phone: invoice.customer_phone,
+      title: '20×10 ft Billboard Flex Print',
+      workflow_routing: 'design_ok',
+      status: 'received',
+      all_invoice_items: invoice.items,
+    } as any)
 
     const jobs = await DesignRepository.getDesignJobs(companyId)
     assert.equal(jobs.length, 1, 'Should find 1 design job for Design Check')
@@ -131,6 +159,34 @@ describe('Design Panel - Invoice Design Required & Design OK Intake Tests', () =
       created_at: new Date().toISOString(),
     }
     PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
+
+    await DesignRepository.createDesignJob({
+      id: 'dsn-test-multi-box',
+      company_id: companyId,
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      customer_id: invoice.customer_id,
+      customer_name: invoice.customer_name,
+      customer_phone: invoice.customer_phone,
+      title: 'Custom Juice Box with Die-Cut Crease',
+      workflow_routing: 'design_required',
+      status: 'received',
+      all_invoice_items: invoice.items,
+    } as any)
+
+    await DesignRepository.createDesignJob({
+      id: 'dsn-test-multi-tag',
+      company_id: companyId,
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      customer_id: invoice.customer_id,
+      customer_name: invoice.customer_name,
+      customer_phone: invoice.customer_phone,
+      title: 'Hang Tag 350 GSM Matte Lamination',
+      workflow_routing: 'design_ok',
+      status: 'received',
+      all_invoice_items: invoice.items,
+    } as any)
 
     const jobs = await DesignRepository.getDesignJobs(companyId)
     assert.equal(jobs.length, 2, 'Should ingest exactly 2 design jobs (excluding ready_product)')

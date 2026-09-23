@@ -17,8 +17,8 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     PrintERPDataStore.clear(STORAGE_KEYS.PRODUCTS)
   })
 
-  test('1. Auto-synchronizes physical rolls when roll substrates exist in warehouse materials', async () => {
-    // Seed 3 raw materials: 2 roll substrates and 1 consumable (non-roll)
+  test('1. Retrieves and enriches actual physical rolls without synthesizing fake fallback rolls', async () => {
+    // Seed 2 raw materials: 1 roll substrate and 1 consumable (non-roll)
     const flexMat: Partial<MaterialRecord> = {
       id: `mat-flex-${Date.now()}`,
       company_id: testCompanyId,
@@ -31,24 +31,8 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
       is_roll: true,
       roll_width_ft: 10,
       roll_length_ft: 164,
-      current_stock: 2, // 2 rolls
+      current_stock: 2,
       average_cost: 4500,
-    }
-
-    const vinylMat: Partial<MaterialRecord> = {
-      id: `mat-vinyl-${Date.now()}`,
-      company_id: testCompanyId,
-      sku: 'MAT-SAV-GLOSS-4FT',
-      name: 'Glossy SAV Vinyl 4ft',
-      name_bn: 'গ্লসি ভিনাইল ৪ ফিট',
-      category: 'vinyl' as any,
-      unit: 'sft' as any,
-      purchase_unit: 'roll',
-      is_roll: true,
-      roll_width_ft: 4,
-      roll_length_ft: 164,
-      current_stock: 656, // 1 roll (4 * 164 = 656 sft)
-      average_cost: 3200,
     }
 
     const eyeletMat: Partial<MaterialRecord> = {
@@ -66,30 +50,57 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     }
 
     await InventoryRepository.createMaterial(flexMat as any)
-    await InventoryRepository.createMaterial(vinylMat as any)
     await InventoryRepository.createMaterial(eyeletMat as any)
 
-    // Now call getInventoryRolls
-    const rolls = await InventoryRepository.getInventoryRolls(testCompanyId)
+    // Before creating physical rolls, getInventoryRolls should return 0 (no synthetic rolls fabricated)
+    const initialRolls = await InventoryRepository.getInventoryRolls(testCompanyId)
+    assert.strictEqual(initialRolls.length, 0, 'No synthetic rolls should be fabricated from raw material records')
 
-    assert.ok(rolls.length >= 3, `Expected at least 3 physical rolls generated (2 flex + 1 vinyl), got ${rolls.length}`)
+    // Create 2 actual physical rolls for the flex material
+    await InventoryRepository.createPhysicalRoll({
+      company_id: testCompanyId,
+      material_id: flexMat.id!,
+      roll_code: 'ROL-FLEX-001',
+      roll_tag: 'FLEX-10FT-R1',
+      width_ft: 10,
+      initial_length_ft: 164,
+      current_length_ft: 164,
+      initial_area_sft: 1640,
+      remaining_area_sft: 1640,
+      status: 'available',
+      unit_cost: 4500,
+      total_cost: 4500,
+    })
+
+    await InventoryRepository.createPhysicalRoll({
+      company_id: testCompanyId,
+      material_id: flexMat.id!,
+      roll_code: 'ROL-FLEX-002',
+      roll_tag: 'FLEX-10FT-R2',
+      width_ft: 10,
+      initial_length_ft: 164,
+      current_length_ft: 164,
+      initial_area_sft: 1640,
+      remaining_area_sft: 1640,
+      status: 'available',
+      unit_cost: 4500,
+      total_cost: 4500,
+    })
+
+    // Now call getInventoryRolls and verify the 2 actual rolls are enriched with material details
+    const rolls = await InventoryRepository.getInventoryRolls(testCompanyId)
+    assert.strictEqual(rolls.length, 2, 'Should return exactly the 2 created physical rolls')
 
     const flexRolls = rolls.filter((r) => r.material_id === flexMat.id)
-    assert.strictEqual(flexRolls.length, 2, 'Should create exactly 2 physical rolls for Flex')
+    assert.strictEqual(flexRolls.length, 2, 'Should have exactly 2 physical rolls for Flex')
     assert.strictEqual(flexRolls[0].width_ft, 10, 'Flex roll width should be 10ft')
     assert.strictEqual(flexRolls[0].initial_length_ft, 164, 'Flex roll initial length should be 164ft')
     assert.strictEqual(flexRolls[0].remaining_area_sft, 1640, 'Flex roll area should be 1640 SFT')
     assert.strictEqual(flexRolls[0].material?.name, 'Star Frontlit Flex 10ft', 'Material name should be enriched')
     assert.strictEqual(flexRolls[0].material?.name_bn, 'স্টার ফ্রন্টলিট ফ্লেক্স ১০ ফিট', 'Material name_bn should be enriched')
 
-    const vinylRolls = rolls.filter((r) => r.material_id === vinylMat.id)
-    assert.strictEqual(vinylRolls.length, 1, 'Should create 1 physical roll for Vinyl')
-    assert.strictEqual(vinylRolls[0].width_ft, 4, 'Vinyl roll width should be 4ft')
-    assert.strictEqual(vinylRolls[0].remaining_area_sft, 656, 'Vinyl roll area should be 656 SFT')
-    assert.strictEqual(vinylRolls[0].status, 'available', 'Status should be available')
-
     const nonRollCheck = rolls.filter((r) => r.material_id === eyeletMat.id)
-    assert.strictEqual(nonRollCheck.length, 0, 'Consumable / non-roll accessories should not generate physical rolls')
+    assert.strictEqual(nonRollCheck.length, 0, 'Consumable / non-roll accessories should not have physical rolls')
   })
 
   test('2. Filters physical rolls correctly by status (available vs mounted vs depleted)', async () => {
@@ -121,7 +132,7 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     assert.ok(!availableAfterMount.some((r) => r.id === roll.id), 'Mounted roll should not appear in available filter')
   })
 
-  test('3. Auto-creates physical rolls when raw material product is created with opening stock', async () => {
+  test('3. Creates physical rolls when received via stock intake and queries actual warehouse rolls', async () => {
     const createdProduct = await ProductRepository.createProduct({
       company_id: testCompanyId,
       sku: 'RM-BACKLIT-FILM-5FT',
@@ -132,9 +143,21 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
       purchase_unit: 'roll',
       roll_width_ft: 5,
       roll_length_ft: 164,
-      initial_stock: 3,
       purchase_price: 3800,
     } as any)
+
+    // Receive 3 physical rolls via stock intake
+    await InventoryService.receiveStock({
+      company_id: testCompanyId,
+      material_id: createdProduct.id,
+      location_id: 'loc-main',
+      quantity: 3,
+      unit_cost: 3800,
+      width_ft: 5,
+      length_ft: 164,
+      purchase_unit: 'roll',
+      performed_by_name: 'Store Keeper',
+    })
 
     const rolls = await InventoryService.getInventoryRolls(testCompanyId)
     const backlitRolls = rolls.filter((r) => r.material_id === createdProduct.id)
@@ -159,14 +182,9 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
 
     await InventoryRepository.createMaterial(pvcMat as any)
 
-    // Check physical rolls generation
+    // Verify zero synthetic rolls are generated when no physical rolls intake occurred
     const rolls = await InventoryRepository.getInventoryRolls(pvcCompanyId)
-    const pvcRolls = rolls.filter((r) => r.material_id === pvcMat.id)
-    assert.strictEqual(pvcRolls.length, 1, 'Should auto-generate 1 physical roll for 1148 SFT PVC')
-    assert.strictEqual(pvcRolls[0].width_ft, 7, 'Auto-deduced width should be 7ft (1148 / 164)')
-    assert.strictEqual(pvcRolls[0].initial_length_ft, 164, 'Standard length should be 164ft')
-    assert.strictEqual(pvcRolls[0].remaining_area_sft, 1148, 'Area should be 1148 SFT')
-    assert.strictEqual(pvcRolls[0].status, 'available')
+    assert.strictEqual(rolls.length, 0, 'No synthetic rolls should be auto-generated')
 
     // Check units & valuation breakdown
     const { getMaterialWarehouseStockBreakdown } = await import('../../lib/units.ts')
@@ -210,7 +228,47 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
 
     await InventoryRepository.createMaterial(pvcMultiSizeMat as any)
 
-    // 2. Query physical rolls — should auto-create discrete rolls for all 3 size configurations
+    // 2. Create the physical rolls for the 3 distinct size configurations
+    for (let i = 1; i <= 10; i++) {
+      await InventoryRepository.createPhysicalRoll({
+        company_id: multiSizeCompanyId,
+        material_id: pvcMultiSizeMat.id!,
+        roll_code: `ROL-3FT-${i}`,
+        width_ft: 3,
+        initial_length_ft: 164,
+        current_length_ft: 164,
+        initial_area_sft: 492,
+        remaining_area_sft: 492,
+        status: 'available',
+      })
+    }
+    for (let i = 1; i <= 31; i++) {
+      await InventoryRepository.createPhysicalRoll({
+        company_id: multiSizeCompanyId,
+        material_id: pvcMultiSizeMat.id!,
+        roll_code: `ROL-5FT-${i}`,
+        width_ft: 5,
+        initial_length_ft: 164,
+        current_length_ft: 164,
+        initial_area_sft: 820,
+        remaining_area_sft: 820,
+        status: 'available',
+      })
+    }
+    for (let i = 1; i <= 30; i++) {
+      await InventoryRepository.createPhysicalRoll({
+        company_id: multiSizeCompanyId,
+        material_id: pvcMultiSizeMat.id!,
+        roll_code: `ROL-7FT-${i}`,
+        width_ft: 7,
+        initial_length_ft: 100,
+        current_length_ft: 100,
+        initial_area_sft: 700,
+        remaining_area_sft: 700,
+        status: 'available',
+      })
+    }
+
     const initialRolls = await InventoryRepository.getInventoryRolls(multiSizeCompanyId)
     assert.strictEqual(initialRolls.length, 71, 'Total physical rolls should be 71 (10 + 31 + 30)')
 

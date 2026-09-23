@@ -83,6 +83,15 @@ export class LogisticsRepository {
 
       let challansData: any[] = (!res.error && Array.isArray(res.data)) ? res.data : []
 
+      // If database is empty or offline in test environment, check DataStore
+      if (challansData.length === 0) {
+        const localChallans = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+        const matched = localChallans.filter((c: any) => c.company_id === companyId || c.company_id === effectiveCompanyId || c.tenant_slug === companyId)
+        if (matched.length > 0) {
+          challansData = matched
+        }
+      }
+
       // If items were not joined, fetch items from item tables
       if (challansData.length > 0 && (!challansData[0]?.items || challansData[0].items.length === 0)) {
         try {
@@ -109,93 +118,10 @@ export class LogisticsRepository {
         } catch {}
       }
 
-      // 4. Dynamic synthesis from invoices via BillingRepository.getInvoices
+      // 4. Enrich actual database challans with invoice financial data
       try {
         const invoices = await BillingRepository.getInvoices(effectiveCompanyId || companyId)
-        if (Array.isArray(invoices) && invoices.length > 0) {
-          const existingInvoiceIds = new Set(
-            challansData.map((c) => c.invoice_id || c.invoice_number)
-          )
-          const synthesized: DeliveryChallanRecord[] = []
-
-          for (const inv of invoices) {
-            const chlNum = `CHL-${(inv.invoice_number || '').replace('INV-', '')}`
-            if (!existingInvoiceIds.has(inv.id) && !existingInvoiceIds.has(inv.invoice_number)) {
-              const invItems = inv.items || []
-              const challanItems: ChallanItemRecord[] = invItems.map((it: any, idx: number) => {
-                const isReady =
-                  it.item_kind === 'ready_product' ||
-                  it.workflow_routing === 'ready_product' ||
-                  isReadyProduct(it)
-                const isOutsource =
-                  it.item_kind === 'outsource' ||
-                  it.workflow_routing === 'outsource' ||
-                  isOutsourceProduct(it)
-                const isDesignReq = it.workflow_routing === 'design_required' || it.design_required === true
-                const isDesignOk = it.workflow_routing === 'design_ok'
-
-                let initialStatus: ChallanItemStatus = 'ready_for_delivery'
-                if (isReady) initialStatus = 'ready_for_delivery'
-                else if (isDesignReq) initialStatus = 'design_pending'
-                else if (isDesignOk) initialStatus = 'design_check'
-                else if (it.workflow_routing === 'ready_production') initialStatus = 'in_production'
-
-                const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom_manufacturing')
-
-                return {
-                  id: it.id || crypto.randomUUID(),
-                  challan_id: undefined,
-                  invoice_item_id: it.id || null,
-                  product_description: it.item_description || it.description || it.item_name || `Item ${idx + 1}`,
-                  dimensions_spec: it.dimensions_spec || null,
-                  quantity: Number(it.quantity) || 1,
-                  unit: it.unit || 'pcs',
-                  item_kind: itemKind,
-                  workflow_routing:
-                    it.workflow_routing ||
-                    (isReady ? 'ready_product' : isDesignReq ? 'design_required' : isDesignOk ? 'design_ok' : 'ready_production'),
-                  status: initialStatus,
-                  is_delivered: false,
-                  delivered_quantity: 0,
-                  remarks: it.finishing || null,
-                }
-              })
-
-              const synChallan: DeliveryChallanRecord = {
-                id: `chl-${inv.id}`,
-                company_id: effectiveCompanyId || companyId,
-                challan_number: chlNum,
-                customer_id: inv.customer_id || 'cust-direct',
-                customer_name: inv.customer_name || 'Valued Customer',
-                customer_phone: inv.customer_phone || '',
-                delivery_address: inv.customer_address || 'Customer Delivery Address',
-                invoice_id: inv.id,
-                invoice_number: inv.invoice_number,
-                sales_order_id: inv.sales_order_id || null,
-                order_number: inv.order_number || (inv.invoice_number ? inv.invoice_number.replace('INV-', 'ORD-') : null),
-                status: 'pending_dispatch' as any,
-                delivery_method: 'company_vehicle',
-                transport_cost: Number((inv as any).transport_cost) || 0,
-                scheduled_date: inv.due_date || inv.invoice_date || new Date().toISOString().split('T')[0],
-                notes: 'Generated from commercial invoice',
-                created_by_name: inv.created_by_name || 'Commercial Billing',
-                grand_total: Number(inv.grand_total) || 0,
-                paid_amount: Number(inv.paid_amount) || 0,
-                due_amount: Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0)),
-                payment_status: (Math.max(0, (Number(inv.grand_total) || 0) - (Number(inv.paid_amount) || 0)) <= 0) ? 'paid' : (Number(inv.paid_amount) > 0 ? 'partial' : 'unpaid'),
-                items: challanItems,
-                created_at: inv.created_at || new Date().toISOString(),
-                updated_at: inv.updated_at || new Date().toISOString(),
-              }
-              synthesized.push(synChallan)
-            }
-          }
-
-          if (synthesized.length > 0) {
-            challansData = [...challansData, ...synthesized]
-          }
-
-          // Enrich all existing challans with invoice financial data
+        if (Array.isArray(invoices) && invoices.length > 0 && Array.isArray(challansData) && challansData.length > 0) {
           challansData = challansData.map((c) => {
             const matchedInv = invoices.find(
               (inv) =>
@@ -286,12 +212,8 @@ export class LogisticsRepository {
         return data as unknown as DeliveryChallanRecord
       }
 
-      // Fallback: check synthesized challans
-      const allChallans = await this.getChallans(companyId)
-      const found = allChallans.find((c) => c.id === id || c.challan_number === id || c.invoice_id === id || c.invoice_number === id)
-      if (found) return found
-
-      return (data as unknown as DeliveryChallanRecord) || null
+      const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
+      return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && (c.company_id === companyId || c.company_id === effectiveCompanyId || (c as any).tenant_slug === companyId)) || null
     } catch (err: any) {
       const all = PrintERPDataStore.get<DeliveryChallanRecord[]>(STORAGE_KEYS.DELIVERY_CHALLANS) || []
       return all.find((c: DeliveryChallanRecord) => (c.id === id || c.challan_number === id) && (c.company_id === companyId || (c as any).tenant_slug === companyId)) || null
@@ -415,16 +337,21 @@ export class LogisticsRepository {
         due_amount: Number(challan.due_amount) || 0,
         grand_total: Number(challan.grand_total) || 0,
         paid_amount: Number(challan.paid_amount) || 0,
+        payment_status: challan.payment_status || (Number(challan.due_amount) > 0 ? (Number(challan.paid_amount) > 0 ? 'partial' : 'unpaid') : 'paid'),
         items: (challan.items || []).map((it: any, idx: number) => ({
           id: it.id || `item-${idx + 1}`,
           challan_id: challan.id || '',
+          product_name: it.product_name || it.item_name || null,
           product_description: it.product_description || it.item_description || 'Item',
           dimensions_spec: it.dimensions_spec || null,
           quantity: Number(it.quantity) || 1,
+          delivered_quantity: Number(it.delivered_quantity) || 0,
+          remaining_quantity: Number(it.remaining_quantity) || Number(it.quantity) || 1,
           unit: it.unit || 'pcs',
           remarks: it.remarks || null,
           is_delivered: it.is_delivered || false,
           status: it.status || 'ready_for_delivery',
+          item_kind: it.item_kind,
           workflow_routing: it.workflow_routing,
         })),
         created_at: new Date().toISOString(),

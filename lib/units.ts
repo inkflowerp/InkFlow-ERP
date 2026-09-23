@@ -1712,11 +1712,14 @@ export function isReadyProduct(p: Partial<ProductRecord> | any | null | undefine
   if (
     rawAny.workflow_routing === 'design_required' ||
     rawAny.workflow_routing === 'design_ok' ||
+    rawAny.workflow_routing === 'ready_production' ||
     rawAny.design_required === true ||
     rawAny.design_required === 'true' ||
     rawAny.item_kind === 'custom_manufacturing' ||
     rawAny.item_kind === 'service' ||
-    rawAny.item_kind === 'custom'
+    rawAny.item_kind === 'custom' ||
+    Boolean(rawAny.design_number) ||
+    Boolean(rawAny.versions)
   ) {
     return false
   }
@@ -2476,6 +2479,23 @@ export function getMaterialWarehouseStockBreakdown(
                 item.total_valuation = count * rollCost
               }
             }
+          }
+        } else {
+          // If all configured sizes already have non-zero rolls, allocate unallocated stock to the matching size
+          const allItems = Array.from(map.values())
+          const exactMatch = allItems.find(
+            (it) => (it.width_ft * it.length_ft > 0) && (Math.abs(unallocatedStock % (it.width_ft * it.length_ft)) < 0.5)
+          )
+          if (exactMatch) {
+            const area = exactMatch.width_ft * exactMatch.length_ft
+            const count = Math.max(1, Math.round(unallocatedStock / area))
+            exactMatch.roll_count += count
+            exactMatch.total_sft += count * area
+            const price = Number(exactMatch.purchase_price || 0)
+            const rollCost = price > 0
+              ? (price > 150 ? price : price * area)
+              : (rawCost > 150 ? rawCost : rawCost * area)
+            exactMatch.total_valuation = (exactMatch.total_valuation || 0) + (count * rollCost)
           }
         }
       }

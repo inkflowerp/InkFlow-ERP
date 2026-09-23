@@ -817,11 +817,7 @@ export class WorkforceRepository {
     }
 
     const uniqueShifts = Array.from(shiftMap.values())
-    if (uniqueShifts.length > 0) {
-      return uniqueShifts
-    }
-
-    return await this.seedDefaultShifts(companyId)
+    return uniqueShifts
   }
 
   static async getShiftById(id: string, companyId: string): Promise<ShiftRecord | null> {
@@ -974,7 +970,7 @@ export class WorkforceRepository {
     }
 
     const allShifts = await this.getShifts(companyId)
-    return allShifts.find((s) => s.is_active) || allShifts[0] || null
+    return allShifts.find((s) => s.is_active) || null
   }
 
   // ============================================================================
@@ -1208,14 +1204,8 @@ export class WorkforceRepository {
     }
 
     const uniqueSummaries = Array.from(attMap.values())
-    if (uniqueSummaries.length > 0) {
-      uniqueSummaries.sort((a, b) => b.attendance_date.localeCompare(a.attendance_date))
-      return uniqueSummaries
-    }
-
-    // Auto-seed default attendance summaries
-    const seeded = await this.seedDefaultAttendanceSummaries(companyId)
-    return seeded.filter((s) => {
+    uniqueSummaries.sort((a, b) => b.attendance_date.localeCompare(a.attendance_date))
+    return uniqueSummaries.filter((s) => {
       if (options?.date && s.attendance_date !== options.date) return false
       if (options?.startDate && s.attendance_date < options.startDate) return false
       if (options?.endDate && s.attendance_date > options.endDate) return false
@@ -1418,12 +1408,8 @@ export class WorkforceRepository {
     }
 
     const uniqueRecords = Array.from(otMap.values())
-    if (uniqueRecords.length > 0) {
-      uniqueRecords.sort((a, b) => b.ot_date.localeCompare(a.ot_date))
-      return uniqueRecords
-    }
-
-    return await this.seedDefaultOvertimeRecords(companyId)
+    uniqueRecords.sort((a, b) => b.ot_date.localeCompare(a.ot_date))
+    return uniqueRecords
   }
 
   static async createOvertimeRecord(record: OvertimeRecord): Promise<OvertimeRecord> {
@@ -1879,117 +1865,14 @@ export class WorkforceRepository {
       }
     }
 
-    let resultPeriods = Array.from(periodMap.values())
-
-    // If no periods exist, auto-seed default payroll period for this tenant
-    if (resultPeriods.length === 0) {
-      resultPeriods = await this.seedDefaultPayrollPeriod(companyId)
-    }
-
-    // Ensure every period has its line items populated (never left as empty items)
-    let activeEmployees: EmployeeRecord[] | null = null
-    for (const period of resultPeriods) {
-      if (!period.items || period.items.length === 0) {
-        if (!activeEmployees) {
-          activeEmployees = await this.getEmployees(companyId, { status: 'active' })
-          if (activeEmployees.length === 0) {
-            activeEmployees = await this.seedDefaultEmployees(companyId)
-          }
-        }
-
-        const otHoursMap: Record<string, number> = {
-          'EMP-2024-1001': 14,
-          'EMP-2024-1002': 10,
-          'EMP-2024-1003': 8,
-          'EMP-2024-1004': 12,
-          'EMP-2024-1005': 6,
-          'EMP-2024-1006': 0,
-          'EMP-2024-1007': 16,
-        }
-
-        const generatedItems: PayrollItemRecord[] = activeEmployees.map((emp, idx) => {
-          const otHours = otHoursMap[emp.employee_id_number] || (emp.is_daily_worker ? 10 : 4)
-          const otRate = Number(emp.overtime_hourly_rate || (emp.hourly_rate ? emp.hourly_rate * 1.5 : 150))
-          const otAmount = Math.round(otHours * otRate)
-
-          let baseSalary = Number(emp.base_salary || 0)
-          if (emp.salary_basis === 'daily_rate' || emp.is_daily_worker) {
-            baseSalary = Number(emp.daily_rate || 800) * 26
-          }
-
-          const grossSalary = baseSalary + otAmount
-          const netSalary = grossSalary
-
-          return {
-            id: `pi-${period.id}-${idx + 1}`,
-            company_id: companyId,
-            payroll_period_id: period.id,
-            employee_id: emp.id,
-            employee_name: emp.name,
-            employee_name_bn: emp.name_bn || null,
-            employee_id_number: emp.employee_id_number,
-            role: emp.role,
-            department: emp.department,
-            employee_type: emp.employee_type || 'permanent',
-            salary_basis: emp.salary_basis || (emp.is_daily_worker ? 'daily_rate' : 'monthly'),
-            base_salary: baseSalary,
-            daily_rate: Number(emp.daily_rate || 0),
-            hourly_rate: Number(emp.hourly_rate || (baseSalary > 0 ? Math.round(baseSalary / 208) : 0)),
-            days_present: period.working_days_count || 26,
-            hours_worked: 208,
-            overtime_hours: otHours,
-            overtime_amount: otAmount,
-            allowances_breakdown: emp.salary_structure || {
-              basic: Math.round(baseSalary * 0.6),
-              house_allowance: Math.round(baseSalary * 0.2),
-              transport_allowance: Math.round(baseSalary * 0.1),
-              food_allowance: 0,
-              medical_allowance: Math.round(baseSalary * 0.1),
-              other_allowances: 0,
-            },
-            bonuses: 0,
-            gross_salary: grossSalary,
-            advance_salary_deducted: 0,
-            advance_remaining_balance: Number(emp.current_advance_balance || 0),
-            absence_deduction: 0,
-            late_fine: 0,
-            loan_deduction: 0,
-            other_deductions: 0,
-            net_salary: netSalary,
-            paid_amount: 0,
-            due_amount: netSalary,
-            payment_status: 'unpaid',
-            created_at: period.created_at || new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          }
-        })
-
-        period.items = generatedItems
-        if (!period.total_gross_salary) {
-          period.total_gross_salary = generatedItems.reduce((sum, i) => sum + i.gross_salary, 0)
-        }
-        if (!period.total_net_salary) {
-          period.total_net_salary = generatedItems.reduce((sum, i) => sum + i.net_salary, 0)
-        }
-        if (period.total_due_amount === undefined || period.total_due_amount === null) {
-          period.total_due_amount = period.total_net_salary
-        }
-
-        // Resync populated period to all store partitions
-        PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, companyId)
-        if (cleanSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, cleanSlug)
-        if (compSlug !== companyId) PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period, compSlug)
-        PrintERPDataStore.addItem(STORAGE_KEYS.PAYROLL_PERIODS, period)
-      }
-    }
-
+    const resultPeriods = Array.from(periodMap.values())
     resultPeriods.sort((a, b) => new Date(b.created_at || b.start_date || 0).getTime() - new Date(a.created_at || a.start_date || 0).getTime())
     return resultPeriods
   }
 
   static async getPayrollPeriodById(id: string, companyId: string): Promise<PayrollPeriodRecord | null> {
     const periods = await this.getPayrollPeriods(companyId)
-    const found = periods.find((p) => p.id === id || p.period_name.toLowerCase().includes(id.toLowerCase())) || periods[0] || null
+    const found = periods.find((p) => p.id === id || p.period_name.toLowerCase() === id.toLowerCase()) || null
     return found
   }
 

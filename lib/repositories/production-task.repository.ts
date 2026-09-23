@@ -135,8 +135,13 @@ export class ProductionTaskRepository {
     try {
       allDesignJobs = await DesignRepository.getDesignJobs(companyId)
     } catch {
-      const localDesignJobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      allDesignJobs = localDesignJobs.filter((d) => this.isMatchingCompany(d.company_id, companyId))
+      allDesignJobs = []
+    }
+    const localDesignJobs = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    for (const ld of localDesignJobs) {
+      if (this.isMatchingCompany(ld.company_id, companyId) && !allDesignJobs.some((j) => j.id === ld.id)) {
+        allDesignJobs.push(ld)
+      }
     }
     for (const dj of dbApprovedJobs) {
       if (!allDesignJobs.some((j) => j.id === dj.id)) {
@@ -388,68 +393,6 @@ export class ProductionTaskRepository {
       } catch {}
     }
 
-    if (!found) {
-      // Check if this task can be synthesized from invoices or design jobs
-      const invoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
-      const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      const jobOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
-
-      // Try to find matching invoice, design job, or job order
-      const matchingInv = invoices.find(
-        (inv) =>
-          this.isMatchingCompany(inv.company_id, companyId) &&
-          (inv.id === id ||
-            inv.invoice_number === id ||
-            (id.startsWith('TSK-') && inv.invoice_number?.includes(id.replace('TSK-', '').split('-')[0])) ||
-            (inv.items && inv.items.some((it: any) => it.id === id || it.item_description?.includes(id) || it.item_name?.includes(id))))
-      )
-
-      const matchingDj = designJobs.find(
-        (dj) =>
-          this.isMatchingCompany(dj.company_id, companyId) &&
-          (dj.id === id ||
-            dj.design_number === id ||
-            (id.startsWith('TSK-') && dj.design_number?.includes(id.replace('TSK-', '').split('-')[0])) ||
-            (matchingInv && dj.invoice_id === matchingInv.id) ||
-            (matchingInv && dj.invoice_number === matchingInv.invoice_number))
-      )
-
-      if (matchingInv || matchingDj) {
-        const title = matchingDj?.title || matchingInv?.items?.[0]?.item_name || matchingInv?.items?.[0]?.item_description || 'Print Job'
-        const custName = matchingDj?.customer_name || matchingInv?.customer_name || 'Direct Customer'
-        const invNum = matchingInv?.invoice_number || matchingDj?.invoice_number || (id.startsWith('TSK-') ? `INV-${id.replace('TSK-', '').split('-')[0]}` : 'INV-000001')
-        const taskNum = id.startsWith('TSK-') ? id : `TSK-${invNum.replace('INV-', '')}-1`
-        const jobOrderId = matchingDj?.job_order_id || matchingInv?.job_order_id || crypto.randomUUID()
-
-        const synthesizedTask: ProductionTaskRecord = {
-          id: isIdUuid ? id : crypto.randomUUID(),
-          company_id: companyId,
-          job_order_id: jobOrderId,
-          task_number: taskNum,
-          task_name: `Print: ${title}`,
-          task_type: 'printing',
-          department: 'printing',
-          sequence_order: 1,
-          quantity: matchingDj?.quantity || matchingInv?.items?.[0]?.quantity || 1,
-          unit: matchingDj?.unit || matchingInv?.items?.[0]?.unit || 'pcs',
-          priority: matchingDj?.priority || 'normal',
-          status: 'queued',
-          customer_name: custName,
-          product_name: matchingDj?.product_name || title,
-          job_number: invNum,
-          job_deadline: matchingDj?.deadline || matchingInv?.due_date || null,
-          is_blocked_by_commercial_gate: false,
-          is_blocked_by_design_gate: false,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }
-
-        all.unshift(synthesizedTask)
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
-        return synthesizedTask
-      }
-    }
-
     // If still not found but taskPayload was provided from client
     if (!found && taskPayload) {
       const now = new Date().toISOString()
@@ -536,6 +479,10 @@ export class ProductionTaskRepository {
       production_job_id: task.production_job_id || null,
       task_number: taskNumber,
       task_name: taskName,
+      customer_name: (task as any).customer_name || null,
+      job_number: (task as any).job_number || null,
+      product_name: (task as any).product_name || null,
+      job_deadline: (task as any).job_deadline || null,
       task_type: task.task_type || 'printing',
       department: task.department || 'printing',
       sequence_order: task.sequence_order ?? 1,

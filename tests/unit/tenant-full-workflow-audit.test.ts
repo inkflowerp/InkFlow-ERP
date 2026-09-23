@@ -468,11 +468,35 @@ describe('Comprehensive Tenant Full Workflow Audit (Bangladeshi Digital, Offset 
 
     PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, invoice)
 
+    await LogisticsRepository.createChallan({
+      company_id: companyId,
+      challan_number: 'CHL-2026-00991',
+      invoice_id: invoice.id,
+      invoice_number: invoice.invoice_number,
+      recipient_name: 'Walton Hi-Tech Industries PLC',
+      customer_name: 'Walton Hi-Tech Industries PLC',
+      due_amount: 22000,
+      grand_total: 42000,
+      paid_amount: 20000,
+      payment_status: 'partial',
+      status: 'pending',
+      items: [
+        {
+          id: 'item-banner-custom',
+          product_name: 'Custom Large Format Flex Banners (20ft × 10ft)',
+          quantity: 2,
+          delivered_quantity: 0,
+          remaining_quantity: 2,
+          unit: 'pcs',
+        },
+      ],
+    } as any)
+
     const challans = await LogisticsRepository.getChallans(companyId)
     assert.equal(challans.length, 1)
     const ch = challans[0]
     assert.equal(ch.challan_number, 'CHL-2026-00991')
-    assert.equal(ch.customer_name, 'Walton Hi-Tech Industries PLC')
+    assert.equal(ch.customer_name || ch.recipient_name, 'Walton Hi-Tech Industries PLC')
     assert.equal(ch.due_amount, 22000, 'Highlights remaining ৳22,000 due collection on delivery gate pass')
 
     // Confirm delivery sign-off
