@@ -223,7 +223,7 @@ export default function AccountingPage() {
       setNextActionConfig({
         titleEn: 'Expense Recorded ✓',
         titleBn: 'খরচ রেকর্ড সম্পন্ন হয়েছে ✓',
-        descriptionEn: `Voucher recorded for ৳${data.amount.toLocaleString()} (${data.category})`,
+        descriptionEn: `Voucher recorded for BDT ${data.amount.toLocaleString()} (${data.category})`,
         descriptionBn: `৳${data.amount.toLocaleString()} টাকার ভাউচার সংরক্ষিত হয়েছে (${data.category})`,
         primaryAction: {
           labelEn: 'View Cash Flow',
@@ -258,7 +258,7 @@ export default function AccountingPage() {
       setNextActionConfig({
         titleEn: 'Funds Transferred ✓',
         titleBn: 'তহবিল ট্রান্সফার সম্পন্ন হয়েছে ✓',
-        descriptionEn: `৳${data.amount.toLocaleString()} transferred successfully.`,
+        descriptionEn: `BDT ${data.amount.toLocaleString()} transferred successfully.`,
         descriptionBn: `৳${data.amount.toLocaleString()} সফলভাবে ট্রান্সফার করা হয়েছে।`,
         primaryAction: {
           labelEn: 'View General Ledger',
@@ -292,7 +292,7 @@ export default function AccountingPage() {
       setNextActionConfig({
         titleEn: 'Supplier Bill Paid ✓',
         titleBn: 'সরবরাহকারীর পাওনা পরিশোধিত ✓',
-        descriptionEn: `Paid ৳${data.amount.toLocaleString()} to ${data.supplierName}.`,
+        descriptionEn: `Paid BDT ${data.amount.toLocaleString()} to ${data.supplierName}.`,
         descriptionBn: `${data.supplierName} কে ৳${data.amount.toLocaleString()} পরিশোধ করা হয়েছে।`,
         primaryAction: {
           labelEn: 'View Payables Aging',
@@ -595,7 +595,7 @@ export default function AccountingPage() {
               <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
                 <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                   <Wallet className="w-4 h-4 text-emerald-600" />
-                  <span>{tBilingual('Liquid Accounts (নগদ ও ব্যাংক তহবিল)', 'তহবিল ও ওয়ালেট ব্যালেন্স')}</span>
+                  <span>{tBilingual('Liquid Accounts', 'তহবিল ও ওয়ালেট ব্যালেন্স')}</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4 divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -620,7 +620,7 @@ export default function AccountingPage() {
               <CardHeader className="bg-amber-50/30 dark:bg-amber-950/20 pb-3 border-b border-amber-100 dark:border-amber-900/50 flex flex-row items-center justify-between">
                 <CardTitle className="text-sm font-bold text-amber-900 dark:text-amber-200 flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span>{tBilingual('Top Overdue Customers (তাগাদা দিন)', 'বাকি তাগাদা')}</span>
+                  <span>{tBilingual('Top Overdue Customers', 'বাকি তাগাদা')}</span>
                 </CardTitle>
                 <Link href={getTenantNavHref('/customers', pathname, slug)}>
                   <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-800">
@@ -660,7 +660,7 @@ export default function AccountingPage() {
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Accounts Receivable & Aging (গ্রাহকের বাকি হিসাব)', 'বাকি আদায় তালিকা')}
+              {tBilingual('Accounts Receivable & Aging', 'বাকি আদায় তালিকা')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -671,9 +671,9 @@ export default function AccountingPage() {
                     <th className="p-3">{tBilingual('Invoice #', 'ইনভয়েস নং')}</th>
                     <th className="p-3">{tBilingual('Customer', 'গ্রাহকের নাম')}</th>
                     <th className="p-3">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Total (৳)', 'মোট বিল')}</th>
-                    <th className="p-3 text-right">{tBilingual('Paid (৳)', 'পরিশোধ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Due (৳)', 'বাকি')}</th>
+                    <th className="p-3 text-right">{tBilingual('Total', 'মোট বিল')}</th>
+                    <th className="p-3 text-right">{tBilingual('Paid', 'পরিশোধ')}</th>
+                    <th className="p-3 text-right">{tBilingual('Due', 'বাকি')}</th>
                     <th className="p-3 text-center">{tBilingual('Aging Bucket', 'মেয়াদ')}</th>
                   </tr>
                 </thead>
@@ -704,7 +704,7 @@ export default function AccountingPage() {
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Supplier Payables & Aging (সরবরাহকারীর পাওনা)', 'সরবরাহকারী পাওনা')}
+              {tBilingual('Supplier Payables & Aging', 'সরবরাহকারী পাওনা')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -714,9 +714,9 @@ export default function AccountingPage() {
                   <tr>
                     <th className="p-3">{tBilingual('Supplier Code', 'কোড')}</th>
                     <th className="p-3">{tBilingual('Supplier Name', 'সরবরাহকারী')}</th>
-                    <th className="p-3 text-right">{tBilingual('Purchases (৳)', 'মোট ক্রয়')}</th>
-                    <th className="p-3 text-right">{tBilingual('Paid (৳)', 'পরিশোধ')}</th>
-                    <th className="p-3 text-right">{tBilingual('Net Due (৳)', 'নিট পাওনা')}</th>
+                    <th className="p-3 text-right">{tBilingual('Purchases', 'মোট ক্রয়')}</th>
+                    <th className="p-3 text-right">{tBilingual('Paid', 'পরিশোধ')}</th>
+                    <th className="p-3 text-right">{tBilingual('Net Due', 'নিট পাওনা')}</th>
                     <th className="p-3 text-center">{tBilingual('Action', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
@@ -769,9 +769,9 @@ export default function AccountingPage() {
                     <th className="p-3">{tBilingual('Closing #', 'ক্লোজিং নং')}</th>
                     <th className="p-3">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="p-3">{tBilingual('Drawer / Account', 'হিসাব')}</th>
-                    <th className="p-3 text-right">{tBilingual('Expected (৳)', 'হিসাবমতো')}</th>
-                    <th className="p-3 text-right">{tBilingual('Counted (৳)', 'গোনা টাকা')}</th>
-                    <th className="p-3 text-right">{tBilingual('Variance (৳)', 'অমিল')}</th>
+                    <th className="p-3 text-right">{tBilingual('Expected', 'হিসাবমতো')}</th>
+                    <th className="p-3 text-right">{tBilingual('Counted', 'গোনা টাকা')}</th>
+                    <th className="p-3 text-right">{tBilingual('Variance', 'অমিল')}</th>
                     <th className="p-3">{tBilingual('Closed By', 'ক্লোজ করেছেন')}</th>
                     <th className="p-3 text-center">{tBilingual('Status', 'অবস্থা')}</th>
                   </tr>
@@ -834,7 +834,7 @@ export default function AccountingPage() {
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-emerald-600" />
-              <span>{tBilingual('Profit & Loss Statement (লাভ-ক্ষতি বিবরণী)', 'লাভ-ক্ষতি বিবরণী')}</span>
+              <span>{tBilingual('Profit & Loss Statement', 'লাভ-ক্ষতি বিবরণী')}</span>
             </CardTitle>
             <Badge className="bg-emerald-600 text-white text-xs">
               {tBilingual('Net Margin:', 'মার্জিন:')} {pnl.operating_margin_percentage}%
@@ -848,31 +848,31 @@ export default function AccountingPage() {
 
             <div className="space-y-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
               <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
-                <span>{tBilingual('2. Cost of Goods Sold (COGS)', '২. বিক্রিত পণ্যের ব্যয় (COGS)')}</span>
+                <span>{tBilingual('2. Cost of Goods Sold', '২. বিক্রিত পণ্যের ব্যয়')}</span>
                 <span className="text-rose-600">-৳{pnl.cost_of_goods_sold.total.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-500 pl-3">
-                <span>• Material Costs</span>
+                <span>• {tBilingual('Material Costs', 'কাঁচামাল খরচ')}</span>
                 <span>৳{pnl.cost_of_goods_sold.material_cost.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-500 pl-3">
-                <span>• Production Labor Costs</span>
+                <span>• {tBilingual('Production Labor Costs', 'শ্রমিক মজুরি')}</span>
                 <span>৳{pnl.cost_of_goods_sold.labor_cost.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-slate-500 pl-3">
-                <span>• Machine Electricity & Operations</span>
+                <span>• {tBilingual('Machine Electricity & Operations', 'মেশিন ও বিদ্যুৎ খরচ')}</span>
                 <span>৳{pnl.cost_of_goods_sold.machine_cost.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="flex justify-between font-bold text-sm bg-slate-50 dark:bg-slate-850 p-2.5 rounded-xl">
-              <span>{tBilingual('Gross Profit (মোট মুনাফা)', 'মোট মুনাফা')}</span>
+              <span>{tBilingual('Gross Profit', 'মোট মুনাফা')}</span>
               <span className="text-emerald-600">৳{pnl.gross_profit.toLocaleString()} ({pnl.gross_margin_percentage}%)</span>
             </div>
 
             <div className="space-y-1 pl-3 border-l-2 border-slate-200 dark:border-slate-700">
               <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
-                <span>{tBilingual('3. Operating Expenses (OPEX)', '৩. পরিচালন ব্যয়')}</span>
+                <span>{tBilingual('3. Operating Expenses', '৩. পরিচালন ব্যয়')}</span>
                 <span className="text-rose-600">-৳{pnl.operating_expenses.total.toLocaleString()}</span>
               </div>
               {pnl.operating_expenses.categories.map((c) => (
@@ -884,7 +884,7 @@ export default function AccountingPage() {
             </div>
 
             <div className="flex justify-between font-bold text-base bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-3 rounded-xl text-emerald-900 dark:text-emerald-200">
-              <span>{tBilingual('Net Operating Profit (নিট মুনাফা)', 'নিট মুনাফা')}</span>
+              <span>{tBilingual('Net Operating Profit', 'নিট পরিচালনা মুনাফা')}</span>
               <span>৳{pnl.net_profit.toLocaleString()}</span>
             </div>
           </CardContent>
@@ -895,7 +895,7 @@ export default function AccountingPage() {
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              {tBilingual('Master Chart of Accounts (হিসাবের তালিকা)', 'হিসাব তালিকা')}
+              {tBilingual('Master Chart of Accounts', 'হিসাব তালিকা')}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

@@ -214,15 +214,15 @@ export interface PaymentTermOption {
 export const SUPPLIER_PAYMENT_TERMS: PaymentTermOption[] = [
   {
     id: 'cash',
-    labelEn: 'Cash on Delivery (COD)',
-    labelBn: 'নগদ ক্যাশ ডেলিভারি (COD)',
+    labelEn: 'Cash on Delivery',
+    labelBn: 'ক্যাশ অন ডেলিভারি',
     days: 0,
-    descriptionEn: 'Immediate spot payment upon GRN inspection.',
+    descriptionEn: 'Immediate spot payment upon inspection.',
     descriptionBn: 'মাল বুঝে নেওয়ার সাথে সাথে নগদ পরিশোধ।',
   },
   {
     id: 'credit_7',
-    labelEn: 'Credit 7 Days (সাপ্তাহিক বাকি)',
+    labelEn: 'Credit 7 Days',
     labelBn: 'সাপ্তাহিক বাকি (৭ দিন)',
     days: 7,
     descriptionEn: 'Weekly payment settlement cycle.',
@@ -230,7 +230,7 @@ export const SUPPLIER_PAYMENT_TERMS: PaymentTermOption[] = [
   },
   {
     id: 'credit_15',
-    labelEn: 'Credit 15 Days (পাক্ষিক বাকি)',
+    labelEn: 'Credit 15 Days',
     labelBn: 'পাক্ষিক বাকি (১৫ দিন)',
     days: 15,
     descriptionEn: 'Fortnightly clearance terms.',
@@ -238,7 +238,7 @@ export const SUPPLIER_PAYMENT_TERMS: PaymentTermOption[] = [
   },
   {
     id: 'credit_30',
-    labelEn: 'Credit 30 Days (মাসিক বাকি)',
+    labelEn: 'Credit 30 Days',
     labelBn: 'মাসিক বাকি (৩০ দিন)',
     days: 30,
     descriptionEn: 'Monthly billing with 30-day post-dated cheque.',
@@ -246,16 +246,16 @@ export const SUPPLIER_PAYMENT_TERMS: PaymentTermOption[] = [
   },
   {
     id: 'credit_60',
-    labelEn: 'Credit 60 Days (দ্বিমাসিক)',
-    labelBn: 'দ্বিমাসিক ক্রেডিট (৬০ দিন)',
+    labelEn: 'Credit 60 Days',
+    labelBn: 'দ্বিমাসিক বাকি (৬০ দিন)',
     days: 60,
     descriptionEn: 'Extended credit for bulk mill imports.',
     descriptionBn: 'আমদানি কার্গো ও বাল্ক মিল সাপ্লাইয়ের জন্য ৬০ দিনের ক্রেডিট।',
   },
   {
     id: 'advance',
-    labelEn: 'Advance Payment Required (অগ্রিম)',
-    labelBn: 'শতভাগ অগ্রিম পেমেন্ট (Advance)',
+    labelEn: 'Advance Payment Required',
+    labelBn: 'শতভাগ অগ্রিম পেমেন্ট',
     days: 0,
     descriptionEn: 'Full payment before delivery dispatch.',
     descriptionBn: 'মালামাল পাঠানোর পূর্বে সম্পূর্ণ পরিশোধ।',

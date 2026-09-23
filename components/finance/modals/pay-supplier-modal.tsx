@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/context'
+import { formatBDT } from '@/lib/formatters'
 import type { AccountRecord } from '@/types/finance.types'
 import type { SupplierRecord } from '@/types/crm.types'
 
@@ -119,7 +120,7 @@ export function PaySupplierModal({
           >
             {suppliers.map((s) => (
               <option key={s.id} value={s.id}>
-                {s.supplier_name} {s.name_bn ? `(${s.name_bn})` : ''} — মোবাইল: {s.mobile}
+                {s.supplier_name} — {tBilingual('Mobile: ', 'মোবাইল: ')}{s.mobile}
               </option>
             ))}
           </select>
@@ -128,7 +129,7 @@ export function PaySupplierModal({
         {/* Amount Input */}
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {tBilingual('Payment Amount (৳ BDT)', 'টাকার পরিমাণ (৳)')} *
+            {tBilingual('Payment Amount', 'পরিশোধের পরিমাণ')} *
           </Label>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">
@@ -158,7 +159,7 @@ export function PaySupplierModal({
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
-                {acc.name} ({acc.account_subtype}) — ব্যালেন্স: ৳{acc.current_balance.toLocaleString()}
+                {acc.name} ({acc.account_subtype}) — {tBilingual('Balance: ', 'ব্যালেন্স: ')}{formatBDT(acc.current_balance)}
               </option>
             ))}
           </select>

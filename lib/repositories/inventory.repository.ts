@@ -1329,7 +1329,7 @@ export class InventoryRepository {
       received_by_name: params.received_by_name || null,
       assigned_machine: assignedMach,
       job_reference: jobRef,
-      status: 'in_use',
+      status: (params as any).status || 'completed',
       notes: params.notes?.trim() || null,
       created_at: new Date().toISOString(),
       items: params.items.map((it) => {

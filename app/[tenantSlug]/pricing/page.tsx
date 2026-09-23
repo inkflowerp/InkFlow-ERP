@@ -634,22 +634,22 @@ export default function PricingManagementPage() {
       {/* 5 DOMAIN TABS NAVIGATION */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto">
         {[
-          { id: 'matrix', labelEn: '🎯 Customer Pricing Matrix (দর তুলনা)', labelBn: 'কাস্টমার ম্যাট্রিক্স' },
-          { id: 'services', labelEn: '🧵 Custom Print Services (ব্যানার/ভিনাইল ট্যারিফ)', labelBn: 'প্রিন্ট সেবা ট্যারিফ' },
-          { id: 'products', labelEn: '📦 Ready Products & Hardware (স্ট্যান্ডি/হার্ডওয়্যার)', labelBn: 'রেডি প্রোডাক্ট' },
-          { id: 'tariffs', labelEn: '✨ Finishing, Machine & Installation (ফিনিশিং ও মেথড)', labelBn: 'ফিনিশিং ও মেথড' },
-          { id: 'calculator', labelEn: '🧮 Live Job Pricing Simulator (লাইভ ক্যালকুলেটর)', labelBn: 'লাইভ ক্যালকুলেটর' },
+          { id: 'matrix', labelEn: '🎯 Customer Pricing Matrix', labelBn: '🎯 কাস্টমার দর তালিকা' },
+          { id: 'services', labelEn: '🧵 Custom Print Services', labelBn: '🧵 প্রিন্ট সেবা ট্যারিফ' },
+          { id: 'products', labelEn: '📦 Ready Products & Hardware', labelBn: '📦 রেডি পণ্য ও হার্ডওয়্যার' },
+          { id: 'tariffs', labelEn: '✨ Finishing, Machine & Installation', labelBn: '✨ ফিনিশিং, মেশিন ও ইনস্টলেশন' },
+          { id: 'calculator', labelEn: '🧮 Live Job Pricing Simulator', labelBn: '🧮 লাইভ জব প্রাইসিং ক্যালকুলেটর' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setDomainTab(tab.id as MainDomainTab)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
               domainTab === tab.id
                 ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/40'
             }`}
           >
-            <span>{tab.labelEn}</span>
+            <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
           </button>
         ))}
       </div>
@@ -824,7 +824,7 @@ export default function PricingManagementPage() {
             ) : (
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Fixed Override Price (৳ BDT)', 'সরাসরি নির্ধারিত মূল্য')}
+                  {tBilingual('Fixed Override Price', 'সরাসরি নির্ধারিত মূল্য')}
                 </Label>
                 <Input
                   type="number"

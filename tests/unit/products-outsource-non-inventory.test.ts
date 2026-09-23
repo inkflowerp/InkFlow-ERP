@@ -19,10 +19,8 @@ describe('Unit: Outsource Products & Subcontract Services (Non-Inventory Items)'
   const otherCompanyId = 'tenant-outsource-other-02'
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICE_HISTORY, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_VARIANTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCT_FORMULAS, [])
+    PrintERPDataStore.purgeTenantData(companyId)
+    PrintERPDataStore.purgeTenantData(otherCompanyId)
   })
 
   it('1. Correctly classifies Outsource Product (Offset Brochure) as Outsource (Non-Inventory)', async () => {

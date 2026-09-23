@@ -20,7 +20,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'heidelberg_sm74',
     name: 'Heidelberg Speedmaster SM-74 (4-Color Offset)',
-    type: 'Commercial Sheetfed Offset (অফসেট)',
+    type: 'Commercial Sheetfed Offset',
     specs: 'Max Sheet: 20×28 in / 28×40 in | 15,000 IPH | CTP Plates',
     location: 'Ground Floor - Main Offset Section',
     category: 'offset',
@@ -28,7 +28,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'konica_c1085',
     name: 'Konica Minolta AccurioPress C1085 (Digital Offset)',
-    type: 'Production Digital Color (ডিজিটাল প্রিন্ট)',
+    type: 'Production Digital Color',
     specs: '300-350 GSM Art Card | 13×19 in / Banner Sheet | Instant Proof',
     location: '1st Floor - Quick Digital Studio',
     category: 'digital',
@@ -36,7 +36,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'roland_truevis',
     name: 'Roland TrueVIS SG2-540 / 640 (Eco-Solvent Large Format)',
-    type: 'Flex / Banner / Vinyl Sticker (লার্জ ফরম্যাট)',
+    type: 'Flex / Banner / Vinyl Sticker',
     specs: '10ft / 6ft Width | 1440 DPI Photo Print | Star Flex / Matte Vinyl',
     location: 'Ground Floor - Signage & Banner Section',
     category: 'large_format',
@@ -44,7 +44,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'docan_uv_flatbed',
     name: 'Docan / EFI Pro 24f UV Flatbed (8×4 ft Rigid)',
-    type: 'UV Direct Board & Acrylic (ইউভি ফ্ল্যাটবেড)',
+    type: 'UV Direct Board & Acrylic',
     specs: '8×4 ft Bed | Acrylic, PVC Foam Board, Wood, Metal | CMYK + White + Varnish',
     location: 'Signage Fabrication Floor',
     category: 'uv',
@@ -52,7 +52,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'graphtec_cutter',
     name: 'Graphtec FC9000 / JWEI Digital CNC Flatbed Cutter',
-    type: 'Die-Cut Sticker & Creasing (ডাই-কাটিং ও প্লটার)',
+    type: 'Die-Cut Sticker & Creasing',
     specs: 'Optical Eye Contour Cut | Half Cut / Full Cut | Box Creasing',
     location: 'Post-Press Finishing Floor',
     category: 'finishing',
@@ -60,7 +60,7 @@ export const PRINT_MACHINERY_LIST: PrintMachine[] = [
   {
     id: 'epson_dtf',
     name: 'Epson SureColor F2100 DTF Textile Printer',
-    type: 'Apparel & T-Shirt Direct-to-Film (টি-শার্ট ফেব্রিক)',
+    type: 'Apparel & T-Shirt Direct-to-Film',
     specs: 'CMYK + White Ink | Hot Melt Powder Transfer | Apparel Printing',
     location: 'Textile Merchandise Section',
     category: 'dtf',
@@ -76,10 +76,10 @@ export interface WhatsAppTemplate {
 }
 
 export const WHATSAPP_TEMPLATES: WhatsAppTemplate[] = [
-  { key: 'proof', title: '১. ড্রাফট প্রুফ (Draft Proof + Disclaimer)', badge: 'ডিজাইন প্রুফ' },
-  { key: 'reminder', title: '২. জরুরী তাগাদা (Urgent Approval Reminder)', badge: 'দেরি হলে প্রিন্ট মিস' },
-  { key: 'production', title: '৩. প্রেসে পাঠানো (Routed to Press)', badge: 'প্রিন্ট চালু' },
-  { key: 'revision', title: '৪. সংশোধিত প্রুফ (Revision v+1)', badge: 'সংশোধিত ফাইল' },
+  { key: 'proof', title: '১. ড্রাফট প্রুফ ও শর্তাবলী', badge: 'ডিজাইন প্রুফ' },
+  { key: 'reminder', title: '২. জরুরি অনুমোদন তাগাদা', badge: 'দেরি হলে প্রিন্ট মিস' },
+  { key: 'production', title: '৩. প্রেসে পাঠানো হয়েছে', badge: 'প্রিন্ট চালু' },
+  { key: 'revision', title: '৪. সংশোধিত প্রুফ', badge: 'সংশোধিত ফাইল' },
 ]
 
 export function sanitizeBangladeshiPhone(rawPhone: string): string {
@@ -126,7 +126,7 @@ export function buildBangladeshiWhatsAppMessage({
     return (
       `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
       `আপনার *${jobTitle}* (জব নং: #${jobNum}) এর ডিজাইন প্রুফটি পূর্বে পাঠানো হয়েছিল।\n\n` +
-      `⏰ সময়মতো প্রিন্ট ও ডেলিভারি সম্পন্ন করার জন্য অনুগ্রহ করে ডিজাইনটি দ্রুত দেখে অনুমোদন (Approve) করুন অথবা কোনো পরিবর্তন থাকলে জানান।\n\n` +
+      `⏰ সময়মতো প্রিন্ট ও ডেলিভারি সম্পন্ন করার জন্য অনুগ্রহ করে ডিজাইনটি দ্রুত দেখে অনুমোদন করুন অথবা কোনো পরিবর্তন থাকলে জানান।\n\n` +
       `🖼️ প্রুফ লিংক: ${proofUrl}\n\n` +
       `ধন্যবাদ,\n${comp}`
     )
@@ -162,8 +162,8 @@ export function buildBangladeshiWhatsAppMessage({
     `📄 ভার্সন: v${ver}\n` +
     `🖼️ ডিজিটাল প্রুফ দেখুন: ${proofUrl}\n\n` +
     `⚠️ *বিশেষ সতর্কবার্তা / দায়িত্ব:* \n` +
-    `দয়া করে বানান (Spelling), মোবাইল নম্বর, সাইজ এবং কালার ভালো করে দেখে নিশ্চিত করুন। অনুমোদনের পর কোনো ভুল থাকলে তার দায়ভার সম্পূর্ণ গ্রাহকের।\n\n` +
-    `সব ঠিক থাকলে *APPROVED* লিখে রিপ্লাই দিন অথবা কোনো পরিবর্তন প্রয়োজন হলে জানান।\n\n` +
+    `দয়া করে বানান, মোবাইল নম্বর, সাইজ এবং কালার ভালো করে দেখে নিশ্চিত করুন। অনুমোদনের পর কোনো ভুল থাকলে তার দায়ভার সম্পূর্ণ গ্রাহকের।\n\n` +
+    `সব ঠিক থাকলে *অনুমোদিত* অথবা *OK* লিখে জানান অথবা কোনো পরিবর্তন প্রয়োজন হলে জানান।\n\n` +
     `ধন্যবাদ,\n${comp}`
   )
 }

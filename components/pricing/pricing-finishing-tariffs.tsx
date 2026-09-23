@@ -235,8 +235,8 @@ export function PricingFinishingTariffs({
                 <tr>
                   <th className="py-3 px-4">{tBilingual('Finishing Option', 'ফিনিশিং বিবরণ')}</th>
                   <th className="py-3 px-4">{tBilingual('Billing Unit / Method', 'বিলিং মেথড')}</th>
-                  <th className="py-3 px-4">{tBilingual('Client Selling Rate (৳)', 'বিক্রয় দর (৳)')}</th>
-                  <th className="py-3 px-4">{tBilingual('Internal Cost (৳)', 'অভ্যন্তরীণ খরচ')}</th>
+                  <th className="py-3 px-4">{tBilingual('Client Selling Rate', 'বিক্রয় দর')}</th>
+                  <th className="py-3 px-4">{tBilingual('Internal Cost', 'অভ্যন্তরীণ খরচ')}</th>
                   <th className="py-3 px-4">{tBilingual('Gross Margin', 'মুনাফা %')}</th>
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
@@ -347,7 +347,7 @@ export function PricingFinishingTariffs({
                   <th className="py-3 px-4">{tBilingual('Method Name', 'মেথডের নাম')}</th>
                   <th className="py-3 px-4">{tBilingual('Identifier Code', 'কোড')}</th>
                   <th className="py-3 px-4">{tBilingual('Unit', 'একক')}</th>
-                  <th className="py-3 px-4">{tBilingual('Print Surcharge (৳)', 'সারচার্জ দর (৳)')}</th>
+                  <th className="py-3 px-4">{tBilingual('Print Surcharge', 'সারচার্জ দর')}</th>
                   <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
                 </tr>
               </thead>
@@ -420,7 +420,7 @@ export function PricingFinishingTariffs({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Bengali Name (বাংলায় নাম)', 'বাংলায় নাম')}
+                {tBilingual('Bengali Name', 'বাংলা নাম')}
               </Label>
               <Input
                 placeholder="যেমন: গ্লস লেমিনেশন"
@@ -451,7 +451,7 @@ export function PricingFinishingTariffs({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Client Price (৳ BDT)', 'বিক্রয় দর (৳)')} <span className="text-rose-500">*</span>
+                {tBilingual('Client Price', 'বিক্রয় দর')} <span className="text-rose-500">*</span>
               </Label>
               <Input
                 type="number"
@@ -465,7 +465,7 @@ export function PricingFinishingTariffs({
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Internal Cost (৳ BDT)', 'অভ্যন্তরীণ খরচ')}
+                {tBilingual('Internal Cost', 'অভ্যন্তরীণ খরচ')}
               </Label>
               <Input
                 type="number"
@@ -529,7 +529,7 @@ export function PricingFinishingTariffs({
           <div className="grid grid-cols-1 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Print Surcharge per SFT (৳ BDT)', 'প্রতি স্কয়ার ফিট সারচার্জ দর (৳)')} <span className="text-rose-500">*</span>
+                {tBilingual('Print Surcharge per SFT', 'প্রতি স্কয়ার ফিট সারচার্জ দর')} <span className="text-rose-500">*</span>
               </Label>
               <Input
                 type="number"

@@ -36,7 +36,7 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
         <div>
           <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <Scale className="w-4 h-4 text-indigo-600" />
-            <span>{tBilingual('Trial Balance Statement (রেওয়ামিল)', 'রেওয়ামিল বিবরণী')}</span>
+            <span>{tBilingual('Trial Balance Statement', 'রেওয়ামিল বিবরণী')}</span>
           </CardTitle>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             {tBilingual('As of Date:', 'তারিখ:')} {statement.as_of_date}
@@ -72,9 +72,9 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
                 <th className="p-3 w-20">{tBilingual('Code', 'কোড')}</th>
                 <th className="p-3">{tBilingual('Account Name', 'হিসাবের নাম')}</th>
                 <th className="p-3 w-28">{tBilingual('Type', 'ধরন')}</th>
-                <th className="p-3 text-right w-32">{tBilingual('Debit (৳)', 'ডেবিট (৳)')}</th>
-                <th className="p-3 text-right w-32">{tBilingual('Credit (৳)', 'ক্রেডিট (৳)')}</th>
-                <th className="p-3 text-right w-32">{tBilingual('Net Balance (৳)', 'নিট ব্যালেন্স')}</th>
+                <th className="p-3 text-right w-32">{tBilingual('Debit', 'ডেবিট')}</th>
+                <th className="p-3 text-right w-32">{tBilingual('Credit', 'ক্রেডিট')}</th>
+                <th className="p-3 text-right w-32">{tBilingual('Net Balance', 'নিট ব্যালেন্স')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -82,7 +82,7 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
                 <tr key={acc.account_id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                   <td className="p-3 font-mono font-medium text-slate-500">{acc.code}</td>
                   <td className="p-3 font-medium text-slate-800 dark:text-slate-200">
-                    {acc.name} {acc.name_bn ? `(${acc.name_bn})` : ''}
+                    {tBilingual(acc.name, acc.name_bn || acc.name)}
                   </td>
                   <td className="p-3">
                     <Badge variant="outline" className="text-[10px] font-medium border-slate-300 dark:border-slate-700">

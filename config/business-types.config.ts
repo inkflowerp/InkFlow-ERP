@@ -59,7 +59,7 @@ export const ONBOARDING_BUSINESS_TYPES: BusinessType[] = [
   {
     code: 'advertising_agency',
     nameEn: 'Advertising Agency',
-    nameBn: 'বিজ্ঞাপনী সংস্থা (Agency)',
+    nameBn: 'বিজ্ঞাপনী সংস্থা',
     descriptionEn: 'Media buying, outdoor branding, event setups, campaigns',
     descriptionBn: 'আউটডোর ব্র্যান্ডিং, ইভেন্ট সেটআপ, ক্যাম্পেইন ও প্রিন্ট ম্যানেজমেন্ট',
     iconName: 'Briefcase',

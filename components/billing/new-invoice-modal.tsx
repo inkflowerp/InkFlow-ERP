@@ -37,7 +37,7 @@ import { Badge } from '@/components/ui/badge'
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { ProductRecord } from '@/types/product.types'
-import { formatBDT } from '@/lib/formatters'
+import { formatBDT, tBilingual } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import {
   searchInvoiceCustomersAction,
@@ -160,19 +160,19 @@ export {
 }
 
 const UNIT_OPTIONS = [
-  { value: 'sft', label: 'SFT (স্কয়ার ফুট)' },
-  { value: 'pcs', label: 'PCS (পিস)' },
-  { value: 'piece', label: 'Piece (পিস)' },
-  { value: 'set', label: 'SET (সেট)' },
-  { value: 'rft', label: 'RFT (রানিং ফুট)' },
-  { value: 'roll', label: 'ROLL (রোল)' },
-  { value: 'sheet', label: 'SHEET (শিট)' },
-  { value: 'box', label: 'BOX (বক্স)' },
-  { value: 'pack', label: 'PACK (প্যাক)' },
-  { value: 'pair', label: 'PAIR (জোড়া)' },
-  { value: 'carton', label: 'CARTON (কার্টুন)' },
-  { value: 'kg', label: 'KG (কেজি)' },
-  { value: 'sqin', label: 'SQIN (ইঞ্চি)' },
+  { value: 'sft', label: 'Square Feet (sft)', label_bn: 'বর্গফুট (স্কয়ার ফিট)' },
+  { value: 'pcs', label: 'Pieces (pcs)', label_bn: 'পিস' },
+  { value: 'piece', label: 'Piece', label_bn: 'পিস' },
+  { value: 'set', label: 'Set', label_bn: 'সেট' },
+  { value: 'rft', label: 'Running Feet (rft)', label_bn: 'রানিং ফিট' },
+  { value: 'roll', label: 'Roll', label_bn: 'রোল' },
+  { value: 'sheet', label: 'Sheet', label_bn: 'শীট' },
+  { value: 'box', label: 'Box', label_bn: 'বক্স' },
+  { value: 'pack', label: 'Pack', label_bn: 'প্যাক' },
+  { value: 'pair', label: 'Pair', label_bn: 'জোড়া' },
+  { value: 'carton', label: 'Carton', label_bn: 'কার্টুন' },
+  { value: 'kg', label: 'Kilogram', label_bn: 'কেজি' },
+  { value: 'sqin', label: 'Square Inch (sqin)', label_bn: 'বর্গইঞ্চি' },
 ]
 
 export function detectProductKind(p: ProductRecord | any): 'ready_product' | 'material' | 'service' {
@@ -2076,18 +2076,18 @@ export function NewInvoiceModal({
              ========================================================================= */}
           <div className="p-3 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/70 dark:from-slate-900/80 dark:via-blue-950/30 dark:to-indigo-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/40 space-y-2.5">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+              <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-bold shrink-0">
                 <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>১-ক্লিক প্রিন্ট প্রিসেট (Fast 1-Click BD Presets):</span>
+                <span>{tBilingual('Fast 1-Click BD Presets:', '১-ক্লিক প্রিন্ট প্রিসেট:')}</span>
               </div>
               <div className="flex flex-wrap items-center gap-1">
                 {(
                   [
-                    { key: 'all', label: 'সব প্রিসেট (All)' },
-                    { key: 'digital_print', label: '🎨 ডিজিটাল (Digital)' },
-                    { key: 'offset_print', label: '📑 অফসেট (Offset)' },
-                    { key: 'signage_fabrication', label: '💡 ৩ডি সাইনেজ (3D Sign)' },
-                    { key: 'ready_merchandise', label: '🎯 রেডি পণ্য (Ready)' },
+                    { key: 'all', label: 'All Presets', label_bn: 'সকল প্রিসেট' },
+                    { key: 'digital_print', label: '🎨 Digital', label_bn: '🎨 ডিজিটাল' },
+                    { key: 'offset_print', label: '📑 Offset', label_bn: '📑 অফসেট' },
+                    { key: 'signage_fabrication', label: '💡 3D Sign', label_bn: '💡 ৩ডি সাইনেজ' },
+                    { key: 'ready_merchandise', label: '🎯 Ready', label_bn: '🎯 রেডি পণ্য' },
                   ] as const
                 ).map((cat) => (
                   <button
@@ -2101,7 +2101,7 @@ export function NewInvoiceModal({
                         : 'bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700'
                     )}
                   >
-                    {cat.label}
+                    {tBilingual(cat.label, cat.label_bn)}
                   </button>
                 ))}
               </div>
@@ -2736,10 +2736,10 @@ export function NewInvoiceModal({
                         <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                           <Layers className="h-3.5 w-3.5 text-blue-600" />
                           {item.category_preset === 'offset_print'
-                            ? 'অফসেট প্রিন্টিং স্পেসিফিকেশন (Offset Commercial Specs)'
+                            ? tBilingual('Offset Printing Specifications', 'অফসেট প্রিন্টিং বিবরণ')
                             : item.category_preset === 'signage_fabrication'
-                            ? '৩ডি সাইনেজ ও লাইটিং স্পেসিফিকেশন (3D Signage Specs)'
-                            : 'Advanced Domain & Material Specs'}
+                            ? tBilingual('3D Signage & Lighting Specifications', '৩ডি সাইনেজ ও লাইটিং বিবরণ')
+                            : tBilingual('Advanced Domain & Material Specs', 'অ্যাডভান্সড স্পেসিফিকেশন')}
                         </span>
                         {item.description_bn && (
                           <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">

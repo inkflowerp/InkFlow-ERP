@@ -96,7 +96,7 @@ export function Customer360View({
           {/* Due Balance Card */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-right min-w-[160px]">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('Receivable Due (বাকি)', 'বাকি টাকা')}
+              {tBilingual('Receivable Due', 'বাকি টাকা')}
             </div>
             <div className={`text-xl font-black font-mono ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
               ৳{dueAmount.toLocaleString()}

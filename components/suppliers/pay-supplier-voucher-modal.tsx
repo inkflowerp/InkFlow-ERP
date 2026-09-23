@@ -89,7 +89,7 @@ export function PaySupplierVoucherModal({
     const errors: Record<string, string> = {}
     const numAmount = Number(amount)
     if (!numAmount || numAmount <= 0) {
-      errors.amount = tBilingual('Please enter a valid disbursement amount greater than ৳ 0.', 'অনুগ্রহ করে ৳ ০ এর বেশি সঠিক পেমেন্ট পরিমাণ লিখুন।')
+      errors.amount = tBilingual('Please enter a valid disbursement amount greater than 0.', 'অনুগ্রহ করে ০ এর বেশি সঠিক পেমেন্ট পরিমাণ লিখুন।')
     }
 
     if (method === 'cheque' && !chequeNumber.trim()) {
@@ -180,7 +180,7 @@ export function PaySupplierVoucherModal({
         <div className="p-4 rounded-xl bg-gradient-to-r from-teal-50 to-slate-50 dark:from-teal-950/40 dark:to-slate-900/60 border border-teal-200 dark:border-teal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div>
             <span className="text-[10px] uppercase font-bold text-teal-700 dark:text-teal-300 tracking-wider">
-              {tBilingual('Current Payable Balance (বকেয়া পাওনা)', 'বর্তমান বকেয়া পাওনা')}
+              {tBilingual('Current Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
             <div className="text-2xl font-black text-teal-900 dark:text-teal-100 font-mono mt-0.5">
               {formatBDT(currentBalance)}
@@ -200,7 +200,7 @@ export function PaySupplierVoucherModal({
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
               <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] mt-1 border-0">
-                Full Due Settled (সম্পূর্ণ পরিশোধ)
+                {tBilingual('Full Due Settled', 'সম্পূর্ণ পরিশোধিত')}
               </Badge>
             )}
           </div>
@@ -210,7 +210,7 @@ export function PaySupplierVoucherModal({
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3 shadow-xs">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
-              {tBilingual('Disbursement Amount (টাকার পরিমাণ ৳)', 'প্রদেয় টাকার পরিমাণ (৳)')} <span className="text-rose-500">*</span>
+              {tBilingual('Disbursement Amount', 'প্রদেয় টাকার পরিমাণ')} <span className="text-rose-500">*</span>
             </Label>
             <div className="flex items-center gap-1.5">
               {[
@@ -313,7 +313,7 @@ export function PaySupplierVoucherModal({
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Cheque Number (৬ বা ৭ সংখ্যার চেক নং)', 'চেক নম্বর')} <span className="text-rose-500">*</span>
+                  {tBilingual('Cheque Number', 'চেক নম্বর')} <span className="text-rose-500">*</span>
                 </Label>
                 <Input
                   placeholder="e.g. 9821043"
@@ -387,7 +387,7 @@ export function PaySupplierVoucherModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Vendor bKash / Nagad Number', 'ভেন্ডরের বিকাশ/নগদ নম্বর')}
+                  {tBilingual('Vendor bKash / Nagad Number', 'ভেন্ডরের বিকাশ বা নগদ নম্বর')}
                 </Label>
                 <Input
                   placeholder="017XXXXXXXX"
@@ -399,7 +399,7 @@ export function PaySupplierVoucherModal({
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('MFS TrxID / Reference', 'TrxID নম্বর')}
+                  {tBilingual('MFS TrxID / Reference', 'লেনদেন আইডি বা রেফারেন্স')}
                 </Label>
                 <Input
                   placeholder="e.g. 9B27X8KL9"

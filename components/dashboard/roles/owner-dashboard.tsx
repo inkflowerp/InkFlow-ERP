@@ -332,7 +332,7 @@ export function OwnerDashboard({
             />
 
             <span className="text-[11px] text-blue-200/80 font-semibold mt-1">
-              {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময় (Asia/Dhaka)')}
+              {tBilingual('Asia/Dhaka (UTC+6)', 'বাংলাদেশ সময়')}
             </span>
           </div>
         </div>
@@ -779,7 +779,7 @@ export function OwnerDashboard({
 
             <div className="pt-2 border-t border-purple-100 dark:border-purple-900/80 flex items-center justify-between text-xs font-mono">
               <span className="text-slate-600 dark:text-slate-400">
-                {tBilingual('Plates/CTP:', 'প্লেট/CTP:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
+                {tBilingual('Plates / CTP:', 'প্লেট / সিটিপি:')} <strong className="text-slate-900 dark:text-slate-100">{safeData.segmentMetrics.offset.platesPending}</strong>
               </span>
               <span className="font-bold text-purple-600 dark:text-purple-400">
                 {formatBDT(safeData.segmentMetrics.offset.todaySales)}
@@ -1088,7 +1088,7 @@ export function OwnerDashboard({
               <div className="flex items-center gap-2">
                 <Receipt className="h-4 w-4 text-emerald-600" />
                 <CardTitle className="text-base font-bold bangla-text">
-                  {tBilingual('Money to Collect (বকেয়া আদায়)', 'বকেয়া টাকা আদায়')}
+                  {tBilingual('Money to Collect', 'বকেয়া টাকা আদায়')}
                 </CardTitle>
               </div>
               <Button

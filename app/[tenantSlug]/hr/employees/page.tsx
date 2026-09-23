@@ -1675,7 +1675,7 @@ function EmployeeListContent() {
 
                   <div className="space-y-1.5">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {tBilingual('Profile Picture URL / Link', 'প্রোফাইল ছবি URL (বিকল্প)')}
+                      {tBilingual('Profile Picture URL', 'প্রোফাইল ছবির লিংক')}
                     </Label>
                     <div className="relative">
                       <Camera className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
@@ -1798,15 +1798,15 @@ function EmployeeListContent() {
                       onChange={(e) => setEmpForm({ ...empForm, department: e.target.value })}
                       className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                     >
-                      <option value="printing">{tBilingual('Printing (মুদ্রণ ও প্রিন্টিং)', 'মুদ্রণ ও প্রিন্টিং')}</option>
-                      <option value="finishing">{tBilingual('Finishing & Binding (ফিনিশিং ও বাইন্ডিং)', 'ফিনিশিং ও বাইন্ডিং')}</option>
-                      <option value="fabrication">{tBilingual('Fabrication & CNC (সাইনেজ ও মেটালিক)', 'সাইনেজ ও মেটালিক')}</option>
-                      <option value="design">{tBilingual('Pre-press & Design (গ্রাফিক ডিজাইন)', 'গ্রাফিক ডিজাইন')}</option>
-                      <option value="installation">{tBilingual('On-site Installation (অন-সাইট ফিটিং)', 'অন-সাইট ফিটিং')}</option>
-                      <option value="accounts">{tBilingual('Accounts & Billing (হিসাব ও বিলিং)', 'হিসাব ও বিলিং')}</option>
-                      <option value="sales">{tBilingual('Sales & Marketing (মার্কেটিং ও সেলস)', 'মার্কেটিং ও সেলস')}</option>
-                      <option value="management">{tBilingual('Management / Floor Admin (ম্যানেজমেন্ট)', 'ম্যানেজমেন্ট')}</option>
-                      <option value="field_ops">{tBilingual('Field Operations (ফিল্ড অপারেশন)', 'ফিল্ড অপারেশন')}</option>
+                      <option value="printing">{tBilingual('Printing', 'মুদ্রণ ও প্রিন্টিং')}</option>
+                      <option value="finishing">{tBilingual('Finishing & Binding', 'ফিনিশিং ও বাইন্ডিং')}</option>
+                      <option value="fabrication">{tBilingual('Fabrication & CNC', 'সাইনেজ ও মেটালিক')}</option>
+                      <option value="design">{tBilingual('Pre-press & Design', 'গ্রাফিক ডিজাইন')}</option>
+                      <option value="installation">{tBilingual('On-site Installation', 'অন-সাইট ফিটিং')}</option>
+                      <option value="accounts">{tBilingual('Accounts & Billing', 'হিসাব ও বিলিং')}</option>
+                      <option value="sales">{tBilingual('Sales & Marketing', 'মার্কেটিং ও সেলস')}</option>
+                      <option value="management">{tBilingual('Management / Floor Admin', 'ম্যানেজমেন্ট')}</option>
+                      <option value="field_ops">{tBilingual('Field Operations', 'ফিল্ড অপারেশন')}</option>
                     </select>
                   </div>
 
@@ -1827,11 +1827,11 @@ function EmployeeListContent() {
                       }}
                       className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                     >
-                      <option value="permanent">{tBilingual('Permanent Monthly Staff (স্থায়ী মাসিক কর্মী)', 'স্থায়ী মাসিক কর্মী')}</option>
-                      <option value="daily_worker">{tBilingual('Daily Wage Laborer (দৈনিক মজুরি কর্মী)', 'দৈনিক মজুরি কর্মী')}</option>
-                      <option value="hourly_worker">{tBilingual('Hourly Worker (ঘণ্টাপ্রতি পারিশ্রমিক)', 'ঘণ্টাপ্রতি পারিশ্রমিক')}</option>
-                      <option value="contract">{tBilingual('Contract Staff (চুক্তিভিত্তিক কর্মী)', 'চুক্তিভিত্তিক কর্মী')}</option>
-                      <option value="part_time">{tBilingual('Part-Time Worker (খণ্ডকালীন কর্মী)', 'খণ্ডকালীন কর্মী')}</option>
+                      <option value="permanent">{tBilingual('Permanent Monthly Staff', 'স্থায়ী মাসিক কর্মী')}</option>
+                      <option value="daily_worker">{tBilingual('Daily Wage Laborer', 'দৈনিক মজুরি কর্মী')}</option>
+                      <option value="hourly_worker">{tBilingual('Hourly Worker', 'ঘণ্টাপ্রতি পারিশ্রমিক')}</option>
+                      <option value="contract">{tBilingual('Contract Staff', 'চুক্তিভিত্তিক কর্মী')}</option>
+                      <option value="part_time">{tBilingual('Part-Time Worker', 'খণ্ডকালীন কর্মী')}</option>
                     </select>
                   </div>
 
@@ -1911,9 +1911,9 @@ function EmployeeListContent() {
                       onChange={(e) => setEmpForm({ ...empForm, status: e.target.value as any })}
                       className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                     >
-                      <option value="active">{tBilingual('Active (কর্মরত)', 'কর্মরত')}</option>
-                      <option value="on_leave">{tBilingual('On Leave (ছুটিতে)', 'ছুটিতে')}</option>
-                      <option value="terminated">{tBilingual('Terminated / Inactive (অব্যাহতিপ্রাপ্ত)', 'অব্যাহতিপ্রাপ্ত')}</option>
+                      <option value="active">{tBilingual('Active', 'কর্মরত')}</option>
+                      <option value="on_leave">{tBilingual('On Leave', 'ছুটিতে')}</option>
+                      <option value="terminated">{tBilingual('Terminated / Inactive', 'অব্যাহতিপ্রাপ্ত')}</option>
                     </select>
                   </div>
                 </div>
@@ -2054,10 +2054,10 @@ function EmployeeListContent() {
                         }
                         className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                       >
-                        <option value="Friday">{tBilingual('Friday (শুক্রবার)', 'শুক্রবার')}</option>
-                        <option value="Saturday">{tBilingual('Saturday (শনিবার)', 'শনিবার')}</option>
-                        <option value="Sunday">{tBilingual('Sunday (রবিবার)', 'রবিবার')}</option>
-                        <option value="None">{tBilingual('Rotating Shift / None (রোটেটিং)', 'রোটেটিং')}</option>
+                        <option value="Friday">{tBilingual('Friday', 'শুক্রবার')}</option>
+                        <option value="Saturday">{tBilingual('Saturday', 'শনিবার')}</option>
+                        <option value="Sunday">{tBilingual('Sunday', 'রবিবার')}</option>
+                        <option value="None">{tBilingual('Rotating Shift / None', 'রোটেটিং')}</option>
                       </select>
                     </div>
 
@@ -2119,16 +2119,16 @@ function EmployeeListContent() {
                         }}
                         className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                       >
-                        <option value="1.5x_standard">{tBilingual('1.5x Regular Hourly Rate (সাধারণ ১.৫x)', 'সাধারণ ১.৫x')}</option>
-                        <option value="2.0x_holiday">{tBilingual('2.0x Holiday / Night Shift (উৎসব ও নাইট ২.০x)', 'উৎসব ও নাইট ২.০x')}</option>
-                        <option value="fixed_rate">{tBilingual('Fixed Hourly OT Rate (নির্দিষ্ট রেট)', 'নির্দিষ্ট রেট')}</option>
-                        <option value="none">{tBilingual('No Overtime Allowed (প্রযোজ্য নয়)', 'প্রযোজ্য নয়')}</option>
+                        <option value="1.5x_standard">{tBilingual('1.5x Regular Hourly Rate', 'সাধারণ দেড়গুণ রেট')}</option>
+                        <option value="2.0x_holiday">{tBilingual('2.0x Holiday / Night Shift', 'ছুটি বা রাতের দ্বিগুণ রেট')}</option>
+                        <option value="fixed_rate">{tBilingual('Fixed Hourly OT Rate', 'নির্দিষ্ট রেট')}</option>
+                        <option value="none">{tBilingual('No Overtime Allowed', 'প্রযোজ্য নয়')}</option>
                       </select>
                     </div>
 
                     <div className="space-y-1">
                       <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {tBilingual('Overtime Rate / Value (৳ / hr)', 'ওভারটাইম রেট (৳ / ঘণ্টা)')}
+                        {tBilingual('Overtime Rate', 'ওভারটাইম রেট')}
                       </Label>
                       <Input
                         type="number"
@@ -2191,16 +2191,16 @@ function EmployeeListContent() {
                           }
                           className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                         >
-                          <option value="3_late_1_day_salary">{tBilingual('3 Days Late = 1 Day Salary Cut (৩ দিন দেরিতে ১ দিনের বেতন কর্তন)', '৩ দিন দেরিতে ১ দিনের বেতন কর্তন')}</option>
-                          <option value="fixed_amount">{tBilingual('Fixed Fine Amount per Late (প্রতি দেরিতে নির্দিষ্ট জরিমানা)', 'প্রতি দেরিতে নির্দিষ্ট জরিমানা')}</option>
-                          <option value="warning_only">{tBilingual('Warning Notice Only (শুধুমাত্র সতর্কবার্তা)', 'শুধুমাত্র সতর্কবার্তা')}</option>
+                          <option value="3_late_1_day_salary">{tBilingual('3 Days Late = 1 Day Salary Cut', '৩ দিন দেরিতে ১ দিনের বেতন কর্তন')}</option>
+                          <option value="fixed_amount">{tBilingual('Fixed Fine Amount per Late', 'প্রতি দেরিতে নির্দিষ্ট জরিমানা')}</option>
+                          <option value="warning_only">{tBilingual('Warning Notice Only', 'শুধুমাত্র সতর্কবার্তা')}</option>
                         </select>
                       </div>
 
                       {empForm.duty_settings.late_fine_policy === 'fixed_amount' && (
                         <div className="space-y-1">
                           <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Fine Amount per Late (৳)', 'দেরি প্রতি জরিমানা (৳)')}
+                            {tBilingual('Fine Amount per Late', 'দেরির জরিমানা')}
                           </Label>
                           <Input
                             type="number"
@@ -2234,10 +2234,10 @@ function EmployeeListContent() {
                   </Label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'monthly', label: 'Monthly Fixed (মাসিক)', desc: 'Full-time salaried staff' },
-                      { id: 'daily_rate', label: 'Daily Wage (দৈনিক)', desc: 'Shop-floor labor rate' },
-                      { id: 'hourly_rate', label: 'Hourly Rate (ঘণ্টাপ্রতি)', desc: 'Field & part-time tech' },
-                      { id: 'contract', label: 'Contractual (চুক্তি)', desc: 'Job-wise or fixed term' },
+                      { id: 'monthly', label: 'Monthly Fixed', label_bn: 'মাসিক', desc: 'Full-time salaried staff', desc_bn: 'স্থায়ী মাসিক কর্মী' },
+                      { id: 'daily_rate', label: 'Daily Wage', label_bn: 'দৈনিক', desc: 'Shop-floor labor rate', desc_bn: 'দৈনিক মজুরি কর্মী' },
+                      { id: 'hourly_rate', label: 'Hourly Rate', label_bn: 'ঘণ্টাপ্রতি', desc: 'Field & part-time tech', desc_bn: 'ঘণ্টাপ্রতি কর্মী' },
+                      { id: 'contract', label: 'Contractual', label_bn: 'চুক্তিভিত্তিক', desc: 'Job-wise or fixed term', desc_bn: 'চুক্তিভিত্তিক কর্মী' },
                     ].map((mode) => (
                       <button
                         key={mode.id}
@@ -2249,8 +2249,8 @@ function EmployeeListContent() {
                             : 'bg-card border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                         }`}
                       >
-                        <div className="text-xs font-bold">{mode.label}</div>
-                        <div className="text-[10px] opacity-75">{mode.desc}</div>
+                        <div className="text-xs font-bold">{tBilingual(mode.label, mode.label_bn)}</div>
+                        <div className="text-[10px] opacity-75">{tBilingual(mode.desc, mode.desc_bn)}</div>
                       </button>
                     ))}
                   </div>
@@ -2270,13 +2270,13 @@ function EmployeeListContent() {
                       className="text-sm h-9 font-bold font-mono"
                     />
                     <p className="text-[10px] text-slate-400">
-                      {tBilingual('Auto-calculates hourly & 1.5x OT rates', 'ঘণ্টা ও ১.৫x ওভারটাইম হিসাব হবে')}
+                      {tBilingual('Auto-calculates hourly & overtime rates', 'ঘণ্টা ও ওভারটাইম রেট স্বয়ংক্রিয় হিসাব হবে')}
                     </p>
                   </div>
 
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
-                      <span>{tBilingual('Daily Rate (Daily Staff)', 'দৈনিক রেট (৳)')}</span>
+                      <span>{tBilingual('Daily Rate', 'দৈনিক রেট')}</span>
                       <span className="text-[10px] text-blue-600 font-mono">৳/day</span>
                     </Label>
                     <Input
@@ -2292,7 +2292,7 @@ function EmployeeListContent() {
 
                   <div className="space-y-1.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20">
                     <Label className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center justify-between">
-                      <span>{tBilingual('OT Hourly Rate (৳)', 'ওভারটাইম রেট')}</span>
+                      <span>{tBilingual('OT Hourly Rate', 'ওভারটাইম রেট')}</span>
                       <span className="text-[10px] text-amber-600 font-mono">৳/hour</span>
                     </Label>
                     <Input
@@ -2376,7 +2376,7 @@ function EmployeeListContent() {
                   {showAdvancedAllowances && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Custom Basic (৳)', 'কাস্টম বেসিক')}</Label>
+                        <Label className="text-[11px]">{tBilingual('Custom Basic', 'মূল বেতন')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.basic}
@@ -2390,7 +2390,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('House Rent (৳)', 'বাড়ি ভাড়া')}</Label>
+                        <Label className="text-[11px]">{tBilingual('House Rent', 'বাড়ি ভাড়া')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.house_allowance}
@@ -2404,7 +2404,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Food Allowance (৳)', 'খাবার ভাতা')}</Label>
+                        <Label className="text-[11px]">{tBilingual('Food Allowance', 'খাবার ভাতা')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.food_allowance || 0}
@@ -2418,7 +2418,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Other Allowance (৳)', 'অন্যান্য ভাতা')}</Label>
+                        <Label className="text-[11px]">{tBilingual('Other Allowance', 'অন্যান্য ভাতা')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.other_allowances || 0}
@@ -2482,14 +2482,14 @@ function EmployeeListContent() {
                           }
                           className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                         >
-                          <option value="percentage">{tBilingual('Percentage of Sales (% বিক্রয়)', '% বিক্রয়')}</option>
-                          <option value="fixed_unit">{tBilingual('Fixed Amount per Unit (৳ প্রতি ইউনিট)', '৳ প্রতি ইউনিট')}</option>
+                          <option value="percentage">{tBilingual('Percentage of Sales', 'বিক্রয়ের শতকরা হার')}</option>
+                          <option value="fixed_unit">{tBilingual('Fixed Amount per Unit', 'প্রতি ইউনিটে নির্দিষ্ট টাকা')}</option>
                         </select>
                       </div>
 
                       <div className="space-y-1">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Commission Rate (% or ৳)', 'কমিশন রেট (% বা ৳)')}
+                          {tBilingual('Commission Rate (% or Fixed)', 'কমিশন হার (% বা নির্দিষ্ট টাকা)')}
                         </Label>
                         <Input
                           type="number"
@@ -2511,7 +2511,7 @@ function EmployeeListContent() {
 
                       <div className="space-y-1">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Monthly Sales Target (৳)', 'মাসিক টার্গেট (৳)')}
+                          {tBilingual('Monthly Sales Target', 'মাসিক বিক্রয় লক্ষ্যমাত্রা')}
                         </Label>
                         <Input
                           type="number"
@@ -2650,10 +2650,10 @@ function EmployeeListContent() {
                   {/* MFS Provider Selection */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'bkash', label: 'bKash (বিকাশ)', color: 'border-pink-500/30 bg-pink-500/5 text-pink-700 dark:text-pink-400' },
-                      { id: 'nagad', label: 'Nagad (নগদ)', color: 'border-orange-500/30 bg-orange-500/5 text-orange-700 dark:text-orange-400' },
-                      { id: 'rocket', label: 'Rocket (রকেট)', color: 'border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-400' },
-                      { id: 'other', label: 'Upay / Other (উপায়)', color: 'border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400' },
+                      { id: 'bkash', label: 'bKash', label_bn: 'বিকাশ', color: 'border-pink-500/30 bg-pink-500/5 text-pink-700 dark:text-pink-400' },
+                      { id: 'nagad', label: 'Nagad', label_bn: 'নগদ', color: 'border-orange-500/30 bg-orange-500/5 text-orange-700 dark:text-orange-400' },
+                      { id: 'rocket', label: 'Rocket', label_bn: 'রকেট', color: 'border-purple-500/30 bg-purple-500/5 text-purple-700 dark:text-purple-400' },
+                      { id: 'other', label: 'Upay / Other', label_bn: 'উপায় / অন্যান্য', color: 'border-blue-500/30 bg-blue-500/5 text-blue-700 dark:text-blue-400' },
                     ].map((p) => (
                       <button
                         key={p.id}
@@ -2663,7 +2663,7 @@ function EmployeeListContent() {
                           empForm.mfs_provider === p.id ? 'ring-2 ring-blue-500 shadow-xs' : 'opacity-70 hover:opacity-100'
                         }`}
                       >
-                        {p.label}
+                        {tBilingual(p.label, p.label_bn)}
                       </button>
                     ))}
                   </div>
@@ -2701,9 +2701,9 @@ function EmployeeListContent() {
                         onChange={(e) => setEmpForm({ ...empForm, mfs_account_type: e.target.value as any })}
                         className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                       >
-                        <option value="personal">{tBilingual('Personal (ব্যক্তিগত)', 'ব্যক্তিগত')}</option>
-                        <option value="merchant">{tBilingual('Merchant (মার্চেন্ট)', 'মার্চেন্ট')}</option>
-                        <option value="agent">{tBilingual('Agent (এজেন্ট)', 'এজেন্ট')}</option>
+                        <option value="personal">{tBilingual('Personal', 'ব্যক্তিগত')}</option>
+                        <option value="merchant">{tBilingual('Merchant', 'মার্চেন্ট')}</option>
+                        <option value="agent">{tBilingual('Agent', 'এজেন্ট')}</option>
                       </select>
                     </div>
                   </div>
@@ -2814,11 +2814,11 @@ function EmployeeListContent() {
                           }
                           className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                         >
-                          <option value="operator">{tBilingual('Operator / Technician (ফ্লোর অপারেটর)', 'ফ্লোর অপারেটর')}</option>
-                          <option value="designer">{tBilingual('Graphic Designer (ডিজাইনার)', 'ডিজাইনার')}</option>
-                          <option value="sales">{tBilingual('Sales Executive (সেলস এক্সিকিউটিভ)', 'সেলস এক্সিকিউটিভ')}</option>
-                          <option value="accounts">{tBilingual('Accountant / Billing (অ্যাকাউন্ট্যান্ট)', 'অ্যাকাউন্ট্যান্ট')}</option>
-                          <option value="manager">{tBilingual('Branch Manager (ব্রাঞ্চ ম্যানেজার)', 'ব্রাঞ্চ ম্যানেজার')}</option>
+                          <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর')}</option>
+                          <option value="designer">{tBilingual('Graphic Designer', 'ডিজাইনার')}</option>
+                          <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
+                          <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
+                          <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
                         </select>
                       </div>
                     </div>
@@ -3078,13 +3078,13 @@ function EmployeeListContent() {
                         onChange={(e) => setEmpForm({ ...empForm, emergency_contact_relation: e.target.value })}
                         className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                       >
-                        <option value="Spouse">{tBilingual('Spouse (স্ত্রী/স্বামী)', 'স্ত্রী/স্বামী')}</option>
-                        <option value="Father">{tBilingual('Father (পিতা)', 'পিতা')}</option>
-                        <option value="Mother">{tBilingual('Mother (মাতা)', 'মাতা')}</option>
-                        <option value="Brother">{tBilingual('Brother (ভাই)', 'ভাই')}</option>
-                        <option value="Sister">{tBilingual('Sister (বোন)', 'বোন')}</option>
-                        <option value="Son/Daughter">{tBilingual('Son/Daughter (সন্তান)', 'সন্তান')}</option>
-                        <option value="Guardian/Friend">{tBilingual('Guardian / Friend (অভিভাবক/বন্ধু)', 'অভিভাবক/বন্ধু')}</option>
+                        <option value="Spouse">{tBilingual('Spouse', 'স্ত্রী/স্বামী')}</option>
+                        <option value="Father">{tBilingual('Father', 'পিতা')}</option>
+                        <option value="Mother">{tBilingual('Mother', 'মাতা')}</option>
+                        <option value="Brother">{tBilingual('Brother', 'ভাই')}</option>
+                        <option value="Sister">{tBilingual('Sister', 'বোন')}</option>
+                        <option value="Son/Daughter">{tBilingual('Son / Daughter', 'সন্তান')}</option>
+                        <option value="Guardian/Friend">{tBilingual('Guardian / Friend', 'অভিভাবক / বন্ধু')}</option>
                       </select>
                     </div>
 
@@ -3649,7 +3649,7 @@ function EmployeeListContent() {
                               : 'bg-slate-100 text-slate-600'
                           }
                         >
-                          {selectedEmployee.duty_settings?.absent_deduction_allowed !== false ? 'Enabled (কর্তন প্রযোজ্য)' : 'Disabled'}
+                          {selectedEmployee.duty_settings?.absent_deduction_allowed !== false ? tBilingual('Enabled', 'কর্তন প্রযোজ্য') : tBilingual('Disabled', 'নিষ্ক্রিয়')}
                         </Badge>
                       </div>
                       <div className="flex items-center justify-between">

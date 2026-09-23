@@ -72,68 +72,68 @@ export const COST_COMPONENTS = [
 export const COMMERCIAL_PRODUCT_TYPES: CommercialProductTypeDefinition[] = [
   {
     id: 'ready_product',
-    label: 'Ready Product (তৈরি পণ্য)',
+    label: 'Ready Product',
     label_bn: 'তৈরি পণ্য',
     description: 'Off-the-shelf retail items ready to dispatch (e.g. frames, standees, accessories)',
   },
   {
     id: 'production_product',
-    label: 'Production Product (উৎপাদন পণ্য)',
+    label: 'Production Product',
     label_bn: 'উৎপাদন পণ্য',
     description: 'Custom manufactured print & signage items requiring machine runs',
   },
   {
     id: 'service',
-    label: 'General Service (সাধারণ সেবা)',
+    label: 'General Service',
     label_bn: 'সাধারণ সেবা',
     description: 'Billed professional services (e.g. banner design, artwork correction)',
   },
   {
     id: 'finishing',
-    label: 'Finishing Service (পোস্ট-প্রেস ফিনিশিং)',
+    label: 'Finishing Service',
     label_bn: 'ফিনিশিং সেবা',
     description: 'Post-press operations (e.g. hemming, eyelets, thermal lamination, die-cutting)',
   },
   {
     id: 'fabrication',
-    label: 'Fabrication Service (ফেব্রিকেশন / সাইনেজ)',
+    label: 'Fabrication Service',
     label_bn: 'ফেব্রিকেশন সেবা',
     description: 'Metal, MS frame, SS frame, ACP, or acrylic structure fabrication',
   },
   {
     id: 'installation',
-    label: 'Installation Service (ইনস্টলেশন সেবা)',
+    label: 'Installation Service',
     label_bn: 'ইনস্টলেশন সেবা',
     description: 'On-site billboard, signage, or sticker mounting at client premises',
   },
   {
     id: 'delivery',
-    label: 'Delivery & Logistics (ডেলিভারি / লজিস্টিকস)',
+    label: 'Delivery & Logistics',
     label_bn: 'ডেলিভারি সেবা',
     description: 'Courier, van transport, or Dhaka inter-district transport dispatch',
   },
   {
     id: 'package',
-    label: 'Package / Bundle Product (প্যাকেজ / বান্ডেল)',
+    label: 'Package / Bundle Product',
     label_bn: 'প্যাকেজ পণ্য',
     description: 'Turnkey event branding bundles (e.g. Backdrop + X-Stand + Installation)',
   },
   {
     id: 'outsource',
-    label: 'Outsource Product (আউটসোর্স পণ্য - নন-ইনভেন্টরি)',
-    label_bn: 'আউটসোর্স পণ্য (নন-ইনভেন্টরি)',
+    label: 'Outsource Product',
+    label_bn: 'আউটসোর্স পণ্য',
     description: 'Third-party vendor outsourced products & jobs (e.g. Offset, Neon bending, Embroidery, Debossing) requiring no internal stock depletion.',
   },
 ]
 
-export const MEASUREMENT_TYPES: { id: MeasurementType; label: string; description: string }[] = [
-  { id: 'area', label: 'Area / Substrate (বর্গফুট / স্কয়ার ফিট)', description: 'Flex, Vinyl, Banner, Acrylic, PVC, ACP (sqft / sqm)' },
-  { id: 'piece', label: 'Piece / Count (পিস / সংখ্যা)', description: 'Display stands, business cards, eyelets, badges, brochures' },
-  { id: 'length', label: 'Length / Running Feet (দৈর্ঘ্য / রানিং ফিট)', description: 'MS pipes, aluminum channels, border profiles, LED strips' },
-  { id: 'weight', label: 'Weight / Mass (ওজন / কেজি)', description: 'Raw metals, scrap, bulk vinyl pellets, paper reams (kg / gram)' },
-  { id: 'volume', label: 'Volume / Liquid (আয়তন / তরল)', description: 'Solvent ink, UV ink, cleaning solution, adhesives (liter / ml)' },
-  { id: 'job', label: 'Job / Project Tariff (জব / এককালীন চার্জ)', description: 'Design fees, installation charges, trip fees' },
-  { id: 'time', label: 'Time / Hourly Labor (সময় / ঘণ্টা)', description: 'Technician labor time, machine hourly rate' },
+export const MEASUREMENT_TYPES: { id: MeasurementType; label: string; label_bn: string; description: string }[] = [
+  { id: 'area', label: 'Area / Substrate', label_bn: 'বর্গফুট / স্কয়ার ফিট', description: 'Flex, Vinyl, Banner, Acrylic, PVC, ACP (sqft / sqm)' },
+  { id: 'piece', label: 'Piece / Count', label_bn: 'পিস / সংখ্যা', description: 'Display stands, business cards, eyelets, badges, brochures' },
+  { id: 'length', label: 'Length / Running Feet', label_bn: 'দৈর্ঘ্য / রানিং ফিট', description: 'MS pipes, aluminum channels, border profiles, LED strips' },
+  { id: 'weight', label: 'Weight / Mass', label_bn: 'ওজন', description: 'Raw metals, scrap, bulk vinyl pellets, paper reams (kg / gram)' },
+  { id: 'volume', label: 'Volume / Liquid', label_bn: 'আয়তন', description: 'Solvent ink, UV ink, cleaning solution, adhesives (liter / ml)' },
+  { id: 'job', label: 'Job / Project Tariff', label_bn: 'কাজের এককালীন চার্জ', description: 'Design fees, installation charges, trip fees' },
+  { id: 'time', label: 'Time / Hourly Labor', label_bn: 'সময় / ঘণ্টা', description: 'Technician labor time, machine hourly rate' },
 ]
 
 export interface StandardUnitDefinition {
@@ -148,34 +148,34 @@ export interface StandardUnitDefinition {
 }
 
 export const COMMON_PURCHASE_UNITS = [
-  { code: 'roll', name: 'Roll (রোল)', measurement_type: 'area' },
-  { code: 'sheet', name: 'Sheet (শীট)', measurement_type: 'area' },
-  { code: 'box', name: 'Box (বক্স)', measurement_type: 'piece' },
-  { code: 'pack', name: 'Pack (প্যাকেট)', measurement_type: 'piece' },
-  { code: 'bottle', name: 'Bottle (বোতল)', measurement_type: 'volume' },
-  { code: 'kg', name: 'Kilogram (কেজি)', measurement_type: 'weight' },
-  { code: 'pcs', name: 'Pieces (পিস)', measurement_type: 'piece' },
-  { code: 'job', name: 'Job (জব)', measurement_type: 'job' },
+  { code: 'roll', name: 'Roll', name_bn: 'রোল', measurement_type: 'area' },
+  { code: 'sheet', name: 'Sheet', name_bn: 'শীট', measurement_type: 'area' },
+  { code: 'box', name: 'Box', name_bn: 'বক্স', measurement_type: 'piece' },
+  { code: 'pack', name: 'Pack', name_bn: 'প্যাকেট', measurement_type: 'piece' },
+  { code: 'bottle', name: 'Bottle', name_bn: 'বোতল', measurement_type: 'volume' },
+  { code: 'kg', name: 'Kilogram', name_bn: 'কেজি', measurement_type: 'weight' },
+  { code: 'pcs', name: 'Pieces', name_bn: 'পিস', measurement_type: 'piece' },
+  { code: 'job', name: 'Job', name_bn: 'কাজের অর্ডার', measurement_type: 'job' },
 ]
 
 export const COMMON_SELLING_UNITS = [
-  { code: 'sft', name: 'Square Feet (sft / sqft)', measurement_type: 'area' },
-  { code: 'pcs', name: 'Pieces (পিস)', measurement_type: 'piece' },
-  { code: 'rft', name: 'Running Feet (rft)', measurement_type: 'length' },
-  { code: 'sheet', name: 'Sheet (শীট)', measurement_type: 'area' },
-  { code: 'meter', name: 'Meter (মিটার)', measurement_type: 'length' },
-  { code: 'ml', name: 'Milliliter (মিলি)', measurement_type: 'volume' },
-  { code: 'kg', name: 'Kilogram (কেজি)', measurement_type: 'weight' },
-  { code: 'job', name: 'Job / Flat Charge (জব)', measurement_type: 'job' },
-  { code: 'trip', name: 'Trip (ট্রিপ)', measurement_type: 'job' },
-  { code: 'hour', name: 'Hour (ঘণ্টা)', measurement_type: 'time' },
+  { code: 'sft', name: 'Square Feet', name_bn: 'বর্গফুট', measurement_type: 'area' },
+  { code: 'pcs', name: 'Pieces', name_bn: 'পিস', measurement_type: 'piece' },
+  { code: 'rft', name: 'Running Feet', name_bn: 'রানিং ফিট', measurement_type: 'length' },
+  { code: 'sheet', name: 'Sheet', name_bn: 'শীট', measurement_type: 'area' },
+  { code: 'meter', name: 'Meter', name_bn: 'মিটার', measurement_type: 'length' },
+  { code: 'ml', name: 'Milliliter', name_bn: 'মিলি', measurement_type: 'volume' },
+  { code: 'kg', name: 'Kilogram', name_bn: 'কেজি', measurement_type: 'weight' },
+  { code: 'job', name: 'Job / Flat Charge', name_bn: 'এককালীন চার্জ', measurement_type: 'job' },
+  { code: 'trip', name: 'Trip', name_bn: 'ট্রিপ', measurement_type: 'job' },
+  { code: 'hour', name: 'Hour', name_bn: 'ঘণ্টা', measurement_type: 'time' },
 ]
 
 export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> = {
   // Count / Discrete
   pcs: {
     code: 'pcs',
-    name: 'Pieces (Pcs)',
+    name: 'Pieces',
     name_bn: 'পিস',
     category: 'count',
     measurement_type: 'piece',
@@ -220,7 +220,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   thousand: {
     code: '1000 pcs',
-    name: 'Thousand (1,000 pcs)',
+    name: 'Thousand',
     name_bn: 'হাজার পিস',
     category: 'count',
     measurement_type: 'piece',
@@ -231,8 +231,8 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   // Area / Substrate Media
   sft: {
     code: 'sft',
-    name: 'Square Feet (sft / sqft)',
-    name_bn: 'বর্গফুট (স্কয়ার ফিট)',
+    name: 'Square Feet',
+    name_bn: 'বর্গফুট',
     category: 'area',
     measurement_type: 'area',
     decimal_precision: 2,
@@ -240,7 +240,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   sqft: {
     code: 'sqft',
-    name: 'Square Feet (sqft)',
+    name: 'Square Feet',
     name_bn: 'স্কয়ার ফিট',
     category: 'area',
     measurement_type: 'area',
@@ -249,7 +249,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   sqm: {
     code: 'sqm',
-    name: 'Square Meter (sqm)',
+    name: 'Square Meter',
     name_bn: 'বর্গমিটার',
     category: 'area',
     measurement_type: 'area',
@@ -258,7 +258,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   sheet: {
     code: 'sheet',
-    name: 'Sheet (Board / Acrylic / Paper)',
+    name: 'Sheet',
     name_bn: 'শীট',
     category: 'area',
     measurement_type: 'area',
@@ -267,7 +267,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   roll: {
     code: 'roll',
-    name: 'Roll (Flex / Vinyl / Banner)',
+    name: 'Roll',
     name_bn: 'রোল',
     category: 'area',
     measurement_type: 'area',
@@ -278,7 +278,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   // Length
   rft: {
     code: 'rft',
-    name: 'Running Feet (rft)',
+    name: 'Running Feet',
     name_bn: 'রানিং ফিট',
     category: 'length',
     measurement_type: 'length',
@@ -287,7 +287,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   ft: {
     code: 'ft',
-    name: 'Feet (ft)',
+    name: 'Feet',
     name_bn: 'ফিট',
     category: 'length',
     measurement_type: 'length',
@@ -296,7 +296,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   inch: {
     code: 'inch',
-    name: 'Inch (in)',
+    name: 'Inch',
     name_bn: 'ইঞ্চি',
     category: 'length',
     measurement_type: 'length',
@@ -305,7 +305,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   meter: {
     code: 'meter',
-    name: 'Meter (m)',
+    name: 'Meter',
     name_bn: 'মিটার',
     category: 'length',
     measurement_type: 'length',
@@ -316,7 +316,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   // Weight
   kg: {
     code: 'kg',
-    name: 'Kilogram (kg)',
+    name: 'Kilogram',
     name_bn: 'কেজি',
     category: 'weight',
     measurement_type: 'weight',
@@ -325,7 +325,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   gram: {
     code: 'gram',
-    name: 'Gram (g)',
+    name: 'Gram',
     name_bn: 'গ্রাম',
     category: 'weight',
     measurement_type: 'weight',
@@ -336,7 +336,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   // Volume / Liquid Media
   liter: {
     code: 'liter',
-    name: 'Liter (L / ltr)',
+    name: 'Liter',
     name_bn: 'লিটার',
     category: 'volume',
     measurement_type: 'volume',
@@ -345,7 +345,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   ml: {
     code: 'ml',
-    name: 'Milliliter (ml)',
+    name: 'Milliliter',
     name_bn: 'মিলি',
     category: 'volume',
     measurement_type: 'volume',
@@ -354,7 +354,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   bottle: {
     code: 'bottle',
-    name: 'Bottle (Ink / Solvent)',
+    name: 'Bottle',
     name_bn: 'বোতল',
     category: 'volume',
     measurement_type: 'volume',
@@ -365,7 +365,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   // Time / Labor
   hour: {
     code: 'hour',
-    name: 'Hour (hr)',
+    name: 'Hour',
     name_bn: 'ঘণ্টা',
     category: 'time',
     measurement_type: 'time',
@@ -377,7 +377,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   job: {
     code: 'job',
     name: 'Job / Project',
-    name_bn: 'জব / প্রজেক্ট',
+    name_bn: 'কাজের অর্ডার',
     category: 'service',
     measurement_type: 'job',
     decimal_precision: 0,
@@ -385,7 +385,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   trip: {
     code: 'trip',
-    name: 'Trip / Delivery Delivery',
+    name: 'Trip',
     name_bn: 'ট্রিপ',
     category: 'service',
     measurement_type: 'job',
@@ -394,7 +394,7 @@ export const STANDARD_COMMERCIAL_UNITS: Record<string, StandardUnitDefinition> =
   },
   design: {
     code: 'design',
-    name: 'Design / Creative',
+    name: 'Design',
     name_bn: 'ডিজাইন',
     category: 'service',
     measurement_type: 'job',

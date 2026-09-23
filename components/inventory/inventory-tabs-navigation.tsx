@@ -120,14 +120,14 @@ export function InventoryTabsNavigation({
     {
       id: 'purchases',
       labelEn: 'Purchase Orders',
-      labelBn: 'কেনাকাটা (PO)',
+      labelBn: 'ক্রয়াদেশ সমূহ',
       icon: ShoppingBag,
       count: ordersCount,
     },
     {
       id: 'receiving',
-      labelEn: 'Receiving (GRN)',
-      labelBn: 'রিসিভিং (GRN)',
+      labelEn: 'Goods Receiving',
+      labelBn: 'পণ্য গ্রহণ ও রিসিভিং',
       icon: Truck,
       count: pendingInwardCount,
       alert: pendingInwardCount > 0,

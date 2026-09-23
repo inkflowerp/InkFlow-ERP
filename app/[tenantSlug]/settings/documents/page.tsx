@@ -301,12 +301,12 @@ export default function DocumentDesignerPage() {
           {/* Document Types */}
           <div className="flex items-center gap-1.5 overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 touch-scroll w-full sm:w-auto">
             {[
-              { id: 'quotation', label: 'Quotation (দরপত্র)' },
-              { id: 'invoice', label: 'Sales Invoice (চালান বিল)' },
-              { id: 'vat_mushak', label: 'NBR VAT (মূসক-৬.৩)' },
-              { id: 'receipt', label: 'Receipt (মানি রিসিট)' },
-              { id: 'challan', label: 'Challan (ডেলিভারি)' },
-              { id: 'purchase_order', label: 'PO (ক্রয় আদেশ)' },
+              { id: 'quotation', label: 'Quotation', label_bn: 'দরপত্র' },
+              { id: 'invoice', label: 'Sales Invoice', label_bn: 'চালান বিল' },
+              { id: 'vat_mushak', label: 'NBR VAT (Mushak 6.3)', label_bn: 'মূসক-৬.৩' },
+              { id: 'receipt', label: 'Money Receipt', label_bn: 'মানি রিসিট' },
+              { id: 'challan', label: 'Delivery Challan', label_bn: 'ডেলিভারি চালান' },
+              { id: 'purchase_order', label: 'Purchase Order', label_bn: 'ক্রয় আদেশ' },
             ].map((doc) => (
               <Button
                 key={doc.id}
@@ -317,7 +317,7 @@ export default function DocumentDesignerPage() {
                   selectedDoc === doc.id ? 'bg-blue-600 text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400'
                 }`}
               >
-                {doc.label}
+                {tBilingual(doc.label, doc.label_bn)}
               </Button>
             ))}
           </div>

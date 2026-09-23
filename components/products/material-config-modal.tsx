@@ -53,6 +53,7 @@ import { formatBDT } from '@/lib/formatters'
 import { calculateGrossMargin, calculateSuggestedSellingPrice } from '@/lib/units'
 import { cn } from '@/lib/utils'
 import { dispatchToast } from '@/components/shared/toast-feedback'
+import { useI18n } from '@/i18n/client'
 
 interface MaterialConfigModalProps {
   isOpen: boolean
@@ -152,26 +153,26 @@ export const PHYSICAL_FORM_CARDS: Array<{
   },
 ]
 
-const COMMON_PURCHASE_UNITS: { value: string; label: string; defaultType: MaterialPhysicalType }[] = [
-  { value: 'roll', label: 'Continuous Roll (রোল - Media Substrate)', defaultType: 'roll' },
-  { value: 'sheet', label: 'Rigid Sheet / Board (শীট / বোর্ড)', defaultType: 'sheet' },
-  { value: 'bottle', label: 'Bottle / Can (বোতল - Ink/Chemical)', defaultType: 'liquid' },
-  { value: 'liter', label: 'Liter (লিটার)', defaultType: 'liquid' },
-  { value: 'box', label: 'Box / Pack (বক্স / প্যাকেট)', defaultType: 'accessory' },
-  { value: 'piece', label: 'Piece (পিস)', defaultType: 'accessory' },
-  { value: 'kg', label: 'Kilogram (কেজি)', defaultType: 'rigid' },
-  { value: 'meter', label: 'Meter (মিটার)', defaultType: 'rigid' },
-  { value: 'pack', label: 'Packet (প্যাক)', defaultType: 'accessory' },
+const COMMON_PURCHASE_UNITS: { value: string; label: string; label_bn: string; defaultType: MaterialPhysicalType }[] = [
+  { value: 'roll', label: 'Continuous Roll', label_bn: 'রোল মিডিয়া', defaultType: 'roll' },
+  { value: 'sheet', label: 'Rigid Sheet / Board', label_bn: 'শীট বা বোর্ড', defaultType: 'sheet' },
+  { value: 'bottle', label: 'Bottle / Can', label_bn: 'বোতল বা ক্যান', defaultType: 'liquid' },
+  { value: 'liter', label: 'Liter', label_bn: 'লিটার', defaultType: 'liquid' },
+  { value: 'box', label: 'Box / Pack', label_bn: 'বক্স বা প্যাকেট', defaultType: 'accessory' },
+  { value: 'piece', label: 'Piece', label_bn: 'পিস বা টুকরা', defaultType: 'accessory' },
+  { value: 'kg', label: 'Kilogram', label_bn: 'কেজি', defaultType: 'rigid' },
+  { value: 'meter', label: 'Meter', label_bn: 'মিটার', defaultType: 'rigid' },
+  { value: 'pack', label: 'Packet', label_bn: 'প্যাকেট', defaultType: 'accessory' },
 ]
 
-const COMMON_USAGE_UNITS: { value: UnitOfMeasure; label: string }[] = [
-  { value: 'sft', label: 'Square Feet (sft) — স্কয়ার ফিট' },
-  { value: 'sqin', label: 'Square Inch (sqin) — স্কয়ার ইঞ্চি' },
-  { value: 'sqm', label: 'Square Meter (sqm) — বর্গমিটার' },
-  { value: 'piece', label: 'Piece (পিস) — একক সংখ্যা' },
-  { value: 'liter', label: 'Liter / ML (লিটার/মিলি)' },
-  { value: 'rft', label: 'Running Feet (rft) — দৈর্ঘ্য' },
-  { value: 'kg', label: 'Kilogram (কেজি)' },
+const COMMON_USAGE_UNITS: { value: UnitOfMeasure; label: string; label_bn: string }[] = [
+  { value: 'sft', label: 'Square Feet (sft)', label_bn: 'বর্গফুট (স্কয়ার ফিট)' },
+  { value: 'sqin', label: 'Square Inch (sqin)', label_bn: 'বর্গইঞ্চি' },
+  { value: 'sqm', label: 'Square Meter (sqm)', label_bn: 'বর্গমিটার' },
+  { value: 'piece', label: 'Piece', label_bn: 'পিস (সংখ্যা)' },
+  { value: 'liter', label: 'Liter / ML', label_bn: 'লিটার বা মিলি' },
+  { value: 'rft', label: 'Running Feet (rft)', label_bn: 'রানিং ফিট (দৈর্ঘ্য)' },
+  { value: 'kg', label: 'Kilogram', label_bn: 'কেজি' },
 ]
 
 export const MATERIAL_TYPE_CATEGORIES: Record<
@@ -179,28 +180,28 @@ export const MATERIAL_TYPE_CATEGORIES: Record<
   Array<{ id: string; name: string; name_bn?: string; defaultPurchaseUnit: string; defaultUsageUnit: UnitOfMeasure }>
 > = {
   roll: [
-    { id: 'flex_banner', name: 'PVC Flex Banner (Frontlit / Backlit / Blackout)', name_bn: 'পিভিসি ব্যানার রোল (ফ্রন্টলিট / ব্যাকলিট)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
-    { id: 'adhesive_vinyl', name: 'Self-Adhesive Vinyl (Gloss / Matt / Clear / Frosted)', name_bn: 'ভিনাইল স্টিকার রোল (গ্লস / ম্যাট / ফ্রস্টেড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'flex_banner', name: 'PVC Flex Banner (Frontlit / Backlit / Blackout)', name_bn: 'পিভিসি ব্যানার রোল (ফ্রন্টলিট বা ব্যাকলিট)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'adhesive_vinyl', name: 'Self-Adhesive Vinyl (Gloss / Matt / Clear / Frosted)', name_bn: 'ভিনাইল স্টিকার রোল (গ্লস বা ম্যাট বা ফ্রস্টেড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
     { id: 'one_way_vision', name: 'One-Way Vision Window Perforated Film', name_bn: 'ওয়ান-ওয়ে ভিশন গ্লাস ফিল্ম', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
     { id: 'reflective_vinyl', name: 'Reflective & Specialty Vinyl Sheeting', name_bn: 'রিফ্লেক্টিভ স্টিকার রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
-    { id: 'lamination_rolls', name: 'Thermal & Cold Lamination Film Rolls', name_bn: 'ল্যামিনেশন ফিল্ম রোল (থার্মাল / কোল্ড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
+    { id: 'lamination_rolls', name: 'Thermal & Cold Lamination Film Rolls', name_bn: 'ল্যামিনেশন ফিল্ম রোল (থার্মাল বা কোল্ড)', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
     { id: 'canvas_fabrics', name: 'Canvas, Satin & Textile Print Fabrics', name_bn: 'ক্যানভাস ও টেক্সটাইল ফেব্রিক রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
     { id: 'photo_papers', name: 'High-Gloss Photo Paper & PP Synthetic Rolls', name_bn: 'ফটো পেপার ও সিন্থেটিক মিডিয়া রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
     { id: 'mesh_backlit', name: 'Mesh Banner & Backlit PET Film Rolls', name_bn: 'মেশ ও ব্যাকলিট ফিল্ম রোল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'sft' },
   ],
   sheet: [
     { id: 'pvc_foam_board', name: 'PVC Foam Sheet & Sunboard (3mm–18mm)', name_bn: 'পিভিসি ফোম বোর্ড ও সানবোর্ড', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
-    { id: 'acrylic_sheets', name: 'Cast Acrylic Sheets (Clear / Opal / Color 2mm–12mm)', name_bn: 'কাস্ট এক্রিলিক শীট (স্বচ্ছ / কালার)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
-    { id: 'acp_sheets', name: 'Aluminum Composite Panels (ACP 3mm, 4mm)', name_bn: 'অ্যালুমিনিয়াম কম্পোজিট প্যানেল (ACP)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'acrylic_sheets', name: 'Cast Acrylic Sheets (Clear / Opal / Color 2mm–12mm)', name_bn: 'কাস্ট এক্রিলিক শীট (স্বচ্ছ বা রঙিন)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
+    { id: 'acp_sheets', name: 'Aluminum Composite Panels (ACP 3mm, 4mm)', name_bn: 'অ্যালুমিনিয়াম কম্পোজিট প্যানেল', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
     { id: 'coroplast_sheets', name: 'PP Coroplast / Hollow Flute Board (3mm–5mm)', name_bn: 'করোপ্লাস্ট ও পিপি ফ্লুট শীট', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
     { id: 'mdf_wood_boards', name: 'MDF, HDF & Plywood Craft Sheets', name_bn: 'এমডিএফ ও কাঠের বোর্ড শীট', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'sft' },
     { id: 'commercial_paper_cards', name: 'Art Paper, Art Card & Kraft Board Sheets', name_bn: 'আর্ট পেপার ও কার্ড শীট (১২০–৩৫০ জিএসএম)', defaultPurchaseUnit: 'sheet', defaultUsageUnit: 'piece' },
   ],
   liquid: [
     { id: 'eco_solvent_inks', name: 'Eco-Solvent Inks (CMYK + Light Colors)', name_bn: 'ইকো-সলভেন্ট কালি (বোতল)', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
-    { id: 'solvent_inks', name: 'Solvent Heavy Duty Inks (CMYK 5L / 1L)', name_bn: 'সলভেন্ট ব্যানার কালি (ক্যান/বোতল)', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'solvent_inks', name: 'Solvent Heavy Duty Inks (CMYK 5L / 1L)', name_bn: 'সলভেন্ট ব্যানার কালি (ক্যান বা বোতল)', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
     { id: 'uv_curable_inks', name: 'UV Curable LED Inks (CMYK + White + Varnish)', name_bn: 'ইউভি কিউরেবল এলইডি কালি', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
-    { id: 'textile_inks', name: 'Dye Sublimation & DTF Textile Inks', name_bn: 'সাবলিমেশন ও ডিটিএফ টেক্সটাইল কালি', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
+    { id: 'textile_inks', name: 'Dye Sublimation & DTF Textile Inks', name_bn: 'সাবলিমেশন ও টেক্সটাইল কালি', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
     { id: 'offset_process_inks', name: 'Commercial Offset Sheetfed Process Inks', name_bn: 'অফসেট প্রসেস পেস্ট কালি', defaultPurchaseUnit: 'kg', defaultUsageUnit: 'kg' },
     { id: 'screen_print_inks', name: 'Screen Printing Plastisol & Water Paste Inks', name_bn: 'স্ক্রিন প্রিন্ট পেস্ট ও কেমিক্যাল', defaultPurchaseUnit: 'kg', defaultUsageUnit: 'kg' },
     { id: 'cleaning_chemicals', name: 'Printhead Cleaning Solutions & Flushing Fluids', name_bn: 'হেড ক্লিনিং সলিউশন ও ফ্লাশিং ফ্লুইড', defaultPurchaseUnit: 'bottle', defaultUsageUnit: 'liter' },
@@ -212,16 +213,16 @@ export const MATERIAL_TYPE_CATEGORIES: Record<
     { id: 'gi_pipes_truss', name: 'GI Pipes & Structural Billboard Truss Steel', name_bn: 'জিআই পাইপ ও হেভি ট্রাস মেটাল', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'rft' },
   ],
   accessory: [
-    { id: 'eyelets_grommets', name: 'Brass, Nickel & Metal Eyelets / Grommets', name_bn: 'আইলেট ও গ্রোমেট (বক্স/প্যাকেট)', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
+    { id: 'eyelets_grommets', name: 'Brass, Nickel & Metal Eyelets / Grommets', name_bn: 'আইলেট ও গ্রোমেট (বক্স বা প্যাকেট)', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
     { id: 'display_stands', name: 'Portable Display Stands (X-Banner, Roll-up, Pop-up)', name_bn: 'এক্স-ব্যানার ও রোল-আপ ডিসপ্লে স্ট্যান্ড', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
-    { id: 'adhesives_tapes', name: 'Industrial VHB Foam Tapes & Double Tapes', name_bn: 'ভিএইচবি ফোম টেপ ও আঠা', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
+    { id: 'adhesives_tapes', name: 'Industrial VHB Foam Tapes & Double Tapes', name_bn: 'ফোম টেপ ও আঠা', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
     { id: 'standoff_studs', name: 'Acrylic & Signboard Standoff Spacer Studs', name_bn: 'স্টাড নাট-বোল্ট ও স্পেসার', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
-    { id: 'binding_spirals', name: 'Wiro Binding Coils, Spirals & Hard Covers', name_bn: 'স্পাইরাল কয়েল ও বাইন্ডিং মেটেরিয়াল', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
-    { id: 'packaging_materials', name: 'Protective Bubble Wrap, Stretch Film & Packaging', name_bn: 'বাবল র‍্যাপ ও প্যাকেজিং মেটেরিয়াল', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'piece' },
+    { id: 'binding_spirals', name: 'Wiro Binding Coils, Spirals & Hard Covers', name_bn: 'স্পাইরাল কয়েল ও বাইন্ডিং সামগ্রী', defaultPurchaseUnit: 'box', defaultUsageUnit: 'piece' },
+    { id: 'packaging_materials', name: 'Protective Bubble Wrap, Stretch Film & Packaging', name_bn: 'বাবল র‍্যাপ ও প্যাকেজিং সামগ্রী', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'piece' },
   ],
   electrical: [
     { id: 'led_modules', name: 'Injection LED Modules (1.2W / 1.5W Samsung/Epistar)', name_bn: 'ইনজেকশন এলইডি মডিউল (স্ট্রিং)', defaultPurchaseUnit: 'pack', defaultUsageUnit: 'piece' },
-    { id: 'power_supplies', name: 'Rainproof Switching Power Supplies (12V / 24V SMPS)', name_bn: '১২ভি/২৪ভি পাওয়ার সাপ্লাই ট্রান্সফরমার', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
+    { id: 'power_supplies', name: 'Rainproof Switching Power Supplies (12V / 24V SMPS)', name_bn: '১২ভি বা ২৪ভি পাওয়ার সাপ্লাই ট্রান্সফরমার', defaultPurchaseUnit: 'piece', defaultUsageUnit: 'piece' },
     { id: 'led_neon_strips', name: 'Flexible LED Neon Strips & Silicone Diffusers', name_bn: 'ফ্লেক্সিবল এলইডি নিয়ন স্ট্রিপ', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'rft' },
     { id: 'cables_controllers', name: 'Multi-Core Electrical Cables & Dimmers', name_bn: 'কপার কেবল, টাইমার ও কন্ট্রোলার', defaultPurchaseUnit: 'roll', defaultUsageUnit: 'rft' },
   ],
@@ -268,36 +269,36 @@ const QUICK_SHEET_PRESETS = [
 
 // Substrate Finish Options
 const SUBSTRATE_FINISH_OPTIONS = [
-  { value: 'gloss', label: 'Glossy / Shine (চকচকে)' },
-  { value: 'matte', label: 'Matte / Non-Glare (ম্যাট / প্রতিফলনহীন)' },
-  { value: 'satin', label: 'Satin / Semi-Gloss (সেমি-গ্লস)' },
-  { value: 'clear', label: 'Ultra-Clear Transparent (স্বচ্ছ)' },
-  { value: 'frosted', label: 'Frosted / Etched Glass (ফ্রস্টেড)' },
-  { value: 'backlit', label: 'Translucent Backlit (ব্যাকলিট লাইটবক্স)' },
-  { value: 'blockout', label: 'Blockout / 100% Blackout (ব্লকআউট)' },
-  { value: 'metallic', label: 'Metallic / Chrome / Gold (মেটালিক)' },
-  { value: 'textured', label: 'Textured Canvas / Embossed (টেক্সচার্ড)' },
+  { value: 'gloss', label: 'Glossy / Shine', label_bn: 'চকচকে বা গ্লসি' },
+  { value: 'matte', label: 'Matte / Non-Glare', label_bn: 'ম্যাট বা প্রতিফলনহীন' },
+  { value: 'satin', label: 'Satin / Semi-Gloss', label_bn: 'সেমি-গ্লস' },
+  { value: 'clear', label: 'Ultra-Clear Transparent', label_bn: 'স্বচ্ছ বা ক্লিয়ার' },
+  { value: 'frosted', label: 'Frosted / Etched Glass', label_bn: 'ফ্রস্টেড গ্লাস' },
+  { value: 'backlit', label: 'Translucent Backlit', label_bn: 'ব্যাকলিট লাইটবক্স' },
+  { value: 'blockout', label: 'Blockout / 100% Blackout', label_bn: 'ব্লকআউট বা অস্বচ্ছ' },
+  { value: 'metallic', label: 'Metallic / Chrome / Gold', label_bn: 'মেটালিক বা গোল্ডেন' },
+  { value: 'textured', label: 'Textured Canvas / Embossed', label_bn: 'টেক্সচার্ড ক্যানভাস' },
 ]
 
 // Durability Options
 const DURABILITY_OPTIONS = [
-  { value: 'indoor', label: 'Indoor Promo (অভ্যন্তরীণ ইনডোর)' },
-  { value: 'outdoor_1yr', label: 'Outdoor 1-Year Standard (১ বছর আউটডোর)' },
-  { value: 'outdoor_2yr', label: 'Outdoor 2-Year Medium Term (২ বছর আউটডোর)' },
-  { value: 'outdoor_3yr', label: 'Outdoor 3-5 Year Heavy Duty (৩-৫ বছর আউটডোর)' },
-  { value: 'cast_automotive', label: 'Cast / Automotive Grade 5-7 Years (প্রিমিয়াম কাস্ট)' },
+  { value: 'indoor', label: 'Indoor Promo', label_bn: 'ইনডোর বা ঘরের ভেতর' },
+  { value: 'outdoor_1yr', label: 'Outdoor 1-Year Standard', label_bn: '১ বছর আউটডোর' },
+  { value: 'outdoor_2yr', label: 'Outdoor 2-Year Medium Term', label_bn: '২ বছর আউটডোর' },
+  { value: 'outdoor_3yr', label: 'Outdoor 3-5 Year Heavy Duty', label_bn: '৩-৫ বছর আউটডোর' },
+  { value: 'cast_automotive', label: 'Cast / Automotive Grade 5-7 Years', label_bn: '৫-৭ বছর প্রিমিয়াম কাস্ট' },
 ]
 
 // Production Role Options
 const PRODUCTION_ROLE_OPTIONS = [
-  { value: 'primary_substrate', label: 'Primary Print Substrate (মূল প্রিন্ট মিডিয়া)' },
-  { value: 'lamination_film', label: 'Lamination Overcoat Film (ল্যামিনেশন ফিল্ম)' },
-  { value: 'backing_board', label: 'Rigid Backing / Mounting Board (মাউন্টিং বোর্ড)' },
-  { value: 'ink_consumable', label: 'Ink / Liquid Consumable (প্রিন্টার কালি)' },
-  { value: 'structure_metal', label: 'Frame & Structure Metal (ফ্রেম মেটাল)' },
-  { value: 'fastener_hardware', label: 'Fastener / Eyelet Hardware (আইলেট ও হার্ডওয়্যার)' },
-  { value: 'illumination_led', label: 'LED & Electrical Module (এলইডি ও পাওয়ার)' },
-  { value: 'packaging', label: 'Packaging & Protection (প্যাকেজিং)' },
+  { value: 'primary_substrate', label: 'Primary Print Substrate', label_bn: 'মূল প্রিন্ট মিডিয়া' },
+  { value: 'lamination_film', label: 'Lamination Overcoat Film', label_bn: 'ল্যামিনেশন ফিল্ম' },
+  { value: 'backing_board', label: 'Rigid Backing / Mounting Board', label_bn: 'মাউন্টিং বোর্ড' },
+  { value: 'ink_consumable', label: 'Ink / Liquid Consumable', label_bn: 'প্রিন্টার কালি' },
+  { value: 'structure_metal', label: 'Frame & Structure Metal', label_bn: 'ফ্রেম ও মেটাল স্ট্রাকচার' },
+  { value: 'fastener_hardware', label: 'Fastener / Eyelet Hardware', label_bn: 'আইলেট ও হার্ডওয়্যার' },
+  { value: 'illumination_led', label: 'LED & Electrical Module', label_bn: 'এলইডি ও পাওয়ার সাপ্লাই' },
+  { value: 'packaging', label: 'Packaging & Protection', label_bn: 'প্যাকেজিং' },
 ]
 
 // Default Printing Methods
@@ -335,6 +336,8 @@ export function MaterialConfigModal({
   suppliers = [],
   printingMethods = [],
 }: MaterialConfigModalProps) {
+  const { tBilingual } = useI18n()
+
   // Tab State
   const [activeTab, setActiveTab] = useState<'basic' | 'geometry' | 'costing' | 'inventory' | 'production'>('basic')
 
@@ -1743,7 +1746,7 @@ export function MaterialConfigModal({
                   >
                     {SUBSTRATE_FINISH_OPTIONS.map((f) => (
                       <option key={f.value} value={f.value}>
-                        {f.label}
+                        {tBilingual(f.label, f.label_bn)}
                       </option>
                     ))}
                   </select>
@@ -1752,7 +1755,7 @@ export function MaterialConfigModal({
                 {/* Weight GSM / Caliper */}
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                    Weight / Density (GSM)
+                    {tBilingual('Weight / Density (GSM)', 'ওজন বা ঘনত্ব (জিএসএম)')}
                   </Label>
                   <div className="relative">
                     <Input
@@ -1771,7 +1774,7 @@ export function MaterialConfigModal({
                 {/* Durability */}
                 <div>
                   <Label className="text-xs font-semibold mb-1 block text-slate-800 dark:text-slate-200">
-                    Outdoor Durability
+                    {tBilingual('Outdoor Durability', 'আউটডোর স্থায়িত্ব')}
                   </Label>
                   <select
                     value={durabilityGrade}
@@ -1780,7 +1783,7 @@ export function MaterialConfigModal({
                   >
                     {DURABILITY_OPTIONS.map((d) => (
                       <option key={d.value} value={d.value}>
-                        {d.label}
+                        {tBilingual(d.label, d.label_bn)}
                       </option>
                     ))}
                   </select>
@@ -1789,7 +1792,7 @@ export function MaterialConfigModal({
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  Technical Description & Application Notes
+                  {tBilingual('Technical Description & Application Notes', 'প্রযুক্তিগত বিবরণ ও প্রয়োগের বিবরণ')}
                 </Label>
                 <textarea
                   rows={2}
@@ -1814,10 +1817,12 @@ export function MaterialConfigModal({
                   2
                 </div>
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Measurement Units & Physical Dimensions Matrix
+                  {tBilingual('Measurement Units & Physical Dimensions Matrix', 'পরিমাপ একক ও সাইজ মেট্রিক্স')}
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Purchase units, roll widths & dimensions</span>
+              <span className="text-[11px] text-slate-400 font-medium">
+                {tBilingual('Purchase units, roll widths & dimensions', 'ক্রয় একক, রোল প্রস্থ ও সাইজ')}
+              </span>
             </div>
 
             <div className="p-3.5 bg-blue-50/50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3.5">
@@ -1825,7 +1830,7 @@ export function MaterialConfigModal({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
-                    Purchase Unit (ক্রয় একক) <span className="text-rose-500">*</span>
+                    {tBilingual('Purchase Unit', 'ক্রয় একক')} <span className="text-rose-500">*</span>
                   </Label>
                   <select
                     value={purchaseUnit}
@@ -1839,7 +1844,7 @@ export function MaterialConfigModal({
                   >
                     {COMMON_PURCHASE_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
-                        {u.label}
+                        {tBilingual(u.label, u.label_bn)}
                       </option>
                     ))}
                   </select>
@@ -1847,7 +1852,7 @@ export function MaterialConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
-                    Usage Unit (খরচ হিসাব একক) <span className="text-rose-500">*</span>
+                    {tBilingual('Usage Unit', 'ব্যবহার বা খরচের একক')} <span className="text-rose-500">*</span>
                   </Label>
                   <select
                     value={usageUnit}
@@ -1856,7 +1861,7 @@ export function MaterialConfigModal({
                   >
                     {COMMON_USAGE_UNITS.map((u) => (
                       <option key={u.value} value={u.value}>
-                        {u.label}
+                        {tBilingual(u.label, u.label_bn)}
                       </option>
                     ))}
                   </select>
@@ -1864,17 +1869,17 @@ export function MaterialConfigModal({
 
                 <div>
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 mb-1 block">
-                    Dimension Unit (পরিমাপ একক)
+                    {tBilingual('Dimension Unit', 'পরিমাপের একক')}
                   </Label>
                   <select
                     value={dimensionUnit}
                     onChange={(e) => setDimensionUnit(e.target.value as any)}
                     className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                   >
-                    <option value="ft">Feet (ft) — Standard Media</option>
-                    <option value="inch">Inches (in)</option>
-                    <option value="mm">Millimeters (mm)</option>
-                    <option value="m">Meters (m)</option>
+                    <option value="ft">{tBilingual('Feet (ft)', 'ফুট')}</option>
+                    <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি')}</option>
+                    <option value="mm">{tBilingual('Millimeters (mm)', 'মিলিমিটার')}</option>
+                    <option value="m">{tBilingual('Meters (m)', 'মিটার')}</option>
                   </select>
                 </div>
               </div>
@@ -2809,7 +2814,7 @@ export function MaterialConfigModal({
                 >
                   {PRODUCTION_ROLE_OPTIONS.map((r) => (
                     <option key={r.value} value={r.value}>
-                      {r.label}
+                      {tBilingual(r.label, r.label_bn)}
                     </option>
                   ))}
                 </select>
@@ -2819,7 +2824,7 @@ export function MaterialConfigModal({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
-                    Compatible Printing Methods & Machinery (মেশিন সামঞ্জস্যতা)
+                    {tBilingual('Compatible Printing Methods & Machinery', 'সামঞ্জস্যপূর্ণ প্রিন্টিং পদ্ধতি ও মেশিন')}
                   </Label>
                   <span className="text-[10px] text-slate-400 font-medium">
                     {compatiblePrintingMethods.length} Selected

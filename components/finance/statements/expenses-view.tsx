@@ -353,7 +353,7 @@ export function ExpensesView({
                 <th className="py-3 px-3">{tBilingual('Payee / Employee', 'প্রাপক / কর্মচারী')}</th>
                 <th className="py-3 px-3">{tBilingual('Payment Account', 'পরিশোধের তহবিল')}</th>
                 <th className="py-3 px-3">{tBilingual('Description', 'বিবরণ ও নোট')}</th>
-                <th className="py-3 px-4 text-right">{tBilingual('Amount (৳)', 'পরিমাণ (৳)')}</th>
+                <th className="py-3 px-4 text-right">{tBilingual('Amount', 'পরিমাণ')}</th>
                 <th className="py-3 px-4 text-center">{tBilingual('Action', 'অ্যাকশন')}</th>
               </tr>
             </thead>

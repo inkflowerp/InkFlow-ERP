@@ -31,6 +31,23 @@ export function UserMenu() {
     : 'User'
   const userEmail = currentUser?.profile?.email || ''
 
+  const roleName = currentRole ? ({
+    owner: tBilingual('Owner', 'মালিক'),
+    business_owner: tBilingual('Owner', 'মালিক'),
+    platform_owner: tBilingual('Platform Owner', 'প্ল্যাটফর্ম মালিক'),
+    admin: tBilingual('Admin', 'অ্যাডমিন'),
+    manager: tBilingual('Manager', 'ম্যানেজার'),
+    sales_manager: tBilingual('Sales Manager', 'বিক্রয় ব্যবস্থাপক'),
+    designer: tBilingual('Designer', 'ডিজাইনার'),
+    production_manager: tBilingual('Production Manager', 'উৎপাদন ব্যবস্থাপক'),
+    operator: tBilingual('Operator', 'অপারেটর'),
+    store_manager: tBilingual('Store Manager', 'স্টোর ম্যানেজার'),
+    accountant: tBilingual('Accountant', 'হিসাবরক্ষক'),
+    delivery_coordinator: tBilingual('Delivery Coordinator', 'ডেলিভারি সমন্বয়কারী'),
+    general_staff: tBilingual('Staff', 'কর্মী'),
+    staff: tBilingual('Staff', 'কর্মী'),
+  } as Record<string, string>)[currentRole] || currentRole : tBilingual('Staff', 'কর্মী')
+
   return (
     <div ref={menuRef} className="relative shrink-0">
       <button
@@ -47,8 +64,8 @@ export function UserMenu() {
           <span className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap truncate bangla-text">
             {userName}
           </span>
-          <span className="text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap truncate">
-            {currentRole || 'Staff'} {currentBranch ? `• ${currentBranch.code || currentBranch.name.split(' ')[0]}` : ''}
+          <span className="text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap truncate bangla-text">
+            {roleName} {currentBranch ? `• ${currentBranch.code || currentBranch.name.split(' ')[0]}` : ''}
           </span>
         </div>
       </button>
@@ -61,9 +78,9 @@ export function UserMenu() {
             </p>
             {userEmail && <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{userEmail}</p>}
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline" className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+              <Badge variant="outline" className="text-xs uppercase font-semibold py-0.5 px-2 border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300 bangla-text">
                 <Shield className="h-3 w-3 mr-1 text-blue-600" />
-                {currentRole || 'Staff'}
+                {roleName}
               </Badge>
               {currentBranch && (
                 <Badge variant="secondary" className="text-xs py-0.5 px-2 truncate max-w-[130px]">

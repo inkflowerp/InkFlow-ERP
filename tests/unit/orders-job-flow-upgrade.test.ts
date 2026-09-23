@@ -23,7 +23,7 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     const ordersItem = allItems.find((item) => item.key === 'orders')
     assert.ok(ordersItem, 'Orders item must exist in navigation config')
     assert.strictEqual(ordersItem.title, 'Orders & Job Flow')
-    assert.strictEqual(ordersItem.titleBn, 'অর্ডার ও জব ফ্লো')
+    assert.strictEqual(ordersItem.titleBn, 'কাজের অর্ডার')
     assert.strictEqual(ordersItem.href, '/orders')
   })
 

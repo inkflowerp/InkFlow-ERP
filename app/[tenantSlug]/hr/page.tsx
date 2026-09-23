@@ -500,7 +500,7 @@ export default function HrmDashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
                 <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                  {tBilingual('Salary Disbursed (পরিশোধিত)', 'Salary Disbursed (পরিশোধিত)')}
+                  {tBilingual('Salary Disbursed', 'বেতন পরিশোধিত')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
                   <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -514,7 +514,7 @@ export default function HrmDashboardPage() {
 
               <div className="p-3 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/40 dark:bg-rose-950/20">
                 <div className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
-                  {tBilingual('Salary Pending (বাকি আছে)', 'Salary Pending (বাকি আছে)')}
+                  {tBilingual('Salary Pending', 'বেতন বকেয়া')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
                   <span className="text-2xl font-black text-rose-600 dark:text-rose-400">
@@ -579,7 +579,7 @@ export default function HrmDashboardPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
                 <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
-                  {tBilingual('Present Rate (উপস্থিতি)', 'Present Rate (উপস্থিতি)')}
+                  {tBilingual('Present Rate', 'উপস্থিতির হার')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
                   <span className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
@@ -593,7 +593,7 @@ export default function HrmDashboardPage() {
 
               <div className="p-3 rounded-xl border border-blue-100 dark:border-blue-950 bg-blue-50/40 dark:bg-blue-950/20">
                 <div className="text-[11px] font-bold text-blue-800 dark:text-blue-300">
-                  {tBilingual('Approved Leaves (ছুটি)', 'Approved Leaves (ছুটি)')}
+                  {tBilingual('Approved Leaves', 'অনুমোদিত ছুটি')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
                   <span className="text-2xl font-black text-blue-600 dark:text-blue-400">

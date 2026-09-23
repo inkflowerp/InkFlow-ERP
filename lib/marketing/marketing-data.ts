@@ -343,9 +343,9 @@ export const INDUSTRY_SOLUTIONS = [
 // 8. Bangladesh Specific Features
 export const BANGLADESH_FEATURES = [
   {
-    titleEn: '৳ BDT Native Currency & Words',
-    titleBn: '৳ বাংলাদেশি টাকা ও কথায় লেখা',
-    descEn: 'Native support for Bangladeshi Taka formatting, comma conventions (e.g. ৳ ১,২৫,০০০), and automatic "কথায়" spellout.',
+    titleEn: 'BDT Native Currency & Words',
+    titleBn: 'বাংলাদেশি টাকা ও কথায় রূপান্তর',
+    descEn: 'Native support for Bangladeshi Taka formatting, comma conventions (e.g. BDT 1,25,000), and automatic spellout in words.',
     descBn: 'বাংলাদেশি টাকার সংখ্যা নিয়ম (যেমন ৳ ১,২৫,০০০) এবং চালানে স্বয়ংক্রিয় বাংলায় টাকায় রূপান্তর।',
   },
   {

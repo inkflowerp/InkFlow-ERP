@@ -251,7 +251,7 @@ export default function TaxSettingsPage() {
         titleEn="Bangladesh VAT & NBR Tax Settings"
         titleBn="বাংলাদেশ ভ্যাট ও এনবিআর ট্যাক্স সেটিংস"
         descriptionEn="Manage 13-digit BIN, NBR VAT rates, inclusive/exclusive pricing modes, VDS/TDS withholding, and monthly Mushak return summaries."
-        descriptionBn="১৩ ডিজিটের বিআইএন, এনবিআর ভ্যাট হার, ভ্যাট অন্তর্ভুক্তি মোড, উৎসে কর কর্তন (VDS/TDS) এবং মাসিক মূসক রিটার্ন সারাংশ পরিচালনা করুন।"
+        descriptionBn="১৩ ডিজিটের বিআইএন, এনবিআর ভ্যাট হার, ভ্যাট অন্তর্ভুক্তি মোড, উৎসে কর কর্তন এবং মাসিক মূসক রিটার্ন সারাংশ পরিচালনা করুন।"
         icon={Landmark}
         iconColor="text-emerald-600 dark:text-emerald-400"
         actions={
@@ -363,7 +363,7 @@ export default function TaxSettingsPage() {
 
           <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
             <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-[11px] font-semibold">
-              <span>{tBilingual('2. Output VAT (বিক্রয় মূসক)', '২. প্রদেয় বিক্রয় মূসক')}</span>
+              <span>{tBilingual('2. Output VAT', '২. প্রদেয় বিক্রয় মূসক')}</span>
               <Badge variant="outline" className="text-[9px] font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
                 Mushak 6.3
               </Badge>
@@ -375,7 +375,7 @@ export default function TaxSettingsPage() {
 
           <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
             <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 text-[11px] font-semibold">
-              <span>{tBilingual('3. Input VAT Rebate (ক্রয় মূসক রেয়াত)', '৩. অনুমোদিত রেয়াত')}</span>
+              <span>{tBilingual('3. Input VAT Rebate', '৩. অনুমোদিত রেয়াত')}</span>
               <span className="font-mono text-[10px] bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
                 {vatReturnSummary.purchaseCount} {tBilingual('bills', 'বিল')}
               </span>
@@ -552,7 +552,7 @@ export default function TaxSettingsPage() {
           <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               <Scale className="h-4 w-4 text-purple-600" />
-              <span>{tBilingual('Withholding Tax & Source Deductions (VDS / TDS)', 'উৎসে মূসক ও কর কর্তন সেটিংস (VDS ও TDS)')}</span>
+              <span>{tBilingual('Withholding Tax & Source Deductions (VDS / TDS)', 'উৎসে মূসক ও কর কর্তন সেটিংস')}</span>
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               {tBilingual(
@@ -568,7 +568,7 @@ export default function TaxSettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                    {tBilingual('VDS (VAT Deducted at Source)', 'উৎসে মূসক কর্তন (VDS)')}
+                    {tBilingual('VDS (VAT Deducted at Source)', 'উৎসে মূসক কর্তন')}
                   </Label>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {tBilingual('Withheld by corporate & institutional clients', 'কর্পোরেট গ্রাহক কর্তৃক কর্তিত মূসক')}
@@ -594,7 +594,7 @@ export default function TaxSettingsPage() {
               {taxSettings.vds_enabled && (
                 <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                   <span className="text-xs text-slate-600 dark:text-slate-400">
-                    {tBilingual('Default VDS Deduction Rate:', 'ডিফল্ট VDS হার:')}
+                    {tBilingual('Default VDS Deduction Rate:', 'ডিফল্ট কর্তন হার:')}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <Input
@@ -621,7 +621,7 @@ export default function TaxSettingsPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="font-bold text-xs text-slate-900 dark:text-slate-100">
-                    {tBilingual('TDS (Income Tax Deducted at Source)', 'উৎসে আয়কর কর্তন (TDS)')}
+                    {tBilingual('TDS (Income Tax Deducted at Source)', 'উৎসে আয়কর কর্তন')}
                   </Label>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {tBilingual('Income tax deducted on supply of print goods', 'প্রিন্টিং পণ্য সরবরাহের বিপরীতে কর্তিত আয়কর')}
@@ -647,7 +647,7 @@ export default function TaxSettingsPage() {
               {taxSettings.tds_enabled && (
                 <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between gap-3">
                   <span className="text-xs text-slate-600 dark:text-slate-400">
-                    {tBilingual('Default TDS Deduction Rate:', 'ডিফল্ট TDS হার:')}
+                    {tBilingual('Default TDS Deduction Rate:', 'ডিফল্ট আয়কর কর্তন হার:')}
                   </span>
                   <div className="flex items-center gap-1.5">
                     <Input
@@ -690,7 +690,7 @@ export default function TaxSettingsPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="binNo" required className="text-xs font-semibold">
-                  {tBilingual('13-Digit Business Identification Number (BIN)', '১৩ ডিজিটের মূসক নিবন্ধন (BIN) নম্বর')}
+                  {tBilingual('13-Digit Business Identification Number (BIN)', '১৩ ডিজিটের মূসক নিবন্ধন নম্বর')}
                 </Label>
                 {taxSettings.bin_number && (
                   <Badge
@@ -718,7 +718,7 @@ export default function TaxSettingsPage() {
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
                 <Label htmlFor="tinNo" required className="text-xs font-semibold">
-                  {tBilingual('12-Digit Taxpayer Identification Number (TIN)', '১২ ডিজিটের ই-টিন (TIN) নম্বর')}
+                  {tBilingual('12-Digit Taxpayer Identification Number (TIN)', '১২ ডিজিটের ই-টিন নম্বর')}
                 </Label>
                 {taxSettings.tin_number && (
                   <Badge
@@ -902,7 +902,7 @@ export default function TaxSettingsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
           <div className="space-y-1">
             <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-              {tBilingual('Order Amount (৳)', 'অর্ডার মূল্য (৳)')}
+              {tBilingual('Order Amount', 'অর্ডার মূল্য')}
             </Label>
             <Input
               type="number"
@@ -940,7 +940,7 @@ export default function TaxSettingsPage() {
 
           <div className="space-y-1">
             <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-              {tBilingual('VDS Deduction (%)', 'VDS কর্তন (%)')}
+              {tBilingual('VDS Deduction (%)', 'উৎসে মূসক কর্তন (%)')}
             </Label>
             <Input
               type="number"
@@ -954,7 +954,7 @@ export default function TaxSettingsPage() {
 
           <div className="space-y-1">
             <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
-              {tBilingual('TDS Deduction (%)', 'TDS কর্তন (%)')}
+              {tBilingual('TDS Deduction (%)', 'উৎসে আয়কর কর্তন (%)')}
             </Label>
             <Input
               type="number"
@@ -986,7 +986,7 @@ export default function TaxSettingsPage() {
 
           <div className="space-y-0.5">
             <span className="text-purple-600 dark:text-purple-400 text-[10px] uppercase">
-              {tBilingual('Withheld (VDS+TDS)', 'কর্তন (VDS+TDS)')}:
+              {tBilingual('Withheld (VDS+TDS)', 'মোট উৎসে কর্তন')}:
             </span>
             <div className="font-bold text-purple-600 dark:text-purple-400 text-sm">
               -{formatBDT(testCalcResult.vdsAmount + testCalcResult.tdsAmount)}

@@ -179,7 +179,7 @@ export function AttendancePunchModal({
                 }`}
               >
                 <Clock className="h-4 w-4" />
-                <span>{tBilingual('Check-In (প্রবেশ)', 'প্রবেশ (Check-In)')}</span>
+                <span>{tBilingual('Check-In', 'প্রবেশ')}</span>
               </button>
 
               <button
@@ -192,7 +192,7 @@ export function AttendancePunchModal({
                 }`}
               >
                 <LogOut className="h-4 w-4" />
-                <span>{tBilingual('Check-Out (প্রস্থান)', 'প্রস্থান (Check-Out)')}</span>
+                <span>{tBilingual('Check-Out', 'প্রস্থান')}</span>
               </button>
             </div>
 

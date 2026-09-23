@@ -118,7 +118,7 @@ export function ReportProblemModal({
     <ModalDialog
       open={isOpen}
       onOpenChange={(open) => !open && onClose()}
-      title={tBilingual('⚠ Report Floor Issue (সমস্যা হয়েছে)', '⚠ সমস্যা হয়েছে — রিপোর্ট করুন')}
+      title={tBilingual('Report Floor Issue', 'সমস্যা রিপোর্ট করুন')}
       hideFooter={true}
       size="md"
     >
@@ -128,7 +128,7 @@ export function ReportProblemModal({
           <div className="space-y-0.5 min-w-0">
             <div className="flex items-center gap-2">
               <Badge className="bg-rose-600 text-white text-[10px] font-bold">
-                Job #{task.job_number || 'N/A'}
+                {tBilingual(`Job #${task.job_number || 'N/A'}`, `কাজ #${task.job_number || 'N/A'}`)}
               </Badge>
               <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                 {task.task_name}
@@ -151,7 +151,7 @@ export function ReportProblemModal({
         {/* Reason Picker Cards */}
         <div className="space-y-1.5">
           <Label className="text-xs font-bold">
-            {tBilingual('What happened? (কী সমস্যা হয়েছে?)', 'সমস্যার কারণ নির্বাচন করুন *')}
+            {tBilingual('Select Problem Reason', 'সমস্যার কারণ নির্বাচন করুন')} <span className="text-rose-500">*</span>
           </Label>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1">
             {PROBLEM_REASONS.map((r) => {
@@ -169,8 +169,7 @@ export function ReportProblemModal({
                 >
                   <IconComp className={`h-4 w-4 shrink-0 ${isSelected ? 'text-rose-600' : 'text-slate-400'}`} />
                   <div className="min-w-0">
-                    <div className="truncate">{r.labelBn}</div>
-                    <div className="text-[10px] text-slate-500 truncate">{r.labelEn}</div>
+                    <div className="truncate font-semibold">{tBilingual(r.labelEn, r.labelBn)}</div>
                   </div>
                 </div>
               )
@@ -181,7 +180,7 @@ export function ReportProblemModal({
         {/* Photo Upload / Camera Capture */}
         <div className="space-y-1.5">
           <Label className="text-xs font-bold">
-            {tBilingual('Add Photo of Problem (সমস্যার ছবি তুলুন)', 'ছবি যুক্ত করুন (ঐচ্ছিক)')}
+            {tBilingual('Add Photo of Problem', 'সমস্যার ছবি যুক্ত করুন')}
           </Label>
 
           {photoPreview ? (
@@ -210,12 +209,12 @@ export function ReportProblemModal({
         {/* Detailed Notes */}
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold">
-            {tBilingual('Additional Notes (নোট লিখুন)', 'বিস্তারিত বিবরণ')}
+            {tBilingual('Additional Notes', 'বিস্তারিত বিবরণ')}
           </Label>
           <Input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="e.g. Media slipped after 10 feet / Need urgent machine technician"
+            placeholder={tBilingual('e.g. Media slipped after 10 feet / Need technician', 'যেমন: ১০ ফিট চলার পর মিডিয়া বাঁকা হয়ে গেছে')}
             className="h-10 text-xs"
           />
         </div>

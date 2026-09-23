@@ -492,7 +492,7 @@ export function NewWorkWizard({
               <Input
                 value={customerSearch}
                 onChange={(e) => setCustomerSearch(e.target.value)}
-                placeholder={tBilingual('Search by Name or Phone (নাম বা মোবাইল দিয়ে খুঁজুন)...', 'কাস্টমারের নাম বা মোবাইল নম্বর লিখুন...')}
+                placeholder={tBilingual('Search by Name or Phone...', 'কাস্টমারের নাম বা মোবাইল নম্বর লিখুন...')}
                 className="h-12 text-sm bg-white dark:bg-slate-900 border-slate-300"
               />
 
@@ -613,7 +613,7 @@ export function NewWorkWizard({
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold">{tBilingual('Width (প্রস্থ)', 'প্রস্থ (Width)')}</Label>
+                  <Label className="text-xs font-bold">{tBilingual('Width', 'প্রস্থ')}</Label>
                   <Input
                     type="number"
                     min="0.1"
@@ -625,7 +625,7 @@ export function NewWorkWizard({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold">{tBilingual('Height (উচ্চতা)', 'উচ্চতা (Height)')}</Label>
+                  <Label className="text-xs font-bold">{tBilingual('Height', 'উচ্চতা')}</Label>
                   <Input
                     type="number"
                     min="0.1"
@@ -637,20 +637,20 @@ export function NewWorkWizard({
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold">{tBilingual('Unit (একক)', 'একক (Unit)')}</Label>
+                  <Label className="text-xs font-bold">{tBilingual('Unit', 'একক')}</Label>
                   <select
                     value={unit}
                     onChange={(e) => setUnit(e.target.value as any)}
                     className="w-full h-11 rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-semibold dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   >
-                    <option value="ft">Feet (ফুট)</option>
-                    <option value="inch">Inch (ইঞ্চি)</option>
-                    <option value="pcs">Pieces (পিস)</option>
+                    <option value="ft">{tBilingual('Feet (ft)', 'ফুট')}</option>
+                    <option value="inch">{tBilingual('Inches (in)', 'ইঞ্চি')}</option>
+                    <option value="pcs">{tBilingual('Pieces (pcs)', 'পিস')}</option>
                   </select>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-xs font-bold">{tBilingual('Quantity (পরিমাণ)', 'পরিমাণ (Qty)')}</Label>
+                  <Label className="text-xs font-bold">{tBilingual('Quantity', 'পরিমাণ')}</Label>
                   <Input
                     type="number"
                     min="1"
@@ -724,23 +724,23 @@ export function NewWorkWizard({
             </div>
 
             <div className="space-y-2">
-              <Label className="text-xs font-bold">{tBilingual('Finishing Tasks (ফিনিশিং কাজ)', 'ফিনিশিং নির্বাচন করুন')}</Label>
+              <Label className="text-xs font-bold">{tBilingual('Finishing Tasks', 'ফিনিশিং নির্বাচন করুন')}</Label>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {[
-                  'Eyelet / Ring (আইলেট রিং)',
-                  'Seaming / Border Fold (বর্ডার ভাঁজ)',
-                  'Wooden Frame (কাঠের ফ্রেম)',
-                  'Metal Frame (লোহার ফ্রেম)',
-                  'Cold Lamination (ল্যামিনেশন)',
-                  'Die Cut / Shape Cut (কাটিং)',
-                  'Fitting / Pasting (ফিটিং)',
-                  'LED Wiring (এলইডি লাইটিং)',
+                  { label: 'Eyelet / Ring', label_bn: 'আইলেট রিং' },
+                  { label: 'Seaming / Border Fold', label_bn: 'বর্ডার ভাঁজ ও সিমিং' },
+                  { label: 'Wooden Frame', label_bn: 'কাঠের ফ্রেম' },
+                  { label: 'Metal Frame', label_bn: 'লোহার ফ্রেম' },
+                  { label: 'Cold Lamination', label_bn: 'কোল্ড ল্যামিনেশন' },
+                  { label: 'Die Cut / Shape Cut', label_bn: 'ডাই কাটিং' },
+                  { label: 'Fitting / Pasting', label_bn: 'ফিটিং ও পেস্টিং' },
+                  { label: 'LED Wiring', label_bn: 'এলইডি লাইটিং' },
                 ].map((item) => {
-                  const isSelected = selectedFinishings.includes(item)
+                  const isSelected = selectedFinishings.includes(item.label)
                   return (
                     <div
-                      key={item}
-                      onClick={() => toggleFinishing(item)}
+                      key={item.label}
+                      onClick={() => toggleFinishing(item.label)}
                       className={`p-2.5 rounded-lg border text-xs font-medium cursor-pointer transition-all flex items-center gap-2 ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 text-blue-900 dark:bg-blue-950/40 dark:text-blue-200'
@@ -748,7 +748,7 @@ export function NewWorkWizard({
                       }`}
                     >
                       <input type="checkbox" checked={isSelected} readOnly className="rounded text-blue-600" />
-                      <span className="truncate">{item}</span>
+                      <span className="truncate">{tBilingual(item.label, item.label_bn)}</span>
                     </div>
                   )
                 })}
@@ -778,9 +778,9 @@ export function NewWorkWizard({
                       onChange={(e) => setPriority(e.target.value as any)}
                       className="w-full h-8 rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs px-2"
                     >
-                      <option value="normal">Normal (স্বাভাবিক)</option>
-                      <option value="urgent">Urgent (জরুরি)</option>
-                      <option value="very_urgent">Very Urgent (খুব জরুরি)</option>
+                      <option value="normal">{tBilingual('Normal', 'স্বাভাবিক')}</option>
+                      <option value="urgent">{tBilingual('Urgent', 'জরুরি')}</option>
+                      <option value="very_urgent">{tBilingual('Very Urgent', 'খুব জরুরি')}</option>
                     </select>
                   </div>
                 </div>
@@ -829,9 +829,9 @@ export function NewWorkWizard({
                     onChange={(e) => setDeliveryType(e.target.value as any)}
                     className="w-full h-10 rounded-md border border-slate-300 bg-white px-3 text-sm font-semibold dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
                   >
-                    <option value="pickup">Store Pickup (দোকান থেকে নেবে)</option>
-                    <option value="courier">Courier / Transport (কুরিয়ার / পরিবহন)</option>
-                    <option value="installation">Site Installation (সাইটে গিয়ে লাগানো)</option>
+                    <option value="pickup">{tBilingual('Store Pickup', 'দোকান থেকে গ্রহণ')}</option>
+                    <option value="courier">{tBilingual('Courier / Transport', 'কুরিয়ার বা পরিবহন')}</option>
+                    <option value="installation">{tBilingual('Site Installation', 'সাইট ফিটিং ও ইনস্টলেশন')}</option>
                   </select>
                 </div>
               </div>
@@ -840,14 +840,16 @@ export function NewWorkWizard({
               <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-900 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-amber-900 dark:text-amber-200">
-                    {tBilingual('Advance Payment Received (অগ্রিম জমা)', 'অগ্রিম টাকা জমা')}
+                    {tBilingual('Advance Payment Received', 'অগ্রিম টাকা জমা')}
                   </span>
-                  <span className="text-xs font-mono font-bold text-slate-600">মোট বিল: ৳{totalAmount.toLocaleString()}</span>
+                  <span className="text-xs font-mono font-bold text-slate-600">
+                    {tBilingual('Total: ', 'মোট বিল: ')}{formatBDT(totalAmount)}
+                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">{tBilingual('Advance Amount (৳)', 'জমা টাকা')}</Label>
+                    <Label className="text-[11px] font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
                     <Input
                       type="number"
                       min="0"

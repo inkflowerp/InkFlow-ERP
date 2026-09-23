@@ -33,7 +33,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
     {
       id: 'today',
       title: 'Sales & Commercial',
-      titleBn: 'সেলস ও বাণিজ্যিক',
+      titleBn: 'বিক্রয় ও বাণিজ্যিক',
       items: [
         {
           key: 'new-work',
@@ -64,7 +64,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'orders',
           title: 'Orders & Job Flow',
-          titleBn: 'অর্ডার ও জব ফ্লো',
+          titleBn: 'কাজের অর্ডার',
           href: '/orders',
           icon: 'ShoppingBag',
           permission: { action: 'view', resource: 'orders' },
@@ -72,7 +72,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'billing',
           title: 'Billing & Collections',
-          titleBn: 'বিলিং ও কালেকশন',
+          titleBn: 'বিল ও জমা',
           href: '/billing',
           icon: 'Receipt',
           permission: { action: 'view', resource: 'invoices' },
@@ -90,7 +90,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
     {
       id: 'work',
       title: 'Factory & Floor',
-      titleBn: 'কারখানা ও প্রোডাকশন',
+      titleBn: 'কারখানা ও উৎপাদন',
       items: [
         {
           key: 'design',
@@ -112,7 +112,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'floor_consumption',
           title: 'Floor Consumption',
-          titleBn: 'ফ্লোর কনজাম্পশন',
+          titleBn: 'কাঁচামাল খরচ',
           href: '/production/floor-consumption',
           icon: 'Flame',
           permission: { action: 'view', resource: 'production' },
@@ -122,7 +122,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'finishing',
           title: 'Finishing & Fabrication',
-          titleBn: 'ফিনিশিং ও ফেব্রিকেশন',
+          titleBn: 'ফিনিশিং ও তৈরি',
           href: '/finishing',
           icon: 'Scissors',
           permission: { action: 'view', resource: 'production' },
@@ -142,7 +142,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'machineries',
           title: 'Machineries & Fleet',
-          titleBn: 'মেশিনারি ও ফ্লিট',
+          titleBn: 'মেশিন ও যন্ত্রপাতি',
           href: '/production/machineries',
           icon: 'Cpu',
           permission: { action: 'view', resource: 'machineries' },
@@ -165,7 +165,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'inventory',
           title: 'Materials & Rolls',
-          titleBn: 'ইনভেন্টরি ও রুল',
+          titleBn: 'কাঁচামাল ও রোল',
           href: '/inventory',
           icon: 'Package',
           permission: { action: 'view', resource: 'inventory' },
@@ -181,7 +181,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'suppliers',
           title: 'Suppliers & Purchase',
-          titleBn: 'সরবরাহকারী',
+          titleBn: 'সরবরাহকারী ও মহাজন',
           href: '/suppliers',
           icon: 'Building2',
           permission: { action: 'view', resource: 'inventory' },
@@ -213,7 +213,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'reports',
           title: 'Business Reports',
-          titleBn: 'রিপোর্ট',
+          titleBn: 'রিপোর্ট ও হিসাব',
           href: '/reports',
           icon: 'BarChart3',
           permission: { action: 'view', resource: 'reports' },
@@ -228,7 +228,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'company_settings',
           title: 'Company Settings',
-          titleBn: 'কোম্পানি সেটিংস',
+          titleBn: 'প্রতিষ্ঠান সেটিংস',
           href: '/settings',
           icon: 'Settings',
           exact: true,
@@ -269,7 +269,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
             },
             {
               key: 'settings_tax',
-              title: 'Tax & NBR VAT 6.3',
+              title: 'Tax & VAT',
               titleBn: 'ট্যাক্স ও ভ্যাট',
               href: '/settings/tax',
               icon: 'FileCheck2',
@@ -334,7 +334,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
             {
               key: 'settings_users',
               title: 'Team Users',
-              titleBn: 'টিম মেম্বার',
+              titleBn: 'টিম সদস্য',
               href: '/settings/users',
               icon: 'Users',
               permission: { action: 'manage', resource: 'settings' },
@@ -342,7 +342,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
             {
               key: 'settings_roles',
               title: 'Roles & Matrix',
-              titleBn: 'অনুমতি ম্যাট্রিক্স',
+              titleBn: 'অনুমতি সেটিংস',
               href: '/settings/roles',
               icon: 'ShieldCheck',
               permission: { action: 'manage', resource: 'settings' },
@@ -357,8 +357,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
             },
             {
               key: 'settings_trash',
-              title: 'Trash / Recycle Bin',
-              titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
+              title: 'Recycle Bin',
+              titleBn: 'রিসাইকেল বিন',
               href: '/settings/trash',
               icon: 'Trash2',
               permission: { action: 'view', resource: 'settings' },
@@ -368,7 +368,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'users',
           title: 'Users & Permissions',
-          titleBn: 'ইউজার ও অনুমতি',
+          titleBn: 'টিম সদস্য ও অনুমতি',
           href: '/settings/users',
           icon: 'ShieldCheck',
           permission: { action: 'manage', resource: 'settings' },
@@ -376,14 +376,14 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         {
           key: 'branches',
           title: 'Factory Branches',
-          titleBn: 'শাখা ও ব্রাঞ্চ',
+          titleBn: 'শাখা ও কারখানা',
           href: '/settings/branches',
           icon: 'Building',
           permission: { action: 'view', resource: 'branches' },
         },
         {
           key: 'tax',
-          title: 'Tax & NBR VAT 6.3',
+          title: 'Tax & VAT',
           titleBn: 'ট্যাক্স ও ভ্যাট',
           href: '/settings/tax',
           icon: 'FileCheck2',
@@ -391,8 +391,8 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'trash',
-          title: 'Trash / Recycle Bin',
-          titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
+          title: 'Recycle Bin',
+          titleBn: 'রিসাইকেল বিন',
           href: '/trash',
           icon: 'Trash2',
           permission: { action: 'view', resource: 'settings' },

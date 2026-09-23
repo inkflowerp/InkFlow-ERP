@@ -53,7 +53,8 @@ import { FeatureGate } from '@/components/subscriptions/feature-gate'
 const INDUSTRY_PRESETS = [
   {
     id: 'panaflex',
-    nameEn: 'Outdoor Panaflex Billboard (পানাফ্লেক্স বিলবোর্ড)',
+    nameEn: 'Outdoor Panaflex Billboard',
+    nameBn: 'আউটডোর পানাফ্লেক্স বিলবোর্ড',
     title: 'Outdoor Panaflex Banner with Frame & Eyelets',
     specs: '20ft × 10ft (200 sqft) • 440 GSM Star Flex • Konica 512i',
     selling: 48000,
@@ -72,7 +73,8 @@ const INDUSTRY_PRESETS = [
   },
   {
     id: 'acrylic_3d',
-    nameEn: '3D Acrylic LED Channel Letter Signboard (অ্যাক্রিলিক ৩ডি)',
+    nameEn: '3D Acrylic LED Channel Letter Signboard',
+    nameBn: 'থ্রিডি অ্যাক্রিলিক এলইডি সাইনবোর্ড',
     title: '3D Acrylic Backlit Golden Mirror Signboard',
     specs: '16ft × 4ft (64 sqft) • 5mm Cast Acrylic • Samsung LED • Meanwell SMPS',
     selling: 85000,
@@ -91,7 +93,8 @@ const INDUSTRY_PRESETS = [
   },
   {
     id: 'offset_catalog',
-    nameEn: '4-Color Offset Catalog / Brochure (অফসেট ব্রোশিউর)',
+    nameEn: '4-Color Offset Catalog / Brochure',
+    nameBn: '৪-রঙা অফসেট ক্যাটালগ ও ব্রোশিউর',
     title: 'Annual Product Catalog 2026 (64 Pages, Hardcover)',
     specs: '1,000 Copies • A4 • Inner 150 GSM Art Paper • Cover 300 GSM Art Card',
     selling: 165000,
@@ -110,7 +113,8 @@ const INDUSTRY_PRESETS = [
   },
   {
     id: 'die_cut_boxes',
-    nameEn: 'Die-Cut Duplex Packaging Boxes (ডাই-কাট প্যাকেজিং বক্স)',
+    nameEn: 'Die-Cut Duplex Packaging Boxes',
+    nameBn: 'ডাই-কাট ডুপ্লেক্স প্যাকেজিং বক্স',
     title: 'Corrugated Die-Cut Master Packaging Boxes',
     specs: '5,000 Pcs • 350 GSM Duplex + E-Flute • 4-Color Flexo & Die-Cut',
     selling: 195000,
@@ -129,7 +133,8 @@ const INDUSTRY_PRESETS = [
   },
   {
     id: 'vehicle_wrap',
-    nameEn: 'Fleet Vehicle Branding Cast Vinyl Wrap (গাড়ি ব্র্যান্ডিং)',
+    nameEn: 'Fleet Vehicle Branding Cast Vinyl Wrap',
+    nameBn: 'গাড়ি ব্র্যান্ডিং কাস্ট ভিনাইল র‍্যাপ',
     title: 'Fleet Covered Van Cast Vinyl Wrap Branding',
     specs: '4 Covered Vans (14ft) • 3M Cast Vinyl + Gloss Overlam • Latex 1200 DPI',
     selling: 112000,
@@ -1345,7 +1350,7 @@ export default function JobCostingPage() {
             {/* Quick Industry Presets */}
             <div className="space-y-1.5">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                {tBilingual('Quick Industry Preset (শিল্প প্রিসেট নির্বাচন করুন)', 'শিল্প প্রিসেট')}
+                {tBilingual('Quick Industry Presets', 'শিল্পভিত্তিক দ্রুত প্রিসেট')}
               </Label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                 {INDUSTRY_PRESETS.map((p) => (
@@ -1355,7 +1360,7 @@ export default function JobCostingPage() {
                     onClick={() => handleApplyPreset(p.id)}
                     className="text-left p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-xs transition-colors"
                   >
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">{p.nameEn}</div>
+                    <div className="font-semibold text-slate-800 dark:text-slate-200">{tBilingual(p.nameEn, p.nameBn || p.nameEn)}</div>
                     <div className="text-[10px] text-slate-500 font-mono mt-0.5">Preset Ref: {formatBDT(p.selling)}</div>
                   </button>
                 ))}
@@ -1365,7 +1370,9 @@ export default function JobCostingPage() {
             {/* Job Particulars */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
               <div className="space-y-1">
-                <Label htmlFor="newJobNum" className="text-xs">Job Number (জব নং)</Label>
+                <Label htmlFor="newJobNum" className="text-xs">
+                  {tBilingual('Job Number', 'জব নম্বর')}
+                </Label>
                 <Input
                   id="newJobNum"
                   value={newJobNumber}
@@ -1376,7 +1383,9 @@ export default function JobCostingPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="newCustName" className="text-xs">Customer Name (গ্রাহকের নাম)</Label>
+                <Label htmlFor="newCustName" className="text-xs">
+                  {tBilingual('Customer Name', 'গ্রাহকের নাম')}
+                </Label>
                 <Input
                   id="newCustName"
                   placeholder="e.g. Apex Footwear Ltd."
@@ -1389,7 +1398,9 @@ export default function JobCostingPage() {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="newItemTitle" className="text-xs">Work / Item Title (কাজের বিবরণ)</Label>
+              <Label htmlFor="newItemTitle" className="text-xs">
+                {tBilingual('Work / Item Title', 'কাজের বিবরণ')}
+              </Label>
               <Input
                 id="newItemTitle"
                 placeholder="e.g. Outdoor Panaflex Mega Billboard 20ft × 10ft"
@@ -1401,7 +1412,9 @@ export default function JobCostingPage() {
             </div>
 
             <div className="space-y-1">
-              <Label htmlFor="newSpecs" className="text-xs">Technical Specs & Dimensions (সাইজ ও স্পেক্স)</Label>
+              <Label htmlFor="newSpecs" className="text-xs">
+                {tBilingual('Technical Specs & Dimensions', 'সাইজ ও স্পেক্স')}
+              </Label>
               <Input
                 id="newSpecs"
                 placeholder="e.g. 20ft × 10ft • 440 GSM Star Flex • Konica 512i • MS Pipe 1 inch"
@@ -1415,7 +1428,7 @@ export default function JobCostingPage() {
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
               <div className="flex items-center justify-between pb-2">
                 <Label className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                  {tBilingual('9-Head Estimated Cost Breakdown (৯টি ব্যয় খাত)', '৯টি ব্যয় খাত')}
+                  {tBilingual('9-Head Estimated Cost Breakdown', '৯টি ব্যয় খাতের হিসাব')}
                 </Label>
                 <span className="text-xs font-mono font-bold text-slate-500">
                   Total Cost: {formatBDT(newTotalEstCost)}

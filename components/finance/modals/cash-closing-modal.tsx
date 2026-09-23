@@ -130,7 +130,7 @@ export function CashClosingModal({
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
               <Calculator className="w-3.5 h-3.5 text-purple-600" />
-              <span>{tBilingual('Physical Cash Counted in Drawer (৳)', 'ড্রয়ারে গুনে পাওয়া টাকা (৳)')} *</span>
+              <span>{tBilingual('Physical Cash Counted in Drawer', 'ড্রয়ারে গুনে পাওয়া নগদ টাকা')} *</span>
             </Label>
             <div className="relative">
               <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">
@@ -191,7 +191,7 @@ export function CashClosingModal({
             </Label>
             <Input
               required
-              placeholder="যেমন: খুচরা ফেরত দেওয়া ভুল হয়েছে / চা নাস্তার হিসাব এখনও বাকি"
+              placeholder={tBilingual('e.g. Change return mistake / Pending petty expense', 'যেমন: খুচরা ফেরত দেওয়া ভুল হয়েছে / খরচের ভাউচার বাকি')}
               value={varianceReason}
               onChange={(e) => setVarianceReason(e.target.value)}
               className="h-10 text-sm rounded-xl border-rose-300 dark:border-rose-700"

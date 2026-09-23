@@ -234,7 +234,7 @@ export function UpgradePrompt({
             <CurrencyDisplay amount={targetPlan.price_monthly} />
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            {tBilingual(' / month (৳ BDT)', ' / প্রতি মাসে')}
+            {tBilingual(' / month', ' / প্রতি মাসে')}
           </span>
         </div>
       </CardContent>

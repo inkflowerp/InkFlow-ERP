@@ -56,10 +56,10 @@ const OFFICE_HOURS_PRESETS = [
 ]
 
 const HOLIDAY_PRESETS = [
-  'Friday (সাপ্তাহিক ছুটি)',
-  'Friday & Saturday (দ্বি-সাপ্তাহিক ছুটি)',
-  'Friday & Govt Holidays (শুক্রবার ও সরকারি ছুটি)',
-  'Sunday (রবিবার)',
+  'Friday',
+  'Friday & Saturday',
+  'Friday & Govt Holidays',
+  'Sunday',
 ]
 
 export default function CompanySettingsPage() {
@@ -98,7 +98,7 @@ export default function CompanySettingsPage() {
       address_bn: company?.address_bn || '',
       area: company?.area || '',
       office_hours: company?.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
-      holidays: company?.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
+      holidays: company?.holidays || (settings as any)?.holidays || 'Friday',
       bin_no: company?.bin_no || '',
       tin_no: company?.tin_no || '',
       trade_license_no: company?.trade_license_no || '',
@@ -133,7 +133,7 @@ export default function CompanySettingsPage() {
           address_bn: company.address_bn || '',
           area: company.area || '',
           office_hours: company.office_hours || (settings as any)?.office_hours || '9:00 AM - 8:00 PM (Sat - Thu)',
-          holidays: company.holidays || (settings as any)?.holidays || 'Friday (সাপ্তাহিক ছুটি)',
+          holidays: company.holidays || (settings as any)?.holidays || 'Friday',
           bin_no: company.bin_no || '',
           tin_no: company.tin_no || '',
           trade_license_no: company.trade_license_no || '',
@@ -504,7 +504,7 @@ export default function CompanySettingsPage() {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="name_bn">
-                      {tBilingual('Display Name (বাংলা)', 'প্রদর্শনী নাম (বাংলা)')}
+                      {tBilingual('Display Name (Bengali)', 'প্রদর্শনী নাম (বাংলা)')}
                     </Label>
                     <Input id="name_bn" {...register('name_bn')} error={errors.name_bn?.message} placeholder="উদা: র‍্যাপিড প্রিন্ট অ্যান্ড মিডিয়া" />
                   </div>
@@ -535,7 +535,7 @@ export default function CompanySettingsPage() {
                 {/* Company Logo with Live Preview */}
                 <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                   <Label htmlFor="logo_url">
-                    {tBilingual('Company Logo URL', 'কোম্পানির লোগো লিংক (URL)')}
+                    {tBilingual('Company Logo URL', 'কোম্পানির লোগোর লিংক')}
                   </Label>
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                     <div className="h-16 w-24 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden shrink-0">
@@ -646,7 +646,7 @@ export default function CompanySettingsPage() {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="address_bn">
-                      {tBilingual('Full Address (বাংলা)', 'পূর্ণাঙ্গ ঠিকানা (বাংলা)')}
+                      {tBilingual('Full Address (Bengali)', 'পূর্ণাঙ্গ ঠিকানা (বাংলা)')}
                     </Label>
                     <Input id="address_bn" placeholder="উদা: ১৪/এ তোয়েনবি সার্কুলার রোড, মতিঝিল" {...register('address_bn')} />
                   </div>
@@ -702,7 +702,7 @@ export default function CompanySettingsPage() {
                 </Label>
                 <Input
                   id="holidays"
-                  placeholder="e.g. Friday (সাপ্তাহিক ছুটি)"
+                  placeholder={tBilingual('e.g. Friday', 'যেমন: শুক্রবার')}
                   {...register('holidays')}
                 />
                 <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -749,7 +749,7 @@ export default function CompanySettingsPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="bin_no">
-                    {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নং (BIN)')}
+                    {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                   </Label>
                   <Input id="bin_no" placeholder="e.g. 004819284-0101" {...register('bin_no')} />
                   <span className="text-[11px] text-slate-500">
@@ -759,7 +759,7 @@ export default function CompanySettingsPage() {
 
                 <div className="space-y-1.5">
                   <Label htmlFor="tin_no">
-                    {tBilingual('TIN (Tax Identification Number)', 'ই-টিন নং (TIN)')}
+                    {tBilingual('TIN (Tax Identification Number)', 'ই-টিন নম্বর')}
                   </Label>
                   <Input id="tin_no" placeholder="e.g. 8492049182" {...register('tin_no')} />
                 </div>

@@ -126,7 +126,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
         <div className="flex items-center gap-2">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <Clock className="h-5 w-5 text-blue-600" />
-            <span>{tBilingual("Today's Schedule & Actionable Work", 'আজকের কাজ (Today’s Work)')}</span>
+            <span>{tBilingual("Today's Schedule & Tasks", 'আজকের কাজের তালিকা')}</span>
           </h2>
           <Badge variant="outline" className="text-xs font-mono font-bold bg-blue-50 text-blue-700 border-blue-200">
             {tasks.length}
@@ -256,7 +256,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         className="h-10 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-5 shadow-xs"
                       >
                         <Play className="h-4 w-4 mr-1.5 fill-current" />
-                        {tBilingual('START (শুরু করুন)', 'শুরু করুন')}
+                        {tBilingual('Start Work', 'শুরু করুন')}
                       </Button>
                     ) : isRunning ? (
                       <div className="flex items-center gap-2 w-full justify-between">
@@ -280,7 +280,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                             className="h-10 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50"
                           >
                             <AlertOctagon className="h-4 w-4 mr-1 text-rose-600" />
-                            {tBilingual('⚠ Issue (সমস্যা)', '⚠ সমস্যা')}
+                            {tBilingual('Report Issue', 'সমস্যা রিপোর্ট')}
                           </Button>
                         </div>
 
@@ -292,13 +292,13 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                           className="h-10 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-6 shadow-sm"
                         >
                           <CheckCircle2 className="h-4 w-4 mr-1.5" />
-                          {tBilingual('COMPLETE (সম্পন্ন)', 'সম্পন্ন')}
+                          {tBilingual('Complete', 'সম্পন্ন')}
                         </Button>
                       </div>
                     ) : isPaused ? (
                       <div className="flex items-center gap-2 w-full justify-between">
                         <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 truncate">
-                          স্থগিত: {task.hold_reason || 'Operator Pause'}
+                          {tBilingual('Paused: ', 'স্থগিত: ')}{task.hold_reason || tBilingual('Operator Pause', 'অপারেটর বিরতি')}
                         </span>
                         <div className="flex items-center gap-2">
                           <Button
@@ -366,7 +366,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-emerald-700">
-                  {tBilingual('Good Quantity (সঠিক মাল)', 'সঠিক তৈরি পরিমাণ *')}
+                  {tBilingual('Good Quantity', 'সঠিক পরিমাণ')} *
                 </Label>
                 <Input
                   type="number"
@@ -379,7 +379,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
 
               <div className="space-y-1">
                 <Label className="text-xs font-bold text-rose-700">
-                  {tBilingual('Scrap / Wastage (নষ্ট / অপচয়)', 'অপচয় / স্ক্র্যাপ')}
+                  {tBilingual('Scrap / Wastage', 'অপচয় / নষ্ট')}
                 </Label>
                 <Input
                   type="number"

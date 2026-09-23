@@ -1157,17 +1157,28 @@ export class ProductRepository {
   }> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const quotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []).filter(
-          (q) => q.items?.some((i: any) => i.product_id === productId)
+        const quotesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
+        const quotesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+        const quotes = [...quotesCompany, ...quotesGlobal].filter(
+          (q, idx, arr) => arr.findIndex((x) => x.id === q.id) === idx && (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
         )
-        const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []).filter(
-          (inv) => inv.items?.some((i: any) => i.product_id === productId)
+
+        const invoicesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
+        const invoicesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        const invoices = [...invoicesCompany, ...invoicesGlobal].filter(
+          (inv, idx, arr) => arr.findIndex((x) => x.id === inv.id) === idx && (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
         )
-        const jobs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []).filter(
-          (t) => t.product_id === productId
+
+        const jobsCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
+        const jobsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const jobs = [...jobsCompany, ...jobsGlobal].filter(
+          (t, idx, arr) => arr.findIndex((x) => x.id === t.id) === idx && (!t.company_id || t.company_id === companyId) && t.product_id === productId
         )
-        const customerRates = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES, companyId) || []).filter(
-          (r) => r.product_id === productId
+
+        const customerRatesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES, companyId) || []) : []
+        const customerRatesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+        const customerRates = [...customerRatesCompany, ...customerRatesGlobal].filter(
+          (r, idx, arr) => arr.findIndex((x) => x.id === r.id) === idx && (!r.company_id || r.company_id === companyId) && r.product_id === productId
         )
 
         const totalRefs = quotes.length + invoices.length + jobs.length + customerRates.length
@@ -1294,14 +1305,20 @@ export class ProductRepository {
   static async getProductUsageStats(productId: string, companyId: string): Promise<ProductUsageStats> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const quotes = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []).filter(
-          (q) => (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
+        const quotesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []) : []
+        const quotesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+        const quotes = [...quotesCompany, ...quotesGlobal].filter(
+          (q, idx, arr) => arr.findIndex((x) => x.id === q.id) === idx && (!q.company_id || q.company_id === companyId) && q.items?.some((i: any) => i.product_id === productId)
         )
-        const invoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter(
-          (inv) => (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
+        const invoicesCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES, companyId) || []) : []
+        const invoicesGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        const invoices = [...invoicesCompany, ...invoicesGlobal].filter(
+          (inv, idx, arr) => arr.findIndex((x) => x.id === inv.id) === idx && (!inv.company_id || inv.company_id === companyId) && inv.items?.some((i: any) => i.product_id === productId)
         )
-        const jobs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []).filter(
-          (t) => (!t.company_id || t.company_id === companyId) && t.product_id === productId
+        const jobsCompany = companyId ? (PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS, companyId) || []) : []
+        const jobsGlobal = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const jobs = [...jobsCompany, ...jobsGlobal].filter(
+          (t, idx, arr) => arr.findIndex((x) => x.id === t.id) === idx && (!t.company_id || t.company_id === companyId) && t.product_id === productId
         )
 
         let totalRev = 0
@@ -1405,7 +1422,10 @@ export class ProductRepository {
 
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        if (companyId && companyId !== 'default') {
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+        }
         return entry
       }
       throw new Error('Authoritative database connection is required to record price history.')
@@ -1435,7 +1455,10 @@ export class ProductRepository {
 
       if (error) {
         if (isTestMode()) {
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+          if (companyId && companyId !== 'default') {
+            PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+          }
           return entry
         }
         throw new Error(`Failed to record price history: ${error.message}`)
@@ -1444,7 +1467,10 @@ export class ProductRepository {
       return { ...entry, id: data.id }
     } catch (err: any) {
       if (isTestMode()) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+        PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry)
+        if (companyId && companyId !== 'default') {
+          PrintERPDataStore.addItem(STORAGE_KEYS.PRICE_HISTORY, entry, companyId)
+        }
         return entry
       }
       throw err
@@ -1454,11 +1480,16 @@ export class ProductRepository {
   static async getProductPriceHistory(productId?: string, companyId?: string): Promise<PriceHistoryRecord[]> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
-        const history = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, companyId) || []
+        const historyCompany = companyId && companyId !== 'default' ? (PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY, companyId) || []) : []
+        const historyGlobal = PrintERPDataStore.get<PriceHistoryRecord[]>(STORAGE_KEYS.PRICE_HISTORY) || []
+        const history = [...historyCompany, ...historyGlobal]
         const norm = companyId ? companyId.toLowerCase() : ''
         const clean = norm.replace(/^comp-/, '').replace(/^co-/, '')
         return history.filter(
-          (h) => (!productId || h.product_id === productId) && (!companyId || (h.company_id && (h.company_id.toLowerCase() === norm || h.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
+          (h, idx, arr) =>
+            arr.findIndex((x) => x.id === h.id) === idx &&
+            (!productId || h.product_id === productId) &&
+            (!companyId || (h.company_id && (h.company_id.toLowerCase() === norm || h.company_id.toLowerCase().replace(/^comp-/, '') === clean)))
         )
       }
       return []

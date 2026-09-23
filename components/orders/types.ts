@@ -71,10 +71,10 @@ export interface OrderWhatsAppTemplate {
 }
 
 export const ORDER_WHATSAPP_TEMPLATES: OrderWhatsAppTemplate[] = [
-  { key: 'order_confirmed', title: '১. অর্ডার কনফার্মেশন ও রসিদ (Order Confirmed + Receipt)', badge: 'অগ্রিম গ্রহণ' },
-  { key: 'design_proof', title: '২. ডিজাইন প্রুফ প্রস্তুত (Design Proof Ready)', badge: 'অনুমোদন' },
-  { key: 'ready_pickup', title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি (Print Ready for Pickup)', badge: 'ডেলিভারি চালান' },
-  { key: 'payment_reminder', title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ (Due Balance & Delivery)', badge: 'বাকি আদায়' },
+  { key: 'order_confirmed', title: '১. অর্ডার নিশ্চিতকরণ ও রসিদ', badge: 'অগ্রিম গ্রহণ' },
+  { key: 'design_proof', title: '২. ডিজাইন প্রুফ প্রস্তুত', badge: 'অনুমোদন' },
+  { key: 'ready_pickup', title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি', badge: 'ডেলিভারি চালান' },
+  { key: 'payment_reminder', title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ', badge: 'বাকি আদায়' },
 ]
 
 export function sanitizeBangladeshiPhone(rawPhone?: string | null): string {
@@ -121,7 +121,7 @@ export function buildBangladeshiOrderWhatsAppMessage({
       `আসসালামু আলাইকুম / নমস্কার ${custName},\n\n` +
       `আপনার অর্ডার *${docNum}*${invStr}-এর কাজের ডিজাইন ড্রাফট প্রুফ প্রস্তুত হয়েছে।\n\n` +
       `📋 কাজের বিবরণ: ${itemsSummary}\n\n` +
-      `দয়া করে বানান, সাইজ এবং কালার ভালো করে দেখে নিশ্চিত করুন। কোনো সংশোধন থাকলে এখনই জানান, আর সব ঠিক থাকলে *APPROVED* লিখে রিপ্লাই দিন।\n\n` +
+      `দয়া করে বানান, সাইজ এবং কালার ভালো করে দেখে নিশ্চিত করুন। কোনো সংশোধন থাকলে এখনই জানান, আর সব ঠিক থাকলে *অনুমোদিত* অথবা *OK* লিখে জানান।\n\n` +
       `ধন্যবাদ,\n${comp}`
     )
   }
@@ -146,7 +146,7 @@ export function buildBangladeshiOrderWhatsAppMessage({
       `💰 মোট বিল: ৳${totalAmount.toLocaleString()}\n` +
       `💵 পরিশোধিত: ৳${advanceAmount.toLocaleString()}\n` +
       `⚠️ বকেয়া বাকি: ৳${dueAmount.toLocaleString()}\n\n` +
-      `অনুগ্রহ করে বকেয়া টাকা (ক্যাশ/বিকাশ/নগদ/ব্যাংক) পরিশোধ করে ডেলিভারি বুঝে নেওয়ার অনুরোধ করা যাচ্ছে।\n\n` +
+      `অনুগ্রহ করে বকেয়া টাকা পরিশোধ করে ডেলিভারি বুঝে নেওয়ার অনুরোধ করা যাচ্ছে।\n\n` +
       `ধন্যবাদ,\n${comp}`
     )
   }

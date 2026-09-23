@@ -123,12 +123,12 @@ export default function LocalizationSettingsPage() {
         <Card>
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-row items-center justify-between">
             <div>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <Languages className="h-4 w-4 text-blue-600" />
-                Default Language & Presentation Mode
+                {tBilingual('Default Language & Display Mode', 'ডিফল্ট ভাষা ও ডিসপ্লে')}
               </CardTitle>
-              <CardDescription className="text-xs">
-                Controls invoice labels, customer receipts, and system interface language.
+              <CardDescription className="text-xs bangla-text">
+                {tBilingual('Controls invoice labels, customer receipts, and system interface language.', 'চালান, রসিদ এবং সফটওয়্যারের ভাষা নিয়ন্ত্রণ করে।')}
               </CardDescription>
             </div>
             <LanguageSwitcher />
@@ -138,13 +138,13 @@ export default function LocalizationSettingsPage() {
               {[
                 {
                   id: 'bn',
-                  title: 'বাংলা (Bengali)',
-                  desc: 'All invoices, challans, and menus in pure Bengali typography.',
+                  title: tBilingual('Bengali', 'বাংলা'),
+                  desc: tBilingual('All invoices, challans, and menus in pure Bengali.', 'সকল চালান, রসিদ এবং মেনু সহজ বাংলায় দেখা যাবে।'),
                 },
                 {
                   id: 'en',
-                  title: 'English',
-                  desc: 'Standard commercial international invoice terminology.',
+                  title: tBilingual('English', 'ইংরেজি'),
+                  desc: tBilingual('Standard commercial English invoice and software terminology.', 'ইংরেজি ভাষায় সফটওয়্যার ও চালানের তথ্য প্রদর্শিত হবে।'),
                 },
               ].map((item) => (
                 <div
@@ -159,10 +159,10 @@ export default function LocalizationSettingsPage() {
                       : 'border-slate-200 hover:border-slate-300 dark:border-slate-800'
                   }`}
                 >
-                  <div className="font-bold text-sm text-slate-900 dark:text-white">
+                  <div className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
                     {item.title}
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">{item.desc}</p>
+                  <p className="text-xs text-slate-500 mt-1 bangla-text">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -173,64 +173,64 @@ export default function LocalizationSettingsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <DollarSign className="h-4 w-4 text-emerald-600" />
-                Base Currency (মুদ্রা)
+                {tBilingual('Base Currency', 'মূল মুদ্রা')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="currency">Selected Currency</Label>
+                <Label htmlFor="currency" className="bangla-text">{tBilingual('Selected Currency', 'নির্বাচিত মুদ্রা')}</Label>
                 <select
                   id="currency"
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold"
+                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-semibold bangla-text"
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
                 >
-                  <option value="BDT">Bangladeshi Taka (৳ BDT) - Default</option>
-                  <option value="USD">US Dollar ($ USD)</option>
+                  <option value="BDT">{tBilingual('Bangladeshi Taka (BDT) - Default', 'বাংলাদেশি টাকা (ডিফল্ট)')}</option>
+                  <option value="USD">{tBilingual('US Dollar (USD)', 'ইউএস ডলার')}</option>
                 </select>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300">
-                Numbering will format using Bangladeshi comma standards: <strong>৳ ১,৫০,০০০.০০</strong> (Lakh/Crore grouping).
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300 bangla-text">
+                {tBilingual('Numbering will format using Bangladeshi comma standards: BDT 1,50,000 (Lakh/Crore grouping).', 'টাকার হিসাব বাংলাদেশি নিয়মে কমা দিয়ে দেখানো হবে: ৳ ১,৫০,০০০ (লক্ষ/কোটি)।')}
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 bangla-text">
                 <Calendar className="h-4 w-4 text-purple-600" />
-                Date Format (তারিখ ফরম্যাট)
+                {tBilingual('Date Format', 'তারিখ ফরম্যাট')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-4">
               <div className="space-y-1.5">
-                <Label htmlFor="dateFormat">Selected Date Format</Label>
+                <Label htmlFor="dateFormat" className="bangla-text">{tBilingual('Selected Date Format', 'নির্বাচিত তারিখের ধরন')}</Label>
                 <select
                   id="dateFormat"
-                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-mono"
+                  className="w-full h-10 px-3 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-sm font-mono bangla-text"
                   value={dateFormat}
                   onChange={(e) => setDateFormat(e.target.value)}
                 >
-                  <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 03/09/2024) - BD Standard</option>
-                  <option value="YYYY-MM-DD">YYYY-MM-DD (e.g. 2024-09-03) - ISO</option>
-                  <option value="MM/DD/YYYY">MM/DD/YYYY (e.g. 09/03/2024)</option>
+                  <option value="DD/MM/YYYY">{tBilingual('DD/MM/YYYY (e.g. 03/09/2026) - BD Standard', 'দিন/মাস/বছর (যেমন: ০৩/০৯/২০২৬) - মানসম্মত')}</option>
+                  <option value="YYYY-MM-DD">{tBilingual('YYYY-MM-DD (e.g. 2026-09-03) - ISO Standard', 'বছর-মাস-দিন (যেমন: ২০২৬-০৯-০৩)')}</option>
+                  <option value="MM/DD/YYYY">{tBilingual('MM/DD/YYYY (e.g. 09/03/2026)', 'মাস/দিন/বছর (যেমন: ০৯/০৩/২০২৬)')}</option>
                 </select>
               </div>
 
-              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300">
-                Delivery challans and quotation expiry dates will display in this format.
+              <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900 text-xs text-slate-600 dark:text-slate-300 bangla-text">
+                {tBilingual('Delivery challans, invoices, and quotation expiry dates will display in this format.', 'চালান, বিল এবং কোটেশনের মেয়াদ এই ফরম্যাটে প্রদর্শিত হবে।')}
               </div>
             </CardContent>
           </Card>
         </div>
 
         <div className="flex justify-end pt-2">
-          <Button type="submit" isLoading={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold">
+          <Button type="submit" isLoading={isLoading} className="bg-emerald-600 hover:bg-emerald-700 text-white w-full sm:w-auto h-11 sm:h-9 text-xs font-semibold bangla-text">
             <Save className="mr-1.5 h-4 w-4" />
-            Save Localization Settings
+            {tBilingual('Save Localization Settings', 'ভাষা ও মুদ্রা সেটিংস সংরক্ষণ করুন')}
           </Button>
         </div>
       </form>

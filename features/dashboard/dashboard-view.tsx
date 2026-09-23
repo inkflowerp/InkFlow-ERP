@@ -948,11 +948,11 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-blue-600" />
             <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('Quick Operations', 'দ্রুত কাজ ও এন্ট্রি')}
+              {tBilingual('Quick Operations', 'দ্রুত কাজ')}
             </span>
           </div>
           <span className="text-xs text-slate-500 dark:text-slate-400 bangla-text hidden sm:inline">
-            {tBilingual('1-2 tap direct actions', '১-২ ক্লিকে দ্রুত সম্পাদন')}
+            {tBilingual('1-click direct shortcuts', '১ ক্লিকে দ্রুত কাজ')}
           </span>
         </div>
 
@@ -997,7 +997,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
           <div className="flex items-center gap-2 px-1">
             <AlertTriangle className="h-4 w-4 text-amber-500" />
             <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-              {tBilingual('Needs Attention', 'জরুরি মনোযোগ প্রয়োজন')}
+              {tBilingual('Needs Attention', 'জরুরি মনোযোগ')}
             </h2>
           </div>
 
@@ -1061,7 +1061,7 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
         <div className="flex items-center gap-2 px-1">
           <TrendingUp className="h-4 w-4 text-blue-600" />
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 bangla-text">
-            {tBilingual("Today at a Glance", 'আজকের সার্বিক চিত্র')}
+            {tBilingual("Today's Overview", 'আজকের সার্বিক হিসাব')}
           </h2>
         </div>
 

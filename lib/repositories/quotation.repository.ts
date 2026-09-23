@@ -144,10 +144,6 @@ export class QuotationRepository {
       if (Array.isArray(rawStored)) {
         rawCandidates.push(...rawStored)
       }
-      const rawStoredDefault = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, 'default') || []
-      if (Array.isArray(rawStoredDefault)) {
-        rawCandidates.push(...rawStoredDefault)
-      }
 
       if (typeof window !== 'undefined') {
         try {
@@ -282,8 +278,11 @@ export class QuotationRepository {
     if (!cleanId) return null
 
     const isAllowedTenant = (recordCompanyId: string | null | undefined): boolean => {
-      if (!companyId || companyId === 'c-01' || companyId === 'default') return true
-      return !recordCompanyId || recordCompanyId === companyId || recordCompanyId === 'c-01' || recordCompanyId === 'default'
+      if (!companyId || companyId === 'all' || companyId === 'c-01' || companyId === 'default') return true
+      if (!recordCompanyId) return true
+      const normCompany = companyId.toLowerCase().trim()
+      const normRec = String(recordCompanyId).toLowerCase().trim()
+      return normRec === normCompany || normRec === normCompany.replace(/^comp-/, '').replace(/^co-/, '')
     }
 
     try {
@@ -399,7 +398,7 @@ export class QuotationRepository {
       const w = Number(it.width) || 0
       const h = Number(it.height) || 0
       const qty = Math.max(1, Number(it.quantity) || 1)
-      const rate = Math.max(0, Number(it.unit_rate) || 0)
+      const rate = Math.max(0, Number(it.unit_rate !== undefined ? it.unit_rate : ((it as any).unit_price !== undefined ? (it as any).unit_price : ((it as any).rate !== undefined ? (it as any).rate : ((it as any).price !== undefined ? (it as any).price : 0)))) || 0)
       const dimUnit = it.dimension_unit || 'ft'
       
       let areaSft = 0
@@ -440,6 +439,7 @@ export class QuotationRepository {
         quantity: qty,
         unit: it.unit || (areaSft > 0 ? 'sft' : 'pcs'),
         unit_rate: rate,
+        unit_price: rate,
         rate_source: it.rate_source || 'default',
         tier_applied: (it as any).tier_applied || null,
         moq: (it as any).moq || null,
@@ -663,7 +663,8 @@ export class QuotationRepository {
       // fallback
     }
 
-    return PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, id, updates)
+    const updated = PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, id, updates)
+    return updated || (await this.getQuotationById(id, companyId))
   }
 
   /**

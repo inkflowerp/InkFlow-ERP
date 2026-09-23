@@ -36,16 +36,18 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
             {tBilingual('Operator Terminal', 'প্রেস ও ফ্লোর টার্মিনাল')}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black">
-            {tBilingual('আমার কাজ — আজকের কাজের তালিকা', 'আমার কাজ — আজকের কাজের তালিকা')}
+            {tBilingual('My Work — Today’s Task List', 'আমার কাজ — আজকের কাজের তালিকা')}
           </h1>
           <p className="text-xs text-blue-100/90">
-            {tBilingual('Touch START to begin, Report Issue if jammed, and Sign Off when done.', 'কাজ শুরু করতে START চাপুন, সমস্যা হলে রিপোর্ট করুন এবং কাজ শেষে COMPLETE চাপুন।')}
+            {tBilingual('Touch Start to begin, Report Issue if jammed, and Complete when done.', 'কাজ শুরু করতে "শুরু" চাপুন, সমস্যা হলে রিপোর্ট করুন এবং কাজ শেষে "সম্পন্ন" চাপুন।')}
           </p>
         </div>
 
         <div className="text-right hidden sm:block">
           <div className="text-2xl font-black font-mono">{activeCount}</div>
-          <div className="text-[11px] text-blue-200">বর্তমানে চলমান</div>
+          <div className="text-[11px] text-blue-200">
+            {tBilingual('Currently Active', 'বর্তমানে চলমান')}
+          </div>
         </div>
       </div>
 

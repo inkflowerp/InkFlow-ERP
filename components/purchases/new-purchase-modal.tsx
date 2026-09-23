@@ -730,7 +730,7 @@ export function NewPurchaseModal({
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-black text-slate-900 dark:text-white">
-                {tBilingual('Issue Purchase Order (PO)', 'নতুন ক্রয় আদেশ (PO) জারি করুন')}
+                {tBilingual('Issue Purchase Order', 'নতুন ক্রয় আদেশ তৈরি করুন')}
               </h2>
               <Badge
                 variant="outline"
@@ -1462,18 +1462,18 @@ export function NewPurchaseModal({
                     onChange={(e) => setVatType(e.target.value as any)}
                     className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                   >
-                    <option value="none">0% Exempted / Nil VAT (ভ্যাট প্রযোজ্য নয়)</option>
-                    <option value="15">15% Standard NBR VAT (১৫% আদর্শ মূসক)</option>
-                    <option value="7.5">7.5% Truncated VAT (৭.৫% মূসক)</option>
-                    <option value="5">5% Retail/Trading VAT (৫% মূসক)</option>
-                    <option value="custom">Custom Fixed Amount (কাস্টম ভ্যাট)</option>
+                    <option value="none">{tBilingual('0% Exempted / Nil VAT', '০% ভ্যাট প্রযোজ্য নয়')}</option>
+                    <option value="15">{tBilingual('15% Standard VAT', '১৫% আদর্শ মূসক')}</option>
+                    <option value="7.5">{tBilingual('7.5% Truncated VAT', '৭.৫% মূসক')}</option>
+                    <option value="5">{tBilingual('5% Retail VAT', '৫% মূসক')}</option>
+                    <option value="custom">{tBilingual('Custom Fixed Amount', 'কাস্টম ভ্যাট')}</option>
                   </select>
                 </div>
 
                 {/* Shipping & Freight */}
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Freight & Carriage (৳)', 'পরিবহন / ক্যারেজ ভাড়া')}
+                    {tBilingual('Freight & Carriage', 'পরিবহন ভাড়া')}
                   </Label>
                   <Input
                     type="number"
@@ -1488,7 +1488,9 @@ export function NewPurchaseModal({
 
               {vatType === 'custom' && (
                 <div className="pt-1">
-                  <Label className="text-xs font-semibold mb-1 block">Custom Fixed VAT Amount (৳)</Label>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    {tBilingual('Custom Fixed VAT Amount', 'নির্দিষ্ট ভ্যাট পরিমাণ')}
+                  </Label>
                   <Input
                     type="number"
                     min="0"
@@ -1521,7 +1523,7 @@ export function NewPurchaseModal({
                   >
                     {PAYMENT_TERMS_PRESETS.map((p) => (
                       <option key={p.value} value={p.value}>
-                        {p.labelEn}
+                        {tBilingual(p.labelEn, p.labelBn)}
                       </option>
                     ))}
                   </select>
@@ -1529,7 +1531,7 @@ export function NewPurchaseModal({
 
                 <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    {tBilingual('Advance Paid Now (৳)', 'বর্তমান অগ্রিম পরিশোধ')}
+                    {tBilingual('Advance Paid Now', 'বর্তমান অগ্রিম পরিশোধ')}
                   </Label>
                   <Input
                     type="number"

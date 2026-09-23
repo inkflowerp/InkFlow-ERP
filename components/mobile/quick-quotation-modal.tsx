@@ -306,7 +306,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
               onChange={(e) => setIncludeLamination(e.target.checked)}
               className="rounded border-slate-300 dark:border-slate-700 text-blue-600 h-4 w-4"
             />
-            <span>{tBilingual('Include Protective Matte/Gloss Lamination (+৳6/sft)', 'ম্যাট/গ্লস লেমিনেশন যুক্ত করুন (+৳৬/স্কয়ারফুট)')}</span>
+            <span>{tBilingual('Include Protective Matte / Gloss Lamination (+6/sft)', 'ম্যাট বা গ্লস লেমিনেশন যুক্ত করুন (+৳৬/স্কয়ারফুট)')}</span>
           </label>
         </div>
 

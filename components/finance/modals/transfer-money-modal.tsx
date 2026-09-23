@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/context'
+import { formatBDT } from '@/lib/formatters'
 import type { AccountRecord } from '@/types/finance.types'
 
 interface TransferMoneyModalProps {
@@ -115,7 +116,7 @@ export function TransferMoneyModal({
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
-                {acc.name} ({acc.account_subtype}) — বর্তমান ব্যালেন্স: ৳{acc.current_balance.toLocaleString()}
+                {acc.name} ({acc.account_subtype}) — {tBilingual('Current Balance: ', 'বর্তমান ব্যালেন্স: ')}{formatBDT(acc.current_balance)}
               </option>
             ))}
           </select>
@@ -133,7 +134,7 @@ export function TransferMoneyModal({
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
-                {acc.name} ({acc.account_subtype}) — বর্তমান ব্যালেন্স: ৳{acc.current_balance.toLocaleString()}
+                {acc.name} ({acc.account_subtype}) — {tBilingual('Current Balance: ', 'বর্তমান ব্যালেন্স: ')}{formatBDT(acc.current_balance)}
               </option>
             ))}
           </select>
@@ -143,7 +144,7 @@ export function TransferMoneyModal({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
             <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              {tBilingual('Amount (৳ BDT)', 'টাকার পরিমাণ (৳)')} *
+              {tBilingual('Transfer Amount', 'স্থানান্তরের পরিমাণ')} *
             </Label>
             <Input
               type="number"
@@ -157,7 +158,7 @@ export function TransferMoneyModal({
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-slate-600 dark:text-slate-400">
-              {tBilingual('Processing Fee (৳)', 'চার্জ / ফি (৳)')}
+              {tBilingual('Processing Fee', 'চার্জ বা ফি')}
             </Label>
             <Input
               type="number"

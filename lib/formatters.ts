@@ -455,38 +455,51 @@ export function getDepartmentColumns(department: string) {
   switch (department) {
     case 'printing':
       return [
-        { id: 'queued', title: 'Queued (অপেক্ষারত)', titleBn: 'অপেক্ষারত', statusMatch: ['queued', 'paused'] },
-        { id: 'printing', title: 'Printing (প্রিন্ট চলছে)', titleBn: 'প্রিন্ট চলছে', statusMatch: ['in_progress'] },
-        { id: 'completed', title: 'Completed (সম্পন্ন)', titleBn: 'সম্পন্ন', statusMatch: ['completed'] },
+        { id: 'queued', title: 'Queued', titleBn: 'অপেক্ষারত', statusMatch: ['queued', 'paused'] },
+        { id: 'printing', title: 'Printing', titleBn: 'প্রিন্ট চলছে', statusMatch: ['in_progress'] },
+        { id: 'completed', title: 'Completed', titleBn: 'সম্পন্ন', statusMatch: ['completed'] },
       ]
     case 'finishing':
       return [
-        { id: 'queued', title: 'Queued (ফিনিশিং কিউ)', titleBn: 'ফিনিশিং কিউ', statusMatch: ['queued'] },
-        { id: 'in_finishing', title: 'In Finishing (কাটিং/লেমিনেশন)', titleBn: 'কাটিং ও লেমিনেশন', statusMatch: ['in_progress', 'paused'] },
-        { id: 'qc', title: 'Quality Check (কিউসি)', titleBn: 'কিউসি পরীক্ষা', statusMatch: ['quality_check', 'rework'] },
-        { id: 'completed', title: 'Completed (ডেলিভারি রেডি)', titleBn: 'ডেলিভারি রেডি', statusMatch: ['completed'] },
+        { id: 'queued', title: 'Queued', titleBn: 'ফিনিশিং তালিকা', statusMatch: ['queued'] },
+        { id: 'in_finishing', title: 'In Finishing', titleBn: 'কাটিং ও লেমিনেশন', statusMatch: ['in_progress', 'paused'] },
+        { id: 'qc', title: 'Quality Check', titleBn: 'গুণমান পরীক্ষা', statusMatch: ['quality_check', 'rework'] },
+        { id: 'completed', title: 'Completed', titleBn: 'ডেলিভারি প্রস্তুত', statusMatch: ['completed'] },
       ]
     case 'fabrication':
       return [
-        { id: 'queued', title: 'Queued (ওয়ার্কশপ কিউ)', titleBn: 'ওয়ার্কশপ কিউ', statusMatch: ['queued'] },
-        { id: 'in_fab', title: 'In Fabrication (ওয়েল্ডিং/লেটার)', titleBn: 'ওয়েল্ডিং ও লেটার তৈরি', statusMatch: ['in_progress', 'paused'] },
-        { id: 'qc', title: 'Wiring & QC (এলইডি টেস্ট)', titleBn: 'এলইডি টেস্ট', statusMatch: ['quality_check', 'rework'] },
-        { id: 'completed', title: 'Completed (ফিটিং রেডি)', titleBn: 'ফিটিং রেডি', statusMatch: ['completed'] },
+        { id: 'queued', title: 'Queued', titleBn: 'তৈরির তালিকা', statusMatch: ['queued'] },
+        { id: 'in_fab', title: 'In Fabrication', titleBn: 'তৈরি ও ফিটিং', statusMatch: ['in_progress', 'paused'] },
+        { id: 'qc', title: 'Testing and QC', titleBn: 'পরীক্ষা ও যাচাই', statusMatch: ['quality_check', 'rework'] },
+        { id: 'completed', title: 'Completed', titleBn: 'সম্পন্ন', statusMatch: ['completed'] },
       ]
     case 'installation':
       return [
-        { id: 'scheduled', title: 'Scheduled (শিডিউল্ড)', titleBn: 'শিডিউল্ড', statusMatch: ['queued'] },
-        { id: 'en_route', title: 'En Route / On Site', titleBn: 'সাইটে টিম রওয়ানা', statusMatch: ['in_progress', 'paused'] },
-        { id: 'installing', title: 'Installing (ফিটিং চলছে)', titleBn: 'ফিটিং চলছে', statusMatch: ['quality_check'] },
-        { id: 'completed', title: 'Completed (হস্তান্তরিত)', titleBn: 'হস্তান্তরিত', statusMatch: ['completed'] },
+        { id: 'scheduled', title: 'Scheduled', titleBn: 'নির্ধারিত', statusMatch: ['queued'] },
+        { id: 'en_route', title: 'En Route', titleBn: 'সাইটে রওয়ানা', statusMatch: ['in_progress', 'paused'] },
+        { id: 'installing', title: 'Installing', titleBn: 'ফিটিং চলছে', statusMatch: ['quality_check'] },
+        { id: 'completed', title: 'Completed', titleBn: 'হস্তান্তর সম্পন্ন', statusMatch: ['completed'] },
       ]
     default:
       return [
-        { id: 'queued', title: 'Queued', titleBn: 'কিউ', statusMatch: ['queued'] },
-        { id: 'in_progress', title: 'In Progress (চলছে)', titleBn: 'চলছে', statusMatch: ['in_progress'] },
-        { id: 'quality_check', title: 'QC / Review', titleBn: 'কিউসি', statusMatch: ['quality_check', 'rework', 'paused'] },
+        { id: 'queued', title: 'Queued', titleBn: 'অপেক্ষারত', statusMatch: ['queued'] },
+        { id: 'in_progress', title: 'In Progress', titleBn: 'চলমান', statusMatch: ['in_progress'] },
+        { id: 'quality_check', title: 'Quality Check', titleBn: 'গুণমান যাচাই', statusMatch: ['quality_check', 'rework', 'paused'] },
         { id: 'completed', title: 'Completed', titleBn: 'সম্পন্ন', statusMatch: ['completed'] },
       ]
   }
+}
+
+/**
+ * Fallback bilingual text helper based on localStorage
+ */
+export function tBilingual(enText: string, bnText?: string | null): string {
+  if (!bnText) return enText
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem('printerp_locale')
+    if (saved === 'bn') return bnText
+    return enText
+  }
+  return enText
 }
 

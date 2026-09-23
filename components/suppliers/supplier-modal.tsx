@@ -226,7 +226,7 @@ export function SupplierModal({
     } else {
       const normMobile = normalizeBdPhone(formData.mobile)
       if (!normMobile) {
-        errors.mobile = tBilingual('Invalid Bangladesh phone format (e.g. 017XXXXXXXX).', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: ০১৭XXXXXXXX)।')
+        errors.mobile = tBilingual('Invalid Bangladesh phone format.', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন।')
       }
     }
 
@@ -456,7 +456,7 @@ export function SupplierModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      {tBilingual('Bengali Name (বাংলায় নাম)', 'বাংলায় নাম')}
+                      {tBilingual('Bengali Name', 'বাংলা নাম')}
                     </Label>
                     <Input
                       placeholder="যেমন: নয়াবাজার পেপার হাউস"
@@ -755,7 +755,7 @@ export function SupplierModal({
                 {/* Terms Selector Cards */}
                 <div>
                   <Label className="text-xs font-semibold mb-1.5 block">
-                    {tBilingual('Payment Terms (বিল পরিশোধের চুক্তি)', 'পেমেন্টের শর্তাবলী')}
+                    {tBilingual('Payment Terms', 'পেমেন্টের শর্তাবলী')}
                   </Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {SUPPLIER_PAYMENT_TERMS.map((term) => {
@@ -772,15 +772,16 @@ export function SupplierModal({
                           }`}
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-bold text-slate-900 dark:text-white">{term.labelEn}</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-white">
+                              {tBilingual(term.labelEn, term.labelBn)}
+                            </span>
                             <Badge variant="outline" className="text-[10px] font-mono">
                               {term.days > 0 ? `${term.days} Days` : 'Spot'}
                             </Badge>
                           </div>
-                          <div className="text-[11px] text-teal-700 dark:text-teal-400 mt-0.5 font-medium">
-                            {term.labelBn}
+                          <div className="text-[10px] text-slate-400 mt-1 leading-tight">
+                            {tBilingual(term.descriptionEn, term.descriptionBn || term.descriptionEn)}
                           </div>
-                          <div className="text-[10px] text-slate-400 mt-1 leading-tight">{term.descriptionEn}</div>
                         </button>
                       )
                     })}
@@ -790,7 +791,7 @@ export function SupplierModal({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                   <div>
                     <Label className="text-xs font-semibold mb-1 block">
-                      {tBilingual('Credit Limit (বাকি সীমা ৳ BDT)', 'সর্বোচ্চ বাকি সীমা (৳)')}
+                      {tBilingual('Credit Limit', 'সর্বোচ্চ বাকি সীমা')}
                     </Label>
                     <div className="relative">
                       <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
@@ -1025,7 +1026,7 @@ export function SupplierModal({
                       dispatchToast({
                         type: 'warning',
                         title: tBilingual('Invalid Phone Format', 'মোবাইল নম্বর সঠিক নয়'),
-                        message: tBilingual('Please provide a valid phone number (e.g. 017XXXXXXXX).', 'সঠিক বাংলাদেশি মোবাইল নম্বর দিন (যেমন: ০১৭XXXXXXXX)।'),
+                        message: tBilingual('Please provide a valid 11-digit mobile number.', 'সঠিক ১১ ডিজিটের মোবাইল নম্বর প্রদান করুন।'),
                       })
                       return
                     }

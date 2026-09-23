@@ -218,7 +218,7 @@ function OnboardingWizard() {
         email: 'Valid official email address is required.',
         division_id: 'Please select your division.',
         district_id: 'Please select your district.',
-        address: 'Street Address (ঠিকানা) is required (minimum 3 characters).',
+        address: 'Street address is required (minimum 3 characters).',
         owner_name: 'Owner full name is required.',
         owner_email: 'Owner email address is required.',
         owner_phone: 'Owner mobile number is required.',
@@ -363,8 +363,8 @@ function OnboardingWizard() {
     { step: 2, title: 'Business Type', titleBn: 'ব্যবসার ধরন', icon: Briefcase },
     { step: 3, title: 'Contact Info', titleBn: 'যোগাযোগের তথ্য', icon: Phone },
     { step: 4, title: 'Address & Area', titleBn: 'ঠিকানা ও এলাকা', icon: MapPin },
-    { step: 5, title: 'Currency', titleBn: 'মুদ্রা (Currency)', icon: Coins },
-    { step: 6, title: 'Language', titleBn: 'ভাষা (Language)', icon: Globe },
+    { step: 5, title: 'Currency', titleBn: 'মুদ্রা', icon: Coins },
+    { step: 6, title: 'Language', titleBn: 'ভাষা', icon: Globe },
     { step: 7, title: 'Owner Account', titleBn: 'মালিকের অ্যাকাউন্ট', icon: UserCheck },
     ...(isPaidPlan
       ? [{ step: 8, title: 'Payment & Activation', titleBn: 'পেমেন্ট ও অ্যাক্টিভেশন', icon: CreditCard }]
@@ -722,15 +722,15 @@ function OnboardingWizard() {
                     {[
                       {
                         code: 'bn',
-                        title: 'বাংলা (Bengali)',
-                        desc: 'সম্পূর্ণ বাংলা ইন্টারফেস ও ভাউচার ফরম্যাট',
-                        badge: 'জনপ্রিয় (Popular)',
+                        title: tBilingual('Bengali', 'বাংলা'),
+                        desc: tBilingual('Full Bengali interface and voucher formats', 'সম্পূর্ণ বাংলা ইন্টারফেস ও ভাউচার ফরম্যাট'),
+                        badge: tBilingual('Popular', 'জনপ্রিয়'),
                       },
                       {
                         code: 'en',
-                        title: 'English',
-                        desc: 'Standard international English ERP interface',
-                        badge: 'Standard',
+                        title: tBilingual('English', 'ইংরেজি'),
+                        desc: tBilingual('Standard international English ERP interface', 'স্ট্যান্ডার্ড আন্তর্জাতিক ইংরেজি ইন্টারফেস'),
+                        badge: tBilingual('Standard', 'স্ট্যান্ডার্ড'),
                       },
                     ].map((lang) => {
                       const isSelected = watchedLanguage === lang.code
@@ -1121,7 +1121,7 @@ function OnboardingWizard() {
                         </>
                       ) : (
                         <>
-                          Complete Setup & Launch
+                          <span>{tBilingual('Complete Setup & Launch', 'সেটআপ সম্পন্ন করে চালু করুন')}</span>
                           <Sparkles className="ml-1.5 h-4 w-4" />
                         </>
                       )}

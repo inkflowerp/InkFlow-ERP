@@ -632,7 +632,7 @@ export default function SuppliersPage() {
                     <th className="py-3 px-4">{tBilingual('Contact & Phone', 'মোবাইল ও যোগাযোগ')}</th>
                     <th className="py-3 px-4">{tBilingual('Market Hub', 'মার্কেট হাব')}</th>
                     <th className="py-3 px-4">{tBilingual('Payment Terms & Limit', 'বাকি শর্ত ও সীমা')}</th>
-                    <th className="py-3 px-4">{tBilingual('Payable Balance (বাকি)', 'বকেয়া পাওনা')}</th>
+                    <th className="py-3 px-4">{tBilingual('Payable Balance', 'বকেয়া পাওনা')}</th>
                     <th className="py-3 px-4 text-right">{tBilingual('Quick Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>

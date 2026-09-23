@@ -19,10 +19,7 @@ describe('InkFlow ERP — Customer-Type-Based Pricing Engine Unit Tests', () => 
   const companyIdB = `comp-pricing-other-${Date.now()}`
 
   beforeEach(() => {
-    PrintERPDataStore.set(STORAGE_KEYS.PRODUCTS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [])
-    PrintERPDataStore.set(STORAGE_KEYS.CUSTOMER_RATES, [])
-    PrintERPDataStore.set(STORAGE_KEYS.PRICING_RULES, [])
+    PrintERPDataStore.clear()
   })
 
   // --------------------------------------------------------------------------
@@ -380,6 +377,7 @@ describe('InkFlow ERP — Customer-Type-Based Pricing Engine Unit Tests', () => 
     const copyResult = await PricingRepository.copyPricingBetweenCustomerTypes(companyId, {
       source_customer_type: 'retail',
       target_customer_type: 'regular',
+      product_ids: [p1.id],
       adjustment_percent: -5,
       override_existing: true,
     })

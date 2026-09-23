@@ -347,10 +347,10 @@ export default function EmployeeAttendancePage() {
               }`}
             >
               {todayStatus.hasCheckedOut
-                ? 'OUT (সম্পন্ন)'
+                ? tBilingual('OUT', 'প্রস্থান সম্পন্ন')
                 : todayStatus.hasCheckedIn
-                ? 'IN (উপস্থিত)'
-                : 'PENDING (বাকি)'}
+                ? tBilingual('IN', 'উপস্থিত')
+                : tBilingual('PENDING', 'বাকি')}
             </Badge>
           </div>
 
@@ -450,7 +450,7 @@ export default function EmployeeAttendancePage() {
               className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-semibold cursor-pointer flex items-center gap-1 self-start sm:self-auto"
             >
               <FileEdit className="h-3.5 w-3.5" />
-              <span>{tBilingual('Request Correction (ভুল সংশোধন)', 'সংশোধনের আবেদন করুন')}</span>
+              <span>{tBilingual('Request Correction', 'ভুল সংশোধনের আবেদন')}</span>
             </button>
           </div>
         </CardContent>
@@ -618,15 +618,15 @@ export default function EmployeeAttendancePage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="corrType" className="text-xs font-semibold text-slate-700 dark:text-slate-300">{tBilingual('Punch Type', 'পাঞ্চ টাইপ')}</Label>
+                  <Label htmlFor="corrType" className="text-xs font-semibold text-slate-700 dark:text-slate-300">{tBilingual('Punch Type', 'পাঞ্চের ধরন')}</Label>
                   <select
                     id="corrType"
                     value={corrType}
                     onChange={(e) => setCorrType(e.target.value as any)}
                     className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-xs font-semibold"
                   >
-                    <option value="CHECK_IN">{tBilingual('Check-In (প্রবেশ)', 'প্রবেশ (Check-In)')}</option>
-                    <option value="CHECK_OUT">{tBilingual('Check-Out (প্রস্থান)', 'প্রস্থান (Check-Out)')}</option>
+                    <option value="CHECK_IN">{tBilingual('Check-In', 'প্রবেশ')}</option>
+                    <option value="CHECK_OUT">{tBilingual('Check-Out', 'প্রস্থান')}</option>
                   </select>
                 </div>
 

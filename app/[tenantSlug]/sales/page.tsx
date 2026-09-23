@@ -242,9 +242,9 @@ export default function SalesManagerPage() {
       {/* Tabs */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-1 overflow-x-auto touch-scroll pb-px">
         {[
-          { id: 'quotations', label: tBilingual('Active Quotations (দরপ্রস্তাব)', 'দরপ্রস্তাব') },
-          { id: 'orders', label: tBilingual('Booked Job Orders (জব অর্ডার)', 'জব অর্ডার') },
-          { id: 'leads', label: tBilingual('Corporate Leads (কর্পোরেট লিড)', 'কর্পোরেট লিড') },
+          { id: 'quotations', label: tBilingual('Active Quotations', 'দরপ্রস্তাব') },
+          { id: 'orders', label: tBilingual('Booked Job Orders', 'জব অর্ডার') },
+          { id: 'leads', label: tBilingual('Corporate Leads', 'কর্পোরেট লিড') },
         ].map((tab) => (
           <button
             key={tab.id}

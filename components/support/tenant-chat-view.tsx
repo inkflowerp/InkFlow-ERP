@@ -382,7 +382,7 @@ export function TenantChatView({
               value={inputText}
               onChange={handleTextChange}
               onKeyDown={handleKeyDown}
-              placeholder={tBilingual('Type your reply... (Press Enter to send, Shift+Enter for new line)', 'আপনার বার্তা লিখুন... (পাঠাতে Enter চাপুন)')}
+              placeholder={tBilingual('Type your reply...', 'আপনার বার্তা লিখুন...')}
               className="w-full text-xs sm:text-sm bg-transparent text-slate-900 dark:text-slate-100 focus:outline-none resize-none placeholder:text-slate-400 py-1"
             />
           </div>

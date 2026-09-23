@@ -43,6 +43,7 @@ import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { cn } from '@/lib/utils'
+import { tBilingual } from '@/lib/formatters'
 
 interface RoleItem {
   id: string
@@ -73,32 +74,32 @@ type ModuleCategory = 'all' | 'sales' | 'production' | 'inventory' | 'hr' | 'sys
 
 const MODULE_CATEGORIES: Record<ModuleCategory, { labelEn: string; labelBn: string; modules: PermissionModule[] }> = {
   all: {
-    labelEn: 'All Modules (সকল মডিউল)',
+    labelEn: 'All Modules',
     labelBn: 'সকল মডিউল',
     modules: Object.keys(MODULE_ACTION_SPECS) as PermissionModule[],
   },
   sales: {
-    labelEn: 'Commercial & Sales (বাণিজ্যিক ও বিক্রয়)',
+    labelEn: 'Commercial & Sales',
     labelBn: 'বিক্রয় ও বাণিজ্যিক',
     modules: ['products', 'pricing', 'customers', 'quotations', 'orders', 'design', 'invoices', 'payments'],
   },
   production: {
-    labelEn: 'Production & Plant (প্রোডাকশন ও কারখানা)',
+    labelEn: 'Production & Plant',
     labelBn: 'প্রোডাকশন ও কারখানা',
     modules: ['production', 'machineries', 'tasks'],
   },
   inventory: {
-    labelEn: 'Inventory & Dispatch (স্টক ও ডেলিভারি)',
+    labelEn: 'Inventory & Dispatch',
     labelBn: 'ইনভেন্টরি ও ডেলিভারি',
     modules: ['inventory', 'delivery'],
   },
   hr: {
-    labelEn: 'Workforce & HR (কর্মী ও এইচআর)',
+    labelEn: 'Workforce & HR',
     labelBn: 'এইচআর ও কর্মী',
     modules: ['hr'],
   },
   system: {
-    labelEn: 'System & Governance (প্রশাসন ও সেটিংস)',
+    labelEn: 'System & Governance',
     labelBn: 'সিস্টেম ও প্রশাসন',
     modules: ['settings', 'branches', 'users', 'notifications', 'support', 'reports'],
   },
@@ -363,7 +364,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
         <div>
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-primary" />
-            Roles & Permission Matrix Studio (রোল ও পারমিশন স্টুডিও)
+            {tBilingual('Roles & Permission Matrix Studio', 'রোল ও পারমিশন স্টুডিও')}
           </h2>
           <p className="text-xs text-slate-400">
             Define role boundaries, customize permissions per module, and create custom job templates.
@@ -377,7 +378,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
             className="bg-primary hover:bg-primary/90 text-xs font-semibold gap-1.5"
           >
             <Plus className="w-3.5 h-3.5" />
-            Create Custom Role (নতুন রোল)
+            {tBilingual('Create Custom Role', 'নতুন রোল তৈরি')}
           </Button>
         </div>
       </div>
@@ -566,7 +567,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                             : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900'
                         )}
                       >
-                        {MODULE_CATEGORIES[catKey].labelEn}
+                        {tBilingual(MODULE_CATEGORIES[catKey].labelEn, MODULE_CATEGORIES[catKey].labelBn)}
                       </button>
                     )
                   })}

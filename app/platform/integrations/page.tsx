@@ -193,7 +193,7 @@ const PROVIDERS_METADATA: Record<string, ProviderMeta> = {
     id: 'ses',
     category: 'email',
     name: 'Amazon Simple Email Service (SES)',
-    nameBn: 'আমাজন সিম্পল ইমেইল সার্ভিস (SES)',
+    nameBn: 'আমাজন সিম্পল ইমেইল সার্ভিস',
     tagline: 'Cost-effective high-scale cloud email with AWS region integration',
     icon: Globe,
     docsUrl: 'https://docs.aws.amazon.com/ses/',

@@ -770,7 +770,7 @@ export function getNeedsAttentionItems(
         id: 'overdue_receivables',
         titleEn: `${overdueInvoices.length} Overdue Account(s) Past Payment Term`,
         titleBn: `${overdueInvoices.length}টি একাউন্টের বাকির মেয়াদ উত্তীর্ণ`,
-        subtitleEn: `Total outstanding ৳ ${overdueTotal.toLocaleString()} exceeds billing term.`,
+        subtitleEn: `Total outstanding BDT ${overdueTotal.toLocaleString()} exceeds billing term.`,
         subtitleBn: `মোট ৳ ${overdueTotal.toLocaleString()} বাকির মেয়াদ অতিক্রম করেছে।`,
         severity: 'urgent',
         actionLabelEn: 'View Due List',

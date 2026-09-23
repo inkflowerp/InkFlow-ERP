@@ -227,7 +227,7 @@ export function QuickActionsBar({
     {
       id: 'new-work',
       labelEn: 'New Work',
-      labelBn: 'নতুন কাজ (Walk-in)',
+      labelBn: 'নতুন কাজ',
       subEn: 'Fast Job Intake & Proof',
       subBn: 'ওয়াক-ইন কাজ ও আর্টওয়ার্ক',
       icon: Printer,

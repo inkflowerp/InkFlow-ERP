@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useI18n } from '@/i18n/context'
+import { formatBDT } from '@/lib/formatters'
 import type { AccountRecord } from '@/types/finance.types'
 import type { CustomerRecord } from '@/types/crm.types'
 
@@ -127,7 +128,7 @@ export function CustomerRefundModal({
         {/* Amount Input */}
         <div className="space-y-1.5">
           <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-            {tBilingual('Refund Amount (৳ BDT)', 'ফেরতের পরিমাণ (৳)')} *
+            {tBilingual('Refund Amount', 'ফেরতের পরিমাণ')} *
           </Label>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">
@@ -157,7 +158,7 @@ export function CustomerRefundModal({
           >
             {liquidAccounts.map((acc) => (
               <option key={acc.id} value={acc.id}>
-                {acc.name} ({acc.account_subtype}) — ব্যালেন্স: ৳{acc.current_balance.toLocaleString()}
+                {acc.name} ({acc.account_subtype}) — {tBilingual('Balance: ', 'ব্যালেন্স: ')}{formatBDT(acc.current_balance)}
               </option>
             ))}
           </select>

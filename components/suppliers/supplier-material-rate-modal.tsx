@@ -118,7 +118,7 @@ export function SupplierMaterialRateModal({
     }
 
     if (formData.contract_price_bdt <= 0) {
-      errors.contract_price_bdt = tBilingual('Contract rate must be greater than ৳ 0.', 'চুক্তির দর ৳ ০ এর বেশি হতে হবে।')
+      errors.contract_price_bdt = tBilingual('Contract rate must be greater than 0.', 'চুক্তির দর ০ এর বেশি হতে হবে।')
     }
 
     if (Object.keys(errors).length > 0) {
@@ -283,28 +283,28 @@ export function SupplierMaterialRateModal({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Unit of Measure (UOM)', 'একক (UOM)')}
+                {tBilingual('Unit of Measure', 'পরিমাপের একক')}
               </Label>
               <select
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                 className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium font-mono"
               >
-                <option value="sft">sft (Square Feet)</option>
-                <option value="sheet">sheet (8x4, 6x4)</option>
-                <option value="roll">roll (Roll)</option>
-                <option value="piece">piece (পিস)</option>
-                <option value="liter">liter (লিটার)</option>
-                <option value="ream">ream (রিম)</option>
-                <option value="kg">kg (কেজি)</option>
-                <option value="pack">pack (প্যাক)</option>
-                <option value="sqm">sqm (Square Meter)</option>
+                <option value="sft">{tBilingual('sft (Square Feet)', 'স্কয়ার ফিট')}</option>
+                <option value="sheet">{tBilingual('sheet (Sheet)', 'শীট')}</option>
+                <option value="roll">{tBilingual('roll (Roll)', 'রোল')}</option>
+                <option value="piece">{tBilingual('piece (Piece)', 'পিস')}</option>
+                <option value="liter">{tBilingual('liter (Liter)', 'লিটার')}</option>
+                <option value="ream">{tBilingual('ream (Ream)', 'রিম')}</option>
+                <option value="kg">{tBilingual('kg (Kg)', 'কেজি')}</option>
+                <option value="pack">{tBilingual('pack (Pack)', 'প্যাক')}</option>
+                <option value="sqm">{tBilingual('sqm (Square Meter)', 'স্কয়ার মিটার')}</option>
               </select>
             </div>
 
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Contract Buying Rate (৳ BDT)', 'চুক্তিভিত্তিক দর (৳)')} <span className="text-rose-500">*</span>
+                {tBilingual('Contract Buying Rate', 'চুক্তিভিত্তিক ক্রয় দর')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">৳</span>
@@ -350,7 +350,7 @@ export function SupplierMaterialRateModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             <div>
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Effective Date (কার্যকর তারিখ)', 'কার্যকর তারিখ')}
+                {tBilingual('Effective Date', 'কার্যকর তারিখ')}
               </Label>
               <Input
                 type="date"

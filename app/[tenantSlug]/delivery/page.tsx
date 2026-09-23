@@ -1344,7 +1344,7 @@ export default function DeliveryLogisticsPage() {
 
               <div>
                 <Label className="text-xs font-semibold mb-1 block">
-                  {tBilingual('Transport Cost (৳ BDT)', 'পরিবহন খরচ (৳)')}
+                  {tBilingual('Transport Cost', 'পরিবহন খরচ')}
                 </Label>
                 <Input
                   type="number"

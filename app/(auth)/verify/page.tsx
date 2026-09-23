@@ -441,18 +441,18 @@ function VerifyEmailForm() {
                 {t('auth.didnt_receive_code') || "Didn't receive the code?"}
               </span>
               {cooldown > 0 ? (
-                <span className="font-semibold text-slate-400 dark:text-slate-500">
-                  {locale === 'bn' ? `পুনরায় পাঠানো যাবে (${cooldown}s)` : `Resend in ${cooldown}s`}
+                <span className="font-semibold text-slate-400 dark:text-slate-500 bangla-text">
+                  {locale === 'bn' ? `পুনরায় পাঠানো যাবে (${cooldown} সেকেন্ড)` : `Resend in ${cooldown}s`}
                 </span>
               ) : (
                 <button
                   type="button"
                   onClick={handleResend}
                   disabled={isResending || isLoading}
-                  className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 hover:underline cursor-pointer disabled:opacity-50"
+                  className="inline-flex items-center gap-1 font-bold text-cyan-600 hover:text-cyan-700 dark:text-cyan-400 hover:underline cursor-pointer disabled:opacity-50 bangla-text"
                 >
                   <RefreshCw className={`h-3.5 w-3.5 ${isResending ? 'animate-spin' : ''}`} />
-                  <span>{isResending ? 'Sending...' : t('auth.resend_code') || 'Resend Code'}</span>
+                  <span>{isResending ? (locale === 'bn' ? 'পাঠানো হচ্ছে...' : 'Sending...') : t('auth.resend_code') || 'Resend Code'}</span>
                 </button>
               )}
             </div>

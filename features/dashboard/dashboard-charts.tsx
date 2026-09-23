@@ -228,19 +228,19 @@ export function DashboardCharts() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-bold bangla-text">
-                    {tBilingual('Daily Sales & Collection Trend', 'দৈনিক বিক্রয় ও আদায় ট্রেন্ড')}
+                    {tBilingual('Daily Sales & Collections', 'দৈনিক বিক্রি ও জমা')}
                   </CardTitle>
                   <CardDescription className="text-xs bangla-text">
-                    {tBilingual('Past 7 days performance comparison (৳ BDT)', 'বিগত ৭ দিনের তুলনা (টাকা)')}
+                    {tBilingual('Past 7 days sales and collection comparison', 'গত ৭ দিনের বিক্রি ও জমার তুলনা')}
                   </CardDescription>
                 </div>
                 {hasSalesTrendData && (
                   <div className="flex items-center gap-3 text-xs font-medium">
                     <span className="flex items-center gap-1 bangla-text">
-                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> {tBilingual('Sales', 'সেলস')}
+                      <span className="h-2.5 w-2.5 rounded-full bg-blue-600" /> {tBilingual('Sales', 'বিক্রি')}
                     </span>
                     <span className="flex items-center gap-1 bangla-text">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> {tBilingual('Collections', 'আদায়')}
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" /> {tBilingual('Collections', 'জমা')}
                     </span>
                   </div>
                 )}
@@ -281,14 +281,14 @@ export function DashboardCharts() {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base font-bold bangla-text">
-                    {tBilingual('Payment Collection by Method', 'পেমেন্ট গেটওয়ে ও ক্যাশ কালেকশন')}
+                    {tBilingual('Collections by Payment Method', 'পেমেন্ট মাধ্যম অনুযায়ী জমা')}
                   </CardTitle>
                   <CardDescription className="text-xs bangla-text">
-                    {tBilingual('bKash, Nagad, Bank deposit & Cash split', 'বিকাশ, নগদ, ব্যাংক ও ক্যাশ কাউন্টার')}
+                    {tBilingual('bKash, Nagad, Bank, and Cash breakdown', 'বিকাশ, নগদ, ব্যাংক ও ক্যাশ কাউন্টার')}
                   </CardDescription>
                 </div>
                 <Badge variant="outline" className="text-xs font-semibold bangla-text">
-                  {tBilingual('All Recorded', 'সর্বমোট প্রাপ্তি')}
+                  {tBilingual('All Received', 'মোট প্রাপ্তি')}
                 </Badge>
               </div>
             </CardHeader>
@@ -323,14 +323,14 @@ export function DashboardCharts() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-bold bangla-text">
-                {tBilingual('Order Stage Distribution', 'অর্ডার ও কাজের পর্যায় বিন্যাস')}
+                {tBilingual('Order Status Distribution', 'কাজের অবস্থা বিন্যাস')}
               </CardTitle>
               <CardDescription className="text-xs bangla-text">
-                {tBilingual('Active jobs by production phase', 'উৎপাদন পর্যায় অনুযায়ী চলমান কাজ')}
+                {tBilingual('Active jobs by production stage', 'উৎপাদন পর্যায় অনুযায়ী চলতি কাজ')}
               </CardDescription>
             </div>
             <span className="text-xs font-bold text-blue-600 bangla-text">
-              {tBilingual(`${activeOrdersCount} Active Orders`, `${num(activeOrdersCount)}টি সক্রিয় অর্ডার`)}
+              {tBilingual(`${activeOrdersCount} Active Orders`, `${num(activeOrdersCount)}টি চলতি অর্ডার`)}
             </span>
           </div>
         </CardHeader>
@@ -382,10 +382,10 @@ export function DashboardCharts() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="text-base font-bold bangla-text">
-                {tBilingual('Active Work by Department', 'বিভাগ অনুযায়ী চলমান কাজের চাপ')}
+                {tBilingual('Active Work by Department', 'বিভাগ অনুযায়ী চলতি কাজ')}
               </CardTitle>
               <CardDescription className="text-xs bangla-text">
-                {tBilingual('Current active job count across departments', 'বিভিন্ন বিভাগের সক্রিয় কাজের সংখ্যা')}
+                {tBilingual('Current active job count across departments', 'বিভিন্ন বিভাগের চলতি কাজের সংখ্যা')}
               </CardDescription>
             </div>
           </div>

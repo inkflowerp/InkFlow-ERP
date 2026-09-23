@@ -23,7 +23,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
     assert.ok(finishingItem, 'Finishing item must be in work section')
     assert.equal(finishingItem.href, '/finishing')
     assert.equal(finishingItem.title, 'Finishing & Fabrication')
-    assert.equal(finishingItem.titleBn, 'ফিনিশিং ও ফেব্রিকেশন')
+    assert.equal(finishingItem.titleBn, 'ফিনিশিং ও তৈরি')
     assert.equal(finishingItem.badge, 'Floor')
   })
 

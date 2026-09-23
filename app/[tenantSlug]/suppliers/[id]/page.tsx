@@ -398,7 +398,7 @@ export default function SupplierProfilePage() {
         <Card className={`p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 border-l-4 ${outstandingDue > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-              {tBilingual('Payable Balance (মহাজনের বাকি)', 'বর্তমান বকেয়া পাওনা')}
+              {tBilingual('Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
             {outstandingDue > 0 ? (
               <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-[10px] font-bold">
@@ -443,22 +443,22 @@ export default function SupplierProfilePage() {
       {/* 5 ENTERPRISE DOMAIN TABS */}
       <div className="flex border-b border-slate-200 dark:border-slate-800 gap-2 overflow-x-auto">
         {[
-          { id: 'prices', labelEn: '🏷️ Material Contract Rates (দর তালিকা)', labelBn: 'দর তালিকা', count: materialPrices.length },
-          { id: 'purchases', labelEn: '📦 Purchase Orders & Inward Deliveries', labelBn: 'ক্রয়াদেশ ও জিআরএন', count: relatedPOs.length },
-          { id: 'payments', labelEn: '💳 Payment Vouchers & Disbursements', labelBn: 'পেমেন্ট ভাউচার' },
-          { id: 'ledger', labelEn: '📑 Financial Statement & Ledger', labelBn: 'হিসাব লেজার' },
-          { id: 'company_info', labelEn: '🏢 Corporate, Legal & Bank Details', labelBn: 'ব্যাংক ও আইনগত তথ্য' },
+          { id: 'prices', labelEn: '🏷️ Material Contract Rates', labelBn: '🏷️ কাঁচামাল চুক্তি দর', count: materialPrices.length },
+          { id: 'purchases', labelEn: '📦 Purchase Orders & Inward Deliveries', labelBn: '📦 ক্রয়াদেশ ও ডেলিভারি', count: relatedPOs.length },
+          { id: 'payments', labelEn: '💳 Payment Vouchers & Disbursements', labelBn: '💳 পেমেন্ট ভাউচার ও পরিশোধ' },
+          { id: 'ledger', labelEn: '📑 Financial Statement & Ledger', labelBn: '📑 আর্থিক বিবরণী ও খতিয়ান' },
+          { id: 'company_info', labelEn: '🏢 Corporate, Legal & Bank Details', labelBn: '🏢 ব্যাংক ও আইনি তথ্য' },
         ].map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as TabKey)}
-            className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer ${
+            className={`px-4 py-2.5 text-xs font-bold border-b-2 -mb-px whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer bangla-text ${
               activeTab === tab.id
                 ? 'border-teal-600 text-teal-700 dark:border-teal-400 dark:text-teal-300 bg-teal-50/50 dark:bg-teal-950/30 rounded-t-lg'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/40'
             }`}
           >
-            <span>{tab.labelEn}</span>
+            <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
               <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
                 {tab.count}
@@ -507,8 +507,8 @@ export default function SupplierProfilePage() {
                     <th className="py-3 px-4">{tBilingual('Material Specification & Brand', 'মেটেরিয়াল বিবরণ')}</th>
                     <th className="py-3 px-4">{tBilingual('Category', 'ক্যাটাগরি')}</th>
                     <th className="py-3 px-4">{tBilingual('UOM', 'একক')}</th>
-                    <th className="py-3 px-4">{tBilingual('Contract Rate (৳ BDT)', 'চুক্তি দর (৳)')}</th>
-                    <th className="py-3 px-4">{tBilingual('MOQ & Lead Time', 'MOQ ও সময়')}</th>
+                    <th className="py-3 px-4">{tBilingual('Contract Rate', 'চুক্তি দর')}</th>
+                    <th className="py-3 px-4">{tBilingual('MOQ & Lead Time', 'নূন্যতম অর্ডার ও সময়')}</th>
                     <th className="py-3 px-4">{tBilingual('Effective Date', 'কার্যকর তারিখ')}</th>
                     <th className="py-3 px-4">{tBilingual('Remarks / Terms', 'মন্তব্য')}</th>
                     <th className="py-3 px-4 text-right">{tBilingual('Actions', 'অ্যাকশন')}</th>
@@ -684,7 +684,7 @@ export default function SupplierProfilePage() {
                   <tr>
                     <th className="py-3 px-4">{tBilingual('Voucher No', 'ভাউচার নং')}</th>
                     <th className="py-3 px-4">{tBilingual('Disbursement Channel', 'পেমেন্টের মাধ্যম')}</th>
-                    <th className="py-3 px-4">{tBilingual('Amount Paid (৳)', 'পরিশোধের পরিমাণ')}</th>
+                    <th className="py-3 px-4">{tBilingual('Amount Paid', 'পরিশোধের পরিমাণ')}</th>
                     <th className="py-3 px-4">{tBilingual('Date', 'তারিখ')}</th>
                     <th className="py-3 px-4">{tBilingual('Bank / Cheque Ref', 'চেক বা ব্যাংক রেফারেন্স')}</th>
                     <th className="py-3 px-4">{tBilingual('Status', 'স্ট্যাটাস')}</th>

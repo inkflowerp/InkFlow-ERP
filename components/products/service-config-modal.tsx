@@ -82,40 +82,40 @@ interface ServiceConfigModalProps {
   installationMasterOptions?: Array<{ id: string; name: string; pricing_method: string; selling_price: number; cost: number }>
 }
 
-export const COMMON_SELLING_UNITS: { value: string; label: string; defaultMethod: PricingMethod }[] = [
-  { value: 'sft', label: 'Square Feet (sft / sqft) — বর্গফুট', defaultMethod: 'per_area' },
-  { value: 'pcs', label: 'Piece (pcs) — পিস', defaultMethod: 'per_piece' },
-  { value: 'rft', label: 'Running Feet (rft) — রানিং ফিট', defaultMethod: 'per_length' },
-  { value: 'sheet', label: 'Sheet — শীট', defaultMethod: 'per_piece' },
-  { value: 'meter', label: 'Meter (m) — মিটার', defaultMethod: 'per_length' },
-  { value: 'sqm', label: 'Square Meter (sqm) — বর্গমিটার', defaultMethod: 'per_area' },
-  { value: 'inch', label: 'Inch (in) — ইঞ্চি', defaultMethod: 'per_length' },
-  { value: 'set', label: 'Set — সেট', defaultMethod: 'per_piece' },
-  { value: 'job', label: 'Job / Project — এককালীন চার্জ', defaultMethod: 'per_job' },
-  { value: 'hour', label: 'Hour — ঘণ্টা', defaultMethod: 'per_hour' },
+export const COMMON_SELLING_UNITS: { value: string; label: string; label_bn: string; defaultMethod: PricingMethod }[] = [
+  { value: 'sft', label: 'Square Feet (sft / sqft)', label_bn: 'বর্গফুট (স্কয়ার ফিট)', defaultMethod: 'per_area' },
+  { value: 'pcs', label: 'Piece (pcs)', label_bn: 'পিস (সংখ্যা)', defaultMethod: 'per_piece' },
+  { value: 'rft', label: 'Running Feet (rft)', label_bn: 'রানিং ফিট (দৈর্ঘ্য)', defaultMethod: 'per_length' },
+  { value: 'sheet', label: 'Sheet', label_bn: 'শীট', defaultMethod: 'per_piece' },
+  { value: 'meter', label: 'Meter (m)', label_bn: 'মিটার', defaultMethod: 'per_length' },
+  { value: 'sqm', label: 'Square Meter (sqm)', label_bn: 'বর্গমিটার', defaultMethod: 'per_area' },
+  { value: 'inch', label: 'Inch (in)', label_bn: 'ইঞ্চি', defaultMethod: 'per_length' },
+  { value: 'set', label: 'Set', label_bn: 'সেট', defaultMethod: 'per_piece' },
+  { value: 'job', label: 'Job / Project', label_bn: 'এককালীন কাজ বা প্রজেক্ট', defaultMethod: 'per_job' },
+  { value: 'hour', label: 'Hour', label_bn: 'ঘণ্টা', defaultMethod: 'per_hour' },
 ]
 
-export const COMMON_BOM_UNITS: { value: string; label: string }[] = [
-  { value: 'sft', label: 'sft (Square Feet — বর্গফুট)' },
-  { value: 'sqft', label: 'sqft (Square Feet)' },
-  { value: 'sheet', label: 'sheet (Sheet — সম্পূর্ণ শীট)' },
-  { value: 'pcs', label: 'pcs (Pieces — পিস)' },
-  { value: 'piece', label: 'piece (Piece — পিস)' },
-  { value: 'rft', label: 'rft (Running Feet — রানিং ফিট)' },
-  { value: 'meter', label: 'meter (Meter — মিটার)' },
-  { value: 'inch', label: 'inch (Inch — ইঞ্চি)' },
-  { value: 'roll', label: 'roll (Roll — রোল)' },
-  { value: 'kg', label: 'kg (Kilogram — কেজি)' },
-  { value: 'gm', label: 'gm (Gram — গ্রাম)' },
-  { value: 'liter', label: 'liter (Liter — লিটার)' },
-  { value: 'ml', label: 'ml (Milliliter — মিলি)' },
-  { value: 'bottle', label: 'bottle (Bottle — বোতল)' },
-  { value: 'can', label: 'can (Can — ক্যান)' },
-  { value: 'box', label: 'box (Box — বক্স)' },
-  { value: 'pack', label: 'pack (Pack — প্যাকেট)' },
-  { value: 'set', label: 'set (Set — সেট)' },
-  { value: 'sqm', label: 'sqm (Square Meter — বর্গমিটার)' },
-  { value: 'job', label: 'job (Job / Flat — এককালীন)' },
+export const COMMON_BOM_UNITS: { value: string; label: string; label_bn: string }[] = [
+  { value: 'sft', label: 'sft (Square Feet)', label_bn: 'বর্গফুট (স্কয়ার ফিট)' },
+  { value: 'sqft', label: 'sqft (Square Feet)', label_bn: 'বর্গফুট' },
+  { value: 'sheet', label: 'sheet (Sheet)', label_bn: 'সম্পূর্ণ শীট' },
+  { value: 'pcs', label: 'pcs (Pieces)', label_bn: 'পিস' },
+  { value: 'piece', label: 'piece (Piece)', label_bn: 'পিস' },
+  { value: 'rft', label: 'rft (Running Feet)', label_bn: 'রানিং ফিট' },
+  { value: 'meter', label: 'meter (Meter)', label_bn: 'মিটার' },
+  { value: 'inch', label: 'inch (Inch)', label_bn: 'ইঞ্চি' },
+  { value: 'roll', label: 'roll (Roll)', label_bn: 'রোল' },
+  { value: 'kg', label: 'kg (Kilogram)', label_bn: 'কেজি' },
+  { value: 'gm', label: 'gm (Gram)', label_bn: 'গ্রাম' },
+  { value: 'liter', label: 'liter (Liter)', label_bn: 'লিটার' },
+  { value: 'ml', label: 'ml (Milliliter)', label_bn: 'মিলি' },
+  { value: 'bottle', label: 'bottle (Bottle)', label_bn: 'বোতল' },
+  { value: 'can', label: 'can (Can)', label_bn: 'ক্যান' },
+  { value: 'box', label: 'box (Box)', label_bn: 'বক্স' },
+  { value: 'pack', label: 'pack (Pack)', label_bn: 'প্যাকেট' },
+  { value: 'set', label: 'set (Set)', label_bn: 'সেট' },
+  { value: 'sqm', label: 'sqm (Square Meter)', label_bn: 'বর্গমিটার' },
+  { value: 'job', label: 'job (Job / Flat)', label_bn: 'এককালীন' },
 ]
 
 
@@ -850,17 +850,17 @@ export const DEFAULT_FINISHING_CATEGORIES: Array<{
   defaultCost: number
   defaultMethod: string
 }> = [
-  { id: 'thermal_lamination', name: 'Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)', name_bn: 'থার্মাল ফিল্ম ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 8, defaultCost: 3.5, defaultMethod: 'per_sqft' },
-  { id: 'cold_lamination', name: 'Cold Pressure Lamination (কোল্ড ল্যামিনেশন)', name_bn: 'কোল্ড ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 6, defaultCost: 2.8, defaultMethod: 'per_sqft' },
-  { id: 'floor_anti_slip', name: 'Floor & Vehicle Anti-Slip Overlaminate (ফ্লোর ল্যামিনেশন)', name_bn: 'ফ্লোর অ্যান্টি-স্লিপ ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 15, defaultCost: 7.0, defaultMethod: 'per_sqft' },
-  { id: 'board_mounting', name: 'Hardboard & Foam PVC Board Mounting (বোর্ড পেস্টিং)', name_bn: 'বোর্ড মাউন্টিং ও পেস্টিং', defaultUnit: 'sft', defaultRate: 25, defaultCost: 12.0, defaultMethod: 'per_sqft' },
-  { id: 'eyelets_grommets', name: 'Eyelets & Grommets Punching (আইলেটস পাঞ্চিং)', name_bn: 'আইলেটস পাঞ্চিং', defaultUnit: 'pcs', defaultRate: 5, defaultCost: 1.5, defaultMethod: 'per_piece' },
-  { id: 'edge_hemming', name: 'Edge Hemming & Banner Seaming (ব্যানার সিমিং)', name_bn: 'ব্যানার এজ সিমিং', defaultUnit: 'rft', defaultRate: 3, defaultCost: 1.0, defaultMethod: 'per_rft' },
-  { id: 'die_cutting', name: 'Digital & Knife Contour Die-Cutting (ডাই-কাট)', name_bn: 'কনট্যুর ডাই-কাট', defaultUnit: 'pcs', defaultRate: 12, defaultCost: 4.0, defaultMethod: 'per_piece' },
-  { id: 'spiral_binding', name: 'Spiral & Wiro Book Binding (স্পাইরাল বাইন্ডিং)', name_bn: 'স্পাইরাল বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 40, defaultCost: 18.0, defaultMethod: 'per_piece' },
-  { id: 'perfect_binding', name: 'Hot Melt & Perfect Book Binding (হার্ড কভার বাইন্ডিং)', name_bn: 'পারফেক্ট বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 60, defaultCost: 25.0, defaultMethod: 'per_piece' },
-  { id: 'spot_uv', name: 'Spot UV Varnish Coating (স্পট ইউভি)', name_bn: 'স্পট ইউভি কোটিং', defaultUnit: 'sft', defaultRate: 18, defaultCost: 8.0, defaultMethod: 'per_sqft' },
-  { id: 'foil_stamping', name: 'Hot Foil Stamping (Gold/Silver ফয়েল প্রিন্ট)', name_bn: 'হট ফয়েল স্ট্যাম্পিং', defaultUnit: 'pcs', defaultRate: 20, defaultCost: 8.0, defaultMethod: 'per_piece' },
+  { id: 'thermal_lamination', name: 'Thermal Film Lamination', name_bn: 'থার্মাল ফিল্ম ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 8, defaultCost: 3.5, defaultMethod: 'per_sqft' },
+  { id: 'cold_lamination', name: 'Cold Pressure Lamination', name_bn: 'কোল্ড ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 6, defaultCost: 2.8, defaultMethod: 'per_sqft' },
+  { id: 'floor_anti_slip', name: 'Floor & Vehicle Anti-Slip Overlaminate', name_bn: 'ফ্লোর অ্যান্টি-স্লিপ ল্যামিনেশন', defaultUnit: 'sft', defaultRate: 15, defaultCost: 7.0, defaultMethod: 'per_sqft' },
+  { id: 'board_mounting', name: 'Hardboard & Foam PVC Board Mounting', name_bn: 'বোর্ড মাউন্টিং ও পেস্টিং', defaultUnit: 'sft', defaultRate: 25, defaultCost: 12.0, defaultMethod: 'per_sqft' },
+  { id: 'eyelets_grommets', name: 'Eyelets & Grommets Punching', name_bn: 'আইলেটস পাঞ্চিং', defaultUnit: 'pcs', defaultRate: 5, defaultCost: 1.5, defaultMethod: 'per_piece' },
+  { id: 'edge_hemming', name: 'Edge Hemming & Banner Seaming', name_bn: 'ব্যানার এজ সিমিং', defaultUnit: 'rft', defaultRate: 3, defaultCost: 1.0, defaultMethod: 'per_rft' },
+  { id: 'die_cutting', name: 'Digital & Knife Contour Die-Cutting', name_bn: 'কনট্যুর ডাই-কাট', defaultUnit: 'pcs', defaultRate: 12, defaultCost: 4.0, defaultMethod: 'per_piece' },
+  { id: 'spiral_binding', name: 'Spiral & Wiro Book Binding', name_bn: 'স্পাইরাল বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 40, defaultCost: 18.0, defaultMethod: 'per_piece' },
+  { id: 'perfect_binding', name: 'Hot Melt & Perfect Book Binding', name_bn: 'পারফেক্ট বুক বাইন্ডিং', defaultUnit: 'pcs', defaultRate: 60, defaultCost: 25.0, defaultMethod: 'per_piece' },
+  { id: 'spot_uv', name: 'Spot UV Varnish Coating', name_bn: 'স্পট ইউভি কোটিং', defaultUnit: 'sft', defaultRate: 18, defaultCost: 8.0, defaultMethod: 'per_sqft' },
+  { id: 'foil_stamping', name: 'Hot Foil Stamping', name_bn: 'হট ফয়েল স্ট্যাম্পিং', defaultUnit: 'pcs', defaultRate: 20, defaultCost: 8.0, defaultMethod: 'per_piece' },
 ]
 
 export const LAMINATION_MICRON_PRESETS = [
@@ -882,12 +882,12 @@ export const DEFAULT_PRODUCTION_CATEGORIES: Array<{
   defaultDepth: string
   defaultLighting: string
 }> = [
-  { id: 'signage_fabrication', name: 'Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)', name_bn: 'সাইনবোর্ড ও মেটাল ফ্রেম স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: '1" MS Square Box Pipe (20 gauge)', defaultDepth: '2 inch', defaultLighting: 'none' },
-  { id: 'acrylic_3d_letters', name: '3D Acrylic, SS & Neon Letters (এক্রিলিক ও ৩ডি নিয়ন লেটার)', name_bn: 'এক্রিলিক ও ৩ডি নিয়ন লেটার', defaultUnit: 'inch', defaultMethod: 'per_length', defaultFrame: 'SS 304 Mirror Gold/Silver Profile', defaultDepth: '2 inch', defaultLighting: 'led_backlit' },
-  { id: 'lightbox_led', name: 'LED Backlit & Slim Lightboxes (লাইটবক্স ও এলইডি ফ্রেম)', name_bn: 'লাইটবক্স ও এলইডি ডিসপ্লে ফ্রেম', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Aluminum Profile Snap Frame', defaultDepth: '4 inch', defaultLighting: 'led_backlit' },
-  { id: 'cnc_wood_fabrication', name: 'CNC Router & Laser Engraving (সিএনসি ও লেজার কাটিং/খোদাই)', name_bn: 'সিএনসি ও লেজার কাটিং/খোদাই', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Frameless ACP/MDF Backing', defaultDepth: '1 inch', defaultLighting: 'none' },
-  { id: 'display_kiosks', name: 'POS Displays, Kiosks & Gondolas (ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ)', name_bn: 'ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultFrame: '1.5" Heavy MS Angle Frame', defaultDepth: 'Custom Depth', defaultLighting: 'led_edgelit' },
-  { id: 'event_backdrops', name: 'Event Staging & Truss Structures (ইভেন্ট ব্যাকড্রপ ও স্টেজ)', name_bn: 'ইভেন্ট ব্যাকড্রপ ও স্টেজ স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Heavy Truss & Pipe Structure', defaultDepth: '3 inch', defaultLighting: 'spotlight' },
+  { id: 'signage_fabrication', name: 'Signboard & Metal Frame Fabrication', name_bn: 'সাইনবোর্ড ও মেটাল ফ্রেম স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: '1" MS Square Box Pipe (20 gauge)', defaultDepth: '2 inch', defaultLighting: 'none' },
+  { id: 'acrylic_3d_letters', name: '3D Acrylic, SS & Neon Letters', name_bn: 'এক্রিলিক ও ৩ডি নিয়ন লেটার', defaultUnit: 'inch', defaultMethod: 'per_length', defaultFrame: 'SS 304 Mirror Gold/Silver Profile', defaultDepth: '2 inch', defaultLighting: 'led_backlit' },
+  { id: 'lightbox_led', name: 'LED Backlit & Slim Lightboxes', name_bn: 'লাইটবক্স ও এলইডি ডিসপ্লে ফ্রেম', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Aluminum Profile Snap Frame', defaultDepth: '4 inch', defaultLighting: 'led_backlit' },
+  { id: 'cnc_wood_fabrication', name: 'CNC Router & Laser Engraving', name_bn: 'সিএনসি ও লেজার কাটিং বা খোদাই', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Frameless ACP/MDF Backing', defaultDepth: '1 inch', defaultLighting: 'none' },
+  { id: 'display_kiosks', name: 'POS Displays, Kiosks & Gondolas', name_bn: 'ডিসপ্লে কিয়স্ক ও পিওএসএম বুথ', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultFrame: '1.5" Heavy MS Angle Frame', defaultDepth: 'Custom Depth', defaultLighting: 'led_edgelit' },
+  { id: 'event_backdrops', name: 'Event Staging & Truss Structures', name_bn: 'ইভেন্ট ব্যাকড্রপ ও স্টেজ স্ট্রাকচার', defaultUnit: 'sft', defaultMethod: 'per_area', defaultFrame: 'Heavy Truss & Pipe Structure', defaultDepth: '3 inch', defaultLighting: 'spotlight' },
 ]
 
 export const STRUCTURE_FRAME_PRESETS = [
@@ -910,11 +910,11 @@ export const FRAME_DEPTH_PRESETS = [
 ]
 
 export const LIGHTING_TYPE_PRESETS = [
-  { label: 'Non-lit (আলোবিহীন সাধারণ স্ট্রাকচার)', value: 'none' },
-  { label: 'LED Backlit Injection Modules (পিছন থেকে সমান্তরাল আলো)', value: 'led_backlit' },
-  { label: 'LED Edge-lit Perimeter Strip (চারপাশ থেকে এজ-লাইট)', value: 'led_edgelit' },
-  { label: 'Flexible Silicone Neon Glow (সিলিকন নিয়ন ফ্লেক্স)', value: 'neon_flex' },
-  { label: 'Frontlit Flood / Spot Light Arms (সামনে থেকে ফ্লাডলাইট)', value: 'spotlight' },
+  { label: 'Non-lit', label_bn: 'আলোবিহীন সাধারণ স্ট্রাকচার', value: 'none' },
+  { label: 'LED Backlit Injection Modules', label_bn: 'পিছন থেকে সমান্তরাল আলো', value: 'led_backlit' },
+  { label: 'LED Edge-lit Perimeter Strip', label_bn: 'চারপাশ থেকে এজ-লাইট', value: 'led_edgelit' },
+  { label: 'Flexible Silicone Neon Glow', label_bn: 'সিলিকন নিয়ন ফ্লেক্স', value: 'neon_flex' },
+  { label: 'Frontlit Flood / Spot Light Arms', label_bn: 'সামনে থেকে ফ্লাডলাইট', value: 'spotlight' },
 ]
 
 export const FABRICATION_METHOD_PRESETS = [
@@ -934,17 +934,17 @@ export const DEFAULT_INSTALLATION_CATEGORIES: Array<{
   defaultHeight: string
   defaultCrew: number
 }> = [
-  { id: 'site_pasting', name: 'Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)', name_bn: 'গ্লাস স্টিকার ও ওয়াল পেস্টিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'ground', defaultCrew: 2 },
-  { id: 'billboard_erection', name: 'Rooftop Billboard & Unipole Fitting (বিলবোর্ড স্থাপন)', name_bn: 'বিলবোর্ড ও ইউনিপোল স্থাপন', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'high_elevation', defaultCrew: 4 },
-  { id: 'signboard_installation', name: 'Shopfront & Fascia Sign Fitting (সাইনবোর্ড ফিটিং)', name_bn: 'সাইনবোর্ড ও সাইন ফিটিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'fascia_mid', defaultCrew: 2 },
-  { id: 'vehicle_branding', name: 'Vehicle Branding & Fleet Wrapping (গাড়ি ব্র্যান্ডিং)', name_bn: 'গাড়ি ব্র্যান্ডিং ও র‍্যাপিং ফিটিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 2 },
-  { id: 'exhibition_setup', name: 'Stall Fabrication & Event Setup (মেলা ও স্টল সেটআপ)', name_bn: 'মেলা ও এক্সিবিশন সেটআপ', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 3 },
+  { id: 'site_pasting', name: 'Glass & Wall Vinyl Graphics Pasting', name_bn: 'গ্লাস স্টিকার ও ওয়াল পেস্টিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'ground', defaultCrew: 2 },
+  { id: 'billboard_erection', name: 'Rooftop Billboard & Unipole Fitting', name_bn: 'বিলবোর্ড ও ইউনিপোল স্থাপন', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'high_elevation', defaultCrew: 4 },
+  { id: 'signboard_installation', name: 'Shopfront & Fascia Sign Fitting', name_bn: 'সাইনবোর্ড ও সাইন ফিটিং', defaultUnit: 'sft', defaultMethod: 'per_area', defaultHeight: 'fascia_mid', defaultCrew: 2 },
+  { id: 'vehicle_branding', name: 'Vehicle Branding & Fleet Wrapping', name_bn: 'গাড়ি ব্র্যান্ডিং ও র‍্যাপিং ফিটিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 2 },
+  { id: 'exhibition_setup', name: 'Stall Fabrication & Event Setup', name_bn: 'মেলা ও এক্সিবিশন সেটআপ', defaultUnit: 'job', defaultMethod: 'per_job', defaultHeight: 'ground', defaultCrew: 3 },
 ]
 
 export const HEIGHT_TIER_PRESETS = [
-  { label: 'Ground Level / Indoor (0–10 ft) — সাধারণ মই', value: 'ground' },
-  { label: 'Shopfront / Fascia 1st Floor (10–20 ft) — উঁচু মই', value: 'fascia_mid' },
-  { label: 'Rooftop / High Elevation (> 20 ft) — স্ক্যাফোল্ডিং ও রশি', value: 'high_elevation' },
+  { label: 'Ground Level / Indoor (0–10 ft)', label_bn: 'নিচতলা বা ঘরের ভেতর (০–১০ ফুট)', value: 'ground' },
+  { label: 'Shopfront / Fascia 1st Floor (10–20 ft)', label_bn: 'দোকানের সামনে বা ১ম তলা (১০–২০ ফুট)', value: 'fascia_mid' },
+  { label: 'Rooftop / High Elevation (> 20 ft)', label_bn: 'ছাদ বা উঁচু স্থান (২০ ফুটের বেশি)', value: 'high_elevation' },
 ]
 
 export const DEFAULT_DELIVERY_CATEGORIES: Array<{
@@ -955,17 +955,17 @@ export const DEFAULT_DELIVERY_CATEGORIES: Array<{
   defaultMethod: PricingMethod
   defaultVehicle: string
 }> = [
-  { id: 'local_city_delivery', name: 'Local City Van / Bike Delivery (সিটি ডেলিভারি)', name_bn: 'সিটি ডেলিভারি ও পরিবহন', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'pickup_van' },
-  { id: 'freight_transport', name: 'Inter-District Cargo & Freight Transport (আন্তঃজেলা কুরিয়ার)', name_bn: 'আন্তঃজেলা কার্গো ও কুরিয়ার', defaultUnit: 'job', defaultMethod: 'per_job', defaultVehicle: 'covered_van' },
-  { id: 'express_delivery', name: 'Priority Express Delivery (জরুরি এক্সপ্রেস ডেলিভারি)', name_bn: 'জরুরি এক্সপ্রেস ডেলিভারি', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'bike_courier' },
-  { id: 'warehouse_handling', name: 'Packaging, Crating & Dispatch Handling (প্যাকিং ও হ্যান্ডলিং)', name_bn: 'প্যাকেজিং ও ওয়্যারহাউস হ্যান্ডলিং', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultVehicle: 'pickup_van' },
+  { id: 'local_city_delivery', name: 'Local City Van / Bike Delivery', name_bn: 'সিটি ডেলিভারি ও পরিবহন', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'pickup_van' },
+  { id: 'freight_transport', name: 'Inter-District Cargo & Freight Transport', name_bn: 'আন্তঃজেলা কার্গো ও কুরিয়ার', defaultUnit: 'job', defaultMethod: 'per_job', defaultVehicle: 'covered_van' },
+  { id: 'express_delivery', name: 'Priority Express Delivery', name_bn: 'জরুরি এক্সপ্রেস ডেলিভারি', defaultUnit: 'trip', defaultMethod: 'per_job', defaultVehicle: 'bike_courier' },
+  { id: 'warehouse_handling', name: 'Packaging, Crating & Dispatch Handling', name_bn: 'প্যাকেজিং ও ওয়্যারহাউস হ্যান্ডলিং', defaultUnit: 'pcs', defaultMethod: 'per_piece', defaultVehicle: 'pickup_van' },
 ]
 
 export const VEHICLE_TYPE_PRESETS = [
-  { label: 'Pickup Van / 1-Ton Truck (পিকআপ ভ্যান / ১-টন ট্রাক)', value: 'pickup_van' },
-  { label: 'Covered Van (কাভার্ড ভ্যান)', value: 'covered_van' },
-  { label: 'Motorbike / Rider Courier (মোটরসাইকেল কুরিয়ার)', value: 'bike_courier' },
-  { label: 'CNG Auto Rickshaw (সিএনজি)', value: 'cng_auto' },
+  { label: 'Pickup Van / 1-Ton Truck', label_bn: 'পিকআপ ভ্যান বা ১-টন ট্রাক', value: 'pickup_van' },
+  { label: 'Covered Van', label_bn: 'কাভার্ড ভ্যান', value: 'covered_van' },
+  { label: 'Motorbike / Rider Courier', label_bn: 'মোটরসাইকেল কুরিয়ার', value: 'bike_courier' },
+  { label: 'CNG Auto Rickshaw', label_bn: 'সিএনজি অটো রিকশা', value: 'cng_auto' },
 ]
 
 export const DEFAULT_GENERAL_CATEGORIES: Array<{
@@ -976,9 +976,9 @@ export const DEFAULT_GENERAL_CATEGORIES: Array<{
   defaultMethod: PricingMethod
   defaultFormat: string
 }> = [
-  { id: 'graphic_design', name: 'Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)', name_bn: 'গ্রাফিক ডিজাইন ও প্রি-প্রেস সার্ভিস', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'vector_ai_pdf' },
-  { id: 'technical_survey', name: 'Site Measurement & Feasibility Survey (সাইট ভিজিট)', name_bn: 'সাইট ভিজিট ও মেজারমেন্ট', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'site_survey_cad' },
-  { id: 'maintenance_repair', name: 'Signboard Maintenance & LED Repair (সাইনবোর্ড মেরামত)', name_bn: 'সাইনবোর্ড মেরামত ও সার্ভিসিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'on_site_repair' },
+  { id: 'graphic_design', name: 'Graphic Design & Pre-Press Color Separation', name_bn: 'গ্রাফিক ডিজাইন ও প্রি-প্রেস সার্ভিস', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'vector_ai_pdf' },
+  { id: 'technical_survey', name: 'Site Measurement & Feasibility Survey', name_bn: 'সাইট ভিজিট ও মেজারমেন্ট', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'site_survey_cad' },
+  { id: 'maintenance_repair', name: 'Signboard Maintenance & LED Repair', name_bn: 'সাইনবোর্ড মেরামত ও সার্ভিসিং', defaultUnit: 'job', defaultMethod: 'per_job', defaultFormat: 'on_site_repair' },
 ]
 
 export const MATERIAL_FILTER_TABS: Array<{
@@ -1074,14 +1074,14 @@ export function ServiceConfigModal({
   const [inkCost, setInkCost] = useState<number | ''>(3.36)
 
   // 1.2 Finishing & Lamination Configuration (when serviceType === 'finishing')
-  const [finishingCategory, setFinishingCategory] = useState<string>('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
+  const [finishingCategory, setFinishingCategory] = useState<string>('Thermal Film Lamination')
   const [finishingMaterialId, setFinishingMaterialId] = useState<string>('')
   const [finishingMethod, setFinishingMethod] = useState<string>('Gloss Thermal Lamination')
   const [laminationMicron, setLaminationMicron] = useState<string | number>('32')
   const [laminationType, setLaminationType] = useState<string>('Gloss')
 
   // 1.2.1 Production & Fabrication Configuration (when serviceType === 'production')
-  const [productionCategory, setProductionCategory] = useState<string>('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+  const [productionCategory, setProductionCategory] = useState<string>('Signboard & Metal Frame Fabrication')
   const [productionMaterialId, setProductionMaterialId] = useState<string>('')
   const [structureFrameType, setStructureFrameType] = useState<string>('1" MS Square Box Pipe (20 gauge)')
   const [frameDepth, setFrameDepth] = useState<string>('2 inch')
@@ -1091,20 +1091,20 @@ export function ServiceConfigModal({
   const [fabricationMethod, setFabricationMethod] = useState<string>('Welding & Metal Assembly')
 
   // 1.2.2 Installation Configuration (when serviceType === 'installation')
-  const [installationCategory, setInstallationCategory] = useState<string>('Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+  const [installationCategory, setInstallationCategory] = useState<string>('Glass & Wall Vinyl Graphics Pasting')
   const [installationHardwareId, setInstallationHardwareId] = useState<string>('')
   const [installationHeightTier, setInstallationHeightTier] = useState<string>('ground')
   const [installationCrewSize, setInstallationCrewSize] = useState<number>(2)
   const [safetyEquipmentRequired, setSafetyEquipmentRequired] = useState<boolean>(false)
 
   // 1.2.3 Delivery Configuration (when serviceType === 'delivery')
-  const [deliveryCategory, setDeliveryCategory] = useState<string>('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+  const [deliveryCategory, setDeliveryCategory] = useState<string>('Local City Van / Bike Delivery')
   const [deliveryVehicleType, setDeliveryVehicleType] = useState<string>('pickup_van')
   const [packagingMaterialId, setPackagingMaterialId] = useState<string>('')
   const [deliveryDistanceZone, setDeliveryDistanceZone] = useState<string>('inside_city')
 
   // 1.2.4 General Configuration (when serviceType === 'general')
-  const [generalCategory, setGeneralCategory] = useState<string>('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+  const [generalCategory, setGeneralCategory] = useState<string>('Graphic Design & Pre-Press Color Separation')
   const [deliverableFormat, setDeliverableFormat] = useState<string>('vector_ai_pdf')
   const [turnaroundHours, setTurnaroundHours] = useState<number>(24)
 
@@ -1693,7 +1693,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_piece')
       setPurchaseUnit('pcs')
     } else if (catId === 'signage_fabrication') {
-      setProductionCategory('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+      setProductionCategory('Signboard & Metal Frame Fabrication')
       setStructureFrameType('1" MS Square Box Pipe (20 gauge)')
       setFrameDepth('2 inch')
       setLightingType('none')
@@ -1703,7 +1703,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_area')
       setPurchaseUnit('sheet')
     } else if (catId === 'acrylic_3d_letters') {
-      setProductionCategory('3D Acrylic, SS & Neon Letters (এক্রিলিক ৩ডি লেটার)')
+      setProductionCategory('3D Acrylic, SS & Neon Letters')
       setStructureFrameType('Acrylic 3mm Sheet with 2" Return Edge')
       setFrameDepth('2 inch')
       setLightingType('backlit_led')
@@ -1713,7 +1713,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_length')
       setPurchaseUnit('sheet')
     } else if (catId === 'lightbox_led') {
-      setProductionCategory('LED Backlit & Slim Lightboxes (লাইটবক্স ফ্রেম)')
+      setProductionCategory('LED Backlit & Slim Lightboxes')
       setStructureFrameType('Aluminum Slim Lightbox Extrusion Profile')
       setFrameDepth('4 inch')
       setLightingType('backlit_led')
@@ -1723,7 +1723,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_area')
       setPurchaseUnit('pcs')
     } else if (catId === 'cnc_wood_fabrication') {
-      setProductionCategory('CNC Router & Laser Engraving (সিএনসি ও লেজার)')
+      setProductionCategory('CNC Router & Laser Engraving')
       setStructureFrameType('MDF / Solid Wood / PVC Board')
       setFrameDepth('Flat (2D)')
       setFabricationMethod('CNC 3D Carving & Laser Engraving')
@@ -1732,7 +1732,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_area')
       setPurchaseUnit('sheet')
     } else if (catId === 'display_kiosks') {
-      setProductionCategory('POS Displays, Kiosks & Gondolas (ডিসপ্লে কিয়স্ক)')
+      setProductionCategory('POS Displays, Kiosks & Gondolas')
       setStructureFrameType('Modular MS Frame & Acrylic Trays')
       setFrameDepth('12 inch')
       setFabricationMethod('Metal Welding & Acrylic Fabrication')
@@ -1741,7 +1741,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_piece')
       setPurchaseUnit('pcs')
     } else if (catId === 'event_backdrops') {
-      setProductionCategory('Event Staging & Truss Structures (ইভেন্ট স্টেজ)')
+      setProductionCategory('Event Staging & Truss Structures')
       setStructureFrameType('Heavy Aluminum Truss / MS Box')
       setFrameDepth('6 inch')
       setFabricationMethod('Modular Truss Erection')
@@ -1817,7 +1817,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_piece')
       setPurchaseUnit('sheet')
     } else if (catId === 'site_pasting') {
-      setInstallationCategory('Indoor Wall & Glass Sticker Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+      setInstallationCategory('Indoor Wall & Glass Sticker Pasting')
       setInstallationHeightTier('ground')
       setInstallationCrewSize(2)
       setDefaultDepartment('Site Installation Dept')
@@ -1858,7 +1858,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_area')
       setPurchaseUnit('job')
     } else if (catId === 'local_city_delivery') {
-      setDeliveryCategory('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+      setDeliveryCategory('Local City Van / Bike Delivery')
       setDeliveryVehicleType('pickup_van')
       setDeliveryDistanceZone('inside_city')
       setDefaultDepartment('Logistics & Dispatch Dept')
@@ -1866,7 +1866,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('trip')
     } else if (catId === 'freight_transport') {
-      setDeliveryCategory('Inter-District Courier & Truck Freight (আন্তঃজেলা পরিবহন)')
+      setDeliveryCategory('Inter-District Courier & Truck Freight')
       setDeliveryVehicleType('covered_truck')
       setDeliveryDistanceZone('nationwide')
       setDefaultDepartment('Logistics & Dispatch Dept')
@@ -1874,7 +1874,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('trip')
     } else if (catId === 'express_delivery') {
-      setDeliveryCategory('Express Urgent Delivery (এক্সপ্রেস ডেলিভারি)')
+      setDeliveryCategory('Express Urgent Delivery')
       setDeliveryVehicleType('motorbike')
       setDeliveryDistanceZone('inside_city')
       setDefaultDepartment('Logistics & Dispatch Dept')
@@ -1882,7 +1882,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('trip')
     } else if (catId === 'warehouse_handling') {
-      setDeliveryCategory('Packaging & Crate Boxing (প্যাকেজিং ও ক্রেট)')
+      setDeliveryCategory('Packaging & Crate Boxing')
       setDeliveryVehicleType('pickup_van')
       setDeliveryDistanceZone('inside_city')
       setDefaultDepartment('Logistics & Dispatch Dept')
@@ -1890,7 +1890,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_piece')
       setPurchaseUnit('pcs')
     } else if (catId === 'graphic_design') {
-      setGeneralCategory('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+      setGeneralCategory('Graphic Design & Pre-Press Color Separation')
       setDeliverableFormat('vector_ai_pdf')
       setTurnaroundHours(24)
       setDefaultDepartment('Creative Design Studio')
@@ -1898,7 +1898,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('job')
     } else if (catId === 'technical_survey') {
-      setGeneralCategory('Site Measurement & Laser Survey (সাইট পরিমাপ)')
+      setGeneralCategory('Site Measurement & Laser Survey')
       setDeliverableFormat('site_survey_report')
       setTurnaroundHours(12)
       setDefaultDepartment('Technical Survey Team')
@@ -1906,7 +1906,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('job')
     } else if (catId === 'maintenance_repair') {
-      setGeneralCategory('Signboard Maintenance & LED Repair (রক্ষণাবেক্ষণ)')
+      setGeneralCategory('Signboard Maintenance & LED Repair')
       setDeliverableFormat('onsite_maintenance')
       setTurnaroundHours(48)
       setDefaultDepartment('Field Operations Team')
@@ -1914,7 +1914,7 @@ export function ServiceConfigModal({
       setPricingMethod('per_job')
       setPurchaseUnit('job')
     } else if (catId === 'custom_job_service') {
-      setGeneralCategory('Custom CNC / Laser Job Work (জব ওয়ার্ক)')
+      setGeneralCategory('Custom CNC / Laser Job Work')
       setDeliverableFormat('vector_ai_pdf')
       setTurnaroundHours(24)
       setDefaultDepartment('CNC & Laser Dept')
@@ -2030,7 +2030,7 @@ export function ServiceConfigModal({
       setPrintCategory(loadedPrintCat)
 
       // Finishing category & methods (when serviceType === 'finishing')
-      const loadedFinCat = (initialData as any).finishing_category || cfg.finishing_category || 'Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)'
+      const loadedFinCat = (initialData as any).finishing_category || cfg.finishing_category || 'Thermal Film Lamination'
       setFinishingCategory(loadedFinCat)
       const loadedFinMatId = (initialData as any).finishing_material_id || cfg.finishing_material_id || ''
       setFinishingMaterialId(loadedFinMatId)
@@ -2039,7 +2039,7 @@ export function ServiceConfigModal({
       setLaminationType((initialData as any).lamination_type || cfg.lamination_type || 'Gloss')
 
       // Production & Fabrication (when serviceType === 'production')
-      const loadedProdCat = (initialData as any).production_category || cfg.production_category || 'Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)'
+      const loadedProdCat = (initialData as any).production_category || cfg.production_category || 'Signboard & Metal Frame Fabrication'
       setProductionCategory(loadedProdCat)
       const loadedProdMatId = (initialData as any).production_material_id || cfg.production_material_id || ''
       setProductionMaterialId(loadedProdMatId)
@@ -2051,7 +2051,7 @@ export function ServiceConfigModal({
       setFabricationMethod((initialData as any).fabrication_method || cfg.fabrication_method || 'Welding & Metal Assembly')
 
       // Installation & Fitting (when serviceType === 'installation')
-      const loadedInstCat = (initialData as any).installation_category || cfg.installation_category || 'Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)'
+      const loadedInstCat = (initialData as any).installation_category || cfg.installation_category || 'Glass & Wall Vinyl Graphics Pasting'
       setInstallationCategory(loadedInstCat)
       const loadedInstHwId = (initialData as any).installation_hardware_id || cfg.installation_hardware_id || ''
       setInstallationHardwareId(loadedInstHwId)
@@ -2060,7 +2060,7 @@ export function ServiceConfigModal({
       setSafetyEquipmentRequired(Boolean((initialData as any).safety_equipment_required ?? cfg.safety_equipment_required))
 
       // Delivery & Logistics (when serviceType === 'delivery')
-      const loadedDelCat = (initialData as any).delivery_category || cfg.delivery_category || 'Local City Van / Bike Delivery (সিটি ডেলিভারি)'
+      const loadedDelCat = (initialData as any).delivery_category || cfg.delivery_category || 'Local City Van / Bike Delivery'
       setDeliveryCategory(loadedDelCat)
       setDeliveryVehicleType((initialData as any).delivery_vehicle_type || cfg.delivery_vehicle_type || 'pickup_van')
       const loadedPackMatId = (initialData as any).packaging_material_id || cfg.packaging_material_id || ''
@@ -2068,7 +2068,7 @@ export function ServiceConfigModal({
       setDeliveryDistanceZone((initialData as any).delivery_distance_zone || cfg.delivery_distance_zone || 'inside_city')
 
       // General & Design Services (when serviceType === 'general')
-      const loadedGenCat = (initialData as any).general_category || cfg.general_category || 'Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)'
+      const loadedGenCat = (initialData as any).general_category || cfg.general_category || 'Graphic Design & Pre-Press Color Separation'
       setGeneralCategory(loadedGenCat)
       setDeliverableFormat((initialData as any).deliverable_format || cfg.deliverable_format || 'vector_ai_pdf')
       setTurnaroundHours((initialData as any).turnaround_hours || cfg.turnaround_hours || 24)
@@ -2170,13 +2170,13 @@ export function ServiceConfigModal({
       setIsDeliveryRequired(false)
       setServiceType('printing')
       setPrintCategory('Large Format Eco-Solvent Print')
-      setFinishingCategory('Thermal Film Lamination (গ্লস/ম্যাট থার্মাল)')
+      setFinishingCategory('Thermal Film Lamination')
       setFinishingMaterialId('')
       setFinishingMethod('Gloss Thermal Lamination')
       setLaminationMicron('32')
       setLaminationType('Gloss')
 
-      setProductionCategory('Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)')
+      setProductionCategory('Signboard & Metal Frame Fabrication')
       setProductionMaterialId('')
       setStructureFrameType('1" MS Square Box Pipe (20 gauge)')
       setFrameDepth('2 inch')
@@ -2185,18 +2185,18 @@ export function ServiceConfigModal({
       setPowerSupplyMaterialId('')
       setFabricationMethod('Welding & Metal Assembly')
 
-      setInstallationCategory('Glass & Wall Vinyl Graphics Pasting (গ্লাস ও ওয়াল পেস্টিং)')
+      setInstallationCategory('Glass & Wall Vinyl Graphics Pasting')
       setInstallationHardwareId('')
       setInstallationHeightTier('ground')
       setInstallationCrewSize(2)
       setSafetyEquipmentRequired(false)
 
-      setDeliveryCategory('Local City Van / Bike Delivery (সিটি ডেলিভারি)')
+      setDeliveryCategory('Local City Van / Bike Delivery')
       setDeliveryVehicleType('pickup_van')
       setPackagingMaterialId('')
       setDeliveryDistanceZone('inside_city')
 
-      setGeneralCategory('Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)')
+      setGeneralCategory('Graphic Design & Pre-Press Color Separation')
       setDeliverableFormat('vector_ai_pdf')
       setTurnaroundHours(24)
 
@@ -4410,12 +4410,12 @@ export function ServiceConfigModal({
                         onChange={(e) => setProductionCategory(e.target.value)}
                         className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                       >
-                        <option value='Signboard & Metal Frame Fabrication (এমএস ফ্রেম সাইনবোর্ড)'>Signboard & MS Metal Frame</option>
-                        <option value='3D Acrylic, SS & Neon Letters (এক্রিলিক ৩ডি লেটার)'>3D Acrylic, SS & Neon Letters</option>
-                        <option value='LED Backlit & Slim Lightboxes (লাইটবক্স ফ্রেম)'>LED Backlit & Slim Lightbox</option>
-                        <option value='CNC Router & Laser Engraving (সিএনসি ও লেজার)'>CNC Router & Laser Cutting</option>
-                        <option value='POS Displays, Kiosks & Gondolas (ডিসপ্লে কিয়স্ক)'>POS Displays, Kiosks & Racks</option>
-                        <option value='Event Staging & Truss Structures (ইভেন্ট স্টেজ)'>Event Staging & Truss</option>
+                        <option value='Signboard & Metal Frame Fabrication'>Signboard & MS Metal Frame</option>
+                        <option value='3D Acrylic, SS & Neon Letters'>3D Acrylic, SS & Neon Letters</option>
+                        <option value='LED Backlit & Slim Lightboxes'>LED Backlit & Slim Lightbox</option>
+                        <option value='CNC Router & Laser Engraving'>CNC Router & Laser Cutting</option>
+                        <option value='POS Displays, Kiosks & Gondolas'>POS Displays, Kiosks & Racks</option>
+                        <option value='Event Staging & Truss Structures'>Event Staging & Truss</option>
                       </select>
                     </div>
 
@@ -4780,7 +4780,7 @@ export function ServiceConfigModal({
                         onChange={(e) => setInstallationCategory(e.target.value)}
                         className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                       >
-                        <option value="Indoor Wall & Glass Sticker Pasting (গ্লাস ও ওয়াল পেস্টিং)">Wall & Glass Sticker Pasting</option>
+                        <option value="Indoor Wall & Glass Sticker Pasting">Wall & Glass Sticker Pasting</option>
                         <option value="Rooftop Billboard & Highway Unipole Erection">Rooftop Billboard Erection</option>
                         <option value="Shopfront Fascia & Building Sign Installation">Shopfront Sign Fitting</option>
                         <option value="Commercial Vehicle Full Body Branding & Wrap">Vehicle Branding & Wrap</option>
@@ -4906,10 +4906,10 @@ export function ServiceConfigModal({
                         onChange={(e) => setDeliveryCategory(e.target.value)}
                         className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                       >
-                        <option value="Local City Van / Bike Delivery (সিটি ডেলিভারি)">City Local Delivery</option>
-                        <option value="Inter-District Courier & Truck Freight (আন্তঃজেলা পরিবহন)">Inter-District Freight</option>
-                        <option value="Express Urgent Delivery (এক্সপ্রেস ডেলিভারি)">Express Urgent Jet</option>
-                        <option value="Packaging & Crate Boxing (প্যাকেজিং ও ক্রেট)">Packaging & Crating</option>
+                        <option value="Local City Van / Bike Delivery">City Local Delivery</option>
+                        <option value="Inter-District Courier & Truck Freight">Inter-District Freight</option>
+                        <option value="Express Urgent Delivery">Express Urgent Jet</option>
+                        <option value="Packaging & Crate Boxing">Packaging & Crating</option>
                       </select>
                     </div>
 
@@ -5029,10 +5029,10 @@ export function ServiceConfigModal({
                         onChange={(e) => setGeneralCategory(e.target.value)}
                         className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                       >
-                        <option value="Graphic Design & Pre-Press Color Separation (গ্রাফিক ডিজাইন)">Graphic Design & Pre-Press</option>
-                        <option value="Site Measurement & Laser Survey (সাইট পরিমাপ)">Site Laser Survey</option>
-                        <option value="Signboard Maintenance & LED Repair (রক্ষণাবেক্ষণ)">Maintenance & LED Repair</option>
-                        <option value="Custom CNC / Laser Job Work (জব ওয়ার্ক)">Custom Job Work</option>
+                        <option value="Graphic Design & Pre-Press Color Separation">Graphic Design & Pre-Press</option>
+                        <option value="Site Measurement & Laser Survey">Site Laser Survey</option>
+                        <option value="Signboard Maintenance & LED Repair">Maintenance & LED Repair</option>
+                        <option value="Custom CNC / Laser Job Work">Custom Job Work</option>
                       </select>
                     </div>
 
@@ -6073,12 +6073,12 @@ export function ServiceConfigModal({
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                   {[
-                    { id: 'a-1', name: 'X-Stand Hardware (এক্স-স্ট্যান্ড)', pricing_method: 'per_piece', selling_price: 350, cost: 220, type: 'addon' },
-                    { id: 'a-2', name: 'Roll-up Banner Stand (রোল-আপ স্ট্যান্ড)', pricing_method: 'per_piece', selling_price: 850, cost: 550, type: 'addon' },
-                    { id: 'i-1', name: 'Glass Wall Pasting (গ্লাস স্টিকার পেস্টিং)', pricing_method: 'per_sqft', selling_price: 15, cost: 8, type: 'install' },
-                    { id: 'i-2', name: 'Rooftop Billboard Erection (বিলবোর্ড ফিটিং)', pricing_method: 'per_job', selling_price: 2500, cost: 1200, type: 'install' },
-                    { id: 'i-3', name: 'Shop Front Signboard Fitting (দোকান সাইনবোর্ড)', pricing_method: 'per_sqft', selling_price: 25, cost: 12, type: 'install' },
-                    { id: 'a-3', name: 'Dhaka City Transport / Delivery (ডেলিভারি)', pricing_method: 'fixed', selling_price: 300, cost: 150, type: 'addon' },
+                    { id: 'a-1', name: 'X-Stand Hardware', name_bn: 'এক্স-স্ট্যান্ড হার্ডওয়্যার', pricing_method: 'per_piece', selling_price: 350, cost: 220, type: 'addon' },
+                    { id: 'a-2', name: 'Roll-up Banner Stand', name_bn: 'রোল-আপ ব্যানার স্ট্যান্ড', pricing_method: 'per_piece', selling_price: 850, cost: 550, type: 'addon' },
+                    { id: 'i-1', name: 'Glass Wall Pasting', name_bn: 'গ্লাস স্টিকার পেস্টিং', pricing_method: 'per_sqft', selling_price: 15, cost: 8, type: 'install' },
+                    { id: 'i-2', name: 'Rooftop Billboard Erection', name_bn: 'বিলবোর্ড স্থাপন ফিটিং', pricing_method: 'per_job', selling_price: 2500, cost: 1200, type: 'install' },
+                    { id: 'i-3', name: 'Shop Front Signboard Fitting', name_bn: 'দোকান সাইনবোর্ড ফিটিং', pricing_method: 'per_sqft', selling_price: 25, cost: 12, type: 'install' },
+                    { id: 'a-3', name: 'Dhaka City Transport Delivery', name_bn: 'সিটি ডেলিভারি পরিবহন', pricing_method: 'fixed', selling_price: 300, cost: 150, type: 'addon' },
                   ].map((opt) => {
                     const isSelected = opt.type === 'addon'
                       ? additionalOptions.some((a) => a.name.toLowerCase() === opt.name.toLowerCase())

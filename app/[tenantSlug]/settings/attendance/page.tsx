@@ -1341,7 +1341,7 @@ export default function AttendanceSettingsPage() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="locLat" className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                  {tBilingual('Latitude (°N)', 'অক্ষাংশ (Latitude)')}
+                  {tBilingual('Latitude (°N)', 'অক্ষাংশ')}
                 </Label>
                 <Input
                   id="locLat"
@@ -1357,7 +1357,7 @@ export default function AttendanceSettingsPage() {
 
               <div className="space-y-1">
                 <Label htmlFor="locLng" className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
-                  {tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ (Longitude)')}
+                  {tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}
                 </Label>
                 <Input
                   id="locLng"

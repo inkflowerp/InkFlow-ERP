@@ -32,6 +32,7 @@ export interface QuotationItemRecord {
   quantity: number
   unit: string
   unit_rate: number
+  unit_price?: number
   rate_source?: RateSource
   tier_applied?: string | null
   moq?: number | null
@@ -184,7 +185,8 @@ export interface CreateQuotationItemInput {
   area_sft?: number
   quantity: number
   unit?: string
-  unit_rate: number
+  unit_rate?: number
+  unit_price?: number
   rate_source?: RateSource
   tier_applied?: string | null
   moq?: number | null
@@ -338,7 +340,7 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
     const w = Number(it.width) || 0
     const h = Number(it.height) || 0
     const qty = Math.max(1, Number(it.quantity) || 1)
-    const rate = Math.max(0, Number(it.unit_rate || it.rate || it.price) || 0)
+    const rate = Math.max(0, Number(it.unit_rate !== undefined ? it.unit_rate : (it.unit_price !== undefined ? it.unit_price : (it.rate !== undefined ? it.rate : (it.price !== undefined ? it.price : 0)))) || 0)
     const dimUnit = (it.dimension_unit || it.unit_dimension || 'ft') as 'ft' | 'inch' | 'm'
     let areaSft = Number(it.area_sft || it.area) || 0
     if (areaSft === 0 && w > 0 && h > 0) {
@@ -368,6 +370,7 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
       quantity: qty,
       unit: it.unit || (areaSft > 0 ? 'sft' : 'pcs'),
       unit_rate: rate,
+      unit_price: rate,
       rate_source: it.rate_source || 'default',
       tier_applied: it.tier_applied || null,
       moq: it.moq || null,
@@ -662,10 +665,11 @@ export function deduplicateQuotations(rawList: any[], targetCompanyId?: string):
     if (isPurgedQuotation(norm)) continue
 
     // Tenant isolation check: if targetCompanyId is specified and strict tenant boundary applies
-    if (targetCompanyId && targetCompanyId !== 'c-01' && targetCompanyId !== 'default') {
+    if (targetCompanyId && targetCompanyId !== 'all') {
       const cId = norm.company_id
-      const isAllowed = !cId || cId === targetCompanyId || cId === 'c-01' || cId === 'default' || cId === ''
-      if (!isAllowed) continue
+      if (cId && cId !== targetCompanyId && cId.toLowerCase() !== targetCompanyId.toLowerCase()) {
+        continue
+      }
     }
 
     const qNumKey = norm.quotation_number ? norm.quotation_number.toLowerCase().trim() : null

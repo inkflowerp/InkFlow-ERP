@@ -1,11 +1,11 @@
-import {
+import type {
   ProductionJobRecord,
   ProductionReworkRecord,
   DepartmentKanbanColumn,
   ProductionTaskRecord,
   MachineQueueGroup,
-} from '@/types/production.types'
-import { ProductionRepository } from '@/lib/repositories/production.repository'
+} from '../types/production.types.ts'
+import { ProductionRepository } from '../lib/repositories/production.repository.ts'
 
 export interface ProductionKpiMetrics {
   totalTasks: number

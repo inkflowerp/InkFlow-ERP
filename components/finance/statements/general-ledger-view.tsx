@@ -58,7 +58,7 @@ export function GeneralLedgerView({
             onChange={(e) => onSelectAccount(e.target.value === 'all' ? '' : e.target.value)}
             className="h-9 px-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 flex-1"
           >
-            <option value="all">{tBilingual('All Accounts (সব হিসাব)', 'সব হিসাব')}</option>
+            <option value="all">{tBilingual('All Accounts', 'সব হিসাব')}</option>
             {accounts.map((a) => (
               <option key={a.id} value={a.id}>
                 {a.code} - {a.name}
@@ -83,7 +83,7 @@ export function GeneralLedgerView({
         <CardHeader className="bg-slate-50/50 dark:bg-slate-800/40 pb-3 border-b border-slate-100 dark:border-slate-800">
           <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-blue-600" />
-            <span>{tBilingual('General Ledger Book (খতিয়ান বিবরণী)', 'খতিয়ান বই')}</span>
+            <span>{tBilingual('General Ledger Book', 'খতিয়ান বই')}</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
@@ -104,9 +104,9 @@ export function GeneralLedgerView({
                     <th className="p-3 w-32">{tBilingual('Txn #', 'ভাউচার নং')}</th>
                     <th className="p-3 w-40">{tBilingual('Account', 'হিসাব')}</th>
                     <th className="p-3">{tBilingual('Narration / Memo', 'বিবরণ')}</th>
-                    <th className="p-3 text-right w-28">{tBilingual('Debit (৳)', 'ডেবিট (৳)')}</th>
-                    <th className="p-3 text-right w-28">{tBilingual('Credit (৳)', 'ক্রেডিট (৳)')}</th>
-                    <th className="p-3 text-right w-32">{tBilingual('Running Bal (৳)', 'চলতি ব্যালেন্স')}</th>
+                    <th className="p-3 text-right w-28">{tBilingual('Debit', 'ডেবিট')}</th>
+                    <th className="p-3 text-right w-28">{tBilingual('Credit', 'ক্রেডিট')}</th>
+                    <th className="p-3 text-right w-32">{tBilingual('Running Balance', 'চলতি ব্যালেন্স')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">

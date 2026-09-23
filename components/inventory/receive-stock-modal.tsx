@@ -1717,10 +1717,10 @@ export function ReceiveStockModal({
             <div className="flex items-center gap-2">
               <h2 className="text-base font-black text-slate-900 dark:text-white">
                 {mode === 'po'
-                  ? tBilingual('Goods Receiving Note (GRN) Intake', 'ক্রয় আদেশ অনুযায়ী মাল গ্রহণ (GRN)')
+                  ? tBilingual('Goods Receiving Note Intake', 'ক্রয় আদেশ অনুযায়ী মাল গ্রহণ')
                   : mode === 'opening'
                   ? tBilingual('Record Opening Stock Balance', 'প্রারম্ভিক স্টক ব্যালেন্স এন্ট্রি')
-                  : tBilingual('Direct Stock Intake & Price Intelligence', 'সরাসরি পণ্য/কাঁচামাল গ্রহণ ও মূল্য আপডেট')}
+                  : tBilingual('Direct Stock Intake & Price Intelligence', 'সরাসরি পণ্য বা কাঁচামাল গ্রহণ')}
               </h2>
               <Badge
                 variant="outline"
@@ -1767,7 +1767,7 @@ export function ReceiveStockModal({
                   <ShieldCheck className="h-4 w-4" />
                   <span>
                     {mode === 'po'
-                      ? tBilingual('Post GRN Stock Receipt', 'GRN স্টক গ্রহণ নিশ্চিত করুন')
+                      ? tBilingual('Post Stock Receipt', 'স্টক গ্রহণ নিশ্চিত করুন')
                       : mode === 'opening'
                       ? tBilingual('Save Opening Balance', 'প্রারম্ভিক স্টক সংরক্ষণ করুন')
                       : tBilingual('Confirm Intake & Sync Pricing', 'পণ্য গ্রহণ ও মূল্য আপডেট নিশ্চিত করুন')}
@@ -1809,7 +1809,7 @@ export function ReceiveStockModal({
             )}
           >
             <Truck className="h-4 w-4 shrink-0" />
-            <span className="truncate">{tBilingual('PO Receiving (GRN)', 'PO চালান গ্রহণ')}</span>
+            <span className="truncate">{tBilingual('PO Receiving (GRN)', 'অর্ডার চালান গ্রহণ')}</span>
           </button>
 
           <button

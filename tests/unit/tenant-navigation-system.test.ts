@@ -23,7 +23,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const todaySection = navSections.find((s) => s.id === 'today')!
     assert.ok(todaySection, 'Today section must exist')
     assert.equal(todaySection.title, 'Sales & Commercial')
-    assert.equal(todaySection.titleBn, 'সেলস ও বাণিজ্যিক')
+    assert.equal(todaySection.titleBn, 'বিক্রয় ও বাণিজ্যিক')
     const todayItems = todaySection.items.map((i) => i.key)
     assert.deepEqual(todayItems, ['new-work', 'dashboard', 'quotations', 'orders', 'billing', 'customers'])
 
@@ -31,7 +31,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     const workSection = navSections.find((s) => s.id === 'work')!
     assert.ok(workSection, 'Work section must exist')
     assert.equal(workSection.title, 'Factory & Floor')
-    assert.equal(workSection.titleBn, 'কারখানা ও প্রোডাকশন')
+    assert.equal(workSection.titleBn, 'কারখানা ও উৎপাদন')
     const workItems = workSection.items.map((i) => i.key)
     assert.deepEqual(workItems, ['design', 'production', 'floor_consumption', 'finishing', 'operator', 'machineries', 'delivery'])
 

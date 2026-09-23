@@ -796,7 +796,7 @@ export function SpendMoneyModal({
             {/* Large Hero Amount Input */}
             <div className="sm:col-span-1">
               <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Amount to Pay (৳ BDT)', 'পরিশোধের পরিমাণ (৳)')} <span className="text-rose-500">*</span>
+                {tBilingual('Amount to Pay', 'পরিশোধের পরিমাণ')} <span className="text-rose-500">*</span>
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-lg">

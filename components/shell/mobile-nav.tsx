@@ -358,7 +358,7 @@ export function MobileNav() {
                 </div>
                 {isTrial ? (
                   <Badge suppressHydrationWarning className="bg-amber-500/20 text-amber-800 dark:text-amber-300 text-xs font-bold border-amber-300 shrink-0 px-1.5 py-0.5">
-                    {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d trial`}
+                    {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d trial', 'দিন ট্রায়াল')}`}
                   </Badge>
                 ) : (
                   currentPlan && (
@@ -395,7 +395,7 @@ export function MobileNav() {
                 className="flex items-center justify-center gap-1 p-2 rounded-xl bg-cyan-50/80 dark:bg-cyan-950/40 border border-cyan-200/70 dark:border-cyan-900/60 text-cyan-700 dark:text-cyan-300 text-xs font-semibold hover:bg-cyan-100 transition-colors min-h-[38px] bangla-text"
               >
                 <Printer className="h-3.5 w-3.5 text-cyan-600" />
-                <span>{tBilingual('Press', 'প্রোডাকশন')}</span>
+                <span>{tBilingual('Production', 'কারখানা')}</span>
               </Link>
             </div>
 
@@ -406,7 +406,7 @@ export function MobileNav() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={tBilingual('Search menu & features...', 'মেনু ফিল্টার করুন...')}
+                placeholder={tBilingual('Search menu...', 'মেনু খুঁজুন...')}
                 className="w-full h-9 pl-9 pr-8 rounded-xl bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/40 transition-all bangla-text"
               />
               {searchQuery && (

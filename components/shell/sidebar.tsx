@@ -341,7 +341,7 @@ export function Sidebar() {
                 Ink<span className="text-blue-600">Flow</span>
               </span>
               <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">
-                Print ERP • বাংলা
+                {tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
               </span>
             </div>
           </Link>
@@ -378,7 +378,7 @@ export function Sidebar() {
               type="text"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
-              placeholder="মেনু খুঁজুন... / Quick filter"
+              placeholder={tBilingual('Quick filter...', 'মেনু খুঁজুন...')}
               className="w-full pl-8 pr-7 py-1.5 text-xs rounded-lg border border-slate-200/80 bg-slate-50 text-slate-800 placeholder-slate-400 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-200 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all bangla-text"
             />
             {filterQuery && (
@@ -643,8 +643,7 @@ export function Sidebar() {
         {/* Empty filter search indicator */}
         {processedSections.length === 0 && filterQuery && (
           <div className="text-center py-6 px-3">
-            <p className="text-xs text-slate-400 bangla-text">কোনো মেনু পাওয়া যায়নি</p>
-            <p className="text-2xs text-slate-400 mt-0.5">No matching menu item</p>
+            <p className="text-xs text-slate-400 bangla-text">{tBilingual('No matching menu items found', 'কোনো মেনু পাওয়া যায়নি')}</p>
           </div>
         )}
       </nav>
@@ -663,7 +662,7 @@ export function Sidebar() {
                   </span>
                 </div>
                 <Badge suppressHydrationWarning className="text-2xs bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold border-amber-300 px-1.5 py-0.2 shrink-0">
-                  {timeRemainingInTrial ? timeRemainingInTrial.statusBadgeEn : `${daysRemainingInTrial}d left`}
+                  {timeRemainingInTrial ? (tBilingual(timeRemainingInTrial.statusBadgeEn, timeRemainingInTrial.statusBadgeBn || timeRemainingInTrial.statusBadgeEn)) : `${daysRemainingInTrial} ${tBilingual('d left', 'দিন বাকি')}`}
                 </Badge>
               </div>
 
@@ -745,7 +744,7 @@ export function Sidebar() {
             type="button"
             onClick={() => setResetModalOpen(true)}
             className="h-9 w-9 rounded-xl flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 hover:text-rose-600 transition-colors cursor-pointer"
-            title="Reset All Data (সব ডাটা রিসেট)"
+            title={tBilingual('Reset All Data', 'সব তথ্য রিসেট')}
           >
             <RotateCcw className="h-4 w-4" />
           </button>

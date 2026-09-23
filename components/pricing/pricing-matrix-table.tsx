@@ -75,7 +75,7 @@ export function PricingMatrixTable({
             <div className="relative w-48 sm:w-64">
               <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
               <Input
-                placeholder="Filter by product name, SKU..."
+                placeholder={tBilingual('Filter by product name, SKU...', 'পণ্যের নাম বা কোড দিয়ে খুঁজুন...')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-8 text-xs h-8"
@@ -87,7 +87,7 @@ export function PricingMatrixTable({
               onChange={(e) => setSelectedCategory(e.target.value)}
               className="h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-semibold"
             >
-              <option value="all">All Categories</option>
+              <option value="all">{tBilingual('All Categories', 'সকল ক্যাটাগরি')}</option>
               {categories.map((c) => (
                 <option key={c} value={c}>
                   {c.toUpperCase()}
@@ -104,22 +104,22 @@ export function PricingMatrixTable({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50/90 dark:bg-slate-900/90 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
               <tr>
-                <th className="py-3 px-4 min-w-[200px]">{tBilingual('Product / Print Service', 'পণ্য / সেবা')}</th>
-                <th className="py-3 px-3 text-center">{tBilingual('Base Cost', 'ক্রয় খরচ')}</th>
+                <th className="py-3 px-4 min-w-[200px]">{tBilingual('Product / Service', 'পণ্য / সেবা')}</th>
+                <th className="py-3 px-3 text-center">{tBilingual('Base Cost', 'মূল খরচ')}</th>
                 <th className="py-3 px-3 text-center text-emerald-700 dark:text-emerald-400">
-                  {tBilingual('Retail (খুচরা)', 'খুচরা')}
+                  {tBilingual('Retail', 'খুচরা')}
                 </th>
                 <th className="py-3 px-3 text-center text-blue-700 dark:text-blue-400">
-                  {tBilingual('Reseller (রিসেলার)', 'রিসেলার')}
+                  {tBilingual('Reseller', 'রিসেলার')}
                 </th>
                 <th className="py-3 px-3 text-center text-purple-700 dark:text-purple-400">
-                  {tBilingual('Corporate (কর্পোরেট)', 'কর্পোরেট')}
+                  {tBilingual('Corporate', 'কর্পোরেট')}
                 </th>
                 <th className="py-3 px-3 text-center text-amber-700 dark:text-amber-400">
-                  {tBilingual('Agency (এজেন্সি)', 'এজেন্সি')}
+                  {tBilingual('Agency', 'এজেন্সি')}
                 </th>
                 <th className="py-3 px-3 text-center text-rose-700 dark:text-rose-400">
-                  {tBilingual('Govt (সরকারি)', 'সরকারি')}
+                  {tBilingual('Govt', 'সরকারি')}
                 </th>
                 <th className="py-3 px-4 text-right">{tBilingual('Action', 'অ্যাকশন')}</th>
               </tr>

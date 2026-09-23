@@ -31,8 +31,8 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
 
     const trashItem = settingsSection.items.find((item) => item.key === 'trash')
     assert.ok(trashItem, 'Trash navigation item must exist')
-    assert.strictEqual(trashItem.title, 'Trash / Recycle Bin')
-    assert.strictEqual(trashItem.titleBn, 'ট্র্যাশ ও রিসাইকেল বিন')
+    assert.strictEqual(trashItem.title, 'Recycle Bin')
+    assert.strictEqual(trashItem.titleBn, 'রিসাইকেল বিন')
     assert.strictEqual(trashItem.href, '/trash')
     assert.strictEqual(trashItem.icon, 'Trash2')
   })

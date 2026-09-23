@@ -535,7 +535,7 @@ export default function ReportingAnalyticsPage() {
           }`}
         >
           <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
-          {tBilingual('Sales & Commercial (বিক্রয়)', 'বিক্রয় ও সেলস')}
+          {tBilingual('Sales & Commercial', 'বিক্রয় ও সেলস')}
         </Button>
 
         <Button
@@ -547,7 +547,7 @@ export default function ReportingAnalyticsPage() {
           }`}
         >
           <PrintIcon className="h-3.5 w-3.5 mr-1.5" />
-          {tBilingual('Production & Quality (প্রোডাকশন)', 'প্রোডাকশন')}
+          {tBilingual('Production & Quality', 'প্রোডাকশন ও মান')}
         </Button>
 
         <Button
@@ -559,7 +559,7 @@ export default function ReportingAnalyticsPage() {
           }`}
         >
           <DollarSign className="h-3.5 w-3.5 mr-1.5" />
-          {tBilingual('Financial & Aging (বাকি ও নগদ)', 'বাকি ও নগদ')}
+          {tBilingual('Financial & Aging', 'বাকি ও নগদ হিসাব')}
         </Button>
 
         <Button
@@ -571,7 +571,7 @@ export default function ReportingAnalyticsPage() {
           }`}
         >
           <Package className="h-3.5 w-3.5 mr-1.5" />
-          {tBilingual('Inventory & Valuation (মজুদ)', 'মজুদ হিসাব')}
+          {tBilingual('Inventory & Valuation', 'মজুদ হিসাব')}
         </Button>
 
         <Button
@@ -583,7 +583,7 @@ export default function ReportingAnalyticsPage() {
           }`}
         >
           <Users className="h-3.5 w-3.5 mr-1.5" />
-          {tBilingual('Customer Insights (গ্রাহক)', 'গ্রাহক তথ্য')}
+          {tBilingual('Customer Insights', 'গ্রাহক তথ্য')}
         </Button>
       </div>
 
