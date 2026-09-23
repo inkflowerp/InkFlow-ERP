@@ -146,6 +146,7 @@ import {
   isOutsourceProduct,
   getProductEntityKind,
   getProductEntityKindLabel,
+  getProductConversionRatio,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -570,7 +571,7 @@ export default function ProductsCatalogPage() {
       formData.measurement_type === 'job'
 
     const purchasePrice = isService ? 0 : Number(formData.purchase_price) || 0
-    const conversionRatio = Math.max(0.0001, Number(formData.conversion_ratio) || 1.0)
+    const conversionRatio = getProductConversionRatio(formData)
     const wastage = isService ? 0 : Math.max(0, Number(formData.default_wastage_percentage) || 0)
     const targetMargin = Number(formData.target_margin_percentage) || 35.0
     const currentSellingPrice = Number(formData.selling_price) || 0
@@ -1002,7 +1003,7 @@ export default function ProductsCatalogPage() {
       purchase_unit: p.purchase_unit || 'roll',
       purchase_price: Number(p.purchase_price) || 0,
       selling_unit: p.selling_unit || p.unit || 'sft',
-      conversion_ratio: Number(p.conversion_ratio) || 1.0,
+      conversion_ratio: getProductConversionRatio(p),
       production_unit: p.production_unit || p.unit || 'sft',
       default_wastage_percentage: Number(p.default_wastage_percentage) || 0,
       target_margin_percentage: Number(p.target_margin_percentage) || 35.0,
@@ -1083,7 +1084,7 @@ export default function ProductsCatalogPage() {
           purchase_unit: formData.purchase_unit,
           purchase_price: Number(formData.purchase_price) || 0,
           selling_unit: formData.selling_unit || formData.unit,
-          conversion_ratio: Number(formData.conversion_ratio) || 1.0,
+          conversion_ratio: getProductConversionRatio(formData),
           production_unit: formData.production_unit || formData.unit,
           default_wastage_percentage: Number(formData.default_wastage_percentage) || 0,
           target_margin_percentage: Number(formData.target_margin_percentage) || 35.0,
@@ -3144,7 +3145,7 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-400">
-                            <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}</div>
+                            <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
                               <div className="text-[10px] text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
                             ) : null}
@@ -3565,7 +3566,7 @@ export default function ProductsCatalogPage() {
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
                                 <div className="text-[10px] text-slate-400 font-mono whitespace-nowrap">
-                                  1 {item.purchase_unit || 'roll'} = {item.conversion_ratio || 1} {item.selling_unit || item.unit}
+                                  1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}
                                   {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
                                 </div>
                               </div>
@@ -3757,7 +3758,7 @@ export default function ProductsCatalogPage() {
                       {/* Commercial Economics Badges */}
                       {item.purchase_price && item.purchase_price > 0 ? (
                         <div className="text-xs font-mono text-slate-500 bg-slate-50 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
-                          Buy: <strong>৳{item.purchase_price}/{item.purchase_unit}</strong> (1 {item.purchase_unit} = {item.conversion_ratio} {item.selling_unit})
+                          Buy: <strong>৳{item.purchase_price}/{item.purchase_unit || 'roll'}</strong> (1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit})
                         </div>
                       ) : null}
 

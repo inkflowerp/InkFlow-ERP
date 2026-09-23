@@ -87,6 +87,7 @@ import {
   isOutsourceProduct,
   getProductEntityKind,
   getProductEntityKindLabel,
+  getProductConversionRatio,
 } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
@@ -255,7 +256,7 @@ export default function ProductDetailPage() {
       product.measurement_type === 'job'
 
     const purchasePrice = Number(product.purchase_price) || 0
-    const conversionRatio = Math.max(0.0001, Number(product.conversion_ratio) || 1.0)
+    const conversionRatio = getProductConversionRatio(product)
     const wastage = Number(product.default_wastage_percentage) || 0
     const targetMargin = Number(product.target_margin_percentage) || 35.0
     const sellingPrice = Number(product.selling_price) || 0

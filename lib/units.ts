@@ -1,4 +1,4 @@
-import type { ProductRecord } from '@/types/product.types'
+import type { ProductRecord } from '../types/product.types.ts'
 
 /**
  * InkFlow ERP — Centralized Commercial Unit & Conversion Engine
@@ -714,6 +714,99 @@ export function calculateEffectiveUnitCost(params: {
     rawCostWithoutWastage: Math.round(rawCostWithoutWastage * 10000) / 10000,
     wastageCostPerUnit: Math.round(wastageCostPerUnit * 10000) / 10000,
   }
+}
+
+/**
+ * Resolves the true purchase-to-consumption conversion ratio for a product/material.
+ * Accurately derives:
+ * 1. Roll Media: width_ft * length_ft (e.g. 6ft * 164ft = 984 sft, 10ft * 164ft = 1640 sft, 3ft * 164ft = 492 sft)
+ * 2. Purchase Price & Base Cost ratio: purchase_price / base_cost (e.g. 6888 / 7 = 984)
+ * 3. Rigid Sheets: width_ft * length_ft (e.g. 4 * 8 = 32 sft)
+ * 4. Box / Pack / Packet: pack_quantity (e.g. 1000 pcs)
+ * 5. Explicit conversion_ratio > 1
+ */
+export function getProductConversionRatio(item: any): number {
+  if (!item) return 1
+
+  const rawRatio = Number(item.conversion_ratio ?? (item.material_config as any)?.conversion_ratio)
+  const isRoll = Boolean(
+    item.is_roll ||
+    item.purchase_unit === 'roll' ||
+    (item.category && ['flex', 'vinyl', 'banner', 'sticker', 'pvc', 'canvas', 'mesh', 'roll_media', 'roll'].some((c: string) => String(item.category).toLowerCase().includes(c))) ||
+    (item.name && ['flex', 'vinyl', 'banner', 'sticker', 'pvc', 'canvas', 'mesh', 'sav'].some((c: string) => String(item.name).toLowerCase().includes(c)))
+  )
+
+  // Explicit valid ratio for rolls (>10) or non-rolls (>1)
+  if (rawRatio > 1 && (!isRoll || rawRatio > 10)) {
+    return rawRatio
+  }
+
+  if (isRoll) {
+    // 1. Check explicit roll dimensions
+    const width = Number(
+      item.roll_width_ft ||
+      item.width ||
+      (Array.isArray(item.available_widths_ft) && item.available_widths_ft.length > 0 ? item.available_widths_ft[0] : 0) ||
+      (item.material_config as any)?.roll_width_ft ||
+      (item.material_config as any)?.width ||
+      (Array.isArray((item.material_config as any)?.available_widths_ft) && (item.material_config as any).available_widths_ft.length > 0 ? (item.material_config as any).available_widths_ft[0] : 0) ||
+      (Array.isArray(item.roll_sizes) && item.roll_sizes.length > 0 ? (item.roll_sizes[0].width || item.roll_sizes[0].width_ft) : 0) ||
+      (Array.isArray((item.material_config as any)?.roll_sizes) && (item.material_config as any).roll_sizes.length > 0 ? ((item.material_config as any).roll_sizes[0].width || (item.material_config as any).roll_sizes[0].width_ft) : 0) ||
+      0
+    )
+    const length = Number(
+      item.standard_roll_length_ft ||
+      item.roll_length_ft ||
+      item.length ||
+      (item.material_config as any)?.standard_roll_length_ft ||
+      (item.material_config as any)?.roll_length_ft ||
+      (Array.isArray(item.roll_sizes) && item.roll_sizes.length > 0 ? (item.roll_sizes[0].length || item.roll_sizes[0].length_ft) : 0) ||
+      164
+    )
+
+    if (width > 0 && length > 0) {
+      return Math.round(width * length * 100) / 100
+    }
+
+    // 2. Cost-based derivation: purchase_price / base_cost (e.g. 6888 / 7 = 984)
+    const buyPrice = Number(item.purchase_price || 0)
+    const costPerSft = Number(item.base_cost || item.purchase_price_per_sft || (item.material_config as any)?.purchase_price_per_sft || 0)
+    if (buyPrice > 0 && costPerSft > 0 && buyPrice > costPerSft) {
+      const derived = Math.round(buyPrice / costPerSft)
+      if (derived > 10) return derived
+    }
+
+    if (rawRatio > 1) return rawRatio
+    return 492
+  }
+
+  // Rigid sheet
+  const isSheet = Boolean(
+    item.purchase_unit === 'sheet' ||
+    (item.category && ['rigid_sheet', 'sheet', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some((c: string) => String(item.category).toLowerCase().includes(c))) ||
+    (item.name && ['sheet', 'board', 'acrylic', 'foam'].some((c: string) => String(item.name).toLowerCase().includes(c)))
+  )
+  if (isSheet) {
+    const sw = Number(item.sheet_width_ft || item.width || (item.material_config as any)?.sheet_width_ft || 4)
+    const sl = Number(item.sheet_length_ft || item.length || (item.material_config as any)?.sheet_length_ft || 8)
+    if (sw > 0 && sl > 0) return sw * sl
+    return 32
+  }
+
+  // Box / Pack / Packet
+  const isPack = ['box', 'pack', 'carton', 'packet'].includes(String(item.purchase_unit || '').toLowerCase())
+  if (isPack) {
+    const packQty = Number(
+      item.pack_quantity ||
+      (item.material_config as any)?.pack_quantity ||
+      (item.material_config as any)?.conversion_ratio ||
+      1000
+    )
+    if (packQty > 1) return packQty
+  }
+
+  if (rawRatio > 0) return rawRatio
+  return 1
 }
 
 /**
@@ -2299,6 +2392,7 @@ export function formatFloorPieceDisplay(roll: any): string {
   const tag = roll.roll_code || roll.roll_tag || ''
   return `${matName} Width ${width}ft Available Length ${currentLen.toFixed(2)}ft - 1 Pcs${tag ? ` [${tag}]` : ''}`
 }
+
 
 
 

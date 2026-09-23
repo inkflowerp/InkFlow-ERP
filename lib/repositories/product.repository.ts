@@ -31,6 +31,7 @@ import {
   normalizePricingMethod,
   validateCircularBOM,
   getProductEntityKind,
+  getProductConversionRatio,
   isOutsourceProduct,
   isServiceProduct,
   isReadyProduct,
@@ -147,14 +148,14 @@ export function enrichProductRecord(p: any): ProductRecord {
   }
 
   const purchasePrice = Number(p.purchase_price) || 0
-  const conversionRatio = Math.max(0.0001, Number(p.conversion_ratio) || 1.0)
+  const conversionRatio = getProductConversionRatio(p)
   const defaultWastage = Math.max(0, Number(p.default_wastage_percentage) || 0)
   const targetMargin = p.target_margin_percentage !== undefined && p.target_margin_percentage !== null && !isNaN(Number(p.target_margin_percentage)) ? Number(p.target_margin_percentage) : 35.0
   const minAllowedMargin = p.min_allowed_margin_percent !== undefined && p.min_allowed_margin_percent !== null && !isNaN(Number(p.min_allowed_margin_percent)) ? Number(p.min_allowed_margin_percent) : 15.0
   const sellingPrice = Number(p.selling_price) || 0
 
   let effectiveCost = Number(p.base_cost) || 0
-  if (purchasePrice > 0 && conversionRatio > 0) {
+  if (purchasePrice > 0 && conversionRatio > 0 && (!p.base_cost || Number(p.base_cost) === 0 || Number(p.base_cost) === purchasePrice)) {
     const costCalc = calculateEffectiveUnitCost({
       purchasePrice,
       conversionRatio,
