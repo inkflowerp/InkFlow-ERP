@@ -468,4 +468,207 @@ describe('Inventory & Warehouse Operations 7-Canonical-Attribute Grouping Rule',
       assert.strictEqual(breakdownB.roll_items.length, 0, 'Tenant B stock breakdown must be 0')
     })
   })
+
+  describe('4. Universal 7-Attribute Grouping Across All Material Categories', () => {
+    it('Rigid Sheets: separates distinct sheet sizes and thicknesses into distinct canonical groups', () => {
+      const acrylicSheetMaterial: MaterialRecord = {
+        id: 'mat-acrylic-01',
+        company_id: tenantA,
+        sku: 'ACR-CLR-3MM',
+        name: 'Cast Acrylic Clear 3mm',
+        category: 'acrylic',
+        unit: 'sft',
+        purchase_unit: 'sheet',
+        is_roll: false,
+        current_stock: 560, // 560 sqft total
+        min_stock_level: 5,
+        average_cost: 3200,
+        sheet_sizes: [
+          {
+            id: 'ss-8x4',
+            width_ft: 8,
+            length_ft: 4,
+            purchase_price: 3200,
+            thickness_mm: 3,
+            finishing: 'Clear',
+            quantity: 10, // 10 sheets * 32 sft = 320 sft (val: ৳ 32,000)
+          },
+          {
+            id: 'ss-6x4',
+            width_ft: 6,
+            length_ft: 4,
+            purchase_price: 2400,
+            thickness_mm: 3,
+            finishing: 'Clear',
+            quantity: 10, // 10 sheets * 24 sft = 240 sft (val: ৳ 24,000)
+          },
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const breakdown = getMaterialWarehouseStockBreakdown(acrylicSheetMaterial)
+      assert.strictEqual(breakdown.is_roll, false)
+      assert.strictEqual(breakdown.purchase_unit, 'sheet')
+      assert.strictEqual(breakdown.roll_items.length, 2, 'Must have 2 distinct canonical sheet groups')
+
+      const item8x4 = breakdown.roll_items.find((it) => it.width_ft === 8 && it.length_ft === 4)
+      const item6x4 = breakdown.roll_items.find((it) => it.width_ft === 6 && it.length_ft === 4)
+
+      assert.ok(item8x4, '8ft x 4ft sheet group must exist')
+      assert.ok(item6x4, '6ft x 4ft sheet group must exist')
+
+      assert.notStrictEqual(item8x4.key, item6x4.key, 'Grouping keys must be different')
+      assert.strictEqual(item8x4.roll_count, 10)
+      assert.strictEqual(item8x4.total_sft, 320)
+      assert.strictEqual(item8x4.total_valuation, 32000)
+
+      assert.strictEqual(item6x4.roll_count, 10)
+      assert.strictEqual(item6x4.total_sft, 240)
+      assert.strictEqual(item6x4.total_valuation, 24000)
+
+      // Total valuation invariance
+      assert.strictEqual(breakdown.total_valuation, 56000)
+      assert.strictEqual(breakdown.total_rolls, 0, 'Non-roll material total_rolls is 0')
+      assert.strictEqual(breakdown.roll_items.reduce((s, it) => s + it.roll_count, 0), 20)
+    })
+
+    it('Inks & Liquids: separates CMYK color variants with discrete costs into distinct canonical groups', () => {
+      const ecoSolventInk: MaterialRecord = {
+        id: 'mat-ink-01',
+        company_id: tenantA,
+        sku: 'INK-ECO-SOL',
+        name: 'Eco-Solvent Premium Ink 1L',
+        category: 'ink',
+        unit: 'liter',
+        purchase_unit: 'bottle',
+        is_roll: false,
+        current_stock: 14,
+        min_stock_level: 4,
+        average_cost: 1500,
+        variants: [
+          { id: 'var-c', variant_name: 'Cyan', purchase_price: 1500, quantity: 4 },
+          { id: 'var-m', variant_name: 'Magenta', purchase_price: 1500, quantity: 4 },
+          { id: 'var-y', variant_name: 'Yellow', purchase_price: 1500, quantity: 4 },
+          { id: 'var-k', variant_name: 'Black', purchase_price: 1400, quantity: 2 },
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const breakdown = getMaterialWarehouseStockBreakdown(ecoSolventInk)
+      assert.strictEqual(breakdown.is_roll, false)
+      assert.strictEqual(breakdown.purchase_unit, 'bottle')
+      assert.strictEqual(breakdown.roll_items.length, 4, 'Must have 4 distinct CMYK color groups')
+
+      const blackVar = breakdown.roll_items.find((it) => it.finishing === 'Black')
+      const cyanVar = breakdown.roll_items.find((it) => it.finishing === 'Cyan')
+
+      assert.ok(blackVar)
+      assert.ok(cyanVar)
+      assert.strictEqual(blackVar.purchase_price, 1400)
+      assert.strictEqual(cyanVar.purchase_price, 1500)
+      assert.notStrictEqual(blackVar.key, cyanVar.key)
+
+      // Total valuation: (3 * 4 * 1500) + (2 * 1400) = 18000 + 2800 = 20800
+      assert.strictEqual(breakdown.total_valuation, 20800)
+      assert.strictEqual(breakdown.total_rolls, 0)
+      assert.strictEqual(breakdown.roll_items.reduce((s, it) => s + it.roll_count, 0), 14)
+    })
+
+    it('Hardware: separates dimensional display standee sizes into distinct canonical groups', () => {
+      const standeeMaterial: MaterialRecord = {
+        id: 'mat-standee-01',
+        company_id: tenantA,
+        sku: 'STND-ROLLUP',
+        name: 'Roll-Up Standee Luxury Base',
+        category: 'hardware',
+        unit: 'pcs',
+        purchase_unit: 'pcs',
+        is_roll: false,
+        current_stock: 30,
+        min_stock_level: 5,
+        average_cost: 1200,
+        variants: [
+          { id: 'stnd-2.5x6', variant_name: '2.5ft x 6ft Stand', width_ft: 2.5, length_ft: 6, purchase_price: 1200, quantity: 20 },
+          { id: 'stnd-3x6.5', variant_name: '3ft x 6.5ft Stand', width_ft: 3, length_ft: 6.5, purchase_price: 1450, quantity: 10 },
+        ],
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const breakdown = getMaterialWarehouseStockBreakdown(standeeMaterial)
+      assert.strictEqual(breakdown.roll_items.length, 2)
+
+      const stand2_5 = breakdown.roll_items.find((it) => it.width_ft === 2.5 && it.length_ft === 6)
+      const stand3 = breakdown.roll_items.find((it) => it.width_ft === 3 && it.length_ft === 6.5)
+
+      assert.ok(stand2_5)
+      assert.ok(stand3)
+      assert.strictEqual(stand2_5.roll_count, 20)
+      assert.strictEqual(stand2_5.purchase_price, 1200)
+      assert.strictEqual(stand3.roll_count, 10)
+      assert.strictEqual(stand3.purchase_price, 1450)
+
+      // Total valuation: 20*1200 + 10*1450 = 24000 + 14500 = 38500
+      assert.strictEqual(breakdown.total_valuation, 38500)
+      assert.strictEqual(breakdown.total_rolls, 0)
+      assert.strictEqual(breakdown.roll_items.reduce((s, it) => s + it.roll_count, 0), 30)
+    })
+
+    it('Boxes / Packs: groups pack items with conversion into canonical groups', () => {
+      const eyeletBoxMaterial: MaterialRecord = {
+        id: 'mat-eyelet-01',
+        company_id: tenantA,
+        sku: 'EYE-10MM',
+        name: 'Brass Eyelets #4 10mm',
+        category: 'consumables',
+        unit: 'pcs',
+        purchase_unit: 'box',
+        pack_quantity: 1000,
+        is_roll: false,
+        current_stock: 5000, // 5 boxes
+        min_stock_level: 2000,
+        average_cost: 850, // ৳ 850 / box
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const breakdown = getMaterialWarehouseStockBreakdown(eyeletBoxMaterial)
+      assert.strictEqual(breakdown.roll_items.length, 1)
+      assert.strictEqual(breakdown.purchase_unit, 'box')
+      assert.strictEqual(breakdown.total_rolls, 0) // 0 rolls since it's a box
+      assert.strictEqual(breakdown.roll_items[0].roll_count, 5) // 5 boxes
+      assert.strictEqual(breakdown.cost_per_purchase_unit, 850)
+      assert.strictEqual(breakdown.total_valuation, 4250) // 5 * 850 = 4250
+    })
+
+    it('Single-spec consumables: maintains 7-attribute canonical group invariance', () => {
+      const cutterBladeMaterial: MaterialRecord = {
+        id: 'mat-cutter-01',
+        company_id: tenantA,
+        sku: 'TOOL-BLADE-30D',
+        name: 'Olfa 30 Degree Craft Cutter Blade',
+        category: 'consumables',
+        unit: 'pack',
+        purchase_unit: 'pack',
+        is_roll: false,
+        current_stock: 15,
+        min_stock_level: 3,
+        average_cost: 220,
+        default_finishing: '30-Degree Carbon Steel',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      const breakdown = getMaterialWarehouseStockBreakdown(cutterBladeMaterial)
+      assert.strictEqual(breakdown.roll_items.length, 1)
+      const item = breakdown.roll_items[0]
+      assert.strictEqual(item.roll_count, 15)
+      assert.strictEqual(item.purchase_price, 220)
+      assert.strictEqual(item.finishing, '30-Degree Carbon Steel')
+      assert.ok(item.key?.includes('30-degree carbon steel'))
+      assert.strictEqual(breakdown.total_valuation, 3300)
+    })
+  })
 })

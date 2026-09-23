@@ -2697,35 +2697,189 @@ export function getMaterialWarehouseStockBreakdown(
     rawPurchaseUnit === 'sheet' ||
     ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some(c => matCategory.includes(c))
   ) {
-    const sheetW = Number(material.sheet_width_ft || material.width || 4)
-    const sheetL = Number(material.sheet_length_ft || material.length || 8)
-    const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
-    const isSftCons = ['sft', 'sqft'].includes(consumptionUnit)
-    const totalSheets = isSftCons && sheetArea > 0 ? Math.floor(currentStock / sheetArea) : currentStock
-    const remainderSft = isSftCons && sheetArea > 0 ? currentStock % sheetArea : 0
-    const sheetDisplay = `${totalSheets} ${totalSheets === 1 ? 'Sheet' : 'Sheets'}${remainderSft > 0 ? ` + ${remainderSft} SFT` : ''}`
+    const rawSheetSizes: any[] = (Array.isArray(material.sheet_sizes) && material.sheet_sizes.length > 0)
+      ? material.sheet_sizes
+      : (Array.isArray(material.available_sheet_sizes) && material.available_sheet_sizes.length > 0)
+      ? material.available_sheet_sizes
+      : ((material.material_config as any)?.available_sheet_sizes && Array.isArray((material.material_config as any).available_sheet_sizes) && (material.material_config as any).available_sheet_sizes.length > 0)
+      ? (material.material_config as any).available_sheet_sizes
+      : ((material.material_config as any)?.sheet_sizes && Array.isArray((material.material_config as any).sheet_sizes) && (material.material_config as any).sheet_sizes.length > 0)
+      ? (material.material_config as any).sheet_sizes
+      : ((material.pricing_formula as any)?.available_sheet_sizes && Array.isArray((material.pricing_formula as any).available_sheet_sizes) && (material.pricing_formula as any).available_sheet_sizes.length > 0)
+      ? (material.pricing_formula as any).available_sheet_sizes
+      : ((material.pricing_formula as any)?.material_config?.available_sheet_sizes && Array.isArray((material.pricing_formula as any).material_config.available_sheet_sizes) && (material.pricing_formula as any).material_config.available_sheet_sizes.length > 0)
+      ? (material.pricing_formula as any).material_config.available_sheet_sizes
+      : []
 
-    let costPerSheet = rawCost
-    let costPerCons = rawCost
-    if (isSftCons) {
-      if (rawCost > 150) {
-        costPerSheet = rawCost
-        costPerCons = sheetArea > 0 ? rawCost / sheetArea : rawCost
-      } else {
-        costPerCons = rawCost
-        costPerSheet = rawCost * sheetArea
+    const defaultSheetW = Number(material.sheet_width_ft || material.width || 8)
+    const defaultSheetL = Number(material.sheet_length_ft || material.length || 4)
+    const defaultSheetArea = defaultSheetW * defaultSheetL > 0 ? defaultSheetW * defaultSheetL : 32
+    const isSftCons = ['sft', 'sqft'].includes(consumptionUnit)
+
+    let rollItems: WarehouseRollStockItem[] = []
+    let totalSheets = 0
+    let totalSft = 0
+    let totalValuation = 0
+
+    if (rawSheetSizes.length > 0) {
+      const sheetMap = new Map<string, WarehouseRollStockItem>()
+
+      for (const ss of rawSheetSizes) {
+        let w = defaultSheetW
+        let l = defaultSheetL
+        if (typeof ss === 'string') {
+          const match = ss.match(/(\d+(?:\.\d+)?)\s*(?:ft|')?\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
+          if (match) {
+            w = Number(match[1])
+            l = Number(match[2])
+          }
+        } else if (typeof ss === 'object' && ss !== null) {
+          w = Number(ss.width || ss.width_ft || defaultSheetW)
+          l = Number(ss.length || ss.length_ft || defaultSheetL)
+        }
+        const area = w * l > 0 ? w * l : defaultSheetArea
+        const allowance = typeof ss === 'object' && ss ? Number(ss.allowance_ft || ss.allowance || 0) : 0
+        const explicitCount = typeof ss === 'object' && ss ? Number(ss.quantity ?? ss.stock_qty ?? ss.stock ?? ss.sheet_count ?? ss.count ?? 0) : 0
+
+        let price = typeof ss === 'object' && ss ? Number(ss.purchase_price ?? ss.unit_cost ?? ss.default_supplier_price ?? ss.price ?? 0) : 0
+        if (price <= 0) {
+          if (rawCost > 150) {
+            price = rawCost
+          } else if (rawCost > 0 && isSftCons) {
+            price = rawCost * area
+          } else {
+            price = rawCost
+          }
+        }
+        const gsm = typeof ss === 'object' && ss ? Number(ss.gsm || ss.thickness_mm || material.gsm || material.thickness_mm || 0) : Number(material.gsm || material.thickness_mm || 0)
+        const fin = typeof ss === 'object' && ss ? String(ss.finishing || ss.finish || material.default_finishing || (material as any)?.finish || 'none') : String(material.default_finishing || (material as any)?.finish || 'none')
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allowance,
+          purchase_price: price,
+          gsm,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+
+        sheetMap.set(key, {
+          key,
+          name: attrs.name,
+          width_ft: attrs.width_ft,
+          length_ft: attrs.length_ft,
+          allowance_ft: attrs.allowance_ft,
+          purchase_price: attrs.purchase_price,
+          gsm: attrs.gsm,
+          finishing: attrs.finishing,
+          roll_count: explicitCount,
+          total_sft: explicitCount > 0 ? (isSftCons ? explicitCount * area : explicitCount) : 0,
+          unit_cost: attrs.purchase_price,
+          total_valuation: explicitCount * attrs.purchase_price,
+          label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+        })
       }
+
+      // If explicit counts were not provided per sheet size, distribute currentStock
+      const explicitSum = Array.from(sheetMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
+      if (explicitSum === 0 && currentStock > 0) {
+        const list = Array.from(sheetMap.values())
+        if (list.length === 1) {
+          const it = list[0]
+          const area = it.width_ft * it.length_ft > 0 ? it.width_ft * it.length_ft : defaultSheetArea
+          const count = isSftCons ? Math.floor(currentStock / area) : currentStock
+          it.roll_count = Math.max(1, count)
+          it.total_sft = currentStock
+          it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
+        } else {
+          // Multiple sizes: allocate to the best matching area or distribute
+          let bestIdx = 0
+          for (let i = 0; i < list.length; i++) {
+            const area = list[i].width_ft * list[i].length_ft
+            if (area > 0 && currentStock % area === 0) {
+              bestIdx = i
+              break
+            }
+          }
+          const it = list[bestIdx]
+          const area = it.width_ft * it.length_ft > 0 ? it.width_ft * it.length_ft : defaultSheetArea
+          const count = isSftCons ? Math.floor(currentStock / area) : currentStock
+          it.roll_count = Math.max(1, count)
+          it.total_sft = currentStock
+          it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
+        }
+      }
+
+      rollItems = Array.from(sheetMap.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
+      totalSheets = rollItems.reduce((s, it) => s + (it.roll_count || 0), 0)
+      totalSft = rollItems.reduce((s, it) => s + (it.total_sft || 0), 0)
+      totalValuation = rollItems.reduce((s, it) => s + (it.total_valuation || 0), 0)
+    } else {
+      totalSheets = isSftCons && defaultSheetArea > 0 ? Math.floor(currentStock / defaultSheetArea) : currentStock
+      let costPerSheet = rawCost
+      let costPerCons = rawCost
+      if (isSftCons) {
+        if (rawCost > 150) {
+          costPerSheet = rawCost
+          costPerCons = defaultSheetArea > 0 ? rawCost / defaultSheetArea : rawCost
+        } else {
+          costPerCons = rawCost
+          costPerSheet = rawCost * defaultSheetArea
+        }
+      }
+      totalValuation = currentStock * costPerCons
+
+      const attrs = normalizeInventoryGroupAttributes({
+        name: material.name,
+        width_ft: defaultSheetW,
+        length_ft: defaultSheetL,
+        allowance_ft: 0,
+        purchase_price: costPerSheet,
+        gsm: Number(material.gsm || material.thickness_mm || 0),
+        finishing: String(material.default_finishing || (material as any)?.finish || 'none'),
+        specification: material.specification,
+        material_spec: (material as any)?.material_spec,
+      })
+
+      rollItems = [
+        {
+          key: createInventoryGroupingKey(attrs),
+          name: attrs.name,
+          width_ft: attrs.width_ft,
+          length_ft: attrs.length_ft,
+          allowance_ft: attrs.allowance_ft,
+          purchase_price: attrs.purchase_price,
+          gsm: attrs.gsm,
+          finishing: attrs.finishing,
+          roll_count: totalSheets,
+          total_sft: currentStock,
+          unit_cost: costPerSheet,
+          total_valuation: totalValuation,
+          label: `${defaultSheetW}ft × ${defaultSheetL}ft`,
+        },
+      ]
     }
-    const totalValuation = currentStock * costPerCons
+
+    const remainderSft = isSftCons && defaultSheetArea > 0 ? currentStock % defaultSheetArea : 0
+    const sheetDisplay = `${totalSheets} ${totalSheets === 1 ? 'Sheet' : 'Sheets'}${remainderSft > 0 ? ` + ${remainderSft} SFT` : ''}`
+    const primaryW = rollItems[0]?.width_ft || defaultSheetW
+    const primaryL = rollItems[0]?.length_ft || defaultSheetL
+    const primaryArea = primaryW * primaryL > 0 ? primaryW * primaryL : defaultSheetArea
+    const costPerSheet = rollItems[0]?.purchase_price || (isSftCons ? (rawCost > 150 ? rawCost : rawCost * primaryArea) : rawCost)
+    const costPerCons = isSftCons && primaryArea > 0 ? costPerSheet / primaryArea : rawCost
 
     return {
       is_roll: false,
       purchase_unit_display: totalSheets > 0 ? sheetDisplay : `${currentStock.toLocaleString()} ${consumptionUnit}`,
       consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
-      roll_items: [],
+      roll_items: rollItems,
       total_rolls: 0,
       total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
-      formatted_summary: isSftCons ? `${sheetW}ft × ${sheetL}ft (${sheetArea} SFT/Sheet)` : `1 Sheet`,
+      formatted_summary: isSftCons ? `${primaryW}ft × ${primaryL}ft (${primaryArea} SFT/Sheet)` : `1 Sheet`,
       purchase_unit: 'sheet',
       consumption_unit: consumptionUnit,
       cost_per_purchase_unit: costPerSheet,
@@ -2736,7 +2890,125 @@ export function getMaterialWarehouseStockBreakdown(
     }
   }
 
-  // 3. Check for Pack / Box / Discrete Items with conversion
+  // 3. Check for Liquids / Inks / Solvents
+  const isFluid =
+    ['bottle', 'can', 'liter', 'ltr', 'gallon', 'ml'].includes(rawPurchaseUnit) ||
+    ['ink', 'fluid', 'solvent', 'chemical', 'liquid', 'dye', 'pigment'].some(c => matCategory.includes(c) || matName.includes(c))
+
+  if (isFluid) {
+    const rawVariants: any[] = Array.isArray(material.variants) && material.variants.length > 0
+      ? material.variants
+      : []
+
+    let rollItems: WarehouseRollStockItem[] = []
+    let totalPacks = 0
+    let totalValuation = 0
+
+    if (rawVariants.length > 0) {
+      const varMap = new Map<string, WarehouseRollStockItem>()
+
+      for (const v of rawVariants) {
+        const vPrice = Number(v.purchase_price ?? v.unit_cost ?? (rawCost + Number(v.cost_adjustment || 0)))
+        const fin = String(v.variant_name || v.color || v.finish || v.size_spec || 'none')
+        const count = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: vPrice,
+          gsm: 0,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+
+        varMap.set(key, {
+          key,
+          name: attrs.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: attrs.purchase_price,
+          gsm: 0,
+          finishing: attrs.finishing,
+          roll_count: count,
+          total_sft: count,
+          unit_cost: attrs.purchase_price,
+          total_valuation: count * attrs.purchase_price,
+          label: `${v.variant_name || 'Variant'}${v.size_spec ? ` (${v.size_spec})` : ''}`,
+        })
+      }
+
+      const explicitSum = Array.from(varMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
+      if (explicitSum === 0 && currentStock > 0) {
+        const first = Array.from(varMap.values())[0]
+        first.roll_count = currentStock
+        first.total_sft = currentStock
+        first.total_valuation = currentStock * (first.purchase_price || rawCost)
+      }
+
+      rollItems = Array.from(varMap.values())
+      totalPacks = rollItems.reduce((s, it) => s + (it.roll_count || 0), 0)
+      totalValuation = rollItems.reduce((s, it) => s + (it.total_valuation || 0), 0)
+    } else {
+      totalPacks = currentStock
+      totalValuation = currentStock * rawCost
+
+      const attrs = normalizeInventoryGroupAttributes({
+        name: material.name,
+        width_ft: 0,
+        length_ft: 0,
+        allowance_ft: 0,
+        purchase_price: rawCost,
+        gsm: 0,
+        finishing: String(material.default_finishing || (material as any)?.finish || 'none'),
+        specification: material.specification,
+        material_spec: (material as any)?.material_spec,
+      })
+
+      rollItems = [
+        {
+          key: createInventoryGroupingKey(attrs),
+          name: attrs.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: attrs.purchase_price,
+          gsm: 0,
+          finishing: attrs.finishing,
+          roll_count: totalPacks,
+          total_sft: currentStock,
+          unit_cost: rawCost,
+          total_valuation: totalValuation,
+          label: material.name,
+        },
+      ]
+    }
+
+    const displayUnit = rawPurchaseUnit || 'bottle'
+
+    return {
+      is_roll: false,
+      purchase_unit_display: `${currentStock.toLocaleString()} ${displayUnit}${currentStock !== 1 ? 's' : ''}`,
+      consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      roll_items: rollItems,
+      total_rolls: 0,
+      total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      formatted_summary: `${currentStock.toLocaleString()} ${displayUnit}`,
+      purchase_unit: displayUnit,
+      consumption_unit: consumptionUnit,
+      cost_per_purchase_unit: rawCost,
+      cost_per_consumption_unit: rawCost,
+      cost_display_primary: rawCost > 0 ? `৳ ${rawCost.toLocaleString()} / ${displayUnit}` : '—',
+      cost_display_secondary: null,
+      total_valuation: totalValuation,
+    }
+  }
+
+  // 4. Check for Pack / Box / Discrete Items with conversion
   const packQuantity = Number(
     material.pack_quantity ||
     (material.material_config as any)?.pack_quantity ||
@@ -2745,7 +3017,12 @@ export function getMaterialWarehouseStockBreakdown(
   )
 
   if (['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit) && packQuantity > 1) {
-    const totalPacks = Math.floor(currentStock / packQuantity)
+    const rawVariants: any[] = Array.isArray(material.variants) && material.variants.length > 0
+      ? material.variants
+      : []
+
+    let rollItems: WarehouseRollStockItem[] = []
+    let totalPacks = Math.floor(currentStock / packQuantity)
     const remainderPcs = currentStock % packQuantity
     const packDisplay = `${totalPacks} ${rawPurchaseUnit.toUpperCase()}${totalPacks !== 1 ? 's' : ''}${remainderPcs > 0 ? ` + ${remainderPcs} ${consumptionUnit}` : ''}`
 
@@ -2755,13 +3032,94 @@ export function getMaterialWarehouseStockBreakdown(
       costPerPc = rawCost
       costPerPack = rawCost * packQuantity
     }
-    const totalValuation = currentStock * costPerPc
+    let totalValuation = currentStock * costPerPc
+
+    if (rawVariants.length > 0) {
+      const varMap = new Map<string, WarehouseRollStockItem>()
+
+      for (const v of rawVariants) {
+        const vPrice = Number(v.purchase_price ?? v.unit_cost ?? (costPerPack + Number(v.cost_adjustment || 0)))
+        const fin = String(v.variant_name || v.spec || v.size_spec || 'none')
+        const count = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: vPrice,
+          gsm: 0,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+
+        varMap.set(key, {
+          key,
+          name: attrs.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: attrs.purchase_price,
+          gsm: 0,
+          finishing: attrs.finishing,
+          roll_count: count,
+          total_sft: count * packQuantity,
+          unit_cost: attrs.purchase_price,
+          total_valuation: count * attrs.purchase_price,
+          label: `${v.variant_name || 'Variant'}${v.size_spec ? ` (${v.size_spec})` : ''}`,
+        })
+      }
+
+      const explicitSum = Array.from(varMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
+      if (explicitSum === 0 && totalPacks > 0) {
+        const first = Array.from(varMap.values())[0]
+        first.roll_count = totalPacks
+        first.total_sft = currentStock
+        first.total_valuation = totalPacks * (first.purchase_price || costPerPack)
+      }
+
+      rollItems = Array.from(varMap.values())
+      totalPacks = rollItems.reduce((s, it) => s + (it.roll_count || 0), 0)
+      totalValuation = rollItems.reduce((s, it) => s + (it.total_valuation || 0), 0)
+    } else {
+      const attrs = normalizeInventoryGroupAttributes({
+        name: material.name,
+        width_ft: 0,
+        length_ft: 0,
+        allowance_ft: 0,
+        purchase_price: costPerPack,
+        gsm: 0,
+        finishing: String(material.default_finishing || (material as any)?.finish || 'none'),
+        specification: material.specification,
+        material_spec: (material as any)?.material_spec,
+      })
+
+      rollItems = [
+        {
+          key: createInventoryGroupingKey(attrs),
+          name: attrs.name,
+          width_ft: 0,
+          length_ft: 0,
+          allowance_ft: 0,
+          purchase_price: attrs.purchase_price,
+          gsm: 0,
+          finishing: attrs.finishing,
+          roll_count: totalPacks,
+          total_sft: currentStock,
+          unit_cost: costPerPack,
+          total_valuation: totalValuation,
+          label: `${packQuantity} ${consumptionUnit}/${rawPurchaseUnit}`,
+        },
+      ]
+    }
 
     return {
       is_roll: false,
       purchase_unit_display: totalPacks > 0 ? packDisplay : `${currentStock.toLocaleString()} ${consumptionUnit}`,
       consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
-      roll_items: [],
+      roll_items: rollItems,
       total_rolls: 0,
       total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
       formatted_summary: `${packQuantity} ${consumptionUnit}/${rawPurchaseUnit}`,
@@ -2775,15 +3133,109 @@ export function getMaterialWarehouseStockBreakdown(
     }
   }
 
-  // 4. General item
+  // 5. Hardware / Display Stands / Merchandise / General Consumables
+  const rawVariants: any[] = Array.isArray(material.variants) && material.variants.length > 0
+    ? material.variants
+    : []
+
+  let rollItems: WarehouseRollStockItem[] = []
+  let totalValuation = currentStock * rawCost
   const displayUnit = rawPurchaseUnit || consumptionUnit || 'pcs'
-  const totalValuation = currentStock * rawCost
+
+  if (rawVariants.length > 0) {
+    const varMap = new Map<string, WarehouseRollStockItem>()
+
+    for (const v of rawVariants) {
+      let w = Number(v.width || v.width_ft || 0)
+      let l = Number(v.length || v.length_ft || 0)
+      if (w === 0 && l === 0 && (v.size_spec || v.variant_name)) {
+        const match = String(v.size_spec || v.variant_name).match(/(\d+(?:\.\d+)?)\s*(?:ft|')?\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
+        if (match) {
+          w = Number(match[1])
+          l = Number(match[2])
+        }
+      }
+      const vPrice = Number(v.purchase_price ?? v.unit_cost ?? (rawCost + Number(v.cost_adjustment || 0)))
+      const fin = String(v.variant_name || v.color || v.finish || v.size_spec || 'none')
+      const count = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+
+      const attrs = normalizeInventoryGroupAttributes({
+        name: material.name,
+        width_ft: w,
+        length_ft: l,
+        allowance_ft: 0,
+        purchase_price: vPrice,
+        gsm: Number(v.gsm || material.gsm || (material as any)?.weight_gsm || 0),
+        finishing: fin,
+        specification: material.specification,
+        material_spec: (material as any)?.material_spec,
+      })
+      const key = createInventoryGroupingKey(attrs)
+
+      varMap.set(key, {
+        key,
+        name: attrs.name,
+        width_ft: attrs.width_ft,
+        length_ft: attrs.length_ft,
+        allowance_ft: attrs.allowance_ft,
+        purchase_price: attrs.purchase_price,
+        gsm: attrs.gsm,
+        finishing: attrs.finishing,
+        roll_count: count,
+        total_sft: count,
+        unit_cost: attrs.purchase_price,
+        total_valuation: count * attrs.purchase_price,
+        label: `${v.variant_name || 'Variant'}${v.size_spec ? ` (${v.size_spec})` : ''}`,
+      })
+    }
+
+    const explicitSum = Array.from(varMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
+    if (explicitSum === 0 && currentStock > 0) {
+      const first = Array.from(varMap.values())[0]
+      first.roll_count = currentStock
+      first.total_sft = currentStock
+      first.total_valuation = currentStock * (first.purchase_price || rawCost)
+    }
+
+    rollItems = Array.from(varMap.values())
+    totalValuation = rollItems.reduce((s, it) => s + (it.total_valuation || 0), 0)
+  } else {
+    const attrs = normalizeInventoryGroupAttributes({
+      name: material.name,
+      width_ft: Number(material.width || 0),
+      length_ft: Number(material.length || 0),
+      allowance_ft: 0,
+      purchase_price: rawCost,
+      gsm: Number(material.gsm || (material as any)?.weight_gsm || 0),
+      finishing: String(material.default_finishing || (material as any)?.finish || 'none'),
+      specification: material.specification,
+      material_spec: (material as any)?.material_spec,
+    })
+
+    rollItems = [
+      {
+        key: createInventoryGroupingKey(attrs),
+        name: attrs.name,
+        width_ft: attrs.width_ft,
+        length_ft: attrs.length_ft,
+        allowance_ft: attrs.allowance_ft,
+        purchase_price: attrs.purchase_price,
+        gsm: attrs.gsm,
+        finishing: attrs.finishing,
+        roll_count: currentStock,
+        total_sft: currentStock,
+        unit_cost: rawCost,
+        total_valuation: totalValuation,
+        label: material.name,
+      },
+    ]
+  }
 
   return {
     is_roll: false,
     purchase_unit_display: `${currentStock.toLocaleString()} ${displayUnit}`,
     consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
-    roll_items: [],
+    roll_items: rollItems,
     total_rolls: 0,
     total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
     formatted_summary: `${currentStock.toLocaleString()} ${displayUnit}`,

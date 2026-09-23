@@ -510,7 +510,7 @@ function UnifiedInventoryContent() {
         0
       )
 
-      if (isRoll && breakdown.roll_items && breakdown.roll_items.length > 0) {
+      if (breakdown.roll_items && breakdown.roll_items.length > 0) {
         // Expand each distinct 7-attribute inventory group as its own first-class table row
         for (const item of breakdown.roll_items) {
           const canonicalAttrs = normalizeInventoryGroupAttributes({
@@ -525,20 +525,59 @@ function UnifiedInventoryContent() {
             material_spec: (mat as any)?.material_spec,
           })
           const key = createInventoryGroupingKey(canonicalAttrs)
-          const rollCount = item.roll_count
-          const totalSft = item.total_sft
-          const itemVal = item.total_valuation || (rollCount * (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft)))
+          const stockCount = item.roll_count
+          const consQty = item.total_sft
+          const itemVal = item.total_valuation !== undefined
+            ? item.total_valuation
+            : (stockCount * (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft || 1)))
 
-          const isOut = rollCount <= 0
-          const isLow = !isOut && (reorder > 0 ? rollCount <= reorder : false)
+          const isOut = stockCount <= 0
+          const isLow = !isOut && (reorder > 0 ? stockCount <= reorder : false)
           const status = isOut ? 'out_of_stock' : isLow ? 'low_stock' : 'available'
 
-          const pricePerRoll = canonicalAttrs.purchase_price > 0
-            ? (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
-            : (baseCost > 150 ? baseCost : baseCost * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
-          const pricePerSft = canonicalAttrs.width_ft * canonicalAttrs.length_ft > 0
+          const unitPrice = canonicalAttrs.purchase_price > 0 ? canonicalAttrs.purchase_price : baseCost
+          const pricePerRoll = isRoll
+            ? (unitPrice > 150 ? unitPrice : unitPrice * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
+            : unitPrice
+          const pricePerSft = isRoll && canonicalAttrs.width_ft * canonicalAttrs.length_ft > 0
             ? pricePerRoll / (canonicalAttrs.width_ft * canonicalAttrs.length_ft)
             : 0
+
+          let displayTitle = mat.name
+          if (isRoll) {
+            displayTitle = `${mat.name} — ${canonicalAttrs.width_ft}ft × ${canonicalAttrs.length_ft}ft`
+          } else if (canonicalAttrs.width_ft > 0 && canonicalAttrs.length_ft > 0) {
+            displayTitle = `${mat.name} — ${canonicalAttrs.width_ft}ft × ${canonicalAttrs.length_ft}ft`
+          } else if (item.label && item.label !== mat.name) {
+            displayTitle = `${mat.name} — ${item.label}`
+          } else if (canonicalAttrs.finishing && canonicalAttrs.finishing !== 'none') {
+            displayTitle = `${mat.name} — ${canonicalAttrs.finishing}`
+          }
+
+          let stockUnit = isRoll ? (stockCount === 1 ? 'Roll' : 'Rolls') : (breakdown.purchase_unit || mat.unit || 'pcs')
+          if (breakdown.purchase_unit === 'sheet') stockUnit = stockCount === 1 ? 'Sheet' : 'Sheets'
+
+          let primaryStockDisplay = `${stockCount} ${stockUnit}`
+          if (!isRoll && breakdown.purchase_unit !== 'sheet') {
+            primaryStockDisplay = `${stockCount.toLocaleString()} ${stockUnit}`
+          }
+
+          let secondaryStockDisplay: string | null = null
+          if (isRoll) {
+            secondaryStockDisplay = `${consQty.toLocaleString()} SFT`
+          } else if (breakdown.consumption_unit !== breakdown.purchase_unit && consQty > 0) {
+            secondaryStockDisplay = `${consQty.toLocaleString()} ${breakdown.consumption_unit.toUpperCase()}`
+          }
+
+          let primaryCostDisplay = isRoll && pricePerRoll > 0
+            ? `৳ ${pricePerRoll.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / Roll`
+            : unitPrice > 0
+            ? `৳ ${unitPrice.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / ${breakdown.purchase_unit || 'unit'}`
+            : '—'
+
+          let secondaryCostDisplay = isRoll && pricePerSft > 0
+            ? `(৳ ${pricePerSft.toFixed(2)} / SFT)`
+            : (!isRoll && breakdown.cost_display_secondary) ? breakdown.cost_display_secondary : null
 
           rowsList.push({
             key,
@@ -546,33 +585,33 @@ function UnifiedInventoryContent() {
             material: mat,
             name: mat.name,
             name_bn: mat.name_bn || null,
-            display_title: `${mat.name} — ${canonicalAttrs.width_ft}ft × ${canonicalAttrs.length_ft}ft`,
+            display_title: displayTitle,
             sku: mat.sku,
             category: mat.category,
             specification: mat.specification,
-            is_roll: true,
+            is_roll: isRoll,
             width_ft: canonicalAttrs.width_ft,
             length_ft: canonicalAttrs.length_ft,
             allowance_ft: canonicalAttrs.allowance_ft,
             purchase_price: canonicalAttrs.purchase_price,
             gsm: canonicalAttrs.gsm,
             finishing: canonicalAttrs.finishing,
-            stock_quantity: rollCount,
-            stock_unit: rollCount === 1 ? 'Roll' : 'Rolls',
-            consumption_qty: totalSft,
-            consumption_unit: 'SFT',
-            avg_unit_cost: pricePerRoll,
+            stock_quantity: stockCount,
+            stock_unit: stockUnit,
+            consumption_qty: consQty,
+            consumption_unit: breakdown.consumption_unit || 'pcs',
+            avg_unit_cost: unitPrice,
             total_valuation: itemVal,
             reorder_level: reorder,
             status,
-            cost_display_primary: pricePerRoll > 0 ? `৳ ${pricePerRoll.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / Roll` : '—',
-            cost_display_secondary: pricePerSft > 0 ? `(৳ ${pricePerSft.toFixed(2)} / SFT)` : null,
-            stock_display_primary: `${rollCount} ${rollCount === 1 ? 'Roll' : 'Rolls'}`,
-            stock_display_secondary: `${totalSft.toLocaleString()} SFT`,
+            cost_display_primary: primaryCostDisplay,
+            cost_display_secondary: secondaryCostDisplay,
+            stock_display_primary: primaryStockDisplay,
+            stock_display_secondary: secondaryStockDisplay,
           })
         }
       } else {
-        // Non-roll material or roll material with 0 stock and no configured roll sizes
+        // Fallback for material with 0 stock and no configured sizes/variants
         const stockQty = Number(mat.current_stock || 0)
         const isOut = stockQty <= 0
         const isLow = !isOut && (reorder > 0 ? stockQty <= reorder : false)
@@ -655,17 +694,11 @@ function UnifiedInventoryContent() {
         (row.specification && row.specification.toLowerCase().includes(q))
 
       const matchSpec =
-        row.is_roll && (
-          `${row.width_ft}ft`.includes(q) ||
-          `${row.width_ft} ft`.includes(q) ||
-          `${row.width_ft}`.includes(q) ||
-          `${row.length_ft}ft`.includes(q) ||
-          `${row.length_ft} ft`.includes(q) ||
-          `${row.length_ft}`.includes(q) ||
-          (row.gsm > 0 && (`${row.gsm}gsm`.includes(q) || `${row.gsm} gsm`.includes(q) || `${row.gsm}`.includes(q))) ||
-          (row.finishing && row.finishing !== 'none' && row.finishing.toLowerCase().includes(q)) ||
-          (row.purchase_price > 0 && `${row.purchase_price}`.includes(q))
-        )
+        (row.width_ft > 0 && (`${row.width_ft}ft`.includes(q) || `${row.width_ft} ft`.includes(q) || `${row.width_ft}`.includes(q))) ||
+        (row.length_ft > 0 && (`${row.length_ft}ft`.includes(q) || `${row.length_ft} ft`.includes(q) || `${row.length_ft}`.includes(q))) ||
+        (row.gsm > 0 && (`${row.gsm}gsm`.includes(q) || `${row.gsm} gsm`.includes(q) || `${row.gsm}`.includes(q))) ||
+        (row.finishing && row.finishing !== 'none' && row.finishing.toLowerCase().includes(q)) ||
+        (row.purchase_price > 0 && `${row.purchase_price}`.includes(q))
 
       return matchBasic || matchSpec
     })
@@ -1518,7 +1551,7 @@ function UnifiedInventoryContent() {
                               {row.name_bn && <div className="text-[11px] text-slate-400 font-bengali mt-0.5">{row.name_bn}</div>}
                               <div className="flex flex-wrap items-center gap-1.5 mt-1">
                                 <span className="text-[10px] text-slate-500 font-mono font-medium">SKU: {row.sku}</span>
-                                {row.is_roll && row.width_ft > 0 && (
+                                {row.width_ft > 0 && row.length_ft > 0 && (
                                   <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
                                     {row.width_ft}ft × {row.length_ft}ft
                                   </span>
@@ -1547,6 +1580,11 @@ function UnifiedInventoryContent() {
                               {row.is_roll && row.width_ft * row.length_ft > 0 && (
                                 <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
                                   {(row.width_ft * row.length_ft).toLocaleString()} SFT / roll
+                                </div>
+                              )}
+                              {!row.is_roll && row.width_ft * row.length_ft > 0 && (
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                                  {(row.width_ft * row.length_ft).toLocaleString()} SFT / unit
                                 </div>
                               )}
                               {row.specification && (
