@@ -1300,6 +1300,26 @@ export class ProductRepository {
       try {
         const dbPayload = sanitizeProductDbPayload(payload)
         const supabase = await createClient()
+
+        const { data: existingRow } = await (supabase as any)
+          .from('products')
+          .select('pricing_formula')
+          .eq('id', id)
+          .eq('company_id', companyId)
+          .maybeSingle()
+
+        if (existingRow?.pricing_formula) {
+          const prevFormula = typeof existingRow.pricing_formula === 'object' && existingRow.pricing_formula !== null
+            ? existingRow.pricing_formula
+            : typeof existingRow.pricing_formula === 'string'
+            ? (() => { try { return JSON.parse(existingRow.pricing_formula) } catch { return {} } })()
+            : {}
+          dbPayload.pricing_formula = {
+            ...prevFormula,
+            ...(typeof dbPayload.pricing_formula === 'object' && dbPayload.pricing_formula !== null ? dbPayload.pricing_formula : {}),
+          }
+        }
+
         const { data, error } = await (supabase as any)
           .from('products')
           .update(dbPayload)

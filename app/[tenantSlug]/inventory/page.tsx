@@ -1144,6 +1144,14 @@ function UnifiedInventoryContent() {
                         )
                         const totalBalanceQty = locBalances.reduce((sum, b) => sum + (Number(b.available_quantity ?? (b as any).quantity) || 0), 0)
 
+                        const matchingLedgerEntries = ledger.filter(
+                          (l) => l.material_id === p.id || (p.sku && ((l as any).material_sku?.toLowerCase() === p.sku.toLowerCase() || l.material?.sku?.toLowerCase() === p.sku.toLowerCase())) || (matchingMat && l.material_id === matchingMat.id)
+                        )
+                        const latestLedgerEntry = matchingLedgerEntries.length > 0 ? matchingLedgerEntries[matchingLedgerEntries.length - 1] : null
+                        const ledgerStock = latestLedgerEntry && latestLedgerEntry.balance_after !== undefined && latestLedgerEntry.balance_after !== null && !isNaN(Number(latestLedgerEntry.balance_after))
+                          ? Number(latestLedgerEntry.balance_after)
+                          : null
+
                         const rawFormula = (p as any).pricing_formula
                         const formula =
                           typeof rawFormula === 'object' && rawFormula !== null
@@ -1158,25 +1166,26 @@ function UnifiedInventoryContent() {
                               })()
                             : {}
 
-                        const directProductStock = Number(
-                          p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
-                            ? p.current_stock
-                            : p.stock !== undefined && p.stock !== null && !isNaN(Number(p.stock))
-                            ? p.stock
-                            : p.opening_stock !== undefined && p.opening_stock !== null && !isNaN(Number(p.opening_stock))
-                            ? p.opening_stock
-                            : formula.current_stock !== undefined && formula.current_stock !== null && !isNaN(Number(formula.current_stock))
-                            ? formula.current_stock
-                            : formula.stock !== undefined && formula.stock !== null && !isNaN(Number(formula.stock))
-                            ? formula.stock
-                            : formula.opening_stock !== undefined && formula.opening_stock !== null && !isNaN(Number(formula.opening_stock))
-                            ? formula.opening_stock
-                            : matchingMat?.current_stock !== undefined && matchingMat?.current_stock !== null && !isNaN(Number(matchingMat.current_stock))
-                            ? matchingMat.current_stock
-                            : 0
-                        )
+                        const candidateStocks = [
+                          Number(p.current_stock),
+                          Number(p.stock),
+                          Number(formula.current_stock),
+                          Number(formula.stock),
+                          Number(p.opening_stock),
+                          Number(formula.opening_stock),
+                          Number((p.material_config as any)?.opening_stock),
+                          Number((p.material_config as any)?.current_stock),
+                          Number(matchingMat?.current_stock),
+                        ]
+                        const positiveDirectStock = candidateStocks.find((v) => !isNaN(v) && v > 0)
 
-                        const stockQty = totalBalanceQty > 0 ? totalBalanceQty : directProductStock
+                        const stockQty = totalBalanceQty > 0
+                          ? totalBalanceQty
+                          : ledgerStock !== null && ledgerStock > 0
+                          ? ledgerStock
+                          : positiveDirectStock !== undefined
+                          ? positiveDirectStock
+                          : (ledgerStock !== null ? ledgerStock : (Number(p.current_stock) || Number(formula.current_stock) || Number(p.opening_stock) || Number(formula.opening_stock) || 0))
 
                         const cost = Number(
                           p.base_cost ||
@@ -1186,6 +1195,7 @@ function UnifiedInventoryContent() {
                           matchingMat?.last_purchase_price ||
                           formula.base_cost ||
                           formula.purchase_price ||
+                          (p.material_config as any)?.purchase_price ||
                           0
                         )
 

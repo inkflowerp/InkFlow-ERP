@@ -1074,16 +1074,19 @@ export class InventoryService {
             })()
           : {}
 
-      const stock = Number(
-        (p as any).current_stock ??
-        (p as any).stock ??
-        (p as any).opening_stock ??
-        formula.current_stock ??
-        formula.stock ??
-        formula.opening_stock ??
-        0
-      )
-      const cost = Number(p.base_cost || p.purchase_price || (p as any).cost_per_unit || formula.base_cost || formula.purchase_price || 0)
+      const candidateStocks = [
+        Number((p as any).current_stock),
+        Number((p as any).stock),
+        Number((p as any).opening_stock),
+        Number(formula.current_stock),
+        Number(formula.stock),
+        Number(formula.opening_stock),
+        Number((p as any).material_config?.opening_stock),
+        Number((p as any).material_config?.current_stock),
+      ]
+      const positiveStock = candidateStocks.find((v) => !isNaN(v) && v > 0)
+      const stock = positiveStock !== undefined ? positiveStock : (Number((p as any).current_stock) || Number((p as any).stock) || 0)
+      const cost = Number(p.base_cost || p.purchase_price || (p as any).cost_per_unit || formula.base_cost || formula.purchase_price || (p as any).material_config?.purchase_price || 0)
       return sum + (stock > 0 ? stock * cost : 0)
     }, 0)
 
