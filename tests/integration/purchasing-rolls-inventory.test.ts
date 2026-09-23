@@ -9,6 +9,7 @@ describe('Purchasing to Physical Roll Inventory Integration', () => {
   const companyId = 'comp-test-purchasing'
 
   beforeEach(async () => {
+    PrintERPDataStore.clearAll(companyId)
     PrintERPDataStore.clearAll()
 
     // Seed supplier

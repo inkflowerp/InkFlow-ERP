@@ -2173,9 +2173,9 @@ export function getMaterialWarehouseStockBreakdown(
       totalSft = 0
 
       for (const rs of rawRollSizes) {
-        const baseW = Number(rs.width || rs.width_ft || rs.size || inferredWidth || 4)
-        const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : globalAllowance))
-        const w = (allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW
+        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+        const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : (rs.allowance_ft !== undefined ? rs.allowance_ft : globalAllowance)))
+        const w = Number(rs.width_ft) || ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
         const l = Number(rs.length || rs.length_ft || standardLength)
         const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
         const sft = count > 0 ? count * w * l : (Number(rs.total_sft ?? rs.sft) || 0)
@@ -2194,21 +2194,49 @@ export function getMaterialWarehouseStockBreakdown(
       }
 
       if (rollItems.length === 0 && currentStock > 0) {
-        const primaryBaseW = Number(rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)
-        const allowance = Number(rawRollSizes[0].extra_allowance !== undefined ? rawRollSizes[0].extra_allowance : (rawRollSizes[0].allowance !== undefined ? rawRollSizes[0].allowance : globalAllowance))
-        const primaryW = (allowance > 0 && Math.floor(primaryBaseW) === primaryBaseW) ? Math.round((primaryBaseW + allowance) * 100) / 100 : primaryBaseW
-        const primaryL = Number(rawRollSizes[0].length || rawRollSizes[0].length_ft || standardLength)
-        const areaPerRoll = primaryW * primaryL
-        const count = areaPerRoll > 0 ? Math.max(1, Math.round(currentStock / areaPerRoll)) : 1
-        rollItems = [{
-          width_ft: primaryW,
-          length_ft: primaryL,
-          roll_count: count,
-          total_sft: currentStock,
-          label: `${primaryW}ft × ${primaryL}ft`,
-        }]
-        totalRolls = count
-        totalSft = currentStock
+        const configuredList = rawRollSizes.map((rs: any) => {
+          const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+          const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : (rs.allowance_ft !== undefined ? rs.allowance_ft : globalAllowance)))
+          const w = Number(rs.width_ft) || ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+          const l = Number(rs.length || rs.length_ft || standardLength)
+          const area = Math.round(w * l * 100) / 100
+          return { w, l, area }
+        })
+
+        const sumSetArea = configuredList.reduce((sum, item) => sum + item.area, 0)
+        if (configuredList.length > 1 && sumSetArea > 0) {
+          const sets = Math.floor(currentStock / sumSetArea)
+          const remainder = currentStock - (sets * sumSetArea)
+
+          for (let idx = 0; idx < configuredList.length; idx++) {
+            const item = configuredList[idx]
+            const count = sets > 0
+              ? sets + (idx === 0 && remainder > (item.area / 2) ? Math.round(remainder / item.area) : 0)
+              : Math.max(1, Math.round((currentStock / configuredList.length) / item.area))
+            const sft = count * item.area
+            rollItems.push({
+              width_ft: item.w,
+              length_ft: item.l,
+              roll_count: count,
+              total_sft: sft,
+              label: `${item.w}ft × ${item.l}ft`,
+            })
+            totalRolls += count
+            totalSft += sft
+          }
+        } else {
+          const item = configuredList[0]
+          const count = item.area > 0 ? Math.max(1, Math.round(currentStock / item.area)) : 1
+          rollItems = [{
+            width_ft: item.w,
+            length_ft: item.l,
+            roll_count: count,
+            total_sft: currentStock,
+            label: `${item.w}ft × ${item.l}ft`,
+          }]
+          totalRolls = count
+          totalSft = currentStock
+        }
       }
     } else {
       const effectiveInferredW = (globalAllowance > 0 && Math.floor(inferredWidth) === inferredWidth) ? Math.round((inferredWidth + globalAllowance) * 100) / 100 : inferredWidth
@@ -2236,9 +2264,9 @@ export function getMaterialWarehouseStockBreakdown(
     } else if (rollItems.length === 1) {
       formattedSummary = `(${rollItems[0].width_ft}ft × ${rollItems[0].length_ft}ft)`
     } else if (rawRollSizes.length > 0) {
-      const primaryBaseW = Number(rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)
-      const allowance = Number(rawRollSizes[0].extra_allowance !== undefined ? rawRollSizes[0].extra_allowance : (rawRollSizes[0].allowance !== undefined ? rawRollSizes[0].allowance : globalAllowance))
-      const primaryW = (allowance > 0 && Math.floor(primaryBaseW) === primaryBaseW) ? Math.round((primaryBaseW + allowance) * 100) / 100 : primaryBaseW
+      const primaryBaseW = Number(rawRollSizes[0].nominal_width_ft || rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)
+      const allowance = Number(rawRollSizes[0].extra_allowance !== undefined ? rawRollSizes[0].extra_allowance : (rawRollSizes[0].allowance !== undefined ? rawRollSizes[0].allowance : (rawRollSizes[0].allowance_ft !== undefined ? rawRollSizes[0].allowance_ft : globalAllowance)))
+      const primaryW = Number(rawRollSizes[0].width_ft) || ((allowance > 0 && Math.floor(primaryBaseW) === primaryBaseW) ? Math.round((primaryBaseW + allowance) * 100) / 100 : primaryBaseW)
       const primaryL = Number(rawRollSizes[0].length || rawRollSizes[0].length_ft || standardLength)
       formattedSummary = `(${primaryW}ft × ${primaryL}ft)`
     } else {

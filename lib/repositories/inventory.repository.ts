@@ -2735,64 +2735,133 @@ export class InventoryRepository {
               }
             }
           } else {
-            // Sizes are configured types (without item quantities): allocate stockNum to the primary configured size
-            const primarySize = rawRollSizes[0]
-            const primaryBaseW = Number(primarySize.width || primarySize.width_ft || primarySize.size || widthFt || 4)
-            const allowance = Number(primarySize.extra_allowance !== undefined ? primarySize.extra_allowance : (primarySize.allowance !== undefined ? primarySize.allowance : globalAllowance))
-            const w = (allowance > 0 && Math.floor(primaryBaseW) === primaryBaseW) ? Math.round((primaryBaseW + allowance) * 100) / 100 : primaryBaseW
-            const l = Number(primarySize.length || primarySize.length_ft || lengthFt)
-            const rollArea = Math.round(w * l * 100) / 100
-            const numRolls = rollArea > 0 ? Math.max(1, Math.round(stockNum / rollArea)) : Math.max(1, Math.round(stockNum))
-            const rollCost = primarySize.price || primarySize.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost))
+            // Sizes are configured types (without explicit item quantities): distribute stockNum across all configured sizes
+            const configuredList = rawRollSizes.map((rs: any) => {
+              const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || widthFt || 4)
+              const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : (rs.allowance_ft !== undefined ? rs.allowance_ft : globalAllowance)))
+              const w = Number(rs.width_ft) || ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+              const l = Number(rs.length || rs.length_ft || lengthFt)
+              const area = Math.round(w * l * 100) / 100
+              const rollCost = rs.price || rs.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && area > 0 ? rawCost * area : rawCost))
+              return { baseW, w, l, area, rollCost, allowance }
+            })
 
-            for (let i = 1; i <= numRolls; i++) {
-              const rollCode = numRolls === 1
-                ? `ROL-${cleanSku}-${w}FT`
-                : `ROL-${cleanSku}-${w}FT-${String(i).padStart(2, '0')}`
+            const sumSetArea = configuredList.reduce((sum, item) => sum + item.area, 0)
+            let rollCounter = 1
 
-              const rollPayload: InventoryRollRecord = {
-                id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
-                company_id: companyId,
-                branch_id: m.branch_id || null,
-                location_id: null,
-                location_name: m.location || 'Main Warehouse',
-                material_id: m.id,
-                roll_code: rollCode,
-                roll_tag: rollCode,
-                width_ft: w,
-                initial_length_ft: l,
-                current_length_ft: l,
-                original_length_ft: l,
-                remaining_length_ft: l,
-                initial_area_sft: rollArea,
-                consumed_area_sft: 0,
-                remaining_area_sft: rollArea,
-                current_area_sft: rollArea,
-                status: 'available',
-                unit_cost: rollCost,
-                total_cost: rollCost,
-                material: {
-                  id: m.id,
-                  name: m.name,
-                  sku: m.sku,
-                  unit: m.unit,
-                  name_bn: m.name_bn || null,
-                } as any,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
+            if (configuredList.length > 1 && sumSetArea > 0) {
+              const sets = Math.floor(stockNum / sumSetArea)
+              const remainder = stockNum - (sets * sumSetArea)
+
+              for (let idx = 0; idx < configuredList.length; idx++) {
+                const item = configuredList[idx]
+                const count = sets > 0
+                  ? sets + (idx === 0 && remainder > (item.area / 2) ? Math.round(remainder / item.area) : 0)
+                  : Math.max(1, Math.round((stockNum / configuredList.length) / item.area))
+
+                for (let i = 1; i <= count; i++) {
+                  const rollCode = count === 1
+                    ? `ROL-${cleanSku}-${item.w}FT`
+                    : `ROL-${cleanSku}-${item.w}FT-${String(i).padStart(2, '0')}`
+
+                  const rollPayload: InventoryRollRecord = {
+                    id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
+                    company_id: companyId,
+                    branch_id: m.branch_id || null,
+                    location_id: null,
+                    location_name: m.location || 'Main Warehouse',
+                    material_id: m.id,
+                    roll_code: rollCode,
+                    roll_tag: rollCode,
+                    width_ft: item.w,
+                    initial_length_ft: item.l,
+                    current_length_ft: item.l,
+                    original_length_ft: item.l,
+                    remaining_length_ft: item.l,
+                    initial_area_sft: item.area,
+                    consumed_area_sft: 0,
+                    remaining_area_sft: item.area,
+                    current_area_sft: item.area,
+                    status: 'available',
+                    unit_cost: item.rollCost,
+                    total_cost: item.rollCost,
+                    material: {
+                      id: m.id,
+                      name: m.name,
+                      sku: m.sku,
+                      unit: m.unit,
+                      name_bn: m.name_bn || null,
+                    } as any,
+                    created_at: new Date().toISOString(),
+                    updated_at: new Date().toISOString(),
+                  }
+
+                  if (supabaseClient) {
+                    try {
+                      const dbInsert = { ...rollPayload }
+                      delete (dbInsert as any).material
+                      await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
+                    } catch {}
+                  }
+
+                  PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
+                  PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
+                  rolls.push(rollPayload)
+                  rollCounter++
+                }
               }
+            } else {
+              const item = configuredList[0]
+              const numRolls = item.area > 0 ? Math.max(1, Math.round(stockNum / item.area)) : Math.max(1, Math.round(stockNum))
+              for (let i = 1; i <= numRolls; i++) {
+                const rollCode = numRolls === 1
+                  ? `ROL-${cleanSku}-${item.w}FT`
+                  : `ROL-${cleanSku}-${item.w}FT-${String(i).padStart(2, '0')}`
 
-              if (supabaseClient) {
-                try {
-                  const dbInsert = { ...rollPayload }
-                  delete (dbInsert as any).material
-                  await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
-                } catch {}
+                const rollPayload: InventoryRollRecord = {
+                  id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
+                  company_id: companyId,
+                  branch_id: m.branch_id || null,
+                  location_id: null,
+                  location_name: m.location || 'Main Warehouse',
+                  material_id: m.id,
+                  roll_code: rollCode,
+                  roll_tag: rollCode,
+                  width_ft: item.w,
+                  initial_length_ft: item.l,
+                  current_length_ft: item.l,
+                  original_length_ft: item.l,
+                  remaining_length_ft: item.l,
+                  initial_area_sft: item.area,
+                  consumed_area_sft: 0,
+                  remaining_area_sft: item.area,
+                  current_area_sft: item.area,
+                  status: 'available',
+                  unit_cost: item.rollCost,
+                  total_cost: item.rollCost,
+                  material: {
+                    id: m.id,
+                    name: m.name,
+                    sku: m.sku,
+                    unit: m.unit,
+                    name_bn: m.name_bn || null,
+                  } as any,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+
+                if (supabaseClient) {
+                  try {
+                    const dbInsert = { ...rollPayload }
+                    delete (dbInsert as any).material
+                    await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
+                  } catch {}
+                }
+
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
+                rolls.push(rollPayload)
               }
-
-              PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
-              PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
-              rolls.push(rollPayload)
             }
           }
           existingMaterialIdsWithRolls.add(m.id)
@@ -3022,11 +3091,13 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
         PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
         return payload
       }
     } catch {}
 
+    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
     PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
     return payload
   }
@@ -3715,6 +3786,7 @@ export class InventoryRepository {
       if (data) updated = data as unknown as InventoryRollRecord
     } catch {}
 
+    PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated, params.company_id)
     PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, roll.id, updated)
 
     // Synchronize Machinery active mounted roll

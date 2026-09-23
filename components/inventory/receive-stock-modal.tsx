@@ -1678,6 +1678,7 @@ export function ReceiveStockModal({
         if (typeof window !== 'undefined') {
           window.dispatchEvent(new CustomEvent('printerp_table_synced:products'))
           window.dispatchEvent(new CustomEvent('printerp_table_synced:materials'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:inventory_rolls'))
           window.dispatchEvent(new CustomEvent('printerp_table_synced:stock_ledger'))
           window.dispatchEvent(new CustomEvent('printerp_table_synced:pricing_rules'))
         }

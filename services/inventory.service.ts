@@ -203,26 +203,15 @@ export class InventoryService {
       0
     )
 
-    // Width & Length extraction
-    let widthFt = Number(params.width_ft || 0)
-    if (!widthFt && params.size_label) {
+    // Width & Length extraction with configured roll size resolution
+    let nominalWidthFt = Number(params.width_ft || 0)
+    if (!nominalWidthFt && params.size_label) {
       const matchW = params.size_label.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
-      if (matchW) widthFt = Number(matchW[1])
+      if (matchW) nominalWidthFt = Number(matchW[1])
     }
-    if (!widthFt && params.notes) {
+    if (!nominalWidthFt && params.notes) {
       const matchW = params.notes.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
-      if (matchW) widthFt = Number(matchW[1])
-    }
-    if (!widthFt) {
-      widthFt = Number(
-        material.roll_width_ft ||
-        (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
-        material.width ||
-        4
-      )
-    }
-    if (isRoll && globalAllowance > 0 && Math.floor(widthFt) === widthFt) {
-      widthFt = Math.round((widthFt + globalAllowance) * 100) / 100
+      if (matchW) nominalWidthFt = Number(matchW[1])
     }
 
     let lengthFt = Number(params.length_ft || 0)
@@ -237,6 +226,42 @@ export class InventoryService {
     if (!lengthFt) {
       lengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
     }
+
+    // Check if this matches a specific configured roll size
+    let widthFt = nominalWidthFt
+    let matchedConfigAllowance = globalAllowance
+
+    if (rawRollSizes.length > 0 && nominalWidthFt > 0) {
+      const matchingConfigSize = rawRollSizes.find((sz: any) => {
+        const szNominal = Number(sz.nominal_width_ft || sz.width || sz.size || 0)
+        const szEffective = Number(sz.width_ft || sz.width || sz.size || 0)
+        const szLen = Number(sz.length || sz.length_ft || 0)
+        const wMatch = szNominal === nominalWidthFt || szEffective === nominalWidthFt || (Math.abs(szEffective - nominalWidthFt) < 0.1) || (Math.abs(szNominal - nominalWidthFt) < 0.1)
+        const lMatch = !szLen || !lengthFt || Math.abs(szLen - lengthFt) <= 5
+        return wMatch && lMatch
+      })
+
+      if (matchingConfigSize) {
+        matchedConfigAllowance = Number(matchingConfigSize.extra_allowance ?? matchingConfigSize.allowance ?? matchingConfigSize.allowance_ft ?? globalAllowance ?? 0)
+        nominalWidthFt = Number(matchingConfigSize.nominal_width_ft || matchingConfigSize.width || matchingConfigSize.size || nominalWidthFt)
+        widthFt = Number(matchingConfigSize.width_ft) || ((matchedConfigAllowance > 0 && Math.floor(nominalWidthFt) === nominalWidthFt) ? Math.round((nominalWidthFt + matchedConfigAllowance) * 100) / 100 : (nominalWidthFt + matchedConfigAllowance))
+        lengthFt = Number(matchingConfigSize.length || matchingConfigSize.length_ft || lengthFt)
+      }
+    }
+
+    if (!widthFt) {
+      widthFt = Number(
+        material.roll_width_ft ||
+        (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+        material.width ||
+        4
+      )
+      nominalWidthFt = widthFt
+    }
+    if (isRoll && matchedConfigAllowance > 0 && Math.floor(widthFt) === widthFt) {
+      widthFt = Math.round((widthFt + matchedConfigAllowance) * 100) / 100
+    }
+
     const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : 1
     const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
 
@@ -303,6 +328,79 @@ export class InventoryService {
           rollsCreated.push(rollRecord)
         } catch {}
       }
+    }
+
+    // Update material.roll_sizes with discrete quantity counts per size configuration
+    if (isRoll) {
+      try {
+        const existingRollSizes: any[] = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
+          ? [...material.roll_sizes]
+          : Array.isArray((material.material_config as any)?.roll_sizes) && (material.material_config as any).roll_sizes.length > 0
+          ? [...(material.material_config as any).roll_sizes]
+          : []
+
+        let matched = false
+        const updatedSizes = existingRollSizes.map((sz: any) => {
+          const szNominal = Number(sz.nominal_width_ft || sz.width || sz.size || 0)
+          const szEffective = Number(sz.width_ft || sz.width || sz.size || 0)
+          const szLen = Number(sz.length || sz.length_ft || 0)
+          const wMatch = (szNominal === nominalWidthFt || szEffective === widthFt || Math.abs(szEffective - widthFt) < 0.1 || Math.abs(szNominal - nominalWidthFt) < 0.1 || Math.abs(szEffective - nominalWidthFt) < 0.1)
+          const lMatch = !szLen || !lengthFt || Math.abs(szLen - lengthFt) <= 5
+
+          if (wMatch && lMatch && !matched) {
+            matched = true
+            const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
+            const newQty = curQty + params.quantity
+            const allowance = Number(sz.extra_allowance ?? sz.allowance ?? sz.allowance_ft ?? matchedConfigAllowance ?? 0)
+            const effW = widthFt
+            const effL = szLen || lengthFt
+            return {
+              ...sz,
+              width: szNominal || nominalWidthFt || widthFt,
+              nominal_width_ft: szNominal || nominalWidthFt || widthFt,
+              width_ft: effW,
+              allowance_ft: allowance,
+              length: effL,
+              length_ft: effL,
+              quantity: newQty,
+              roll_count: newQty,
+              stock_qty: newQty,
+              stock: newQty,
+              total_sft: Math.round(newQty * effW * effL * 100) / 100,
+            }
+          }
+          return sz
+        })
+
+        if (!matched && (existingRollSizes.length > 0 || params.quantity > 0)) {
+          const allowance = (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : matchedConfigAllowance
+          updatedSizes.push({
+            width: nominalWidthFt || widthFt,
+            nominal_width_ft: nominalWidthFt || widthFt,
+            width_ft: widthFt,
+            allowance_ft: allowance,
+            length: lengthFt,
+            length_ft: lengthFt,
+            quantity: params.quantity,
+            roll_count: params.quantity,
+            stock_qty: params.quantity,
+            stock: params.quantity,
+            total_sft: Math.round(params.quantity * widthFt * lengthFt * 100) / 100,
+          })
+        }
+
+        await InventoryRepository.updateMaterial(
+          material.id,
+          {
+            roll_sizes: updatedSizes,
+            material_config: {
+              ...(material.material_config as any),
+              roll_sizes: updatedSizes,
+            },
+          },
+          params.company_id
+        )
+      } catch {}
     }
 
     // Record Inward Price Intelligence
