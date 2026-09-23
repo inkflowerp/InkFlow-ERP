@@ -111,6 +111,27 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
       out[k] = v
     }
   }
+
+  // Ensure NOT NULL JSONB columns are never null
+  if (out.material_config === null || out.material_config === undefined || typeof out.material_config !== 'object') {
+    out.material_config = {}
+  }
+  if (out.service_config === null || out.service_config === undefined || typeof out.service_config !== 'object') {
+    out.service_config = {}
+  }
+  if (out.price_tiers === null || out.price_tiers === undefined || typeof out.price_tiers !== 'object') {
+    out.price_tiers = {}
+  }
+  if (out.cost_breakdown === null || out.cost_breakdown === undefined || typeof out.cost_breakdown !== 'object') {
+    out.cost_breakdown = {}
+  }
+  if (out.components === null || out.components === undefined || !Array.isArray(out.components)) {
+    out.components = []
+  }
+  if (out.pricing_formula === null || out.pricing_formula === undefined || typeof out.pricing_formula !== 'object') {
+    out.pricing_formula = {}
+  }
+
   return out
 }
 
@@ -617,7 +638,7 @@ export class ProductRepository {
         description: product.description?.trim() || null,
         description_bn: product.description_bn?.trim() || null,
         dimensions_spec: product.dimensions_spec?.trim() || null,
-        material_config: product.material_config || null,
+        material_config: product.material_config || {},
         base_cost: calculatedBaseCost,
         selling_price: Math.max(0, Number(product.selling_price) || 0),
         min_price: Math.max(0, Number(product.min_price) || 0),
@@ -637,8 +658,8 @@ export class ProductRepository {
           turnaround_days: product.turnaround_days !== undefined && product.turnaround_days !== null ? Number(product.turnaround_days) : (outsourceConfig?.turnaround_days ?? null),
           outsource_notes: product.outsource_notes || outsourceConfig?.vendor_notes || null,
           outsource_category: product.outsource_category || (isOutsource ? product.category : null),
-          service_config: product.service_config || null,
-          material_config: product.material_config || null,
+          service_config: product.service_config || {},
+          material_config: product.material_config || {},
           roll_sizes: product.roll_sizes || product.material_config?.roll_sizes || null,
           available_widths_ft: product.available_widths_ft || product.material_config?.available_widths_ft || null,
           standard_roll_length_ft: product.standard_roll_length_ft || product.material_config?.standard_roll_length_ft || null,
@@ -946,8 +967,8 @@ export class ProductRepository {
         formulaUpdates.roll_sizes = payload.roll_sizes
       }
       if (updates.material_config !== undefined) {
-        payload.material_config = updates.material_config
-        formulaUpdates.material_config = updates.material_config
+        payload.material_config = updates.material_config || {}
+        formulaUpdates.material_config = updates.material_config || {}
       }
       if (updates.available_widths_ft !== undefined) {
         payload.available_widths_ft = updates.available_widths_ft

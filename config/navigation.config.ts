@@ -172,11 +172,19 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
         },
         {
           key: 'products',
-          title: 'Products & Pricing',
+          title: 'Products & Masters',
           titleBn: 'পণ্য ও সেবা',
           href: '/products',
           icon: 'Layers',
           permission: { action: 'view', resource: 'inventory' },
+        },
+        {
+          key: 'pricing',
+          title: 'Pricing & Estimator',
+          titleBn: 'দর তালিকা ও ক্যালকুলেটর',
+          href: '/pricing',
+          icon: 'Calculator',
+          permission: { action: 'view', resource: 'pricing' },
         },
         {
           key: 'suppliers',

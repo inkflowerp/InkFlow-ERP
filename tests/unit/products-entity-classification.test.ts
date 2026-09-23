@@ -8,7 +8,7 @@ import {
   getProductEntityKindLabel,
 } from '../../lib/units.ts'
 import { ProductService } from '../../services/product.service.ts'
-import { ProductRepository } from '../../lib/repositories/product.repository.ts'
+import { ProductRepository, sanitizeProductDbPayload } from '../../lib/repositories/product.repository.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 
 describe('Unit: Product Entity Type Classification (Ready Product vs Raw Material vs Service)', () => {
@@ -187,5 +187,28 @@ describe('Unit: Product Entity Type Classification (Ready Product vs Raw Materia
     assert.strictEqual(isReadyProduct(eyelet), false, 'Eyelet must not be a ready product')
     assert.strictEqual(getProductEntityKind(eyelet), 'material')
     assert.strictEqual(getProductEntityKindLabel(eyelet), 'Raw Material')
+  })
+
+  it('7. sanitizeProductDbPayload guarantees non-null JSONB defaults for material_config and service_config', () => {
+    const rawPayload = {
+      name: 'Banner Flex 280gsm',
+      sku: 'PRD-TEST-001',
+      unit: 'sft',
+      selling_price: 25,
+      material_config: null,
+      service_config: null,
+      price_tiers: null,
+      cost_breakdown: null,
+      components: null,
+      pricing_formula: null,
+    }
+
+    const sanitized = sanitizeProductDbPayload(rawPayload)
+    assert.deepStrictEqual(sanitized.material_config, {}, 'material_config must default to empty object, never null')
+    assert.deepStrictEqual(sanitized.service_config, {}, 'service_config must default to empty object, never null')
+    assert.deepStrictEqual(sanitized.price_tiers, {}, 'price_tiers must default to empty object, never null')
+    assert.deepStrictEqual(sanitized.cost_breakdown, {}, 'cost_breakdown must default to empty object, never null')
+    assert.deepStrictEqual(sanitized.components, [], 'components must default to empty array, never null')
+    assert.deepStrictEqual(sanitized.pricing_formula, {}, 'pricing_formula must default to empty object, never null')
   })
 })

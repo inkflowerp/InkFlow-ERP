@@ -41,7 +41,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(mgmtSection.title, 'Materials & Finance')
     assert.equal(mgmtSection.titleBn, 'মালামাল ও হিসাব')
     const mgmtItems = mgmtSection.items.map((i) => i.key)
-    assert.deepEqual(mgmtItems, ['inventory', 'products', 'suppliers', 'accounting', 'costing', 'hr', 'reports'])
+    assert.deepEqual(mgmtItems, ['inventory', 'products', 'pricing', 'suppliers', 'accounting', 'costing', 'hr', 'reports'])
 
     // Section 4: System & Settings
     const settingsSection = navSections.find((s) => s.id === 'settings')!
