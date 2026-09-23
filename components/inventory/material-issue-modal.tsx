@@ -379,13 +379,13 @@ export function MaterialIssueModal({
     })
   }
 
-  const handleSizeChange = (index: number, sizeItem: { width_ft: number; length_ft: number; label: string }) => {
+  const handleSizeChange = (index: number, sizeItem: { width_ft: number; length_ft: number; label?: string }) => {
     setItems((prev) => {
       const updated = [...prev]
       const cur = { ...updated[index] }
       cur.selected_width_ft = sizeItem.width_ft
       cur.selected_length_ft = sizeItem.length_ft
-      cur.selected_size_label = sizeItem.label
+      cur.selected_size_label = sizeItem.label || `${sizeItem.width_ft}ft × ${sizeItem.length_ft}ft`
       const areaPerUnit = sizeItem.width_ft * sizeItem.length_ft
       cur.area_per_purchase_unit = areaPerUnit
       cur.consumption_quantity = cur.issued_quantity * areaPerUnit
@@ -967,7 +967,11 @@ export function MaterialIssueModal({
                               length_ft: l || 164,
                               label: `${w}ft × ${l}ft`,
                             }
-                            handleSizeChange(idx, foundSize)
+                            handleSizeChange(idx, {
+                              width_ft: foundSize.width_ft,
+                              length_ft: foundSize.length_ft,
+                              label: foundSize.label || `${foundSize.width_ft}ft × ${foundSize.length_ft}ft`,
+                            })
                           }}
                           className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-xs font-medium"
                         >
