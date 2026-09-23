@@ -22,6 +22,8 @@ import {
   HelpCircle,
   ShieldCheck,
   RotateCcw,
+  ArrowRight,
+  Package,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -41,6 +43,7 @@ import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { issueMasterRollsBatchAction } from '@/actions/inventory.actions'
 import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface IssueMasterRollModalProps {
   open: boolean
@@ -58,10 +61,11 @@ export interface IssueMasterRollModalProps {
 
 const DEFAULT_WIDTH_PRESETS = [
   { label: '3 ft (36")', value: 3 },
-  { label: '3.2 ft (1m)', value: 3.28 },
+  { label: '3.2 ft (1m)', value: 3.2 },
   { label: '4 ft (48")', value: 4 },
   { label: '5 ft (60")', value: 5 },
   { label: '6 ft (72")', value: 6 },
+  { label: '7 ft (84")', value: 7 },
   { label: '10 ft (120")', value: 10 },
 ]
 
@@ -73,13 +77,14 @@ const DEFAULT_LENGTH_PRESETS = [
 ]
 
 const DEFAULT_PRODUCTION_MACHINES = [
-  { id: 'roland', name: 'Roland Eco-Solvent (64")' },
+  { id: 'roland', name: 'Roland Eco-Solvent Press (64")' },
+  { id: 'flora', name: 'Flora Large Format Flex Press (10.5ft)' },
   { id: 'mimaki', name: 'Mimaki UV Flatbed 2513' },
   { id: 'hp', name: 'HP Latex 570 (64")' },
   { id: 'laser', name: 'Laser Cutting & Engraving Bay' },
   { id: 'cnc', name: 'CNC Router Workstation' },
   { id: 'screen', name: 'Screen Print Table' },
-  { id: 'finishing', name: 'Finishing & Grommeting Station' },
+  { id: 'finishing', name: 'Finishing & Eyelet Workstation' },
 ]
 
 export function IssueMasterRollModal({
@@ -96,15 +101,69 @@ export function IssueMasterRollModal({
   companyId,
 }: IssueMasterRollModalProps) {
   const { locale, tBilingual } = useI18n()
-  const isBn = locale === 'bn'
 
-  // Substrate Material
-  const [materialId, setMaterialId] = useState<string>(initialMaterialId || materials[0]?.id || '')
+  // 1. Strict Filter for Roll Substrates ONLY (exclude inks, hardware, accessories, grommets, liquids)
+  const rollMaterials = useMemo(() => {
+    return materials.filter((m) => {
+      if (!m) return false
+      const cat = String(m.category || '').toLowerCase()
+      const name = String(m.name || '').toLowerCase()
+      const unit = String(m.unit || '').toLowerCase()
+      const pUnit = String(m.purchase_unit || m.master_purchase_unit || '').toLowerCase()
+
+      // Exclude non-roll media: inks, accessories, eyelets, stands, hardware, fluids, chemicals, rigid boards
+      const isExcluded = [
+        'ink',
+        'solvent',
+        'eco_solvent',
+        'uv_ink',
+        'sublimation_ink',
+        'pigment_ink',
+        'accessories',
+        'grommet',
+        'eyelet',
+        'hardware',
+        'stand',
+        'standee',
+        'liquid',
+        'chemical',
+        'cleaning_solution',
+        'foam_board',
+        'acrylic',
+        'pvc_board',
+        'sheet',
+      ].some((c) => (cat.includes(c) || name.includes(c)) && !name.includes('banner') && !name.includes('vinyl') && !name.includes('flex') && !name.includes('roll'))
+
+      if (isExcluded && !m.is_roll && pUnit !== 'roll') {
+        return false
+      }
+
+      return Boolean(
+        m.is_roll ||
+        pUnit === 'roll' ||
+        unit === 'roll' ||
+        ['sft', 'sqft'].includes(unit) ||
+        (m.roll_width_ft && Number(m.roll_width_ft) > 0) ||
+        ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll', 'pvc', 'flex_banner', 'sav'].some(
+          (c) => cat.includes(c) || name.includes(c)
+        )
+      )
+    })
+  }, [materials])
+
+  // Substrate Material Selection
+  const [materialId, setMaterialId] = useState<string>(() => {
+    if (initialMaterialId && rollMaterials.some((m) => m.id === initialMaterialId)) {
+      return initialMaterialId
+    }
+    return rollMaterials[0]?.id || ''
+  })
+
   const selectedMaterial = useMemo(() => {
-    return materials.find((m) => m.id === materialId) || null
-  }, [materials, materialId])
+    return rollMaterials.find((m) => m.id === materialId) || materials.find((m) => m.id === materialId) || null
+  }, [rollMaterials, materials, materialId])
 
-  // Source Location
+  // Source Store Location
   const [sourceLocationId, setSourceLocationId] = useState<string>(locations[0]?.id || '')
 
   // Dimensions
@@ -113,7 +172,7 @@ export function IssueMasterRollModal({
   const [isCustomLength, setIsCustomLength] = useState<boolean>(false)
   const [lengthFt, setLengthFt] = useState<number>(initialLengthFt)
 
-  // Batch Quantity
+  // Batch Quantity (Number of physical rolls to issue)
   const [quantityRolls, setQuantityRolls] = useState<number>(1)
 
   // Destination & Machine Mounting
@@ -129,7 +188,7 @@ export function IssueMasterRollModal({
 
   // Notes & Operator
   const [notes, setNotes] = useState<string>('')
-  const [operatorName, setOperatorName] = useState<string>('Press Operator')
+  const [operatorName, setOperatorName] = useState<string>('Floor Operator')
 
   // UI Feedback States
   const [loading, setLoading] = useState<boolean>(false)
@@ -137,10 +196,32 @@ export function IssueMasterRollModal({
   const [success, setSuccess] = useState<string | null>(null)
   const [showPrintLabel, setShowPrintLabel] = useState<boolean>(false)
 
-  // Reset or Sync when opened or initialMaterialId changes
+  // Dynamic Machinery list
+  const machineryList = useMemo(() => {
+    if (!companyId) return DEFAULT_PRODUCTION_MACHINES
+    try {
+      const stored = PrintERPDataStore.getAll<any>(STORAGE_KEYS.MACHINERIES, companyId) || []
+      if (stored.length > 0) {
+        return stored.map((m) => ({ id: m.id, name: m.name || m.machinery_name }))
+      }
+    } catch {}
+    return DEFAULT_PRODUCTION_MACHINES
+  }, [companyId])
+
+  // Warehouse Stock Breakdown in Purchase Units & Multi-dimensional Roll Sizes
+  const warehouseBreakdown = useMemo(() => {
+    return getMaterialWarehouseStockBreakdown(selectedMaterial)
+  }, [selectedMaterial])
+
+  // Reset or Sync when modal opens or initial props change
   useEffect(() => {
     if (open) {
-      if (initialMaterialId) setMaterialId(initialMaterialId)
+      if (initialMaterialId && rollMaterials.some((m) => m.id === initialMaterialId)) {
+        setMaterialId(initialMaterialId)
+      } else if (rollMaterials.length > 0 && !rollMaterials.some((m) => m.id === materialId)) {
+        setMaterialId(rollMaterials[0].id)
+      }
+
       if (initialWidthFt) setWidthFt(initialWidthFt)
       if (initialLengthFt) setLengthFt(initialLengthFt)
       if (initialMachineId) {
@@ -151,7 +232,34 @@ export function IssueMasterRollModal({
       setSuccess(null)
       setLoading(false)
     }
-  }, [open, initialMaterialId, initialWidthFt, initialLengthFt, initialMachineId])
+  }, [open, initialMaterialId, initialWidthFt, initialLengthFt, initialMachineId, rollMaterials])
+
+  // Auto-synchronize width and length when substrate changes
+  useEffect(() => {
+    if (!selectedMaterial) return
+
+    const breakdown = getMaterialWarehouseStockBreakdown(selectedMaterial)
+    if (breakdown.roll_items.length > 0) {
+      // Pick first size group with stock, or first configured size
+      const stockItem = breakdown.roll_items.find((r) => r.roll_count > 0) || breakdown.roll_items[0]
+      setWidthFt(stockItem.width_ft)
+      setLengthFt(stockItem.length_ft)
+      setIsCustomWidth(false)
+      setIsCustomLength(false)
+    } else {
+      const stdWidth = Number(
+        selectedMaterial.roll_width_ft ||
+        selectedMaterial.width ||
+        (Array.isArray(selectedMaterial.available_widths_ft) && selectedMaterial.available_widths_ft.length === 1 ? selectedMaterial.available_widths_ft[0] : 0) ||
+        3
+      )
+      const stdLength = Number(selectedMaterial.standard_roll_length_ft || selectedMaterial.roll_length_ft || selectedMaterial.length || 164)
+      setWidthFt(stdWidth)
+      setLengthFt(stdLength)
+      setIsCustomWidth(false)
+      setIsCustomLength(false)
+    }
+  }, [selectedMaterial])
 
   // Auto-Generated Roll Code Preview
   const generatedRollCode = useMemo(() => {
@@ -159,15 +267,10 @@ export function IssueMasterRollModal({
       return quantityRolls > 1 ? `${customRollTag.trim()}-01` : customRollTag.trim()
     }
     const cleanSku = (selectedMaterial?.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
-    const lot = lotNumber.trim() || 'LOT'
+    const lot = lotNumber.trim() || new Date().toISOString().slice(2, 10).replace(/-/g, '')
     const tag = `ROL-${cleanSku}-${widthFt}FT-${lot}`
     return quantityRolls > 1 ? `${tag}-01` : tag
   }, [selectedMaterial, widthFt, lotNumber, customRollTag, quantityRolls])
-
-  // Warehouse Stock Breakdown in Purchase Units
-  const warehouseBreakdown = useMemo(() => {
-    return getMaterialWarehouseStockBreakdown(selectedMaterial)
-  }, [selectedMaterial])
 
   const singleRollAreaSft = useMemo(() => {
     return Math.round(widthFt * lengthFt * 100) / 100
@@ -182,24 +285,39 @@ export function IssueMasterRollModal({
     return Number(selectedMaterial?.current_stock || 0)
   }, [selectedMaterial])
 
-  const currentAvailableRollsForWidth = useMemo(() => {
+  // Specific Size Group Stock Check
+  const selectedSizeGroup = useMemo(() => {
+    return warehouseBreakdown.roll_items.find(
+      (r) => Number(r.width_ft) === Number(widthFt) && Number(r.length_ft) === Number(lengthFt)
+    ) || null
+  }, [warehouseBreakdown, widthFt, lengthFt])
+
+  const currentAvailableRollsForSize = useMemo(() => {
+    if (selectedSizeGroup) {
+      return selectedSizeGroup.roll_count
+    }
     if (singleRollAreaSft <= 0) return 0
     return Math.floor(currentStoreStock / singleRollAreaSft)
-  }, [currentStoreStock, singleRollAreaSft])
+  }, [selectedSizeGroup, currentStoreStock, singleRollAreaSft])
 
   const projectedRollsRemaining = useMemo(() => {
-    return Math.max(0, currentAvailableRollsForWidth - quantityRolls)
-  }, [currentAvailableRollsForWidth, quantityRolls])
+    return Math.max(0, currentAvailableRollsForSize - quantityRolls)
+  }, [currentAvailableRollsForSize, quantityRolls])
 
   const unitCost = useMemo(() => {
     if (!selectedMaterial) return 0
     return Number(
+      warehouseBreakdown.cost_per_consumption_unit ||
       (selectedMaterial as any).unit_cost ||
-        selectedMaterial.average_cost ||
-        selectedMaterial.last_purchase_price ||
-        0
+      selectedMaterial.average_cost ||
+      selectedMaterial.last_purchase_price ||
+      0
     )
-  }, [selectedMaterial])
+  }, [selectedMaterial, warehouseBreakdown])
+
+  const costPerRoll = useMemo(() => {
+    return Math.round(singleRollAreaSft * unitCost * 100) / 100
+  }, [singleRollAreaSft, unitCost])
 
   const totalValuation = useMemo(() => {
     return Math.round(totalBatchAreaSft * unitCost * 100) / 100
@@ -209,7 +327,7 @@ export function IssueMasterRollModal({
     return currentStoreStock - totalBatchAreaSft
   }, [currentStoreStock, totalBatchAreaSft])
 
-  const isStoreShortage = projectedStoreBalance < 0
+  const isStoreShortage = currentStoreStock < totalBatchAreaSft || currentAvailableRollsForSize < quantityRolls
 
   const handleWidthSelect = (val: number) => {
     setWidthFt(val)
@@ -224,7 +342,7 @@ export function IssueMasterRollModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!materialId) {
-      setError('Please select a material substrate from warehouse inventory.')
+      setError('Please select a valid roll media substrate from warehouse inventory.')
       return
     }
     if (widthFt <= 0 || lengthFt <= 0) {
@@ -241,7 +359,7 @@ export function IssueMasterRollModal({
     setSuccess(null)
 
     try {
-      const targetMachine = DEFAULT_PRODUCTION_MACHINES.find((m) => m.id === machineId)
+      const targetMachine = machineryList.find((m) => m.id === machineId)
       const machineName =
         destination === 'machine'
           ? initialMachineName || targetMachine?.name || 'Production Workstation'
@@ -283,7 +401,7 @@ export function IssueMasterRollModal({
 
       setTimeout(() => {
         onOpenChange(false)
-      }, 900)
+      }, 700)
     } catch (err: any) {
       setError(err.message || 'Error occurred while issuing master roll.')
     } finally {
@@ -295,79 +413,110 @@ export function IssueMasterRollModal({
     <ModalDialog
       open={open}
       onOpenChange={onOpenChange}
-      title={tBilingual(
-        'Issue / Requisition Master Roll to Print Floor',
-        'প্রিন্ট ফ্লোরে মাস্টার রোল ইস্যু ও মাউন্টিং'
-      )}
-      description={tBilingual(
-        'Mount or issue master rolls directly to production workstations or floor staging with live inventory ledger sync.',
-        'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে নতুন মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
-      )}
+      size="3xl"
+      hideFooter={true}
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
+            <Disc className="h-5 w-5 animate-[spin_10s_linear_infinite]" />
+          </div>
+          <div>
+            <div className="text-base font-bold text-slate-900 dark:text-white leading-tight">
+              {tBilingual(
+                'Issue / Requisition Master Roll to Print Floor',
+                'প্রিন্ট ফ্লোরে মাস্টার রোল ইস্যু ও মাউন্টিং'
+              )}
+            </div>
+            <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              {tBilingual(
+                'Directly requisition and mount physical rolls from warehouse stock to machines or staging.',
+                'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে নতুন মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
+              )}
+            </div>
+          </div>
+        </div>
+      }
       onSubmit={handleSubmit}
-      className="max-w-2xl max-h-[90vh] overflow-y-auto"
+      className="p-0 overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-800"
     >
-      <div className="space-y-4 pt-1 text-xs">
+      <div className="p-4 sm:p-5 space-y-4 text-xs max-h-[calc(85vh-4rem)] overflow-y-auto pr-2">
         {/* Success Alert */}
         {success && (
-          <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 flex items-center gap-2.5 animate-in fade-in">
+          <div className="p-3.5 bg-emerald-50 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-200 rounded-xl border border-emerald-300 dark:border-emerald-800 flex items-center gap-3 animate-in fade-in shadow-xs">
             <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span className="font-semibold">{success}</span>
+            <span className="font-semibold text-xs">{success}</span>
           </div>
         )}
 
         {/* Error Alert */}
         {error && (
-          <div className="p-3 bg-rose-50 dark:bg-rose-950/40 text-rose-900 dark:text-rose-200 rounded-xl border border-rose-300 dark:border-rose-800 flex items-center gap-2.5 animate-in fade-in">
+          <div className="p-3.5 bg-rose-50 dark:bg-rose-950/50 text-rose-900 dark:text-rose-200 rounded-xl border border-rose-300 dark:border-rose-800 flex items-center gap-3 animate-in fade-in shadow-xs">
             <AlertTriangle className="h-5 w-5 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span className="font-semibold">{error}</span>
+            <span className="font-semibold text-xs">{error}</span>
+          </div>
+        )}
+
+        {/* No Roll Media Warning if materials list is empty */}
+        {rollMaterials.length === 0 && (
+          <div className="p-4 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 rounded-xl border border-amber-300 dark:border-amber-800 flex items-start gap-3">
+            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-xs">No Roll Media Substrates Found</div>
+              <div className="text-[11px] opacity-90 mt-0.5">
+                No active roll substrates (PVC, Flex Banner, Vinyl, SAV, Canvas, etc.) were found in your warehouse inventory. Add or configure roll media in Materials Master.
+              </div>
+            </div>
           </div>
         )}
 
         {/* ========================================================= */}
         {/* STEP 1: SUBSTRATE MATERIAL & SOURCE WAREHOUSE */}
         {/* ========================================================= */}
-        <div className="space-y-3 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+              <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               1. {tBilingual('Material Substrate & Warehouse Source', 'কাঁচামাল ও সোর্স গুদাম')}
             </span>
             {selectedMaterial && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    'text-[10px] font-mono font-bold py-0.5',
-                    currentAvailableRollsForWidth > 0
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
-                      : 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950 dark:text-amber-300'
-                  )}
-                >
-                  Store Stock: {currentAvailableRollsForWidth} Roll(s) ({widthFt}ft × {lengthFt}ft) • {currentStoreStock.toLocaleString()} SFT
-                </Badge>
-              </div>
+              <Badge
+                variant="outline"
+                className={cn(
+                  'text-[11px] font-mono font-bold py-1 px-2.5 shadow-2xs',
+                  currentStoreStock > 0
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                    : 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
+                )}
+              >
+                Store Stock: {warehouseBreakdown.purchase_unit_display} • {currentStoreStock.toLocaleString()} SFT Available
+              </Badge>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* Substrate Select */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block">
-                {tBilingual('Material Substrate', 'কাঁচামাল সাবস্ট্রেট')}{' '}
-                <span className="text-rose-500">*</span>
+              <Label className="text-xs font-semibold mb-1.5 flex items-center justify-between">
+                <span>
+                  {tBilingual('Roll Substrate Media', 'কাঁচামাল রোল সাবস্ট্রেট')}{' '}
+                  <span className="text-rose-500">*</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-normal">
+                  ({rollMaterials.length} Roll Media Items)
+                </span>
               </Label>
               <select
                 value={materialId}
                 onChange={(e) => setMaterialId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500"
+                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
                 required
               >
-                <option value="">-- Select Material Substrate --</option>
-                {materials.map((m) => {
+                <option value="">-- Select Roll Media Substrate --</option>
+                {rollMaterials.map((m) => {
                   const bd = getMaterialWarehouseStockBreakdown(m)
                   return (
                     <option key={m.id} value={m.id}>
-                      {m.name} ({m.sku || 'No SKU'}) • {bd.purchase_unit_display} ({m.current_stock} {m.unit} avail)
+                      {m.name} ({m.sku || 'No SKU'}) — {bd.purchase_unit_display} ({m.current_stock} {m.unit})
                     </option>
                   )
                 })}
@@ -376,13 +525,13 @@ export function IssueMasterRollModal({
 
             {/* Source Warehouse Location */}
             <div>
-              <Label className="text-xs font-semibold mb-1 block">
+              <Label className="text-xs font-semibold mb-1.5 block">
                 {tBilingual('Source Store Location', 'উৎস স্টোর লোকেশন')}
               </Label>
               <select
                 value={sourceLocationId}
                 onChange={(e) => setSourceLocationId(e.target.value)}
-                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-indigo-500"
+                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
               >
                 {locations.length === 0 ? (
                   <option value="">Main Warehouse Store</option>
@@ -399,13 +548,13 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 2: ROLL DIMENSIONS (WIDTH & LENGTH PRESETS) */}
+        {/* STEP 2: ROLL DIMENSIONS (AVAILABLE SIZES & PRESETS) */}
         {/* ========================================================= */}
-        <div className="space-y-3 p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="space-y-3.5 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
               <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              2. {tBilingual('Master Roll Dimensions', 'মাস্টার রোলের সাইজ ও মাপ')}
+              2. {tBilingual('Master Roll Dimensions & Size Breakdown', 'মাস্টার রোলের সাইজ ও বহর')}
             </span>
             <span className="text-[10px] text-slate-500 font-mono">
               Store Unit: <strong>Purchase Unit (Full Rolls)</strong>
@@ -413,22 +562,24 @@ export function IssueMasterRollModal({
           </div>
 
           {/* Dynamic Available Warehouse Sizes Selector */}
-          {warehouseBreakdown.roll_items.length > 0 && (
-            <div className="p-3 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-2">
+          {warehouseBreakdown.roll_items.length > 0 ? (
+            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-2.5">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                  <Disc className="h-3.5 w-3.5 text-blue-600" />
+                  <Package className="h-3.5 w-3.5 text-blue-600" />
                   {tBilingual('Available Warehouse Roll Sizes', 'গুদামে বিদ্যমান রোলের সাইজ বহর')}
                 </span>
-                <span className="text-[10px] text-blue-700 dark:text-blue-300 font-mono font-semibold">
-                  {warehouseBreakdown.roll_items.length} Sizes in Stock
-                </span>
+                <Badge variant="secondary" className="text-[10px] font-mono font-bold">
+                  {warehouseBreakdown.roll_items.length} {warehouseBreakdown.roll_items.length === 1 ? 'Size Group' : 'Size Groups'}
+                </Badge>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {warehouseBreakdown.roll_items.map((item) => {
                   const isSelected = widthFt === item.width_ft && lengthFt === item.length_ft
                   const availCount = item.roll_count
                   const remainingCount = Math.max(0, availCount - (isSelected ? quantityRolls : 0))
+
                   return (
                     <button
                       key={`${item.width_ft}x${item.length_ft}`}
@@ -440,26 +591,39 @@ export function IssueMasterRollModal({
                         setIsCustomLength(false)
                       }}
                       className={cn(
-                        'p-2.5 rounded-lg border text-left transition-all cursor-pointer flex flex-col justify-between gap-1 shadow-2xs',
+                        'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs text-left relative overflow-hidden',
                         isSelected
-                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400'
-                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700'
+                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-md'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xs'
                       )}
                     >
                       <div className="flex items-center justify-between">
-                        <span className={cn('font-mono font-black text-xs', isSelected ? 'text-white' : 'text-slate-900 dark:text-white')}>
+                        <span className={cn('font-mono font-black text-sm', isSelected ? 'text-white' : 'text-slate-900 dark:text-white')}>
                           {item.width_ft}ft × {item.length_ft}ft
                         </span>
-                        <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded font-mono', isSelected ? 'bg-blue-700 text-white' : 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300')}>
+                        <span
+                          className={cn(
+                            'text-[10px] font-bold px-2 py-0.5 rounded-full font-mono',
+                            isSelected
+                              ? 'bg-blue-700 text-white'
+                              : availCount > 0
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                          )}
+                        >
                           {item.roll_count} Pcs
                         </span>
                       </div>
-                      <div className={cn('text-[10px]', isSelected ? 'text-blue-100' : 'text-slate-500')}>
-                        {item.total_sft.toLocaleString()} SFT
+
+                      <div className={cn('text-[11px] font-medium flex items-center justify-between', isSelected ? 'text-blue-100' : 'text-slate-500')}>
+                        <span>{item.total_sft.toLocaleString()} SFT Total</span>
+                        <span>{item.width_ft * item.length_ft} SFT/roll</span>
                       </div>
+
                       {isSelected && (
-                        <div className="text-[10px] font-semibold text-emerald-200 mt-0.5 font-mono">
-                          {item.roll_count} Pcs - {quantityRolls} Pcs = {remainingCount} Pcs remaining
+                        <div className="pt-1.5 border-t border-blue-500/50 flex items-center justify-between text-[10px] font-bold text-emerald-200 font-mono">
+                          <span>Deduction Preview:</span>
+                          <span>{item.roll_count} Pcs - {quantityRolls} = {remainingCount} Pcs left</span>
                         </div>
                       )}
                     </button>
@@ -467,7 +631,7 @@ export function IssueMasterRollModal({
                 })}
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Width Section */}
           <div>
@@ -476,10 +640,10 @@ export function IssueMasterRollModal({
                 {tBilingual('Roll Width (Feed Axis)', 'রোলের প্রস্থ')} <span className="text-rose-500">*</span>
               </Label>
               <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
-                Current: {widthFt} ft ({Math.round(widthFt * 12)}&quot;) • {currentAvailableRollsForWidth} Rolls Avail in Store
+                Selected: {widthFt} ft ({Math.round(widthFt * 12)}&quot;) • {currentAvailableRollsForSize} Rolls in Store
               </span>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-7 gap-1.5">
+            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
               {DEFAULT_WIDTH_PRESETS.map((p) => {
                 const area = p.value * lengthFt
                 const availRolls = area > 0 ? Math.floor(currentStoreStock / area) : 0
@@ -516,7 +680,7 @@ export function IssueMasterRollModal({
                   value={widthFt}
                   onChange={(e) => setWidthFt(Number(e.target.value))}
                   placeholder="Width in feet (e.g. 5.5)"
-                  className="h-8 text-xs font-mono font-bold"
+                  className="h-9 text-xs font-mono font-bold"
                   required
                 />
                 <span className="text-xs text-slate-500 whitespace-nowrap font-medium">feet</span>
@@ -531,7 +695,7 @@ export function IssueMasterRollModal({
                 {tBilingual('Nominal Master Length', 'রোলের দৈর্ঘ্য')} <span className="text-rose-500">*</span>
               </Label>
               <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
-                Current: {lengthFt} ft ({(lengthFt * 0.3048).toFixed(1)}m)
+                Selected: {lengthFt} ft ({(lengthFt * 0.3048).toFixed(1)}m)
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
@@ -542,7 +706,7 @@ export function IssueMasterRollModal({
                   size="sm"
                   variant={!isCustomLength && lengthFt === p.value ? 'default' : 'outline'}
                   onClick={() => handleLengthSelect(p.value)}
-                  className="h-8 text-xs font-bold px-1"
+                  className="h-9 text-xs font-bold px-1"
                 >
                   {p.label}
                 </Button>
@@ -552,7 +716,7 @@ export function IssueMasterRollModal({
                 size="sm"
                 variant={isCustomLength ? 'default' : 'outline'}
                 onClick={() => setIsCustomLength(true)}
-                className="h-8 text-xs font-bold px-1"
+                className="h-9 text-xs font-bold px-1"
               >
                 Custom
               </Button>
@@ -566,7 +730,7 @@ export function IssueMasterRollModal({
                   value={lengthFt}
                   onChange={(e) => setLengthFt(Number(e.target.value))}
                   placeholder="Length in feet (e.g. 150)"
-                  className="h-8 text-xs font-mono font-bold"
+                  className="h-9 text-xs font-mono font-bold"
                   required
                 />
                 <span className="text-xs text-slate-500 whitespace-nowrap font-medium">feet</span>
@@ -576,16 +740,16 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 3: MULTI-ROLL BATCH QUANTITY & DESTINATION */}
+        {/* STEP 3: REQUISITION QUANTITY & DESTINATION */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {/* Multi-Roll Quantity */}
-          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold block">
-                {tBilingual('Requisition Quantity (Purchase Units / Full Rolls)', 'ইস্যুকৃত রোলের সংখ্যা')}
+                {tBilingual('Requisition Quantity (Purchase Units / Rolls)', 'ইস্যুকৃত রোলের সংখ্যা')}
               </Label>
-              <Badge variant="secondary" className="text-[10px] font-mono">
+              <Badge variant="secondary" className="text-[10px] font-mono font-bold">
                 {quantityRolls} Roll(s) = {totalBatchAreaSft} SFT
               </Badge>
             </div>
@@ -595,37 +759,37 @@ export function IssueMasterRollModal({
                 size="sm"
                 variant="outline"
                 onClick={() => setQuantityRolls((q) => Math.max(1, q - 1))}
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0 cursor-pointer"
               >
-                <Minus className="h-3.5 w-3.5" />
+                <Minus className="h-4 w-4" />
               </Button>
               <Input
                 type="number"
                 min="1"
-                max="50"
+                max="100"
                 value={quantityRolls}
                 onChange={(e) => setQuantityRolls(Math.max(1, parseInt(e.target.value) || 1))}
-                className="h-8 text-center font-mono font-black text-sm"
+                className="h-9 text-center font-mono font-black text-sm"
               />
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
                 onClick={() => setQuantityRolls((q) => q + 1)}
-                className="h-8 w-8 p-0"
+                className="h-9 w-9 p-0 cursor-pointer"
               >
-                <Plus className="h-3.5 w-3.5" />
+                <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex items-center gap-1.5 justify-center pt-1">
+            <div className="flex items-center gap-1.5 justify-center pt-1 flex-wrap">
               {[1, 2, 3, 5, 10].map((q) => (
                 <Button
                   key={q}
                   type="button"
                   size="sm"
-                  variant={quantityRolls === q ? 'secondary' : 'ghost'}
+                  variant={quantityRolls === q ? 'default' : 'outline'}
                   onClick={() => setQuantityRolls(q)}
-                  className="h-6 text-[11px] px-2 font-bold"
+                  className="h-7 text-[11px] px-2.5 font-bold cursor-pointer"
                 >
                   {q} {q === 1 ? 'Roll' : 'Rolls'}
                 </Button>
@@ -634,9 +798,9 @@ export function IssueMasterRollModal({
           </div>
 
           {/* Machine Mount or Floor Staging */}
-          <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
+          <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
             <Label className="text-xs font-semibold block">
-              {tBilingual('Workstation Destination', 'ফ্লোর গন্তব্য ও মাউন্টিং')}
+              {tBilingual('Workstation Destination & Assignment', 'ফ্লোর গন্তব্য ও মাউন্টিং')}
             </Label>
             <div className="flex items-center gap-2">
               <Button
@@ -644,9 +808,9 @@ export function IssueMasterRollModal({
                 size="sm"
                 variant={destination === 'machine' ? 'default' : 'outline'}
                 onClick={() => setDestination('machine')}
-                className="h-8 flex-1 text-xs font-bold gap-1"
+                className="h-9 flex-1 text-xs font-bold gap-1.5 cursor-pointer"
               >
-                <Cpu className="h-3.5 w-3.5" />
+                <Cpu className="h-4 w-4" />
                 <span>Mount to Press</span>
               </Button>
               <Button
@@ -654,9 +818,9 @@ export function IssueMasterRollModal({
                 size="sm"
                 variant={destination === 'floor_staging' ? 'default' : 'outline'}
                 onClick={() => setDestination('floor_staging')}
-                className="h-8 flex-1 text-xs font-bold gap-1"
+                className="h-9 flex-1 text-xs font-bold gap-1.5 cursor-pointer"
               >
-                <Building className="h-3.5 w-3.5" />
+                <Building className="h-4 w-4" />
                 <span>Floor Staging</span>
               </Button>
             </div>
@@ -665,9 +829,9 @@ export function IssueMasterRollModal({
               <select
                 value={machineId}
                 onChange={(e) => setMachineId(e.target.value)}
-                className="w-full h-8 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 text-xs font-semibold mt-1"
+                className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold mt-1"
               >
-                {DEFAULT_PRODUCTION_MACHINES.map((m) => (
+                {machineryList.map((m) => (
                   <option key={m.id} value={m.id}>
                     {m.name}
                   </option>
@@ -680,7 +844,7 @@ export function IssueMasterRollModal({
         {/* ========================================================= */}
         {/* STEP 4: SMART ROLL TAG AUTO-GENERATOR */}
         {/* ========================================================= */}
-        <div className="p-3 bg-indigo-50/40 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60">
+        <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
@@ -693,31 +857,31 @@ export function IssueMasterRollModal({
               variant="ghost"
               size="sm"
               onClick={() => setShowAdvancedTag(!showAdvancedTag)}
-              className="h-6 text-[10px] text-indigo-700 dark:text-indigo-300 font-semibold px-1.5"
+              className="h-6 text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold px-2 cursor-pointer"
             >
-              {showAdvancedTag ? 'Hide Custom Tag' : 'Edit Lot / Tag'}
+              {showAdvancedTag ? 'Hide Custom Lot' : 'Customize Lot / Tag'}
             </Button>
           </div>
 
-          <div className="mt-2 flex items-center justify-between gap-2 flex-wrap">
-            <Badge className="bg-indigo-600 text-white font-mono text-xs px-2.5 py-1 font-bold shadow-xs">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <Badge className="bg-indigo-600 text-white font-mono text-xs px-3 py-1 font-bold shadow-xs">
               {generatedRollCode}
               {quantityRolls > 1 && ` (to ...-${String(quantityRolls).padStart(2, '0')})`}
             </Badge>
             <span className="text-[11px] text-slate-500 font-medium">
-              Format: ROL-[SKU]-[WIDTH]-[LOT]
+              Standard Format: ROL-[SKU]-[WIDTH]FT-[LOT]
             </span>
           </div>
 
           {showAdvancedTag && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3 pt-2.5 border-t border-indigo-200 dark:border-indigo-900/60">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-indigo-200 dark:border-indigo-900/60">
               <div>
                 <Label className="text-[11px] font-semibold mb-1 block">Batch / Lot Number</Label>
                 <Input
                   placeholder="e.g. LOT-2026-B8"
                   value={lotNumber}
                   onChange={(e) => setLotNumber(e.target.value)}
-                  className="h-7 text-xs font-mono"
+                  className="h-8 text-xs font-mono"
                 />
               </div>
               <div>
@@ -726,7 +890,7 @@ export function IssueMasterRollModal({
                   placeholder="e.g. ROL-CUSTOM-001"
                   value={customRollTag}
                   onChange={(e) => setCustomRollTag(e.target.value)}
-                  className="h-7 text-xs font-mono"
+                  className="h-8 text-xs font-mono"
                 />
               </div>
             </div>
@@ -734,42 +898,42 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 5: LIVE TELEMETRY, VALUATION & STORE STOCK IMPACT */}
+        {/* STEP 5: LIVE TELEMETRY, VALUATION & STORE IMPACT */}
         {/* ========================================================= */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <Card className="p-2.5 bg-white dark:bg-slate-900 border shadow-xs">
+          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
             <span className="text-[10px] uppercase font-bold text-slate-400 block">Single Roll Area</span>
             <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
               {singleRollAreaSft} SFT
             </span>
-            <span className="text-[9px] text-slate-400 block">{widthFt}ft × {lengthFt}ft</span>
+            <span className="text-[10px] text-slate-500 block">{widthFt}ft × {lengthFt}ft</span>
           </Card>
 
-          <Card className="p-2.5 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-indigo-600 dark:text-indigo-400 block">
-              Requisition / Issue
+          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
+            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block">
+              Requisition Batch
             </span>
-            <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 font-mono">
+            <span className="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">
               {quantityRolls} Roll(s)
             </span>
-            <span className="text-[9px] text-slate-400 block">{totalBatchAreaSft} SFT total</span>
+            <span className="text-[10px] text-slate-500 block">{totalBatchAreaSft} SFT total</span>
           </Card>
 
-          <Card className="p-2.5 bg-white dark:bg-slate-900 border shadow-xs">
+          <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
             <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">
-              Valuation (BDT)
+              Total Valuation
             </span>
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
               {formatBDT(totalValuation)}
             </span>
-            <span className="text-[9px] text-slate-400 block">@{formatBDT(unitCost)}/SFT</span>
+            <span className="text-[10px] text-slate-500 block">@{formatBDT(costPerRoll)}/Roll</span>
           </Card>
 
           <Card
             className={cn(
-              'p-2.5 border shadow-xs',
+              'p-3 border shadow-xs',
               isStoreShortage
-                ? 'bg-rose-50/70 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900'
+                ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-300 dark:border-rose-900'
                 : 'bg-white dark:bg-slate-900'
             )}
           >
@@ -782,18 +946,18 @@ export function IssueMasterRollModal({
             >
               {projectedRollsRemaining} Rolls ({projectedStoreBalance.toLocaleString()} SFT)
             </span>
-            <span className="text-[9px] text-slate-400 block">
-              {isStoreShortage ? '⚠️ Store Shortage' : `Dispatched as ${quantityRolls} Active Piece(s)`}
+            <span className="text-[10px] text-slate-500 block">
+              {isStoreShortage ? '⚠️ Stock Shortage' : `Dispatched as ${quantityRolls} Active Piece(s)`}
             </span>
           </Card>
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 6: PRINTABLE INDUSTRIAL ROLL LABEL / TICKET BADGE */}
+        {/* STEP 6: PRINTABLE INDUSTRIAL ROLL TICKET PREVIEW */}
         {/* ========================================================= */}
-        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900">
-          <div className="p-2.5 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
-            <span className="font-bold text-[11px] text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+        <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
+          <div className="p-3 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
+            <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <Barcode className="h-4 w-4 text-slate-600 dark:text-slate-400" />
               {tBilingual('Printable Industrial Physical Tag Preview', 'প্রিন্টযোগ্য রোল স্টিকার / বারকোড প্রিভিউ')}
             </span>
@@ -802,15 +966,15 @@ export function IssueMasterRollModal({
               variant="outline"
               size="sm"
               onClick={() => setShowPrintLabel(!showPrintLabel)}
-              className="h-6 text-[10px] font-bold px-2"
+              className="h-7 text-[11px] font-bold px-2.5 cursor-pointer"
             >
-              {showPrintLabel ? 'Hide Label' : 'Show Label'}
+              {showPrintLabel ? 'Hide Label' : 'Show Ticket'}
             </Button>
           </div>
 
           {showPrintLabel && (
-            <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center">
-              <div className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2 text-slate-900 dark:text-slate-100">
+            <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center animate-in fade-in">
+              <div className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2.5 text-slate-900 dark:text-slate-100">
                 <div className="flex items-center justify-between border-b pb-2">
                   <div className="font-black text-xs tracking-wider">INKFLOW ERP ROLL TICKET</div>
                   <Badge variant="outline" className="font-mono text-[9px] font-bold">
@@ -820,7 +984,7 @@ export function IssueMasterRollModal({
 
                 <div className="text-center py-1">
                   <div className="font-mono font-black text-base tracking-wider">{generatedRollCode}</div>
-                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                  <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
                     {selectedMaterial?.name || 'Raw Material Media'}
                   </div>
                 </div>
@@ -842,13 +1006,13 @@ export function IssueMasterRollModal({
                     <span className="text-slate-400 block">DESTINATION:</span>
                     <strong className="truncate block">
                       {destination === 'machine'
-                        ? DEFAULT_PRODUCTION_MACHINES.find((m) => m.id === machineId)?.name || 'Machine'
+                        ? machineryList.find((m) => m.id === machineId)?.name || 'Machine'
                         : 'Floor Staging'}
                     </strong>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[9px] text-slate-400 pt-1">
+                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
                   <span>DATE: {new Date().toLocaleDateString('en-GB')}</span>
                   <span>OPERATOR: {operatorName}</span>
                 </div>
@@ -858,29 +1022,40 @@ export function IssueMasterRollModal({
         </div>
 
         {/* Operator & Notes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
             <Label className="text-xs font-semibold mb-1 block">Requisitioned By / Operator</Label>
             <Input
               value={operatorName}
               onChange={(e) => setOperatorName(e.target.value)}
               placeholder="Operator Name"
-              className="h-8 text-xs font-medium"
+              className="h-9 text-xs font-medium"
             />
           </div>
           <div>
-            <Label className="text-xs font-semibold mb-1 block">Requisition Notes</Label>
+            <Label className="text-xs font-semibold mb-1 block">Requisition Notes / Job Reference</Label>
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Urgent banner run for Job #1042"
-              className="h-8 text-xs font-medium"
+              className="h-9 text-xs font-medium"
             />
           </div>
         </div>
+      </div>
 
-        {/* Modal Submit Footer */}
-        <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
+      {/* FIXED DEDICATED MODAL FOOTER */}
+      <div className="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
+        <div className="flex items-center gap-2">
+          <Badge variant="secondary" className="font-mono text-xs font-bold py-1 px-2.5">
+            {quantityRolls} {quantityRolls === 1 ? 'Roll' : 'Rolls'} ({totalBatchAreaSft} SFT)
+          </Badge>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">
+            {formatBDT(totalValuation)}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
           <Button
             type="button"
             variant="outline"
@@ -892,8 +1067,8 @@ export function IssueMasterRollModal({
           </Button>
           <Button
             type="submit"
-            disabled={loading || !materialId}
-            className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-1.5"
+            disabled={loading || !materialId || isStoreShortage}
+            className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
           >
             {loading ? (
               <span>Issuing Roll(s)...</span>
@@ -906,6 +1081,7 @@ export function IssueMasterRollModal({
                     `ইস্যু নিশ্চিত করুন (${quantityRolls}টি রোল)`
                   )}
                 </span>
+                <ArrowRight className="h-3.5 w-3.5 ml-0.5" />
               </>
             )}
           </Button>
