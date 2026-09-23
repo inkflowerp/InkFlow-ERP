@@ -1117,10 +1117,11 @@ function UnifiedInventoryContent() {
                       filteredMaterials.map((mat) => {
                         const stockQty = Number(mat.current_stock || 0)
                         const reorder = Number(mat.reorder_level || mat.min_stock_level || 0)
-                        const isLow = stockQty <= reorder && stockQty > 0
-                        const isOut = stockQty <= 0
-                        const avgCost = Number(mat.average_cost || mat.last_purchase_price || 0)
                         const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
+                        const isRoll = breakdown.is_roll
+                        const isOut = (isRoll && breakdown.total_rolls === 0) || stockQty <= 0
+                        const isLow = !isOut && (reorder > 0 ? stockQty <= reorder : false)
+                        const avgCost = Number(mat.average_cost || mat.last_purchase_price || 0)
 
                         return (
                           <tr key={mat.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">

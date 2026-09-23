@@ -446,15 +446,61 @@ export class PurchaseService {
     for (const item of params.items_received) {
       const accepted = Number(item.accepted_quantity) || 0
       if (accepted > 0) {
+        // Resolve material details for physical conversion
+        let material: any = null
+        try {
+          material = await InventoryRepository.getMaterialById(item.material_id, params.company_id)
+        } catch {}
+
+        const itemUnit = (item.unit || material?.purchase_unit || material?.unit || 'pcs').toLowerCase()
+        const matUnit = (material?.unit || '').toLowerCase()
+        const isRoll =
+          itemUnit === 'roll' ||
+          Boolean(material?.is_roll) ||
+          material?.material_type === 'roll' ||
+          ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'pvc'].some(c => (material?.category || '').toLowerCase().includes(c))
+
+        const rawRollSizes: any[] = Array.isArray(material?.roll_sizes) && material.roll_sizes.length > 0
+          ? material.roll_sizes
+          : Array.isArray((material?.material_config as any)?.roll_sizes) && (material.material_config as any).roll_sizes.length > 0
+          ? (material.material_config as any).roll_sizes
+          : []
+
+        const rollWidth = Number(
+          (item as any).roll_width_ft ||
+          material?.roll_width_ft ||
+          (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+          material?.width ||
+          4
+        )
+        const rollLength = Number(
+          (item as any).roll_length_ft ||
+          material?.roll_length_ft ||
+          material?.length ||
+          material?.standard_roll_length_ft ||
+          164
+        )
+        const rollArea = Math.round(rollWidth * rollLength * 100) / 100
+
+        let stockChangeQty = accepted
+        let effectiveUnitCost = item.unit_cost
+
+        if (isRoll && (matUnit === 'sft' || matUnit === 'sqft') && (itemUnit === 'roll' || itemUnit === 'rolls') && rollArea > 0) {
+          stockChangeQty = Math.round(accepted * rollArea * 100) / 100
+          if (effectiveUnitCost && effectiveUnitCost > 150) {
+            effectiveUnitCost = Math.round((effectiveUnitCost / rollArea) * 100) / 100
+          }
+        }
+
         try {
           await InventoryRepository.recordStockAdjustment({
             company_id: params.company_id,
             branch_id: params.branch_id || po.branch_id || null,
             material_id: item.material_id,
             location_id: params.receiving_location_id || null,
-            quantity_change: accepted,
+            quantity_change: stockChangeQty,
             transaction_type: 'PURCHASE_RECEIPT',
-            unit_cost: item.unit_cost,
+            unit_cost: effectiveUnitCost,
             reference_type: 'PURCHASE_ORDER',
             reference_id: po.id,
             notes: `GRN ${grn.grn_number} for PO ${po.po_number}. Challan: ${params.challan_number || 'N/A'}`,
@@ -467,22 +513,8 @@ export class PurchaseService {
 
         // Spawn Individual Physical Rolls if this is a roll material or purchased in rolls
         try {
-          const material = await InventoryRepository.getMaterialById(item.material_id, params.company_id)
-          const isRoll =
-            (item.unit && item.unit.toLowerCase() === 'roll') ||
-            Boolean(material?.is_roll) ||
-            material?.material_type === 'roll'
-
           if (isRoll) {
-            const rollWidth = Number((item as any).roll_width_ft || material?.roll_width_ft || material?.width || 4)
-            const rollLength = Number(
-              (item as any).roll_length_ft ||
-                material?.roll_length_ft ||
-                material?.length ||
-                material?.standard_roll_length_ft ||
-                164
-            )
-            const rollCost = item.unit_cost !== undefined ? item.unit_cost : 0
+            const rollCost = item.unit_cost !== undefined ? item.unit_cost : (effectiveUnitCost ? effectiveUnitCost * rollArea : 0)
 
             for (let r = 0; r < accepted; r++) {
               const rollIndex = (r + 1).toString().padStart(3, '0')

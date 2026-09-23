@@ -357,5 +357,84 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     assert.strictEqual(vinylBreakdown.roll_items[0].roll_count, 39)
     assert.strictEqual(vinylBreakdown.roll_items[0].total_sft, 19188)
   })
+
+  test('7. Correctly handles Black PVC MAT-43550 configured sizes: zero-stock does not create phantom rolls, and receiving 3 rolls (4ft x 164ft) @ ৳6,560 yields 1968 SFT, ৳19,680 valuation', async () => {
+    const blackPvcCompanyId = `black-pvc-company-${Date.now()}`
+
+    // 1. Initial State: Black PVC registered with configured sizes (4ft and 5.25ft) and 0 current stock
+    const blackPvcMat: Partial<MaterialRecord> = {
+      id: `mat-black-pvc-${Date.now()}`,
+      company_id: blackPvcCompanyId,
+      sku: 'MAT-43550',
+      name: 'Black PVC',
+      name_bn: 'ব্ল্যাক পিভিসি',
+      category: 'flex_banner' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      is_roll: true,
+      standard_roll_length_ft: 164,
+      current_stock: 0,
+      average_cost: 10,
+      purchase_price_per_sft: 10,
+      roll_sizes: [
+        { width: 4, length: 164, default_supplier_price: 6560, price: 6560 },
+        { width: 5.25, length: 164, default_supplier_price: 8610, price: 8610 },
+      ],
+    }
+
+    await InventoryRepository.createMaterial(blackPvcMat as any)
+
+    // At 0 stock: getInventoryRolls must return 0 rolls (no dummy 3ft or 4ft rolls)
+    const initialRolls = await InventoryRepository.getInventoryRolls(blackPvcCompanyId)
+    assert.strictEqual(initialRolls.length, 0, 'Zero stock material must not generate phantom rolls')
+
+    // At 0 stock: getMaterialWarehouseStockBreakdown must show 0 rolls, 0 SFT, 0 valuation
+    const zeroBreakdown = getMaterialWarehouseStockBreakdown(blackPvcMat, initialRolls)
+    assert.strictEqual(zeroBreakdown.total_rolls, 0)
+    assert.strictEqual(zeroBreakdown.purchase_unit_display, '0 Rolls')
+    assert.strictEqual(zeroBreakdown.consumption_unit_display, '0 SFT')
+    assert.strictEqual(zeroBreakdown.total_valuation, 0)
+    assert.strictEqual(zeroBreakdown.formatted_summary, '(4ft × 164ft)')
+
+    // 2. Receive 3 rolls of 4ft x 164ft @ ৳6,560 / roll (Total = ৳ 19,680)
+    const receiveResult = await InventoryService.receiveStock({
+      company_id: blackPvcCompanyId,
+      material_id: blackPvcMat.id!,
+      location_id: 'loc-main-wh',
+      quantity: 3, // 3 rolls
+      unit_cost: 6560, // ৳ 6,560 per roll
+      width_ft: 4,
+      length_ft: 164,
+      purchase_unit: 'roll',
+      performed_by_name: 'Store Keeper',
+      notes: 'GRN for Black PVC 4ft rolls',
+    })
+
+    // Verify stock adjustment: 3 rolls * 4ft * 164ft = 1968 SFT
+    const updatedMat = await InventoryRepository.getMaterialById(blackPvcMat.id!, blackPvcCompanyId)
+    assert.ok(updatedMat)
+    assert.strictEqual(updatedMat?.current_stock, 1968, 'Stock must increase by 3 * 656 = 1968 SFT')
+    assert.strictEqual(updatedMat?.average_cost, 10, 'Unit cost per SFT must be ৳ 10 (6560 / 656)')
+
+    // Verify created physical rolls in warehouse
+    const warehouseRolls = await InventoryRepository.getInventoryRolls(blackPvcCompanyId)
+    assert.strictEqual(warehouseRolls.length, 3, 'Must create exactly 3 physical rolls')
+    for (const r of warehouseRolls) {
+      assert.strictEqual(r.width_ft, 4, 'Roll width must be 4ft')
+      assert.strictEqual(r.initial_length_ft, 164, 'Roll length must be 164ft')
+      assert.strictEqual(r.remaining_area_sft, 656, 'Roll area must be 656 SFT')
+      assert.strictEqual(r.unit_cost, 6560, 'Roll purchase price must be ৳ 6,560')
+    }
+
+    // Verify inventory breakdown display
+    const finalBreakdown = getMaterialWarehouseStockBreakdown(updatedMat, warehouseRolls)
+    assert.strictEqual(finalBreakdown.total_rolls, 3)
+    assert.strictEqual(finalBreakdown.purchase_unit_display, '3 Rolls')
+    assert.strictEqual(finalBreakdown.consumption_unit_display, '1,968 SFT')
+    assert.strictEqual(finalBreakdown.cost_display_primary, '৳ 6,560 / Roll')
+    assert.strictEqual(finalBreakdown.cost_display_secondary, '(৳ 10.00 / SFT)')
+    assert.strictEqual(finalBreakdown.total_valuation, 19680)
+    assert.strictEqual(finalBreakdown.formatted_summary, '(4ft × 164ft)')
+  })
 })
 

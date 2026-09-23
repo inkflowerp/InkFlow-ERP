@@ -188,18 +188,30 @@ export class InventoryService {
     const physicalForm = params.physical_form || PriceIntelligenceEngine.detectMaterialPhysicalForm(material)
     const isRoll = physicalForm === 'roll' || material.is_roll
 
+    const rawRollSizes: any[] = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
+      ? material.roll_sizes
+      : Array.isArray((material.material_config as any)?.roll_sizes) && (material.material_config as any).roll_sizes.length > 0
+      ? (material.material_config as any).roll_sizes
+      : []
+
     // Width & Length extraction
-    const widthFt = Number(params.width_ft || material.roll_width_ft || 3)
+    const widthFt = Number(
+      params.width_ft ||
+      (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+      material.roll_width_ft ||
+      material.width ||
+      4
+    )
     const lengthFt = Number(params.length_ft || material.standard_roll_length_ft || material.roll_length_ft || 164)
-    const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 10) / 10 : 1
+    const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : 1
     const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
 
     // Quantity conversion: If purchase unit is Roll and material stock is kept in SFT, convert quantity
     let stockChangeQty = params.quantity
     let effectiveUnitCost = params.unit_cost
-    if (isRoll && pUnit === 'roll' && material.unit.toLowerCase() === 'sft') {
+    if (isRoll && (material.unit.toLowerCase() === 'sft' || material.unit.toLowerCase() === 'sqft') && (pUnit === 'roll' || pUnit === 'rolls') && areaPerUnitSft > 0) {
       stockChangeQty = Math.round(params.quantity * areaPerUnitSft * 100) / 100
-      if (effectiveUnitCost && effectiveUnitCost > 150 && areaPerUnitSft > 0) {
+      if (effectiveUnitCost && effectiveUnitCost > 150) {
         effectiveUnitCost = Math.round((effectiveUnitCost / areaPerUnitSft) * 100) / 100
       }
     } else if (physicalForm === 'sheet' && pUnit === 'sheet' && material.unit.toLowerCase() === 'sft') {

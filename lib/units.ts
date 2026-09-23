@@ -2101,9 +2101,10 @@ export function getMaterialWarehouseStockBreakdown(
       ? material.variants
       : []
 
-    // Determine roll width
+    // Determine roll width (prioritizing explicit master configuration & configured sizes)
     let inferredWidth = Number(
       material.roll_width_ft ||
+      (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
       material.width ||
       (Array.isArray(material.available_widths_ft) && material.available_widths_ft.length === 1 ? material.available_widths_ft[0] : 0) ||
       (matName.includes('10ft') || matName.includes('10 ft') ? 10 :
@@ -2123,7 +2124,7 @@ export function getMaterialWarehouseStockBreakdown(
         inferredWidth = Math.max(3.2, Math.round(ratio * 10) / 10)
       }
     }
-    if (!inferredWidth) inferredWidth = 3.2
+    if (!inferredWidth) inferredWidth = 4
 
     let totalRolls = 0
     let rollItems: WarehouseRollStockItem[] = []
@@ -2151,39 +2152,46 @@ export function getMaterialWarehouseStockBreakdown(
         totalSft += sft
       }
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft)
+    } else if (currentStock <= 0) {
+      // Zero stock with no physical rolls
+      totalRolls = 0
+      totalSft = 0
+      rollItems = []
     } else if (rawRollSizes.length > 0) {
       // Parse configured roll sizes / variants
       totalRolls = 0
       totalSft = 0
 
       for (const rs of rawRollSizes) {
-        const w = Number(rs.width || rs.width_ft || rs.size || 3)
+        const w = Number(rs.width || rs.width_ft || rs.size || inferredWidth || 4)
         const l = Number(rs.length || rs.length_ft || standardLength)
         const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
         const sft = count > 0 ? count * w * l : (Number(rs.total_sft ?? rs.sft) || 0)
 
-        if (count > 0 || rawRollSizes.length === 1) {
+        if (count > 0) {
           rollItems.push({
             width_ft: w,
             length_ft: l,
-            roll_count: count > 0 ? count : (currentStock > 0 && w * l > 0 ? Math.max(1, Math.round(currentStock / (w * l))) : 0),
-            total_sft: count > 0 ? sft : currentStock,
+            roll_count: count,
+            total_sft: sft,
             label: `${w}ft × ${l}ft`,
           })
-          totalRolls += count > 0 ? count : (currentStock > 0 && w * l > 0 ? Math.max(1, Math.round(currentStock / (w * l))) : 0)
-          totalSft += count > 0 ? sft : currentStock
+          totalRolls += count
+          totalSft += sft
         }
       }
 
       if (rollItems.length === 0 && currentStock > 0) {
-        const areaPerRoll = inferredWidth * standardLength
+        const primaryW = Number(rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)
+        const primaryL = Number(rawRollSizes[0].length || rawRollSizes[0].length_ft || standardLength)
+        const areaPerRoll = primaryW * primaryL
         const count = areaPerRoll > 0 ? Math.max(1, Math.round(currentStock / areaPerRoll)) : 1
         rollItems = [{
-          width_ft: inferredWidth,
-          length_ft: standardLength,
+          width_ft: primaryW,
+          length_ft: primaryL,
           roll_count: count,
           total_sft: currentStock,
-          label: `${inferredWidth}ft × ${standardLength}ft`,
+          label: `${primaryW}ft × ${primaryL}ft`,
         }]
         totalRolls = count
         totalSft = currentStock
@@ -2212,12 +2220,18 @@ export function getMaterialWarehouseStockBreakdown(
         .join(' • ')
     } else if (rollItems.length === 1) {
       formattedSummary = `(${rollItems[0].width_ft}ft × ${rollItems[0].length_ft}ft)`
+    } else if (rawRollSizes.length > 0) {
+      const primaryW = Number(rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size || inferredWidth || 4)
+      const primaryL = Number(rawRollSizes[0].length || rawRollSizes[0].length_ft || standardLength)
+      formattedSummary = `(${primaryW}ft × ${primaryL}ft)`
     } else {
       formattedSummary = `(${inferredWidth}ft × ${standardLength}ft)`
     }
 
-    const effectiveStockSft = totalSft > 0 ? totalSft : currentStock
-    const areaPerStandardRoll = (rollItems[0]?.width_ft || inferredWidth) * (rollItems[0]?.length_ft || standardLength)
+    const effectiveStockSft = (matRolls.length > 0 || totalSft > 0) ? totalSft : currentStock
+    const primaryW = rollItems[0]?.width_ft || (rawRollSizes[0] ? Number(rawRollSizes[0].width || rawRollSizes[0].width_ft || 0) : 0) || inferredWidth
+    const primaryL = rollItems[0]?.length_ft || standardLength
+    const areaPerStandardRoll = primaryW * primaryL
     let costPerRoll = 0
     let costPerSft = 0
     let totalValuation = 0
@@ -2232,19 +2246,19 @@ export function getMaterialWarehouseStockBreakdown(
 
     if (explicitPerSft > 0) {
       costPerSft = explicitPerSft
-      costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 492)
-      totalValuation = effectiveStockSft * costPerSft
+      costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 656)
+      totalValuation = effectiveStockSft > 0 ? effectiveStockSft * costPerSft : 0
     } else if (rawCost > 0) {
       if (rawCost > 100) {
-        // rawCost is per-Roll (e.g. ৳ 11,480 / Roll)
+        // rawCost is per-Roll (e.g. ৳ 6,560 / Roll)
         costPerRoll = rawCost
         costPerSft = areaPerStandardRoll > 0 ? (rawCost / areaPerStandardRoll) : rawCost
-        totalValuation = effectiveStockSft * costPerSft
+        totalValuation = effectiveStockSft > 0 ? effectiveStockSft * costPerSft : 0
       } else {
         // rawCost is per-SFT (e.g. ৳ 10.00 / SFT)
         costPerSft = rawCost
-        costPerRoll = areaPerStandardRoll > 0 ? (rawCost * areaPerStandardRoll) : (rawCost * 492)
-        totalValuation = effectiveStockSft * costPerSft
+        costPerRoll = areaPerStandardRoll > 0 ? (rawCost * areaPerStandardRoll) : (rawCost * 656)
+        totalValuation = effectiveStockSft > 0 ? effectiveStockSft * costPerSft : 0
       }
     }
 
@@ -2267,7 +2281,7 @@ export function getMaterialWarehouseStockBreakdown(
       consumption_unit: 'sft',
       cost_per_purchase_unit: costPerRoll,
       cost_per_consumption_unit: costPerSft,
-      cost_display_primary: costPerRoll > 0 ? `৳ ${costPerRoll.toLocaleString()} / Roll` : (costPerSft > 0 ? `৳ ${costPerSft.toFixed(2)} / SFT` : '—'),
+      cost_display_primary: costPerRoll > 0 ? `৳ ${Math.round(costPerRoll).toLocaleString()} / Roll` : (costPerSft > 0 ? `৳ ${costPerSft.toFixed(2)} / SFT` : '—'),
       cost_display_secondary: costPerSft > 0 && costPerRoll > 0 ? `(৳ ${costPerSft.toFixed(2)} / SFT)` : null,
       total_valuation: totalValuation,
     }

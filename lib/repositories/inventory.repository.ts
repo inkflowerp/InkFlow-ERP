@@ -2565,6 +2565,26 @@ export class InventoryRepository {
       if (materialsList.length === 0) {
         materialsList = await this.getMaterials(companyId)
       }
+
+      // Filter out stale auto-generated synthetic rolls (rol-init-) for materials with 0 or negative current stock
+      if (rolls.length > 0 && materialsList.length > 0) {
+        const matStockMap = new Map<string, number>()
+        for (const m of materialsList) {
+          matStockMap.set(m.id, Number(m.current_stock || 0))
+          if (m.sku) matStockMap.set(m.sku.toLowerCase(), Number(m.current_stock || 0))
+        }
+
+        rolls = rolls.filter((r) => {
+          if (r.id && r.id.startsWith('rol-init-')) {
+            const stock = matStockMap.get(r.material_id) ?? (r.material?.sku ? matStockMap.get(r.material.sku.toLowerCase()) : undefined)
+            if (stock !== undefined && stock <= 0) {
+              return false
+            }
+          }
+          return true
+        })
+      }
+
       const existingMaterialIdsWithRolls = new Set(rolls.map((r) => r.material_id))
 
       const isRollMaterial = (m: MaterialRecord) => {
@@ -2596,9 +2616,22 @@ export class InventoryRepository {
         const stockNum = Number(m.current_stock || 0)
         if (stockNum <= 0) continue
 
+        const rawRollSizes: any[] = Array.isArray(m.roll_sizes) && m.roll_sizes.length > 0
+          ? m.roll_sizes
+          : Array.isArray((m.material_config as any)?.roll_sizes) && (m.material_config as any).roll_sizes.length > 0
+          ? (m.material_config as any).roll_sizes
+          : Array.isArray((m.pricing_formula as any)?.roll_sizes) && (m.pricing_formula as any).roll_sizes.length > 0
+          ? (m.pricing_formula as any).roll_sizes
+          : Array.isArray((m.pricing_formula as any)?.material_config?.roll_sizes) && (m.pricing_formula as any).material_config.roll_sizes.length > 0
+          ? (m.pricing_formula as any).material_config.roll_sizes
+          : Array.isArray(m.variants) && m.variants.length > 0
+          ? m.variants
+          : []
+
         const matName = String(m.name || '').toLowerCase()
         let widthFt = Number(
           m.roll_width_ft ||
+          (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
           m.width ||
           (Array.isArray(m.available_widths_ft) && m.available_widths_ft.length === 1 ? m.available_widths_ft[0] : 0) ||
           (matName.includes('10ft') || matName.includes('10 ft') ? 10 :
@@ -2618,41 +2651,94 @@ export class InventoryRepository {
             widthFt = Math.max(3.2, Math.round(ratio * 10) / 10)
           }
         }
-        if (!widthFt) widthFt = 3.2
-
-        const rawRollSizes: any[] = Array.isArray(m.roll_sizes) && m.roll_sizes.length > 0
-          ? m.roll_sizes
-          : Array.isArray((m.material_config as any)?.roll_sizes) && (m.material_config as any).roll_sizes.length > 0
-          ? (m.material_config as any).roll_sizes
-          : Array.isArray((m.pricing_formula as any)?.roll_sizes) && (m.pricing_formula as any).roll_sizes.length > 0
-          ? (m.pricing_formula as any).roll_sizes
-          : Array.isArray((m.pricing_formula as any)?.material_config?.roll_sizes) && (m.pricing_formula as any).material_config.roll_sizes.length > 0
-          ? (m.pricing_formula as any).material_config.roll_sizes
-          : Array.isArray(m.variants) && m.variants.length > 0
-          ? m.variants
-          : []
+        if (!widthFt) widthFt = 4
 
         const cleanSku = (m.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
         const lot = Date.now().toString().slice(-4)
         const rawCost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
 
         if (rawRollSizes.length > 0) {
-          // Auto-generate discrete rolls for each configured roll size / variant
-          let rollCounter = 1
-          for (const rs of rawRollSizes) {
-            const w = Number(rs.width || rs.width_ft || rs.size || 3)
-            const l = Number(rs.length || rs.length_ft || lengthFt)
-            const count = Math.max(1, Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1))
-            const rollArea = Math.round(w * l * 100) / 100
-            const rollCost = rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost)
+          // Check if explicit stock counts exist on configured sizes
+          const sizesWithQty = rawRollSizes.filter(
+            (rs) => Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0) > 0
+          )
 
-            for (let i = 1; i <= count; i++) {
-              const rollCode = count === 1
+          if (sizesWithQty.length > 0) {
+            let rollCounter = 1
+            for (const rs of sizesWithQty) {
+              const w = Number(rs.width || rs.width_ft || rs.size || widthFt || 4)
+              const l = Number(rs.length || rs.length_ft || lengthFt)
+              const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1)
+              const rollArea = Math.round(w * l * 100) / 100
+              const rollCost = rs.price || rs.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost))
+
+              for (let i = 1; i <= count; i++) {
+                const rollCode = count === 1
+                  ? `ROL-${cleanSku}-${w}FT`
+                  : `ROL-${cleanSku}-${w}FT-${String(i).padStart(2, '0')}`
+
+                const rollPayload: InventoryRollRecord = {
+                  id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
+                  company_id: companyId,
+                  branch_id: m.branch_id || null,
+                  location_id: null,
+                  location_name: m.location || 'Main Warehouse',
+                  material_id: m.id,
+                  roll_code: rollCode,
+                  roll_tag: rollCode,
+                  width_ft: w,
+                  initial_length_ft: l,
+                  current_length_ft: l,
+                  original_length_ft: l,
+                  remaining_length_ft: l,
+                  initial_area_sft: rollArea,
+                  consumed_area_sft: 0,
+                  remaining_area_sft: rollArea,
+                  current_area_sft: rollArea,
+                  status: 'available',
+                  unit_cost: rollCost,
+                  total_cost: rollCost,
+                  material: {
+                    id: m.id,
+                    name: m.name,
+                    sku: m.sku,
+                    unit: m.unit,
+                    name_bn: m.name_bn || null,
+                  } as any,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+
+                if (supabaseClient) {
+                  try {
+                    const dbInsert = { ...rollPayload }
+                    delete (dbInsert as any).material
+                    await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
+                  } catch {}
+                }
+
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
+                rolls.push(rollPayload)
+                rollCounter++
+              }
+            }
+          } else {
+            // Sizes are configured types (without item quantities): allocate stockNum to the primary configured size
+            const primarySize = rawRollSizes[0]
+            const w = Number(primarySize.width || primarySize.width_ft || primarySize.size || widthFt || 4)
+            const l = Number(primarySize.length || primarySize.length_ft || lengthFt)
+            const rollArea = Math.round(w * l * 100) / 100
+            const numRolls = rollArea > 0 ? Math.max(1, Math.round(stockNum / rollArea)) : Math.max(1, Math.round(stockNum))
+            const rollCost = primarySize.price || primarySize.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost))
+
+            for (let i = 1; i <= numRolls; i++) {
+              const rollCode = numRolls === 1
                 ? `ROL-${cleanSku}-${w}FT`
                 : `ROL-${cleanSku}-${w}FT-${String(i).padStart(2, '0')}`
 
               const rollPayload: InventoryRollRecord = {
-                id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
+                id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
                 company_id: companyId,
                 branch_id: m.branch_id || null,
                 location_id: null,
@@ -2694,7 +2780,6 @@ export class InventoryRepository {
               PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
               PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
               rolls.push(rollPayload)
-              rollCounter++
             }
           }
           existingMaterialIdsWithRolls.add(m.id)
