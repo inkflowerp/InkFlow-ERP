@@ -1,29 +1,22 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
 import {
   Plus,
   ArrowRightLeft,
   Scissors,
   RotateCcw,
   ShoppingBag,
-  Cpu,
   Printer,
-  Building2,
-  Trash2,
   RefreshCw,
-  Truck,
-  Layers,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useI18n } from '@/i18n/context'
-import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 
 export interface InventoryActionBarProps {
-  pathname: string
-  slug: string
+  pathname?: string
+  slug?: string
   loading: boolean
   onReceiveStock: () => void
   onFloorIssue: () => void
@@ -35,8 +28,6 @@ export interface InventoryActionBarProps {
 }
 
 export function InventoryActionBar({
-  pathname,
-  slug,
   loading,
   onReceiveStock,
   onFloorIssue,
@@ -46,14 +37,14 @@ export function InventoryActionBar({
   onNewPurchase,
   onRefresh,
 }: InventoryActionBarProps) {
-  const { locale, tBilingual } = useI18n()
+  const { locale } = useI18n()
   const isBn = locale === 'bn'
 
   return (
     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-      {/* Primary Operations (Left/Top) */}
+      {/* Primary Operations (Left) */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* + Receive Stock (GRN) */}
+        {/* Receive Stock (GRN) */}
         <Button
           size="sm"
           onClick={onReceiveStock}
@@ -61,7 +52,7 @@ export function InventoryActionBar({
           title="Receive raw materials or ready products into warehouse"
         >
           <Plus className="h-4 w-4" />
-          <span>{isBn ? '+ মালামাল গ্রহণ (GRN)' : '+ Receive Stock (GRN)'}</span>
+          <span>{isBn ? 'মালামাল গ্রহণ (GRN)' : 'Receive Stock (GRN)'}</span>
         </Button>
 
         {/* Floor Issue */}
@@ -114,7 +105,7 @@ export function InventoryActionBar({
           <span>{isBn ? 'স্টক অডিট / সমন্বয়' : 'Audit / Adjust'}</span>
         </Button>
 
-        {/* New PO */}
+        {/* New Purchase Order */}
         <Button
           size="sm"
           variant="outline"
@@ -123,56 +114,22 @@ export function InventoryActionBar({
           title="Create a new Purchase Order to suppliers"
         >
           <ShoppingBag className="h-3.5 w-3.5 text-violet-600" />
-          <span>{isBn ? '+ পারচেজ অর্ডার' : '+ New PO'}</span>
+          <span>{isBn ? 'নতুন PO' : 'New PO'}</span>
         </Button>
       </div>
 
-      {/* Connected Department Links & Utilities (Right/Bottom) */}
-      <div className="flex flex-wrap items-center gap-1.5 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100 dark:border-slate-800">
-        <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
-          <Button variant="ghost" size="sm" className="text-[11px] h-8 px-2 gap-1 text-slate-600 dark:text-slate-400 hover:text-blue-600">
-            <Cpu className="h-3.5 w-3.5 text-blue-600" />
-            <span className="hidden sm:inline">{isBn ? 'মেশিনারি' : 'Machineries'}</span>
-          </Button>
-        </Link>
-
-        <Link href={getTenantNavHref('/production', pathname, slug)}>
-          <Button variant="ghost" size="sm" className="text-[11px] h-8 px-2 gap-1 text-slate-600 dark:text-slate-400 hover:text-indigo-600">
-            <Printer className="h-3.5 w-3.5 text-indigo-600" />
-            <span className="hidden sm:inline">{isBn ? 'প্রিন্টিং ফ্লোর' : 'Printing Floor'}</span>
-          </Button>
-        </Link>
-
-        <Link href={getTenantNavHref('/finishing', pathname, slug)}>
-          <Button variant="ghost" size="sm" className="text-[11px] h-8 px-2 gap-1 text-slate-600 dark:text-slate-400 hover:text-purple-600">
-            <Scissors className="h-3.5 w-3.5 text-purple-600" />
-            <span className="hidden sm:inline">{isBn ? 'ফিনিশিং' : 'Finishing'}</span>
-          </Button>
-        </Link>
-
-        <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
-          <Button variant="ghost" size="sm" className="text-[11px] h-8 px-2 gap-1 text-slate-600 dark:text-slate-400 hover:text-emerald-600">
-            <Building2 className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="hidden sm:inline">{isBn ? 'সাপ্লায়ার' : 'Suppliers'}</span>
-          </Button>
-        </Link>
-
-        <Link href={getTenantNavHref('/trash?tab=materials', pathname, slug)}>
-          <Button variant="ghost" size="sm" className="text-[11px] h-8 px-2 gap-1 text-slate-500 hover:text-rose-600" title="Trash Bin">
-            <Trash2 className="h-3.5 w-3.5" />
-            <span className="hidden lg:inline">{isBn ? 'রিসাইকেল বিন' : 'Trash'}</span>
-          </Button>
-        </Link>
-
+      {/* Utilities (Right) */}
+      <div className="flex items-center gap-1.5">
         <Button
           variant="outline"
           size="sm"
           onClick={onRefresh}
           disabled={loading}
-          className="text-xs h-8 px-2.5 cursor-pointer"
+          className="text-xs h-9 px-3 cursor-pointer gap-1.5 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
           title="Refresh live inventory data"
         >
           <RefreshCw className={cn('h-3.5 w-3.5 text-slate-500', loading && 'animate-spin')} />
+          <span>{isBn ? 'রিফ্রেশ' : 'Refresh'}</span>
         </Button>
       </div>
     </div>

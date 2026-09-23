@@ -743,21 +743,6 @@ function UnifiedInventoryContent() {
           descriptionBn="লাইভ রোল ম্যানেজমেন্ট, কাঁচামাল স্টক হিসাব, স্টোর ট্রান্সফার ও স্বয়ংক্রিয় খতিয়ান"
           icon={Package}
           iconColor="text-emerald-600"
-          actions={
-            <div className="flex items-center gap-2">
-              <Button
-                size="sm"
-                onClick={() => {
-                  setSelectedMaterialForAction(null)
-                  setIsReceiveStockOpen(true)
-                }}
-                className="bg-emerald-600 hover:bg-emerald-700 text-xs text-white h-9 shadow-xs font-bold cursor-pointer gap-1.5"
-              >
-                <Plus className="h-4 w-4" />
-                <span>{isBn ? 'স্টক রিসিভ (GRN)' : 'Receive Stock'}</span>
-              </Button>
-            </div>
-          }
         />
 
         {/* Notification Toast Alert */}
@@ -1159,23 +1144,38 @@ function UnifiedInventoryContent() {
                         )
                         const totalBalanceQty = locBalances.reduce((sum, b) => sum + (Number(b.available_quantity ?? (b as any).quantity) || 0), 0)
 
-                        const stockQty = Number(
-                          locBalances.length > 0
-                            ? totalBalanceQty
-                            : p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
+                        const formula =
+                          typeof p.pricing_formula === 'object' && p.pricing_formula !== null
+                            ? p.pricing_formula
+                            : typeof p.pricing_formula === 'string' && p.pricing_formula.trim()
+                            ? (() => {
+                                try {
+                                  return JSON.parse(p.pricing_formula)
+                                } catch {
+                                  return {}
+                                }
+                              })()
+                            : {}
+
+                        const directProductStock = Number(
+                          p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
                             ? p.current_stock
                             : p.stock !== undefined && p.stock !== null && !isNaN(Number(p.stock))
                             ? p.stock
                             : p.opening_stock !== undefined && p.opening_stock !== null && !isNaN(Number(p.opening_stock))
                             ? p.opening_stock
-                            : (p.pricing_formula as any)?.current_stock !== undefined && (p.pricing_formula as any)?.current_stock !== null && !isNaN(Number((p.pricing_formula as any).current_stock))
-                            ? (p.pricing_formula as any).current_stock
-                            : (p.pricing_formula as any)?.opening_stock !== undefined && (p.pricing_formula as any)?.opening_stock !== null && !isNaN(Number((p.pricing_formula as any).opening_stock))
-                            ? (p.pricing_formula as any).opening_stock
+                            : formula.current_stock !== undefined && formula.current_stock !== null && !isNaN(Number(formula.current_stock))
+                            ? formula.current_stock
+                            : formula.stock !== undefined && formula.stock !== null && !isNaN(Number(formula.stock))
+                            ? formula.stock
+                            : formula.opening_stock !== undefined && formula.opening_stock !== null && !isNaN(Number(formula.opening_stock))
+                            ? formula.opening_stock
                             : matchingMat?.current_stock !== undefined && matchingMat?.current_stock !== null && !isNaN(Number(matchingMat.current_stock))
                             ? matchingMat.current_stock
                             : 0
                         )
+
+                        const stockQty = totalBalanceQty > 0 ? totalBalanceQty : directProductStock
 
                         const cost = Number(
                           p.base_cost ||
@@ -1183,6 +1183,8 @@ function UnifiedInventoryContent() {
                           (p as any).cost_per_unit ||
                           matchingMat?.average_cost ||
                           matchingMat?.last_purchase_price ||
+                          formula.base_cost ||
+                          formula.purchase_price ||
                           0
                         )
 
@@ -1191,13 +1193,13 @@ function UnifiedInventoryContent() {
                           p.price_tiers?.retail ||
                           (p as any).retail_price ||
                           (p as any).price ||
-                          (p.pricing_formula as any)?.selling_price ||
-                          (p.pricing_formula as any)?.price ||
+                          formula.selling_price ||
+                          formula.price ||
                           0
                         )
 
                         const totalValuation = stockQty * cost
-                        const reorderPoint = Number(p.reorder_level || p.min_stock_level || matchingMat?.reorder_level || matchingMat?.min_stock_level || 0)
+                        const reorderPoint = Number(p.reorder_level || p.min_stock_level || formula.reorder_level || formula.min_stock_level || matchingMat?.reorder_level || matchingMat?.min_stock_level || 0)
                         const isOut = stockQty <= 0
                         const isLow = !isOut && reorderPoint > 0 && stockQty <= reorderPoint
 

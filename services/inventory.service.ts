@@ -1060,15 +1060,29 @@ export class InventoryService {
     const matIds = new Set(materials.map((m) => m.id))
     const productsValue = readyProducts.reduce((sum, p) => {
       if (matIds.has(p.id)) return sum
+      const formula =
+        typeof p.pricing_formula === 'object' && p.pricing_formula !== null
+          ? p.pricing_formula
+          : typeof p.pricing_formula === 'string' && p.pricing_formula.trim()
+          ? (() => {
+              try {
+                return JSON.parse(p.pricing_formula)
+              } catch {
+                return {}
+              }
+            })()
+          : {}
+
       const stock = Number(
         (p as any).current_stock ??
         (p as any).stock ??
         (p as any).opening_stock ??
-        (p.pricing_formula as any)?.current_stock ??
-        (p.pricing_formula as any)?.opening_stock ??
+        formula.current_stock ??
+        formula.stock ??
+        formula.opening_stock ??
         0
       )
-      const cost = Number(p.base_cost || p.purchase_price || 0)
+      const cost = Number(p.base_cost || p.purchase_price || (p as any).cost_per_unit || formula.base_cost || formula.purchase_price || 0)
       return sum + (stock > 0 ? stock * cost : 0)
     }, 0)
 

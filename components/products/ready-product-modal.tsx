@@ -435,13 +435,35 @@ export function ReadyProductModal({
         custom: tiers.custom ?? '',
       })
 
-      setOpeningStock((initialData as any).opening_stock ?? '')
-      setReorderLevel((initialData as any).reorder_level ?? '')
-      setMaxStock((initialData as any).max_stock ?? '')
-      setWarehouseLocation((initialData as any).warehouse_location || '')
-      setPreferredSupplierId((initialData as any).preferred_supplier_id || '')
-      setSupplierItemCode((initialData as any).supplier_item_code || '')
-      setLeadTimeDays((initialData as any).lead_time_days ?? '')
+      setOpeningStock(
+        (initialData as any).opening_stock ??
+        (initialData as any).current_stock ??
+        (initialData as any).stock ??
+        (initialData.pricing_formula as any)?.opening_stock ??
+        (initialData.pricing_formula as any)?.current_stock ??
+        (initialData.pricing_formula as any)?.stock ??
+        ''
+      )
+      setReorderLevel(
+        (initialData as any).reorder_level ??
+        (initialData as any).min_stock_level ??
+        (initialData.pricing_formula as any)?.reorder_level ??
+        (initialData.pricing_formula as any)?.min_stock_level ??
+        ''
+      )
+      setMaxStock(
+        (initialData as any).max_stock ??
+        (initialData.pricing_formula as any)?.max_stock ??
+        ''
+      )
+      setWarehouseLocation(
+        (initialData as any).warehouse_location ||
+        (initialData.pricing_formula as any)?.warehouse_location ||
+        ''
+      )
+      setPreferredSupplierId((initialData as any).preferred_supplier_id || (initialData.pricing_formula as any)?.preferred_supplier_id || '')
+      setSupplierItemCode((initialData as any).supplier_item_code || (initialData.pricing_formula as any)?.supplier_item_code || '')
+      setLeadTimeDays((initialData as any).lead_time_days ?? (initialData.pricing_formula as any)?.lead_time_days ?? '')
       setVatApplicable(Boolean(initialData.vat_applicable))
       setIsTaxInclusive(Boolean(initialData.is_tax_inclusive))
       setTaxRate(initialData.tax_rate ?? 7.5)
@@ -653,7 +675,10 @@ export function ReadyProductModal({
         carton_dimensions: cartonDimensions.trim() || undefined,
         carton_weight_kg: cartonWeightKg !== '' ? Number(cartonWeightKg) : undefined,
         opening_stock: openingStock !== '' ? Number(openingStock) : undefined,
+        current_stock: openingStock !== '' ? Number(openingStock) : undefined,
+        stock: openingStock !== '' ? Number(openingStock) : undefined,
         reorder_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
+        min_stock_level: reorderLevel !== '' ? Number(reorderLevel) : undefined,
         max_stock: maxStock !== '' ? Number(maxStock) : undefined,
         warehouse_location: warehouseLocation.trim() || undefined,
         preferred_supplier_id: preferredSupplierId || undefined,

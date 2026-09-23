@@ -135,7 +135,16 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
 
 export function enrichProductRecord(p: any): ProductRecord {
   if (!p) return p
-  const formula = (typeof p.pricing_formula === 'object' && p.pricing_formula !== null ? p.pricing_formula : {}) as any
+  let formula: any = {}
+  if (typeof p.pricing_formula === 'object' && p.pricing_formula !== null) {
+    formula = p.pricing_formula
+  } else if (typeof p.pricing_formula === 'string' && p.pricing_formula.trim()) {
+    try {
+      formula = JSON.parse(p.pricing_formula)
+    } catch {
+      formula = {}
+    }
+  }
 
   const purchasePrice = Number(p.purchase_price) || 0
   const conversionRatio = Math.max(0.0001, Number(p.conversion_ratio) || 1.0)
@@ -906,6 +915,26 @@ export class ProductRepository {
         const enriched = enrichProductRecord(data as ProductRecord)
         if (isTestMode()) {
           PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, enriched, product.company_id)
+        }
+
+        // If product has opening stock > 0, record in stock_ledger
+        if (initialStock > 0) {
+          try {
+            await (supabase as any).from('stock_ledger').insert({
+              company_id: product.company_id,
+              branch_id: product.branch_id || null,
+              material_id: enriched.id,
+              transaction_type: 'opening_stock',
+              quantity_change: initialStock,
+              unit: enriched.unit || 'pcs',
+              balance_after: initialStock,
+              unit_cost: Number(enriched.base_cost || enriched.purchase_price || 0),
+              total_cost: initialStock * Number(enriched.base_cost || enriched.purchase_price || 0),
+              notes: 'Initial opening stock recorded at catalog master creation',
+              performed_by_name: 'System / Master Creation',
+              created_at: new Date().toISOString(),
+            })
+          } catch {}
         }
 
         // Auto-sync into MATERIALS store if product is a raw material / substrate
