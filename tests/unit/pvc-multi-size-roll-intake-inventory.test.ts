@@ -236,5 +236,85 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     assert.strictEqual(breakdown.roll_items[0].width_ft, 4, 'Width must remain 4ft')
     assert.strictEqual(breakdown.roll_items[0].label, '4ft × 100ft')
   })
+
+  it('4. should receive 2.25ft x 100ft - 1 Pcs on a material with 10 configured sizes and show ONLY 1 roll (2.25ft x 100ft, 225 SFT), NOT 10 rolls (8,384 SFT)', async () => {
+    const mat10Sizes: MaterialRecord = {
+      id: 'mat-pvc-10-sizes',
+      company_id: testCompanyId,
+      sku: 'MAT-225-10',
+      name: 'Star Flex Banner Multi-Width',
+      category: 'flex_banner',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      roll_sizes: [
+        { width: 2.25, width_ft: 2.25, length: 100, length_ft: 100 },
+        { width: 2.25, width_ft: 2.25, length: 164, length_ft: 164 },
+        { width: 2.5, width_ft: 2.5, length: 164, length_ft: 164 },
+        { width: 3.25, width_ft: 3.25, length: 164, length_ft: 164 },
+        { width: 4.25, width_ft: 4.25, length: 164, length_ft: 164 },
+        { width: 5.25, width_ft: 5.25, length: 164, length_ft: 164 },
+        { width: 6.25, width_ft: 6.25, length: 164, length_ft: 164 },
+        { width: 7.25, width_ft: 7.25, length: 164, length_ft: 164 },
+        { width: 8.25, width_ft: 8.25, length: 164, length_ft: 164 },
+        { width: 10.5, width_ft: 10.5, length: 164, length_ft: 164 },
+      ],
+      current_stock: 0,
+      average_cost: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    await InventoryService.createMaterial(mat10Sizes)
+
+    // Receive only 1 Roll of 2.25ft x 100ft
+    const intake = await InventoryService.receiveStock({
+      company_id: testCompanyId,
+      material_id: mat10Sizes.id,
+      location_id: 'loc-main-store',
+      quantity: 1,
+      unit_cost: 2250,
+      width_ft: 2.25,
+      length_ft: 100,
+      size_label: '2.25ft × 100ft',
+      physical_form: 'roll',
+      purchase_unit: 'roll',
+      supplier_name: 'Supplier X',
+      performed_by_name: 'Store Manager',
+    })
+
+    assert.strictEqual(intake.rollsCreated?.length, 1, 'Must create only 1 physical roll')
+    assert.strictEqual(intake.rollsCreated![0].width_ft, 2.25)
+    assert.strictEqual(intake.rollsCreated![0].initial_length_ft, 100)
+    assert.strictEqual(intake.rollsCreated![0].remaining_area_sft, 225)
+
+    const updatedMat = await InventoryRepository.getMaterialById(mat10Sizes.id, testCompanyId)
+    assert.ok(updatedMat)
+
+    const storeRolls = await InventoryRepository.getInventoryRolls(testCompanyId, {
+      materialId: mat10Sizes.id,
+    })
+    assert.strictEqual(storeRolls.length, 1, 'Total warehouse physical rolls must be exactly 1')
+
+    const breakdownWithRolls = getMaterialWarehouseStockBreakdown(updatedMat!, storeRolls)
+    assert.strictEqual(breakdownWithRolls.total_rolls, 1, 'Total rolls in breakdown must be 1, NOT 10')
+    assert.strictEqual(breakdownWithRolls.roll_items.length, 1, 'Must have only 1 active roll size item')
+    assert.strictEqual(breakdownWithRolls.roll_items[0].roll_count, 1)
+    assert.strictEqual(breakdownWithRolls.roll_items[0].width_ft, 2.25)
+    assert.strictEqual(breakdownWithRolls.roll_items[0].length_ft, 100)
+    assert.strictEqual(breakdownWithRolls.roll_items[0].total_sft, 225, 'Total SFT must be 225, NOT 8,384')
+
+    // Also test stock breakdown fallback when rolls array is empty but current_stock = 225
+    const matWithStockOnly: MaterialRecord = {
+      ...mat10Sizes,
+      current_stock: 225,
+    }
+    const breakdownFallback = getMaterialWarehouseStockBreakdown(matWithStockOnly)
+    assert.strictEqual(breakdownFallback.total_rolls, 1, 'Fallback total rolls must be 1, NOT 10')
+    assert.strictEqual(breakdownFallback.roll_items.length, 1, 'Fallback must allocate only to 2.25ft x 100ft')
+    assert.strictEqual(breakdownFallback.roll_items[0].roll_count, 1)
+    assert.strictEqual(breakdownFallback.roll_items[0].width_ft, 2.25)
+    assert.strictEqual(breakdownFallback.roll_items[0].length_ft, 100)
+    assert.strictEqual(breakdownFallback.roll_items[0].total_sft, 225, 'Fallback SFT must be 225, NOT 8,384')
+  })
 })
 

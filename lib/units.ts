@@ -2222,23 +2222,75 @@ export function getMaterialWarehouseStockBreakdown(
           const sets = Math.floor(currentStock / sumSetArea)
           const remainder = currentStock - (sets * sumSetArea)
 
-          for (let idx = 0; idx < configuredList.length; idx++) {
-            const item = configuredList[idx]
-            const count = sets > 0
-              ? sets + (idx === 0 && remainder > (item.area / 2) ? Math.round(remainder / item.area) : 0)
-              : Math.max(1, Math.round((currentStock / configuredList.length) / item.area))
-            const sft = count * item.area
+          if (sets > 0) {
+            let remainderTargetIdx = -1
+            if (remainder > 0) {
+              remainderTargetIdx = configuredList.findIndex(
+                (item) => item.area > 0 && Math.abs(remainder % item.area) < 1
+              )
+              if (remainderTargetIdx === -1) {
+                let minDiff = Infinity
+                for (let i = 0; i < configuredList.length; i++) {
+                  const diff = Math.abs(configuredList[i].area - remainder)
+                  if (diff < minDiff) {
+                    minDiff = diff
+                    remainderTargetIdx = i
+                  }
+                }
+              }
+            }
+
+            for (let idx = 0; idx < configuredList.length; idx++) {
+              const item = configuredList[idx]
+              const extra = (idx === remainderTargetIdx && remainder > (item.area / 4))
+                ? Math.max(1, Math.round(remainder / item.area))
+                : 0
+              const count = sets + extra
+              if (count > 0) {
+                const sft = count * item.area
+                rollItems.push({
+                  width_ft: item.w,
+                  length_ft: item.l,
+                  roll_count: count,
+                  total_sft: sft,
+                  label: `${item.w}ft × ${item.l}ft`,
+                })
+                totalRolls += count
+                totalSft += sft
+              }
+            }
+          } else {
+            // sets === 0: currentStock is smaller than the sum of all configured sizes
+            // Allocate ONLY to the single best matching configured size instead of multiplying 1 roll for every size
+            let bestIdx = configuredList.findIndex(
+              (item) => item.area > 0 && (Math.abs(currentStock % item.area) < 1 || Math.abs(item.area - currentStock) < 1)
+            )
+            if (bestIdx === -1) {
+              let minDiff = Infinity
+              for (let i = 0; i < configuredList.length; i++) {
+                const diff = Math.abs(configuredList[i].area - currentStock)
+                if (diff < minDiff) {
+                  minDiff = diff
+                  bestIdx = i
+                }
+              }
+            }
+            if (bestIdx === -1) bestIdx = 0
+
+            const bestItem = configuredList[bestIdx]
+            const count = bestItem.area > 0 ? Math.max(1, Math.round(currentStock / bestItem.area)) : 1
+            const sft = currentStock
             rollItems.push({
-              width_ft: item.w,
-              length_ft: item.l,
+              width_ft: bestItem.w,
+              length_ft: bestItem.l,
               roll_count: count,
               total_sft: sft,
-              label: `${item.w}ft × ${item.l}ft`,
+              label: `${bestItem.w}ft × ${bestItem.l}ft`,
             })
             totalRolls += count
             totalSft += sft
           }
-        } else {
+        } else if (configuredList.length > 0) {
           const item = configuredList[0]
           const count = item.area > 0 ? Math.max(1, Math.round(currentStock / item.area)) : 1
           rollItems = [{

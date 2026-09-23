@@ -2568,7 +2568,7 @@ export class InventoryRepository {
         materialsList = await this.getMaterials(companyId)
       }
 
-      // Filter out stale auto-generated synthetic rolls (rol-init-) for materials with 0 or negative current stock
+      // Filter out stale auto-generated synthetic rolls (rol-init-) when real physical rolls exist or stock is 0
       if (rolls.length > 0 && materialsList.length > 0) {
         const matStockMap = new Map<string, number>()
         for (const m of materialsList) {
@@ -2576,8 +2576,15 @@ export class InventoryRepository {
           if (m.sku) matStockMap.set(m.sku.toLowerCase(), Number(m.current_stock || 0))
         }
 
+        const realPhysicalRollMats = new Set(
+          rolls.filter((r) => r && r.id && !r.id.startsWith('rol-init-')).map((r) => r.material_id)
+        )
+
         rolls = rolls.filter((r) => {
           if (r.id && r.id.startsWith('rol-init-')) {
+            if (realPhysicalRollMats.has(r.material_id)) {
+              return false
+            }
             const stock = matStockMap.get(r.material_id) ?? (r.material?.sku ? matStockMap.get(r.material.sku.toLowerCase()) : undefined)
             if (stock !== undefined && stock <= 0) {
               return false
@@ -2771,11 +2778,102 @@ export class InventoryRepository {
               const sets = Math.floor(stockNum / sumSetArea)
               const remainder = stockNum - (sets * sumSetArea)
 
-              for (let idx = 0; idx < configuredList.length; idx++) {
-                const item = configuredList[idx]
-                const count = sets > 0
-                  ? sets + (idx === 0 && remainder > (item.area / 2) ? Math.round(remainder / item.area) : 0)
-                  : Math.max(1, Math.round((stockNum / configuredList.length) / item.area))
+              if (sets > 0) {
+                let remainderTargetIdx = -1
+                if (remainder > 0) {
+                  remainderTargetIdx = configuredList.findIndex(
+                    (item) => item.area > 0 && Math.abs(remainder % item.area) < 1
+                  )
+                  if (remainderTargetIdx === -1) {
+                    let minDiff = Infinity
+                    for (let i = 0; i < configuredList.length; i++) {
+                      const diff = Math.abs(configuredList[i].area - remainder)
+                      if (diff < minDiff) {
+                        minDiff = diff
+                        remainderTargetIdx = i
+                      }
+                    }
+                  }
+                }
+
+                for (let idx = 0; idx < configuredList.length; idx++) {
+                  const item = configuredList[idx]
+                  const extra = (idx === remainderTargetIdx && remainder > (item.area / 4))
+                    ? Math.max(1, Math.round(remainder / item.area))
+                    : 0
+                  const count = sets + extra
+
+                  for (let i = 1; i <= count; i++) {
+                    const rollCode = count === 1
+                      ? `ROL-${cleanSku}-${item.w}FT`
+                      : `ROL-${cleanSku}-${item.w}FT-${String(i).padStart(2, '0')}`
+
+                    const rollPayload: InventoryRollRecord = {
+                      id: `rol-init-${m.id.slice(0, 8)}-${rollCounter}-${lot}`,
+                      company_id: companyId,
+                      branch_id: m.branch_id || null,
+                      location_id: null,
+                      location_name: m.location || 'Main Warehouse',
+                      material_id: m.id,
+                      roll_code: rollCode,
+                      roll_tag: rollCode,
+                      width_ft: item.w,
+                      initial_length_ft: item.l,
+                      current_length_ft: item.l,
+                      original_length_ft: item.l,
+                      remaining_length_ft: item.l,
+                      initial_area_sft: item.area,
+                      consumed_area_sft: 0,
+                      remaining_area_sft: item.area,
+                      current_area_sft: item.area,
+                      status: 'available',
+                      unit_cost: item.rollCost,
+                      total_cost: item.rollCost,
+                      material: {
+                        id: m.id,
+                        name: m.name,
+                        sku: m.sku,
+                        unit: m.unit,
+                        name_bn: m.name_bn || null,
+                      } as any,
+                      created_at: new Date().toISOString(),
+                      updated_at: new Date().toISOString(),
+                    }
+
+                    if (supabaseClient) {
+                      try {
+                        const dbInsert = { ...rollPayload }
+                        delete (dbInsert as any).material
+                        await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
+                      } catch {}
+                    }
+
+                    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
+                    PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload)
+                    rolls.push(rollPayload)
+                    rollCounter++
+                  }
+                }
+              } else {
+                // sets === 0: stockNum is smaller than total of all configured sizes
+                // Allocate ONLY to the single best matching configured size
+                let bestIdx = configuredList.findIndex(
+                  (item) => item.area > 0 && (Math.abs(stockNum % item.area) < 1 || Math.abs(item.area - stockNum) < 1)
+                )
+                if (bestIdx === -1) {
+                  let minDiff = Infinity
+                  for (let i = 0; i < configuredList.length; i++) {
+                    const diff = Math.abs(configuredList[i].area - stockNum)
+                    if (diff < minDiff) {
+                      minDiff = diff
+                      bestIdx = i
+                    }
+                  }
+                }
+                if (bestIdx === -1) bestIdx = 0
+
+                const item = configuredList[bestIdx]
+                const count = item.area > 0 ? Math.max(1, Math.round(stockNum / item.area)) : 1
 
                 for (let i = 1; i <= count; i++) {
                   const rollCode = count === 1
@@ -2828,7 +2926,7 @@ export class InventoryRepository {
                   rollCounter++
                 }
               }
-            } else {
+            } else if (configuredList.length > 0) {
               const item = configuredList[0]
               const numRolls = item.area > 0 ? Math.max(1, Math.round(stockNum / item.area)) : Math.max(1, Math.round(stockNum))
               for (let i = 1; i <= numRolls; i++) {
