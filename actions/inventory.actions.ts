@@ -1029,7 +1029,7 @@ export async function getInventoryDashboardDataAction(
     }
     const companyId = tenant.companyId
 
-    const [matData, locData, balData, reqData, issData, floorData, remData, ledData, sumData, rollsData, posData, grnData, prodsData] = await Promise.all([
+    const [matData, locData, balData, reqData, issData, floorData, remData, ledData, posData, grnData, prodsData] = await Promise.all([
       InventoryService.getMaterials(companyId).catch(() => []),
       InventoryService.getLocations(companyId).catch(() => []),
       InventoryService.getStockBalances(companyId).catch(() => []),
@@ -1038,11 +1038,21 @@ export async function getInventoryDashboardDataAction(
       InventoryService.getFloorConsumptions(companyId).catch(() => []),
       InventoryService.getRemnants(companyId).catch(() => []),
       InventoryService.getStockLedger(companyId).catch(() => []),
-      InventoryService.getInventorySummary(companyId).catch(() => ({})),
-      InventoryService.getInventoryRolls(companyId).catch(() => []),
       PurchaseService.getPurchaseOrders(companyId).catch(() => []),
       PurchaseService.getGoodsReceivedNotes(companyId).catch(() => []),
-      ProductRepository.getProducts(companyId, false, 'all').catch(() => []),
+      ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
+    ])
+
+    const [sumData, rollsData] = await Promise.all([
+      InventoryService.getInventorySummary(companyId, matData || [], prodsData || []).catch(() => ({
+        totalMaterials: 0,
+        totalAvailableStockValue: 0,
+        lowStockCount: 0,
+        pendingRequestsCount: 0,
+        totalRemnantsCount: 0,
+        totalWastageRecordsCount: 0,
+      })),
+      InventoryService.getInventoryRolls(companyId, undefined, matData || []).catch(() => []),
     ])
 
     return {

@@ -876,9 +876,13 @@ export class InventoryService {
     return await InventoryRepository.getStockLedger(companyId, materialId)
   }
 
-  static async getInventoryRolls(companyId: string): Promise<InventoryRollRecord[]> {
+  static async getInventoryRolls(
+    companyId: string,
+    options?: { materialId?: string; status?: string; locationId?: string },
+    preloadedMaterials?: MaterialRecord[]
+  ): Promise<InventoryRollRecord[]> {
     if (!companyId) return []
-    return await InventoryRepository.getInventoryRolls(companyId)
+    return await InventoryRepository.getInventoryRolls(companyId, options, preloadedMaterials)
   }
 
   static async mountRollToMachine(params: {
@@ -1027,7 +1031,11 @@ export class InventoryService {
     return result.ledgerEntry
   }
 
-  static async getInventorySummary(companyId: string): Promise<InventorySummaryStats> {
+  static async getInventorySummary(
+    companyId: string,
+    preloadedMaterials?: MaterialRecord[],
+    preloadedProducts?: any[]
+  ): Promise<InventorySummaryStats> {
     if (!companyId) {
       return {
         totalMaterials: 0,
@@ -1040,11 +1048,15 @@ export class InventoryService {
     }
 
     const [materials, requests, remnants, ledger, readyProducts] = await Promise.all([
-      InventoryRepository.getMaterials(companyId).catch(() => []),
+      preloadedMaterials && preloadedMaterials.length > 0
+        ? Promise.resolve(preloadedMaterials)
+        : InventoryRepository.getMaterials(companyId).catch(() => []),
       InventoryRepository.getRequests(companyId, { status: 'requested' }).catch(() => []),
       InventoryRepository.getRemnants(companyId, { status: 'available' }).catch(() => []),
       InventoryRepository.getStockLedger(companyId).catch(() => []),
-      ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
+      preloadedProducts && preloadedProducts.length > 0
+        ? Promise.resolve(preloadedProducts)
+        : ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
     ])
 
     const lowStockCount = materials.filter((m) => {

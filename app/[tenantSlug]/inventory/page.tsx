@@ -418,8 +418,12 @@ function UnifiedInventoryContent() {
   useEffect(() => {
     loadAllData(false)
 
+    let syncTimeout: any = null
     const handleRealtimeSync = () => {
-      loadAllData(true)
+      if (syncTimeout) clearTimeout(syncTimeout)
+      syncTimeout = setTimeout(() => {
+        loadAllData(true)
+      }, 300)
     }
 
     if (typeof window !== 'undefined') {
@@ -438,6 +442,7 @@ function UnifiedInventoryContent() {
       window.addEventListener('storage', handleRealtimeSync)
 
       return () => {
+        if (syncTimeout) clearTimeout(syncTimeout)
         window.removeEventListener('printerp_table_synced:materials', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:products', handleRealtimeSync)
         window.removeEventListener('printerp_table_synced:inventory_rolls', handleRealtimeSync)

@@ -2325,14 +2325,16 @@ export class InventoryRepository {
 
   static async getInventoryRolls(
     companyId: string,
-    options?: { materialId?: string; status?: string; locationId?: string }
+    options?: { materialId?: string; status?: string; locationId?: string },
+    preloadedMaterials?: MaterialRecord[]
   ): Promise<InventoryRollRecord[]> {
     let rolls: InventoryRollRecord[] = []
+    let supabaseClient: any = null
 
     // 1. Fetch from Supabase
     try {
-      const supabase = await createClient()
-      let query = (supabase as any)
+      supabaseClient = await createClient()
+      let query = (supabaseClient as any)
         .from('inventory_rolls')
         .select('*, material:materials(id, name, sku, unit)')
         .eq('company_id', companyId)
@@ -2378,8 +2380,11 @@ export class InventoryRepository {
     }
 
     // 3. Auto-populate / Synchronize Physical Rolls for roll materials that don't have roll records yet
+    let materialsList: MaterialRecord[] = preloadedMaterials || []
     try {
-      const materials = await this.getMaterials(companyId)
+      if (materialsList.length === 0) {
+        materialsList = await this.getMaterials(companyId)
+      }
       const existingMaterialIdsWithRolls = new Set(rolls.map((r) => r.material_id))
 
       const isRollMaterial = (m: MaterialRecord) => {
@@ -2399,7 +2404,7 @@ export class InventoryRepository {
         )
       }
 
-      const rollMaterials = materials.filter(isRollMaterial)
+      const rollMaterials = materialsList.filter(isRollMaterial)
 
       for (const m of rollMaterials) {
         if (options?.materialId && m.id !== options.materialId) continue
@@ -2487,12 +2492,13 @@ export class InventoryRepository {
             updated_at: new Date().toISOString(),
           }
 
-          try {
-            const supabase = await createClient()
-            const dbInsert = { ...rollPayload }
-            delete (dbInsert as any).material
-            await (supabase as any).from('inventory_rolls').insert(dbInsert)
-          } catch {}
+          if (supabaseClient) {
+            try {
+              const dbInsert = { ...rollPayload }
+              delete (dbInsert as any).material
+              await (supabaseClient as any).from('inventory_rolls').insert(dbInsert)
+            } catch {}
+          }
 
           PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
           rolls.push(rollPayload)
@@ -2503,9 +2509,8 @@ export class InventoryRepository {
 
     // 4. Enrich Material metadata on all rolls
     try {
-      const materials = await this.getMaterials(companyId)
       const matMap = new Map<string, MaterialRecord>()
-      for (const m of materials) {
+      for (const m of materialsList) {
         matMap.set(m.id, m)
         if (m.sku) matMap.set(m.sku.toLowerCase(), m)
       }
