@@ -35,6 +35,7 @@ import {
   MaterialRecord,
   InventoryLocationRecord,
   InventoryRollRecord,
+  MaterialRequestRecord,
   IssueMasterRollParams,
   IssueMasterRollResult,
 } from '@/types/inventory.types'
@@ -51,11 +52,15 @@ export interface IssueMasterRollModalProps {
   materials: MaterialRecord[]
   locations?: InventoryLocationRecord[]
   initialMaterialId?: string
+  selectedMaterialId?: string
   initialWidthFt?: number
   initialLengthFt?: number
   initialMachineId?: string | null
   initialMachineName?: string | null
-  onSuccess?: (result: IssueMasterRollResult) => void
+  request?: MaterialRequestRecord | null
+  requests?: MaterialRequestRecord[]
+  rolls?: InventoryRollRecord[]
+  onSuccess?: (result?: IssueMasterRollResult) => void
   companyId?: string
 }
 
@@ -101,10 +106,14 @@ export function IssueMasterRollModal({
   materials = [],
   locations = [],
   initialMaterialId,
+  selectedMaterialId,
   initialWidthFt = 3,
   initialLengthFt = 164,
   initialMachineId = 'roland',
   initialMachineName,
+  request,
+  requests,
+  rolls,
   onSuccess,
   companyId,
 }: IssueMasterRollModalProps) {
@@ -116,9 +125,10 @@ export function IssueMasterRollModal({
   }, [materials])
 
   // Material Selection
+  const effectiveInitialMatId = initialMaterialId || selectedMaterialId || request?.items?.[0]?.material_id || (request as any)?.material_id
   const [materialId, setMaterialId] = useState<string>(() => {
-    if (initialMaterialId && availableMaterials.some((m) => m.id === initialMaterialId)) {
-      return initialMaterialId
+    if (effectiveInitialMatId && availableMaterials.some((m) => m.id === effectiveInitialMatId)) {
+      return effectiveInitialMatId
     }
     return availableMaterials[0]?.id || ''
   })
@@ -245,10 +255,23 @@ export function IssueMasterRollModal({
   // Reset or Sync when modal opens or initial props change
   useEffect(() => {
     if (open) {
-      if (initialMaterialId && availableMaterials.some((m) => m.id === initialMaterialId)) {
-        setMaterialId(initialMaterialId)
+      const targetMatId = initialMaterialId || selectedMaterialId || request?.items?.[0]?.material_id || (request as any)?.material_id
+      if (targetMatId && availableMaterials.some((m) => m.id === targetMatId)) {
+        setMaterialId(targetMatId)
       } else if (availableMaterials.length > 0 && !availableMaterials.some((m) => m.id === materialId)) {
         setMaterialId(availableMaterials[0].id)
+      }
+
+      if (request) {
+        const reqQty = Number(request.items?.[0]?.requested_quantity || (request as any)?.requested_quantity || 1)
+        if (reqQty > 0) {
+          setQuantityRolls(reqQty)
+        }
+        if (request.notes) {
+          setNotes(request.notes)
+        } else if (request.request_number) {
+          setNotes(`Requisition #${request.request_number}`)
+        }
       }
 
       // Auto-select source location
@@ -272,7 +295,7 @@ export function IssueMasterRollModal({
       setSuccess(null)
       setLoading(false)
     }
-  }, [open, initialMaterialId, initialMachineId, availableMaterials, effectiveLocations])
+  }, [open, initialMaterialId, selectedMaterialId, initialMachineId, request, availableMaterials, effectiveLocations])
 
   // Material Physical Form & Unit Classifications
   const isRollMedia = Boolean(warehouseBreakdown.is_roll)
@@ -591,13 +614,13 @@ export function IssueMasterRollModal({
           <div>
             <div className="text-base font-bold text-slate-900 dark:text-white leading-tight">
               {tBilingual(
-                'Issue / Requisition materials to Print Floor',
-                'প্রিন্ট ফ্লোরে কাঁচামাল ইস্যু ও বরাদ্দ'
+                'Direct Material Issue & Print Floor Requisition',
+                'সরাসরি ফ্লোরে কাঁচামাল প্রদান ও চাহিদা পূরণ'
               )}
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tBilingual(
-                'Directly requisition and issue raw materials or roll substrates from warehouse stock to machines or staging.',
+                'Directly issue raw materials, substrates, and supplies from warehouse stock to machines or staging.',
                 'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে কাঁচামাল বা মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
               )}
             </div>
@@ -1070,3 +1093,9 @@ export function IssueMasterRollModal({
     </ModalDialog>
   )
 }
+
+export const MaterialIssueModal = IssueMasterRollModal
+export type MaterialIssueModalProps = IssueMasterRollModalProps
+export const FloorIssueModal = IssueMasterRollModal
+export type FloorIssueModalProps = IssueMasterRollModalProps
+

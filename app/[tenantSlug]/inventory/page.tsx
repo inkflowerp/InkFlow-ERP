@@ -96,7 +96,7 @@ import { moveToTrashAction } from '@/actions/trash.actions'
 // Modals
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { MaterialRequestModal } from '@/components/inventory/material-request-modal'
-import { MaterialIssueModal } from '@/components/inventory/material-issue-modal'
+import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
 import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
 import { StockTransferModal } from '@/components/inventory/stock-transfer-modal'
 import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
@@ -108,7 +108,6 @@ import { InventoryKpiBar } from '@/components/inventory/inventory-kpi-bar'
 import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
 import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
-import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PromptDialog } from '@/components/shared/prompt-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -281,13 +280,12 @@ function UnifiedInventoryContent() {
   const [isReceiveStockOpen, setIsReceiveStockOpen] = useState(false)
   const [isNewPurchaseOpen, setIsNewPurchaseOpen] = useState(false)
   const [isRequestOpen, setIsRequestOpen] = useState(false)
-  const [isIssueOpen, setIsIssueOpen] = useState(false)
+  const [isFloorIssueOpen, setIsFloorIssueOpen] = useState(false)
+  const [floorIssueMaterialId, setFloorIssueMaterialId] = useState<string>('')
   const [isConsumptionOpen, setIsConsumptionOpen] = useState(false)
   const [isTransferOpen, setIsTransferOpen] = useState(false)
   const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false)
   const [isNewLocationOpen, setIsNewLocationOpen] = useState(false)
-  const [isIssueMasterRollOpen, setIsIssueMasterRollOpen] = useState(false)
-  const [initialRollMaterialId, setInitialRollMaterialId] = useState<string>('')
 
   // Target items for contextual actions
   const [selectedMaterialForAction, setSelectedMaterialForAction] = useState<MaterialRecord | null>(null)
@@ -803,7 +801,9 @@ function UnifiedInventoryContent() {
           }}
           onFloorIssue={() => {
             setSelectedMaterialForAction(null)
-            setIsIssueOpen(true)
+            setFloorIssueMaterialId('')
+            setSelectedRequestForIssue(null)
+            setIsFloorIssueOpen(true)
           }}
           onLogConsumption={() => {
             setSelectedFloorRecordForConsumption(null)
@@ -1026,12 +1026,9 @@ function UnifiedInventoryContent() {
                                   variant="outline"
                                   onClick={() => {
                                     setSelectedMaterialForAction(mat)
-                                    if (mat.is_roll || breakdown.is_roll) {
-                                      setInitialRollMaterialId(mat.id)
-                                      setIsIssueMasterRollOpen(true)
-                                    } else {
-                                      setIsIssueOpen(true)
-                                    }
+                                    setFloorIssueMaterialId(mat.id)
+                                    setSelectedRequestForIssue(null)
+                                    setIsFloorIssueOpen(true)
                                   }}
                                   className="h-7 px-2 text-[11px] text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 font-medium cursor-pointer"
                                 >
@@ -1403,8 +1400,10 @@ function UnifiedInventoryContent() {
                   <Button
                     size="sm"
                     onClick={() => {
-                      setInitialRollMaterialId('')
-                      setIsIssueMasterRollOpen(true)
+                      setSelectedMaterialForAction(null)
+                      setFloorIssueMaterialId('')
+                      setSelectedRequestForIssue(null)
+                      setIsFloorIssueOpen(true)
                     }}
                     className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8 px-3 cursor-pointer shrink-0 gap-1"
                   >
@@ -1444,8 +1443,10 @@ function UnifiedInventoryContent() {
                             <Button
                               size="sm"
                               onClick={() => {
-                                setInitialRollMaterialId('')
-                                setIsIssueMasterRollOpen(true)
+                                setSelectedMaterialForAction(null)
+                                setFloorIssueMaterialId('')
+                                setSelectedRequestForIssue(null)
+                                setIsFloorIssueOpen(true)
                               }}
                               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold cursor-pointer"
                             >
@@ -1708,7 +1709,8 @@ function UnifiedInventoryContent() {
                                   size="sm"
                                   onClick={() => {
                                     setSelectedRequestForIssue(req)
-                                    setIsIssueOpen(true)
+                                    setFloorIssueMaterialId(req.items?.[0]?.material_id || '')
+                                    setIsFloorIssueOpen(true)
                                   }}
                                   className="h-7 px-2.5 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer"
                                 >
@@ -2332,23 +2334,29 @@ function UnifiedInventoryContent() {
           companyId={companyId}
         />
 
-        <MaterialIssueModal
-          open={isIssueOpen}
+        {/* Unified Direct Material Issue & Print Floor Requisition Modal */}
+        <IssueMasterRollModal
+          open={isFloorIssueOpen}
           onOpenChange={(open) => {
-            setIsIssueOpen(open)
-            if (!open) setSelectedRequestForIssue(null)
+            setIsFloorIssueOpen(open)
+            if (!open) {
+              setSelectedRequestForIssue(null)
+              setFloorIssueMaterialId('')
+              setSelectedMaterialForAction(null)
+            }
           }}
           materials={materials}
           locations={locations}
           requests={requests}
           rolls={rolls}
           request={selectedRequestForIssue}
-          selectedMaterialId={selectedMaterialForAction?.id}
+          initialMaterialId={floorIssueMaterialId || selectedMaterialForAction?.id}
+          selectedMaterialId={floorIssueMaterialId || selectedMaterialForAction?.id}
+          companyId={companyId}
           onSuccess={() => {
             showNotification('Material issued to print floor successfully.')
-            loadAllData()
+            loadAllData(true)
           }}
-          companyId={companyId}
         />
 
         <LogConsumptionModal
@@ -2512,16 +2520,6 @@ function UnifiedInventoryContent() {
           </div>
         )}
 
-        {/* Upgraded Issue Master Roll to Print Floor Modal */}
-        <IssueMasterRollModal
-          open={isIssueMasterRollOpen}
-          onOpenChange={setIsIssueMasterRollOpen}
-          materials={materials}
-          locations={locations}
-          initialMaterialId={initialRollMaterialId}
-          companyId={companyId}
-          onSuccess={() => loadAllData(true)}
-        />
 
         {/* Material Trash Confirmation Dialog */}
         <ConfirmDialog
