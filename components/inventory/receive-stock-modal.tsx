@@ -149,6 +149,7 @@ export interface DirectReceiptItemRow {
   material_config?: any
   purchase_price_per_sft?: number | null
   production_width_allowance?: number | null
+  nominal_width_ft?: number | null
   allowance_ft?: number | null
   gsm?: number | null
   finishing?: string | null
@@ -1138,17 +1139,23 @@ export function ReceiveStockModal({
 
       if (matchedSize.physical_form === 'roll') {
         current.roll_width_ft = matchedSize.width_ft || current.roll_width_ft
+        current.nominal_width_ft = (matchedSize as any).nominal_width_ft ?? (matchedSize.allowance_ft ? ((matchedSize.width_ft ?? 0) - matchedSize.allowance_ft) : (matchedSize.width_ft ?? current.roll_width_ft ?? null))
+        current.allowance_ft = matchedSize.allowance_ft !== undefined ? matchedSize.allowance_ft : 0
         current.roll_length_ft = matchedSize.length_ft || current.roll_length_ft
         current.roll_area_sft = matchedSize.standard_area_sft || (current.roll_width_ft && current.roll_length_ft ? Math.round(current.roll_width_ft * current.roll_length_ft) : 820)
       } else if (matchedSize.physical_form === 'sheet') {
         current.sheet_size = matchedSize.label
         current.sheet_area_sft = matchedSize.standard_area_sft || 32
         current.roll_width_ft = matchedSize.width_ft || (matchedSize as any).width || 8
+        current.nominal_width_ft = (matchedSize as any).nominal_width_ft ?? current.roll_width_ft ?? null
+        current.allowance_ft = matchedSize.allowance_ft !== undefined ? matchedSize.allowance_ft : 0
         current.roll_length_ft = matchedSize.length_ft || (matchedSize as any).length || 4
         current.thickness_mm = matchedSize.thickness_mm || current.thickness_mm
       } else if (matchedSize.physical_form === 'hardware' || matchedSize.physical_form === 'piece') {
         if (matchedSize.width_ft && matchedSize.length_ft) {
           current.roll_width_ft = matchedSize.width_ft
+          current.nominal_width_ft = (matchedSize as any).nominal_width_ft ?? matchedSize.width_ft ?? null
+          current.allowance_ft = matchedSize.allowance_ft !== undefined ? matchedSize.allowance_ft : 0
           current.roll_length_ft = matchedSize.length_ft
         }
       }
@@ -1226,6 +1233,8 @@ export function ReceiveStockModal({
 
           if (primarySize) {
             current.size_spec = primarySize.label
+            current.nominal_width_ft = (primarySize as any).nominal_width_ft ?? (primarySize.allowance_ft ? ((primarySize.width_ft ?? 0) - primarySize.allowance_ft) : (primarySize.width_ft ?? null))
+            current.allowance_ft = primarySize.allowance_ft !== undefined ? primarySize.allowance_ft : 0
             if (primarySize.physical_form === 'roll') {
               current.roll_width_ft = primarySize.width_ft || current.roll_width_ft
               current.roll_length_ft = primarySize.length_ft || current.roll_length_ft
@@ -1662,7 +1671,7 @@ export function ReceiveStockModal({
               size_label: item.size_spec || (item.roll_width_ft ? `${item.roll_width_ft} ft × ${item.roll_length_ft || 164} ft` : item.sheet_size) || null,
               width_ft: item.roll_width_ft || null,
               length_ft: item.roll_length_ft || null,
-              allowance_ft: item.allowance_ft ?? item.production_width_allowance ?? (item.material_config as any)?.extra_width_allowance_ft ?? null,
+              allowance_ft: item.allowance_ft !== undefined ? item.allowance_ft : (item.production_width_allowance ?? 0),
               gsm: item.gsm ?? (item.material_config as any)?.gsm ?? null,
               finishing: item.finishing ?? (item.material_config as any)?.finishing ?? (item.material_config as any)?.default_finishing ?? null,
               physical_form: item.physical_form as any,

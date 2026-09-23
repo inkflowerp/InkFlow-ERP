@@ -264,11 +264,12 @@ export class InventoryService {
       ? Number(params.allowance_ft)
       : (isZeroAllowanceExplicit ? 0 : globalAllowance)
     let hasExplicitConfig = false
+    let matchingConfigSize: any = null
 
     if (rawRollSizes.length > 0 && (nominalWidthFt > 0 || widthFt > 0)) {
       const searchNominal = nominalWidthFt || widthFt
       const searchEffective = widthFt || nominalWidthFt
-      const matchingConfigSize = rawRollSizes.find((sz: any) => {
+      matchingConfigSize = rawRollSizes.find((sz: any) => {
         const szNominal = Number(sz.nominal_width_ft || sz.width || sz.size || 0)
         const szEffective = Number(sz.width_ft || sz.width || sz.size || 0)
         const szLen = Number(sz.length || sz.length_ft || 0)
@@ -315,9 +316,6 @@ export class InventoryService {
         (isSheet ? 8 : 4)
       )
       nominalWidthFt = widthFt
-    }
-    if (isRoll && !hasExplicitConfig && !isZeroAllowanceExplicit && matchedConfigAllowance > 0 && Math.floor(widthFt) === widthFt) {
-      widthFt = Math.round((widthFt + matchedConfigAllowance) * 100) / 100
     }
 
     const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : (isSheet ? Math.round(widthFt * lengthFt * 100) / 100 : 1)
@@ -366,7 +364,7 @@ export class InventoryService {
 
     const incomingAllowance = params.allowance_ft !== undefined
       ? Number(params.allowance_ft)
-      : (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : matchedConfigAllowance
+      : (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : (matchingConfigSize ? Number(matchingConfigSize.allowance_ft ?? matchingConfigSize.allowance ?? 0) : 0)
     const incomingGsm = Number((params as any)?.gsm ?? (material as any)?.gsm ?? (material as any)?.weight_gsm ?? (material as any)?.thickness_mm ?? 0)
     const incomingFinishing = String((params as any)?.finishing ?? (material as any)?.default_finishing ?? (material as any)?.finish ?? 'none')
 
@@ -439,7 +437,7 @@ export class InventoryService {
             ? Number(sz.allowance)
             : sz.allowance_ft !== undefined
             ? Number(sz.allowance_ft)
-            : globalAllowance
+            : 0
           const szW = sz.width_ft !== undefined && Number(sz.width_ft) > 0
             ? Number(sz.width_ft)
             : ((szAllowance > 0 && Math.floor(szBaseW) === szBaseW) ? Math.round((szBaseW + szAllowance) * 100) / 100 : szBaseW)
@@ -462,20 +460,21 @@ export class InventoryService {
           })
           const szKey = createInventoryGroupingKey(szCanonicalAttrs)
 
-          // Strict 7-attribute comparison
+          // Strict 7-attribute canonical comparison or exact matching spec match
+          const incomingNominalW = incomingCanonicalAttrs.width_ft - incomingCanonicalAttrs.allowance_ft
           const isFullCanonicalMatch = szKey === incomingGroupKey
+          const isCompatibleSpecMatch = !matched &&
+            (Math.abs(szW - incomingCanonicalAttrs.width_ft) < 0.05 || (szBaseW > 0 && Math.abs(szBaseW - incomingNominalW) < 0.05 && Math.abs(szAllowance - incomingCanonicalAttrs.allowance_ft) < 0.05)) &&
+            (!szL || !incomingCanonicalAttrs.length_ft || Math.abs(szL - incomingCanonicalAttrs.length_ft) <= 5) &&
+            (szPrice === 0 || szPrice === incomingCanonicalAttrs.purchase_price) &&
+            (szGsm === 0 || szGsm === incomingCanonicalAttrs.gsm) &&
+            (szFin === 'none' || szFin === incomingCanonicalAttrs.finishing)
 
-          // Also support matching configured empty template size (count == 0) for the incoming width/length
-          const isTemplateSizeMatch = !matched &&
-            Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) === 0 &&
-            Math.abs(szCanonicalAttrs.width_ft - incomingCanonicalAttrs.width_ft) < 0.1 &&
-            (!szCanonicalAttrs.length_ft || Math.abs(szCanonicalAttrs.length_ft - incomingCanonicalAttrs.length_ft) <= 5)
-
-          if ((isFullCanonicalMatch || isTemplateSizeMatch) && !matched) {
+          if ((isFullCanonicalMatch || isCompatibleSpecMatch) && !matched) {
             matched = true
             const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
             const newQty = curQty + params.quantity
-            const effW = incomingCanonicalAttrs.width_ft
+            const effW = szW || incomingCanonicalAttrs.width_ft
             const effL = szL || incomingCanonicalAttrs.length_ft
             return {
               ...sz,
@@ -483,13 +482,13 @@ export class InventoryService {
               width: szBaseW || nominalWidthFt || widthFt,
               nominal_width_ft: szBaseW || nominalWidthFt || widthFt,
               width_ft: effW,
-              allowance_ft: incomingCanonicalAttrs.allowance_ft,
-              extra_allowance: incomingCanonicalAttrs.allowance_ft,
+              allowance_ft: szAllowance,
+              extra_allowance: szAllowance,
               length: effL,
               length_ft: effL,
-              price: incomingCanonicalAttrs.purchase_price,
-              unit_cost: incomingCanonicalAttrs.purchase_price,
-              purchase_price: incomingCanonicalAttrs.purchase_price,
+              price: incomingCanonicalAttrs.purchase_price > 0 ? incomingCanonicalAttrs.purchase_price : szPrice,
+              unit_cost: incomingCanonicalAttrs.purchase_price > 0 ? incomingCanonicalAttrs.purchase_price : szPrice,
+              purchase_price: incomingCanonicalAttrs.purchase_price > 0 ? incomingCanonicalAttrs.purchase_price : szPrice,
               gsm: incomingCanonicalAttrs.gsm,
               finishing: incomingCanonicalAttrs.finishing,
               quantity: newQty,
@@ -525,9 +524,10 @@ export class InventoryService {
           })
         }
 
-        // If there was previously existing unallocated stock on other configured sizes, preserve their stock counts
+        // If there was previously existing unallocated stock on other configured sizes and no sizes had explicit stock, preserve legacy stock count
+        const hadAnyExplicitRollsBefore = existingRollSizes.some((sz: any) => Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) > 0)
         const prevStockBeforeIntake = Math.max(0, Number(freshMaterial.current_stock || 0) - stockChangeQty)
-        if (prevStockBeforeIntake > 0) {
+        if (!hadAnyExplicitRollsBefore && prevStockBeforeIntake > 0) {
           const zeroSizes = updatedSizes.filter((sz: any) => Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) === 0)
           if (zeroSizes.length > 0) {
             const exactPrevMatchIdx = zeroSizes.findIndex((sz: any) => {
