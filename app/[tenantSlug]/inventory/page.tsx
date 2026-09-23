@@ -474,6 +474,16 @@ function UnifiedInventoryContent() {
   // Filtered Ready Products
   const filteredReadyProducts = useMemo(() => {
     return readyProducts.filter((p) => {
+      const isReady =
+        p.entity_type === 'product' ||
+        p.is_ready_product ||
+        (p.product_type as any) === 'product' ||
+        p.product_type === 'PRODUCT' ||
+        p.product_type === 'ready_product' ||
+        p.commercial_type === 'ready_product' ||
+        isReadyProduct(p)
+      if (!isReady) return false
+
       const q = search.trim().toLowerCase()
       return (
         !q ||
@@ -1135,12 +1145,18 @@ function UnifiedInventoryContent() {
                         const totalBalanceQty = locBalances.reduce((sum, b) => sum + (Number(b.available_quantity || (b as any).quantity) || 0), 0)
 
                         const stockQty = Number(
-                          (p as any).current_stock !== undefined && (p as any).current_stock !== null
-                            ? (p as any).current_stock
-                            : matchingMat?.current_stock !== undefined && matchingMat?.current_stock !== null
-                            ? matchingMat.current_stock
-                            : totalBalanceQty > 0
+                          totalBalanceQty > 0
                             ? totalBalanceQty
+                            : (p as any).current_stock !== undefined && (p as any).current_stock !== null && !isNaN(Number((p as any).current_stock))
+                            ? (p as any).current_stock
+                            : (p as any).opening_stock !== undefined && (p as any).opening_stock !== null && !isNaN(Number((p as any).opening_stock))
+                            ? (p as any).opening_stock
+                            : (p.pricing_formula as any)?.current_stock !== undefined && (p.pricing_formula as any)?.current_stock !== null && !isNaN(Number((p.pricing_formula as any).current_stock))
+                            ? (p.pricing_formula as any).current_stock
+                            : (p.pricing_formula as any)?.opening_stock !== undefined && (p.pricing_formula as any)?.opening_stock !== null && !isNaN(Number((p.pricing_formula as any).opening_stock))
+                            ? (p.pricing_formula as any).opening_stock
+                            : matchingMat?.current_stock !== undefined && matchingMat?.current_stock !== null && !isNaN(Number(matchingMat.current_stock))
+                            ? matchingMat.current_stock
                             : (p as any).stock || 0
                         )
                         const cost = Number(

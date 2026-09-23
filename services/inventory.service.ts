@@ -1039,10 +1039,10 @@ export class InventoryService {
     }
 
     const [materials, requests, remnants, ledger, readyProducts] = await Promise.all([
-      InventoryRepository.getMaterials(companyId),
-      InventoryRepository.getRequests(companyId, { status: 'requested' }),
-      InventoryRepository.getRemnants(companyId, { status: 'available' }),
-      InventoryRepository.getStockLedger(companyId),
+      InventoryRepository.getMaterials(companyId).catch(() => []),
+      InventoryRepository.getRequests(companyId, { status: 'requested' }).catch(() => []),
+      InventoryRepository.getRemnants(companyId, { status: 'available' }).catch(() => []),
+      InventoryRepository.getStockLedger(companyId).catch(() => []),
       ProductRepository.getProducts(companyId, false, 'all', undefined, 'product').catch(() => []),
     ])
 
@@ -1060,7 +1060,14 @@ export class InventoryService {
     const matIds = new Set(materials.map((m) => m.id))
     const productsValue = readyProducts.reduce((sum, p) => {
       if (matIds.has(p.id)) return sum
-      const stock = Number((p as any).current_stock ?? (p as any).stock ?? 0)
+      const stock = Number(
+        (p as any).current_stock ??
+        (p as any).stock ??
+        (p as any).opening_stock ??
+        (p.pricing_formula as any)?.current_stock ??
+        (p.pricing_formula as any)?.opening_stock ??
+        0
+      )
       const cost = Number(p.base_cost || p.purchase_price || 0)
       return sum + (stock > 0 ? stock * cost : 0)
     }, 0)

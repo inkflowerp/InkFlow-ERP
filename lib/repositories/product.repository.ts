@@ -311,8 +311,105 @@ export function enrichProductRecord(p: any): ProductRecord {
     cost_basis_type: costBasisType,
     suggested_selling_price: suggestedPrice,
     gross_margin_percent: marginCalc.grossMarginPercent,
-    current_stock: p.current_stock !== undefined && p.current_stock !== null ? Number(p.current_stock) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0),
-    stock: p.current_stock !== undefined && p.current_stock !== null ? Number(p.current_stock) : (p.stock !== undefined && p.stock !== null ? Number(p.stock) : 0),
+    current_stock:
+      p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
+        ? Number(p.current_stock)
+        : p.stock !== undefined && p.stock !== null && !isNaN(Number(p.stock))
+        ? Number(p.stock)
+        : formula.current_stock !== undefined && formula.current_stock !== null && !isNaN(Number(formula.current_stock))
+        ? Number(formula.current_stock)
+        : formula.stock !== undefined && formula.stock !== null && !isNaN(Number(formula.stock))
+        ? Number(formula.stock)
+        : p.opening_stock !== undefined && p.opening_stock !== null && !isNaN(Number(p.opening_stock))
+        ? Number(p.opening_stock)
+        : formula.opening_stock !== undefined && formula.opening_stock !== null && !isNaN(Number(formula.opening_stock))
+        ? Number(formula.opening_stock)
+        : 0,
+    stock:
+      p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
+        ? Number(p.current_stock)
+        : p.stock !== undefined && p.stock !== null && !isNaN(Number(p.stock))
+        ? Number(p.stock)
+        : formula.current_stock !== undefined && formula.current_stock !== null && !isNaN(Number(formula.current_stock))
+        ? Number(formula.current_stock)
+        : formula.stock !== undefined && formula.stock !== null && !isNaN(Number(formula.stock))
+        ? Number(formula.stock)
+        : p.opening_stock !== undefined && p.opening_stock !== null && !isNaN(Number(p.opening_stock))
+        ? Number(p.opening_stock)
+        : formula.opening_stock !== undefined && formula.opening_stock !== null && !isNaN(Number(formula.opening_stock))
+        ? Number(formula.opening_stock)
+        : 0,
+    opening_stock:
+      p.opening_stock !== undefined && p.opening_stock !== null && !isNaN(Number(p.opening_stock))
+        ? Number(p.opening_stock)
+        : formula.opening_stock !== undefined && formula.opening_stock !== null && !isNaN(Number(formula.opening_stock))
+        ? Number(formula.opening_stock)
+        : p.current_stock !== undefined && p.current_stock !== null && !isNaN(Number(p.current_stock))
+        ? Number(p.current_stock)
+        : formula.current_stock !== undefined && formula.current_stock !== null && !isNaN(Number(formula.current_stock))
+        ? Number(formula.current_stock)
+        : 0,
+    reorder_level:
+      p.reorder_level !== undefined && p.reorder_level !== null && !isNaN(Number(p.reorder_level))
+        ? Number(p.reorder_level)
+        : p.min_stock_level !== undefined && p.min_stock_level !== null && !isNaN(Number(p.min_stock_level))
+        ? Number(p.min_stock_level)
+        : formula.reorder_level !== undefined && formula.reorder_level !== null && !isNaN(Number(formula.reorder_level))
+        ? Number(formula.reorder_level)
+        : formula.min_stock_level !== undefined && formula.min_stock_level !== null && !isNaN(Number(formula.min_stock_level))
+        ? Number(formula.min_stock_level)
+        : 0,
+    min_stock_level:
+      p.min_stock_level !== undefined && p.min_stock_level !== null && !isNaN(Number(p.min_stock_level))
+        ? Number(p.min_stock_level)
+        : p.reorder_level !== undefined && p.reorder_level !== null && !isNaN(Number(p.reorder_level))
+        ? Number(p.reorder_level)
+        : formula.min_stock_level !== undefined && formula.min_stock_level !== null && !isNaN(Number(formula.min_stock_level))
+        ? Number(formula.min_stock_level)
+        : formula.reorder_level !== undefined && formula.reorder_level !== null && !isNaN(Number(formula.reorder_level))
+        ? Number(formula.reorder_level)
+        : 0,
+    max_stock:
+      p.max_stock !== undefined && p.max_stock !== null && !isNaN(Number(p.max_stock))
+        ? Number(p.max_stock)
+        : formula.max_stock !== undefined && formula.max_stock !== null && !isNaN(Number(formula.max_stock))
+        ? Number(formula.max_stock)
+        : null,
+    warehouse_location: p.warehouse_location || formula.warehouse_location || null,
+    preferred_supplier_id: p.preferred_supplier_id || formula.preferred_supplier_id || null,
+    supplier_item_code: p.supplier_item_code || formula.supplier_item_code || null,
+    lead_time_days:
+      p.lead_time_days !== undefined && p.lead_time_days !== null && !isNaN(Number(p.lead_time_days))
+        ? Number(p.lead_time_days)
+        : formula.lead_time_days !== undefined && formula.lead_time_days !== null && !isNaN(Number(formula.lead_time_days))
+        ? Number(formula.lead_time_days)
+        : null,
+    brand: p.brand || formula.brand || null,
+    barcode: p.barcode || formula.barcode || null,
+    finish_color: p.finish_color || formula.finish_color || null,
+    unit_weight_kg:
+      p.unit_weight_kg !== undefined && p.unit_weight_kg !== null && !isNaN(Number(p.unit_weight_kg))
+        ? Number(p.unit_weight_kg)
+        : formula.unit_weight_kg !== undefined && formula.unit_weight_kg !== null && !isNaN(Number(formula.unit_weight_kg))
+        ? Number(formula.unit_weight_kg)
+        : null,
+    pcs_per_carton:
+      p.pcs_per_carton !== undefined && p.pcs_per_carton !== null && !isNaN(Number(p.pcs_per_carton))
+        ? Number(p.pcs_per_carton)
+        : formula.pcs_per_carton !== undefined && formula.pcs_per_carton !== null && !isNaN(Number(formula.pcs_per_carton))
+        ? Number(formula.pcs_per_carton)
+        : null,
+    carton_dimensions: p.carton_dimensions || formula.carton_dimensions || null,
+    carton_weight_kg:
+      p.carton_weight_kg !== undefined && p.carton_weight_kg !== null && !isNaN(Number(p.carton_weight_kg))
+        ? Number(p.carton_weight_kg)
+        : formula.carton_weight_kg !== undefined && formula.carton_weight_kg !== null && !isNaN(Number(formula.carton_weight_kg))
+        ? Number(formula.carton_weight_kg)
+        : null,
+    has_carry_bag: p.has_carry_bag !== undefined ? Boolean(p.has_carry_bag) : (formula.has_carry_bag !== undefined ? Boolean(formula.has_carry_bag) : false),
+    is_foldable: p.is_foldable !== undefined ? Boolean(p.is_foldable) : (formula.is_foldable !== undefined ? Boolean(formula.is_foldable) : false),
+    is_outdoor_rated: p.is_outdoor_rated !== undefined ? Boolean(p.is_outdoor_rated) : (formula.is_outdoor_rated !== undefined ? Boolean(formula.is_outdoor_rated) : false),
+    is_mountable: p.is_mountable !== undefined ? Boolean(p.is_mountable) : (formula.is_mountable !== undefined ? Boolean(formula.is_mountable) : false),
   }
 }
 
@@ -577,6 +674,39 @@ export class ProductRepository {
           })
         : null
 
+      const initialStock = Number(
+        product.opening_stock !== undefined && product.opening_stock !== null
+          ? product.opening_stock
+          : product.current_stock !== undefined && product.current_stock !== null
+          ? product.current_stock
+          : product.stock !== undefined && product.stock !== null
+          ? product.stock
+          : 0
+      )
+      const initialReorder = Number(
+        product.reorder_level !== undefined && product.reorder_level !== null
+          ? product.reorder_level
+          : product.min_stock_level !== undefined && product.min_stock_level !== null
+          ? product.min_stock_level
+          : 0
+      )
+      const maxStock = product.max_stock !== undefined && product.max_stock !== null ? Number(product.max_stock) : null
+      const warehouseLocation = product.warehouse_location?.trim() || null
+      const preferredSupplierId = product.preferred_supplier_id || null
+      const supplierItemCode = product.supplier_item_code?.trim() || null
+      const leadTimeDays = product.lead_time_days !== undefined && product.lead_time_days !== null ? Number(product.lead_time_days) : null
+      const barcode = product.barcode?.trim() || null
+      const brand = product.brand?.trim() || null
+      const finishColor = product.finish_color?.trim() || null
+      const unitWeightKg = product.unit_weight_kg !== undefined && product.unit_weight_kg !== null ? Number(product.unit_weight_kg) : null
+      const pcsPerCarton = product.pcs_per_carton !== undefined && product.pcs_per_carton !== null ? Number(product.pcs_per_carton) : null
+      const cartonDimensions = product.carton_dimensions?.trim() || null
+      const cartonWeightKg = product.carton_weight_kg !== undefined && product.carton_weight_kg !== null ? Number(product.carton_weight_kg) : null
+      const hasCarryBag = Boolean(product.has_carry_bag)
+      const isFoldable = Boolean(product.is_foldable)
+      const isOutdoorRated = Boolean(product.is_outdoor_rated)
+      const isMountable = Boolean(product.is_mountable)
+
       const payload: any = {
         company_id: product.company_id,
         branch_id: product.branch_id || null,
@@ -617,6 +747,27 @@ export class ProductRepository {
         minimum_charge: Math.max(0, Number(product.minimum_charge) || 0),
         min_billable_quantity: product.min_billable_quantity !== undefined && product.min_billable_quantity !== null ? Math.max(0, Number(product.min_billable_quantity)) : 0,
         min_order_quantity: product.min_order_quantity !== undefined && product.min_order_quantity !== null ? Math.max(0.01, Number(product.min_order_quantity)) : 1.0,
+        current_stock: initialStock,
+        stock: initialStock,
+        opening_stock: initialStock,
+        reorder_level: initialReorder,
+        min_stock_level: initialReorder,
+        max_stock: maxStock,
+        warehouse_location: warehouseLocation,
+        preferred_supplier_id: preferredSupplierId,
+        supplier_item_code: supplierItemCode,
+        lead_time_days: leadTimeDays,
+        barcode,
+        brand,
+        finish_color: finishColor,
+        unit_weight_kg: unitWeightKg,
+        pcs_per_carton: pcsPerCarton,
+        carton_dimensions: cartonDimensions,
+        carton_weight_kg: cartonWeightKg,
+        has_carry_bag: hasCarryBag,
+        is_foldable: isFoldable,
+        is_outdoor_rated: isOutdoorRated,
+        is_mountable: isMountable,
         allow_manual_override: product.allow_manual_override !== undefined ? Boolean(product.allow_manual_override) : true,
         price_tiers: product.price_tiers || {},
         cost_breakdown: product.cost_breakdown || {},
@@ -645,6 +796,27 @@ export class ProductRepository {
         tax_rate: product.tax_rate !== undefined && product.tax_rate !== null && !isNaN(Number(product.tax_rate)) ? Number(product.tax_rate) : 7.5,
         pricing_formula: {
           ...(typeof product.pricing_formula === 'object' && product.pricing_formula !== null ? product.pricing_formula : {}),
+          opening_stock: initialStock,
+          current_stock: initialStock,
+          stock: initialStock,
+          reorder_level: initialReorder,
+          min_stock_level: initialReorder,
+          max_stock: maxStock,
+          warehouse_location: warehouseLocation,
+          preferred_supplier_id: preferredSupplierId,
+          supplier_item_code: supplierItemCode,
+          lead_time_days: leadTimeDays,
+          barcode,
+          brand,
+          finish_color: finishColor,
+          unit_weight_kg: unitWeightKg,
+          pcs_per_carton: pcsPerCarton,
+          carton_dimensions: cartonDimensions,
+          carton_weight_kg: cartonWeightKg,
+          has_carry_bag: hasCarryBag,
+          is_foldable: isFoldable,
+          is_outdoor_rated: isOutdoorRated,
+          is_mountable: isMountable,
           entity_type: product.entity_type || (isOutsource ? 'outsource' : product.product_type === 'print_service' ? 'service' : product.product_type === 'material' ? 'material' : 'product'),
           is_outsource: isOutsource,
           is_non_inventory: isNonInventory,
@@ -985,13 +1157,101 @@ export class ProductRepository {
       if (updates.material_config?.purchase_price_per_sft !== undefined) {
         formulaUpdates.purchase_price_per_sft = updates.material_config.purchase_price_per_sft
       }
-      if (updates.production_width_allowance !== undefined) {
-        payload.production_width_allowance = updates.production_width_allowance
-        formulaUpdates.production_width_allowance = updates.production_width_allowance
+      if (updates.opening_stock !== undefined || updates.current_stock !== undefined || updates.stock !== undefined) {
+        const stockVal = Number(
+          updates.current_stock !== undefined && updates.current_stock !== null
+            ? updates.current_stock
+            : updates.stock !== undefined && updates.stock !== null
+            ? updates.stock
+            : updates.opening_stock !== undefined && updates.opening_stock !== null
+            ? updates.opening_stock
+            : 0
+        )
+        payload.current_stock = stockVal
+        payload.stock = stockVal
+        formulaUpdates.current_stock = stockVal
+        formulaUpdates.stock = stockVal
+        if (updates.opening_stock !== undefined) {
+          payload.opening_stock = Number(updates.opening_stock)
+          formulaUpdates.opening_stock = Number(updates.opening_stock)
+        }
       }
-      if (updates.production_length_allowance !== undefined) {
-        payload.production_length_allowance = updates.production_length_allowance
-        formulaUpdates.production_length_allowance = updates.production_length_allowance
+      if (updates.reorder_level !== undefined || updates.min_stock_level !== undefined) {
+        const reorderVal = Number(
+          updates.reorder_level !== undefined && updates.reorder_level !== null
+            ? updates.reorder_level
+            : updates.min_stock_level !== undefined && updates.min_stock_level !== null
+            ? updates.min_stock_level
+            : 0
+        )
+        payload.reorder_level = reorderVal
+        payload.min_stock_level = reorderVal
+        formulaUpdates.reorder_level = reorderVal
+        formulaUpdates.min_stock_level = reorderVal
+      }
+      if (updates.max_stock !== undefined) {
+        payload.max_stock = updates.max_stock !== null ? Number(updates.max_stock) : null
+        formulaUpdates.max_stock = payload.max_stock
+      }
+      if (updates.warehouse_location !== undefined) {
+        payload.warehouse_location = updates.warehouse_location?.trim() || null
+        formulaUpdates.warehouse_location = payload.warehouse_location
+      }
+      if (updates.preferred_supplier_id !== undefined) {
+        payload.preferred_supplier_id = updates.preferred_supplier_id || null
+        formulaUpdates.preferred_supplier_id = payload.preferred_supplier_id
+      }
+      if (updates.supplier_item_code !== undefined) {
+        payload.supplier_item_code = updates.supplier_item_code?.trim() || null
+        formulaUpdates.supplier_item_code = payload.supplier_item_code
+      }
+      if (updates.lead_time_days !== undefined) {
+        payload.lead_time_days = updates.lead_time_days !== null ? Number(updates.lead_time_days) : null
+        formulaUpdates.lead_time_days = payload.lead_time_days
+      }
+      if (updates.barcode !== undefined) {
+        payload.barcode = updates.barcode?.trim() || null
+        formulaUpdates.barcode = payload.barcode
+      }
+      if (updates.brand !== undefined) {
+        payload.brand = updates.brand?.trim() || null
+        formulaUpdates.brand = payload.brand
+      }
+      if (updates.finish_color !== undefined) {
+        payload.finish_color = updates.finish_color?.trim() || null
+        formulaUpdates.finish_color = payload.finish_color
+      }
+      if (updates.unit_weight_kg !== undefined) {
+        payload.unit_weight_kg = updates.unit_weight_kg !== null ? Number(updates.unit_weight_kg) : null
+        formulaUpdates.unit_weight_kg = payload.unit_weight_kg
+      }
+      if (updates.pcs_per_carton !== undefined) {
+        payload.pcs_per_carton = updates.pcs_per_carton !== null ? Number(updates.pcs_per_carton) : null
+        formulaUpdates.pcs_per_carton = payload.pcs_per_carton
+      }
+      if (updates.carton_dimensions !== undefined) {
+        payload.carton_dimensions = updates.carton_dimensions?.trim() || null
+        formulaUpdates.carton_dimensions = payload.carton_dimensions
+      }
+      if (updates.carton_weight_kg !== undefined) {
+        payload.carton_weight_kg = updates.carton_weight_kg !== null ? Number(updates.carton_weight_kg) : null
+        formulaUpdates.carton_weight_kg = payload.carton_weight_kg
+      }
+      if (updates.has_carry_bag !== undefined) {
+        payload.has_carry_bag = Boolean(updates.has_carry_bag)
+        formulaUpdates.has_carry_bag = payload.has_carry_bag
+      }
+      if (updates.is_foldable !== undefined) {
+        payload.is_foldable = Boolean(updates.is_foldable)
+        formulaUpdates.is_foldable = payload.is_foldable
+      }
+      if (updates.is_outdoor_rated !== undefined) {
+        payload.is_outdoor_rated = Boolean(updates.is_outdoor_rated)
+        formulaUpdates.is_outdoor_rated = payload.is_outdoor_rated
+      }
+      if (updates.is_mountable !== undefined) {
+        payload.is_mountable = Boolean(updates.is_mountable)
+        formulaUpdates.is_mountable = payload.is_mountable
       }
 
       if (Object.keys(formulaUpdates).length > 0) {

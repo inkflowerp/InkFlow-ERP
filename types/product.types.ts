@@ -521,6 +521,25 @@ export interface ProductRecord {
   min_order_quantity?: number
   current_stock?: number
   stock?: number
+  opening_stock?: number
+  reorder_level?: number
+  min_stock_level?: number
+  max_stock?: number | null
+  warehouse_location?: string | null
+  preferred_supplier_id?: string | null
+  supplier_item_code?: string | null
+  lead_time_days?: number | null
+  brand?: string | null
+  barcode?: string | null
+  finish_color?: string | null
+  unit_weight_kg?: number | null
+  pcs_per_carton?: number | null
+  carton_dimensions?: string | null
+  carton_weight_kg?: number | null
+  has_carry_bag?: boolean
+  is_foldable?: boolean
+  is_outdoor_rated?: boolean
+  is_mountable?: boolean
   // Commercial Master 2.1 additions
   pricing_method?: PricingMethod
   min_billable_quantity?: number
