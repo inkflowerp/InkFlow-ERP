@@ -811,9 +811,13 @@ export function IssueMasterRollModal({
         lot_number: lotNumber.trim() || undefined,
         roll_code_custom: customRollTag.trim() || undefined,
         operator_name: operatorName.trim() || 'Floor Operator',
+        request_id: request?.id || null,
+        production_task_id: request?.production_task_id || null,
         notes:
           notes.trim() ||
-          `Requisitioned ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} for Print Floor`,
+          (request?.request_number
+            ? `Issued against Requisition ${request.request_number} (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)}) to Print Floor`
+            : `Requisitioned ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} for Print Floor`),
         unit_cost: costPerConsumptionUnit > 0 ? costPerConsumptionUnit : (singleUnitQuantity > 0 ? Math.round((unitCostPerPurchaseUnit / singleUnitQuantity) * 100) / 100 : unitCostPerPurchaseUnit),
       }
 

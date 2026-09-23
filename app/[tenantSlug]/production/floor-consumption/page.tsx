@@ -30,6 +30,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 import { LogConsumptionModal } from '@/components/inventory/log-consumption-modal'
 import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
+import { MaterialRequestModal } from '@/components/inventory/material-request-modal'
 import {
   getInventoryDashboardDataAction,
   getFloorConsumptionsAction,
@@ -40,6 +41,7 @@ import {
   InventoryLocationRecord,
   MaterialIssueRecord,
   InventoryRollRecord,
+  MaterialRequestRecord,
 } from '@/types/inventory.types'
 import { ProductionTaskRecord } from '@/types/production.types'
 import { getProductionTasksAction } from '@/actions/production-planning.actions'
@@ -64,6 +66,7 @@ export default function FloorConsumptionPage() {
   const [locations, setLocations] = useState<InventoryLocationRecord[]>([])
   const [issues, setIssues] = useState<MaterialIssueRecord[]>([])
   const [rolls, setRolls] = useState<InventoryRollRecord[]>([])
+  const [requests, setRequests] = useState<MaterialRequestRecord[]>([])
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
 
   // Modal States
@@ -71,6 +74,7 @@ export default function FloorConsumptionPage() {
   const [selectedFloorRecord, setSelectedFloorRecord] = useState<FloorConsumptionRecord | null>(null)
   const [selectedRollId, setSelectedRollId] = useState<string | undefined>(undefined)
   const [isIssueMasterRollOpen, setIsIssueMasterRollOpen] = useState(false)
+  const [isMaterialRequestOpen, setIsMaterialRequestOpen] = useState(false)
 
   const loadFloorData = useCallback(async () => {
     try {
@@ -87,6 +91,7 @@ export default function FloorConsumptionPage() {
         setLocations(invRes.data.locations || [])
         setIssues(invRes.data.issues || [])
         setRolls(invRes.data.rolls || [])
+        setRequests(invRes.data.requests || [])
       } else if (!invRes.success) {
         setError(invRes.error || 'Failed to load floor inventory data')
       }
@@ -160,11 +165,21 @@ export default function FloorConsumptionPage() {
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setIsMaterialRequestOpen(true)}
+              className="gap-2 border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+            >
+              <Plus className="h-4 w-4 text-amber-400" />
+              <span>{isBn ? 'স্টোর থেকে রিকুইজিশন পাঠান' : 'Request Material'}</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setIsIssueMasterRollOpen(true)}
               className="gap-2 border-cyan-500/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/50"
             >
               <Disc className="h-4 w-4 text-cyan-400" />
-              <span>{isBn ? 'মাস্টার রোল ইস্যু করুন' : 'Issue Master Roll'}</span>
+              <span>{isBn ? 'সরাসরি রোল ইস্যু করুন' : 'Direct Issue to Floor'}</span>
             </Button>
 
             <Button
@@ -209,6 +224,8 @@ export default function FloorConsumptionPage() {
         locations={locations}
         issues={issues}
         rolls={rolls}
+        requests={requests}
+        onRequestMaterial={() => setIsMaterialRequestOpen(true)}
         onOpenLogConsumption={(record) => {
           if (record && (record as any).width_ft) {
             // It's a roll piece
@@ -223,6 +240,22 @@ export default function FloorConsumptionPage() {
         onRefresh={() => loadFloorData()}
         companyId={companyId}
       />
+
+      {/* Operator Material Requisition Modal */}
+      {isMaterialRequestOpen && (
+        <MaterialRequestModal
+          open={isMaterialRequestOpen}
+          onOpenChange={setIsMaterialRequestOpen}
+          materials={materials}
+          locations={locations}
+          tasks={tasks}
+          onSuccess={() => {
+            setIsMaterialRequestOpen(false)
+            loadFloorData()
+          }}
+          companyId={companyId}
+        />
+      )}
 
       {/* Log Floor Consumption Modal */}
       {isLogConsumptionOpen && (

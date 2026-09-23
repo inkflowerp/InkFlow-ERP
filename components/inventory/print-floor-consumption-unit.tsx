@@ -41,6 +41,7 @@ import {
   MaterialIssueRecord,
   MaterialIssueItemRecord,
   InventoryRollRecord,
+  MaterialRequestRecord,
 } from '@/types/inventory.types'
 import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
@@ -55,6 +56,8 @@ export interface PrintFloorConsumptionUnitProps {
   locations?: InventoryLocationRecord[]
   issues?: MaterialIssueRecord[]
   rolls?: InventoryRollRecord[]
+  requests?: MaterialRequestRecord[]
+  onRequestMaterial?: () => void
   onOpenLogConsumption: (item?: FloorConsumptionRecord | null) => void
   onRefresh: () => void
   companyId?: string
@@ -77,6 +80,8 @@ export function PrintFloorConsumptionUnit({
   locations = [],
   issues = [],
   rolls = [],
+  requests = [],
+  onRequestMaterial,
   onOpenLogConsumption,
   onRefresh,
   companyId,
@@ -101,9 +106,23 @@ export function PrintFloorConsumptionUnit({
   // Issue Master Roll to Floor State
   const [isIssueRollOpen, setIsIssueRollOpen] = useState<boolean>(false)
 
+  // Strictly filter only rolls actually mounted or on the print floor (excludes unissued warehouse stock)
   const activeFloorRolls = useMemo(() => {
-    return (rolls || []).filter((r) => r.status === 'mounted' || r.status === 'available' || r.status === 'in_use')
+    return (rolls || []).filter(
+      (r) =>
+        r.status === 'mounted' ||
+        r.status === 'in_use' ||
+        r.status === 'on_floor' ||
+        r.location_name === 'Print Floor' ||
+        Boolean(r.mounted_machine_id) ||
+        Boolean(r.mounted_machine_name)
+    )
   }, [rolls])
+
+  // Pending store requisitions requested by floor operators
+  const pendingRequests = useMemo(() => {
+    return (requests || []).filter((req) => req.status === 'requested' || req.status === 'pending')
+  }, [requests])
 
   // Filtered Floor Consumptions
   const filteredRecords = useMemo(() => {
@@ -369,15 +388,46 @@ export function PrintFloorConsumptionUnit({
               {tBilingual('Active Physical Rolls & Substrates on Print Floor', 'প্রিন্ট ফ্লোরে সক্রিয় পিস ও রোল বহর')} ({activeFloorRolls.length} Pcs)
             </span>
           </div>
-          <Button
-            size="sm"
-            onClick={() => setIsIssueRollOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{tBilingual('Issue Master Roll to Floor', '+ নতুন রোল ইস্যু করুন')}</span>
-          </Button>
+          <div className="flex items-center gap-2 flex-wrap">
+            {onRequestMaterial && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onRequestMaterial}
+                className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                <span>{tBilingual('Request Material from Store', 'স্টোর থেকে রিকুইজিশন')}</span>
+              </Button>
+            )}
+            <Button
+              size="sm"
+              onClick={() => setIsIssueRollOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>{tBilingual('Direct Issue to Floor', '+ সরাসরি ফ্লোরে ইস্যু')}</span>
+            </Button>
+          </div>
         </div>
+
+        {/* Pending Store Requisitions Banner */}
+        {pendingRequests.length > 0 && (
+          <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900/60 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
+            <div className="flex items-center gap-2">
+              <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
+              <span className="font-semibold text-[11px]">
+                {tBilingual(
+                  `${pendingRequests.length} Material Request(s) submitted — Awaiting Inventory & Warehouse Operations acceptance before floor delivery.`,
+                  `${pendingRequests.length}টি মেটেরিয়াল রিকুইজিশন পেন্ডিং — স্টোর থেকে অনুমোদন ও ইস্যু সম্পন্ন হলে স্বয়ংক্রিয়ভাবে ফ্লোরে যুক্ত হবে।`
+                )}
+              </span>
+            </div>
+            <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900/50 border-amber-300 text-amber-800 dark:text-amber-200 text-[10px] font-bold">
+              {pendingRequests.length} Pending
+            </Badge>
+          </div>
+        )}
 
         {/* Piece-Level Fleet Overview Ribbon */}
         {activeFloorRolls.length > 0 && (

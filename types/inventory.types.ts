@@ -218,6 +218,8 @@ export interface IssueMasterRollParams {
   company_id?: string
   branch_id?: string | null
   actor_email?: string
+  request_id?: string | null
+  production_task_id?: string | null
 }
 
 export interface IssueMasterRollResult {
@@ -353,11 +355,13 @@ export interface TaskMaterialRequirementRecord {
 
 export type MaterialRequestStatus =
   | 'draft'
+  | 'pending'
   | 'requested'
   | 'approved'
   | 'rejected'
   | 'partially_issued'
   | 'issued'
+  | 'fulfilled'
   | 'cancelled'
 
 export type MaterialRequestPriority = 'low' | 'normal' | 'high' | 'urgent'

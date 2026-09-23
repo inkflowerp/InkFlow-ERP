@@ -1133,43 +1133,81 @@ export class InventoryRepository {
     status?: string
     priority?: string
   }): Promise<MaterialRequestRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('material_requests')
-      .select('*, items:material_request_items(*, material:materials(id, name, sku, unit, current_stock)), production_task:production_tasks(id, title, task_code, status)')
-      .eq('company_id', companyId)
-      .order('created_at', { ascending: false })
+    const normTarget = companyId ? companyId.toLowerCase() : ''
+    const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
+    let list: MaterialRequestRecord[] = []
+    const seenIds = new Set<string>()
 
-    if (options?.taskId) {
-      query = query.eq('production_task_id', options.taskId)
-    }
-    if (options?.status && options.status !== 'all') {
-      query = query.eq('status', options.status)
-    }
-    if (options?.priority && options.priority !== 'all') {
-      query = query.eq('priority', options.priority)
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('material_requests')
+        .select('*, items:material_request_items(*, material:materials(id, name, sku, unit, current_stock)), production_task:production_tasks(id, title, task_code, status)')
+        .eq('company_id', companyId)
+        .order('created_at', { ascending: false })
+
+      if (options?.taskId) {
+        query = query.eq('production_task_id', options.taskId)
+      }
+      if (options?.status && options.status !== 'all') {
+        query = query.eq('status', options.status)
+      }
+      if (options?.priority && options.priority !== 'all') {
+        query = query.eq('priority', options.priority)
+      }
+
+      const { data, error } = await query
+      if (!error && data && Array.isArray(data)) {
+        for (const item of data) {
+          if (item && item.id) {
+            seenIds.add(item.id)
+            list.push(item as unknown as MaterialRequestRecord)
+          }
+        }
+      }
+    } catch {}
+
+    // Merge DataStore material requests
+    const localRequests = [
+      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+    ]
+
+    for (const req of localRequests) {
+      if (!req || !req.id || seenIds.has(req.id)) continue
+      if (companyId && req.company_id) {
+        const c = req.company_id.toLowerCase()
+        if (c !== normTarget && c !== cleanTarget && !c.includes(cleanTarget)) continue
+      }
+      if (options?.taskId && req.production_task_id !== options.taskId) continue
+      if (options?.status && options.status !== 'all' && req.status !== options.status) continue
+      if (options?.priority && options.priority !== 'all' && req.priority !== options.priority) continue
+      seenIds.add(req.id)
+      list.push(req)
     }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch material requests: ${error.message}`)
-    }
-    return (data || []) as unknown as MaterialRequestRecord[]
+    return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
   }
 
   static async getRequestById(id: string, companyId: string): Promise<MaterialRequestRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('material_requests')
-      .select('*, items:material_request_items(*, material:materials(id, name, sku, unit, current_stock)), production_task:production_tasks(id, title, task_code, status)')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('material_requests')
+        .select('*, items:material_request_items(*, material:materials(id, name, sku, unit, current_stock)), production_task:production_tasks(id, title, task_code, status)')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
 
-    if (error) {
-      throw new Error(`Failed to fetch material request ${id}: ${error.message}`)
-    }
-    return (data as unknown as MaterialRequestRecord) || null
+      if (!error && data) {
+        return data as unknown as MaterialRequestRecord
+      }
+    } catch {}
+
+    const all = await this.getRequests(companyId)
+    return all.find((req) => req.id === id) || null
   }
 
   static async createRequest(params: {
@@ -1189,56 +1227,85 @@ export class InventoryRepository {
       notes?: string | null
     }>
   }): Promise<MaterialRequestRecord> {
-    const supabase = await createClient()
+    const reqId = `mrq-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`
     const reqNumber = `MRQ-${Date.now().toString().slice(-6)}`
 
-    const { data: request, error: reqErr } = await (supabase as any)
-      .from('material_requests')
-      .insert({
+    let createdRequest: MaterialRequestRecord = {
+      id: reqId,
+      company_id: params.company_id,
+      branch_id: params.branch_id || null,
+      request_number: reqNumber,
+      production_task_id: params.production_task_id || null,
+      destination_location_id: params.destination_location_id || null,
+      source_location_id: params.source_location_id || null,
+      status: 'requested',
+      priority: params.priority || 'normal',
+      requested_by_id: params.requested_by_id || null,
+      requested_by_name: params.requested_by_name,
+      notes: params.notes?.trim() || null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      items: (params.items || []).map((it, idx) => ({
+        id: `mri-${Date.now()}-${idx}`,
+        request_id: reqId,
         company_id: params.company_id,
-        branch_id: params.branch_id || null,
-        request_number: reqNumber,
-        production_task_id: params.production_task_id || null,
-        destination_location_id: params.destination_location_id || null,
-        source_location_id: params.source_location_id || null,
-        status: 'requested',
-        priority: params.priority || 'normal',
-        requested_by_id: params.requested_by_id || null,
-        requested_by_name: params.requested_by_name,
-        notes: params.notes?.trim() || null,
-      })
-      .select()
-      .single()
-
-    if (reqErr) {
-      throw new Error(`Failed to create material request: ${reqErr.message}`)
-    }
-
-    if (params.items && params.items.length > 0) {
-      const itemsPayload = params.items.map((it) => ({
-        request_id: request.id,
         material_id: it.material_id,
         requested_quantity: it.requested_quantity,
         issued_quantity: 0,
-        unit: it.unit,
+        unit: it.unit as any,
         notes: it.notes?.trim() || null,
-      }))
-
-      const { error: itemErr } = await (supabase as any)
-        .from('material_request_items')
-        .insert(itemsPayload)
-
-      if (itemErr) {
-        throw new Error(`Failed to create material request items: ${itemErr.message}`)
-      }
+        created_at: new Date().toISOString(),
+      })),
     }
 
-    return await this.getRequestById(request.id, params.company_id) as MaterialRequestRecord
+    try {
+      const supabase = await createClient()
+      const { data: request, error: reqErr } = await (supabase as any)
+        .from('material_requests')
+        .insert({
+          company_id: params.company_id,
+          branch_id: params.branch_id || null,
+          request_number: reqNumber,
+          production_task_id: params.production_task_id || null,
+          destination_location_id: params.destination_location_id || null,
+          source_location_id: params.source_location_id || null,
+          status: 'requested',
+          priority: params.priority || 'normal',
+          requested_by_id: params.requested_by_id || null,
+          requested_by_name: params.requested_by_name,
+          notes: params.notes?.trim() || null,
+        })
+        .select()
+        .single()
+
+      if (!reqErr && request) {
+        createdRequest.id = request.id
+        if (params.items && params.items.length > 0) {
+          const itemsPayload = params.items.map((it) => ({
+            request_id: request.id,
+            material_id: it.material_id,
+            requested_quantity: it.requested_quantity,
+            issued_quantity: 0,
+            unit: it.unit,
+            notes: it.notes?.trim() || null,
+          }))
+
+          await (supabase as any)
+            .from('material_request_items')
+            .insert(itemsPayload)
+        }
+      }
+    } catch {}
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest, params.company_id)
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_REQUESTS, createdRequest)
+
+    return createdRequest
   }
 
   static async updateRequestStatus(
     id: string,
-    status: 'draft' | 'requested' | 'approved' | 'rejected' | 'partially_issued' | 'issued' | 'cancelled',
+    status: 'draft' | 'requested' | 'approved' | 'rejected' | 'partially_issued' | 'issued' | 'fulfilled' | 'cancelled',
     companyId: string,
     meta?: {
       approved_by_id?: string | null
@@ -1246,7 +1313,6 @@ export class InventoryRepository {
       rejection_reason?: string | null
     }
   ): Promise<MaterialRequestRecord> {
-    const supabase = await createClient()
     const payload: any = {
       status,
       updated_at: new Date().toISOString(),
@@ -1259,15 +1325,29 @@ export class InventoryRepository {
       payload.rejection_reason = meta.rejection_reason
     }
 
-    const { error } = await (supabase as any)
-      .from('material_requests')
-      .update(payload)
-      .eq('id', id)
-      .eq('company_id', companyId)
+    try {
+      const supabase = await createClient()
+      await (supabase as any)
+        .from('material_requests')
+        .update(payload)
+        .eq('id', id)
+        .eq('company_id', companyId)
+    } catch {}
 
-    if (error) {
-      throw new Error(`Failed to update request status: ${error.message}`)
+    const all = [
+      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS, companyId) || []),
+      ...(PrintERPDataStore.get<MaterialRequestRecord[]>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+      ...(PrintERPDataStore.getAll<MaterialRequestRecord>(STORAGE_KEYS.MATERIAL_REQUESTS) || []),
+    ]
+    const target = all.find((r) => r && r.id === id)
+    if (target) {
+      const updated = { ...target, ...payload }
+      PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated, companyId)
+      PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIAL_REQUESTS, id, updated)
+      return updated
     }
+
     return (await this.getRequestById(id, companyId)) as MaterialRequestRecord
   }
 
@@ -1521,7 +1601,7 @@ export class InventoryRepository {
             if (roll) {
               const updatedRoll: InventoryRollRecord = {
                 ...roll,
-                status: assignedMach ? 'mounted' : 'available',
+                status: assignedMach ? 'mounted' : 'on_floor',
                 location_name: 'Print Floor',
                 mounted_machine_id: assignedMach ? assignedMach : roll.mounted_machine_id,
                 mounted_machine_name: assignedMach ? assignedMach : roll.mounted_machine_name,
@@ -1535,6 +1615,15 @@ export class InventoryRepository {
             }
           }
         }
+      } catch {}
+    }
+
+    if (params.request_id) {
+      try {
+        await this.updateRequestStatus(params.request_id, 'fulfilled', params.company_id, {
+          approved_by_id: params.issued_by_id || null,
+          approved_by_name: params.issued_by_name,
+        })
       } catch {}
     }
 
@@ -3420,7 +3509,7 @@ export class InventoryRepository {
     if (isRollMedia) {
       for (let i = 1; i <= numRolls; i++) {
         let rollRecord: InventoryRollRecord
-        const rollStatus: 'mounted' | 'available' = (i === 1 && isMountedToMachine) ? 'mounted' : 'available'
+        const rollStatus: 'mounted' | 'on_floor' = (i === 1 && isMountedToMachine) ? 'mounted' : 'on_floor'
         const rollMachineId = (i === 1 && isMountedToMachine) ? machineId : null
         const rollMachineName = (i === 1 && isMountedToMachine) ? machineName : null
 
@@ -3551,7 +3640,7 @@ export class InventoryRepository {
         remaining_area_sft: totalConsumptionQuantity,
         consumed_area_sft: 0,
         current_area_sft: totalConsumptionQuantity,
-        status: isMountedToMachine ? 'mounted' : 'available',
+        status: isMountedToMachine ? 'mounted' : 'on_floor',
         mounted_machine_id: isMountedToMachine ? machineId : null,
         mounted_machine_name: isMountedToMachine ? machineName : null,
         mounted_press_name: isMountedToMachine ? machineName : null,
@@ -3668,8 +3757,8 @@ export class InventoryRepository {
       company_id: companyId,
       branch_id: params.branch_id || null,
       issue_number: issueNumber,
-      request_id: null,
-      production_task_id: null,
+      request_id: params.request_id || null,
+      production_task_id: params.production_task_id || null,
       source_location_id: params.location_id || 'loc-main',
       destination_location_id: null,
       issued_by_id: null,
@@ -3749,6 +3838,15 @@ export class InventoryRepository {
 
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord, companyId)
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, issueRecord)
+
+    // If linked to a material request, mark request fulfilled
+    if (params.request_id) {
+      try {
+        await this.updateRequestStatus(params.request_id, 'fulfilled', companyId, {
+          approved_by_name: params.operator_name || 'Store Keeper',
+        })
+      } catch {}
+    }
 
     // Also register in FLOOR_CONSUMPTIONS for instantaneous zero-latency UI rendering
     for (const item of issueRecord.items || []) {

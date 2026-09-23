@@ -2656,8 +2656,20 @@ function UnifiedInventoryContent() {
                                 <>
                                   <Button
                                     size="sm"
+                                    onClick={() => {
+                                      setSelectedRequestForIssue(req)
+                                      setFloorIssueMaterialId(req.items?.[0]?.material_id || '')
+                                      setIsFloorIssueOpen(true)
+                                    }}
+                                    className="h-7 px-2.5 text-[11px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer gap-1"
+                                  >
+                                    <Send className="h-3 w-3" />
+                                    <span>{isBn ? 'অনুমোদন ও ইস্যু' : 'Accept & Issue'}</span>
+                                  </Button>
+                                  <Button
+                                    size="sm"
                                     onClick={() => handleApproveRequest(req.id)}
-                                    className="h-7 px-2.5 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+                                    className="h-7 px-2 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white font-semibold cursor-pointer"
                                   >
                                     {isBn ? 'অনুমোদন' : 'Approve'}
                                   </Button>
@@ -2665,7 +2677,7 @@ function UnifiedInventoryContent() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleRejectRequest(req.id)}
-                                    className="h-7 px-2.5 text-[11px] text-rose-600 hover:bg-rose-50 border-rose-200 font-semibold cursor-pointer"
+                                    className="h-7 px-2 text-[11px] text-rose-600 hover:bg-rose-50 border-rose-200 font-semibold cursor-pointer"
                                   >
                                     {isBn ? 'বাতিল' : 'Reject'}
                                   </Button>
@@ -2684,6 +2696,11 @@ function UnifiedInventoryContent() {
                                   <Send className="h-3 w-3 mr-1" />
                                   {isBn ? 'স্টক ইস্যু করুন' : 'Issue Stock'}
                                 </Button>
+                              )}
+                              {(req.status === 'fulfilled' || (req as any).status === 'completed') && (
+                                <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                                  {isBn ? 'ফ্লোরে সরবরাহ সম্পন্ন' : 'Dispatched to Floor'}
+                                </Badge>
                               )}
                             </div>
                           </td>
