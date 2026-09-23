@@ -125,7 +125,8 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       if (!matrix) return false
 
       const mod = normalizeModuleKey(item.permission.resource) as PermissionModule
-      return Boolean(matrix[mod]?.[item.permission.action])
+      const modPerms = matrix[mod] as Record<string, boolean> | undefined
+      return Boolean(modPerms?.[item.permission.action])
     }
 
     // A. Business Owner: full access to all items
