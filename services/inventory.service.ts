@@ -227,9 +227,16 @@ export class InventoryService {
       lengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
     }
 
+    // Check if allowance 0 is specified in label/notes
+    const isZeroAllowanceExplicit = Boolean(
+      (params.size_label && /allowance\s*0|\(\+0|\+0ft|\+0\s*ft|0\s*allowance|allowance:\s*0/i.test(params.size_label)) ||
+      (params.notes && /allowance\s*0|\(\+0|\+0ft|\+0\s*ft|0\s*allowance|allowance:\s*0/i.test(params.notes))
+    )
+
     // Check if this matches a specific configured roll size
     let widthFt = nominalWidthFt
-    let matchedConfigAllowance = globalAllowance
+    let matchedConfigAllowance = isZeroAllowanceExplicit ? 0 : globalAllowance
+    let hasExplicitConfig = false
 
     if (rawRollSizes.length > 0 && nominalWidthFt > 0) {
       const matchingConfigSize = rawRollSizes.find((sz: any) => {
@@ -242,9 +249,25 @@ export class InventoryService {
       })
 
       if (matchingConfigSize) {
-        matchedConfigAllowance = Number(matchingConfigSize.extra_allowance ?? matchingConfigSize.allowance ?? matchingConfigSize.allowance_ft ?? globalAllowance ?? 0)
+        hasExplicitConfig = true
+        const szAllowance = matchingConfigSize.extra_allowance !== undefined
+          ? Number(matchingConfigSize.extra_allowance)
+          : matchingConfigSize.allowance !== undefined
+          ? Number(matchingConfigSize.allowance)
+          : matchingConfigSize.allowance_ft !== undefined
+          ? Number(matchingConfigSize.allowance_ft)
+          : undefined
+
+        matchedConfigAllowance = isZeroAllowanceExplicit ? 0 : (szAllowance !== undefined ? szAllowance : globalAllowance)
         nominalWidthFt = Number(matchingConfigSize.nominal_width_ft || matchingConfigSize.width || matchingConfigSize.size || nominalWidthFt)
-        widthFt = Number(matchingConfigSize.width_ft) || ((matchedConfigAllowance > 0 && Math.floor(nominalWidthFt) === nominalWidthFt) ? Math.round((nominalWidthFt + matchedConfigAllowance) * 100) / 100 : (nominalWidthFt + matchedConfigAllowance))
+        
+        if (matchingConfigSize.width_ft !== undefined && Number(matchingConfigSize.width_ft) > 0 && !isZeroAllowanceExplicit) {
+          widthFt = Number(matchingConfigSize.width_ft)
+        } else if (matchedConfigAllowance > 0 && Math.floor(nominalWidthFt) === nominalWidthFt) {
+          widthFt = Math.round((nominalWidthFt + matchedConfigAllowance) * 100) / 100
+        } else {
+          widthFt = nominalWidthFt
+        }
         lengthFt = Number(matchingConfigSize.length || matchingConfigSize.length_ft || lengthFt)
       }
     }
@@ -258,7 +281,7 @@ export class InventoryService {
       )
       nominalWidthFt = widthFt
     }
-    if (isRoll && matchedConfigAllowance > 0 && Math.floor(widthFt) === widthFt) {
+    if (isRoll && !hasExplicitConfig && !isZeroAllowanceExplicit && matchedConfigAllowance > 0 && Math.floor(widthFt) === widthFt) {
       widthFt = Math.round((widthFt + matchedConfigAllowance) * 100) / 100
     }
 

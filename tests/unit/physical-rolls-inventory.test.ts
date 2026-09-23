@@ -600,9 +600,10 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
       unit_cost: 6560,
       width_ft: 4,
       length_ft: 164,
+      size_label: '4ft (allowance 0) × 164ft',
       purchase_unit: 'roll',
       performed_by_name: 'Store Manager',
-      notes: '41 rolls 4ft',
+      notes: '41 rolls 4ft (allowance 0)',
     })
 
     await InventoryService.receiveStock({

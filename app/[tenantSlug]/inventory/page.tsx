@@ -586,11 +586,10 @@ function UnifiedInventoryContent() {
       )
 
       if (matRolls.length > 0) {
-        // Group by width, length, location
+        // Group by width, length, location using physical roll's exact dimensions
         const map = new Map<string, { width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
         for (const r of matRolls) {
-          const baseW = Number(r.width_ft || mat.roll_width_ft || 3)
-          const w = (allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW
+          const w = Number(r.width_ft || mat.roll_width_ft || 4)
           const l = Number(r.current_length_ft ?? r.initial_length_ft ?? mat.standard_roll_length_ft ?? 164)
           const loc = r.location_name || mat.location || 'Main Store'
           const k = `${w}_${l}_${loc}`
@@ -605,9 +604,7 @@ function UnifiedInventoryContent() {
             (sum, r) => {
               const curLen = Number(r.current_length_ft ?? r.initial_length_ft ?? grp.length)
               const storedArea = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * curLen))
-              const baseW = Number(r.width_ft || grp.width)
-              const isOldNominal = (grp.width !== baseW && Math.round(storedArea) === Math.round(baseW * curLen))
-              return sum + (isOldNominal ? (grp.width * curLen) : storedArea)
+              return sum + storedArea
             },
             0
           )

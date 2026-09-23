@@ -62,7 +62,8 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
   }
 
   beforeEach(async () => {
-    PrintERPDataStore.clear(testCompanyId)
+    PrintERPDataStore.purgeTenantData(testCompanyId)
+    PrintERPDataStore.clearAll(testCompanyId)
     await InventoryService.createMaterial(pvcMaster)
   })
 
@@ -115,7 +116,7 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
       performed_by_name: 'Store Manager',
     })
 
-    assert.strictEqual(intake1.rollsCreated?.length, 5, 'Must create 5 physical rolls for 4.25ft')
+    assert.strictEqual(intake1.rollsCreated?.length, 5, 'Must create 5 physical rolls for 4ft')
     assert.strictEqual(intake2.rollsCreated?.length, 5, 'Must create 5 physical rolls for 5.25ft')
     assert.strictEqual(intake3.rollsCreated?.length, 5, 'Must create 5 physical rolls for 10.5ft')
 
@@ -135,25 +136,25 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     assert.strictEqual(breakdown.total_rolls, 15, 'Total rolls in breakdown must be 15')
     assert.strictEqual(breakdown.roll_items.length, 3, 'Must have exactly 3 distinct roll groups')
 
-    const group4ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 4.25) < 0.05 && x.length_ft === 100)
-    const group5ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 5.25) < 0.05 && x.length_ft === 164)
-    const group10ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 10.5) < 0.05 && x.length_ft === 164)
+    const group4ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 4) < 0.05 && x.length_ft === 100)
+    const group5ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 5) < 0.05 && x.length_ft === 164)
+    const group10ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 10) < 0.05 && x.length_ft === 164)
 
-    assert.ok(group4ft, 'Group 1: 4.25ft × 100ft must exist')
+    assert.ok(group4ft, 'Group 1: 4ft × 100ft must exist')
     assert.strictEqual(group4ft?.roll_count, 5, 'Group 1 must have 5 rolls')
-    assert.strictEqual(group4ft?.total_sft, 5 * 4.25 * 100, 'Group 1 area must be 2,125 SFT')
+    assert.strictEqual(group4ft?.total_sft, 5 * 4 * 100, 'Group 1 area must be 2,000 SFT')
 
-    assert.ok(group5ft, 'Group 2: 5.25ft × 164ft must exist')
+    assert.ok(group5ft, 'Group 2: 5ft × 164ft must exist')
     assert.strictEqual(group5ft?.roll_count, 5, 'Group 2 must have 5 rolls')
-    assert.strictEqual(group5ft?.total_sft, 5 * 5.25 * 164, 'Group 2 area must be 4,305 SFT')
+    assert.strictEqual(group5ft?.total_sft, 5 * 5 * 164, 'Group 2 area must be 4,100 SFT')
 
-    assert.ok(group10ft, 'Group 3: 10.5ft × 164ft must exist')
+    assert.ok(group10ft, 'Group 3: 10ft × 164ft must exist')
     assert.strictEqual(group10ft?.roll_count, 5, 'Group 3 must have 5 rolls')
-    assert.strictEqual(group10ft?.total_sft, 5 * 10.5 * 164, 'Group 3 area must be 8,610 SFT')
+    assert.strictEqual(group10ft?.total_sft, 5 * 10 * 164, 'Group 3 area must be 8,200 SFT')
 
     assert.strictEqual(
       breakdown.formatted_summary,
-      '5 Roll (4.25ft × 100ft) • 5 Roll (5.25ft × 164ft) • 5 Roll (10.5ft × 164ft)'
+      '5 Roll (4ft × 100ft) • 5 Roll (5ft × 164ft) • 5 Roll (10ft × 164ft)'
     )
     assert.strictEqual(breakdown.purchase_unit_display, '15 Rolls')
   })
@@ -161,7 +162,7 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
   it('2. should correctly format stock breakdown with 3 distinct groups even if physical rolls array is not provided', async () => {
     const matWithStock: MaterialRecord = {
       ...pvcMaster,
-      current_stock: 12325, // 5 sets of (425 + 861 + 1179)
+      current_stock: 12325,
       roll_sizes: [
         {
           width: 4,
@@ -200,4 +201,40 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     assert.ok(breakdown.formatted_summary.includes('5.25ft × 164ft'), 'Summary must mention 5.25ft')
     assert.ok(breakdown.formatted_summary.includes('10.5ft × 164ft'), 'Summary must mention 10.5ft')
   })
+
+  it('3. should receive 4ft (allowance 0) x 100ft - 1 Roll and preserve exact 4ft width and 400 SFT without auto-adding 0.25ft allowance', async () => {
+    const intakeZeroAllowance = await InventoryService.receiveStock({
+      company_id: testCompanyId,
+      material_id: pvcMaster.id,
+      location_id: 'loc-main-store',
+      quantity: 1,
+      unit_cost: 4000,
+      width_ft: 4,
+      length_ft: 100,
+      size_label: '4ft (allowance 0) × 100ft',
+      physical_form: 'roll',
+      purchase_unit: 'roll',
+      supplier_name: 'Supplier A',
+      performed_by_name: 'Store Manager',
+    })
+
+    assert.strictEqual(intakeZeroAllowance.rollsCreated?.length, 1, 'Must create 1 physical roll')
+    const createdRoll = intakeZeroAllowance.rollsCreated![0]
+    assert.strictEqual(createdRoll.width_ft, 4, 'Physical roll width must be exactly 4ft, not 4.25ft')
+    assert.strictEqual(createdRoll.remaining_area_sft, 400, 'Roll area must be exactly 400 SFT (4 × 100)')
+
+    // Fetch warehouse rolls
+    const storeRolls = await InventoryRepository.getInventoryRolls(testCompanyId, {
+      materialId: pvcMaster.id,
+    })
+    const updatedMat = await InventoryRepository.getMaterialById(pvcMaster.id, testCompanyId)
+    assert.ok(updatedMat, 'Updated material must exist')
+
+    const breakdown = getMaterialWarehouseStockBreakdown(updatedMat, storeRolls)
+    assert.strictEqual(breakdown.total_rolls, 1, 'Total rolls in breakdown must be 1')
+    assert.strictEqual(breakdown.roll_items[0].total_sft, 400, 'Total SFT in breakdown must be 400')
+    assert.strictEqual(breakdown.roll_items[0].width_ft, 4, 'Width must remain 4ft')
+    assert.strictEqual(breakdown.roll_items[0].label, '4ft × 100ft')
+  })
 })
+

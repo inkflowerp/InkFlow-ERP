@@ -710,6 +710,8 @@ export class InventoryRepository {
       roll_sizes: material.roll_sizes || (material.material_config as any)?.roll_sizes || null,
       material_config: material.material_config || null,
       variants: material.variants || null,
+      production_width_allowance: material.production_width_allowance ?? (material.material_config as any)?.extra_width_allowance_ft ?? (material.material_config as any)?.production_width_allowance ?? 0,
+      purchase_price_per_sft: material.purchase_price_per_sft || (material.material_config as any)?.purchase_price_per_sft || null,
       available_widths_ft: material.available_widths_ft || (material.material_config as any)?.available_widths_ft || null,
       standard_roll_length_ft: material.standard_roll_length_ft || (material.material_config as any)?.standard_roll_length_ft || null,
       location: material.location?.trim() || null,
@@ -2675,9 +2677,17 @@ export class InventoryRepository {
           if (sizesWithQty.length > 0) {
             let rollCounter = 1
             for (const rs of sizesWithQty) {
-              const baseW = Number(rs.width || rs.width_ft || rs.size || widthFt || 4)
-              const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : globalAllowance))
-              const w = (allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW
+              const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || widthFt || 4)
+              const allowance = rs.extra_allowance !== undefined
+                ? Number(rs.extra_allowance)
+                : rs.allowance !== undefined
+                ? Number(rs.allowance)
+                : rs.allowance_ft !== undefined
+                ? Number(rs.allowance_ft)
+                : globalAllowance
+              const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
+                ? Number(rs.width_ft)
+                : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
               const l = Number(rs.length || rs.length_ft || lengthFt)
               const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 1)
               const rollArea = Math.round(w * l * 100) / 100
@@ -2738,8 +2748,16 @@ export class InventoryRepository {
             // Sizes are configured types (without explicit item quantities): distribute stockNum across all configured sizes
             const configuredList = rawRollSizes.map((rs: any) => {
               const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || widthFt || 4)
-              const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : (rs.allowance_ft !== undefined ? rs.allowance_ft : globalAllowance)))
-              const w = Number(rs.width_ft) || ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+              const allowance = rs.extra_allowance !== undefined
+                ? Number(rs.extra_allowance)
+                : rs.allowance !== undefined
+                ? Number(rs.allowance)
+                : rs.allowance_ft !== undefined
+                ? Number(rs.allowance_ft)
+                : globalAllowance
+              const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
+                ? Number(rs.width_ft)
+                : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
               const l = Number(rs.length || rs.length_ft || lengthFt)
               const area = Math.round(w * l * 100) / 100
               const rollCost = rs.price || rs.purchase_price || (rawCost > 100 ? rawCost : (rawCost > 0 && area > 0 ? rawCost * area : rawCost))
