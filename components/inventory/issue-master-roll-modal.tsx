@@ -59,23 +59,6 @@ export interface IssueMasterRollModalProps {
   companyId?: string
 }
 
-const DEFAULT_WIDTH_PRESETS = [
-  { label: '3 ft (36")', value: 3 },
-  { label: '3.2 ft (1m)', value: 3.2 },
-  { label: '4 ft (48")', value: 4 },
-  { label: '5 ft (60")', value: 5 },
-  { label: '6 ft (72")', value: 6 },
-  { label: '7 ft (84")', value: 7 },
-  { label: '10 ft (120")', value: 10 },
-]
-
-const DEFAULT_LENGTH_PRESETS = [
-  { label: '164 ft (50m)', value: 164 },
-  { label: '328 ft (100m)', value: 328 },
-  { label: '100 ft', value: 100 },
-  { label: '50 ft', value: 50 },
-]
-
 const DEFAULT_PRODUCTION_MACHINES = [
   { id: 'roland', name: 'Roland Eco-Solvent Press (64")' },
   { id: 'flora', name: 'Flora Large Format Flex Press (10.5ft)' },
@@ -102,77 +85,103 @@ export function IssueMasterRollModal({
 }: IssueMasterRollModalProps) {
   const { locale, tBilingual } = useI18n()
 
-  // 1. Strict Filter for Roll Substrates ONLY (exclude inks, hardware, accessories, grommets, liquids)
-  const rollMaterials = useMemo(() => {
-    return materials.filter((m) => {
-      if (!m) return false
-      const cat = String(m.category || '').toLowerCase()
-      const name = String(m.name || '').toLowerCase()
-      const unit = String(m.unit || '').toLowerCase()
-      const pUnit = String(m.purchase_unit || m.master_purchase_unit || '').toLowerCase()
-
-      // Exclude non-roll media: inks, accessories, eyelets, stands, hardware, fluids, chemicals, rigid boards
-      const isExcluded = [
-        'ink',
-        'solvent',
-        'eco_solvent',
-        'uv_ink',
-        'sublimation_ink',
-        'pigment_ink',
-        'accessories',
-        'grommet',
-        'eyelet',
-        'hardware',
-        'stand',
-        'standee',
-        'liquid',
-        'chemical',
-        'cleaning_solution',
-        'foam_board',
-        'acrylic',
-        'pvc_board',
-        'sheet',
-      ].some((c) => (cat.includes(c) || name.includes(c)) && !name.includes('banner') && !name.includes('vinyl') && !name.includes('flex') && !name.includes('roll'))
-
-      if (isExcluded && !m.is_roll && pUnit !== 'roll') {
-        return false
-      }
-
-      return Boolean(
-        m.is_roll ||
-        pUnit === 'roll' ||
-        unit === 'roll' ||
-        ['sft', 'sqft'].includes(unit) ||
-        (m.roll_width_ft && Number(m.roll_width_ft) > 0) ||
-        ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll', 'pvc', 'flex_banner', 'sav'].some(
-          (c) => cat.includes(c) || name.includes(c)
-        )
-      )
-    })
+  // 1. Show ALL available inventory materials (not strictly filtered)
+  const availableMaterials = useMemo(() => {
+    return materials.filter((m) => m && m.is_active !== false)
   }, [materials])
 
-  // Substrate Material Selection
+  // Material Selection
   const [materialId, setMaterialId] = useState<string>(() => {
-    if (initialMaterialId && rollMaterials.some((m) => m.id === initialMaterialId)) {
+    if (initialMaterialId && availableMaterials.some((m) => m.id === initialMaterialId)) {
       return initialMaterialId
     }
-    return rollMaterials[0]?.id || ''
+    return availableMaterials[0]?.id || ''
   })
 
   const selectedMaterial = useMemo(() => {
-    return rollMaterials.find((m) => m.id === materialId) || materials.find((m) => m.id === materialId) || null
-  }, [rollMaterials, materials, materialId])
+    return availableMaterials.find((m) => m.id === materialId) || materials.find((m) => m.id === materialId) || null
+  }, [availableMaterials, materials, materialId])
 
-  // Source Store Location
-  const [sourceLocationId, setSourceLocationId] = useState<string>(locations[0]?.id || '')
+  // Effective Locations with fallback and auto discovery
+  const effectiveLocations = useMemo(() => {
+    let list = Array.isArray(locations) && locations.length > 0 ? [...locations] : []
+    if (list.length === 0 && companyId) {
+      try {
+        const stored = PrintERPDataStore.getAll<InventoryLocationRecord>(STORAGE_KEYS.LOCATIONS, companyId) || []
+        if (stored.length > 0) list = stored
+      } catch {}
+    }
+    if (list.length === 0) {
+      try {
+        const storedGlobal = PrintERPDataStore.get<InventoryLocationRecord[]>(STORAGE_KEYS.LOCATIONS) || []
+        if (storedGlobal.length > 0) list = storedGlobal
+      } catch {}
+    }
+    if (list.length === 0) {
+      list = [
+        {
+          id: 'loc-main-warehouse',
+          company_id: companyId || '',
+          location_code: 'WH-MAIN',
+          location_name: 'Main Material Warehouse',
+          location_type: 'raw_material_store',
+          is_active: true,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ]
+    }
+    return list
+  }, [locations, companyId])
 
-  // Dimensions
-  const [isCustomWidth, setIsCustomWidth] = useState<boolean>(false)
-  const [widthFt, setWidthFt] = useState<number>(initialWidthFt)
-  const [isCustomLength, setIsCustomLength] = useState<boolean>(false)
-  const [lengthFt, setLengthFt] = useState<number>(initialLengthFt)
+  // Source Store Location (Auto-selected)
+  const [sourceLocationId, setSourceLocationId] = useState<string>(() => {
+    const pref = locations.find(
+      (l) =>
+        l.location_type === 'raw_material_store' ||
+        l.location_type === 'main_store' ||
+        (l as any).is_default ||
+        l.location_code?.toUpperCase().includes('RAW') ||
+        l.location_code?.toUpperCase().includes('MAIN')
+    )
+    return pref ? pref.id : locations[0]?.id || ''
+  })
 
-  // Batch Quantity (Number of physical rolls to issue)
+  // Warehouse Stock Breakdown in Purchase Units
+  const warehouseBreakdown = useMemo(() => {
+    return getMaterialWarehouseStockBreakdown(selectedMaterial)
+  }, [selectedMaterial])
+
+  // Auto-inferred dimensions
+  const widthFt = useMemo(() => {
+    if (!selectedMaterial) return initialWidthFt || 3
+    if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
+      return warehouseBreakdown.roll_items[0].width_ft
+    }
+    return Number(
+      selectedMaterial.roll_width_ft ||
+        selectedMaterial.width ||
+        (Array.isArray(selectedMaterial.available_widths_ft) && selectedMaterial.available_widths_ft.length === 1
+          ? selectedMaterial.available_widths_ft[0]
+          : 0) ||
+        3
+    )
+  }, [selectedMaterial, warehouseBreakdown, initialWidthFt])
+
+  const lengthFt = useMemo(() => {
+    if (!selectedMaterial) return initialLengthFt || 164
+    if (warehouseBreakdown.roll_items && warehouseBreakdown.roll_items.length > 0) {
+      return warehouseBreakdown.roll_items[0].length_ft
+    }
+    return Number(
+      selectedMaterial.standard_roll_length_ft ||
+        selectedMaterial.roll_length_ft ||
+        selectedMaterial.length ||
+        164
+    )
+  }, [selectedMaterial, warehouseBreakdown, initialLengthFt])
+
+  // Batch Quantity (Number of purchase units / rolls to issue)
   const [quantityRolls, setQuantityRolls] = useState<number>(1)
 
   // Destination & Machine Mounting
@@ -208,22 +217,28 @@ export function IssueMasterRollModal({
     return DEFAULT_PRODUCTION_MACHINES
   }, [companyId])
 
-  // Warehouse Stock Breakdown in Purchase Units & Multi-dimensional Roll Sizes
-  const warehouseBreakdown = useMemo(() => {
-    return getMaterialWarehouseStockBreakdown(selectedMaterial)
-  }, [selectedMaterial])
-
   // Reset or Sync when modal opens or initial props change
   useEffect(() => {
     if (open) {
-      if (initialMaterialId && rollMaterials.some((m) => m.id === initialMaterialId)) {
+      if (initialMaterialId && availableMaterials.some((m) => m.id === initialMaterialId)) {
         setMaterialId(initialMaterialId)
-      } else if (rollMaterials.length > 0 && !rollMaterials.some((m) => m.id === materialId)) {
-        setMaterialId(rollMaterials[0].id)
+      } else if (availableMaterials.length > 0 && !availableMaterials.some((m) => m.id === materialId)) {
+        setMaterialId(availableMaterials[0].id)
       }
 
-      if (initialWidthFt) setWidthFt(initialWidthFt)
-      if (initialLengthFt) setLengthFt(initialLengthFt)
+      // Auto-select source location
+      if (!sourceLocationId || !effectiveLocations.some((l) => l.id === sourceLocationId)) {
+        const pref = effectiveLocations.find(
+          (l) =>
+            l.location_type === 'raw_material_store' ||
+            l.location_type === 'main_store' ||
+            (l as any).is_default ||
+            l.location_code?.toUpperCase().includes('RAW') ||
+            l.location_code?.toUpperCase().includes('MAIN')
+        )
+        setSourceLocationId(pref ? pref.id : effectiveLocations[0]?.id || '')
+      }
+
       if (initialMachineId) {
         setMachineId(initialMachineId)
         setDestination('machine')
@@ -232,125 +247,92 @@ export function IssueMasterRollModal({
       setSuccess(null)
       setLoading(false)
     }
-  }, [open, initialMaterialId, initialWidthFt, initialLengthFt, initialMachineId, rollMaterials])
+  }, [open, initialMaterialId, initialMachineId, availableMaterials, effectiveLocations])
 
-  // Auto-synchronize width and length when substrate changes
-  useEffect(() => {
-    if (!selectedMaterial) return
+  const isRollMedia = Boolean(warehouseBreakdown.is_roll)
+  const purchaseUnitName = warehouseBreakdown.purchase_unit || selectedMaterial?.purchase_unit || 'pcs'
+  const consumptionUnitName = warehouseBreakdown.consumption_unit || selectedMaterial?.unit || 'pcs'
 
-    const breakdown = getMaterialWarehouseStockBreakdown(selectedMaterial)
-    if (breakdown.roll_items.length > 0) {
-      // Pick first size group with stock, or first configured size
-      const stockItem = breakdown.roll_items.find((r) => r.roll_count > 0) || breakdown.roll_items[0]
-      setWidthFt(stockItem.width_ft)
-      setLengthFt(stockItem.length_ft)
-      setIsCustomWidth(false)
-      setIsCustomLength(false)
-    } else {
-      const stdWidth = Number(
-        selectedMaterial.roll_width_ft ||
-        selectedMaterial.width ||
-        (Array.isArray(selectedMaterial.available_widths_ft) && selectedMaterial.available_widths_ft.length === 1 ? selectedMaterial.available_widths_ft[0] : 0) ||
-        3
-      )
-      const stdLength = Number(selectedMaterial.standard_roll_length_ft || selectedMaterial.roll_length_ft || selectedMaterial.length || 164)
-      setWidthFt(stdWidth)
-      setLengthFt(stdLength)
-      setIsCustomWidth(false)
-      setIsCustomLength(false)
+  // Single unit quantity / area in consumption units
+  const singleUnitQuantity = useMemo(() => {
+    if (isRollMedia) {
+      return Math.round(widthFt * lengthFt * 100) / 100
     }
-  }, [selectedMaterial])
+    const packQty = Number(
+      (selectedMaterial as any)?.pack_quantity ||
+        (selectedMaterial?.material_config as any)?.pack_quantity ||
+        1
+    )
+    return packQty > 1 ? packQty : 1
+  }, [isRollMedia, widthFt, lengthFt, selectedMaterial])
 
-  // Auto-Generated Roll Code Preview
-  const generatedRollCode = useMemo(() => {
-    if (customRollTag.trim()) {
-      return quantityRolls > 1 ? `${customRollTag.trim()}-01` : customRollTag.trim()
-    }
-    const cleanSku = (selectedMaterial?.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
-    const lot = lotNumber.trim() || new Date().toISOString().slice(2, 10).replace(/-/g, '')
-    const tag = `ROL-${cleanSku}-${widthFt}FT-${lot}`
-    return quantityRolls > 1 ? `${tag}-01` : tag
-  }, [selectedMaterial, widthFt, lotNumber, customRollTag, quantityRolls])
-
-  const singleRollAreaSft = useMemo(() => {
-    return Math.round(widthFt * lengthFt * 100) / 100
-  }, [widthFt, lengthFt])
-
-  const totalBatchAreaSft = useMemo(() => {
-    return Math.round(singleRollAreaSft * quantityRolls * 100) / 100
-  }, [singleRollAreaSft, quantityRolls])
+  const totalBatchQuantity = useMemo(() => {
+    return Math.round(singleUnitQuantity * quantityRolls * 100) / 100
+  }, [singleUnitQuantity, quantityRolls])
 
   // Store Stock Check
   const currentStoreStock = useMemo(() => {
     return Number(selectedMaterial?.current_stock || 0)
   }, [selectedMaterial])
 
-  // Specific Size Group Stock Check
-  const selectedSizeGroup = useMemo(() => {
-    return warehouseBreakdown.roll_items.find(
-      (r) => Number(r.width_ft) === Number(widthFt) && Number(r.length_ft) === Number(lengthFt)
-    ) || null
-  }, [warehouseBreakdown, widthFt, lengthFt])
-
-  const currentAvailableRollsForSize = useMemo(() => {
-    if (selectedSizeGroup) {
-      return selectedSizeGroup.roll_count
+  const currentAvailablePurchaseUnits = useMemo(() => {
+    if (warehouseBreakdown.total_rolls > 0) {
+      return warehouseBreakdown.total_rolls
     }
-    if (singleRollAreaSft <= 0) return 0
-    return Math.floor(currentStoreStock / singleRollAreaSft)
-  }, [selectedSizeGroup, currentStoreStock, singleRollAreaSft])
+    if (singleUnitQuantity <= 0) return 0
+    return Math.floor(currentStoreStock / singleUnitQuantity)
+  }, [warehouseBreakdown, currentStoreStock, singleUnitQuantity])
 
-  const projectedRollsRemaining = useMemo(() => {
-    return Math.max(0, currentAvailableRollsForSize - quantityRolls)
-  }, [currentAvailableRollsForSize, quantityRolls])
+  const projectedRemainingUnits = useMemo(() => {
+    return Math.max(0, currentAvailablePurchaseUnits - quantityRolls)
+  }, [currentAvailablePurchaseUnits, quantityRolls])
 
-  const unitCost = useMemo(() => {
+  const unitCostPerPurchaseUnit = useMemo(() => {
     if (!selectedMaterial) return 0
-    return Number(
+    if (warehouseBreakdown.cost_per_purchase_unit > 0) {
+      return warehouseBreakdown.cost_per_purchase_unit
+    }
+    const costPerCons = Number(
       warehouseBreakdown.cost_per_consumption_unit ||
-      (selectedMaterial as any).unit_cost ||
-      selectedMaterial.average_cost ||
-      selectedMaterial.last_purchase_price ||
-      0
+        (selectedMaterial as any).unit_cost ||
+        selectedMaterial.average_cost ||
+        selectedMaterial.last_purchase_price ||
+        0
     )
-  }, [selectedMaterial, warehouseBreakdown])
-
-  const costPerRoll = useMemo(() => {
-    return Math.round(singleRollAreaSft * unitCost * 100) / 100
-  }, [singleRollAreaSft, unitCost])
+    return Math.round(costPerCons * singleUnitQuantity * 100) / 100
+  }, [selectedMaterial, warehouseBreakdown, singleUnitQuantity])
 
   const totalValuation = useMemo(() => {
-    return Math.round(totalBatchAreaSft * unitCost * 100) / 100
-  }, [totalBatchAreaSft, unitCost])
+    return Math.round(unitCostPerPurchaseUnit * quantityRolls * 100) / 100
+  }, [unitCostPerPurchaseUnit, quantityRolls])
 
   const projectedStoreBalance = useMemo(() => {
-    return currentStoreStock - totalBatchAreaSft
-  }, [currentStoreStock, totalBatchAreaSft])
+    return currentStoreStock - totalBatchQuantity
+  }, [currentStoreStock, totalBatchQuantity])
 
-  const isStoreShortage = currentStoreStock < totalBatchAreaSft || currentAvailableRollsForSize < quantityRolls
+  const isStoreShortage =
+    currentStoreStock < totalBatchQuantity || currentAvailablePurchaseUnits < quantityRolls
 
-  const handleWidthSelect = (val: number) => {
-    setWidthFt(val)
-    setIsCustomWidth(false)
-  }
-
-  const handleLengthSelect = (val: number) => {
-    setLengthFt(val)
-    setIsCustomLength(false)
-  }
+  // Auto-Generated Identifier Tag
+  const generatedRollCode = useMemo(() => {
+    if (customRollTag.trim()) {
+      return quantityRolls > 1 ? `${customRollTag.trim()}-01` : customRollTag.trim()
+    }
+    const cleanSku = (selectedMaterial?.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+    const lot = lotNumber.trim() || new Date().toISOString().slice(2, 10).replace(/-/g, '')
+    const tagPrefix = isRollMedia ? `ROL-${cleanSku}-${widthFt}FT` : `MAT-${cleanSku}`
+    const tag = `${tagPrefix}-${lot}`
+    return quantityRolls > 1 ? `${tag}-01` : tag
+  }, [selectedMaterial, isRollMedia, widthFt, lotNumber, customRollTag, quantityRolls])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!materialId) {
-      setError('Please select a valid roll media substrate from warehouse inventory.')
-      return
-    }
-    if (widthFt <= 0 || lengthFt <= 0) {
-      setError('Roll width and length must be positive numbers.')
+      setError('Please select a valid inventory material from warehouse.')
       return
     }
     if (quantityRolls <= 0) {
-      setError('Quantity of rolls must be at least 1.')
+      setError('Quantity must be at least 1.')
       return
     }
 
@@ -379,20 +361,20 @@ export function IssueMasterRollModal({
         operator_name: operatorName.trim() || 'Floor Operator',
         notes:
           notes.trim() ||
-          `Requisitioned ${quantityRolls} Master Roll(s) (${widthFt}ft × ${lengthFt}ft) for Print Floor`,
-        unit_cost: unitCost,
+          `Requisitioned ${quantityRolls} ${purchaseUnitName}(s) for Print Floor`,
+        unit_cost: warehouseBreakdown.cost_per_consumption_unit || Number(selectedMaterial?.average_cost || 0),
       }
 
       const res = await issueMasterRollsBatchAction(payload, companyId)
 
       if (!res.success || !res.data) {
-        setError(res.error || 'Failed to issue master roll(s) to floor.')
+        setError(res.error || 'Failed to issue material to floor.')
         return
       }
 
       const result = res.data
       setSuccess(
-        `Successfully issued ${result.quantity_issued} roll(s) (${result.total_area_sft} SFT, ${formatBDT(result.total_valuation)}) to Print Floor!`
+        `Successfully issued ${quantityRolls} ${purchaseUnitName}(s) (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName}, ${formatBDT(totalValuation)}) to Print Floor!`
       )
 
       if (onSuccess) {
@@ -403,7 +385,7 @@ export function IssueMasterRollModal({
         onOpenChange(false)
       }, 700)
     } catch (err: any) {
-      setError(err.message || 'Error occurred while issuing master roll.')
+      setError(err.message || 'Error occurred while issuing material.')
     } finally {
       setLoading(false)
     }
@@ -418,19 +400,19 @@ export function IssueMasterRollModal({
       title={
         <div className="flex items-center gap-2.5">
           <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shrink-0">
-            <Disc className="h-5 w-5 animate-[spin_10s_linear_infinite]" />
+            <Package className="h-5 w-5" />
           </div>
           <div>
             <div className="text-base font-bold text-slate-900 dark:text-white leading-tight">
               {tBilingual(
-                'Issue / Requisition Master Roll to Print Floor',
-                'প্রিন্ট ফ্লোরে মাস্টার রোল ইস্যু ও মাউন্টিং'
+                'Issue / Requisition materials to Print Floor',
+                'প্রিন্ট ফ্লোরে কাঁচামাল ইস্যু ও বরাদ্দ'
               )}
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tBilingual(
-                'Directly requisition and mount physical rolls from warehouse stock to machines or staging.',
-                'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে নতুন মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
+                'Directly requisition and issue raw materials or roll substrates from warehouse stock to machines or staging.',
+                'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে কাঁচামাল বা মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
               )}
             </div>
           </div>
@@ -456,19 +438,6 @@ export function IssueMasterRollModal({
           </div>
         )}
 
-        {/* No Roll Media Warning if materials list is empty */}
-        {rollMaterials.length === 0 && (
-          <div className="p-4 bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-200 rounded-xl border border-amber-300 dark:border-amber-800 flex items-start gap-3">
-            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold text-xs">No Roll Media Substrates Found</div>
-              <div className="text-[11px] opacity-90 mt-0.5">
-                No active roll substrates (PVC, Flex Banner, Vinyl, SAV, Canvas, etc.) were found in your warehouse inventory. Add or configure roll media in Materials Master.
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* ========================================================= */}
         {/* STEP 1: SUBSTRATE MATERIAL & SOURCE WAREHOUSE */}
         {/* ========================================================= */}
@@ -488,21 +457,22 @@ export function IssueMasterRollModal({
                     : 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
                 )}
               >
-                Store Stock: {warehouseBreakdown.purchase_unit_display} • {currentStoreStock.toLocaleString()} SFT Available
+                Store Stock: {warehouseBreakdown.purchase_unit_display} • {currentStoreStock.toLocaleString()}{' '}
+                {consumptionUnitName.toUpperCase()} Available
               </Badge>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {/* Substrate Select */}
+            {/* Substrate Select (Shows ALL Available Materials) */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center justify-between">
                 <span>
-                  {tBilingual('Roll Substrate Media', 'কাঁচামাল রোল সাবস্ট্রেট')}{' '}
+                  {tBilingual('Inventory Material Item', 'গুদামের কাঁচামাল')}{' '}
                   <span className="text-rose-500">*</span>
                 </span>
                 <span className="text-[10px] text-slate-400 font-normal">
-                  ({rollMaterials.length} Roll Media Items)
+                  ({availableMaterials.length} Available Materials)
                 </span>
               </Label>
               <select
@@ -511,8 +481,8 @@ export function IssueMasterRollModal({
                 className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
                 required
               >
-                <option value="">-- Select Roll Media Substrate --</option>
-                {rollMaterials.map((m) => {
+                <option value="">-- Select Inventory Material --</option>
+                {availableMaterials.map((m) => {
                   const bd = getMaterialWarehouseStockBreakdown(m)
                   return (
                     <option key={m.id} value={m.id}>
@@ -525,232 +495,46 @@ export function IssueMasterRollModal({
 
             {/* Source Warehouse Location */}
             <div>
-              <Label className="text-xs font-semibold mb-1.5 block">
-                {tBilingual('Source Store Location', 'উৎস স্টোর লোকেশন')}
-              </Label>
+              <div className="flex items-center justify-between mb-1.5">
+                <Label className="text-xs font-semibold block">
+                  {tBilingual('Source Store Location', 'উৎস স্টোর লোকেশন')}
+                </Label>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                  <Sparkles className="h-3 w-3" /> Auto
+                </span>
+              </div>
               <select
                 value={sourceLocationId}
                 onChange={(e) => setSourceLocationId(e.target.value)}
                 className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium focus:ring-2 focus:ring-blue-500 shadow-2xs"
               >
-                {locations.length === 0 ? (
-                  <option value="">Main Warehouse Store</option>
-                ) : (
-                  locations.map((loc) => (
-                    <option key={loc.id} value={loc.id}>
-                      {loc.location_name} ({loc.location_code})
-                    </option>
-                  ))
-                )}
+                {effectiveLocations.map((loc) => (
+                  <option key={loc.id} value={loc.id}>
+                    {loc.location_name} ({loc.location_code})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 2: ROLL DIMENSIONS (AVAILABLE SIZES & PRESETS) */}
-        {/* ========================================================= */}
-        <div className="space-y-3.5 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
-              <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              2. {tBilingual('Master Roll Dimensions & Size Breakdown', 'মাস্টার রোলের সাইজ ও বহর')}
-            </span>
-            <span className="text-[10px] text-slate-500 font-mono">
-              Store Unit: <strong>Purchase Unit (Full Rolls)</strong>
-            </span>
-          </div>
-
-          {/* Dynamic Available Warehouse Sizes Selector */}
-          {warehouseBreakdown.roll_items.length > 0 ? (
-            <div className="p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-800 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                  <Package className="h-3.5 w-3.5 text-blue-600" />
-                  {tBilingual('Available Warehouse Roll Sizes', 'গুদামে বিদ্যমান রোলের সাইজ বহর')}
-                </span>
-                <Badge variant="secondary" className="text-[10px] font-mono font-bold">
-                  {warehouseBreakdown.roll_items.length} {warehouseBreakdown.roll_items.length === 1 ? 'Size Group' : 'Size Groups'}
-                </Badge>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {warehouseBreakdown.roll_items.map((item) => {
-                  const isSelected = widthFt === item.width_ft && lengthFt === item.length_ft
-                  const availCount = item.roll_count
-                  const remainingCount = Math.max(0, availCount - (isSelected ? quantityRolls : 0))
-
-                  return (
-                    <button
-                      key={`${item.width_ft}x${item.length_ft}`}
-                      type="button"
-                      onClick={() => {
-                        setWidthFt(item.width_ft)
-                        setLengthFt(item.length_ft)
-                        setIsCustomWidth(false)
-                        setIsCustomLength(false)
-                      }}
-                      className={cn(
-                        'p-3 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-1.5 shadow-2xs text-left relative overflow-hidden',
-                        isSelected
-                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-md'
-                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-xs'
-                      )}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={cn('font-mono font-black text-sm', isSelected ? 'text-white' : 'text-slate-900 dark:text-white')}>
-                          {item.width_ft}ft × {item.length_ft}ft
-                        </span>
-                        <span
-                          className={cn(
-                            'text-[10px] font-bold px-2 py-0.5 rounded-full font-mono',
-                            isSelected
-                              ? 'bg-blue-700 text-white'
-                              : availCount > 0
-                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
-                              : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
-                          )}
-                        >
-                          {item.roll_count} Pcs
-                        </span>
-                      </div>
-
-                      <div className={cn('text-[11px] font-medium flex items-center justify-between', isSelected ? 'text-blue-100' : 'text-slate-500')}>
-                        <span>{item.total_sft.toLocaleString()} SFT Total</span>
-                        <span>{item.width_ft * item.length_ft} SFT/roll</span>
-                      </div>
-
-                      {isSelected && (
-                        <div className="pt-1.5 border-t border-blue-500/50 flex items-center justify-between text-[10px] font-bold text-emerald-200 font-mono">
-                          <span>Deduction Preview:</span>
-                          <span>{item.roll_count} Pcs - {quantityRolls} = {remainingCount} Pcs left</span>
-                        </div>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Width Section */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <Label className="text-xs font-semibold">
-                {tBilingual('Roll Width (Feed Axis)', 'রোলের প্রস্থ')} <span className="text-rose-500">*</span>
-              </Label>
-              <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
-                Selected: {widthFt} ft ({Math.round(widthFt * 12)}&quot;) • {currentAvailableRollsForSize} Rolls in Store
-              </span>
-            </div>
-            <div className="grid grid-cols-4 sm:grid-cols-8 gap-1.5">
-              {DEFAULT_WIDTH_PRESETS.map((p) => {
-                const area = p.value * lengthFt
-                const availRolls = area > 0 ? Math.floor(currentStoreStock / area) : 0
-                return (
-                  <Button
-                    key={p.label}
-                    type="button"
-                    size="sm"
-                    variant={!isCustomWidth && widthFt === p.value ? 'default' : 'outline'}
-                    onClick={() => handleWidthSelect(p.value)}
-                    className="h-10 text-xs font-bold px-1 flex flex-col items-center justify-center leading-none gap-0.5"
-                  >
-                    <span>{p.label}</span>
-                    <span className="text-[9px] font-mono opacity-80">{availRolls} Roll</span>
-                  </Button>
-                )
-              })}
-              <Button
-                type="button"
-                size="sm"
-                variant={isCustomWidth ? 'default' : 'outline'}
-                onClick={() => setIsCustomWidth(true)}
-                className="h-10 text-xs font-bold px-1"
-              >
-                Custom
-              </Button>
-            </div>
-            {isCustomWidth && (
-              <div className="mt-2 flex items-center gap-2">
-                <Input
-                  type="number"
-                  step="0.01"
-                  min="0.1"
-                  value={widthFt}
-                  onChange={(e) => setWidthFt(Number(e.target.value))}
-                  placeholder="Width in feet (e.g. 5.5)"
-                  className="h-9 text-xs font-mono font-bold"
-                  required
-                />
-                <span className="text-xs text-slate-500 whitespace-nowrap font-medium">feet</span>
-              </div>
-            )}
-          </div>
-
-          {/* Length Section */}
-          <div className="pt-2 border-t border-slate-200 dark:border-slate-800">
-            <div className="flex items-center justify-between mb-1.5">
-              <Label className="text-xs font-semibold">
-                {tBilingual('Nominal Master Length', 'রোলের দৈর্ঘ্য')} <span className="text-rose-500">*</span>
-              </Label>
-              <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
-                Selected: {lengthFt} ft ({(lengthFt * 0.3048).toFixed(1)}m)
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-              {DEFAULT_LENGTH_PRESETS.map((p) => (
-                <Button
-                  key={p.label}
-                  type="button"
-                  size="sm"
-                  variant={!isCustomLength && lengthFt === p.value ? 'default' : 'outline'}
-                  onClick={() => handleLengthSelect(p.value)}
-                  className="h-9 text-xs font-bold px-1"
-                >
-                  {p.label}
-                </Button>
-              ))}
-              <Button
-                type="button"
-                size="sm"
-                variant={isCustomLength ? 'default' : 'outline'}
-                onClick={() => setIsCustomLength(true)}
-                className="h-9 text-xs font-bold px-1"
-              >
-                Custom
-              </Button>
-            </div>
-            {isCustomLength && (
-              <div className="mt-2 flex items-center gap-2">
-                <Input
-                  type="number"
-                  step="0.1"
-                  min="1"
-                  value={lengthFt}
-                  onChange={(e) => setLengthFt(Number(e.target.value))}
-                  placeholder="Length in feet (e.g. 150)"
-                  className="h-9 text-xs font-mono font-bold"
-                  required
-                />
-                <span className="text-xs text-slate-500 whitespace-nowrap font-medium">feet</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ========================================================= */}
-        {/* STEP 3: REQUISITION QUANTITY & DESTINATION */}
+        {/* STEP 2: REQUISITION QUANTITY & DESTINATION */}
         {/* ========================================================= */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {/* Multi-Roll Quantity */}
+          {/* Multi-Unit Quantity in Purchase Units */}
           <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold block">
-                {tBilingual('Requisition Quantity (Purchase Units / Rolls)', 'ইস্যুকৃত রোলের সংখ্যা')}
+                {tBilingual(
+                  `Requisition Quantity (${purchaseUnitName.toUpperCase()})`,
+                  `ইস্যুকৃত পরিমাণ (${purchaseUnitName})`
+                )}
               </Label>
               <Badge variant="secondary" className="text-[10px] font-mono font-bold">
-                {quantityRolls} Roll(s) = {totalBatchAreaSft} SFT
+                {quantityRolls} {purchaseUnitName}
+                {purchaseUnitName !== consumptionUnitName &&
+                  ` = ${totalBatchQuantity} ${consumptionUnitName.toUpperCase()}`}
               </Badge>
             </div>
             <div className="flex items-center gap-2">
@@ -766,7 +550,7 @@ export function IssueMasterRollModal({
               <Input
                 type="number"
                 min="1"
-                max="100"
+                max="1000"
                 value={quantityRolls}
                 onChange={(e) => setQuantityRolls(Math.max(1, parseInt(e.target.value) || 1))}
                 className="h-9 text-center font-mono font-black text-sm"
@@ -791,7 +575,7 @@ export function IssueMasterRollModal({
                   onClick={() => setQuantityRolls(q)}
                   className="h-7 text-[11px] px-2.5 font-bold cursor-pointer"
                 >
-                  {q} {q === 1 ? 'Roll' : 'Rolls'}
+                  {q} {purchaseUnitName}
                 </Button>
               ))}
             </div>
@@ -842,14 +626,14 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 4: SMART ROLL TAG AUTO-GENERATOR */}
+        {/* STEP 3: SMART IDENTIFIER TAG AUTO-GENERATOR */}
         {/* ========================================================= */}
         <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <span className="font-bold text-xs text-indigo-950 dark:text-indigo-200">
-                {tBilingual('Auto-Generated Roll Identifier Tag', 'স্বয়ংক্রিয় রোল ট্যাগ আইডি')}
+                {tBilingual('Auto-Generated Identifier Tag', 'স্বয়ংক্রিয় ট্র্যাকিং ট্যাগ আইডি')}
               </span>
             </div>
             <Button
@@ -868,8 +652,8 @@ export function IssueMasterRollModal({
               {generatedRollCode}
               {quantityRolls > 1 && ` (to ...-${String(quantityRolls).padStart(2, '0')})`}
             </Badge>
-            <span className="text-[11px] text-slate-500 font-medium">
-              Standard Format: ROL-[SKU]-[WIDTH]FT-[LOT]
+            <span className="text-[11px] text-slate-500 font-medium font-mono">
+              Unit Rate: {formatBDT(unitCostPerPurchaseUnit)} / {purchaseUnitName}
             </span>
           </div>
 
@@ -887,7 +671,7 @@ export function IssueMasterRollModal({
               <div>
                 <Label className="text-[11px] font-semibold mb-1 block">Custom Tag Override</Label>
                 <Input
-                  placeholder="e.g. ROL-CUSTOM-001"
+                  placeholder="e.g. TAG-CUSTOM-001"
                   value={customRollTag}
                   onChange={(e) => setCustomRollTag(e.target.value)}
                   className="h-8 text-xs font-mono"
@@ -898,15 +682,15 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 5: LIVE TELEMETRY, VALUATION & STORE IMPACT */}
+        {/* STEP 4: LIVE TELEMETRY, VALUATION & STORE IMPACT */}
         {/* ========================================================= */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Single Roll Area</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Size / Measure</span>
             <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
-              {singleRollAreaSft} SFT
+              {singleUnitQuantity} {consumptionUnitName.toUpperCase()}
             </span>
-            <span className="text-[10px] text-slate-500 block">{widthFt}ft × {lengthFt}ft</span>
+            <span className="text-[10px] text-slate-500 block">per {purchaseUnitName}</span>
           </Card>
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
@@ -914,9 +698,11 @@ export function IssueMasterRollModal({
               Requisition Batch
             </span>
             <span className="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">
-              {quantityRolls} Roll(s)
+              {quantityRolls} {purchaseUnitName}
             </span>
-            <span className="text-[10px] text-slate-500 block">{totalBatchAreaSft} SFT total</span>
+            <span className="text-[10px] text-slate-500 block">
+              {totalBatchQuantity} {consumptionUnitName.toUpperCase()} total
+            </span>
           </Card>
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
@@ -926,7 +712,9 @@ export function IssueMasterRollModal({
             <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
               {formatBDT(totalValuation)}
             </span>
-            <span className="text-[10px] text-slate-500 block">@{formatBDT(costPerRoll)}/Roll</span>
+            <span className="text-[10px] text-slate-500 block">
+              @{formatBDT(unitCostPerPurchaseUnit)}/{purchaseUnitName}
+            </span>
           </Card>
 
           <Card
@@ -944,22 +732,23 @@ export function IssueMasterRollModal({
                 isStoreShortage ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'
               )}
             >
-              {projectedRollsRemaining} Rolls ({projectedStoreBalance.toLocaleString()} SFT)
+              {projectedRemainingUnits} {purchaseUnitName} ({projectedStoreBalance.toLocaleString()}{' '}
+              {consumptionUnitName.toUpperCase()})
             </span>
             <span className="text-[10px] text-slate-500 block">
-              {isStoreShortage ? '⚠️ Stock Shortage' : `Dispatched as ${quantityRolls} Active Piece(s)`}
+              {isStoreShortage ? '⚠️ Stock Shortage' : `Dispatched to Production`}
             </span>
           </Card>
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 6: PRINTABLE INDUSTRIAL ROLL TICKET PREVIEW */}
+        {/* STEP 5: PRINTABLE INDUSTRIAL TAG PREVIEW */}
         {/* ========================================================= */}
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
           <div className="p-3 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
             <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <Barcode className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              {tBilingual('Printable Industrial Physical Tag Preview', 'প্রিন্টযোগ্য রোল স্টিকার / বারকোড প্রিভিউ')}
+              {tBilingual('Printable Industrial Physical Tag Preview', 'প্রিন্টযোগ্য ট্যাগ / বারকোড প্রিভিউ')}
             </span>
             <Button
               type="button"
@@ -976,31 +765,37 @@ export function IssueMasterRollModal({
             <div className="p-4 bg-slate-50 dark:bg-slate-950/50 flex flex-col items-center animate-in fade-in">
               <div className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2.5 text-slate-900 dark:text-slate-100">
                 <div className="flex items-center justify-between border-b pb-2">
-                  <div className="font-black text-xs tracking-wider">INKFLOW ERP ROLL TICKET</div>
-                  <Badge variant="outline" className="font-mono text-[9px] font-bold">
-                    MASTER ROLL
+                  <div className="font-black text-xs tracking-wider">INKFLOW ERP MATERIAL TICKET</div>
+                  <Badge variant="outline" className="font-mono text-[9px] font-bold uppercase">
+                    {purchaseUnitName}
                   </Badge>
                 </div>
 
                 <div className="text-center py-1">
                   <div className="font-mono font-black text-base tracking-wider">{generatedRollCode}</div>
                   <div className="text-xs font-bold text-slate-600 dark:text-slate-400">
-                    {selectedMaterial?.name || 'Raw Material Media'}
+                    {selectedMaterial?.name || 'Raw Material Item'}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-t border-b py-2">
                   <div>
-                    <span className="text-slate-400 block">WIDTH:</span>
-                    <strong>{widthFt} FT ({Math.round(widthFt * 12)}&quot;)</strong>
+                    <span className="text-slate-400 block">UNIT MEASURE:</span>
+                    <strong>
+                      {singleUnitQuantity} {consumptionUnitName.toUpperCase()}
+                    </strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">INITIAL LENGTH:</span>
-                    <strong>{lengthFt} FT</strong>
+                    <span className="text-slate-400 block">QUANTITY:</span>
+                    <strong>
+                      {quantityRolls} {purchaseUnitName.toUpperCase()}
+                    </strong>
                   </div>
                   <div>
-                    <span className="text-slate-400 block">TOTAL AREA:</span>
-                    <strong>{singleRollAreaSft} SFT</strong>
+                    <span className="text-slate-400 block">TOTAL STOCK:</span>
+                    <strong>
+                      {totalBatchQuantity} {consumptionUnitName.toUpperCase()}
+                    </strong>
                   </div>
                   <div>
                     <span className="text-slate-400 block">DESTINATION:</span>
@@ -1037,7 +832,7 @@ export function IssueMasterRollModal({
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Urgent banner run for Job #1042"
+              placeholder="e.g. Urgent run for Job #1042"
               className="h-9 text-xs font-medium"
             />
           </div>
@@ -1048,7 +843,7 @@ export function IssueMasterRollModal({
       <div className="px-5 py-3.5 bg-slate-100/90 dark:bg-slate-900/90 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2.5">
         <div className="flex items-center gap-2">
           <Badge variant="secondary" className="font-mono text-xs font-bold py-1 px-2.5">
-            {quantityRolls} {quantityRolls === 1 ? 'Roll' : 'Rolls'} ({totalBatchAreaSft} SFT)
+            {quantityRolls} {purchaseUnitName} ({totalBatchQuantity} {consumptionUnitName.toUpperCase()})
           </Badge>
           <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">
             {formatBDT(totalValuation)}
@@ -1071,14 +866,14 @@ export function IssueMasterRollModal({
             className="h-9 px-5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md cursor-pointer gap-2"
           >
             {loading ? (
-              <span>Issuing Roll(s)...</span>
+              <span>Issuing Material...</span>
             ) : (
               <>
-                <Disc className="h-4 w-4" />
+                <Package className="h-4 w-4" />
                 <span>
                   {tBilingual(
-                    `Confirm Issue (${quantityRolls} ${quantityRolls === 1 ? 'Roll' : 'Rolls'})`,
-                    `ইস্যু নিশ্চিত করুন (${quantityRolls}টি রোল)`
+                    `Confirm Issue (${quantityRolls} ${purchaseUnitName})`,
+                    `ইস্যু নিশ্চিত করুন (${quantityRolls} ${purchaseUnitName})`
                   )}
                 </span>
                 <ArrowRight className="h-3.5 w-3.5 ml-0.5" />

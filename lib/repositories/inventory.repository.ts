@@ -1455,6 +1455,54 @@ export class InventoryRepository {
         performed_by_id: params.issued_by_id,
         performed_by_name: params.issued_by_name,
       })
+
+      // Decrement roll size groups on material and transition physical rolls if applicable
+      try {
+        const targetMat = await this.getMaterialById(it.material_id, params.company_id)
+        if (targetMat) {
+          const itemWidth = Number((it as any).width_ft) || (targetMat.roll_width_ft ? Number(targetMat.roll_width_ft) : null)
+          const itemLength = Number((it as any).length_ft) || (targetMat.standard_roll_length_ft ? Number(targetMat.standard_roll_length_ft) : 164)
+          const purchaseQty = Number((it as any).purchase_quantity) || 1
+
+          if (targetMat.roll_sizes && Array.isArray(targetMat.roll_sizes) && itemWidth) {
+            let matched = false
+            const updatedSizes = targetMat.roll_sizes.map((sz: any) => {
+              if (Number(sz.width_ft) === itemWidth && (!sz.length_ft || Number(sz.length_ft) === itemLength || !matched)) {
+                matched = true
+                const currentCount = Number(sz.roll_count ?? sz.count ?? sz.quantity ?? 1)
+                const newCount = Math.max(0, currentCount - purchaseQty)
+                return { ...sz, roll_count: newCount, count: newCount, quantity: newCount }
+              }
+              return sz
+            })
+            targetMat.roll_sizes = updatedSizes
+            if (targetMat.material_config) {
+              (targetMat.material_config as any).roll_sizes = updatedSizes
+            }
+            PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat, params.company_id)
+            PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat)
+          }
+
+          if ((it as any).roll_id) {
+            const roll = await this.getInventoryRollById((it as any).roll_id, params.company_id)
+            if (roll) {
+              const updatedRoll: InventoryRollRecord = {
+                ...roll,
+                status: assignedMach ? 'mounted' : 'available',
+                location_name: 'Print Floor',
+                mounted_machine_id: assignedMach ? assignedMach : roll.mounted_machine_id,
+                mounted_machine_name: assignedMach ? assignedMach : roll.mounted_machine_name,
+                mounted_press_name: assignedMach ? assignedMach : roll.mounted_press_name,
+                mounted_at: assignedMach ? new Date().toISOString() : roll.mounted_at,
+                mounted_by_name: params.received_by_name || params.issued_by_name,
+                updated_at: new Date().toISOString(),
+              }
+              PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll, params.company_id)
+              PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, updatedRoll.id, updatedRoll)
+            }
+          }
+        }
+      } catch {}
     }
 
     return createdIssue
