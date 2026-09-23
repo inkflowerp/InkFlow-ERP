@@ -2383,13 +2383,19 @@ export class InventoryRepository {
       const existingMaterialIdsWithRolls = new Set(rolls.map((r) => r.material_id))
 
       const isRollMaterial = (m: MaterialRecord) => {
+        const cat = String(m.category || '').toLowerCase()
+        const name = String(m.name || '').toLowerCase()
+        const pUnit = String(m.purchase_unit || m.master_purchase_unit || '').toLowerCase()
+        const unit = String(m.unit || '').toLowerCase()
+
         return Boolean(
           m.is_roll ||
-          m.purchase_unit === 'roll' ||
-          m.unit === 'roll' ||
+          pUnit === 'roll' ||
+          unit === 'roll' ||
+          ['sft', 'sqft'].includes(unit) ||
           (m.roll_width_ft && Number(m.roll_width_ft) > 0) ||
-          (m.category && ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll'].some((c) => m.category.toLowerCase().includes(c))) ||
-          (m.name && ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'roll', 'sav'].some((c) => m.name.toLowerCase().includes(c)))
+          ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll', 'pvc', 'flex_banner'].some((c) => cat.includes(c)) ||
+          ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'roll', 'sav', 'pvc'].some((c) => name.includes(c))
         )
       }
 
@@ -2401,26 +2407,45 @@ export class InventoryRepository {
         // If rolls already exist for this material, do not duplicate
         if (existingMaterialIdsWithRolls.has(m.id)) continue
 
-        const widthFt = Number(
-          m.roll_width_ft ||
-          m.width ||
-          (m.name?.toLowerCase().includes('10ft') || m.name?.toLowerCase().includes('10 ft') ? 10 :
-           m.name?.toLowerCase().includes('8ft') || m.name?.toLowerCase().includes('8 ft') ? 8 :
-           m.name?.toLowerCase().includes('6ft') || m.name?.toLowerCase().includes('6 ft') ? 6 :
-           m.name?.toLowerCase().includes('5ft') || m.name?.toLowerCase().includes('5 ft') ? 5 :
-           m.name?.toLowerCase().includes('4ft') || m.name?.toLowerCase().includes('4 ft') ? 4 : 3.2)
-        )
         const lengthFt = Number(m.roll_length_ft || m.length || m.standard_roll_length_ft || 164)
-        const rollArea = Math.round(widthFt * lengthFt * 100) / 100
         const stockNum = Number(m.current_stock || 0)
         if (stockNum <= 0) continue
+
+        const matName = String(m.name || '').toLowerCase()
+        let widthFt = Number(
+          m.roll_width_ft ||
+          m.width ||
+          (Array.isArray(m.available_widths_ft) && m.available_widths_ft.length === 1 ? m.available_widths_ft[0] : 0) ||
+          (matName.includes('10ft') || matName.includes('10 ft') ? 10 :
+           matName.includes('8ft') || matName.includes('8 ft') ? 8 :
+           matName.includes('7ft') || matName.includes('7 ft') ? 7 :
+           matName.includes('6ft') || matName.includes('6 ft') ? 6 :
+           matName.includes('5ft') || matName.includes('5 ft') ? 5 :
+           matName.includes('4ft') || matName.includes('4 ft') ? 4 :
+           matName.includes('3.2ft') || matName.includes('3.2 ft') ? 3.2 : 0)
+        )
+
+        if (!widthFt && stockNum > 0 && lengthFt > 0) {
+          const ratio = stockNum / lengthFt
+          if (stockNum % lengthFt === 0 || [3, 3.2, 3.25, 4, 4.25, 5, 6, 7, 8, 10, 10.5, 12, 12.5].includes(ratio)) {
+            widthFt = ratio
+          } else {
+            widthFt = Math.max(3.2, Math.round(ratio * 10) / 10)
+          }
+        }
+        if (!widthFt) widthFt = 3.2
+
+        const rollArea = Math.round(widthFt * lengthFt * 100) / 100
 
         let numRolls = 1
         if (m.purchase_unit === 'roll' || m.unit === 'roll') {
           numRolls = Math.max(1, Math.round(stockNum))
         } else if (rollArea > 0) {
-          numRolls = Math.max(1, Math.ceil(stockNum / rollArea))
+          numRolls = Math.max(1, Math.round(stockNum / rollArea))
         }
+
+        const rawCost = Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0)
+        const rollCost = rawCost > 100 ? rawCost : (rawCost > 0 && rollArea > 0 ? rawCost * rollArea : rawCost)
 
         const cleanSku = (m.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
         const lot = Date.now().toString().slice(-4)
@@ -2449,8 +2474,8 @@ export class InventoryRepository {
             remaining_area_sft: rollArea,
             current_area_sft: rollArea,
             status: 'available',
-            unit_cost: Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0),
-            total_cost: Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0),
+            unit_cost: rollCost,
+            total_cost: rollCost,
             material: {
               id: m.id,
               name: m.name,

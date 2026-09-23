@@ -140,4 +140,47 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     assert.strictEqual(backlitRolls[0].width_ft, 5)
     assert.strictEqual(backlitRolls[0].initial_length_ft, 164)
   })
+
+  test('4. Correctly computes roll width, purchase unit display, and total valuation for 1148 SFT PVC at ৳ 11,480/roll', async () => {
+    const pvcCompanyId = `test-pvc-valuation-${Date.now()}`
+    const pvcMat: Partial<MaterialRecord> = {
+      id: `mat-pvc-${Date.now()}`,
+      company_id: pvcCompanyId,
+      sku: 'MAT-11925',
+      name: 'PVC',
+      category: 'flex_banner' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      current_stock: 1148,
+      average_cost: 11480, // ৳ 11,480 per roll
+    }
+
+    await InventoryRepository.createMaterial(pvcMat as any)
+
+    // Check physical rolls generation
+    const rolls = await InventoryRepository.getInventoryRolls(pvcCompanyId)
+    const pvcRolls = rolls.filter((r) => r.material_id === pvcMat.id)
+    assert.strictEqual(pvcRolls.length, 1, 'Should auto-generate 1 physical roll for 1148 SFT PVC')
+    assert.strictEqual(pvcRolls[0].width_ft, 7, 'Auto-deduced width should be 7ft (1148 / 164)')
+    assert.strictEqual(pvcRolls[0].initial_length_ft, 164, 'Standard length should be 164ft')
+    assert.strictEqual(pvcRolls[0].remaining_area_sft, 1148, 'Area should be 1148 SFT')
+    assert.strictEqual(pvcRolls[0].status, 'available')
+
+    // Check units & valuation breakdown
+    const { getMaterialWarehouseStockBreakdown } = await import('../../lib/units.ts')
+    const breakdown = getMaterialWarehouseStockBreakdown(pvcMat, rolls)
+
+    assert.strictEqual(breakdown.is_roll, true, 'Should be detected as roll substrate')
+    assert.strictEqual(breakdown.purchase_unit_display, '1 Roll', 'Purchase unit display should be 1 Roll')
+    assert.strictEqual(breakdown.purchase_unit, 'roll')
+    assert.strictEqual(breakdown.consumption_unit, 'sft')
+    assert.strictEqual(breakdown.cost_per_purchase_unit, 11480, 'Cost per roll should be 11480')
+    assert.strictEqual(breakdown.cost_per_consumption_unit, 10, 'Cost per SFT should be 10 (11480 / 1148)')
+    assert.strictEqual(breakdown.total_valuation, 11480, 'Total valuation must be exactly ৳ 11,480 (NOT ৳ 1,31,79,040)')
+
+    // Check inventory summary valuation
+    const summary = await InventoryService.getInventorySummary(pvcCompanyId)
+    assert.strictEqual(summary.totalAvailableStockValue, 11480, 'Inventory summary valuation must reflect normalized ৳ 11,480')
+  })
 })
+

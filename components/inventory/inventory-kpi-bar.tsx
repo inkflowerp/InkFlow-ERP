@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/card'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
+import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 import type { InventorySummaryStats, MaterialRecord, InventoryRollRecord, InventoryRemnantRecord } from '@/types/inventory.types'
 import type { ProductRecord } from '@/types/product.types'
 import type { PurchaseOrderRecord } from '@/types/purchase.types'
@@ -49,6 +50,22 @@ export function InventoryKpiBar({
 
   const mountedRollsCount = rolls.filter((r) => r.status === 'mounted' || r.mounted_machine_id).length
 
+  const computedMaterialsValue = materials.reduce((sum, m) => {
+    const b = getMaterialWarehouseStockBreakdown(m, rolls)
+    return sum + (b.total_valuation || 0)
+  }, 0)
+
+  const computedProductsValue = readyProducts.reduce((sum, p) => {
+    const stock = Number((p as any).current_stock || (p as any).stock || (p as any).opening_stock || 0)
+    const cost = Number(p.base_cost || p.purchase_price || (p as any).cost_per_unit || 0)
+    return sum + (stock > 0 ? stock * cost : 0)
+  }, 0)
+
+  const displayTotalValue =
+    summary.totalAvailableStockValue > 0 && summary.totalAvailableStockValue < 10000000
+      ? summary.totalAvailableStockValue
+      : (computedMaterialsValue + computedProductsValue)
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {/* 1. Total Valuation */}
@@ -66,7 +83,7 @@ export function InventoryKpiBar({
           <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
         </div>
         <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-numeric">
-          <CurrencyDisplay amount={summary.totalAvailableStockValue} />
+          <CurrencyDisplay amount={displayTotalValue} />
         </div>
         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
           {materials.length} {isBn ? 'কাঁচামাল' : 'Materials'} • {readyProducts.length} {isBn ? 'প্রোডাক্ট' : 'Products'}

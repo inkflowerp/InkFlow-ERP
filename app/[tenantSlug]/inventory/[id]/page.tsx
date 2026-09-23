@@ -37,6 +37,7 @@ import {
 import { getMaterialDetailsAction } from '@/actions/inventory.actions'
 import { ReceiveStockModal } from '@/components/inventory/receive-stock-modal'
 import { StockAdjustmentModal } from '@/components/inventory/stock-adjustment-modal'
+import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
 import { cn } from '@/lib/utils'
 
 export default function MaterialDetailPage() {
@@ -118,7 +119,8 @@ export default function MaterialDetailPage() {
   const isLowStock =
     Number(material.reorder_level || material.min_stock_level || 0) > 0 &&
     Number(material.current_stock || 0) <= Number(material.reorder_level || material.min_stock_level || 0)
-  const valuation = Number(material.current_stock || 0) * Number(material.average_cost || 0)
+  
+  const breakdown = getMaterialWarehouseStockBreakdown(material)
 
   return (
     <FeatureGate feature="inventory">
@@ -172,21 +174,31 @@ export default function MaterialDetailPage() {
           <Card className="p-4 border-l-4 border-l-emerald-600">
             <span className="text-xs text-slate-500 font-semibold">Total Stock Available</span>
             <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
-              {material.current_stock} {material.unit}
+              {breakdown.purchase_unit_display || `${material.current_stock} ${material.unit}`}
             </div>
-            <span className="text-[11px] text-slate-400">
-              Reorder threshold: {material.reorder_level || material.min_stock_level} {material.unit}
+            {breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
+              <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">
+                {breakdown.consumption_unit_display}
+              </span>
+            )}
+            <span className="text-[11px] text-slate-400 block mt-0.5">
+              Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
             </span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-blue-600">
             <span className="text-xs text-slate-500 font-semibold">Asset Valuation</span>
             <div className="text-2xl font-black text-emerald-600 mt-1">
-              <CurrencyDisplay amount={valuation} />
+              <CurrencyDisplay amount={breakdown.total_valuation} />
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">
-              Avg Cost: ৳ {material.average_cost} / {material.unit}
+            <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
+              {breakdown.cost_display_primary || `Avg Cost: ৳ ${material.average_cost} / ${material.unit}`}
             </span>
+            {breakdown.cost_display_secondary && (
+              <span className="text-[10px] text-slate-400 font-sans block">
+                {breakdown.cost_display_secondary}
+              </span>
+            )}
           </Card>
 
           <Card className="p-4 border-l-4 border-l-purple-600">

@@ -29,6 +29,7 @@ import type {
   MasterPhysicalClassification,
 } from '../types/price-intelligence.types.ts'
 import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
+import { getMaterialWarehouseStockBreakdown } from '../lib/units.ts'
 
 export class InventoryService {
   // ==========================================
@@ -1052,9 +1053,8 @@ export class InventoryService {
     }).length
 
     const materialsValue = materials.reduce((sum, m) => {
-      const stock = Number(m.current_stock || 0)
-      const cost = Number(m.average_cost || m.last_purchase_price || 0)
-      return sum + (stock > 0 ? stock * cost : 0)
+      const breakdown = getMaterialWarehouseStockBreakdown(m)
+      return sum + (breakdown.total_valuation || 0)
     }, 0)
 
     const matIds = new Set(materials.map((m) => m.id))

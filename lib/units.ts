@@ -1887,16 +1887,26 @@ export interface WarehouseRollStockItem {
 }
 
 export interface MaterialWarehouseStockBreakdown {
+  is_roll: boolean
   purchase_unit_display: string
+  consumption_unit_display: string
   roll_items: WarehouseRollStockItem[]
   total_rolls: number
   total_stock_display: string
   formatted_summary: string
+  purchase_unit: string
+  consumption_unit: string
+  cost_per_purchase_unit: number
+  cost_per_consumption_unit: number
+  cost_display_primary: string
+  cost_display_secondary: string | null
+  total_valuation: number
 }
 
 /**
  * Calculates and formats warehouse stock in Purchase Units (Rolls, Sheets, Cans, Boxes)
- * e.g. "10 Roll (3ft × 164ft) • 8 Roll (5ft × 164ft)"
+ * along with normalized unit costs and accurate inventory valuation.
+ * e.g. "1 Roll (7ft × 164ft)" • "1,148 SFT" • "৳ 11,480 / Roll" • "(৳ 10.00 / SFT)" • Total Valuation "৳ 11,480"
  */
 export function getMaterialWarehouseStockBreakdown(
   material: any,
@@ -1904,42 +1914,96 @@ export function getMaterialWarehouseStockBreakdown(
 ): MaterialWarehouseStockBreakdown {
   if (!material) {
     return {
+      is_roll: false,
       purchase_unit_display: '0 units',
+      consumption_unit_display: '0 units',
       roll_items: [],
       total_rolls: 0,
       total_stock_display: '0',
-      formatted_summary: '0',
+      formatted_summary: '',
+      purchase_unit: 'pcs',
+      consumption_unit: 'pcs',
+      cost_per_purchase_unit: 0,
+      cost_per_consumption_unit: 0,
+      cost_display_primary: '৳ 0',
+      cost_display_secondary: null,
+      total_valuation: 0,
     }
   }
 
-  const currentStock = Number(material.current_stock || 0)
+  const currentStock = Number(material.current_stock ?? material.stock ?? 0)
+  const rawCost = Number(
+    material.average_cost ||
+    material.last_purchase_price ||
+    material.cost_per_unit ||
+    (material.material_config as any)?.purchase_price ||
+    0
+  )
+  const consumptionUnit = String(material.unit || material.selling_unit || 'pcs').toLowerCase()
+  const matCategory = String(material.category || '').toLowerCase()
+  const matName = String(material.name || '').toLowerCase()
+  const rawPurchaseUnit = String(
+    material.purchase_unit ||
+    material.master_purchase_unit ||
+    (material.material_config as any)?.purchase_unit ||
+    ''
+  ).toLowerCase()
+
   const isRoll =
     Boolean(material.is_roll) ||
-    material.category === 'roll_media' ||
-    material.category === 'flex' ||
-    material.category === 'vinyl' ||
-    material.category === 'sticker_paper' ||
-    material.category === 'pvc' ||
-    material.category === 'fabric' ||
-    material.category === 'lamination_film'
+    rawPurchaseUnit === 'roll' ||
+    ['sft', 'sqft'].includes(consumptionUnit) ||
+    ['roll_media', 'flex', 'flex_banner', 'banner', 'vinyl', 'sticker_paper', 'pvc', 'fabric', 'lamination_film', 'mesh', 'canvas', 'paper_roll', 'roll'].some(c => matCategory.includes(c)) ||
+    ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'roll', 'sav'].some(c => matName.includes(c))
 
   if (isRoll) {
-    // If specific warehouse rolls exist for this material
+    // 1. Check if explicit physical rolls exist in warehouse
     const matRolls = (warehouseRolls || []).filter(
       (r) =>
-        r.material_id === material.id &&
-        (r.status === 'in_warehouse' || (r.status === 'available' && r.location_name !== 'Print Floor')) &&
+        (r.material_id === material.id || (material.sku && r.material?.sku && r.material.sku.toLowerCase() === material.sku.toLowerCase())) &&
+        (r.status === 'in_warehouse' || r.status === 'available' || !r.status) &&
+        r.location_name !== 'Print Floor' &&
         (!r.mounted_machine_id && !r.mounted_machine_name)
     )
 
+    const standardLength = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
+
+    // Determine roll width
+    let inferredWidth = Number(
+      material.roll_width_ft ||
+      material.width ||
+      (Array.isArray(material.available_widths_ft) && material.available_widths_ft.length === 1 ? material.available_widths_ft[0] : 0) ||
+      (matName.includes('10ft') || matName.includes('10 ft') ? 10 :
+       matName.includes('8ft') || matName.includes('8 ft') ? 8 :
+       matName.includes('7ft') || matName.includes('7 ft') ? 7 :
+       matName.includes('6ft') || matName.includes('6 ft') ? 6 :
+       matName.includes('5ft') || matName.includes('5 ft') ? 5 :
+       matName.includes('4ft') || matName.includes('4 ft') ? 4 :
+       matName.includes('3.2ft') || matName.includes('3.2 ft') ? 3.2 : 0)
+    )
+
+    if (!inferredWidth && currentStock > 0 && standardLength > 0) {
+      const ratio = currentStock / standardLength
+      if (currentStock % standardLength === 0 || [3, 3.2, 3.25, 4, 4.25, 5, 6, 7, 8, 10, 10.5, 12, 12.5].includes(ratio)) {
+        inferredWidth = ratio
+      } else {
+        inferredWidth = Math.max(3.2, Math.round(ratio * 10) / 10)
+      }
+    }
+    if (!inferredWidth) inferredWidth = 3.2
+
+    let totalRolls = 0
+    let rollItems: WarehouseRollStockItem[] = []
+    let totalSft = currentStock
+
     if (matRolls.length > 0) {
       const map = new Map<string, WarehouseRollStockItem>()
-      let totalRolls = 0
-      let totalSft = 0
+      totalRolls = 0
+      totalSft = 0
 
       for (const r of matRolls) {
-        const w = Number(r.width_ft) || 3
-        const l = Number(r.current_length_ft ?? r.initial_length_ft) || 164
+        const w = Number(r.width_ft) || inferredWidth
+        const l = Number(r.current_length_ft ?? r.initial_length_ft) || standardLength
         const key = `${w}x${l}`
         const sft = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (w * l))
 
@@ -1952,77 +2016,123 @@ export function getMaterialWarehouseStockBreakdown(
         totalRolls += 1
         totalSft += sft
       }
+      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft)
+    } else {
+      const areaPerRoll = inferredWidth * standardLength
+      totalRolls = areaPerRoll > 0 ? Math.max(1, Math.round(currentStock / areaPerRoll)) : 1
+      if (currentStock <= 0) totalRolls = 0
+      rollItems = totalRolls > 0 ? [
+        {
+          width_ft: inferredWidth,
+          length_ft: standardLength,
+          roll_count: totalRolls,
+          total_sft: currentStock,
+        }
+      ] : []
+    }
 
-      const rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft)
-      const summaryParts = rollItems.map(
-        (it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`
-      )
+    const summaryParts = rollItems.map(
+      (it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`
+    )
+    const formattedSummary = summaryParts.length > 0 ? summaryParts.join(' • ') : `(${inferredWidth}ft × ${standardLength}ft)`
 
-      return {
-        purchase_unit_display: `${totalRolls} Roll${totalRolls !== 1 ? 's' : ''}`,
-        roll_items: rollItems,
-        total_rolls: totalRolls,
-        total_stock_display: `${totalSft.toLocaleString()} SFT`,
-        formatted_summary: summaryParts.join(' • '),
+    const areaPerStandardRoll = inferredWidth * standardLength
+    let costPerRoll = 0
+    let costPerSft = 0
+    let totalValuation = 0
+
+    if (rawCost > 0) {
+      if (rawCost > 100) {
+        // rawCost is per-Roll (e.g. ৳ 11,480 / Roll)
+        costPerRoll = rawCost
+        costPerSft = areaPerStandardRoll > 0 ? (rawCost / areaPerStandardRoll) : rawCost
+        totalValuation = currentStock * costPerSft
+      } else {
+        // rawCost is per-SFT (e.g. ৳ 10.00 / SFT)
+        costPerSft = rawCost
+        costPerRoll = areaPerStandardRoll > 0 ? (rawCost * areaPerStandardRoll) : (rawCost * 1148)
+        totalValuation = currentStock * costPerSft
       }
     }
 
-    // Default or configured roll breakdown based on standard widths
-    const standardLength = Number(material.standard_roll_length_ft || material.roll_length_ft || 164)
-    const widths: number[] =
-      Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0
-        ? material.available_widths_ft
-        : material.roll_width_ft
-        ? [material.roll_width_ft]
-        : [3, 5]
+    const rollDisplay = `${totalRolls} ${totalRolls === 1 ? 'Roll' : 'Rolls'}`
 
-    if (widths.length === 1) {
-      const w = widths[0]
-      const areaPerRoll = w * standardLength
-      const rollCount = areaPerRoll > 0 ? Math.floor(currentStock / areaPerRoll) : 0
-      const rollItems: WarehouseRollStockItem[] = [
-        { width_ft: w, length_ft: standardLength, roll_count: rollCount, total_sft: rollCount * areaPerRoll },
-      ]
-      return {
-        purchase_unit_display: `${rollCount} Roll${rollCount !== 1 ? 's' : ''}`,
-        roll_items: rollItems,
-        total_rolls: rollCount,
-        total_stock_display: `${currentStock.toLocaleString()} SFT`,
-        formatted_summary: `${rollCount} Roll (${w}ft × ${standardLength}ft)`,
-      }
-    } else {
-      // Divide stock across available widths proportionally
-      const items: WarehouseRollStockItem[] = widths.map((w) => {
-        const areaPerRoll = w * standardLength
-        const rollCount = areaPerRoll > 0 ? Math.floor((currentStock / widths.length) / areaPerRoll) : 0
-        return {
-          width_ft: w,
-          length_ft: standardLength,
-          roll_count: rollCount,
-          total_sft: rollCount * areaPerRoll,
-        }
-      })
-      const totalRolls = items.reduce((acc, it) => acc + it.roll_count, 0)
-      const summaryParts = items.map((it) => `${it.roll_count} Roll (${it.width_ft}ft × ${it.length_ft}ft)`)
-
-      return {
-        purchase_unit_display: `${totalRolls} Roll${totalRolls !== 1 ? 's' : ''}`,
-        roll_items: items,
-        total_rolls: totalRolls,
-        total_stock_display: `${currentStock.toLocaleString()} SFT`,
-        formatted_summary: summaryParts.join(' • '),
-      }
+    return {
+      is_roll: true,
+      purchase_unit_display: totalRolls > 0 ? rollDisplay : (currentStock > 0 ? `${currentStock.toLocaleString()} SFT` : '0 Rolls'),
+      consumption_unit_display: `${currentStock.toLocaleString()} SFT`,
+      roll_items: rollItems,
+      total_rolls: totalRolls,
+      total_stock_display: `${currentStock.toLocaleString()} SFT`,
+      formatted_summary: formattedSummary,
+      purchase_unit: 'roll',
+      consumption_unit: 'sft',
+      cost_per_purchase_unit: costPerRoll,
+      cost_per_consumption_unit: costPerSft,
+      cost_display_primary: costPerRoll > 0 ? `৳ ${costPerRoll.toLocaleString()} / Roll` : (costPerSft > 0 ? `৳ ${costPerSft.toFixed(2)} / SFT` : '—'),
+      cost_display_secondary: costPerSft > 0 && costPerRoll > 0 ? `(৳ ${costPerSft.toFixed(2)} / SFT)` : null,
+      total_valuation: totalValuation,
     }
   }
 
-  // Non-roll items
-  const unit = (material.unit || 'pcs').toLowerCase()
+  // 2. Check for Pack / Box / Discrete Items with conversion
+  const packQuantity = Number(
+    material.pack_quantity ||
+    (material.material_config as any)?.pack_quantity ||
+    (material.pricing_formula as any)?.material_config?.pack_quantity ||
+    1
+  )
+
+  if (['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit) && packQuantity > 1) {
+    const totalPacks = Math.floor(currentStock / packQuantity)
+    const remainderPcs = currentStock % packQuantity
+    const packDisplay = `${totalPacks} ${rawPurchaseUnit.toUpperCase()}${totalPacks !== 1 ? 's' : ''}${remainderPcs > 0 ? ` + ${remainderPcs} ${consumptionUnit}` : ''}`
+
+    let costPerPack = rawCost
+    let costPerPc = rawCost / packQuantity
+    if (rawCost <= 50) {
+      costPerPc = rawCost
+      costPerPack = rawCost * packQuantity
+    }
+    const totalValuation = currentStock * costPerPc
+
+    return {
+      is_roll: false,
+      purchase_unit_display: totalPacks > 0 ? packDisplay : `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      roll_items: [],
+      total_rolls: 0,
+      total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+      formatted_summary: `${packQuantity} ${consumptionUnit}/${rawPurchaseUnit}`,
+      purchase_unit: rawPurchaseUnit,
+      consumption_unit: consumptionUnit,
+      cost_per_purchase_unit: costPerPack,
+      cost_per_consumption_unit: costPerPc,
+      cost_display_primary: costPerPack > 0 ? `৳ ${costPerPack.toLocaleString()} / ${rawPurchaseUnit}` : '—',
+      cost_display_secondary: costPerPc > 0 ? `(৳ ${costPerPc.toFixed(2)} / ${consumptionUnit})` : null,
+      total_valuation: totalValuation,
+    }
+  }
+
+  // 3. General item
+  const displayUnit = rawPurchaseUnit || consumptionUnit || 'pcs'
+  const totalValuation = currentStock * rawCost
+
   return {
-    purchase_unit_display: `${currentStock.toLocaleString()} ${unit}`,
+    is_roll: false,
+    purchase_unit_display: `${currentStock.toLocaleString()} ${displayUnit}`,
+    consumption_unit_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
     roll_items: [],
     total_rolls: 0,
-    total_stock_display: `${currentStock.toLocaleString()} ${unit}`,
-    formatted_summary: `${currentStock.toLocaleString()} ${unit}`,
+    total_stock_display: `${currentStock.toLocaleString()} ${consumptionUnit}`,
+    formatted_summary: '',
+    purchase_unit: displayUnit,
+    consumption_unit: consumptionUnit,
+    cost_per_purchase_unit: rawCost,
+    cost_per_consumption_unit: rawCost,
+    cost_display_primary: rawCost > 0 ? `৳ ${rawCost.toLocaleString()} / ${displayUnit}` : '—',
+    cost_display_secondary: null,
+    total_valuation: totalValuation,
   }
 }
 

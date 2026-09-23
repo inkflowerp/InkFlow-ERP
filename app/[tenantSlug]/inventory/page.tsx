@@ -936,35 +936,46 @@ function UnifiedInventoryContent() {
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap">
-                              {breakdown.total_rolls > 0 ? (
-                                <div>
-                                  <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">{breakdown.purchase_unit_display}</span>
-                                  <div className="text-[10px] font-medium text-slate-500 font-sans mt-0.5">
-                                    {stockQty.toLocaleString()} {mat.unit}
-                                  </div>
-                                </div>
-                              ) : (
-                                <span className={stockQty <= 0 ? 'text-slate-400 font-bold' : 'text-slate-900 dark:text-white font-extrabold'}>
-                                  {stockQty.toLocaleString()}
+                              <div>
+                                <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
+                                  {breakdown.purchase_unit_display || `${stockQty.toLocaleString()} ${mat.unit}`}
                                 </span>
-                              )}
+                                {breakdown.purchase_unit_display && breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
+                                  <div className="text-[10px] font-medium text-slate-500 font-sans mt-0.5">
+                                    {breakdown.consumption_unit_display}
+                                  </div>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
                               <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono font-bold uppercase text-[10px] border border-slate-200 dark:border-slate-700">
-                                {breakdown.total_rolls > 0 ? 'Rolls' : mat.unit}
+                                {breakdown.purchase_unit ? breakdown.purchase_unit.toUpperCase() : mat.unit}
                               </span>
-                              {breakdown.total_rolls > 0 && breakdown.formatted_summary && (
+                              {breakdown.formatted_summary && (
                                 <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium block whitespace-normal mt-0.5 font-sans">
                                   {breakdown.formatted_summary}
                                 </span>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
-                              <CurrencyDisplay amount={avgCost} />
+                              {breakdown.cost_display_primary && breakdown.cost_display_primary !== '—' ? (
+                                <div>
+                                  <span className="font-semibold text-slate-900 dark:text-white">{breakdown.cost_display_primary}</span>
+                                  {breakdown.cost_display_secondary && (
+                                    <div className="text-[10px] text-slate-400 font-sans font-normal mt-0.5">
+                                      {breakdown.cost_display_secondary}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <CurrencyDisplay amount={avgCost} />
+                              )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap">
-                              {stockQty * avgCost > 0 ? (
-                                <span className="font-extrabold text-slate-900 dark:text-white"><CurrencyDisplay amount={stockQty * avgCost} /></span>
+                              {breakdown.total_valuation > 0 ? (
+                                <span className="font-extrabold text-slate-900 dark:text-white">
+                                  <CurrencyDisplay amount={breakdown.total_valuation} />
+                                </span>
                               ) : (
                                 <span className="text-slate-400 font-medium"><CurrencyDisplay amount={0} /></span>
                               )}
