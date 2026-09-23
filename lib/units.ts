@@ -2289,12 +2289,66 @@ export function getMaterialWarehouseStockBreakdown(
     let totalSft = 0
     let totalValuationCalculated = 0
 
-    if (matRolls.length > 0) {
-      // Group discrete warehouse rolls strictly using the 7 canonical attributes
-      const map = new Map<string, WarehouseRollStockItem>()
-      totalRolls = 0
-      totalSft = 0
+    const map = new Map<string, WarehouseRollStockItem>()
 
+    // Pre-populate all configured roll sizes from rawRollSizes so no configured size is lost
+    if (rawRollSizes.length > 0) {
+      for (const rs of rawRollSizes) {
+        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+        const allowance = rs.extra_allowance !== undefined
+          ? Number(rs.extra_allowance)
+          : rs.allowance !== undefined
+          ? Number(rs.allowance)
+          : rs.allowance_ft !== undefined
+          ? Number(rs.allowance_ft)
+          : globalAllowance
+        const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
+          ? Number(rs.width_ft)
+          : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+        const l = Number(rs.length || rs.length_ft || standardLength)
+        const explicitCount = matRolls.length > 0 ? 0 : Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
+        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+        const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+        const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allowance,
+          purchase_price: price,
+          gsm: gsm,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+        const sft = explicitCount > 0 ? explicitCount * attrs.width_ft * attrs.length_ft : (Number(rs.total_sft ?? rs.sft) || 0)
+        const rollCost = attrs.purchase_price > 0
+          ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
+          : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
+        const itemVal = explicitCount * rollCost
+
+        map.set(key, {
+          key,
+          name: attrs.name,
+          width_ft: attrs.width_ft,
+          length_ft: attrs.length_ft,
+          allowance_ft: attrs.allowance_ft,
+          purchase_price: attrs.purchase_price,
+          gsm: attrs.gsm,
+          finishing: attrs.finishing,
+          roll_count: explicitCount,
+          total_sft: sft,
+          unit_cost: attrs.purchase_price,
+          total_valuation: itemVal,
+          label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+        })
+      }
+    }
+
+    if (matRolls.length > 0) {
+      // Group discrete warehouse physical rolls strictly using the 7 canonical attributes
       for (const r of matRolls) {
         const w = Number(r.width_ft) || inferredWidth
         const l = Number(r.current_length_ft ?? r.initial_length_ft) || standardLength
@@ -2317,7 +2371,6 @@ export function getMaterialWarehouseStockBreakdown(
         const key = createInventoryGroupingKey(attrs)
         const sft = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (attrs.width_ft * attrs.length_ft))
 
-        // Group-specific unit cost & valuation
         const rollCost = attrs.purchase_price > 0
           ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
           : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
@@ -2344,123 +2397,19 @@ export function getMaterialWarehouseStockBreakdown(
         item.roll_count += 1
         item.total_sft += sft
         item.total_valuation = (item.total_valuation || 0) + itemValuation
-        totalRolls += 1
-        totalSft += sft
-        totalValuationCalculated += itemValuation
       }
+
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft || (a.purchase_price || 0) - (b.purchase_price || 0))
-    } else if (currentStock <= 0) {
-      // Zero stock with no physical rolls
-      totalRolls = 0
-      totalSft = 0
-      rollItems = []
+      totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
+      totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
+      totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
     } else if (rawRollSizes.length > 0) {
-      // Parse configured roll sizes / variants strictly using the 7 canonical attributes
-      totalRolls = 0
-      totalSft = 0
-      const map = new Map<string, WarehouseRollStockItem>()
+      // Allocate general currentStock among configured sizes if explicit counts were not provided
+      const currentExplicitRolls = Array.from(map.values()).reduce((sum, it) => sum + (it.roll_count || 0), 0)
+      if (currentExplicitRolls === 0 && currentStock > 0) {
+        const configuredList = Array.from(map.values())
+        const sumSetArea = configuredList.reduce((sum, item) => sum + (item.width_ft * item.length_ft), 0)
 
-      for (const rs of rawRollSizes) {
-        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
-        const allowance = rs.extra_allowance !== undefined
-          ? Number(rs.extra_allowance)
-          : rs.allowance !== undefined
-          ? Number(rs.allowance)
-          : rs.allowance_ft !== undefined
-          ? Number(rs.allowance_ft)
-          : globalAllowance
-        const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
-          ? Number(rs.width_ft)
-          : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
-        const l = Number(rs.length || rs.length_ft || standardLength)
-        const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
-        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
-        const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
-        const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
-
-        const attrs = normalizeInventoryGroupAttributes({
-          name: material.name,
-          width_ft: w,
-          length_ft: l,
-          allowance_ft: allowance,
-          purchase_price: price,
-          gsm: gsm,
-          finishing: fin,
-          specification: material.specification,
-          material_spec: (material as any)?.material_spec,
-        })
-        const key = createInventoryGroupingKey(attrs)
-        const sft = count > 0 ? count * attrs.width_ft * attrs.length_ft : (Number(rs.total_sft ?? rs.sft) || 0)
-
-        if (count > 0) {
-          const rollCost = attrs.purchase_price > 0
-            ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
-            : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
-          const itemVal = count * rollCost
-
-          if (!map.has(key)) {
-            map.set(key, {
-              key,
-              name: attrs.name,
-              width_ft: attrs.width_ft,
-              length_ft: attrs.length_ft,
-              allowance_ft: attrs.allowance_ft,
-              purchase_price: attrs.purchase_price,
-              gsm: attrs.gsm,
-              finishing: attrs.finishing,
-              roll_count: count,
-              total_sft: sft,
-              unit_cost: attrs.purchase_price,
-              total_valuation: itemVal,
-              label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
-            })
-          } else {
-            const existing = map.get(key)!
-            existing.roll_count += count
-            existing.total_sft += sft
-            existing.total_valuation = (existing.total_valuation || 0) + itemVal
-          }
-          totalRolls += count
-          totalSft += sft
-          totalValuationCalculated += itemVal
-        }
-      }
-      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
-
-      if (rollItems.length === 0 && currentStock > 0) {
-        const configuredList = rawRollSizes.map((rs: any) => {
-          const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
-          const allowance = rs.extra_allowance !== undefined
-            ? Number(rs.extra_allowance)
-            : rs.allowance !== undefined
-            ? Number(rs.allowance)
-            : rs.allowance_ft !== undefined
-            ? Number(rs.allowance_ft)
-            : globalAllowance
-          const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
-            ? Number(rs.width_ft)
-            : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
-          const l = Number(rs.length || rs.length_ft || standardLength)
-          const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
-          const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
-          const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
-
-          const attrs = normalizeInventoryGroupAttributes({
-            name: material.name,
-            width_ft: w,
-            length_ft: l,
-            allowance_ft: allowance,
-            purchase_price: price,
-            gsm: gsm,
-            finishing: fin,
-            specification: material.specification,
-            material_spec: (material as any)?.material_spec,
-          })
-          const area = Math.round(attrs.width_ft * attrs.length_ft * 100) / 100
-          return { w: attrs.width_ft, l: attrs.length_ft, area, attrs, key: createInventoryGroupingKey(attrs) }
-        })
-
-        const sumSetArea = configuredList.reduce((sum, item) => sum + item.area, 0)
         if (configuredList.length > 1 && sumSetArea > 0) {
           const sets = Math.floor(currentStock / sumSetArea)
           const remainder = currentStock - (sets * sumSetArea)
@@ -2469,12 +2418,13 @@ export function getMaterialWarehouseStockBreakdown(
             let remainderTargetIdx = -1
             if (remainder > 0) {
               remainderTargetIdx = configuredList.findIndex(
-                (item) => item.area > 0 && Math.abs(remainder % item.area) < 1
+                (item) => item.width_ft * item.length_ft > 0 && Math.abs(remainder % (item.width_ft * item.length_ft)) < 1
               )
               if (remainderTargetIdx === -1) {
                 let minDiff = Infinity
                 for (let i = 0; i < configuredList.length; i++) {
-                  const diff = Math.abs(configuredList[i].area - remainder)
+                  const area = configuredList[i].width_ft * configuredList[i].length_ft
+                  const diff = Math.abs(area - remainder)
                   if (diff < minDiff) {
                     minDiff = diff
                     remainderTargetIdx = i
@@ -2485,47 +2435,29 @@ export function getMaterialWarehouseStockBreakdown(
 
             for (let idx = 0; idx < configuredList.length; idx++) {
               const item = configuredList[idx]
-              const extra = (idx === remainderTargetIdx && remainder > (item.area / 4))
-                ? Math.max(1, Math.round(remainder / item.area))
+              const area = item.width_ft * item.length_ft
+              const extra = (idx === remainderTargetIdx && remainder > (area / 4))
+                ? Math.max(1, Math.round(remainder / area))
                 : 0
               const count = sets + extra
-              if (count > 0) {
-                const sft = count * item.area
-                const rollCost = item.attrs.purchase_price > 0
-                  ? (item.attrs.purchase_price > 150 ? item.attrs.purchase_price : item.attrs.purchase_price * item.area)
-                  : (rawCost > 150 ? rawCost : rawCost * item.area)
-                const itemVal = count * rollCost
-
-                rollItems.push({
-                  key: item.key,
-                  name: item.attrs.name,
-                  width_ft: item.w,
-                  length_ft: item.l,
-                  allowance_ft: item.attrs.allowance_ft,
-                  purchase_price: item.attrs.purchase_price,
-                  gsm: item.attrs.gsm,
-                  finishing: item.attrs.finishing,
-                  roll_count: count,
-                  total_sft: sft,
-                  unit_cost: item.attrs.purchase_price,
-                  total_valuation: itemVal,
-                  label: `${item.w}ft × ${item.l}ft`,
-                })
-                totalRolls += count
-                totalSft += sft
-                totalValuationCalculated += itemVal
-              }
+              item.roll_count = count
+              item.total_sft = count * area
+              const pPrice = Number(item.purchase_price || 0)
+              const rollCost = pPrice > 0
+                ? (pPrice > 150 ? pPrice : pPrice * area)
+                : (rawCost > 150 ? rawCost : rawCost * area)
+              item.total_valuation = count * rollCost
             }
           } else {
-            // sets === 0: currentStock is smaller than the sum of all configured sizes
-            // Allocate ONLY to the single best matching configured size
+            // sets === 0: currentStock is smaller than sum of all sizes
             let bestIdx = configuredList.findIndex(
-              (item) => item.area > 0 && (Math.abs(currentStock % item.area) < 1 || Math.abs(item.area - currentStock) < 1)
+              (item) => (item.width_ft * item.length_ft > 0) && (Math.abs(currentStock % (item.width_ft * item.length_ft)) < 1 || Math.abs((item.width_ft * item.length_ft) - currentStock) < 1)
             )
             if (bestIdx === -1) {
               let minDiff = Infinity
               for (let i = 0; i < configuredList.length; i++) {
-                const diff = Math.abs(configuredList[i].area - currentStock)
+                const area = configuredList[i].width_ft * configuredList[i].length_ft
+                const diff = Math.abs(area - currentStock)
                 if (diff < minDiff) {
                   minDiff = diff
                   bestIdx = i
@@ -2535,60 +2467,34 @@ export function getMaterialWarehouseStockBreakdown(
             if (bestIdx === -1) bestIdx = 0
 
             const bestItem = configuredList[bestIdx]
-            const count = bestItem.area > 0 ? Math.max(1, Math.round(currentStock / bestItem.area)) : 1
-            const sft = currentStock
-            const rollCost = bestItem.attrs.purchase_price > 0
-              ? (bestItem.attrs.purchase_price > 150 ? bestItem.attrs.purchase_price : bestItem.attrs.purchase_price * (bestItem.w * bestItem.l))
-              : (rawCost > 150 ? rawCost : rawCost * (bestItem.w * bestItem.l))
-            const itemVal = count * rollCost
-
-            rollItems.push({
-              key: bestItem.key,
-              name: bestItem.attrs.name,
-              width_ft: bestItem.w,
-              length_ft: bestItem.l,
-              allowance_ft: bestItem.attrs.allowance_ft,
-              purchase_price: bestItem.attrs.purchase_price,
-              gsm: bestItem.attrs.gsm,
-              finishing: bestItem.attrs.finishing,
-              roll_count: count,
-              total_sft: sft,
-              unit_cost: bestItem.attrs.purchase_price,
-              total_valuation: itemVal,
-              label: `${bestItem.w}ft × ${bestItem.l}ft`,
-            })
-            totalRolls += count
-            totalSft += sft
-            totalValuationCalculated += itemVal
+            const bestArea = bestItem.width_ft * bestItem.length_ft
+            const count = bestArea > 0 ? Math.max(1, Math.round(currentStock / bestArea)) : 1
+            bestItem.roll_count = count
+            bestItem.total_sft = currentStock
+            const bestPrice = Number(bestItem.purchase_price || 0)
+            const rollCost = bestPrice > 0
+              ? (bestPrice > 150 ? bestPrice : bestPrice * bestArea)
+              : (rawCost > 150 ? rawCost : rawCost * bestArea)
+            bestItem.total_valuation = count * rollCost
           }
-        } else if (configuredList.length > 0) {
+        } else if (configuredList.length === 1) {
           const item = configuredList[0]
-          const count = item.area > 0 ? Math.max(1, Math.round(currentStock / item.area)) : 1
-          const rollCost = item.attrs.purchase_price > 0
-            ? (item.attrs.purchase_price > 150 ? item.attrs.purchase_price : item.attrs.purchase_price * item.area)
-            : (rawCost > 150 ? rawCost : rawCost * item.area)
-          const itemVal = count * rollCost
-
-          rollItems = [{
-            key: item.key,
-            name: item.attrs.name,
-            width_ft: item.w,
-            length_ft: item.l,
-            allowance_ft: item.attrs.allowance_ft,
-            purchase_price: item.attrs.purchase_price,
-            gsm: item.attrs.gsm,
-            finishing: item.attrs.finishing,
-            roll_count: count,
-            total_sft: currentStock,
-            unit_cost: item.attrs.purchase_price,
-            total_valuation: itemVal,
-            label: `${item.w}ft × ${item.l}ft`,
-          }]
-          totalRolls = count
-          totalSft = currentStock
-          totalValuationCalculated = itemVal
+          const area = item.width_ft * item.length_ft
+          const count = area > 0 ? Math.max(1, Math.round(currentStock / area)) : 1
+          item.roll_count = count
+          item.total_sft = currentStock
+          const pPrice = Number(item.purchase_price || 0)
+          const rollCost = pPrice > 0
+            ? (pPrice > 150 ? pPrice : pPrice * area)
+            : (rawCost > 150 ? rawCost : rawCost * area)
+          item.total_valuation = count * rollCost
         }
       }
+
+      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
+      totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
+      totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
+      totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
     } else {
       const effectiveInferredW = (globalAllowance > 0 && Math.floor(inferredWidth) === inferredWidth) ? Math.round((inferredWidth + globalAllowance) * 100) / 100 : inferredWidth
       const areaPerRoll = effectiveInferredW * standardLength

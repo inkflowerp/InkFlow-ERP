@@ -277,6 +277,7 @@ function UnifiedInventoryContent() {
   const [selectedRollStatus, setSelectedRollStatus] = useState('all')
   const [selectedPoStatus, setSelectedPoStatus] = useState('all')
   const [selectedLedgerType, setSelectedLedgerType] = useState('all')
+  const [stockStatusFilter, setStockStatusFilter] = useState<'all' | 'available' | 'low_stock' | 'out_of_stock'>('all')
   const [notification, setNotification] = useState<string | null>(null)
 
   // Modals state
@@ -635,8 +636,14 @@ function UnifiedInventoryContent() {
   const filteredInventoryGroupRows = useMemo(() => {
     return inventoryGroupRows.filter((row) => {
       const matchCat = selectedCategory === 'all' || row.category === selectedCategory
+      const matchStatus =
+        stockStatusFilter === 'all' ||
+        (stockStatusFilter === 'available' && row.status === 'available') ||
+        (stockStatusFilter === 'low_stock' && row.status === 'low_stock') ||
+        (stockStatusFilter === 'out_of_stock' && row.status === 'out_of_stock')
+
+      if (!matchCat || !matchStatus) return false
       const q = search.trim().toLowerCase()
-      if (!matchCat) return false
       if (!q) return true
 
       const matchBasic =
@@ -662,7 +669,7 @@ function UnifiedInventoryContent() {
 
       return matchBasic || matchSpec
     })
-  }, [inventoryGroupRows, selectedCategory, search])
+  }, [inventoryGroupRows, selectedCategory, stockStatusFilter, search])
 
   // Filtered Materials
   const filteredMaterials = useMemo(() => {
@@ -1127,18 +1134,29 @@ function UnifiedInventoryContent() {
     })
   }, [ledger, selectedLedgerType, search])
 
-  // Low stock materials count
+  // Low stock materials count (accurate across rolls and non-rolls)
   const lowStockMaterials = useMemo(() => {
     return materials.filter((m) => {
+      const breakdown = getMaterialWarehouseStockBreakdown(m, rolls)
       const threshold = Number(m.reorder_level || m.min_stock_level || 0)
-      return threshold > 0 && Number(m.current_stock || 0) <= threshold
+      if (threshold <= 0) return false
+      if (breakdown.is_roll) {
+        return breakdown.total_rolls > 0 ? breakdown.total_rolls <= threshold : Number(m.current_stock || 0) <= threshold
+      }
+      return Number(m.current_stock || 0) <= threshold
     })
-  }, [materials])
+  }, [materials, rolls])
 
   // Out of stock materials count
   const outOfStockMaterials = useMemo(() => {
-    return materials.filter((m) => Number(m.current_stock || 0) <= 0)
-  }, [materials])
+    return materials.filter((m) => {
+      const breakdown = getMaterialWarehouseStockBreakdown(m, rolls)
+      if (breakdown.is_roll) {
+        return breakdown.total_rolls <= 0 && Number(m.current_stock || 0) <= 0
+      }
+      return Number(m.current_stock || 0) <= 0
+    })
+  }, [materials, rolls])
 
   // Pending Inward POs for Receiving
   const pendingInwardPOs = useMemo(() => {
@@ -1308,12 +1326,14 @@ function UnifiedInventoryContent() {
           rolls={rolls}
           pendingInwardPOs={pendingInwardPOs}
           remnants={remnants}
-          activeFilter={currentView}
+          activeFilter={stockStatusFilter !== 'all' ? stockStatusFilter : currentView}
           onFilterClick={(key) => {
             if (key === 'rolls' || key === 'receiving' || key === 'remnants') {
               setViewTab(key as any)
+              setStockStatusFilter('all')
             } else if (key === 'low_stock' || key === 'out_of_stock' || key === 'all') {
               setViewTab('materials')
+              setStockStatusFilter(key === 'all' ? 'all' : key as any)
             }
           }}
         />
@@ -1350,7 +1370,10 @@ function UnifiedInventoryContent() {
         {/* ========================================================= */}
         <InventoryTabsNavigation
           currentView={currentView}
-          onSelectTab={(tab) => setViewTab(tab)}
+          onSelectTab={(tab) => {
+            setViewTab(tab)
+            if (tab !== 'materials') setStockStatusFilter('all')
+          }}
           materialsCount={inventoryGroupRows.length}
           readyProductsCount={readyProducts.length}
           rollsCount={totalPhysicalRollsCount || rolls.length}
@@ -1371,7 +1394,7 @@ function UnifiedInventoryContent() {
         {currentView === 'materials' && (
           <div className="space-y-4">
             {/* Filter & Search Bar */}
-            <Card className="p-3.5">
+            <Card className="p-3.5 space-y-3">
               <div className="flex flex-col md:flex-row items-center justify-between gap-3">
                 <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -1404,6 +1427,43 @@ function UnifiedInventoryContent() {
                     </Button>
                   ))}
                 </div>
+              </div>
+
+              {/* Status Filter Quick Tabs */}
+              <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800 text-xs flex-wrap">
+                <span className="text-[11px] font-semibold text-slate-500 mr-1">
+                  {isBn ? 'স্টক স্ট্যাটাস:' : 'Stock Status:'}
+                </span>
+                {[
+                  { id: 'all', label: isBn ? 'সকল আইটেম' : 'All Items', count: inventoryGroupRows.length },
+                  { id: 'available', label: isBn ? 'স্টকে আছে' : 'In Stock', count: inventoryGroupRows.filter(r => r.status === 'available').length },
+                  { id: 'low_stock', label: isBn ? 'কম স্টক' : 'Low Stock', count: inventoryGroupRows.filter(r => r.status === 'low_stock').length },
+                  { id: 'out_of_stock', label: isBn ? 'স্টক শেষ' : 'Out of Stock', count: inventoryGroupRows.filter(r => r.status === 'out_of_stock').length },
+                ].map((st) => (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => setStockStatusFilter(st.id as any)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border',
+                      stockStatusFilter === st.id
+                        ? st.id === 'out_of_stock'
+                          ? 'bg-rose-600 text-white border-rose-700 shadow-xs'
+                          : st.id === 'low_stock'
+                          ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
+                          : 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                    )}
+                  >
+                    <span>{st.label}</span>
+                    <span className={cn(
+                      'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black',
+                      stockStatusFilter === st.id ? 'bg-white/25 text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200'
+                    )}>
+                      {st.count}
+                    </span>
+                  </button>
+                ))}
               </div>
             </Card>
 
@@ -1495,7 +1555,14 @@ function UnifiedInventoryContent() {
                             </td>
                             <td className="py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap">
                               <div>
-                                <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
+                                <span className={cn(
+                                  'font-extrabold',
+                                  isOut
+                                    ? 'text-rose-600 dark:text-rose-400 font-bold'
+                                    : isLow
+                                    ? 'text-amber-600 dark:text-amber-400'
+                                    : 'text-emerald-700 dark:text-emerald-400'
+                                )}>
                                   {row.stock_display_primary}
                                 </span>
                                 {row.stock_display_secondary && (
