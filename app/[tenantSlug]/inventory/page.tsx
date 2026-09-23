@@ -499,14 +499,24 @@ function UnifiedInventoryContent() {
   // Filtered Rolls
   const filteredRolls = useMemo(() => {
     return rolls.filter((r) => {
-      const matchStatus = selectedRollStatus === 'all' || r.status === selectedRollStatus
+      const matchStatus =
+        selectedRollStatus === 'all' ||
+        r.status === selectedRollStatus ||
+        (selectedRollStatus === 'available' && (r.status === 'available' || r.status === 'in_warehouse' || !r.status)) ||
+        (selectedRollStatus === 'mounted' && (r.status === 'mounted' || r.status === 'in_use' || r.status === 'on_floor')) ||
+        (selectedRollStatus === 'depleted' && (r.status === 'depleted' || (r.remaining_length_ft != null && r.remaining_length_ft <= 0.5)))
       const q = search.trim().toLowerCase()
       const matchSearch =
         !q ||
         (r.roll_code && r.roll_code.toLowerCase().includes(q)) ||
         (r.roll_tag && r.roll_tag.toLowerCase().includes(q)) ||
         (r.material?.name && r.material.name.toLowerCase().includes(q)) ||
-        (r.location_name && r.location_name.toLowerCase().includes(q))
+        (r.material?.name_bn && r.material.name_bn.includes(q)) ||
+        (r.material?.sku && r.material.sku.toLowerCase().includes(q)) ||
+        (r.location_name && r.location_name.toLowerCase().includes(q)) ||
+        (r.mounted_machine_name && r.mounted_machine_name.toLowerCase().includes(q)) ||
+        (r.mounted_press_name && r.mounted_press_name.toLowerCase().includes(q)) ||
+        (r.batch_lot_number && r.batch_lot_number.toLowerCase().includes(q))
       return matchStatus && matchSearch
     })
   }, [rolls, selectedRollStatus, search])
@@ -1431,7 +1441,8 @@ function UnifiedInventoryContent() {
                               {roll.roll_code || roll.roll_tag || roll.id.slice(0, 8)}
                             </td>
                             <td className="py-3.5 px-4 font-medium text-slate-800 dark:text-slate-200">
-                              {roll.material?.name || 'Roll Media'}
+                              <div>{isBn && roll.material?.name_bn ? roll.material.name_bn : (roll.material?.name || 'Roll Media')}</div>
+                              {roll.material?.sku && <div className="text-[10px] text-slate-400 font-mono font-normal">{roll.material.sku}</div>}
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
                               {roll.width_ft} ft
@@ -1456,15 +1467,20 @@ function UnifiedInventoryContent() {
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                              {roll.status === 'available' ? (
+                              {roll.status === 'available' || roll.status === 'in_warehouse' || !roll.status ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap shadow-2xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                   <span>{isBn ? 'অ্যাভেইলেবল' : 'Available'}</span>
                                 </span>
-                              ) : roll.status === 'mounted' || roll.status === 'in_use' ? (
+                              ) : roll.status === 'mounted' || roll.status === 'in_use' || roll.status === 'on_floor' ? (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800 whitespace-nowrap shadow-2xs">
                                   <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 animate-pulse" />
                                   <span>{isBn ? 'মেশিনে মাউন্ট' : 'Mounted / In Use'}</span>
+                                </span>
+                              ) : roll.status === 'depleted' ? (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800 whitespace-nowrap shadow-2xs">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0" />
+                                  <span>{isBn ? 'শেষ হয়েছে' : 'Depleted'}</span>
                                 </span>
                               ) : (
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 whitespace-nowrap shadow-2xs">

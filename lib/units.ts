@@ -2032,7 +2032,7 @@ export function getMaterialWarehouseStockBreakdown(
  */
 export function formatFloorPieceDisplay(roll: any): string {
   if (!roll) return ''
-  const matName = roll.material?.name || roll.material_name || 'Substrate'
+  const matName = roll.material_name || roll.material?.name || 'Substrate'
   const width = Number(roll.width_ft || 3)
   const currentLen = Number(
     roll.current_length_ft ?? (roll.remaining_area_sft ? roll.remaining_area_sft / width : 0)

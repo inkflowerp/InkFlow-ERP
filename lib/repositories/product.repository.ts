@@ -688,6 +688,10 @@ export class ProductRepository {
           ? product.current_stock
           : product.stock !== undefined && product.stock !== null
           ? product.stock
+          : (product as any).initial_stock !== undefined && (product as any).initial_stock !== null
+          ? (product as any).initial_stock
+          : (product as any).initialStock !== undefined && (product as any).initialStock !== null
+          ? (product as any).initialStock
           : 0
       )
       const initialReorder = Number(
@@ -882,15 +886,7 @@ export class ProductRepository {
         updated_at: new Date().toISOString(),
       }
 
-      if (!isSupabaseConfigured()) {
-        if (isTestMode()) {
-          const testRecord: ProductRecord = enrichProductRecord({
-            id: product.id || `prd-test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            ...payload,
-          })
-          PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTS, testRecord, product.company_id)
-          return testRecord
-        }
+      if (!isSupabaseConfigured() && !isTestMode()) {
         throw new Error('Authoritative database connection is required to create a product.')
       }
 
@@ -952,7 +948,7 @@ export class ProductRepository {
             ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
             : rawPurchaseUnit || enriched.unit || 'pcs'
 
-          const matRec = {
+          const matRec: any = {
             id: enriched.id,
             company_id: enriched.company_id || product.company_id,
             sku: enriched.sku,
@@ -979,6 +975,49 @@ export class ProductRepository {
           }
           try {
             PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, matRec, product.company_id)
+            if (isRoll) {
+              const stockVal = initialStock > 0 ? initialStock : Number((enriched as any).initial_stock || (enriched as any).opening_stock || (enriched as any).stock || (enriched as any).current_stock || (matRec as any).current_stock || 0)
+              matRec.current_stock = stockVal
+              const wFt = Number(matRec.roll_width_ft || 3)
+              const lFt = Number(matRec.roll_length_ft || matRec.standard_roll_length_ft || 164)
+              const numR = Math.max(1, stockVal > 0 ? (computedPurchaseUnit === 'roll' ? Math.round(stockVal) : Math.ceil(stockVal / (wFt * lFt))) : 1)
+              const cleanSku = (matRec.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+              for (let i = 1; i <= numR; i++) {
+                const rollCode = numR === 1 ? `ROL-${cleanSku}-${wFt}FT` : `ROL-${cleanSku}-${wFt}FT-${String(i).padStart(2, '0')}`
+                const rollPayload: any = {
+                  id: `rol-${matRec.id.slice(0, 8)}-${i}-${Date.now().toString().slice(-4)}`,
+                  company_id: matRec.company_id || product.company_id,
+                  branch_id: null,
+                  location_id: null,
+                  location_name: 'Main Warehouse',
+                  material_id: matRec.id,
+                  roll_code: rollCode,
+                  roll_tag: rollCode,
+                  width_ft: wFt,
+                  initial_length_ft: lFt,
+                  current_length_ft: lFt,
+                  original_length_ft: lFt,
+                  remaining_length_ft: lFt,
+                  initial_area_sft: wFt * lFt,
+                  consumed_area_sft: 0,
+                  remaining_area_sft: wFt * lFt,
+                  current_area_sft: wFt * lFt,
+                  status: 'available',
+                  unit_cost: Number(matRec.average_cost || 0),
+                  total_cost: Number(matRec.average_cost || 0),
+                  material: {
+                    id: matRec.id,
+                    name: matRec.name,
+                    sku: matRec.sku,
+                    unit: matRec.unit,
+                    name_bn: matRec.name_bn || null,
+                  },
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, product.company_id)
+              }
+            }
           } catch {}
         }
 
@@ -1012,7 +1051,7 @@ export class ProductRepository {
               ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
               : rawPurchaseUnit || testRecord.unit || 'pcs'
 
-            PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, {
+            const matRecordPayload: any = {
               id: testRecord.id,
               company_id: testRecord.company_id,
               sku: testRecord.sku,
@@ -1036,7 +1075,52 @@ export class ProductRepository {
               purchase_price_per_sft: (testRecord.material_config as any)?.purchase_price_per_sft || (testRecord.pricing_formula as any)?.purchase_price_per_sft || null,
               production_width_allowance: testRecord.production_width_allowance || (testRecord.material_config as any)?.extra_width_allowance_ft || (testRecord.pricing_formula as any)?.production_width_allowance || 0,
               is_active: testRecord.is_active !== false,
-            }, product.company_id)
+            }
+            PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, matRecordPayload, product.company_id)
+
+            if (isRoll) {
+              const stockVal = initialStock > 0 ? initialStock : Number((testRecord as any).initial_stock || (testRecord as any).opening_stock || (testRecord as any).stock || (testRecord as any).current_stock || (matRecordPayload as any).current_stock || 0)
+              matRecordPayload.current_stock = stockVal
+              const wFt = Number(matRecordPayload.roll_width_ft || 3)
+              const lFt = Number(matRecordPayload.roll_length_ft || matRecordPayload.standard_roll_length_ft || 164)
+              const numR = Math.max(1, stockVal > 0 ? (computedPurchaseUnit === 'roll' ? Math.round(stockVal) : Math.ceil(stockVal / (wFt * lFt))) : 1)
+              const cleanSku = (matRecordPayload.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+              for (let i = 1; i <= numR; i++) {
+                const rollCode = numR === 1 ? `ROL-${cleanSku}-${wFt}FT` : `ROL-${cleanSku}-${wFt}FT-${String(i).padStart(2, '0')}`
+                const rollPayload: any = {
+                  id: `rol-${matRecordPayload.id.slice(0, 8)}-${i}-${Date.now().toString().slice(-4)}`,
+                  company_id: matRecordPayload.company_id || product.company_id,
+                  branch_id: null,
+                  location_id: null,
+                  location_name: 'Main Warehouse',
+                  material_id: matRecordPayload.id,
+                  roll_code: rollCode,
+                  roll_tag: rollCode,
+                  width_ft: wFt,
+                  initial_length_ft: lFt,
+                  current_length_ft: lFt,
+                  original_length_ft: lFt,
+                  remaining_length_ft: lFt,
+                  initial_area_sft: wFt * lFt,
+                  consumed_area_sft: 0,
+                  remaining_area_sft: wFt * lFt,
+                  current_area_sft: wFt * lFt,
+                  status: 'available',
+                  unit_cost: Number(matRecordPayload.average_cost || 0),
+                  total_cost: Number(matRecordPayload.average_cost || 0),
+                  material: {
+                    id: matRecordPayload.id,
+                    name: matRecordPayload.name,
+                    sku: matRecordPayload.sku,
+                    unit: matRecordPayload.unit,
+                    name_bn: matRecordPayload.name_bn || null,
+                  },
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                }
+                PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, product.company_id)
+              }
+            }
           }
 
           if (typeof window !== 'undefined') {

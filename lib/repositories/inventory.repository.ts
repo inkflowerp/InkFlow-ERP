@@ -2327,6 +2327,9 @@ export class InventoryRepository {
     companyId: string,
     options?: { materialId?: string; status?: string; locationId?: string }
   ): Promise<InventoryRollRecord[]> {
+    let rolls: InventoryRollRecord[] = []
+
+    // 1. Fetch from Supabase
     try {
       const supabase = await createClient()
       let query = (supabase as any)
@@ -2339,44 +2342,227 @@ export class InventoryRepository {
         query = query.eq('material_id', options.materialId)
       }
       if (options?.status && options.status !== 'all') {
-        query = query.eq('status', options.status)
+        if (options.status === 'available') {
+          query = query.in('status', ['available', 'in_warehouse'])
+        } else if (options.status === 'mounted') {
+          query = query.in('status', ['mounted', 'in_use', 'on_floor'])
+        } else {
+          query = query.eq('status', options.status)
+        }
       }
       if (options?.locationId) {
         query = query.eq('location_id', options.locationId)
       }
 
       const { data, error } = await query
-      if (!error && data) {
-        return (data || []) as unknown as InventoryRollRecord[]
+      if (!error && data && Array.isArray(data) && data.length > 0) {
+        rolls = data as unknown as InventoryRollRecord[]
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
-    return all.filter((r) => {
+    // 2. Fallback to Local Store if Supabase returned no rolls
+    if (!rolls || rolls.length === 0) {
+      const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+      rolls = all.filter((r) => {
+        if (r.company_id && r.company_id !== companyId) return false
+        if (options?.materialId && r.material_id !== options.materialId) return false
+        if (options?.status && options.status !== 'all') {
+          if (options.status === 'available' && (r.status === 'available' || r.status === 'in_warehouse' || !r.status)) return true
+          if (options.status === 'mounted' && (r.status === 'mounted' || r.status === 'in_use' || r.status === 'on_floor')) return true
+          if (options.status === 'depleted' && (r.status === 'depleted' || (r.remaining_length_ft != null && r.remaining_length_ft <= 0.5))) return true
+          if (r.status !== options.status) return false
+        }
+        if (options?.locationId && r.location_id !== options.locationId) return false
+        return true
+      })
+    }
+
+    // 3. Auto-populate / Synchronize Physical Rolls for roll materials that don't have roll records yet
+    try {
+      const materials = await this.getMaterials(companyId)
+      const existingMaterialIdsWithRolls = new Set(rolls.map((r) => r.material_id))
+
+      const isRollMaterial = (m: MaterialRecord) => {
+        return Boolean(
+          m.is_roll ||
+          m.purchase_unit === 'roll' ||
+          m.unit === 'roll' ||
+          (m.roll_width_ft && Number(m.roll_width_ft) > 0) ||
+          (m.category && ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'paper_roll', 'fabric', 'film', 'roll_media', 'roll'].some((c) => m.category.toLowerCase().includes(c))) ||
+          (m.name && ['flex', 'vinyl', 'banner', 'sticker', 'canvas', 'mesh', 'roll', 'sav'].some((c) => m.name.toLowerCase().includes(c)))
+        )
+      }
+
+      const rollMaterials = materials.filter(isRollMaterial)
+
+      for (const m of rollMaterials) {
+        if (options?.materialId && m.id !== options.materialId) continue
+
+        // If rolls already exist for this material, do not duplicate
+        if (existingMaterialIdsWithRolls.has(m.id)) continue
+
+        const widthFt = Number(
+          m.roll_width_ft ||
+          m.width ||
+          (m.name?.toLowerCase().includes('10ft') || m.name?.toLowerCase().includes('10 ft') ? 10 :
+           m.name?.toLowerCase().includes('8ft') || m.name?.toLowerCase().includes('8 ft') ? 8 :
+           m.name?.toLowerCase().includes('6ft') || m.name?.toLowerCase().includes('6 ft') ? 6 :
+           m.name?.toLowerCase().includes('5ft') || m.name?.toLowerCase().includes('5 ft') ? 5 :
+           m.name?.toLowerCase().includes('4ft') || m.name?.toLowerCase().includes('4 ft') ? 4 : 3.2)
+        )
+        const lengthFt = Number(m.roll_length_ft || m.length || m.standard_roll_length_ft || 164)
+        const rollArea = Math.round(widthFt * lengthFt * 100) / 100
+        const stockNum = Number(m.current_stock || 0)
+        if (stockNum <= 0) continue
+
+        let numRolls = 1
+        if (m.purchase_unit === 'roll' || m.unit === 'roll') {
+          numRolls = Math.max(1, Math.round(stockNum))
+        } else if (rollArea > 0) {
+          numRolls = Math.max(1, Math.ceil(stockNum / rollArea))
+        }
+
+        const cleanSku = (m.sku || 'MAT').replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
+        const lot = Date.now().toString().slice(-4)
+
+        for (let i = 1; i <= numRolls; i++) {
+          const rollCode = numRolls === 1
+            ? `ROL-${cleanSku}-${widthFt}FT`
+            : `ROL-${cleanSku}-${widthFt}FT-${String(i).padStart(2, '0')}`
+
+          const rollPayload: InventoryRollRecord = {
+            id: `rol-init-${m.id.slice(0, 8)}-${i}-${lot}`,
+            company_id: companyId,
+            branch_id: m.branch_id || null,
+            location_id: null,
+            location_name: m.location || 'Main Warehouse',
+            material_id: m.id,
+            roll_code: rollCode,
+            roll_tag: rollCode,
+            width_ft: widthFt,
+            initial_length_ft: lengthFt,
+            current_length_ft: lengthFt,
+            original_length_ft: lengthFt,
+            remaining_length_ft: lengthFt,
+            initial_area_sft: rollArea,
+            consumed_area_sft: 0,
+            remaining_area_sft: rollArea,
+            current_area_sft: rollArea,
+            status: 'available',
+            unit_cost: Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0),
+            total_cost: Number(m.average_cost || m.last_purchase_price || m.cost_per_unit || 0),
+            material: {
+              id: m.id,
+              name: m.name,
+              sku: m.sku,
+              unit: m.unit,
+              name_bn: m.name_bn || null,
+            } as any,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }
+
+          try {
+            const supabase = await createClient()
+            const dbInsert = { ...rollPayload }
+            delete (dbInsert as any).material
+            await (supabase as any).from('inventory_rolls').insert(dbInsert)
+          } catch {}
+
+          PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollPayload, companyId)
+          rolls.push(rollPayload)
+          existingMaterialIdsWithRolls.add(m.id)
+        }
+      }
+    } catch {}
+
+    // 4. Enrich Material metadata on all rolls
+    try {
+      const materials = await this.getMaterials(companyId)
+      const matMap = new Map<string, MaterialRecord>()
+      for (const m of materials) {
+        matMap.set(m.id, m)
+        if (m.sku) matMap.set(m.sku.toLowerCase(), m)
+      }
+
+      for (const r of rolls) {
+        if (!r.material || !r.material.name || r.material.name === 'Roll Media') {
+          const mat = matMap.get(r.material_id) || (r.roll_code ? matMap.get(r.roll_code.toLowerCase()) : undefined)
+          if (mat) {
+            r.material = {
+              id: mat.id,
+              name: mat.name,
+              sku: mat.sku,
+              unit: mat.unit,
+              name_bn: mat.name_bn || null,
+            } as any
+          }
+        }
+        if (r.current_length_ft == null) {
+          r.current_length_ft = Number(r.remaining_length_ft ?? (r.remaining_area_sft / (r.width_ft || 1)))
+        }
+        if (r.remaining_area_sft == null) {
+          r.remaining_area_sft = Number(r.current_area_sft ?? ((r.current_length_ft || 0) * (r.width_ft || 1)))
+        }
+      }
+    } catch {}
+
+    // 5. Final Filter pass
+    return rolls.filter((r) => {
       if (r.company_id && r.company_id !== companyId) return false
       if (options?.materialId && r.material_id !== options.materialId) return false
-      if (options?.status && options.status !== 'all' && r.status !== options.status) return false
+      if (options?.status && options.status !== 'all') {
+        if (options.status === 'available' && (r.status === 'available' || r.status === 'in_warehouse' || !r.status)) return true
+        if (options.status === 'mounted' && (r.status === 'mounted' || r.status === 'in_use' || r.status === 'on_floor')) return true
+        if (options.status === 'depleted' && (r.status === 'depleted' || (r.remaining_length_ft != null && r.remaining_length_ft <= 0.5))) return true
+        if (r.status !== options.status) return false
+      }
+      if (options?.locationId && r.location_id !== options.locationId) return false
       return true
     })
   }
 
-  static async getInventoryRollById(id: string, companyId: string): Promise<InventoryRollRecord | null> {
+  static async getInventoryRollById(id: string, companyId?: string): Promise<InventoryRollRecord | null> {
+    let roll: InventoryRollRecord | null = null
     try {
       const supabase = await createClient()
-      const { data, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('inventory_rolls')
         .select('*, material:materials(id, name, sku, unit)')
         .eq('id', id)
-        .eq('company_id', companyId)
-        .maybeSingle()
+
+      if (companyId) {
+        query = query.eq('company_id', companyId)
+      }
+
+      const { data, error } = await query.maybeSingle()
 
       if (!error && data) {
-        return data as unknown as InventoryRollRecord
+        roll = data as unknown as InventoryRollRecord
       }
     } catch {}
 
-    const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
-    return all.find((r) => r.id === id || r.roll_code === id || r.roll_tag === id) || null
+    if (!roll) {
+      const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
+      roll = all.find((r) => (r.id === id || r.roll_code === id || r.roll_tag === id) && (!companyId || !r.company_id || r.company_id === companyId)) || null
+    }
+
+    if (roll && (!roll.material || !roll.material.name || roll.material.name === 'Roll Media')) {
+      try {
+        const mat = await this.getMaterialById(roll.material_id, companyId || roll.company_id || '')
+        if (mat) {
+          roll.material = {
+            id: mat.id,
+            name: mat.name,
+            sku: mat.sku,
+            unit: mat.unit,
+            name_bn: mat.name_bn || null,
+          } as any
+        }
+      } catch {}
+    }
+
+    return roll
   }
 
   static async getPhysicalRollById(id: string, companyId: string): Promise<InventoryRollRecord | null> {
