@@ -4,7 +4,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
-import { MaterialRecord } from '../../types/inventory.types.ts'
+import type { MaterialRecord } from '../../types/inventory.types.ts'
 
 describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
   const testCompanyId = `test-roll-company-${Date.now()}`

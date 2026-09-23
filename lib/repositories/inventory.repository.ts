@@ -25,7 +25,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
-import { isMaterialProduct } from '../units.ts'
+import { isMaterialProduct, getMaterialWarehouseStockBreakdown } from '../units.ts'
 
 export class InventoryRepository {
   // ==========================================
@@ -2978,13 +2978,77 @@ export class InventoryRepository {
       throw new Error(`Material with ID ${params.material_id} not found.`)
     }
 
-    const widthFt = Number(params.width_ft) || 3
-    const lengthFt = Number(params.length_ft) || 164 // standard 50m roll = 164 ft
+    const breakdown = getMaterialWarehouseStockBreakdown(mat)
+    const isRollMedia = Boolean(breakdown.is_roll)
+    const rawPurchaseUnit = String(
+      breakdown.purchase_unit ||
+      mat.purchase_unit ||
+      (mat.material_config as any)?.purchase_unit ||
+      'pcs'
+    ).toLowerCase()
+    const consumptionUnit = String(
+      breakdown.consumption_unit ||
+      mat.unit ||
+      (mat as any).selling_unit ||
+      'pcs'
+    ).toLowerCase()
+
+    const isSheet =
+      rawPurchaseUnit === 'sheet' ||
+      ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some((c) =>
+        (mat.category || '').toLowerCase().includes(c)
+      )
+
+    const isPackBox = ['box', 'pack', 'carton', 'set'].includes(rawPurchaseUnit)
+
+    const isFluid =
+      ['bottle', 'can', 'liter', 'ltr'].includes(rawPurchaseUnit) ||
+      ['ink', 'fluid', 'solvent'].some((c) => (mat.category || '').toLowerCase().includes(c))
+
+    const widthFt = Number(params.width_ft) || (isRollMedia ? Number(mat.roll_width_ft || mat.width || 3) : 1)
+    const lengthFt = Number(params.length_ft) || (isRollMedia ? Number(mat.standard_roll_length_ft || mat.roll_length_ft || mat.length || 164) : 1)
     const numRolls = Math.max(1, Number(params.quantity_rolls) || 1)
-    const initialAreaPerRoll = Math.round(widthFt * lengthFt * 100) / 100
-    const totalArea = Math.round(initialAreaPerRoll * numRolls * 100) / 100
-    const unitCost = Number(params.unit_cost ?? (mat as any).unit_cost ?? mat.average_cost ?? mat.last_purchase_price ?? 0)
-    const totalValuation = Math.round(totalArea * unitCost * 100) / 100
+
+    let singleUnitConsumptionQuantity = 1
+    if (isRollMedia) {
+      singleUnitConsumptionQuantity = Math.round(widthFt * lengthFt * 100) / 100
+    } else if (isSheet) {
+      const sheetW = Number((mat as any).sheet_width_ft || mat.width || 4)
+      const sheetL = Number((mat as any).sheet_length_ft || mat.length || 8)
+      const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
+      const isSft = ['sft', 'sqft'].includes(consumptionUnit)
+      singleUnitConsumptionQuantity = isSft ? sheetArea : 1
+    } else if (isPackBox) {
+      const packQty = Number(
+        (mat as any).pack_quantity ||
+          (mat.material_config as any)?.pack_quantity ||
+          (mat as any).conversion_factor ||
+          (mat as any).conversion_ratio ||
+          1
+      )
+      singleUnitConsumptionQuantity = packQty > 1 ? packQty : 1
+    } else if (isFluid) {
+      const isMl = consumptionUnit === 'ml'
+      const vol = Number(
+        (mat as any).liquid_volume_capacity
+          ? String((mat as any).liquid_volume_capacity).replace(/[^0-9.]/g, '')
+          : (mat.material_config as any)?.liquid_volume_ml || 1000
+      )
+      singleUnitConsumptionQuantity = isMl ? (vol > 0 ? vol : 1000) : 1
+    } else {
+      singleUnitConsumptionQuantity = 1
+    }
+
+    const totalConsumptionQuantity = Math.round(singleUnitConsumptionQuantity * numRolls * 100) / 100
+    const unitCost = Number(
+      params.unit_cost ??
+        (mat as any).unit_cost ??
+        mat.average_cost ??
+        mat.last_purchase_price ??
+        (mat as any).purchase_price ??
+        0
+    )
+    const totalValuation = Math.round(totalConsumptionQuantity * unitCost * 100) / 100
 
     const isMountedToMachine = params.destination !== 'floor_staging' && Boolean(params.machine_id)
     const machineId = isMountedToMachine ? params.machine_id || null : null
@@ -3008,129 +3072,196 @@ export class InventoryRepository {
       }
     }
     const storeRolls = Array.from(uniqueStoreRollsMap.values())
-    const matchingWarehouseRolls = storeRolls.filter(
-      (r) =>
-        (r.material_id === mat.id || (mat.sku && r.material?.sku && r.material.sku.toLowerCase() === mat.sku.toLowerCase())) &&
-        Number(r.width_ft) === widthFt &&
-        (r.status === 'in_warehouse' || r.status === 'available' || !r.status) &&
-        r.location_name !== 'Print Floor' &&
-        !r.mounted_machine_id &&
-        !r.mounted_machine_name &&
-        Number(r.initial_length_ft ?? r.current_length_ft ?? 0) >= lengthFt * 0.9
-    )
+    const matchingWarehouseRolls = isRollMedia
+      ? storeRolls.filter(
+          (r) =>
+            (r.material_id === mat.id || (mat.sku && r.material?.sku && r.material.sku.toLowerCase() === mat.sku.toLowerCase())) &&
+            Number(r.width_ft) === widthFt &&
+            (r.status === 'in_warehouse' || r.status === 'available' || !r.status) &&
+            r.location_name !== 'Print Floor' &&
+            !r.mounted_machine_id &&
+            !r.mounted_machine_name &&
+            Number(r.initial_length_ft ?? r.current_length_ft ?? 0) >= lengthFt * 0.9
+        )
+      : []
 
     const createdRolls: InventoryRollRecord[] = []
 
-    for (let i = 1; i <= numRolls; i++) {
-      let rollRecord: InventoryRollRecord
-      const rollStatus: 'mounted' | 'available' = (i === 1 && isMountedToMachine) ? 'mounted' : 'available'
-      const rollMachineId = (i === 1 && isMountedToMachine) ? machineId : null
-      const rollMachineName = (i === 1 && isMountedToMachine) ? machineName : null
+    if (isRollMedia) {
+      for (let i = 1; i <= numRolls; i++) {
+        let rollRecord: InventoryRollRecord
+        const rollStatus: 'mounted' | 'available' = (i === 1 && isMountedToMachine) ? 'mounted' : 'available'
+        const rollMachineId = (i === 1 && isMountedToMachine) ? machineId : null
+        const rollMachineName = (i === 1 && isMountedToMachine) ? machineName : null
 
-      if (matchingWarehouseRolls.length >= i) {
-        // Transition existing warehouse roll to floor / machine
-        const existingRoll = matchingWarehouseRolls[i - 1]
-        rollRecord = {
-          ...existingRoll,
-          status: rollStatus,
-          location_name: 'Print Floor',
-          mounted_machine_id: rollMachineId,
-          mounted_machine_name: rollMachineName,
-          mounted_press_name: rollMachineName,
-          mounted_at: rollStatus === 'mounted' ? new Date().toISOString() : null,
-          mounted_by_name: params.operator_name || 'Floor Operator',
-          updated_at: new Date().toISOString(),
-        }
+        if (matchingWarehouseRolls.length >= i) {
+          // Transition existing warehouse roll to floor / machine
+          const existingRoll = matchingWarehouseRolls[i - 1]
+          rollRecord = {
+            ...existingRoll,
+            status: rollStatus,
+            location_name: 'Print Floor',
+            mounted_machine_id: rollMachineId,
+            mounted_machine_name: rollMachineName,
+            mounted_press_name: rollMachineName,
+            mounted_at: rollStatus === 'mounted' ? new Date().toISOString() : null,
+            mounted_by_name: params.operator_name || 'Floor Operator',
+            updated_at: new Date().toISOString(),
+          }
 
-        try {
-          const supabase = await createClient()
-          await (supabase as any)
-            .from('inventory_rolls')
-            .update({
-              status: rollRecord.status,
-              location_name: 'Print Floor',
-              mounted_machine_id: rollMachineId,
-              mounted_machine_name: rollMachineName,
-              updated_at: rollRecord.updated_at,
-            })
-            .eq('id', rollRecord.id)
-        } catch {}
+          try {
+            const supabase = await createClient()
+            await (supabase as any)
+              .from('inventory_rolls')
+              .update({
+                status: rollRecord.status,
+                location_name: 'Print Floor',
+                mounted_machine_id: rollMachineId,
+                mounted_machine_name: rollMachineName,
+                updated_at: rollRecord.updated_at,
+              })
+              .eq('id', rollRecord.id)
+          } catch {}
 
-        PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord, companyId)
-        PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord)
-      } else {
-        // Create new discrete physical roll on floor
-        const rollId = `roll-${timestamp}-${i}-${Math.random().toString(36).substring(2, 6)}`
-        let rollTag: string
-        if (params.roll_code_custom && params.roll_code_custom.trim()) {
-          rollTag = numRolls === 1
-            ? params.roll_code_custom.trim()
-            : `${params.roll_code_custom.trim()}-${String(i).padStart(2, '0')}`
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord, companyId)
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord.id, rollRecord)
         } else {
-          rollTag = numRolls === 1
-            ? `ROL-${cleanSku}-${widthFt}FT-${baseLot}`
-            : `ROL-${cleanSku}-${widthFt}FT-${baseLot}-${String(i).padStart(2, '0')}`
-        }
+          // Create new discrete physical roll on floor
+          const rollId = `roll-${timestamp}-${i}-${Math.random().toString(36).substring(2, 6)}`
+          let rollTag: string
+          if (params.roll_code_custom && params.roll_code_custom.trim()) {
+            rollTag = numRolls === 1
+              ? params.roll_code_custom.trim()
+              : `${params.roll_code_custom.trim()}-${String(i).padStart(2, '0')}`
+          } else {
+            rollTag = numRolls === 1
+              ? `ROL-${cleanSku}-${widthFt}FT-${baseLot}`
+              : `ROL-${cleanSku}-${widthFt}FT-${baseLot}-${String(i).padStart(2, '0')}`
+          }
 
-        rollRecord = {
-          id: rollId,
-          company_id: companyId,
-          branch_id: params.branch_id || null,
-          location_id: params.location_id || null,
-          location_name: 'Print Floor',
-          material_id: mat.id,
-          roll_code: rollTag,
-          roll_tag: rollTag,
-          width_ft: widthFt,
-          initial_length_ft: lengthFt,
-          current_length_ft: lengthFt,
-          initial_area_sft: initialAreaPerRoll,
-          consumed_area_sft: 0,
-          remaining_area_sft: initialAreaPerRoll,
-          current_area_sft: initialAreaPerRoll,
-          status: rollStatus,
-          mounted_machine_id: rollMachineId,
-          mounted_machine_name: rollMachineName,
-          mounted_press_name: rollMachineName,
-          mounted_at: rollStatus === 'mounted' ? new Date().toISOString() : null,
-          mounted_by_name: params.operator_name || 'Floor Operator',
-          unit_cost: unitCost,
-          total_cost: Math.round(initialAreaPerRoll * unitCost * 100) / 100,
-          notes: params.notes || `Requisitioned for Print Floor Workstation [${machineName || 'Floor Staging'}]`,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          material: mat,
-        }
-
-        try {
-          const supabase = await createClient()
-          await (supabase as any).from('inventory_rolls').insert({
-            id: rollRecord.id,
+          rollRecord = {
+            id: rollId,
             company_id: companyId,
             branch_id: params.branch_id || null,
+            location_id: params.location_id || null,
+            location_name: 'Print Floor',
             material_id: mat.id,
-            roll_tag: rollRecord.roll_tag,
-            roll_code: rollRecord.roll_code,
+            roll_code: rollTag,
+            roll_tag: rollTag,
             width_ft: widthFt,
             initial_length_ft: lengthFt,
             current_length_ft: lengthFt,
-            initial_area_sft: initialAreaPerRoll,
-            remaining_area_sft: initialAreaPerRoll,
+            initial_area_sft: singleUnitConsumptionQuantity,
             consumed_area_sft: 0,
-            status: rollRecord.status,
+            remaining_area_sft: singleUnitConsumptionQuantity,
+            current_area_sft: singleUnitConsumptionQuantity,
+            status: rollStatus,
             mounted_machine_id: rollMachineId,
             mounted_machine_name: rollMachineName,
-            unit_cost: rollRecord.unit_cost,
-            total_cost: rollRecord.total_cost,
-            notes: rollRecord.notes,
-          })
-        } catch {}
+            mounted_press_name: rollMachineName,
+            mounted_at: rollStatus === 'mounted' ? new Date().toISOString() : null,
+            mounted_by_name: params.operator_name || 'Floor Operator',
+            unit_cost: unitCost,
+            total_cost: Math.round(singleUnitConsumptionQuantity * unitCost * 100) / 100,
+            notes: params.notes || `Requisitioned for Print Floor Workstation [${machineName || 'Floor Staging'}]`,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            material: mat,
+          }
 
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord, companyId)
-        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord)
+          try {
+            const supabase = await createClient()
+            await (supabase as any).from('inventory_rolls').insert({
+              id: rollRecord.id,
+              company_id: companyId,
+              branch_id: params.branch_id || null,
+              material_id: mat.id,
+              roll_tag: rollRecord.roll_tag,
+              roll_code: rollRecord.roll_code,
+              width_ft: widthFt,
+              initial_length_ft: lengthFt,
+              current_length_ft: lengthFt,
+              initial_area_sft: singleUnitConsumptionQuantity,
+              remaining_area_sft: singleUnitConsumptionQuantity,
+              consumed_area_sft: 0,
+              status: rollRecord.status,
+              mounted_machine_id: rollMachineId,
+              mounted_machine_name: rollMachineName,
+              unit_cost: rollRecord.unit_cost,
+              total_cost: rollRecord.total_cost,
+              notes: rollRecord.notes,
+            })
+          } catch {}
+
+          PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord, companyId)
+          PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, rollRecord)
+        }
+
+        createdRolls.push(rollRecord)
+      }
+    } else {
+      // Non-roll substrate / discrete piece / sheet / fluid allocated to floor
+      const tagPrefix = isSheet ? 'SHT' : isPackBox ? 'BOX' : isFluid ? 'FLUID' : 'MAT'
+      const rollTag = params.roll_code_custom?.trim() || `${tagPrefix}-${cleanSku}-${baseLot}`
+      const rollId = `floor-item-${timestamp}-${Math.random().toString(36).substring(2, 6)}`
+
+      const floorRecord: InventoryRollRecord = {
+        id: rollId,
+        company_id: companyId,
+        branch_id: params.branch_id || null,
+        location_id: params.location_id || null,
+        location_name: 'Print Floor',
+        material_id: mat.id,
+        roll_code: rollTag,
+        roll_tag: rollTag,
+        width_ft: isSheet ? Number((mat as any).sheet_width_ft || mat.width || 4) : 1,
+        initial_length_ft: isSheet ? Number((mat as any).sheet_length_ft || mat.length || 8) : totalConsumptionQuantity,
+        current_length_ft: isSheet ? Number((mat as any).sheet_length_ft || mat.length || 8) : totalConsumptionQuantity,
+        initial_area_sft: totalConsumptionQuantity,
+        remaining_area_sft: totalConsumptionQuantity,
+        consumed_area_sft: 0,
+        current_area_sft: totalConsumptionQuantity,
+        status: isMountedToMachine ? 'mounted' : 'available',
+        mounted_machine_id: isMountedToMachine ? machineId : null,
+        mounted_machine_name: isMountedToMachine ? machineName : null,
+        mounted_press_name: isMountedToMachine ? machineName : null,
+        mounted_at: isMountedToMachine ? new Date().toISOString() : null,
+        mounted_by_name: params.operator_name || 'Floor Operator',
+        unit_cost: unitCost,
+        total_cost: Math.round(totalConsumptionQuantity * unitCost * 100) / 100,
+        notes: params.notes || `Requisitioned ${numRolls} ${rawPurchaseUnit}(s) for Print Floor`,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        material: mat,
       }
 
-      createdRolls.push(rollRecord)
+      try {
+        const supabase = await createClient()
+        await (supabase as any).from('inventory_rolls').insert({
+          id: floorRecord.id,
+          company_id: companyId,
+          branch_id: params.branch_id || null,
+          material_id: mat.id,
+          roll_tag: floorRecord.roll_tag,
+          roll_code: floorRecord.roll_code,
+          width_ft: floorRecord.width_ft,
+          initial_length_ft: floorRecord.initial_length_ft,
+          current_length_ft: floorRecord.current_length_ft,
+          initial_area_sft: floorRecord.initial_area_sft,
+          remaining_area_sft: floorRecord.remaining_area_sft,
+          consumed_area_sft: 0,
+          status: floorRecord.status,
+          mounted_machine_id: floorRecord.mounted_machine_id,
+          mounted_machine_name: floorRecord.mounted_machine_name,
+          unit_cost: floorRecord.unit_cost,
+          total_cost: floorRecord.total_cost,
+          notes: floorRecord.notes,
+        })
+      } catch {}
+
+      PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord, companyId)
+      PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, floorRecord)
+      createdRolls.push(floorRecord)
     }
 
     const primaryRoll = createdRolls[0]
@@ -3140,47 +3271,49 @@ export class InventoryRepository {
       try {
         await MachineryRepository.updateActiveMountedRoll(machineId, companyId, {
           id: primaryRoll.id,
-          tag: primaryRoll.roll_code || primaryRoll.roll_tag || `Roll #${primaryRoll.id.slice(0, 8)}`,
+          tag: primaryRoll.roll_code || primaryRoll.roll_tag || `Item #${primaryRoll.id.slice(0, 8)}`,
         })
       } catch {}
     }
 
     // Decrement specific size group count in material.roll_sizes or material_config.roll_sizes
-    try {
-      const allMats = [
-        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
-        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
-        ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
-        ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
-      ]
-      const matIdx = allMats.findIndex((m) => m && m.id === mat.id)
-      if (matIdx >= 0) {
-        const targetMat = allMats[matIdx]
-        const rawSizes = targetMat.roll_sizes || (targetMat.material_config as any)?.roll_sizes || []
-        if (Array.isArray(rawSizes) && rawSizes.length > 0) {
-          const updatedSizes = rawSizes.map((s: any) => {
-            if (Number(s.width || s.width_ft) === widthFt) {
-              const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
-              const newCount = Math.max(0, prevCount - numRolls)
-              return {
-                ...s,
-                quantity: newCount,
-                stock_qty: newCount,
-                stock: newCount,
-                roll_count: newCount,
+    if (isRollMedia) {
+      try {
+        const allMats = [
+          ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
+          ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, companyId) || []),
+          ...(PrintERPDataStore.get<MaterialRecord[]>(STORAGE_KEYS.MATERIALS) || []),
+          ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
+        ]
+        const matIdx = allMats.findIndex((m) => m && m.id === mat.id)
+        if (matIdx >= 0) {
+          const targetMat = allMats[matIdx]
+          const rawSizes = targetMat.roll_sizes || (targetMat.material_config as any)?.roll_sizes || []
+          if (Array.isArray(rawSizes) && rawSizes.length > 0) {
+            const updatedSizes = rawSizes.map((s: any) => {
+              if (Number(s.width || s.width_ft) === widthFt) {
+                const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
+                const newCount = Math.max(0, prevCount - numRolls)
+                return {
+                  ...s,
+                  quantity: newCount,
+                  stock_qty: newCount,
+                  stock: newCount,
+                  roll_count: newCount,
+                }
               }
+              return s
+            })
+            targetMat.roll_sizes = updatedSizes
+            if (targetMat.material_config) {
+              targetMat.material_config.roll_sizes = updatedSizes
             }
-            return s
-          })
-          targetMat.roll_sizes = updatedSizes
-          if (targetMat.material_config) {
-            targetMat.material_config.roll_sizes = updatedSizes
+            PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat, companyId)
+            PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat)
           }
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat, companyId)
-          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, targetMat.id, targetMat)
         }
-      }
-    } catch {}
+      } catch {}
+    }
 
     // Deduct raw material master balance from warehouse store & log ISSUE transaction
     await this.recordStockAdjustment({
@@ -3188,19 +3321,19 @@ export class InventoryRepository {
       branch_id: params.branch_id || null,
       material_id: mat.id,
       location_id: params.location_id || null,
-      quantity_change: -totalArea,
+      quantity_change: -totalConsumptionQuantity,
       transaction_type: 'ISSUE',
       unit_cost: unitCost,
       reference_type: 'PRINT_FLOOR_ROLL_ISSUE',
       reference_id: primaryRoll.id,
-      notes: `${numRolls} Master Roll(s) [${primaryRoll.roll_code}${numRolls > 1 ? ` ... (${numRolls} rolls)` : ''}] (${widthFt}ft × ${lengthFt}ft × ${numRolls} = ${totalArea} SFT) issued to Print Floor`,
+      notes: `${numRolls} ${rawPurchaseUnit.toUpperCase()}(s) [${primaryRoll.roll_code}${numRolls > 1 && isRollMedia ? ` ... (${numRolls} rolls)` : ''}] (${totalConsumptionQuantity} ${consumptionUnit.toUpperCase()}) issued to Print Floor`,
       performed_by_name: params.operator_name || 'Store Keeper',
     })
 
     return {
       roll: primaryRoll,
       rolls: createdRolls,
-      total_area_sft: totalArea,
+      total_area_sft: totalConsumptionQuantity,
       total_valuation: totalValuation,
       quantity_issued: numRolls,
     }

@@ -1,9 +1,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
-import { InventoryRepository } from '../../lib/repositories/inventory.repository'
-import { InventoryService } from '../../services/inventory.service'
-import { getMaterialWarehouseStockBreakdown } from '../../lib/units'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
+import { InventoryService } from '../../services/inventory.service.ts'
+import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 import type { MaterialRecord, InventoryLocationRecord, InventoryRollRecord } from '../../types/inventory.types'
 
 test('Direct Material Issue to Production — Auto Source Store & Purchase Unit Handling', async (t) => {
@@ -235,5 +235,47 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
     assert.strictEqual(breakdown.cost_per_purchase_unit, 18 * 492) // ৳8,856 / roll
     assert.strictEqual(breakdown.total_valuation, 4920 * 18)
   })
+
+  await t.test('6. Discrete piece item issue (30 pieces of X-Stand from 102 stock) deducts exactly 30 pieces without roll dimension inflation', async () => {
+    const standMatId = `mat-xstand-${Date.now()}`
+    const standMat: MaterialRecord = {
+      id: standMatId,
+      company_id: companyId,
+      sku: 'RP-49418',
+      name: 'X-Stand',
+      category: 'hardware_accessories',
+      unit: 'piece',
+      purchase_unit: 'piece',
+      current_stock: 102,
+      purchase_price: 350,
+      average_cost: 350,
+      is_roll: false,
+      is_active: true,
+    }
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat, companyId)
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, standMat)
+
+    const issueRes = await InventoryRepository.issueMasterRollsBatch({
+      company_id: companyId,
+      material_id: standMatId,
+      width_ft: 3,
+      length_ft: 164,
+      quantity_rolls: 30, // 30 pieces
+      destination: 'floor_staging',
+      operator_name: 'Floor Lead',
+      unit_cost: 350,
+    })
+
+    assert.ok(issueRes.roll)
+    assert.strictEqual(issueRes.quantity_issued, 30)
+    assert.strictEqual(issueRes.total_area_sft, 30) // Exactly 30 pieces
+    assert.strictEqual(issueRes.total_valuation, 30 * 350) // ৳10,500
+
+    const updatedStand = await InventoryRepository.getMaterialById(standMatId, companyId)
+    assert.ok(updatedStand)
+    assert.strictEqual(updatedStand.current_stock, 102 - 30) // 72 pieces remaining!
+  })
 })
+
 
