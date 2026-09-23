@@ -275,6 +275,14 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
     const updatedStand = await InventoryRepository.getMaterialById(standMatId, companyId)
     assert.ok(updatedStand)
     assert.strictEqual(updatedStand.current_stock, 102 - 30) // 72 pieces remaining!
+
+    // Verify issued material shows up in floor consumption & tracking
+    const floorConsumptions = await InventoryRepository.getFloorConsumptions(companyId)
+    const floorItem = floorConsumptions.find((f) => f.material_id === standMatId)
+    assert.ok(floorItem, 'Issued X-Stand material must be visible in floor consumption & tracking')
+    assert.strictEqual(floorItem.issued_quantity, 30)
+    assert.strictEqual(floorItem.remaining_floor_balance, 30)
+    assert.strictEqual(floorItem.status, 'on_floor')
   })
 })
 
