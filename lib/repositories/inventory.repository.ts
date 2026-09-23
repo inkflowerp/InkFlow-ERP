@@ -730,12 +730,12 @@ export class InventoryRepository {
         .single()
 
       if (!error && data) {
-        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, data)
+        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
         return data as unknown as MaterialRecord
       }
     } catch {}
 
-    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, payload)
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, payload, material.company_id)
     return payload as unknown as MaterialRecord
   }
 
@@ -764,7 +764,9 @@ export class InventoryRepository {
       }
     } catch {}
 
-    const updated = PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId)
+    const updated =
+      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId) ||
+      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload)
     return (updated || { id, company_id: companyId, ...payload }) as MaterialRecord
   }
 
@@ -3196,7 +3198,10 @@ export class InventoryRepository {
       notes: params.notes || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }
+      ...((params as any).allowance_ft !== undefined ? { allowance_ft: (params as any).allowance_ft } : {}),
+      ...((params as any).gsm !== undefined ? { gsm: (params as any).gsm } : {}),
+      ...((params as any).finishing !== undefined ? { finishing: (params as any).finishing } : {}),
+    } as any
 
     try {
       const supabase = await createClient()

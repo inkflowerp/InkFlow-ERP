@@ -29,7 +29,7 @@ import type {
   MasterPhysicalClassification,
 } from '../types/price-intelligence.types.ts'
 import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
-import { getMaterialWarehouseStockBreakdown, isMaterialProduct } from '../lib/units.ts'
+import { getMaterialWarehouseStockBreakdown, isMaterialProduct, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '../lib/units.ts'
 
 export class InventoryService {
   // ==========================================
@@ -165,6 +165,9 @@ export class InventoryService {
     size_label?: string | null
     width_ft?: number | null
     length_ft?: number | null
+    allowance_ft?: number | null
+    gsm?: number | null
+    finishing?: string | null
     physical_form?: MasterPhysicalClassification
     purchase_unit?: string | null
     challan_number?: string | null
@@ -320,7 +323,28 @@ export class InventoryService {
       performed_by_name: params.performed_by_name,
     })
 
-    // Discrete Physical Rolls Creation in Warehouse
+    // Discrete Physical Rolls Creation in Warehouse with Canonical 7-Attribute Metadata
+    const incomingUnitCost = params.unit_cost ? (pUnit === 'roll' ? params.unit_cost : params.unit_cost * areaPerUnitSft) : (material.average_cost ?? material.last_purchase_price ?? 0)
+    const incomingAllowance = params.allowance_ft !== undefined
+      ? Number(params.allowance_ft)
+      : (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : matchedConfigAllowance
+    const incomingGsm = Number((params as any)?.gsm ?? (material as any)?.gsm ?? (material as any)?.weight_gsm ?? 0)
+    const incomingFinishing = String((params as any)?.finishing ?? (material as any)?.default_finishing ?? (material as any)?.finish ?? 'none')
+
+    const incomingCanonicalAttrs = normalizeInventoryGroupAttributes({
+      name: material.name,
+      width_ft: widthFt,
+      nominal_width_ft: nominalWidthFt,
+      length_ft: lengthFt,
+      allowance_ft: incomingAllowance,
+      purchase_price: incomingUnitCost,
+      gsm: incomingGsm,
+      finishing: incomingFinishing,
+      specification: material.specification,
+      material_spec: (material as any)?.material_spec,
+    })
+    const incomingGroupKey = createInventoryGroupingKey(incomingCanonicalAttrs)
+
     const rollsCreated: InventoryRollRecord[] = []
     if (isRoll && (pUnit === 'roll' || params.quantity >= 1)) {
       const numRolls = Math.max(1, Math.round(params.quantity))
@@ -339,9 +363,13 @@ export class InventoryService {
             material_id: material.id,
             location_id: params.location_id,
             roll_code: rollCode,
-            width_ft: widthFt,
-            initial_length_ft: lengthFt,
-            unit_cost: params.unit_cost ? (pUnit === 'roll' ? params.unit_cost : params.unit_cost * areaPerUnitSft) : undefined,
+            width_ft: incomingCanonicalAttrs.width_ft,
+            initial_length_ft: incomingCanonicalAttrs.length_ft,
+            current_length_ft: incomingCanonicalAttrs.length_ft,
+            unit_cost: incomingCanonicalAttrs.purchase_price,
+            allowance_ft: incomingCanonicalAttrs.allowance_ft,
+            gsm: incomingCanonicalAttrs.gsm,
+            finishing: incomingCanonicalAttrs.finishing,
             supplier_id: params.supplier_id || null,
             batch_lot_number: params.batch_lot_number || null,
             status: 'in_warehouse',
@@ -353,38 +381,78 @@ export class InventoryService {
       }
     }
 
-    // Update material.roll_sizes with discrete quantity counts per size configuration
+    // Update material.roll_sizes with discrete quantity counts strictly per canonical 7-attribute grouping
     if (isRoll) {
       try {
-        const existingRollSizes: any[] = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
-          ? [...material.roll_sizes]
-          : Array.isArray((material.material_config as any)?.roll_sizes) && (material.material_config as any).roll_sizes.length > 0
-          ? [...(material.material_config as any).roll_sizes]
+        const freshMaterial = (await InventoryRepository.getMaterialById(material.id, params.company_id)) || material
+        const existingRollSizes: any[] = Array.isArray(freshMaterial.roll_sizes) && freshMaterial.roll_sizes.length > 0
+          ? [...freshMaterial.roll_sizes]
+          : Array.isArray((freshMaterial.material_config as any)?.roll_sizes) && (freshMaterial.material_config as any).roll_sizes.length > 0
+          ? [...(freshMaterial.material_config as any).roll_sizes]
           : []
 
         let matched = false
         const updatedSizes = existingRollSizes.map((sz: any) => {
-          const szNominal = Number(sz.nominal_width_ft || sz.width || sz.size || 0)
-          const szEffective = Number(sz.width_ft || sz.width || sz.size || 0)
-          const szLen = Number(sz.length || sz.length_ft || 0)
-          const wMatch = (szNominal === nominalWidthFt || szEffective === widthFt || Math.abs(szEffective - widthFt) < 0.1 || Math.abs(szNominal - nominalWidthFt) < 0.1 || Math.abs(szEffective - nominalWidthFt) < 0.1)
-          const lMatch = !szLen || !lengthFt || Math.abs(szLen - lengthFt) <= 5
+          const szBaseW = Number(sz.nominal_width_ft || sz.width || sz.width_ft || sz.size || 0)
+          const szAllowance = sz.extra_allowance !== undefined
+            ? Number(sz.extra_allowance)
+            : sz.allowance !== undefined
+            ? Number(sz.allowance)
+            : sz.allowance_ft !== undefined
+            ? Number(sz.allowance_ft)
+            : globalAllowance
+          const szW = sz.width_ft !== undefined && Number(sz.width_ft) > 0
+            ? Number(sz.width_ft)
+            : ((szAllowance > 0 && Math.floor(szBaseW) === szBaseW) ? Math.round((szBaseW + szAllowance) * 100) / 100 : szBaseW)
+          const szL = Number(sz.length || sz.length_ft || 0)
+          const szPrice = Number(sz.price ?? sz.unit_cost ?? sz.purchase_price ?? incomingUnitCost ?? 0)
+          const szGsm = Number(sz.gsm ?? material.gsm ?? 0)
+          const szFin = String(sz.finishing ?? sz.finish ?? material.default_finishing ?? 'none')
 
-          if (wMatch && lMatch && !matched) {
+          const szCanonicalAttrs = normalizeInventoryGroupAttributes({
+            name: material.name,
+            width_ft: szW,
+            nominal_width_ft: szBaseW,
+            length_ft: szL,
+            allowance_ft: szAllowance,
+            purchase_price: szPrice,
+            gsm: szGsm,
+            finishing: szFin,
+            specification: material.specification,
+            material_spec: (material as any)?.material_spec,
+          })
+          const szKey = createInventoryGroupingKey(szCanonicalAttrs)
+
+          // Strict 7-attribute comparison
+          const isFullCanonicalMatch = szKey === incomingGroupKey
+
+          // Also support matching configured empty template size (count == 0) for the incoming width/length
+          const isTemplateSizeMatch = !matched &&
+            Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) === 0 &&
+            Math.abs(szCanonicalAttrs.width_ft - incomingCanonicalAttrs.width_ft) < 0.1 &&
+            (!szCanonicalAttrs.length_ft || Math.abs(szCanonicalAttrs.length_ft - incomingCanonicalAttrs.length_ft) <= 5)
+
+          if ((isFullCanonicalMatch || isTemplateSizeMatch) && !matched) {
             matched = true
             const curQty = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
             const newQty = curQty + params.quantity
-            const allowance = Number(sz.extra_allowance ?? sz.allowance ?? sz.allowance_ft ?? matchedConfigAllowance ?? 0)
-            const effW = widthFt
-            const effL = szLen || lengthFt
+            const effW = incomingCanonicalAttrs.width_ft
+            const effL = szL || incomingCanonicalAttrs.length_ft
             return {
               ...sz,
-              width: szNominal || nominalWidthFt || widthFt,
-              nominal_width_ft: szNominal || nominalWidthFt || widthFt,
+              name: incomingCanonicalAttrs.name,
+              width: szBaseW || nominalWidthFt || widthFt,
+              nominal_width_ft: szBaseW || nominalWidthFt || widthFt,
               width_ft: effW,
-              allowance_ft: allowance,
+              allowance_ft: incomingCanonicalAttrs.allowance_ft,
+              extra_allowance: incomingCanonicalAttrs.allowance_ft,
               length: effL,
               length_ft: effL,
+              price: incomingCanonicalAttrs.purchase_price,
+              unit_cost: incomingCanonicalAttrs.purchase_price,
+              purchase_price: incomingCanonicalAttrs.purchase_price,
+              gsm: incomingCanonicalAttrs.gsm,
+              finishing: incomingCanonicalAttrs.finishing,
               quantity: newQty,
               roll_count: newQty,
               stock_qty: newQty,
@@ -396,19 +464,25 @@ export class InventoryService {
         })
 
         if (!matched && (existingRollSizes.length > 0 || params.quantity > 0)) {
-          const allowance = (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : matchedConfigAllowance
           updatedSizes.push({
+            name: incomingCanonicalAttrs.name,
             width: nominalWidthFt || widthFt,
             nominal_width_ft: nominalWidthFt || widthFt,
-            width_ft: widthFt,
-            allowance_ft: allowance,
-            length: lengthFt,
-            length_ft: lengthFt,
+            width_ft: incomingCanonicalAttrs.width_ft,
+            allowance_ft: incomingCanonicalAttrs.allowance_ft,
+            extra_allowance: incomingCanonicalAttrs.allowance_ft,
+            length: incomingCanonicalAttrs.length_ft,
+            length_ft: incomingCanonicalAttrs.length_ft,
+            price: incomingCanonicalAttrs.purchase_price,
+            unit_cost: incomingCanonicalAttrs.purchase_price,
+            purchase_price: incomingCanonicalAttrs.purchase_price,
+            gsm: incomingCanonicalAttrs.gsm,
+            finishing: incomingCanonicalAttrs.finishing,
             quantity: params.quantity,
             roll_count: params.quantity,
             stock_qty: params.quantity,
             stock: params.quantity,
-            total_sft: Math.round(params.quantity * widthFt * lengthFt * 100) / 100,
+            total_sft: Math.round(params.quantity * incomingCanonicalAttrs.width_ft * incomingCanonicalAttrs.length_ft * 100) / 100,
           })
         }
 

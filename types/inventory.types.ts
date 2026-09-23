@@ -152,6 +152,9 @@ export interface InventoryRollRecord {
   grn_id?: string | null
   supplier_id?: string | null
   batch_lot_number?: string | null
+  allowance_ft?: number | null
+  gsm?: number | null
+  finishing?: string | null
   notes?: string | null
   material?: Partial<MaterialRecord>
   created_at: string
@@ -304,6 +307,7 @@ export interface MaterialRecord {
   cost_per_unit?: number
   average_cost?: number
   last_purchase_price?: number
+  selling_price?: number | null
   manual_cost?: number
   valuation_method?: ValuationMethod
   preferred_supplier_id?: string | null
@@ -318,6 +322,10 @@ export interface MaterialRecord {
   purchase_price_per_sft?: number | null
   production_width_allowance?: number | null
   extra_width_allowance_ft?: number | null
+  allowance_ft?: number | null
+  gsm?: number | null
+  default_finishing?: string | null
+  finishing?: string | null
   liquid_volume_capacity?: string | null
   pack_quantity?: number | null
   physical_form?: string | null

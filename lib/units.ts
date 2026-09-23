@@ -1972,11 +1972,161 @@ export function calculateSignageStructureBOM(
   }
 }
 
-export interface WarehouseRollStockItem {
+export interface InventoryCanonicalAttributes {
+  name: string
   width_ft: number
   length_ft: number
+  allowance_ft: number
+  purchase_price: number
+  gsm: number
+  finishing: string
+}
+
+/**
+ * Normalizes an inventory grouping attribute set according to the canonical 7-attribute ERP rule:
+ * 1. Material/Product Name
+ * 2. Width (ft)
+ * 3. Length (ft)
+ * 4. Allowance (ft)
+ * 5. Purchase Price (BDT / unit cost)
+ * 6. GSM
+ * 7. Finishing
+ *
+ * If even ONE attribute is different, the item belongs to a separate group.
+ * Normalizes technical representations (e.g. 2 ft vs 2.00 ft, null/empty allowance, etc.)
+ */
+export function normalizeInventoryGroupAttributes(raw: {
+  name?: string | null
+  material_name?: string | null
+  product_name?: string | null
+  width?: number | string | null
+  width_ft?: number | string | null
+  nominal_width_ft?: number | string | null
+  length?: number | string | null
+  length_ft?: number | string | null
+  initial_length_ft?: number | string | null
+  current_length_ft?: number | string | null
+  standard_roll_length_ft?: number | string | null
+  allowance?: number | string | null
+  allowance_ft?: number | string | null
+  extra_allowance?: number | string | null
+  production_width_allowance?: number | string | null
+  extra_width_allowance_ft?: number | string | null
+  purchase_price?: number | string | null
+  unit_cost?: number | string | null
+  cost_per_unit?: number | string | null
+  average_cost?: number | string | null
+  last_purchase_price?: number | string | null
+  base_cost?: number | string | null
+  gsm?: number | string | null
+  weight_gsm?: number | string | null
+  finishing?: string | null
+  finish?: string | null
+  default_finishing?: string | null
+  finish_color?: string | null
+  specification?: string | null
+  material_spec?: string | null
+}): InventoryCanonicalAttributes {
+  // 1. Name: trimmed string (preserve casing in display, lowercase for key)
+  const rawName = String(raw.name || raw.material_name || raw.product_name || 'Item').trim()
+
+  // 2. Width: numeric value in feet normalized (e.g. 2, 2.25)
+  const rawW = Number(raw.width_ft ?? raw.nominal_width_ft ?? raw.width ?? 0)
+  const width_ft = isNaN(rawW) || rawW < 0 ? 0 : Math.round(rawW * 10000) / 10000
+
+  // 3. Length: numeric value in feet normalized (e.g. 100, 164, 400)
+  const rawL = Number(
+    raw.length_ft ??
+    raw.current_length_ft ??
+    raw.initial_length_ft ??
+    raw.standard_roll_length_ft ??
+    raw.length ??
+    0
+  )
+  const length_ft = isNaN(rawL) || rawL < 0 ? 0 : Math.round(rawL * 10000) / 10000
+
+  // 4. Allowance: numeric value in feet (null/undefined/empty => 0)
+  const rawAllow = raw.allowance_ft !== undefined && raw.allowance_ft !== null
+    ? Number(raw.allowance_ft)
+    : raw.extra_allowance !== undefined && raw.extra_allowance !== null
+    ? Number(raw.extra_allowance)
+    : raw.allowance !== undefined && raw.allowance !== null
+    ? Number(raw.allowance)
+    : raw.production_width_allowance !== undefined && raw.production_width_allowance !== null
+    ? Number(raw.production_width_allowance)
+    : raw.extra_width_allowance_ft !== undefined && raw.extra_width_allowance_ft !== null
+    ? Number(raw.extra_width_allowance_ft)
+    : 0
+  const allowance_ft = isNaN(rawAllow) || rawAllow <= 0 ? 0 : Math.round(rawAllow * 10000) / 10000
+
+  // 5. Purchase Price: numeric value with exact 2-decimal precision (never round in a way that merges 1000 and 1050)
+  const rawPrice = Number(
+    raw.purchase_price ??
+    raw.unit_cost ??
+    raw.cost_per_unit ??
+    raw.last_purchase_price ??
+    raw.average_cost ??
+    raw.base_cost ??
+    0
+  )
+  const purchase_price = isNaN(rawPrice) || rawPrice < 0 ? 0 : Math.round(rawPrice * 100) / 100
+
+  // 6. GSM: numeric value (extract from raw.gsm, raw.weight_gsm, or parse from spec/name)
+  let rawGsm = Number(raw.gsm ?? raw.weight_gsm ?? 0)
+  if (!rawGsm || isNaN(rawGsm)) {
+    const specStr = `${rawName} ${raw.specification || ''} ${raw.material_spec || ''}`
+    const match = specStr.match(/(\d+)\s*gsm/i)
+    if (match) {
+      rawGsm = Number(match[1])
+    }
+  }
+  const gsm = isNaN(rawGsm) || rawGsm <= 0 ? 0 : Math.round(rawGsm)
+
+  // 7. Finishing: normalized string (null, undefined, '', 'none', 'None', '-' => 'none')
+  let rawFin = String(raw.finishing || raw.finish || raw.default_finishing || raw.finish_color || '').trim()
+  if (!rawFin || rawFin.toLowerCase() === 'none' || rawFin.toLowerCase() === 'null' || rawFin.toLowerCase() === 'undefined' || rawFin === '-') {
+    rawFin = 'none'
+  }
+
+  return {
+    name: rawName,
+    width_ft,
+    length_ft,
+    allowance_ft,
+    purchase_price,
+    gsm,
+    finishing: rawFin,
+  }
+}
+
+/**
+ * Creates a deterministic canonical grouping key based on the 7 canonical attributes.
+ */
+export function createInventoryGroupingKey(attrs: InventoryCanonicalAttributes): string {
+  const normName = attrs.name.trim().toLowerCase().replace(/\s+/g, ' ')
+  const w = attrs.width_ft.toFixed(4).replace(/\.?0+$/, '')
+  const l = attrs.length_ft.toFixed(4).replace(/\.?0+$/, '')
+  const a = attrs.allowance_ft.toFixed(4).replace(/\.?0+$/, '')
+  const p = attrs.purchase_price.toFixed(2).replace(/\.?0+$/, '')
+  const g = String(attrs.gsm || 0)
+  const f = attrs.finishing.trim().toLowerCase().replace(/\s+/g, ' ')
+
+  return `grp|${normName}|w:${w}|l:${l}|a:${a}|p:${p}|gsm:${g}|f:${f}`
+}
+
+export interface WarehouseRollStockItem {
+  key?: string
+  name?: string
+  width_ft: number
+  length_ft: number
+  allowance_ft?: number
+  purchase_price?: number
+  gsm?: number
+  finishing?: string
   roll_count: number
   total_sft: number
+  unit_cost?: number
+  total_valuation?: number
   label?: string
 }
 
@@ -1999,8 +2149,8 @@ export interface MaterialWarehouseStockBreakdown {
 
 /**
  * Calculates and formats warehouse stock in Purchase Units (Rolls, Sheets, Cans, Boxes)
- * along with normalized unit costs and accurate inventory valuation.
- * e.g. "1 Roll (7ft × 164ft)" • "1,148 SFT" • "৳ 11,480 / Roll" • "(৳ 10.00 / SFT)" • Total Valuation "৳ 11,480"
+ * along with normalized unit costs and accurate inventory valuation, strictly applying
+ * the 7 canonical attributes grouping rule.
  */
 export function getMaterialWarehouseStockBreakdown(
   material: any,
@@ -2137,9 +2287,10 @@ export function getMaterialWarehouseStockBreakdown(
     let totalRolls = 0
     let rollItems: WarehouseRollStockItem[] = []
     let totalSft = 0
+    let totalValuationCalculated = 0
 
     if (matRolls.length > 0) {
-      // Group discrete warehouse rolls by width and length
+      // Group discrete warehouse rolls strictly using the 7 canonical attributes
       const map = new Map<string, WarehouseRollStockItem>()
       totalRolls = 0
       totalSft = 0
@@ -2147,28 +2298,67 @@ export function getMaterialWarehouseStockBreakdown(
       for (const r of matRolls) {
         const w = Number(r.width_ft) || inferredWidth
         const l = Number(r.current_length_ft ?? r.initial_length_ft) || standardLength
-        const key = `${w}x${l}`
-        const sft = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (w * l))
+        const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? globalAllowance ?? 0)
+        const pPrice = Number(r.unit_cost ?? material.last_purchase_price ?? material.average_cost ?? material.cost_per_unit ?? rawCost ?? 0)
+        const gsm = Number((r as any).gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+        const fin = String((r as any).finishing ?? (r as any).finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allow,
+          purchase_price: pPrice,
+          gsm: gsm,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+        const sft = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (attrs.width_ft * attrs.length_ft))
+
+        // Group-specific unit cost & valuation
+        const rollCost = attrs.purchase_price > 0
+          ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
+          : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
+        const itemValuation = rollCost > 0 ? rollCost : 0
 
         if (!map.has(key)) {
-          map.set(key, { width_ft: w, length_ft: l, roll_count: 0, total_sft: 0, label: `${w}ft × ${l}ft` })
+          map.set(key, {
+            key,
+            name: attrs.name,
+            width_ft: attrs.width_ft,
+            length_ft: attrs.length_ft,
+            allowance_ft: attrs.allowance_ft,
+            purchase_price: attrs.purchase_price,
+            gsm: attrs.gsm,
+            finishing: attrs.finishing,
+            roll_count: 0,
+            total_sft: 0,
+            unit_cost: attrs.purchase_price,
+            total_valuation: 0,
+            label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+          })
         }
         const item = map.get(key)!
         item.roll_count += 1
         item.total_sft += sft
+        item.total_valuation = (item.total_valuation || 0) + itemValuation
         totalRolls += 1
         totalSft += sft
+        totalValuationCalculated += itemValuation
       }
-      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft)
+      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft || (a.purchase_price || 0) - (b.purchase_price || 0))
     } else if (currentStock <= 0) {
       // Zero stock with no physical rolls
       totalRolls = 0
       totalSft = 0
       rollItems = []
     } else if (rawRollSizes.length > 0) {
-      // Parse configured roll sizes / variants
+      // Parse configured roll sizes / variants strictly using the 7 canonical attributes
       totalRolls = 0
       totalSft = 0
+      const map = new Map<string, WarehouseRollStockItem>()
 
       for (const rs of rawRollSizes) {
         const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
@@ -2184,20 +2374,58 @@ export function getMaterialWarehouseStockBreakdown(
           : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
         const l = Number(rs.length || rs.length_ft || standardLength)
         const count = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
-        const sft = count > 0 ? count * w * l : (Number(rs.total_sft ?? rs.sft) || 0)
+        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+        const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+        const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+        const attrs = normalizeInventoryGroupAttributes({
+          name: material.name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allowance,
+          purchase_price: price,
+          gsm: gsm,
+          finishing: fin,
+          specification: material.specification,
+          material_spec: (material as any)?.material_spec,
+        })
+        const key = createInventoryGroupingKey(attrs)
+        const sft = count > 0 ? count * attrs.width_ft * attrs.length_ft : (Number(rs.total_sft ?? rs.sft) || 0)
 
         if (count > 0) {
-          rollItems.push({
-            width_ft: w,
-            length_ft: l,
-            roll_count: count,
-            total_sft: sft,
-            label: `${w}ft × ${l}ft`,
-          })
+          const rollCost = attrs.purchase_price > 0
+            ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
+            : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
+          const itemVal = count * rollCost
+
+          if (!map.has(key)) {
+            map.set(key, {
+              key,
+              name: attrs.name,
+              width_ft: attrs.width_ft,
+              length_ft: attrs.length_ft,
+              allowance_ft: attrs.allowance_ft,
+              purchase_price: attrs.purchase_price,
+              gsm: attrs.gsm,
+              finishing: attrs.finishing,
+              roll_count: count,
+              total_sft: sft,
+              unit_cost: attrs.purchase_price,
+              total_valuation: itemVal,
+              label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
+            })
+          } else {
+            const existing = map.get(key)!
+            existing.roll_count += count
+            existing.total_sft += sft
+            existing.total_valuation = (existing.total_valuation || 0) + itemVal
+          }
           totalRolls += count
           totalSft += sft
+          totalValuationCalculated += itemVal
         }
       }
+      rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
 
       if (rollItems.length === 0 && currentStock > 0) {
         const configuredList = rawRollSizes.map((rs: any) => {
@@ -2213,8 +2441,23 @@ export function getMaterialWarehouseStockBreakdown(
             ? Number(rs.width_ft)
             : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
           const l = Number(rs.length || rs.length_ft || standardLength)
-          const area = Math.round(w * l * 100) / 100
-          return { w, l, area }
+          const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+          const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
+          const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
+
+          const attrs = normalizeInventoryGroupAttributes({
+            name: material.name,
+            width_ft: w,
+            length_ft: l,
+            allowance_ft: allowance,
+            purchase_price: price,
+            gsm: gsm,
+            finishing: fin,
+            specification: material.specification,
+            material_spec: (material as any)?.material_spec,
+          })
+          const area = Math.round(attrs.width_ft * attrs.length_ft * 100) / 100
+          return { w: attrs.width_ft, l: attrs.length_ft, area, attrs, key: createInventoryGroupingKey(attrs) }
         })
 
         const sumSetArea = configuredList.reduce((sum, item) => sum + item.area, 0)
@@ -2248,20 +2491,34 @@ export function getMaterialWarehouseStockBreakdown(
               const count = sets + extra
               if (count > 0) {
                 const sft = count * item.area
+                const rollCost = item.attrs.purchase_price > 0
+                  ? (item.attrs.purchase_price > 150 ? item.attrs.purchase_price : item.attrs.purchase_price * item.area)
+                  : (rawCost > 150 ? rawCost : rawCost * item.area)
+                const itemVal = count * rollCost
+
                 rollItems.push({
+                  key: item.key,
+                  name: item.attrs.name,
                   width_ft: item.w,
                   length_ft: item.l,
+                  allowance_ft: item.attrs.allowance_ft,
+                  purchase_price: item.attrs.purchase_price,
+                  gsm: item.attrs.gsm,
+                  finishing: item.attrs.finishing,
                   roll_count: count,
                   total_sft: sft,
+                  unit_cost: item.attrs.purchase_price,
+                  total_valuation: itemVal,
                   label: `${item.w}ft × ${item.l}ft`,
                 })
                 totalRolls += count
                 totalSft += sft
+                totalValuationCalculated += itemVal
               }
             }
           } else {
             // sets === 0: currentStock is smaller than the sum of all configured sizes
-            // Allocate ONLY to the single best matching configured size instead of multiplying 1 roll for every size
+            // Allocate ONLY to the single best matching configured size
             let bestIdx = configuredList.findIndex(
               (item) => item.area > 0 && (Math.abs(currentStock % item.area) < 1 || Math.abs(item.area - currentStock) < 1)
             )
@@ -2280,28 +2537,56 @@ export function getMaterialWarehouseStockBreakdown(
             const bestItem = configuredList[bestIdx]
             const count = bestItem.area > 0 ? Math.max(1, Math.round(currentStock / bestItem.area)) : 1
             const sft = currentStock
+            const rollCost = bestItem.attrs.purchase_price > 0
+              ? (bestItem.attrs.purchase_price > 150 ? bestItem.attrs.purchase_price : bestItem.attrs.purchase_price * (bestItem.w * bestItem.l))
+              : (rawCost > 150 ? rawCost : rawCost * (bestItem.w * bestItem.l))
+            const itemVal = count * rollCost
+
             rollItems.push({
+              key: bestItem.key,
+              name: bestItem.attrs.name,
               width_ft: bestItem.w,
               length_ft: bestItem.l,
+              allowance_ft: bestItem.attrs.allowance_ft,
+              purchase_price: bestItem.attrs.purchase_price,
+              gsm: bestItem.attrs.gsm,
+              finishing: bestItem.attrs.finishing,
               roll_count: count,
               total_sft: sft,
+              unit_cost: bestItem.attrs.purchase_price,
+              total_valuation: itemVal,
               label: `${bestItem.w}ft × ${bestItem.l}ft`,
             })
             totalRolls += count
             totalSft += sft
+            totalValuationCalculated += itemVal
           }
         } else if (configuredList.length > 0) {
           const item = configuredList[0]
           const count = item.area > 0 ? Math.max(1, Math.round(currentStock / item.area)) : 1
+          const rollCost = item.attrs.purchase_price > 0
+            ? (item.attrs.purchase_price > 150 ? item.attrs.purchase_price : item.attrs.purchase_price * item.area)
+            : (rawCost > 150 ? rawCost : rawCost * item.area)
+          const itemVal = count * rollCost
+
           rollItems = [{
+            key: item.key,
+            name: item.attrs.name,
             width_ft: item.w,
             length_ft: item.l,
+            allowance_ft: item.attrs.allowance_ft,
+            purchase_price: item.attrs.purchase_price,
+            gsm: item.attrs.gsm,
+            finishing: item.attrs.finishing,
             roll_count: count,
             total_sft: currentStock,
+            unit_cost: item.attrs.purchase_price,
+            total_valuation: itemVal,
             label: `${item.w}ft × ${item.l}ft`,
           }]
           totalRolls = count
           totalSft = currentStock
+          totalValuationCalculated = itemVal
         }
       }
     } else {
@@ -2310,15 +2595,41 @@ export function getMaterialWarehouseStockBreakdown(
       totalRolls = areaPerRoll > 0 ? Math.max(1, Math.round(currentStock / areaPerRoll)) : 1
       if (currentStock <= 0) totalRolls = 0
       totalSft = currentStock
+
+      const attrs = normalizeInventoryGroupAttributes({
+        name: material.name,
+        width_ft: effectiveInferredW,
+        length_ft: standardLength,
+        allowance_ft: globalAllowance,
+        purchase_price: rawCost,
+        gsm: material.gsm ?? (material as any)?.weight_gsm,
+        finishing: material.default_finishing ?? (material as any)?.finish,
+        specification: material.specification,
+        material_spec: (material as any)?.material_spec,
+      })
+      const rollCost = attrs.purchase_price > 0
+        ? (attrs.purchase_price > 150 ? attrs.purchase_price : attrs.purchase_price * (attrs.width_ft * attrs.length_ft))
+        : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
+      const itemVal = totalRolls * rollCost
+
       rollItems = totalRolls > 0 ? [
         {
-          width_ft: effectiveInferredW,
-          length_ft: standardLength,
+          key: createInventoryGroupingKey(attrs),
+          name: attrs.name,
+          width_ft: attrs.width_ft,
+          length_ft: attrs.length_ft,
+          allowance_ft: attrs.allowance_ft,
+          purchase_price: attrs.purchase_price,
+          gsm: attrs.gsm,
+          finishing: attrs.finishing,
           roll_count: totalRolls,
           total_sft: currentStock,
+          unit_cost: attrs.purchase_price,
+          total_valuation: itemVal,
           label: `${effectiveInferredW}ft × ${standardLength}ft`,
         }
       ] : []
+      totalValuationCalculated = itemVal
     }
 
     // Format summary string
@@ -2368,6 +2679,10 @@ export function getMaterialWarehouseStockBreakdown(
       costPerSft = explicitPerSft
       costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 656)
       totalValuation = effectiveStockSft > 0 ? effectiveStockSft * costPerSft : 0
+    } else if (totalValuationCalculated > 0) {
+      totalValuation = totalValuationCalculated
+      costPerSft = effectiveStockSft > 0 ? (totalValuation / effectiveStockSft) : 0
+      costPerRoll = totalRolls > 0 ? (totalValuation / totalRolls) : (areaPerStandardRoll > 0 ? costPerSft * areaPerStandardRoll : 0)
     } else if (rawCost > 0) {
       if (rawCost > 100) {
         // rawCost is per-Roll (e.g. ৳ 6,560 / Roll)

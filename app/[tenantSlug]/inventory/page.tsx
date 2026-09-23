@@ -84,7 +84,7 @@ import type { ProductRecord } from '@/types/product.types'
 import type { MachineryRecord } from '@/types/machinery.types'
 import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay } from '@/lib/units'
+import { isMaterialProduct, isReadyProduct, getMaterialWarehouseStockBreakdown, formatFloorPieceDisplay, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '@/lib/units'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   approveMaterialRequestAction,
@@ -532,6 +532,7 @@ function UnifiedInventoryContent() {
   }, [rolls, selectedRollStatus, search])
 
   // Grouped Physical Rolls by Width & Length
+  // Grouped Physical Rolls Strictly by 7 Canonical Attributes (Name, Width, Length, Allowance, Purchase Price, GSM, Finishing) + Location
   const groupedRolls = useMemo(() => {
     const list: {
       key: string
@@ -542,8 +543,13 @@ function UnifiedInventoryContent() {
       category?: string
       width_ft: number
       length_ft: number
+      allowance_ft: number
+      purchase_price: number
+      gsm: number
+      finishing: string
       quantity_rolls: number
       total_area_sft: number
+      total_valuation: number
       location_name: string
       status: string
       material?: MaterialRecord
@@ -586,44 +592,87 @@ function UnifiedInventoryContent() {
       )
 
       if (matRolls.length > 0) {
-        // Group by width, length, location using physical roll's exact dimensions
-        const map = new Map<string, { width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
+        // Group by the 7 canonical attributes + location
+        const map = new Map<string, {
+          sku: string
+          name: string
+          name_bn?: string | null
+          attrs: any
+          loc: string
+          items: InventoryRollRecord[]
+        }>()
+
         for (const r of matRolls) {
           const w = Number(r.width_ft || mat.roll_width_ft || 4)
           const l = Number(r.current_length_ft ?? r.initial_length_ft ?? mat.standard_roll_length_ft ?? 164)
+          const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? allowance ?? 0)
+          const pPrice = Number(r.unit_cost ?? mat.average_cost ?? mat.last_purchase_price ?? mat.cost_per_unit ?? 0)
+          const gsm = Number((r as any).gsm ?? mat.gsm ?? (mat as any)?.weight_gsm ?? 0)
+          const fin = String((r as any).finishing ?? (r as any).finish ?? mat.default_finishing ?? (mat as any)?.finish ?? 'none')
           const loc = r.location_name || mat.location || 'Main Store'
-          const k = `${w}_${l}_${loc}`
+
+          const canonicalAttrs = normalizeInventoryGroupAttributes({
+            name: mat.name,
+            width_ft: w,
+            length_ft: l,
+            allowance_ft: allow,
+            purchase_price: pPrice,
+            gsm: gsm,
+            finishing: fin,
+            specification: mat.specification,
+            material_spec: (mat as any)?.material_spec,
+          })
+          const baseKey = createInventoryGroupingKey(canonicalAttrs)
+          const k = `${baseKey}|loc:${loc}`
+
           if (!map.has(k)) {
-            map.set(k, { width: w, length: l, loc, items: [] })
+            map.set(k, {
+              sku: mat.sku || 'MAT',
+              name: mat.name,
+              name_bn: mat.name_bn,
+              attrs: canonicalAttrs,
+              loc,
+              items: [],
+            })
           }
           map.get(k)!.items.push(r)
         }
 
-        for (const [_, grp] of map) {
+        for (const [k, grp] of map) {
           const totalArea = grp.items.reduce(
             (sum, r) => {
-              const curLen = Number(r.current_length_ft ?? r.initial_length_ft ?? grp.length)
-              const storedArea = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * curLen))
+              const curLen = Number(r.current_length_ft ?? r.initial_length_ft ?? grp.attrs.length_ft)
+              const storedArea = Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.attrs.width_ft * curLen))
               return sum + storedArea
             },
             0
           )
+          const rollCost = grp.attrs.purchase_price > 0
+            ? (grp.attrs.purchase_price > 150 ? grp.attrs.purchase_price : grp.attrs.purchase_price * (grp.attrs.width_ft * grp.attrs.length_ft))
+            : (Number(mat.average_cost || mat.last_purchase_price || 0) > 150 ? Number(mat.average_cost || mat.last_purchase_price || 0) : Number(mat.average_cost || mat.last_purchase_price || 0) * (grp.attrs.width_ft * grp.attrs.length_ft))
+          const totalValuation = grp.items.length * rollCost
+
           const hasMounted = grp.items.some((r) => r.status === 'mounted')
           const hasAvailable = grp.items.some((r) => r.status === 'available' || r.status === 'in_warehouse' || !r.status)
           const hasDepleted = grp.items.some((r) => r.status === 'depleted')
           const st = hasMounted && hasAvailable ? 'mixed' : hasMounted ? 'mounted' : hasDepleted && !hasAvailable ? 'depleted' : 'available'
 
           list.push({
-            key: `grp-${mat.id}-${grp.width}-${grp.length}-${grp.loc}`,
-            sku: mat.sku || 'MAT',
+            key: k,
+            sku: grp.sku,
             material_id: mat.id,
-            material_name: mat.name,
-            material_name_bn: mat.name_bn || null,
+            material_name: grp.name,
+            material_name_bn: grp.name_bn || null,
             category: mat.category,
-            width_ft: grp.width,
-            length_ft: grp.length,
+            width_ft: grp.attrs.width_ft,
+            length_ft: grp.attrs.length_ft,
+            allowance_ft: grp.attrs.allowance_ft,
+            purchase_price: grp.attrs.purchase_price,
+            gsm: grp.attrs.gsm,
+            finishing: grp.attrs.finishing,
             quantity_rolls: grp.items.length,
             total_area_sft: totalArea,
+            total_valuation: totalValuation,
             location_name: grp.loc,
             status: st,
             material: mat,
@@ -631,25 +680,55 @@ function UnifiedInventoryContent() {
           })
         }
       } else {
-        // Derive from stock breakdown (configured roll sizes e.g. 2ft 10 rolls, 5.25ft 18 rolls)
+        // Derive from stock breakdown (configured roll sizes / stock)
         const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
         if (breakdown.roll_items && breakdown.roll_items.length > 0) {
           for (const item of breakdown.roll_items) {
             const count = item.roll_count || (item.total_sft > 0 && item.width_ft * item.length_ft > 0 ? Math.round(item.total_sft / (item.width_ft * item.length_ft)) : 0)
             const area = item.total_sft || (count * item.width_ft * item.length_ft)
+            const allow = item.allowance_ft ?? allowance
+            const price = item.purchase_price ?? Number(mat.average_cost || mat.last_purchase_price || 0)
+            const gsm = item.gsm ?? Number(mat.gsm || (mat as any)?.weight_gsm || 0)
+            const fin = item.finishing ?? String(mat.default_finishing || (mat as any)?.finish || 'none')
+            const loc = mat.location || 'Main Store'
+
+            const canonicalAttrs = normalizeInventoryGroupAttributes({
+              name: mat.name,
+              width_ft: item.width_ft,
+              length_ft: item.length_ft,
+              allowance_ft: allow,
+              purchase_price: price,
+              gsm: gsm,
+              finishing: fin,
+              specification: mat.specification,
+              material_spec: (mat as any)?.material_spec,
+            })
+            const baseKey = createInventoryGroupingKey(canonicalAttrs)
+            const k = `${baseKey}|loc:${loc}`
+
             if (count > 0 || area > 0) {
+              const rollCost = canonicalAttrs.purchase_price > 0
+                ? (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
+                : 0
+              const itemVal = item.total_valuation || (count * rollCost)
+
               list.push({
-                key: `grp-${mat.id}-${item.width_ft}-${item.length_ft}-${mat.location || 'Main Store'}`,
+                key: k,
                 sku: mat.sku || 'MAT',
                 material_id: mat.id,
                 material_name: mat.name,
                 material_name_bn: mat.name_bn || null,
                 category: mat.category,
-                width_ft: item.width_ft,
-                length_ft: item.length_ft,
+                width_ft: canonicalAttrs.width_ft,
+                length_ft: canonicalAttrs.length_ft,
+                allowance_ft: canonicalAttrs.allowance_ft,
+                purchase_price: canonicalAttrs.purchase_price,
+                gsm: canonicalAttrs.gsm,
+                finishing: canonicalAttrs.finishing,
                 quantity_rolls: count,
                 total_area_sft: area,
-                location_name: mat.location || 'Main Store',
+                total_valuation: itemVal,
+                location_name: loc,
                 status: 'available',
                 material: mat,
                 rolls: [],
@@ -663,7 +742,16 @@ function UnifiedInventoryContent() {
     // 2. Process any remaining physical rolls not linked to the above materials
     const remainingRolls = rolls.filter((r) => r.material_id && !processedMatIds.has(r.material_id))
     if (remainingRolls.length > 0) {
-      const map = new Map<string, { sku: string; name: string; name_bn?: string | null; matId: string; width: number; length: number; loc: string; items: InventoryRollRecord[] }>()
+      const map = new Map<string, {
+        sku: string
+        name: string
+        name_bn?: string | null
+        matId: string
+        attrs: any
+        loc: string
+        items: InventoryRollRecord[]
+      }>()
+
       for (const r of remainingRolls) {
         const sku = r.material?.sku || 'MAT'
         const name = r.material?.name || 'Roll Media'
@@ -671,34 +759,60 @@ function UnifiedInventoryContent() {
         const matId = r.material_id
         const w = Number(r.width_ft || 3)
         const l = Number(r.current_length_ft ?? r.initial_length_ft ?? 164)
+        const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? 0)
+        const pPrice = Number(r.unit_cost ?? 0)
+        const gsm = Number((r as any).gsm ?? 0)
+        const fin = String((r as any).finishing ?? 'none')
         const loc = r.location_name || 'Main Store'
-        const k = `${matId}_${w}_${l}_${loc}`
+
+        const canonicalAttrs = normalizeInventoryGroupAttributes({
+          name,
+          width_ft: w,
+          length_ft: l,
+          allowance_ft: allow,
+          purchase_price: pPrice,
+          gsm: gsm,
+          finishing: fin,
+        })
+        const baseKey = createInventoryGroupingKey(canonicalAttrs)
+        const k = `${baseKey}|loc:${loc}`
+
         if (!map.has(k)) {
-          map.set(k, { sku, name, name_bn, matId, width: w, length: l, loc, items: [] })
+          map.set(k, { sku, name, name_bn, matId, attrs: canonicalAttrs, loc, items: [] })
         }
         map.get(k)!.items.push(r)
       }
 
-      for (const [_, grp] of map) {
+      for (const [k, grp] of map) {
         const totalArea = grp.items.reduce(
-          (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.width * grp.length)),
+          (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (grp.attrs.width_ft * grp.attrs.length_ft)),
           0
         )
+        const rollCost = grp.attrs.purchase_price > 0
+          ? (grp.attrs.purchase_price > 150 ? grp.attrs.purchase_price : grp.attrs.purchase_price * (grp.attrs.width_ft * grp.attrs.length_ft))
+          : 0
+        const totalValuation = grp.items.length * rollCost
+
         const hasMounted = grp.items.some((r) => r.status === 'mounted')
         const hasAvailable = grp.items.some((r) => r.status === 'available' || r.status === 'in_warehouse' || !r.status)
         const hasDepleted = grp.items.some((r) => r.status === 'depleted')
         const st = hasMounted && hasAvailable ? 'mixed' : hasMounted ? 'mounted' : hasDepleted && !hasAvailable ? 'depleted' : 'available'
 
         list.push({
-          key: `grp-${grp.matId}-${grp.width}-${grp.length}-${grp.loc}`,
+          key: k,
           sku: grp.sku,
           material_id: grp.matId,
           material_name: grp.name,
           material_name_bn: grp.name_bn,
-          width_ft: grp.width,
-          length_ft: grp.length,
+          width_ft: grp.attrs.width_ft,
+          length_ft: grp.attrs.length_ft,
+          allowance_ft: grp.attrs.allowance_ft,
+          purchase_price: grp.attrs.purchase_price,
+          gsm: grp.attrs.gsm,
+          finishing: grp.attrs.finishing,
           quantity_rolls: grp.items.length,
           total_area_sft: totalArea,
+          total_valuation: totalValuation,
           location_name: grp.loc,
           status: st,
           rolls: grp.items,
@@ -733,6 +847,9 @@ function UnifiedInventoryContent() {
         `${g.width_ft}`.includes(q) ||
         `${g.length_ft}ft`.includes(q) ||
         `${g.length_ft}`.includes(q) ||
+        (g.gsm > 0 && `${g.gsm}gsm`.includes(q)) ||
+        (g.finishing !== 'none' && g.finishing.toLowerCase().includes(q)) ||
+        (g.purchase_price > 0 && `${g.purchase_price}`.includes(q)) ||
         g.location_name.toLowerCase().includes(q)
       return matchStatus && matchSearch
     })
@@ -1671,11 +1788,12 @@ function UnifiedInventoryContent() {
                     <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
                       <tr>
                         <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'এসকেইউ (SKU)' : 'SKU'}</th>
-                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল নাম' : 'Material Name'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল ও স্পেসিফিকেশন' : 'Material & Specs'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ (Width)' : 'Width'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'দৈর্ঘ্য (Length)' : 'Length'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'ক্রয়মূল্য (Rate)' : 'Purchase Rate'}</th>
                         <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'পরিমাণ (Quantity)' : 'Quantity'}</th>
-                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'মোট এরিয়া (Area)' : 'Area'}</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'মোট এরিয়া ও মূল্য' : 'Total Area & Value'}</th>
                         <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'লোকেশন' : 'Location'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
                       </tr>
@@ -1683,7 +1801,7 @@ function UnifiedInventoryContent() {
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {filteredGroupedRolls.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="p-8 text-center text-slate-500">
+                          <td colSpan={9} className="p-8 text-center text-slate-500">
                             <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
                             <p className="font-bold">{isBn ? 'কোনো রোল পাওয়া যায়নি।' : 'No physical roll stock found.'}</p>
                             <p className="text-[11px] text-slate-400 mt-1">
@@ -1731,15 +1849,32 @@ function UnifiedInventoryContent() {
                                   </span>
                                 </td>
                                 <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                  <div className="flex items-start gap-2">
+                                    <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
                                       <Disc className="h-3.5 w-3.5" />
                                     </div>
-                                    <div>
-                                      <span className="font-bold text-xs">{isBn && group.material_name_bn ? group.material_name_bn : group.material_name}</span>
+                                    <div className="space-y-1">
+                                      <div className="font-bold text-xs">{isBn && group.material_name_bn ? group.material_name_bn : group.material_name}</div>
                                       {group.material_name_bn && !isBn && (
                                         <div className="text-[10px] text-slate-400 font-normal">{group.material_name_bn}</div>
                                       )}
+                                      <div className="flex flex-wrap items-center gap-1">
+                                        {group.gsm > 0 && (
+                                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
+                                            {group.gsm} GSM
+                                          </span>
+                                        )}
+                                        {group.finishing && group.finishing !== 'none' && (
+                                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800 capitalize">
+                                            {group.finishing}
+                                          </span>
+                                        )}
+                                        {group.allowance_ft > 0 && (
+                                          <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                                            +{group.allowance_ft}ft allow
+                                          </span>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </td>
@@ -1749,13 +1884,21 @@ function UnifiedInventoryContent() {
                                 <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
                                   {group.length_ft}ft
                                 </td>
+                                <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap text-xs">
+                                  <CurrencyDisplay amount={group.purchase_price} />
+                                </td>
                                 <td className="py-3.5 px-4 text-center whitespace-nowrap">
                                   <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800 font-mono shadow-2xs">
-                                    {group.quantity_rolls} {group.quantity_rolls === 1 ? 'Roll' : 'Roll'}
+                                    {group.quantity_rolls} {group.quantity_rolls === 1 ? 'Roll' : 'Rolls'}
                                   </span>
                                 </td>
-                                <td className="py-3.5 px-4 text-right font-mono font-black text-emerald-600 dark:text-emerald-400 whitespace-nowrap text-xs">
-                                  {Math.round(group.total_area_sft).toLocaleString()} Sft
+                                <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap text-xs">
+                                  <div className="font-black text-emerald-600 dark:text-emerald-400">
+                                    {Math.round(group.total_area_sft).toLocaleString()} Sft
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 font-semibold">
+                                    <CurrencyDisplay amount={group.total_valuation} />
+                                  </div>
                                 </td>
                                 <td className="py-3.5 px-4 font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap text-xs">
                                   <div className="flex items-center gap-1.5">
@@ -1808,7 +1951,7 @@ function UnifiedInventoryContent() {
                               {/* EXPANDABLE SERIALIZED ROLLS SUB-TABLE */}
                               {isExpanded && hasSerializedRolls && (
                                 <tr className="bg-slate-50/80 dark:bg-slate-900/60">
-                                  <td colSpan={8} className="py-3 px-6">
+                                  <td colSpan={9} className="py-3 px-6">
                                     <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
                                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         <span>Serialized Master Rolls ({group.rolls.length} items registered):</span>
