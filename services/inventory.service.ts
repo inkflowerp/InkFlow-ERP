@@ -1060,13 +1060,14 @@ export class InventoryService {
     const matIds = new Set(materials.map((m) => m.id))
     const productsValue = readyProducts.reduce((sum, p) => {
       if (matIds.has(p.id)) return sum
+      const rawFormula = (p as any).pricing_formula
       const formula =
-        typeof p.pricing_formula === 'object' && p.pricing_formula !== null
-          ? p.pricing_formula
-          : typeof p.pricing_formula === 'string' && p.pricing_formula.trim()
+        typeof rawFormula === 'object' && rawFormula !== null
+          ? rawFormula
+          : typeof rawFormula === 'string' && rawFormula.trim()
           ? (() => {
               try {
-                return JSON.parse(p.pricing_formula)
+                return JSON.parse(rawFormula)
               } catch {
                 return {}
               }

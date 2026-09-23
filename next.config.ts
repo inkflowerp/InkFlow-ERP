@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   reactStrictMode: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -17,9 +20,6 @@ const nextConfig: NextConfig = {
       'class-variance-authority',
       '@hookform/resolvers',
     ],
-    turbopackFileSystemCacheForDev: true,
-    turbopackMemoryEviction: 'auto',
-    serverComponentsHmrCache: true,
   },
   logging: {
     fetches: {

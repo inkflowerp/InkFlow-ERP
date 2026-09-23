@@ -1144,13 +1144,14 @@ function UnifiedInventoryContent() {
                         )
                         const totalBalanceQty = locBalances.reduce((sum, b) => sum + (Number(b.available_quantity ?? (b as any).quantity) || 0), 0)
 
+                        const rawFormula = (p as any).pricing_formula
                         const formula =
-                          typeof p.pricing_formula === 'object' && p.pricing_formula !== null
-                            ? p.pricing_formula
-                            : typeof p.pricing_formula === 'string' && p.pricing_formula.trim()
+                          typeof rawFormula === 'object' && rawFormula !== null
+                            ? rawFormula
+                            : typeof rawFormula === 'string' && rawFormula.trim()
                             ? (() => {
                                 try {
-                                  return JSON.parse(p.pricing_formula)
+                                  return JSON.parse(rawFormula)
                                 } catch {
                                   return {}
                                 }
