@@ -905,6 +905,17 @@ export function ReceiveStockModal({
 
       const rem = Number(item.quantity_remaining ?? Math.max(0, item.quantity_ordered - item.quantity_received))
 
+      let resolvedWidth = Number((item as any).roll_width_ft || (match as any)?.roll_width_ft || 0)
+      if (!resolvedWidth) {
+        const matchW = `${item.material_name || ''} ${(item as any).supplier_sku || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchW) resolvedWidth = Number(matchW[1])
+      }
+      let resolvedLength = Number((item as any).roll_length_ft || (match as any)?.roll_length_ft || (match as any)?.standard_roll_length_ft || 0)
+      if (!resolvedLength) {
+        const matchL = `${item.material_name || ''} ${(item as any).description || ''} ${(item as any).notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchL) resolvedLength = Number(matchL[1])
+      }
+
       return {
         po_item_id: item.id,
         material_id: item.material_id,
@@ -923,8 +934,8 @@ export function ReceiveStockModal({
         rejected_quantity: 0,
         damaged_quantity: 0,
         batch_lot_number: '',
-        roll_width_ft: (match as any)?.roll_width_ft,
-        roll_length_ft: (match as any)?.roll_length_ft,
+        roll_width_ft: resolvedWidth || (match as any)?.roll_width_ft || undefined,
+        roll_length_ft: resolvedLength || (match as any)?.roll_length_ft || undefined,
       }
     })
     setPoReceiveRows(rows)
@@ -1505,6 +1516,8 @@ export function ReceiveStockModal({
               unit: item.unit,
               unit_cost: item.unit_cost,
               batch_lot_number: item.batch_lot_number || null,
+              roll_width_ft: item.roll_width_ft || null,
+              roll_length_ft: item.roll_length_ft || null,
             })),
           },
           companyId
@@ -2053,6 +2066,11 @@ export function ReceiveStockModal({
                           </div>
 
                           <div className="flex items-center gap-2">
+                            {row.roll_width_ft ? (
+                              <Badge variant="outline" className="text-[10px] font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800">
+                                Roll: {row.roll_width_ft}ft × {row.roll_length_ft || 164}ft
+                              </Badge>
+                            ) : null}
                             <Badge variant="outline" className="text-[10px] font-mono">
                               Rate: {formatBDT(row.unit_cost)} / {row.unit}
                             </Badge>

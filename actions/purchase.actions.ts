@@ -365,6 +365,8 @@ export async function receiveGoodsAction(
       unit_cost?: number
       batch_lot_number?: string | null
       roll_id?: string | null
+      roll_width_ft?: number | null
+      roll_length_ft?: number | null
       expiry_date?: string | null
       rejection_reason?: string | null
       notes?: string | null

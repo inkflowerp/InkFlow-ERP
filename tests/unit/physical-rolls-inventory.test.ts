@@ -4,6 +4,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
 import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
 import { ProductRepository } from '../../lib/repositories/product.repository.ts'
 import { InventoryService } from '../../services/inventory.service.ts'
+import { PurchaseService } from '../../services/purchase.service.ts'
 import type { MaterialRecord } from '../../types/inventory.types.ts'
 import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
 
@@ -435,6 +436,126 @@ describe('Unit: Physical Rolls Inventory & Warehouse Tracking', () => {
     assert.strictEqual(finalBreakdown.cost_display_secondary, '(৳ 10.00 / SFT)')
     assert.strictEqual(finalBreakdown.total_valuation, 19680)
     assert.strictEqual(finalBreakdown.formatted_summary, '(4ft × 164ft)')
+  })
+
+  test('8. Distinct 5.25ft and 4ft width rolls maintain separate physical groups and never merge in inventory operations', async () => {
+    const companyId = `test-roll-525-${Date.now()}`
+    const { getMaterialWarehouseStockBreakdown } = await import('../../lib/units.ts')
+
+    // 1. Create Black PVC material with 4ft and 5.25ft sizes
+    const blackPvc: Partial<MaterialRecord> = {
+      id: `mat-black-pvc-525-${Date.now()}`,
+      company_id: companyId,
+      sku: 'MAT-43550-525',
+      name: 'Black PVC Flex Banner',
+      category: 'flex_banner' as any,
+      unit: 'sft' as any,
+      purchase_unit: 'roll',
+      is_roll: true,
+      standard_roll_length_ft: 164,
+      current_stock: 0,
+      average_cost: 10,
+      purchase_price_per_sft: 10,
+      roll_sizes: [
+        { width: 4, length: 164, default_supplier_price: 6560, price: 6560 },
+        { width: 5.25, length: 164, default_supplier_price: 8610, price: 8610 },
+      ],
+    }
+    await InventoryRepository.createMaterial(blackPvc as any)
+
+    // 2. Direct receipt: 2 rolls of 4ft x 164ft
+    await InventoryService.receiveStock({
+      company_id: companyId,
+      material_id: blackPvc.id!,
+      location_id: 'loc-main',
+      quantity: 2,
+      unit_cost: 6560,
+      width_ft: 4,
+      length_ft: 164,
+      purchase_unit: 'roll',
+      performed_by_name: 'Store Officer',
+      notes: 'Direct Intake: 4ft rolls',
+    })
+
+    // 3. PO Receipt via PurchaseService: 3 rolls of 5.25ft x 164ft
+    const po = await PurchaseService.createPurchaseOrder({
+      company_id: companyId,
+      supplier_id: 'sup-01',
+      supplier_name: 'National Media Supplier',
+      supplier_phone: '+8801711000000',
+      items: [
+        {
+          id: `poi-${Date.now()}-1`,
+          material_id: blackPvc.id!,
+          material_name: 'Black PVC (5.25ft × 164ft)',
+          supplier_sku: '5.25ft × 164ft Roll',
+          roll_width_ft: 5.25,
+          roll_length_ft: 164,
+          quantity_ordered: 3,
+          quantity_received: 0,
+          quantity_remaining: 3,
+          unit: 'roll',
+          unit_cost: 8610,
+          total_cost: 3 * 8610,
+        },
+      ],
+    })
+
+    await PurchaseService.receiveGoods({
+      company_id: companyId,
+      purchase_order_id: po.id,
+      received_by_name: 'Warehouse Manager',
+      items_received: [
+        {
+          po_item_id: po.items[0].id,
+          material_id: blackPvc.id!,
+          material_name: 'Black PVC (5.25ft × 164ft)',
+          current_received: 3,
+          accepted_quantity: 3,
+          unit: 'roll',
+          unit_cost: 8610,
+          roll_width_ft: 5.25,
+          roll_length_ft: 164,
+        },
+      ],
+    })
+
+    // 4. Verify physical rolls in warehouse
+    const allRolls = await InventoryRepository.getInventoryRolls(companyId)
+    assert.strictEqual(allRolls.length, 5, 'Total physical rolls must be exactly 5 (2 of 4ft + 3 of 5.25ft)')
+
+    const rolls4ft = allRolls.filter((r) => r.width_ft === 4)
+    const rolls525ft = allRolls.filter((r) => r.width_ft === 5.25)
+
+    assert.strictEqual(rolls4ft.length, 2, 'Must have exactly 2 rolls of 4ft width')
+    assert.strictEqual(rolls4ft[0].remaining_area_sft, 656, '4ft roll must be 656 SFT')
+
+    assert.strictEqual(rolls525ft.length, 3, 'Must have exactly 3 rolls of 5.25ft width (NOT merged into 4ft!)')
+    assert.strictEqual(rolls525ft[0].remaining_area_sft, 861, '5.25ft roll must be 861 SFT (5.25 * 164)')
+    assert.strictEqual(rolls525ft[0].unit_cost, 8610, '5.25ft roll cost must be ৳ 8,610')
+
+    // 5. Verify warehouse stock breakdown
+    const updatedMat = await InventoryRepository.getMaterialById(blackPvc.id!, companyId)
+    assert.ok(updatedMat)
+    const breakdown = getMaterialWarehouseStockBreakdown(updatedMat!, allRolls)
+
+    assert.strictEqual(breakdown.total_rolls, 5)
+    assert.strictEqual(breakdown.roll_items.length, 2, 'Breakdown must have 2 distinct roll item groups')
+
+    const group4 = breakdown.roll_items.find((it) => it.width_ft === 4)
+    assert.ok(group4, '4ft roll item group must exist')
+    assert.strictEqual(group4?.roll_count, 2)
+    assert.strictEqual(group4?.total_sft, 1312)
+
+    const group525 = breakdown.roll_items.find((it) => it.width_ft === 5.25)
+    assert.ok(group525, '5.25ft roll item group must exist')
+    assert.strictEqual(group525?.roll_count, 3)
+    assert.strictEqual(group525?.total_sft, 2583)
+
+    assert.ok(
+      breakdown.formatted_summary.includes('4ft × 164ft') && breakdown.formatted_summary.includes('5.25ft × 164ft'),
+      'Formatted summary must display both sizes distinctly'
+    )
   })
 })
 

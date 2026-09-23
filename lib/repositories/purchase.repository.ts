@@ -279,14 +279,25 @@ export class PurchaseRepository {
       const lineCost = qtyOrdered * unitCost * (1 - discountPct / 100)
       subtotal += lineCost
 
+      let resolvedWidth = item.roll_width_ft !== undefined && item.roll_width_ft !== null ? Number(item.roll_width_ft) : null
+      if (!resolvedWidth) {
+        const matchW = `${item.material_name || ''} ${item.supplier_sku || ''} ${item.notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchW) resolvedWidth = Number(matchW[1])
+      }
+      let resolvedLength = item.roll_length_ft !== undefined && item.roll_length_ft !== null ? Number(item.roll_length_ft) : null
+      if (!resolvedLength) {
+        const matchL = `${item.material_name || ''} ${item.notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+        if (matchL) resolvedLength = Number(matchL[1])
+      }
+
       return {
         id: item.id || crypto.randomUUID(),
         purchase_order_id: poId,
         material_id: item.material_id,
         material_name: item.material_name,
         supplier_sku: item.supplier_sku || null,
-        roll_width_ft: item.roll_width_ft ?? null,
-        roll_length_ft: item.roll_length_ft ?? null,
+        roll_width_ft: resolvedWidth,
+        roll_length_ft: resolvedLength,
         roll_id: item.roll_id ?? null,
         batch_lot_number: item.batch_lot_number ?? null,
         quantity_ordered: qtyOrdered,
@@ -494,6 +505,8 @@ export class PurchaseRepository {
         total_cost: accepted * unitCost,
         batch_lot_number: item.batch_lot_number || null,
         roll_id: item.roll_id || null,
+        roll_width_ft: (item as any).roll_width_ft ?? null,
+        roll_length_ft: (item as any).roll_length_ft ?? null,
         expiry_date: item.expiry_date || null,
         rejection_reason: item.rejection_reason || null,
         notes: item.notes || null,

@@ -195,14 +195,36 @@ export class InventoryService {
       : []
 
     // Width & Length extraction
-    const widthFt = Number(
-      params.width_ft ||
-      (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
-      material.roll_width_ft ||
-      material.width ||
-      4
-    )
-    const lengthFt = Number(params.length_ft || material.standard_roll_length_ft || material.roll_length_ft || 164)
+    let widthFt = Number(params.width_ft || 0)
+    if (!widthFt && params.size_label) {
+      const matchW = params.size_label.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      if (matchW) widthFt = Number(matchW[1])
+    }
+    if (!widthFt && params.notes) {
+      const matchW = params.notes.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      if (matchW) widthFt = Number(matchW[1])
+    }
+    if (!widthFt) {
+      widthFt = Number(
+        material.roll_width_ft ||
+        (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+        material.width ||
+        4
+      )
+    }
+
+    let lengthFt = Number(params.length_ft || 0)
+    if (!lengthFt && params.size_label) {
+      const matchL = params.size_label.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      if (matchL) lengthFt = Number(matchL[1])
+    }
+    if (!lengthFt && params.notes) {
+      const matchL = params.notes.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      if (matchL) lengthFt = Number(matchL[1])
+    }
+    if (!lengthFt) {
+      lengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
+    }
     const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : 1
     const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
 

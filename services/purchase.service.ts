@@ -337,6 +337,8 @@ export class PurchaseService {
       unit_cost?: number
       batch_lot_number?: string | null
       roll_id?: string | null
+      roll_width_ft?: number | null
+      roll_length_ft?: number | null
       expiry_date?: string | null
       rejection_reason?: string | null
       notes?: string | null
@@ -418,6 +420,8 @@ export class PurchaseService {
         total_cost: accepted * unitCost,
         batch_lot_number: item.batch_lot_number || null,
         roll_id: item.roll_id || null,
+        roll_width_ft: (item as any).roll_width_ft ?? null,
+        roll_length_ft: (item as any).roll_length_ft ?? null,
         expiry_date: item.expiry_date || null,
         rejection_reason: item.rejection_reason || null,
         notes: item.notes || null,
@@ -466,20 +470,43 @@ export class PurchaseService {
           ? (material.material_config as any).roll_sizes
           : []
 
-        const rollWidth = Number(
+        const poItem = (po.items || []).find((p: any) => p.id === item.po_item_id || p.material_id === item.material_id)
+
+        let rollWidth = Number(
           (item as any).roll_width_ft ||
-          material?.roll_width_ft ||
-          (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
-          material?.width ||
-          4
+          (poItem as any)?.roll_width_ft ||
+          0
         )
-        const rollLength = Number(
+        if (!rollWidth) {
+          const matchW = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.supplier_sku || ''} ${(poItem as any)?.notes || ''}`.match(/(\d+(?:\.\d+)?)\s*(?:ft|'|foot)/i)
+          if (matchW) rollWidth = Number(matchW[1])
+        }
+        if (!rollWidth) {
+          rollWidth = Number(
+            material?.roll_width_ft ||
+            (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+            material?.width ||
+            4
+          )
+        }
+
+        let rollLength = Number(
           (item as any).roll_length_ft ||
-          material?.roll_length_ft ||
-          material?.length ||
-          material?.standard_roll_length_ft ||
-          164
+          (poItem as any)?.roll_length_ft ||
+          0
         )
+        if (!rollLength) {
+          const matchL = `${item.material_name || ''} ${(poItem as any)?.material_name || ''} ${(poItem as any)?.notes || ''}`.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+          if (matchL) rollLength = Number(matchL[1])
+        }
+        if (!rollLength) {
+          rollLength = Number(
+            material?.roll_length_ft ||
+            material?.length ||
+            material?.standard_roll_length_ft ||
+            164
+          )
+        }
         const rollArea = Math.round(rollWidth * rollLength * 100) / 100
 
         let stockChangeQty = accepted
