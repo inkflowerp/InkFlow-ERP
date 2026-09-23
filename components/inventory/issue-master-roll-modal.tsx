@@ -184,8 +184,8 @@ export function IssueMasterRollModal({
 
   // Warehouse Stock Breakdown in Purchase Units
   const warehouseBreakdown = useMemo(() => {
-    return getMaterialWarehouseStockBreakdown(selectedMaterial)
-  }, [selectedMaterial])
+    return getMaterialWarehouseStockBreakdown(selectedMaterial, rolls)
+  }, [selectedMaterial, rolls])
 
   // Auto-inferred dimensions
   const widthFt = useMemo(() => {

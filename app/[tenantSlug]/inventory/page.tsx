@@ -465,6 +465,205 @@ function UnifiedInventoryContent() {
     }
   }, [companyId])
 
+  // Canonical 7-Attribute Inventory Group Rows (strictly separate row per discrete 7-attribute combination)
+  const inventoryGroupRows = useMemo(() => {
+    const rowsList: {
+      key: string
+      material_id: string
+      material: MaterialRecord
+      name: string
+      name_bn?: string | null
+      display_title: string
+      sku: string
+      category?: string
+      specification?: string | null
+      is_roll: boolean
+      width_ft: number
+      length_ft: number
+      allowance_ft: number
+      purchase_price: number
+      gsm: number
+      finishing: string
+      stock_quantity: number
+      stock_unit: string
+      consumption_qty: number
+      consumption_unit: string
+      avg_unit_cost: number
+      total_valuation: number
+      reorder_level: number
+      status: 'available' | 'low_stock' | 'out_of_stock'
+      cost_display_primary: string
+      cost_display_secondary?: string | null
+      stock_display_primary: string
+      stock_display_secondary?: string | null
+    }[] = []
+
+    for (const mat of materials) {
+      const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
+      const isRoll = breakdown.is_roll
+      const reorder = Number(mat.reorder_level || mat.min_stock_level || 0)
+      const baseCost = Number(mat.average_cost || mat.last_purchase_price || mat.cost_per_unit || 0)
+      const globalAllowance = Number(
+        mat.production_width_allowance ||
+        (mat.material_config as any)?.extra_width_allowance_ft ||
+        0
+      )
+
+      if (isRoll && breakdown.roll_items && breakdown.roll_items.length > 0) {
+        // Expand each distinct 7-attribute inventory group as its own first-class table row
+        for (const item of breakdown.roll_items) {
+          const canonicalAttrs = normalizeInventoryGroupAttributes({
+            name: mat.name,
+            width_ft: item.width_ft,
+            length_ft: item.length_ft,
+            allowance_ft: item.allowance_ft ?? globalAllowance,
+            purchase_price: item.purchase_price ?? baseCost,
+            gsm: item.gsm ?? Number(mat.gsm || 0),
+            finishing: item.finishing ?? String(mat.default_finishing || 'none'),
+            specification: mat.specification,
+            material_spec: (mat as any)?.material_spec,
+          })
+          const key = createInventoryGroupingKey(canonicalAttrs)
+          const rollCount = item.roll_count
+          const totalSft = item.total_sft
+          const itemVal = item.total_valuation || (rollCount * (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft)))
+
+          const isOut = rollCount <= 0
+          const isLow = !isOut && (reorder > 0 ? rollCount <= reorder : false)
+          const status = isOut ? 'out_of_stock' : isLow ? 'low_stock' : 'available'
+
+          const pricePerRoll = canonicalAttrs.purchase_price > 0
+            ? (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
+            : (baseCost > 150 ? baseCost : baseCost * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
+          const pricePerSft = canonicalAttrs.width_ft * canonicalAttrs.length_ft > 0
+            ? pricePerRoll / (canonicalAttrs.width_ft * canonicalAttrs.length_ft)
+            : 0
+
+          rowsList.push({
+            key,
+            material_id: mat.id,
+            material: mat,
+            name: mat.name,
+            name_bn: mat.name_bn || null,
+            display_title: `${mat.name} — ${canonicalAttrs.width_ft}ft × ${canonicalAttrs.length_ft}ft`,
+            sku: mat.sku,
+            category: mat.category,
+            specification: mat.specification,
+            is_roll: true,
+            width_ft: canonicalAttrs.width_ft,
+            length_ft: canonicalAttrs.length_ft,
+            allowance_ft: canonicalAttrs.allowance_ft,
+            purchase_price: canonicalAttrs.purchase_price,
+            gsm: canonicalAttrs.gsm,
+            finishing: canonicalAttrs.finishing,
+            stock_quantity: rollCount,
+            stock_unit: rollCount === 1 ? 'Roll' : 'Rolls',
+            consumption_qty: totalSft,
+            consumption_unit: 'SFT',
+            avg_unit_cost: pricePerRoll,
+            total_valuation: itemVal,
+            reorder_level: reorder,
+            status,
+            cost_display_primary: pricePerRoll > 0 ? `৳ ${pricePerRoll.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })} / Roll` : '—',
+            cost_display_secondary: pricePerSft > 0 ? `(৳ ${pricePerSft.toFixed(2)} / SFT)` : null,
+            stock_display_primary: `${rollCount} ${rollCount === 1 ? 'Roll' : 'Rolls'}`,
+            stock_display_secondary: `${totalSft.toLocaleString()} SFT`,
+          })
+        }
+      } else {
+        // Non-roll material or roll material with 0 stock and no configured roll sizes
+        const stockQty = Number(mat.current_stock || 0)
+        const isOut = stockQty <= 0
+        const isLow = !isOut && (reorder > 0 ? stockQty <= reorder : false)
+        const status = isOut ? 'out_of_stock' : isLow ? 'low_stock' : 'available'
+        const totalVal = breakdown.total_valuation > 0 ? breakdown.total_valuation : (stockQty * baseCost)
+
+        const defaultWidth = Number(mat.roll_width_ft || mat.width || 0)
+        const defaultLength = Number(mat.standard_roll_length_ft || mat.roll_length_ft || mat.length || 0)
+
+        const canonicalAttrs = normalizeInventoryGroupAttributes({
+          name: mat.name,
+          width_ft: defaultWidth,
+          length_ft: defaultLength,
+          allowance_ft: globalAllowance,
+          purchase_price: baseCost,
+          gsm: Number(mat.gsm || 0),
+          finishing: String(mat.default_finishing || 'none'),
+          specification: mat.specification,
+        })
+        const key = createInventoryGroupingKey(canonicalAttrs)
+
+        rowsList.push({
+          key,
+          material_id: mat.id,
+          material: mat,
+          name: mat.name,
+          name_bn: mat.name_bn || null,
+          display_title: isRoll && defaultWidth > 0 && defaultLength > 0
+            ? `${mat.name} — ${defaultWidth}ft × ${defaultLength}ft`
+            : mat.name,
+          sku: mat.sku,
+          category: mat.category,
+          specification: mat.specification,
+          is_roll: isRoll,
+          width_ft: canonicalAttrs.width_ft,
+          length_ft: canonicalAttrs.length_ft,
+          allowance_ft: canonicalAttrs.allowance_ft,
+          purchase_price: canonicalAttrs.purchase_price,
+          gsm: canonicalAttrs.gsm,
+          finishing: canonicalAttrs.finishing,
+          stock_quantity: stockQty,
+          stock_unit: isRoll ? 'Rolls' : (mat.unit || 'pcs'),
+          consumption_qty: stockQty,
+          consumption_unit: mat.unit || 'pcs',
+          avg_unit_cost: baseCost,
+          total_valuation: totalVal,
+          reorder_level: reorder,
+          status,
+          cost_display_primary: breakdown.cost_display_primary || (baseCost > 0 ? `৳ ${baseCost.toLocaleString()}` : '—'),
+          cost_display_secondary: breakdown.cost_display_secondary,
+          stock_display_primary: breakdown.purchase_unit_display || `${stockQty.toLocaleString()} ${mat.unit || 'pcs'}`,
+          stock_display_secondary: breakdown.consumption_unit_display !== breakdown.purchase_unit_display ? breakdown.consumption_unit_display : null,
+        })
+      }
+    }
+
+    return rowsList
+  }, [materials, rolls])
+
+  // Filtered Canonical 7-Attribute Inventory Group Rows
+  const filteredInventoryGroupRows = useMemo(() => {
+    return inventoryGroupRows.filter((row) => {
+      const matchCat = selectedCategory === 'all' || row.category === selectedCategory
+      const q = search.trim().toLowerCase()
+      if (!matchCat) return false
+      if (!q) return true
+
+      const matchBasic =
+        row.name.toLowerCase().includes(q) ||
+        row.display_title.toLowerCase().includes(q) ||
+        row.sku.toLowerCase().includes(q) ||
+        (row.name_bn && row.name_bn.includes(q)) ||
+        (row.category && row.category.toLowerCase().includes(q)) ||
+        (row.specification && row.specification.toLowerCase().includes(q))
+
+      const matchSpec =
+        row.is_roll && (
+          `${row.width_ft}ft`.includes(q) ||
+          `${row.width_ft} ft`.includes(q) ||
+          `${row.width_ft}`.includes(q) ||
+          `${row.length_ft}ft`.includes(q) ||
+          `${row.length_ft} ft`.includes(q) ||
+          `${row.length_ft}`.includes(q) ||
+          (row.gsm > 0 && (`${row.gsm}gsm`.includes(q) || `${row.gsm} gsm`.includes(q) || `${row.gsm}`.includes(q))) ||
+          (row.finishing && row.finishing !== 'none' && row.finishing.toLowerCase().includes(q)) ||
+          (row.purchase_price > 0 && `${row.purchase_price}`.includes(q))
+        )
+
+      return matchBasic || matchSpec
+    })
+  }, [inventoryGroupRows, selectedCategory, search])
+
   // Filtered Materials
   const filteredMaterials = useMemo(() => {
     return materials.filter((m) => {
@@ -1152,7 +1351,7 @@ function UnifiedInventoryContent() {
         <InventoryTabsNavigation
           currentView={currentView}
           onSelectTab={(tab) => setViewTab(tab)}
-          materialsCount={materials.length}
+          materialsCount={inventoryGroupRows.length}
           readyProductsCount={readyProducts.length}
           rollsCount={totalPhysicalRollsCount || rolls.length}
           floorConsumptionsCount={floorConsumptions.length}
@@ -1177,7 +1376,7 @@ function UnifiedInventoryContent() {
                 <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
                   <Input
-                    placeholder="Search raw material name, SKU, brand, specifications..."
+                    placeholder={isBn ? "কাঁচামাল গ্রুপ, মাপ (যেমন ২.২৫ft, ১৬৪ft), SKU, স্পেসিফিকেশন খুঁজুন..." : "Search material group, size (e.g. 2.25ft, 164ft), SKU, brand, GSM, specs..."}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="pl-9 text-xs h-9"
@@ -1214,11 +1413,11 @@ function UnifiedInventoryContent() {
                 <table className="w-full text-xs text-left">
                   <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
                     <tr>
-                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'কাঁচামাল ও এসকেইউ' : 'Material & SKU'}</th>
-                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'ক্যাটাগরি ও স্পেসিফিকেশন' : 'Category & Spec'}</th>
+                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'কাঁচামাল গ্রুপ ও এসকেইউ' : 'Material Group & SKU'}</th>
+                      <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'ক্যাটাগরি ও স্পেক' : 'Category & Spec'}</th>
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'বর্তমান স্টক' : 'Available Stock'}</th>
                       <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'একক' : 'Unit'}</th>
-                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'গড় একক খরচ' : 'Avg Unit Cost'}</th>
+                      <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'একক খরচ' : 'Unit Cost'}</th>
                       <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'মোট মূল্যায়ন' : 'Total Valuation'}</th>
                       <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'রিঅর্ডার লেভেল' : 'Reorder Point'}</th>
                       <th className="py-3.5 px-4 text-center whitespace-nowrap font-bold">{isBn ? 'স্ট্যাটাস' : 'Status'}</th>
@@ -1226,11 +1425,11 @@ function UnifiedInventoryContent() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredMaterials.length === 0 ? (
+                    {filteredInventoryGroupRows.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="p-8 text-center text-slate-500">
                           <Layers className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                          <p className="font-bold">{isBn ? 'কোনো কাঁচামাল পাওয়া যায়নি।' : 'No raw materials match your search.'}</p>
+                          <p className="font-bold">{isBn ? 'কোনো কাঁচামাল গ্রুপ পাওয়া যায়নি।' : 'No inventory groups match your search.'}</p>
                           <Button
                             size="sm"
                             onClick={() => setIsReceiveStockOpen(true)}
@@ -1242,96 +1441,96 @@ function UnifiedInventoryContent() {
                         </td>
                       </tr>
                     ) : (
-                      filteredMaterials.map((mat) => {
-                        const stockQty = Number(mat.current_stock || 0)
-                        const reorder = Number(mat.reorder_level || mat.min_stock_level || 0)
-                        const breakdown = getMaterialWarehouseStockBreakdown(mat, rolls)
-                        const isRoll = breakdown.is_roll
-                        const isOut = (isRoll && breakdown.total_rolls === 0) || stockQty <= 0
-                        const isLow = !isOut && (reorder > 0 ? stockQty <= reorder : false)
-                        const avgCost = Number(mat.average_cost || mat.last_purchase_price || 0)
+                      filteredInventoryGroupRows.map((row) => {
+                        const isOut = row.status === 'out_of_stock'
+                        const isLow = row.status === 'low_stock'
 
                         return (
-                          <tr key={mat.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
+                          <tr key={row.key} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40 transition-colors">
                             <td className="py-3.5 px-4">
                               <Link
-                                href={getTenantNavHref(`/inventory/${mat.id}`, pathname, slug)}
+                                href={getTenantNavHref(`/inventory/${row.material_id}`, pathname, slug)}
                                 className="font-bold text-slate-900 dark:text-white hover:text-emerald-600 flex items-center gap-1.5 transition-colors"
                               >
-                                <span>{mat.name}</span>
+                                <span>{row.display_title}</span>
                                 <ExternalLink className="h-3 w-3 opacity-60" />
                               </Link>
-                              {mat.name_bn && <div className="text-[11px] text-slate-400 font-bengali mt-0.5">{mat.name_bn}</div>}
-                              <div className="text-[10px] text-slate-500 font-mono mt-0.5 font-medium">SKU: {mat.sku}</div>
+                              {row.name_bn && <div className="text-[11px] text-slate-400 font-bengali mt-0.5">{row.name_bn}</div>}
+                              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                                <span className="text-[10px] text-slate-500 font-mono font-medium">SKU: {row.sku}</span>
+                                {row.is_roll && row.width_ft > 0 && (
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                                    {row.width_ft}ft × {row.length_ft}ft
+                                  </span>
+                                )}
+                                {row.allowance_ft > 0 && (
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                                    +{row.allowance_ft}ft allow
+                                  </span>
+                                )}
+                                {row.gsm > 0 && (
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                                    {row.gsm} GSM
+                                  </span>
+                                )}
+                                {row.finishing && row.finishing !== 'none' && (
+                                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-indigo-50 text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 capitalize">
+                                    {row.finishing}
+                                  </span>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4">
                               <span className="capitalize px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                {mat.category?.replace('_', ' ')}
+                                {row.category?.replace('_', ' ') || 'Substrate'}
                               </span>
-                              {mat.specification && (
-                                <div className="text-[10px] text-slate-400 mt-1">{mat.specification}</div>
+                              {row.is_roll && row.width_ft * row.length_ft > 0 && (
+                                <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 font-mono">
+                                  {(row.width_ft * row.length_ft).toLocaleString()} SFT / roll
+                                </div>
+                              )}
+                              {row.specification && (
+                                <div className="text-[10px] text-slate-400 mt-0.5 line-clamp-1">{row.specification}</div>
                               )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-black font-mono text-sm whitespace-nowrap">
                               <div>
                                 <span className="text-emerald-700 dark:text-emerald-400 font-extrabold">
-                                  {breakdown.purchase_unit_display || `${stockQty.toLocaleString()} ${mat.unit}`}
+                                  {row.stock_display_primary}
                                 </span>
-                                {breakdown.is_roll && breakdown.roll_items.length > 1 && (
-                                  <div className="flex flex-wrap items-center justify-end gap-1 mt-1 max-w-[240px] ml-auto">
-                                    {breakdown.roll_items.map((item) => (
-                                      <span
-                                        key={item.label}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800 shadow-2xs"
-                                        title={`${item.width_ft}ft × ${item.length_ft}ft: ${item.roll_count} Pcs (${item.total_sft.toLocaleString()} SFT)`}
-                                      >
-                                        {item.width_ft}ft×{item.length_ft}ft: <strong className="ml-1 text-blue-900 dark:text-blue-100">{item.roll_count} Pcs</strong>
-                                      </span>
-                                    ))}
-                                  </div>
-                                )}
-                                {breakdown.purchase_unit_display && breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
+                                {row.stock_display_secondary && (
                                   <div className="text-[10px] font-medium text-slate-500 font-sans mt-0.5">
-                                    {breakdown.consumption_unit_display}
+                                    {row.stock_display_secondary}
                                   </div>
                                 )}
                               </div>
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
                               <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-mono font-bold uppercase text-[10px] border border-slate-200 dark:border-slate-700">
-                                {breakdown.purchase_unit ? breakdown.purchase_unit.toUpperCase() : mat.unit}
+                                {row.is_roll ? 'ROLL' : row.stock_unit.toUpperCase()}
                               </span>
-                              {breakdown.formatted_summary && (
-                                <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium block whitespace-normal mt-0.5 font-sans">
-                                  {breakdown.formatted_summary}
-                                </span>
-                              )}
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap font-medium">
-                              {breakdown.cost_display_primary && breakdown.cost_display_primary !== '—' ? (
-                                <div>
-                                  <span className="font-semibold text-slate-900 dark:text-white">{breakdown.cost_display_primary}</span>
-                                  {breakdown.cost_display_secondary && (
-                                    <div className="text-[10px] text-slate-400 font-sans font-normal mt-0.5">
-                                      {breakdown.cost_display_secondary}
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                <CurrencyDisplay amount={avgCost} />
-                              )}
+                              <div>
+                                <span className="font-semibold text-slate-900 dark:text-white">{row.cost_display_primary}</span>
+                                {row.cost_display_secondary && (
+                                  <div className="text-[10px] text-slate-400 font-sans font-normal mt-0.5">
+                                    {row.cost_display_secondary}
+                                  </div>
+                                )}
+                              </div>
                             </td>
                             <td className="py-3.5 px-4 text-right font-mono whitespace-nowrap">
-                              {breakdown.total_valuation > 0 ? (
+                              {row.total_valuation > 0 ? (
                                 <span className="font-extrabold text-slate-900 dark:text-white">
-                                  <CurrencyDisplay amount={breakdown.total_valuation} />
+                                  <CurrencyDisplay amount={row.total_valuation} />
                                 </span>
                               ) : (
                                 <span className="text-slate-400 font-medium"><CurrencyDisplay amount={0} /></span>
                               )}
                             </td>
                             <td className="py-3.5 px-4 font-mono text-xs text-slate-500 text-center whitespace-nowrap">
-                              {reorder > 0 ? `${reorder} ${mat.unit}` : '—'}
+                              {row.reorder_level > 0 ? `${row.reorder_level} ${row.stock_unit}` : '—'}
                             </td>
                             <td className="py-3.5 px-4 text-center whitespace-nowrap">
                               {isOut ? (
@@ -1357,8 +1556,10 @@ function UnifiedInventoryContent() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    setSelectedMaterialForAction(mat)
-                                    setFloorIssueMaterialId(mat.id)
+                                    setSelectedMaterialForAction(row.material)
+                                    setFloorIssueMaterialId(row.material_id)
+                                    setFloorIssueWidthFt(row.is_roll ? row.width_ft : undefined)
+                                    setFloorIssueLengthFt(row.is_roll ? row.length_ft : undefined)
                                     setSelectedRequestForIssue(null)
                                     setIsFloorIssueOpen(true)
                                   }}
@@ -1370,7 +1571,7 @@ function UnifiedInventoryContent() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    setSelectedMaterialForAction(mat)
+                                    setSelectedMaterialForAction(row.material)
                                     setIsReceiveStockOpen(true)
                                   }}
                                   className="h-7 px-2 text-[11px] text-emerald-600 hover:bg-emerald-50 border-emerald-200 dark:border-emerald-800 font-medium cursor-pointer"
@@ -1381,7 +1582,7 @@ function UnifiedInventoryContent() {
                                   size="sm"
                                   variant="outline"
                                   onClick={() => {
-                                    setSelectedMaterialForAction(mat)
+                                    setSelectedMaterialForAction(row.material)
                                     setIsAdjustmentOpen(true)
                                   }}
                                   className="h-7 px-2 text-[11px] text-amber-600 hover:bg-amber-50 border-amber-200 dark:border-amber-800 font-medium cursor-pointer"
@@ -1391,7 +1592,7 @@ function UnifiedInventoryContent() {
                                 <Button
                                   size="sm"
                                   variant="ghost"
-                                  onClick={() => handleTrashMaterial(mat)}
+                                  onClick={() => handleTrashMaterial(row.material)}
                                   className="h-7 px-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                                   title={isBn ? 'ট্র্যাশে পাঠান' : 'Move to Trash'}
                                 >
