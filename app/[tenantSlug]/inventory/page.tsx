@@ -532,21 +532,43 @@ function UnifiedInventoryContent() {
           const key = createInventoryGroupingKey(canonicalAttrs)
           const stockCount = item.roll_count
           const consQty = item.total_sft
-          const itemVal = item.total_valuation !== undefined
+          const itemArea = canonicalAttrs.width_ft * canonicalAttrs.length_ft || 1
+
+          let pricePerRoll = 0
+          let pricePerSft = 0
+
+          if (isRoll) {
+            if (canonicalAttrs.purchase_price > 0) {
+              if (canonicalAttrs.purchase_price <= 150) {
+                pricePerSft = canonicalAttrs.purchase_price
+                pricePerRoll = Math.round(canonicalAttrs.purchase_price * itemArea)
+              } else {
+                pricePerRoll = canonicalAttrs.purchase_price
+                pricePerSft = itemArea > 0 ? pricePerRoll / itemArea : 0
+              }
+            } else if (baseCost > 0) {
+              if (baseCost <= 150) {
+                pricePerSft = baseCost
+                pricePerRoll = Math.round(baseCost * itemArea)
+              } else {
+                const masterArea = (Number(mat.roll_width_ft || canonicalAttrs.width_ft) * Number(mat.standard_roll_length_ft || canonicalAttrs.length_ft)) || itemArea
+                pricePerSft = masterArea > 0 ? baseCost / masterArea : 0
+                pricePerRoll = Math.round(pricePerSft * itemArea)
+              }
+            }
+          } else {
+            pricePerRoll = canonicalAttrs.purchase_price > 0 ? canonicalAttrs.purchase_price : baseCost
+          }
+
+          const itemVal = item.total_valuation !== undefined && item.total_valuation > 0
             ? item.total_valuation
-            : (stockCount * (canonicalAttrs.purchase_price > 150 ? canonicalAttrs.purchase_price : canonicalAttrs.purchase_price * (canonicalAttrs.width_ft * canonicalAttrs.length_ft || 1)))
+            : (stockCount * pricePerRoll)
 
           const isOut = stockCount <= 0
           const isLow = !isOut && (reorder > 0 ? stockCount <= reorder : false)
           const status = isOut ? 'out_of_stock' : isLow ? 'low_stock' : 'available'
 
           const unitPrice = canonicalAttrs.purchase_price > 0 ? canonicalAttrs.purchase_price : baseCost
-          const pricePerRoll = isRoll
-            ? (unitPrice > 150 ? unitPrice : unitPrice * (canonicalAttrs.width_ft * canonicalAttrs.length_ft))
-            : unitPrice
-          const pricePerSft = isRoll && canonicalAttrs.width_ft * canonicalAttrs.length_ft > 0
-            ? pricePerRoll / (canonicalAttrs.width_ft * canonicalAttrs.length_ft)
-            : 0
 
           let displayTitle = mat.name
           if (isRoll) {
@@ -1665,7 +1687,9 @@ function UnifiedInventoryContent() {
                                 <Button
                                   size="sm"
                                   variant="outline"
+                                  disabled={isOut}
                                   onClick={() => {
+                                    if (isOut) return
                                     setSelectedMaterialForAction(row.material)
                                     setFloorIssueMaterialId(row.material_id)
                                     setFloorIssueWidthFt(row.is_roll ? row.width_ft : undefined)
@@ -1673,18 +1697,30 @@ function UnifiedInventoryContent() {
                                     setSelectedRequestForIssue(null)
                                     setIsFloorIssueOpen(true)
                                   }}
-                                  className="h-7 px-2 text-[11px] text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 font-medium cursor-pointer"
+                                  className={cn(
+                                    'h-7 px-2 text-[11px] font-medium transition-all',
+                                    isOut
+                                      ? 'opacity-40 text-slate-400 border-slate-200 dark:border-slate-800 cursor-not-allowed'
+                                      : 'text-indigo-600 hover:bg-indigo-50 border-indigo-200 dark:border-indigo-800 cursor-pointer'
+                                  )}
+                                  title={isOut ? (isBn ? 'স্টকে মাল নেই' : 'No stock available to issue') : (isBn ? 'ফ্লোরে ইস্যু করুন' : 'Issue to floor')}
                                 >
                                   {isBn ? 'ইস্যু' : 'Issue'}
                                 </Button>
                                 <Button
                                   size="sm"
-                                  variant="outline"
+                                  variant={isOut ? 'default' : 'outline'}
                                   onClick={() => {
                                     setSelectedMaterialForAction(row.material)
                                     setIsReceiveStockOpen(true)
                                   }}
-                                  className="h-7 px-2 text-[11px] text-emerald-600 hover:bg-emerald-50 border-emerald-200 dark:border-emerald-800 font-medium cursor-pointer"
+                                  className={cn(
+                                    'h-7 px-2 text-[11px] font-medium cursor-pointer transition-all',
+                                    isOut
+                                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs border-emerald-600'
+                                      : 'text-emerald-600 hover:bg-emerald-50 border-emerald-200 dark:border-emerald-800'
+                                  )}
+                                  title={isBn ? 'স্টক রিসিভ করুন' : 'Receive stock'}
                                 >
                                   {isBn ? 'রিসিভ' : 'Receive'}
                                 </Button>
@@ -1696,6 +1732,7 @@ function UnifiedInventoryContent() {
                                     setIsAdjustmentOpen(true)
                                   }}
                                   className="h-7 px-2 text-[11px] text-amber-600 hover:bg-amber-50 border-amber-200 dark:border-amber-800 font-medium cursor-pointer"
+                                  title={isBn ? 'স্টক এডজাস্টমেন্ট' : 'Stock adjustment'}
                                 >
                                   {isBn ? 'এডজাস্ট' : 'Adjust'}
                                 </Button>

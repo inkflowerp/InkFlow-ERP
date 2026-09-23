@@ -2284,6 +2284,30 @@ export function getMaterialWarehouseStockBreakdown(
     }
     if (!inferredWidth) inferredWidth = 4
 
+    // Derive reference per-SFT rate and reference master area for proportional roll costing
+    const explicitPerSft = Number(
+      material.purchase_price_per_sft ||
+      (material.material_config as any)?.purchase_price_per_sft ||
+      (material.pricing_formula as any)?.purchase_price_per_sft ||
+      (material.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
+      (material.cost_breakdown as any)?.material ||
+      (material.cost_breakdown as any)?.material_cost ||
+      0
+    )
+
+    const masterWidthRef = Number(
+      material.roll_width_ft ||
+      (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
+      inferredWidth ||
+      4
+    )
+    const masterAreaRef = (masterWidthRef + globalAllowance) * standardLength
+    const derivedPerSft = explicitPerSft > 0
+      ? explicitPerSft
+      : rawCost > 0
+      ? (rawCost <= 150 ? rawCost : (masterAreaRef > 0 ? rawCost / masterAreaRef : (rawCost / (inferredWidth * standardLength))))
+      : 0
+
     let totalRolls = 0
     let rollItems: WarehouseRollStockItem[] = []
     let totalSft = 0
@@ -2297,7 +2321,14 @@ export function getMaterialWarehouseStockBreakdown(
         const w = Number(r.width_ft) || inferredWidth
         const l = Number(r.current_length_ft ?? r.initial_length_ft) || standardLength
         const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? globalAllowance ?? 0)
-        const pPrice = Number(r.unit_cost ?? material.last_purchase_price ?? material.average_cost ?? material.cost_per_unit ?? rawCost ?? 0)
+        let pPrice = Number(r.unit_cost ?? (r as any).purchase_price ?? 0)
+        if (pPrice <= 0) {
+          if (derivedPerSft > 0) {
+            pPrice = Math.round(derivedPerSft * (w * l))
+          } else if (rawCost > 0) {
+            pPrice = rawCost <= 150 ? Math.round(rawCost * (w * l)) : rawCost
+          }
+        }
         const gsm = Number((r as any).gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
         const fin = String((r as any).finishing ?? (r as any).finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
 
@@ -2358,7 +2389,17 @@ export function getMaterialWarehouseStockBreakdown(
             ? Number(rs.width_ft)
             : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
           const l = Number(rs.length || rs.length_ft || standardLength)
-          const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+          const rollArea = w * l
+          let price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? 0)
+          if (price <= 0) {
+            if (derivedPerSft > 0) {
+              price = Math.round(derivedPerSft * rollArea)
+            } else if (rawCost > 0) {
+              price = rawCost <= 150 ? Math.round(rawCost * rollArea) : rawCost
+            } else {
+              price = 0
+            }
+          }
           const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
           const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
 
@@ -2418,7 +2459,17 @@ export function getMaterialWarehouseStockBreakdown(
           : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
         const l = Number(rs.length || rs.length_ft || standardLength)
         const explicitCount = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
-        const price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? rawCost ?? 0)
+        const rollArea = w * l
+        let price = Number(rs.price ?? rs.unit_cost ?? rs.purchase_price ?? 0)
+        if (price <= 0) {
+          if (derivedPerSft > 0) {
+            price = Math.round(derivedPerSft * rollArea)
+          } else if (rawCost > 0) {
+            price = rawCost <= 150 ? Math.round(rawCost * rollArea) : rawCost
+          } else {
+            price = 0
+          }
+        }
         const gsm = Number(rs.gsm ?? material.gsm ?? (material as any)?.weight_gsm ?? 0)
         const fin = String(rs.finishing ?? rs.finish ?? material.default_finishing ?? (material as any)?.finish ?? 'none')
 
@@ -2637,14 +2688,6 @@ export function getMaterialWarehouseStockBreakdown(
     let costPerSft = 0
     let totalValuation = 0
 
-    const explicitPerSft = Number(
-      material.purchase_price_per_sft ||
-      (material.material_config as any)?.purchase_price_per_sft ||
-      (material.pricing_formula as any)?.purchase_price_per_sft ||
-      (material.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
-      0
-    )
-
     if (explicitPerSft > 0) {
       costPerSft = explicitPerSft
       costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 656)
@@ -2653,6 +2696,10 @@ export function getMaterialWarehouseStockBreakdown(
       totalValuation = totalValuationCalculated
       costPerSft = effectiveStockSft > 0 ? (totalValuation / effectiveStockSft) : 0
       costPerRoll = totalRolls > 0 ? (totalValuation / totalRolls) : (areaPerStandardRoll > 0 ? costPerSft * areaPerStandardRoll : 0)
+    } else if (derivedPerSft > 0) {
+      costPerSft = derivedPerSft
+      costPerRoll = areaPerStandardRoll > 0 ? (costPerSft * areaPerStandardRoll) : (costPerSft * 656)
+      totalValuation = effectiveStockSft > 0 ? effectiveStockSft * costPerSft : 0
     } else if (rawCost > 0) {
       if (rawCost > 100) {
         // rawCost is per-Roll (e.g. ৳ 6,560 / Roll)
