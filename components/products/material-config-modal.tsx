@@ -366,12 +366,10 @@ export function MaterialConfigModal({
   const [dimensionUnit, setDimensionUnit] = useState<'ft' | 'inch' | 'mm' | 'm'>('ft')
 
   // Roll Geometry
-  const [configuredRolls, setConfiguredRolls] = useState<MaterialRollSizeConfig[]>([
-    { width: 10, extra_allowance: 0.25, length: 164 },
-  ])
-  const [standardRollLength, setStandardRollLength] = useState<number | string>(164)
-  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>(0.25)
-  const [newWidthInput, setNewWidthInput] = useState<string>('10')
+  const [configuredRolls, setConfiguredRolls] = useState<MaterialRollSizeConfig[]>([])
+  const [standardRollLength, setStandardRollLength] = useState<number | string>('')
+  const [extraWidthAllowance, setExtraWidthAllowance] = useState<number | string>('')
+  const [newWidthInput, setNewWidthInput] = useState<string>('')
 
   // Sheet Geometry
   const [availableSheetSizes, setAvailableSheetSizes] = useState<Array<{ width: number; length: number; label?: string }>>([
@@ -723,7 +721,7 @@ export function MaterialConfigModal({
           ? initialData.available_widths_ft
           : (formula.available_widths_ft && formula.available_widths_ft.length > 0)
           ? formula.available_widths_ft
-          : ((initialData as any).roll_width_ft ? [Number((initialData as any).roll_width_ft)] : [10])
+          : ((initialData as any).roll_width_ft ? [Number((initialData as any).roll_width_ft)] : [])
         const parsedRawAllowance = typeof rawAllowance === 'number' ? rawAllowance : (rawAllowance !== '' && !isNaN(parseFloat(rawAllowance)) ? parseFloat(rawAllowance) : 0)
         initialRolls = Array.from(new Set(rawWidths.map((w: any) => Number(w))))
           .filter((w: number) => !isNaN(w) && w > 0)
@@ -734,17 +732,19 @@ export function MaterialConfigModal({
           }))
       }
 
-      if (initialRolls.length === 0) {
-        initialRolls = [{ width: 10, extra_allowance: typeof rawAllowance === 'number' ? rawAllowance : 0, length: 164 }]
-      }
-
       initialRolls.sort((a, b) => a.width - b.width)
       setConfiguredRolls(initialRolls)
 
-      const activeRoll = initialRolls[initialRolls.length - 1]
-      setNewWidthInput(activeRoll.width.toString())
-      setExtraWidthAllowance(activeRoll.extra_allowance !== undefined ? activeRoll.extra_allowance : 0)
-      setStandardRollLength(activeRoll.length ?? (Number(stdLen) || 164))
+      if (initialRolls.length > 0) {
+        const activeRoll = initialRolls[initialRolls.length - 1]
+        setNewWidthInput(activeRoll.width.toString())
+        setExtraWidthAllowance(activeRoll.extra_allowance !== undefined ? activeRoll.extra_allowance : '')
+        setStandardRollLength(activeRoll.length ?? (Number(stdLen) || ''))
+      } else {
+        setNewWidthInput('')
+        setExtraWidthAllowance('')
+        setStandardRollLength(matCfg.standard_roll_length_ft || initialData.standard_roll_length_ft || formula.standard_roll_length_ft || '')
+      }
 
       const sheets = (matCfg.available_sheet_sizes && matCfg.available_sheet_sizes.length > 0)
         ? matCfg.available_sheet_sizes
@@ -809,14 +809,15 @@ export function MaterialConfigModal({
       })
 
       // Calculate initial purchase price and purchase price per SFT
-      const activeEffectiveW = activeRoll.width + (activeRoll.extra_allowance ?? 0)
-      const activeLen = activeRoll.length ?? (Number(stdLen) || 164)
-      const rollArea = Number((activeEffectiveW * activeLen).toFixed(2))
+      const activeRoll = initialRolls.length > 0 ? initialRolls[initialRolls.length - 1] : null
+      const activeEffectiveW = activeRoll ? (activeRoll.width + (activeRoll.extra_allowance ?? 0)) : 0
+      const activeLen = activeRoll ? (activeRoll.length ?? (Number(stdLen) || 164)) : (Number(stdLen) || 164)
+      const rollArea = activeEffectiveW > 0 ? Number((activeEffectiveW * activeLen).toFixed(2)) : 0
       const area = (matCfg.material_type === 'sheet' || initialData.purchase_unit === 'sheet')
         ? ((sheets[0]?.width || 4) * (sheets[0]?.length || 8))
         : (initialData.purchase_unit === 'box' || initialData.purchase_unit === 'pack')
         ? (Number(matCfg.pack_quantity) || 1000)
-        : rollArea
+        : (rollArea > 0 ? rollArea : 1)
 
       const rawPerSftPrice = matCfg.purchase_price_per_sft ?? formula.purchase_price_per_sft
       const rawPurPrice = initialData.purchase_price ?? matCfg.purchase_price
@@ -854,15 +855,15 @@ export function MaterialConfigModal({
       setPurchaseUnit('roll')
       setPurchasePrice('')
       setPurchasePricePerSft('')
-      setStandardRollLength(164)
-      setConfiguredRolls([{ width: 10, extra_allowance: 0, length: 164 }])
-      setNewWidthInput('10')
+      setStandardRollLength('')
+      setConfiguredRolls([])
+      setNewWidthInput('')
+      setExtraWidthAllowance('')
       setAvailableSheetSizes([
         { width: 4, length: 8, label: '4ft × 8ft (Standard Board)' },
       ])
       setNewSheetWidthInput('4')
       setNewSheetLengthInput('8')
-      setExtraWidthAllowance(0)
       setUsageUnit('sft')
       setWastePercent(5)
       setReorderLevel(5)
@@ -1305,11 +1306,8 @@ export function MaterialConfigModal({
           finalRolls = [{ width: parsedInput, extra_allowance: finalAllowance, length: finalLength }]
         }
       }
-      if (finalRolls.length === 0) {
-        finalRolls = [{ width: 10, extra_allowance: finalAllowance, length: 164 }]
-      }
       finalRolls.sort((a, b) => a.width - b.width || (a.length || 0) - (b.length || 0))
-      const finalWidths = Array.from(new Set(finalRolls.map((r) => r.width)))
+      const finalWidths = finalRolls.length > 0 ? Array.from(new Set(finalRolls.map((r) => r.width))) : undefined
 
       const finalPriceTiers: ProductPriceTiers = {}
       if (priceTiers.retail !== '') finalPriceTiers.retail = Number(priceTiers.retail)
@@ -1320,11 +1318,11 @@ export function MaterialConfigModal({
 
       const materialConfig: MaterialConfiguration = {
         material_type: materialType,
-        roll_sizes: (materialType === 'roll' || purchaseUnit === 'roll') ? finalRolls : undefined,
+        roll_sizes: (materialType === 'roll' || purchaseUnit === 'roll') ? (finalRolls.length > 0 ? finalRolls : undefined) : undefined,
         available_widths_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalWidths : undefined,
-        standard_roll_length_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalLength : undefined,
+        standard_roll_length_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? (finalRolls.length > 0 ? finalLength : (!isNaN(parsedLength) && parsedLength > 0 ? parsedLength : undefined)) : undefined,
         available_sheet_sizes: (materialType === 'sheet' || purchaseUnit === 'sheet') ? availableSheetSizes : undefined,
-        extra_width_allowance_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? finalAllowance : undefined,
+        extra_width_allowance_ft: (materialType === 'roll' || purchaseUnit === 'roll') ? (finalAllowance > 0 ? finalAllowance : undefined) : undefined,
         purchase_unit: purchaseUnit,
         purchase_price: pp,
         purchase_price_per_sft: purchasePricePerSft !== '' ? Number(purchasePricePerSft) : undefined,
