@@ -547,8 +547,8 @@ describe('Unit: Products & Services Commercial Master 2.1 — Final Business-Own
     it('8.3 Logs and audits price overrides with margin calculations', async () => {
       const prod = await ProductService.createProduct({
         company_id: companyId,
-        name: 'Star Flex Banner 280 GSM',
-        sku: 'FLEX-280-GSM',
+        name: 'Star Flex Banner 280 GSM Audit',
+        sku: 'FLEX-280-GSM-AUDIT',
         purchase_price: 8500,
         selling_price: 28,
         base_cost: 5.46,

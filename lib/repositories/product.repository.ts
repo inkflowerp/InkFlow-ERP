@@ -1971,7 +1971,9 @@ export class ProductRepository {
     return measureAsync(`ProductRepository.getProductSupplierPrices(${productId})`, async () => {
       if (!isSupabaseConfigured() || isTestMode()) {
         const prices = PrintERPDataStore.get<ProductSupplierPriceRecord[]>(STORAGE_KEYS.PRODUCT_SUPPLIER_PRICES, companyId) || []
-        return prices.filter((p) => p.product_id === productId)
+        return prices
+          .filter((p) => p.product_id === productId)
+          .sort((a, b) => (b.is_preferred ? 1 : 0) - (a.is_preferred ? 1 : 0) || a.purchase_price - b.purchase_price)
       }
 
       try {

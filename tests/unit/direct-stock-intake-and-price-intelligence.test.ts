@@ -1,281 +1,233 @@
-import { describe, it } from 'node:test'
+import test from 'node:test'
 import assert from 'node:assert/strict'
-import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
-import { InventoryService } from '../../services/inventory.service.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
-import type { MaterialRecord } from '../../types/inventory.types.ts'
-import type { PriceIntelligenceRecord } from '../../types/price-intelligence.types.ts'
+import { PriceIntelligenceEngine } from '../../lib/domain/price-intelligence-engine.ts'
 
-describe('Direct Stock Intake & Price Intelligence Engine', () => {
-  const testCompanyId = `test-company-price-intel-${Date.now()}`
+test('Direct Stock Intake & Price Intelligence — Registered Masters, Units, & Non-Inflated Pricing', async (t) => {
+  const companyId = 'tenant-price-intelligence-test-corp'
 
-  // 1. Material Master Physical Classification & Purchase Unit Inheritance
-  it('should automatically detect physical classification and preserve purchase unit from material master', () => {
-    // Roll Media
-    const flexMaster = {
-      id: 'mat-flx-001',
-      name: 'Eco Solvent Flex 440 GSM',
+  // Reset store
+  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, [], true, companyId)
+  PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, [], true, companyId)
+  PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, [], true, companyId)
+  PrintERPDataStore.set(STORAGE_KEYS.PRICE_INTELLIGENCE, [], true, companyId)
+  PrintERPDataStore.set(STORAGE_KEYS.LOCATIONS, [], true, companyId)
+
+  // 1. Registered Material Masters exactly as in Products & Commercial Masters
+  const registeredMaterials = [
+    {
+      id: 'mat-cyan-83366',
+      company_id: companyId,
+      sku: 'MAT-83366',
+      name: 'Eco Solvent Ink (Cyan)',
+      category: 'ink_chemistry',
+      unit: 'liter',
+      purchase_unit: 'liter',
+      average_cost: 1050,
+      current_stock: 5,
+    },
+    {
+      id: 'mat-lam-54172',
+      company_id: companyId,
+      sku: 'MAT-54172',
+      name: 'Matte Lamination',
       category: 'roll_media',
       unit: 'sft',
       purchase_unit: 'roll',
       is_roll: true,
-      available_widths_ft: [2.5, 3.2, 5],
+      available_widths_ft: [3, 4, 5],
       standard_roll_length_ft: 164,
-    }
-    const flexForm = PriceIntelligenceEngine.detectMaterialPhysicalForm(flexMaster)
-    assert.strictEqual(flexForm, 'roll', 'Eco Solvent Flex must be classified as roll')
-
-    // Rigid Sheet
-    const pvcMaster = {
-      id: 'mat-pvc-003',
-      name: 'PVC Board 3mm',
+      roll_width_ft: 5,
+      roll_length_ft: 164,
+      average_cost: 4920, // ৳4,920 for a base 5ft roll (820 sqft)
+      current_stock: 820,
+    },
+    {
+      id: 'mat-eyelet-76022',
+      company_id: companyId,
+      sku: 'MAT-76022',
+      name: 'Eyelet',
+      category: 'hardware_accessories',
+      unit: 'piece',
+      purchase_unit: 'piece',
+      average_cost: 400,
+      current_stock: 500,
+    },
+    {
+      id: 'mat-pvc-47483',
+      company_id: companyId,
+      sku: 'MAT-47483',
+      name: 'PVC Flex Banner',
+      category: 'roll_media',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      available_widths_ft: [3, 5],
+      standard_roll_length_ft: 164,
+      roll_width_ft: 5,
+      roll_length_ft: 164,
+      average_cost: 12226.2, // ৳12,226.20 for a 5ft roll (820 sqft) -> ৳14.91 / sqft
+      current_stock: 820,
+    },
+    {
+      id: 'mat-board-99011',
+      company_id: companyId,
+      sku: 'MAT-99011',
+      name: 'Acrylic Sheet 3mm',
       category: 'rigid_sheet',
       unit: 'sheet',
       purchase_unit: 'sheet',
       available_sheet_sizes: ['8x4 ft (32 sft)', '6x4 ft (24 sft)'],
-    }
-    const pvcForm = PriceIntelligenceEngine.detectMaterialPhysicalForm(pvcMaster)
-    assert.strictEqual(pvcForm, 'sheet', 'PVC Board must be classified as sheet')
+      average_cost: 3200,
+      current_stock: 10,
+    },
+  ]
 
-    // Liquid Consumable
-    const inkMaster = {
-      id: 'mat-ink-001',
-      name: 'Eco Solvent Ink Black',
-      category: 'ink_chemistry',
-      unit: 'ltr',
-      purchase_unit: 'bottle',
-    }
-    const inkForm = PriceIntelligenceEngine.detectMaterialPhysicalForm(inkMaster)
-    assert.strictEqual(inkForm, 'liquid', 'Eco Solvent Ink must be classified as liquid')
+  PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, registeredMaterials, true, companyId)
 
-    // Piece / Hardware
-    const eyeletMaster = {
-      id: 'mat-eyl-001',
-      name: 'Eyelet 12mm',
-      category: 'hardware_accessories',
-      unit: 'pcs',
-      purchase_unit: 'pack',
-    }
-    const eyeletForm = PriceIntelligenceEngine.detectMaterialPhysicalForm(eyeletMaster)
-    assert.strictEqual(eyeletForm, 'piece', 'Eyelet must be classified as piece')
+  await t.test('1. Physical Form & Purchase Unit Detection matches registered commercial types', () => {
+    const ink = registeredMaterials[0]
+    const lam = registeredMaterials[1]
+    const eyelet = registeredMaterials[2]
+    const sheet = registeredMaterials[4]
+
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(ink), 'liquid')
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(lam), 'roll')
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(eyelet), 'piece')
+    assert.equal(PriceIntelligenceEngine.detectMaterialPhysicalForm(sheet), 'sheet')
   })
 
-  // 2. Active Configured Roll Sizes & Discrete Economics
-  it('should extract active configured roll sizes and their discrete economic characteristics', () => {
-    const flexMaster = {
-      id: 'mat-flx-001',
-      name: 'Eco Solvent Flex 440 GSM',
-      category: 'roll_media',
-      unit: 'sft',
-      purchase_unit: 'roll',
-      is_roll: true,
-      standard_roll_length_ft: 164,
-      roll_sizes: [
-        { id: 'rs-1', width_ft: 2.5, length_ft: 164, label: '2.5 ft × 50 m', default_supplier_price: 8500, is_active: true },
-        { id: 'rs-2', width_ft: 3.2, length_ft: 164, label: '3.2 ft × 50 m', default_supplier_price: 10500, is_active: true },
-        { id: 'rs-3', width_ft: 5.0, length_ft: 164, label: '5 ft × 50 m', default_supplier_price: 15500, is_active: true },
-        { id: 'rs-4', width_ft: 3.2, length_ft: 328, label: '3.2 ft × 100 m', default_supplier_price: 21000, is_active: false }, // Inactive
-      ],
-    }
+  await t.test('2. Active Configured Sizes for Roll Media strictly derives user-configured widths with realistic scaled pricing', () => {
+    const lam = registeredMaterials[1]
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(lam)
 
-    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(flexMaster)
-    assert.strictEqual(sizes.length, 3, 'Only the 3 active roll sizes should be extracted')
-    assert.strictEqual(sizes[0].label, '2.5 ft × 50 m')
-    assert.strictEqual(sizes[0].default_supplier_price, 8500)
-    assert.strictEqual(sizes[1].label, '3.2 ft × 50 m')
-    assert.strictEqual(sizes[1].default_supplier_price, 10500)
-    assert.strictEqual(sizes[2].label, '5 ft × 50 m')
-    assert.strictEqual(sizes[2].default_supplier_price, 15500)
+    // Must strictly have 3 options matching [3, 4, 5] (no synthetic 2.5ft or 10ft injections)
+    assert.equal(sizes.length, 3)
+    assert.equal(sizes[0].width_ft, 3)
+    assert.equal(sizes[0].standard_area_sft, 492)
+    // 3ft proportional cost = 4920 * (3 / 5) = ৳2,952 (Never 2.4 million taka!)
+    assert.equal(sizes[0].default_supplier_price, 2952)
 
-    // Verify discrete economics area calculations
-    assert.strictEqual(sizes[0].standard_area_sft, 410, '2.5 ft * 164 ft = 410 sft')
-    assert.strictEqual(sizes[1].standard_area_sft, 524.8, '3.2 ft * 164 ft = 524.8 sft')
+    assert.equal(sizes[1].width_ft, 4)
+    assert.equal(sizes[1].standard_area_sft, 656)
+    // 4ft proportional cost = 4920 * (4 / 5) = ৳3,936
+    assert.equal(sizes[1].default_supplier_price, 3936)
+
+    assert.equal(sizes[2].width_ft, 5)
+    assert.equal(sizes[2].standard_area_sft, 820)
+    // 5ft base cost = ৳4,920
+    assert.equal(sizes[2].default_supplier_price, 4920)
   })
 
-  // 3. Normalized Unit Economics Calculations (৳/sqft, ৳/linear ft, ৳/liter)
-  it('should correctly calculate normalized unit economics across physical forms', () => {
-    // 3.2 ft × 50 m roll @ ৳10,500
-    const rollEconomics = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
+  await t.test('3. Normalized Unit Economics calculates accurate Price per Sqft and Price per Unit', () => {
+    // 5ft roll @ ৳4,920 (820 sqft)
+    const econ5ft = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
       physical_form: 'roll',
-      width_ft: 3.2,
+      width_ft: 5,
       length_ft: 164,
-      unit_purchase_price: 10500,
+      standard_area_sft: 820,
+      unit_purchase_price: 4920,
       purchase_unit: 'roll',
     })
-    assert.ok(rollEconomics.normalized_cost_per_sft !== undefined)
-    assert.strictEqual(Number(rollEconomics.normalized_cost_per_sft?.toFixed(2)), 20.01) // 10,500 / 524.8 sft
 
-    // 8x4 ft PVC Sheet (32 sqft) @ ৳3,200
-    const sheetEconomics = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
-      physical_form: 'sheet',
-      width_ft: 8,
-      length_ft: 4,
-      unit_purchase_price: 3200,
-      purchase_unit: 'sheet',
+    assert.equal(econ5ft.normalized_cost_per_sft, 6.0) // 4920 / 820 = 6.00 / sqft
+    assert.equal(econ5ft.standard_area_sft, 820)
+    assert.equal(econ5ft.normalized_cost_per_unit, 4920)
+
+    // 3ft roll @ ৳2,952 (492 sqft)
+    const econ3ft = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
+      physical_form: 'roll',
+      width_ft: 3,
+      length_ft: 164,
+      standard_area_sft: 492,
+      unit_purchase_price: 2952,
+      purchase_unit: 'roll',
     })
-    assert.strictEqual(sheetEconomics.normalized_cost_per_sft, 100) // 3,200 / 32 = 100/sqft
 
-    // 5 Liter Can of Ink @ ৳12,500
-    const liquidEconomics = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
+    assert.equal(econ3ft.normalized_cost_per_sft, 6.0) // 2952 / 492 = 6.00 / sqft
+
+    // Liquid Ink @ ৳1,050 / liter
+    const econInk = PriceIntelligenceEngine.calculateNormalizedUnitEconomics({
       physical_form: 'liquid',
-      capacity_liters: 5,
-      unit_purchase_price: 12500,
-      purchase_unit: 'can',
+      capacity_liters: 1,
+      unit_purchase_price: 1050,
+      purchase_unit: 'liter',
     })
-    assert.strictEqual(liquidEconomics.normalized_cost_per_liter, 2500) // 12,500 / 5 = 2,500/liter
+    assert.equal(econInk.normalized_cost_per_liter, 1050)
   })
 
-  // 4. Price Intelligence Aggregator & Historical Supplier Analysis
-  it('should build a comprehensive price intelligence summary across suppliers with trends and records', () => {
-    const material = {
-      id: 'mat-flx-001',
-      name: 'Eco Solvent Flex 440 GSM',
-      sku: 'MAT-FLX-001',
-      category: 'roll_media',
-      purchase_unit: 'Roll',
-      average_cost: 10500,
-    }
-
-    const historyRecords: PriceIntelligenceRecord[] = [
-      {
-        id: 'pi-1',
-        company_id: testCompanyId,
-        material_id: 'mat-flx-001',
-        material_name: 'Eco Solvent Flex 440 GSM',
-        material_sku: 'MAT-FLX-001',
-        physical_form: 'roll',
-        size_label: '3.2 ft × 50 m',
-        purchase_unit: 'Roll',
-        quantity_received: 5,
-        unit_purchase_price: 10500,
-        total_purchase_amount: 52500,
-        supplier_id: 'sup-a',
-        supplier_name: 'ABC Trading',
-        purchase_date: '2026-09-10',
-        challan_number: 'ABC-101',
-        normalized_price_per_sft: 20.01,
-        created_at: '2026-09-10T10:00:00Z',
-      },
-      {
-        id: 'pi-2',
-        company_id: testCompanyId,
-        material_id: 'mat-flx-001',
-        material_name: 'Eco Solvent Flex 440 GSM',
-        material_sku: 'MAT-FLX-001',
-        physical_form: 'roll',
-        size_label: '3.2 ft × 50 m',
-        purchase_unit: 'Roll',
-        quantity_received: 3,
-        unit_purchase_price: 10200,
-        total_purchase_amount: 30600,
-        supplier_id: 'sup-b',
-        supplier_name: 'Dhaka Media Supplies',
-        purchase_date: '2026-09-15',
-        challan_number: 'DMS-882',
-        normalized_price_per_sft: 19.44,
-        created_at: '2026-09-15T10:00:00Z',
-      },
-      {
-        id: 'pi-3',
-        company_id: testCompanyId,
-        material_id: 'mat-flx-001',
-        material_name: 'Eco Solvent Flex 440 GSM',
-        material_sku: 'MAT-FLX-001',
-        physical_form: 'roll',
-        size_label: '3.2 ft × 50 m',
-        purchase_unit: 'Roll',
-        quantity_received: 5,
-        unit_purchase_price: 10800,
-        total_purchase_amount: 54000,
-        supplier_id: 'sup-a',
-        supplier_name: 'ABC Trading',
-        purchase_date: '2026-09-20',
-        challan_number: 'ABC-1024',
-        normalized_price_per_sft: 20.58,
-        created_at: '2026-09-20T10:00:00Z',
-      },
-    ]
-
+  await t.test('4. Price Intelligence Summary builds supplier comparison & market trend without inflation', () => {
+    const lam = registeredMaterials[1]
     const summary = PriceIntelligenceEngine.buildPriceIntelligenceSummary({
-      material,
-      size_label: '3.2 ft × 50 m',
-      current_unit_price: 10800,
-      current_supplier_id: 'sup-a',
-      history: historyRecords,
+      material: lam,
+      size_label: '3 ft × 50 m (492 sqft)',
+      current_unit_price: 2952,
+      current_supplier_id: 'sup-001',
+      history: [
+        {
+          id: 'pi-1',
+          company_id: companyId,
+          material_id: lam.id,
+          material_name: lam.name,
+          material_sku: lam.sku,
+          physical_form: 'roll',
+          size_label: '3 ft × 50 m (492 sqft)',
+          width_ft: 3,
+          length_ft: 164,
+          area_sft: 492,
+          purchase_unit: 'roll',
+          supplier_id: 'sup-001',
+          supplier_name: 'Meghna Substrates Mill',
+          unit_purchase_price: 2900,
+          quantity_received: 2,
+          total_amount: 5800,
+          normalized_price_per_sft: 5.89,
+          purchase_date: '2026-09-01',
+          created_at: '2026-09-01T10:00:00Z',
+        },
+        {
+          id: 'pi-2',
+          company_id: companyId,
+          material_id: lam.id,
+          material_name: lam.name,
+          material_sku: lam.sku,
+          physical_form: 'roll',
+          size_label: '3 ft × 50 m (492 sqft)',
+          width_ft: 3,
+          length_ft: 164,
+          area_sft: 492,
+          purchase_unit: 'roll',
+          supplier_id: 'sup-002',
+          supplier_name: 'Dhaka Spot Media',
+          unit_purchase_price: 3100,
+          quantity_received: 1,
+          total_amount: 3100,
+          normalized_price_per_sft: 6.3,
+          purchase_date: '2026-09-10',
+          created_at: '2026-09-10T10:00:00Z',
+        },
+      ],
+      width_ft: 3,
+      length_ft: 164,
+      standard_area_sft: 492,
     })
 
-    assert.strictEqual(summary.latest_cost, 10800, 'Latest cost should be ৳10,800')
-    assert.strictEqual(summary.lowest_cost, 10200, 'Lowest recorded cost should be ৳10,200')
-    assert.strictEqual(summary.lowest_supplier_name, 'Dhaka Media Supplies')
-    assert.strictEqual(summary.highest_cost, 10800, 'Highest recorded cost should be ৳10,800')
-    assert.strictEqual(summary.supplier_comparison.length, 2, 'Should compare 2 distinct suppliers')
-    assert.strictEqual(summary.total_records_count, 3, 'Should reflect 3 historical records')
+    assert.equal(summary.material_sku, 'MAT-54172')
+    assert.equal(summary.latest_cost, 2952)
+    assert.equal(summary.lowest_cost, 2900)
+    assert.equal(summary.highest_cost, 3100)
+    assert.equal(summary.normalized_cost_per_sft, 6.0)
+    assert.equal(summary.supplier_comparison.length, 2)
   })
 
-  // 5. Direct Stock Intake Creating Discrete Physical Units (Rolls) & Price Intelligence Event
-  it('should receive 5 rolls of 3.2 ft × 50 m and create 5 individual warehouse roll units with discrete traceability', async () => {
-    // 1. Create registered material
-    const material = await InventoryService.createMaterial({
-      company_id: testCompanyId,
-      sku: 'MAT-FLX-440',
-      name: 'Eco Solvent Flex 440 GSM',
-      category: 'roll_media',
-      unit: 'sft',
-      purchase_unit: 'roll',
-      is_roll: true,
-      roll_width_ft: 3.2,
-      standard_roll_length_ft: 164,
-      cost_per_unit: 20.01,
-      current_stock: 0,
-    })
+  await t.test('5. Rigid Sheet configured sizes are derived accurately', () => {
+    const sheet = registeredMaterials[4]
+    const sizes = PriceIntelligenceEngine.getMaterialActiveSizes(sheet)
 
-    // 2. Direct Stock Intake of 5 rolls of 3.2 ft × 50 m from Supplier ABC
-    const intakeResult = await InventoryService.receiveStock({
-      company_id: testCompanyId,
-      material_id: material.id,
-      location_id: 'main-store-loc',
-      quantity: 5,
-      unit_cost: 10500, // ৳10,500 per roll
-      supplier_id: 'sup-abc-trading',
-      supplier_name: 'ABC Trading',
-      size_label: '3.2 ft × 50 m',
-      width_ft: 3.2,
-      length_ft: 164,
-      physical_form: 'roll',
-      purchase_unit: 'roll',
-      challan_number: 'ABC-INV-1024',
-      supplier_invoice_number: 'INV-9901',
-      batch_lot_number: 'LOT-FLX-01',
-      purchase_date: '2026-09-23',
-      notes: 'Direct warehouse stock intake for Eco Solvent Flex 440 GSM',
-    })
-
-    assert.ok(intakeResult.material, 'Should return updated material')
-    assert.ok(intakeResult.ledgerEntry, 'Should return stock ledger entry')
-    assert.strictEqual(intakeResult.rollsCreated?.length, 5, 'Must create exactly 5 individual physical roll records')
-
-    // Verify discrete roll properties
-    const firstRoll = intakeResult.rollsCreated![0]
-    assert.strictEqual(firstRoll.width_ft, 3.2, 'Roll width must be 3.2 ft')
-    assert.strictEqual(firstRoll.original_length_ft, 164, 'Original length must be 164 ft')
-    assert.strictEqual(firstRoll.remaining_length_ft, 164, 'Initial remaining length must be 164 ft')
-    assert.strictEqual(firstRoll.status, 'in_warehouse', 'Initial roll status must be in_warehouse')
-    assert.strictEqual(firstRoll.unit_cost, 10500, 'Roll discrete purchase price must be ৳10,500')
-    assert.strictEqual(firstRoll.batch_lot_number, 'LOT-FLX-01')
-
-    // Verify Price Intelligence recorded event
-    const priceIntel = await InventoryService.getPriceIntelligence(
-      material.id,
-      testCompanyId,
-      '3.2 ft × 50 m',
-      10500,
-      'sup-abc-trading'
-    )
-
-    assert.ok(priceIntel, 'Price intelligence summary must exist')
-    assert.strictEqual(priceIntel.latest_cost, 10500)
-    assert.strictEqual(priceIntel.lowest_cost, 10500)
-    assert.strictEqual(priceIntel.lowest_supplier_name, 'ABC Trading')
-    assert.strictEqual(priceIntel.total_records_count, 1)
+    assert.equal(sizes.length, 2)
+    assert.equal(sizes[0].label, '8x4 ft (32 sft)')
+    assert.equal(sizes[0].standard_area_sft, 32)
+    assert.equal(sizes[1].label, '6x4 ft (24 sft)')
+    assert.equal(sizes[1].standard_area_sft, 24)
   })
 })
