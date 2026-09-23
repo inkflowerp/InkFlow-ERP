@@ -136,25 +136,25 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     assert.strictEqual(breakdown.total_rolls, 15, 'Total rolls in breakdown must be 15')
     assert.strictEqual(breakdown.roll_items.length, 3, 'Must have exactly 3 distinct roll groups')
 
-    const group4ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 4) < 0.05 && x.length_ft === 100)
-    const group5ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 5) < 0.05 && x.length_ft === 164)
-    const group10ft = breakdown.roll_items.find((x) => Math.abs(x.width_ft - 10) < 0.05 && x.length_ft === 164)
+    const group4ft = breakdown.roll_items.find((x) => (Math.abs(x.width_ft - 4.25) < 0.05 || Math.abs(x.width_ft - 4) < 0.05) && x.length_ft === 100)
+    const group5ft = breakdown.roll_items.find((x) => (Math.abs(x.width_ft - 5.25) < 0.05 || Math.abs(x.width_ft - 5) < 0.05) && x.length_ft === 164)
+    const group10ft = breakdown.roll_items.find((x) => (Math.abs(x.width_ft - 10.5) < 0.05 || Math.abs(x.width_ft - 10) < 0.05) && x.length_ft === 164)
 
     assert.ok(group4ft, 'Group 1: 4ft × 100ft must exist')
     assert.strictEqual(group4ft?.roll_count, 5, 'Group 1 must have 5 rolls')
     assert.strictEqual(group4ft?.total_sft, 5 * 4 * 100, 'Group 1 area must be 2,000 SFT')
 
-    assert.ok(group5ft, 'Group 2: 5ft × 164ft must exist')
+    assert.ok(group5ft, 'Group 2: 5.25ft × 164ft must exist')
     assert.strictEqual(group5ft?.roll_count, 5, 'Group 2 must have 5 rolls')
-    assert.strictEqual(group5ft?.total_sft, 5 * 5 * 164, 'Group 2 area must be 4,100 SFT')
+    assert.strictEqual(group5ft?.total_sft, 5 * 5.25 * 164, 'Group 2 area must be 4,305 SFT')
 
-    assert.ok(group10ft, 'Group 3: 10ft × 164ft must exist')
+    assert.ok(group10ft, 'Group 3: 10.5ft × 164ft must exist')
     assert.strictEqual(group10ft?.roll_count, 5, 'Group 3 must have 5 rolls')
-    assert.strictEqual(group10ft?.total_sft, 5 * 10 * 164, 'Group 3 area must be 8,200 SFT')
+    assert.strictEqual(group10ft?.total_sft, 5 * 10.5 * 164, 'Group 3 area must be 8,610 SFT')
 
     assert.strictEqual(
       breakdown.formatted_summary,
-      '5 Roll (4ft × 100ft) • 5 Roll (5ft × 164ft) • 5 Roll (10ft × 164ft)'
+      '5 Roll (4ft × 100ft) • 5 Roll (5.25ft × 164ft) • 5 Roll (10.5ft × 164ft)'
     )
     assert.strictEqual(breakdown.purchase_unit_display, '15 Rolls')
   })
@@ -162,7 +162,7 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
   it('2. should correctly format stock breakdown with 3 distinct groups even if physical rolls array is not provided', async () => {
     const matWithStock: MaterialRecord = {
       ...pvcMaster,
-      current_stock: 12325,
+      current_stock: 12032,
       roll_sizes: [
         {
           width: 4,

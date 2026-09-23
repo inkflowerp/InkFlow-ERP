@@ -259,16 +259,22 @@ export class InventoryService {
     )
 
     // Check if this matches a specific configured roll size
-    let widthFt = nominalWidthFt
-    let matchedConfigAllowance = isZeroAllowanceExplicit ? 0 : globalAllowance
+    let widthFt = Number(params.width_ft || nominalWidthFt)
+    let matchedConfigAllowance = params.allowance_ft !== undefined
+      ? Number(params.allowance_ft)
+      : (isZeroAllowanceExplicit ? 0 : globalAllowance)
     let hasExplicitConfig = false
 
-    if (rawRollSizes.length > 0 && nominalWidthFt > 0) {
+    if (rawRollSizes.length > 0 && (nominalWidthFt > 0 || widthFt > 0)) {
+      const searchNominal = nominalWidthFt || widthFt
+      const searchEffective = widthFt || nominalWidthFt
       const matchingConfigSize = rawRollSizes.find((sz: any) => {
         const szNominal = Number(sz.nominal_width_ft || sz.width || sz.size || 0)
         const szEffective = Number(sz.width_ft || sz.width || sz.size || 0)
         const szLen = Number(sz.length || sz.length_ft || 0)
-        const wMatch = szNominal === nominalWidthFt || szEffective === nominalWidthFt || (Math.abs(szEffective - nominalWidthFt) < 0.1) || (Math.abs(szNominal - nominalWidthFt) < 0.1)
+        const wMatch = szNominal === searchNominal || szEffective === searchEffective ||
+                       szNominal === searchEffective || szEffective === searchNominal ||
+                       (Math.abs(szEffective - searchEffective) < 0.1) || (Math.abs(szNominal - searchNominal) < 0.1)
         const lMatch = !szLen || !lengthFt || Math.abs(szLen - lengthFt) <= 5
         return wMatch && lMatch
       })
@@ -283,10 +289,14 @@ export class InventoryService {
           ? Number(matchingConfigSize.allowance_ft)
           : undefined
 
-        matchedConfigAllowance = isZeroAllowanceExplicit ? 0 : (szAllowance !== undefined ? szAllowance : globalAllowance)
+        matchedConfigAllowance = params.allowance_ft !== undefined
+          ? Number(params.allowance_ft)
+          : (isZeroAllowanceExplicit ? 0 : (szAllowance !== undefined ? szAllowance : globalAllowance))
         nominalWidthFt = Number(matchingConfigSize.nominal_width_ft || matchingConfigSize.width || matchingConfigSize.size || nominalWidthFt)
         
-        if (matchingConfigSize.width_ft !== undefined && Number(matchingConfigSize.width_ft) > 0 && !isZeroAllowanceExplicit) {
+        if (params.width_ft && Number(params.width_ft) > 0) {
+          widthFt = Number(params.width_ft)
+        } else if (matchingConfigSize.width_ft !== undefined && Number(matchingConfigSize.width_ft) > 0 && !isZeroAllowanceExplicit) {
           widthFt = Number(matchingConfigSize.width_ft)
         } else if (matchedConfigAllowance > 0 && Math.floor(nominalWidthFt) === nominalWidthFt) {
           widthFt = Math.round((nominalWidthFt + matchedConfigAllowance) * 100) / 100

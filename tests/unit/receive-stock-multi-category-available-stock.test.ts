@@ -285,4 +285,143 @@ test('Multi-Category Receive Stock & Available Stock Synchronization Tests', asy
     const prodRecord = prods.find((p) => p.id === prodId)
     assert.strictEqual(prodRecord?.current_stock, 50, 'Product current stock in DataStore should be 50')
   })
+
+  await t.test('6. Multi-Configured Roll Sizes: Receiving 10 rolls of 2.25ft x 164ft allocates ONLY to 2.25ft, NOT 4+4 split', async () => {
+    // Setup Star PVC with two configured sizes: 2ft (+0.25ft) x 164ft and 3ft (+0.25ft) x 164ft
+    const starPvc = await InventoryRepository.createMaterial({
+      company_id: companyId,
+      sku: 'MAT-01622',
+      name: 'Star PVC',
+      category: 'flex_banner',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      current_stock: 0,
+      stock: 0,
+      average_cost: 7, // 7 BDT/sft
+      purchase_price_per_sft: 7,
+      production_width_allowance: 0.25,
+      roll_length_ft: 164,
+      standard_roll_length_ft: 164,
+      roll_sizes: [
+        {
+          width: 2,
+          nominal_width_ft: 2,
+          width_ft: 2.25,
+          allowance_ft: 0.25,
+          extra_allowance: 0.25,
+          length: 164,
+          length_ft: 164,
+          price: 2583,
+          purchase_price: 2583,
+          quantity: 0,
+          roll_count: 0,
+          stock: 0,
+        },
+        {
+          width: 3,
+          nominal_width_ft: 3,
+          width_ft: 3.25,
+          allowance_ft: 0.25,
+          extra_allowance: 0.25,
+          length: 164,
+          length_ft: 164,
+          price: 3731,
+          purchase_price: 3731,
+          quantity: 0,
+          roll_count: 0,
+          stock: 0,
+        },
+      ],
+      material_config: {
+        production_width_allowance: 0.25,
+        roll_sizes: [
+          {
+            width: 2,
+            nominal_width_ft: 2,
+            width_ft: 2.25,
+            allowance_ft: 0.25,
+            extra_allowance: 0.25,
+            length: 164,
+            length_ft: 164,
+            price: 2583,
+            purchase_price: 2583,
+            quantity: 0,
+            roll_count: 0,
+            stock: 0,
+          },
+          {
+            width: 3,
+            nominal_width_ft: 3,
+            width_ft: 3.25,
+            allowance_ft: 0.25,
+            extra_allowance: 0.25,
+            length: 164,
+            length_ft: 164,
+            price: 3731,
+            purchase_price: 3731,
+            quantity: 0,
+            roll_count: 0,
+            stock: 0,
+          },
+        ],
+      },
+    })
+
+    // Receive 10 rolls of 2.25ft (+0.25 allowance on 2ft nominal) x 164ft at ৳ 2583/roll
+    await InventoryService.receiveStock({
+      company_id: companyId,
+      material_id: starPvc.id,
+      location_id: 'loc-main',
+      quantity: 10,
+      unit_cost: 2583,
+      purchase_unit: 'roll',
+      width_ft: 2.25,
+      nominal_width_ft: 2,
+      length_ft: 164,
+      allowance_ft: 0.25,
+      size_label: '2ft (+0.25ft) × 164ft (369 sqft)',
+      performed_by_name: 'Warehouse Inward',
+      notes: 'Direct Stock Intake: 10 rolls 2.25x164',
+    })
+
+    // Fetch updated material
+    const updatedPvc = await InventoryRepository.getMaterialById(starPvc.id, companyId)
+    assert.ok(updatedPvc)
+    assert.strictEqual(updatedPvc?.current_stock, 3690, '10 rolls of 369 SFT = 3690 SFT')
+
+    // Fetch physical rolls
+    const rolls = await InventoryRepository.getInventoryRolls(companyId, { materialId: starPvc.id })
+    assert.strictEqual(rolls.length, 10, 'Should have exactly 10 physical rolls')
+    for (const r of rolls) {
+      assert.strictEqual(r.width_ft, 2.25, 'All physical rolls should be 2.25ft wide')
+    }
+
+    // Check warehouse breakdown for UI table
+    const breakdown = getMaterialWarehouseStockBreakdown(updatedPvc!, rolls)
+    assert.strictEqual(breakdown.total_rolls, 10, 'Total rolls should be 10')
+    assert.strictEqual(breakdown.total_valuation, 25830, 'Total valuation should be 10 * 2583 = 25,830')
+
+    const item225 = breakdown.roll_items.find((it) => it.width_ft === 2.25)
+    const item325 = breakdown.roll_items.find((it) => it.width_ft === 3.25)
+
+    assert.ok(item225, '2.25ft item must exist in breakdown')
+    assert.strictEqual(item225?.roll_count, 10, '2.25ft group should show 10 Rolls')
+    assert.strictEqual(item225?.total_sft, 3690, '2.25ft group should show 3,690 SFT')
+    assert.strictEqual(item225?.total_valuation, 25830, '2.25ft valuation should be 25,830')
+
+    if (item325) {
+      assert.strictEqual(item325.roll_count, 0, '3.25ft group should have 0 Rolls')
+      assert.strictEqual(item325.total_sft, 0, '3.25ft group should have 0 SFT')
+    }
+
+    // Also verify when rolls are not pre-fetched (fallback resolution)
+    const fallbackBreakdown = getMaterialWarehouseStockBreakdown(updatedPvc!)
+    const fb225 = fallbackBreakdown.roll_items.find((it) => it.width_ft === 2.25)
+    const fb325 = fallbackBreakdown.roll_items.find((it) => it.width_ft === 3.25)
+    assert.strictEqual(fb225?.roll_count, 10, 'Fallback resolution should show 10 rolls for 2.25ft')
+    if (fb325) {
+      assert.strictEqual(fb325.roll_count, 0, 'Fallback resolution should show 0 rolls for 3.25ft')
+    }
+  })
 })

@@ -2508,100 +2508,72 @@ export function getMaterialWarehouseStockBreakdown(
         })
       }
 
-      // Allocate general currentStock among configured sizes if explicit counts were not provided
+      // Allocate general currentStock to configured sizes if explicit counts were not provided
       const currentExplicitRolls = Array.from(map.values()).reduce((sum, it) => sum + (it.roll_count || 0), 0)
       if (currentExplicitRolls === 0 && currentStock > 0) {
         const configuredList = Array.from(map.values())
-        const sumSetArea = configuredList.reduce((sum, item) => sum + (item.width_ft * item.length_ft), 0)
+        
+        // 1. Check if currentStock is an exact multiple of any single configured size
+        const exactMatchIdx = configuredList.findIndex(
+          (item) => (item.width_ft * item.length_ft > 0) && (Math.abs(currentStock % (item.width_ft * item.length_ft)) < 0.5)
+        )
 
-        if (configuredList.length > 1 && sumSetArea > 0) {
-          const sets = Math.floor(currentStock / sumSetArea)
-          const remainder = currentStock - (sets * sumSetArea)
+        if (exactMatchIdx !== -1) {
+          const item = configuredList[exactMatchIdx]
+          const area = item.width_ft * item.length_ft
+          const count = Math.max(1, Math.round(currentStock / area))
+          item.roll_count = count
+          item.total_sft = count * area
+          const price = Number(item.purchase_price || 0)
+          const rollCost = price > 0
+            ? (price > 150 ? price : price * area)
+            : (rawCost > 150 ? rawCost : rawCost * area)
+          item.total_valuation = count * rollCost
+        } else {
+          const sumSetArea = configuredList.reduce((sum, it) => sum + (it.width_ft * it.length_ft), 0)
+          if (configuredList.length > 1 && sumSetArea > 0) {
+            const sets = Math.floor(currentStock / sumSetArea)
+            const remainder = currentStock - (sets * sumSetArea)
 
-          if (sets > 0) {
-            let remainderTargetIdx = -1
-            if (remainder > 0) {
-              remainderTargetIdx = configuredList.findIndex(
-                (item) => item.width_ft * item.length_ft > 0 && Math.abs(remainder % (item.width_ft * item.length_ft)) < 1
-              )
-              if (remainderTargetIdx === -1) {
-                let minDiff = Infinity
-                for (let i = 0; i < configuredList.length; i++) {
-                  const area = configuredList[i].width_ft * configuredList[i].length_ft
-                  const diff = Math.abs(area - remainder)
-                  if (diff < minDiff) {
-                    minDiff = diff
-                    remainderTargetIdx = i
+            if (sets > 0) {
+              let remainderTargetIdx = -1
+              if (remainder > 0) {
+                remainderTargetIdx = configuredList.findIndex(
+                  (item) => (item.width_ft * item.length_ft > 0) && Math.abs(remainder % (item.width_ft * item.length_ft)) < 1
+                )
+                if (remainderTargetIdx === -1) {
+                  let minDiff = Infinity
+                  for (let i = 0; i < configuredList.length; i++) {
+                    const diff = Math.abs((configuredList[i].width_ft * configuredList[i].length_ft) - remainder)
+                    if (diff < minDiff) {
+                      minDiff = diff
+                      remainderTargetIdx = i
+                    }
                   }
                 }
               }
-            }
 
-            for (let idx = 0; idx < configuredList.length; idx++) {
-              const item = configuredList[idx]
-              const area = item.width_ft * item.length_ft
-              const extra = (idx === remainderTargetIdx && remainder > (area / 4))
-                ? Math.max(1, Math.round(remainder / area))
-                : 0
-              const count = sets + extra
-              item.roll_count = count
-              item.total_sft = count * area
-              const pPrice = Number(item.purchase_price || 0)
-              const rollCost = pPrice > 0
-                ? (pPrice > 150 ? pPrice : pPrice * area)
-                : (rawCost > 150 ? rawCost : rawCost * area)
-              item.total_valuation = count * rollCost
-            }
-          } else {
-            // sets === 0: currentStock is smaller than sum of all sizes
-            let bestIdx = configuredList.findIndex(
-              (item) => (item.width_ft * item.length_ft > 0) && (Math.abs(currentStock % (item.width_ft * item.length_ft)) < 1 || Math.abs((item.width_ft * item.length_ft) - currentStock) < 1)
-            )
-            if (bestIdx === -1) {
-              let minDiff = Infinity
-              for (let i = 0; i < configuredList.length; i++) {
-                const area = configuredList[i].width_ft * configuredList[i].length_ft
-                const diff = Math.abs(area - currentStock)
-                if (diff < minDiff) {
-                  minDiff = diff
-                  bestIdx = i
-                }
+              for (let idx = 0; idx < configuredList.length; idx++) {
+                const item = configuredList[idx]
+                const itemArea = item.width_ft * item.length_ft
+                const extra = (idx === remainderTargetIdx && remainder > (itemArea / 4))
+                  ? Math.max(1, Math.round(remainder / itemArea))
+                  : 0
+                const count = sets + extra
+                item.roll_count = count
+                item.total_sft = count * itemArea
+                const price = Number(item.purchase_price || 0)
+                const rollCost = price > 0
+                  ? (price > 150 ? price : price * itemArea)
+                  : (rawCost > 150 ? rawCost : rawCost * itemArea)
+                item.total_valuation = count * rollCost
               }
             }
-            if (bestIdx === -1) bestIdx = 0
-
-            const bestItem = configuredList[bestIdx]
-            const bestArea = bestItem.width_ft * bestItem.length_ft
-            const count = bestArea > 0 ? Math.max(1, Math.round(currentStock / bestArea)) : 1
-            bestItem.roll_count = count
-            bestItem.total_sft = currentStock
-            const bestPrice = Number(bestItem.purchase_price || 0)
-            const rollCost = bestPrice > 0
-              ? (bestPrice > 150 ? bestPrice : bestPrice * bestArea)
-              : (rawCost > 150 ? rawCost : rawCost * bestArea)
-            bestItem.total_valuation = count * rollCost
           }
-        } else if (configuredList.length === 1) {
-          const item = configuredList[0]
-          const area = item.width_ft * item.length_ft
-          const count = area > 0 ? Math.max(1, Math.round(currentStock / area)) : 1
-          item.roll_count = count
-          item.total_sft = currentStock
-          const pPrice = Number(item.purchase_price || 0)
-          const rollCost = pPrice > 0
-            ? (pPrice > 150 ? pPrice : pPrice * area)
-            : (rawCost > 150 ? rawCost : rawCost * area)
-          item.total_valuation = count * rollCost
         }
       }
 
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
-      if (currentStock > 0) {
-        const activeItems = rollItems.filter((it) => it.roll_count > 0)
-        if (activeItems.length > 0 && activeItems.reduce((s, it) => s + it.total_sft, 0) >= currentStock - 1) {
-          rollItems = activeItems
-        }
-      }
       totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
       totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
       totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
