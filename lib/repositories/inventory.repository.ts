@@ -26,6 +26,7 @@ import { measureAsync } from '../performance/logger.ts'
 import { MachineryRepository } from './machinery.repository.ts'
 import type { ProductRecord } from '../../types/product.types.ts'
 import { isMaterialProduct, getMaterialWarehouseStockBreakdown } from '../units.ts'
+import { PriceIntelligenceEngine } from '../domain/price-intelligence-engine.ts'
 
 export class InventoryRepository {
   // ==========================================
@@ -679,16 +680,7 @@ export class InventoryRepository {
       is_roll:
         material.is_roll !== undefined
           ? Boolean(material.is_roll)
-          : Boolean(
-              material.roll_width_ft ||
-              material.purchase_unit === 'roll' ||
-              material.master_purchase_unit === 'roll' ||
-              ['sft', 'sqft'].includes(String(material.unit || '').toLowerCase()) ||
-              ['flex', 'vinyl', 'banner', 'pvc', 'canvas', 'mesh', 'roll'].some((c) =>
-                String(material.category || '').toLowerCase().includes(c) ||
-                String(material.name || '').toLowerCase().includes(c)
-              )
-            ),
+          : PriceIntelligenceEngine.detectMaterialPhysicalForm(material as any) === 'roll',
       roll_width_ft: material.roll_width_ft || material.width || null,
       roll_length_ft: material.roll_length_ft || material.length || null,
       total_roll_area_sft:

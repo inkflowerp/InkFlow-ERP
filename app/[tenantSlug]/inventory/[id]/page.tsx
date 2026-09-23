@@ -134,8 +134,10 @@ export default function MaterialDetailPage() {
               </Button>
             </Link>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-mono text-xs font-bold text-blue-600 dark:text-blue-400">{material.sku}</span>
+              <h1 className="text-xl font-black text-slate-900 dark:text-white">{material.name}</h1>
+              {material.name_bn && <p className="text-xs text-slate-500 font-normal">{material.name_bn}</p>}
+              <div className="flex items-center gap-2 mt-1">
+                <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
                 <Badge variant="outline" className="capitalize text-[10px]">
                   {material.category.replace('_', ' ')}
                 </Badge>
@@ -143,8 +145,6 @@ export default function MaterialDetailPage() {
                   <Badge className="bg-red-600 text-white text-[10px] animate-pulse">Low Stock Alert</Badge>
                 )}
               </div>
-              <h1 className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{material.name}</h1>
-              {material.name_bn && <p className="text-xs text-slate-500 font-normal">{material.name_bn}</p>}
             </div>
           </div>
 

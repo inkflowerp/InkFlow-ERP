@@ -1143,7 +1143,14 @@ export function ReceiveStockModal({
       } else if (matchedSize.physical_form === 'sheet') {
         current.sheet_size = matchedSize.label
         current.sheet_area_sft = matchedSize.standard_area_sft || 32
+        current.roll_width_ft = matchedSize.width_ft || (matchedSize as any).width || 8
+        current.roll_length_ft = matchedSize.length_ft || (matchedSize as any).length || 4
         current.thickness_mm = matchedSize.thickness_mm || current.thickness_mm
+      } else if (matchedSize.physical_form === 'hardware' || matchedSize.physical_form === 'piece') {
+        if (matchedSize.width_ft && matchedSize.length_ft) {
+          current.roll_width_ft = matchedSize.width_ft
+          current.roll_length_ft = matchedSize.length_ft
+        }
       }
 
       if (matchedSize.default_supplier_price && matchedSize.default_supplier_price > 0) {
@@ -1665,6 +1672,8 @@ export function ReceiveStockModal({
               batch_lot_number: item.batch_lot_number?.trim() || null,
               purchase_date: receivedDate,
               notes: combinedItemNotes || fullNotes,
+              variant_id: item.variant_id || (item.selected_size_id && item.selected_size_id.startsWith('variant-') ? item.selected_size_id.replace('variant-', '') : item.selected_size_id) || null,
+              variant_name: item.variant_name || (item.physical_form === 'liquid' || item.physical_form === 'hardware' ? item.size_spec : null) || null,
             },
             companyId
           )
@@ -2422,7 +2431,7 @@ export function ReceiveStockModal({
                                 }
                                 return (
                                   <option key={m.id} value={m.id}>
-                                    [{m.sku}] {m.name} — Prev: {formatBDT(m.previous_cost)}/{m.master_purchase_unit || m.unit}{subRate}
+                                    {m.name} [SKU: {m.sku}] — Prev: {formatBDT(m.previous_cost)}/{m.master_purchase_unit || m.unit}{subRate}
                                   </option>
                                 )
                               })}

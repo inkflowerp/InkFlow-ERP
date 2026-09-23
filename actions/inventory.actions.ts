@@ -205,6 +205,8 @@ export async function receiveStockAction(
     batch_lot_number?: string | null
     purchase_date?: string | null
     notes?: string | null
+    variant_id?: string | null
+    variant_name?: string | null
   },
   requestedCompanyId?: string
 ): Promise<ServerActionResult<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }>> {

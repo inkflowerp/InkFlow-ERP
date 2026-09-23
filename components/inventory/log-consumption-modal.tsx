@@ -425,7 +425,7 @@ export function LogConsumptionModal({
                 <option value="">-- Choose Material --</option>
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.sku} - {m.name}
+                    {m.name} [SKU: {m.sku}]
                   </option>
                 ))}
               </select>

@@ -192,12 +192,17 @@ function UnifiedInventoryContent() {
             available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft,
             standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : undefined),
             available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes,
+            sheet_sizes: (p as any).sheet_sizes || (p.material_config as any)?.sheet_sizes || p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes,
             roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes,
             material_config: p.material_config || (p.pricing_formula as any)?.material_config || null,
             purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || null,
             production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || 0,
             liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : null,
             pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || null,
+            gsm: (p as any).gsm ?? (p.material_config as any)?.gsm ?? (p as any).thickness_mm ?? null,
+            default_finishing: (p as any).default_finishing ?? (p as any).finishing ?? (p.material_config as any)?.default_finishing ?? (p.material_config as any)?.finishing ?? null,
+            specification: p.specification ?? (p as any).description ?? null,
+            material_spec: (p as any).material_spec ?? null,
             variants: p.variants || [],
             is_active: p.is_active !== false,
             created_at: p.created_at || new Date().toISOString(),
@@ -2093,8 +2098,7 @@ function UnifiedInventoryContent() {
                   <table className="w-full text-xs text-left">
                     <thead className="bg-slate-50/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800 font-semibold text-xs">
                       <tr>
-                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'এসকেইউ (SKU)' : 'SKU'}</th>
-                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল ও স্পেসিফিকেশন' : 'Material & Specs'}</th>
+                        <th className="py-3.5 px-4 text-left whitespace-nowrap font-bold">{isBn ? 'মেটেরিয়াল ও এসকেইউ' : 'Material & SKU'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'প্রস্থ (Width)' : 'Width'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'দৈর্ঘ্য (Length)' : 'Length'}</th>
                         <th className="py-3.5 px-4 text-right whitespace-nowrap font-bold">{isBn ? 'ক্রয়মূল্য (Rate)' : 'Purchase Rate'}</th>
@@ -2107,7 +2111,7 @@ function UnifiedInventoryContent() {
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {filteredGroupedRolls.length === 0 ? (
                         <tr>
-                          <td colSpan={9} className="p-8 text-center text-slate-500">
+                          <td colSpan={8} className="p-8 text-center text-slate-500">
                             <Disc className="h-8 w-8 mx-auto mb-2 text-slate-400" />
                             <p className="font-bold">{isBn ? 'কোনো রোল পাওয়া যায়নি।' : 'No physical roll stock found.'}</p>
                             <p className="text-[11px] text-slate-400 mt-1">
@@ -2149,22 +2153,18 @@ function UnifiedInventoryContent() {
                           return (
                             <React.Fragment key={group.key}>
                               <tr className="hover:bg-slate-50/70 dark:hover:bg-slate-900/50 transition-colors">
-                                <td className="py-3.5 px-4 font-mono font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                                  <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                                    {group.sku}
-                                  </span>
-                                </td>
                                 <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-slate-100">
                                   <div className="flex items-start gap-2">
                                     <div className="h-7 w-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
                                       <Disc className="h-3.5 w-3.5" />
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-0.5">
                                       <div className="font-bold text-xs">{isBn && group.material_name_bn ? group.material_name_bn : group.material_name}</div>
                                       {group.material_name_bn && !isBn && (
                                         <div className="text-[10px] text-slate-400 font-normal">{group.material_name_bn}</div>
                                       )}
-                                      <div className="flex flex-wrap items-center gap-1">
+                                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                        <span className="text-[10px] text-slate-500 font-mono font-medium">SKU: {group.sku}</span>
                                         {group.gsm > 0 && (
                                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-800">
                                             {group.gsm} GSM
@@ -2257,7 +2257,7 @@ function UnifiedInventoryContent() {
                               {/* EXPANDABLE SERIALIZED ROLLS SUB-TABLE */}
                               {isExpanded && hasSerializedRolls && (
                                 <tr className="bg-slate-50/80 dark:bg-slate-900/60">
-                                  <td colSpan={9} className="py-3 px-6">
+                                  <td colSpan={8} className="py-3 px-6">
                                     <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-3 space-y-2">
                                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-slate-400">
                                         <span>Serialized Master Rolls ({group.rolls.length} items registered):</span>

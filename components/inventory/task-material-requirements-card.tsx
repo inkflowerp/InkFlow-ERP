@@ -105,7 +105,7 @@ export function TaskMaterialRequirementsCard({
               >
                 {materials.map((m) => (
                   <option key={m.id} value={m.id}>
-                    {m.sku} - {m.name} ({m.current_stock} {m.unit} on hand)
+                    {m.name} [SKU: {m.sku}] ({m.current_stock} {m.unit} on hand)
                   </option>
                 ))}
               </select>
@@ -144,8 +144,13 @@ export function TaskMaterialRequirementsCard({
             <div key={req.id} className="py-2 flex items-center justify-between gap-2 text-xs">
               <div>
                 <strong className="text-slate-900 dark:text-white">
-                  {req.material?.sku} - {req.material?.name || 'Material'}
+                  {req.material?.name || 'Material'}
                 </strong>
+                {req.material?.sku && (
+                  <span className="text-[10px] text-slate-400 font-mono font-normal ml-1.5">
+                    [SKU: {req.material.sku}]
+                  </span>
+                )}
                 <div className="text-[11px] text-slate-500">
                   Estimated: <strong>{req.estimated_quantity} {req.unit}</strong>
                   {req.notes && ` — ${req.notes}`}

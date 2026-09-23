@@ -30,6 +30,7 @@ import type {
 } from '../types/price-intelligence.types.ts'
 import { PriceIntelligenceEngine } from '../lib/domain/price-intelligence-engine.ts'
 import { getMaterialWarehouseStockBreakdown, isMaterialProduct, normalizeInventoryGroupAttributes, createInventoryGroupingKey } from '../lib/units.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 
 export class InventoryService {
   // ==========================================
@@ -178,6 +179,8 @@ export class InventoryService {
     performed_by_id?: string | null
     performed_by_name: string
     actor_email?: string
+    variant_id?: string | null
+    variant_name?: string | null
   }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord; rollsCreated?: InventoryRollRecord[] }> {
     if (params.quantity <= 0) {
       throw new Error('Stock receiving rejected: Quantity must be greater than zero.')
@@ -190,6 +193,10 @@ export class InventoryService {
 
     const physicalForm = params.physical_form || PriceIntelligenceEngine.detectMaterialPhysicalForm(material)
     const isRoll = physicalForm === 'roll' || material.is_roll
+    const matCat = (material.category || '').toLowerCase()
+    const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
+    const isSheet = physicalForm === 'sheet' || pUnit === 'sheet' || ['rigid_sheet', 'rigid_sheets', 'acrylic', 'pvc_board', 'foam_board', 'acp'].some(c => matCat.includes(c))
+    const isFluid = physicalForm === 'liquid' || ['bottle', 'can', 'liter', 'ltr', 'gallon', 'ml'].includes(pUnit) || ['ink', 'fluid', 'solvent', 'chemical', 'liquid', 'dye', 'pigment'].some(c => matCat.includes(c) || material.name.toLowerCase().includes(c))
 
     const rawRollSizes: any[] = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
       ? material.roll_sizes
@@ -206,10 +213,21 @@ export class InventoryService {
       0
     )
 
-    // Width & Length extraction with configured roll size resolution
+    // Robust Width & Length extraction with configured roll/sheet size resolution
     let nominalWidthFt = Number(params.width_ft || 0)
+    let lengthFt = Number(params.length_ft || 0)
+
+    const dimSource = `${params.size_label || ''} ${params.notes || ''}`
+    if ((!nominalWidthFt || !lengthFt) && dimSource.trim()) {
+      const pairMatch = dimSource.match(/(\d+(?:\.\d+)?)\s*(?:ft|'|ft\.)?\s*[xX*×]\s*(\d+(?:\.\d+)?)\s*(?:ft|'|ft\.)?/i)
+      if (pairMatch) {
+        if (!nominalWidthFt) nominalWidthFt = Number(pairMatch[1])
+        if (!lengthFt) lengthFt = Number(pairMatch[2])
+      }
+    }
+
     if (!nominalWidthFt && params.size_label) {
-      const matchW = params.size_label.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      const matchW = params.size_label.match(/^(\d+(?:\.\d+)?)\s*(?:ft|')?/i) || params.size_label.match(/(\d+(?:\.\d+)?)\s*(?:ft|')/i)
       if (matchW) nominalWidthFt = Number(matchW[1])
     }
     if (!nominalWidthFt && params.notes) {
@@ -217,17 +235,21 @@ export class InventoryService {
       if (matchW) nominalWidthFt = Number(matchW[1])
     }
 
-    let lengthFt = Number(params.length_ft || 0)
     if (!lengthFt && params.size_label) {
-      const matchL = params.size_label.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      const matchL = params.size_label.match(/[x×]\s*(\d+(?:\.\d+)?)/i)
       if (matchL) lengthFt = Number(matchL[1])
     }
     if (!lengthFt && params.notes) {
-      const matchL = params.notes.match(/[x×]\s*(\d+(?:\.\d+)?)\s*(?:ft|')/i)
+      const matchL = params.notes.match(/[x×]\s*(\d+(?:\.\d+)?)/i)
       if (matchL) lengthFt = Number(matchL[1])
     }
+
     if (!lengthFt) {
-      lengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
+      if (isSheet) {
+        lengthFt = Number(material.sheet_length_ft || material.length || 4)
+      } else {
+        lengthFt = Number(material.standard_roll_length_ft || material.roll_length_ft || material.length || 164)
+      }
     }
 
     // Check if allowance 0 is specified in label/notes
@@ -277,10 +299,10 @@ export class InventoryService {
 
     if (!widthFt) {
       widthFt = Number(
-        material.roll_width_ft ||
+        (isSheet ? material.sheet_width_ft : material.roll_width_ft) ||
         (rawRollSizes.length > 0 ? (rawRollSizes[0].width || rawRollSizes[0].width_ft || rawRollSizes[0].size) : 0) ||
         material.width ||
-        4
+        (isSheet ? 8 : 4)
       )
       nominalWidthFt = widthFt
     }
@@ -288,8 +310,7 @@ export class InventoryService {
       widthFt = Math.round((widthFt + matchedConfigAllowance) * 100) / 100
     }
 
-    const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : 1
-    const pUnit = (params.purchase_unit || material.purchase_unit || material.unit || 'pcs').toLowerCase()
+    const areaPerUnitSft = isRoll ? Math.round(widthFt * lengthFt * 100) / 100 : (isSheet ? Math.round(widthFt * lengthFt * 100) / 100 : 1)
 
     // Quantity conversion: If purchase unit is Roll and material stock is kept in SFT, convert quantity
     let stockChangeQty = params.quantity
@@ -299,8 +320,8 @@ export class InventoryService {
       if (effectiveUnitCost && effectiveUnitCost > 150) {
         effectiveUnitCost = Math.round((effectiveUnitCost / areaPerUnitSft) * 100) / 100
       }
-    } else if (physicalForm === 'sheet' && pUnit === 'sheet' && material.unit.toLowerCase() === 'sft') {
-      const sheetArea = (params.width_ft && params.length_ft) ? params.width_ft * params.length_ft : 32
+    } else if (isSheet && (pUnit === 'sheet' || pUnit === 'sheets') && (material.unit.toLowerCase() === 'sft' || material.unit.toLowerCase() === 'sqft')) {
+      const sheetArea = (widthFt && lengthFt) ? widthFt * lengthFt : 32
       stockChangeQty = Math.round(params.quantity * sheetArea * 100) / 100
       if (effectiveUnitCost && effectiveUnitCost > 150 && sheetArea > 0) {
         effectiveUnitCost = Math.round((effectiveUnitCost / sheetArea) * 100) / 100
@@ -324,11 +345,18 @@ export class InventoryService {
     })
 
     // Discrete Physical Rolls Creation in Warehouse with Canonical 7-Attribute Metadata
-    const incomingUnitCost = params.unit_cost ? (pUnit === 'roll' ? params.unit_cost : params.unit_cost * areaPerUnitSft) : (material.average_cost ?? material.last_purchase_price ?? 0)
+    const incomingUnitCost = params.unit_cost
+      ? (isRoll
+          ? (pUnit === 'roll' ? params.unit_cost : params.unit_cost * areaPerUnitSft)
+          : (isSheet
+              ? (pUnit === 'sheet' || pUnit === 'pcs' || pUnit === 'piece' ? params.unit_cost : (params.unit_cost > 150 ? params.unit_cost : params.unit_cost * areaPerUnitSft))
+              : params.unit_cost))
+      : (material.average_cost ?? material.last_purchase_price ?? 0)
+
     const incomingAllowance = params.allowance_ft !== undefined
       ? Number(params.allowance_ft)
       : (widthFt > nominalWidthFt) ? Math.round((widthFt - nominalWidthFt) * 100) / 100 : matchedConfigAllowance
-    const incomingGsm = Number((params as any)?.gsm ?? (material as any)?.gsm ?? (material as any)?.weight_gsm ?? 0)
+    const incomingGsm = Number((params as any)?.gsm ?? (material as any)?.gsm ?? (material as any)?.weight_gsm ?? (material as any)?.thickness_mm ?? 0)
     const incomingFinishing = String((params as any)?.finishing ?? (material as any)?.default_finishing ?? (material as any)?.finish ?? 'none')
 
     const incomingCanonicalAttrs = normalizeInventoryGroupAttributes({
@@ -381,7 +409,7 @@ export class InventoryService {
       }
     }
 
-    // Update material.roll_sizes with discrete quantity counts strictly per canonical 7-attribute grouping
+    // 1. Update material.roll_sizes with discrete quantity counts strictly per canonical 7-attribute grouping
     if (isRoll) {
       try {
         const freshMaterial = (await InventoryRepository.getMaterialById(material.id, params.company_id)) || material
@@ -497,6 +525,246 @@ export class InventoryService {
           },
           params.company_id
         )
+
+        try {
+          PrintERPDataStore.updateItem<any>(
+            STORAGE_KEYS.PRODUCTS,
+            (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)),
+            {
+              roll_sizes: updatedSizes,
+            },
+            params.company_id
+          )
+        } catch {}
+      } catch {}
+    }
+
+    // 2. Update material.sheet_sizes with discrete quantity counts for Rigid Sheets
+    if (isSheet) {
+      try {
+        const freshMaterial = (await InventoryRepository.getMaterialById(material.id, params.company_id)) || material
+        const rawSheetSizes: any[] = (Array.isArray(freshMaterial.sheet_sizes) && freshMaterial.sheet_sizes.length > 0)
+          ? [...freshMaterial.sheet_sizes]
+          : (Array.isArray(freshMaterial.available_sheet_sizes) && freshMaterial.available_sheet_sizes.length > 0)
+          ? [...freshMaterial.available_sheet_sizes]
+          : ((freshMaterial.material_config as any)?.available_sheet_sizes && Array.isArray((freshMaterial.material_config as any).available_sheet_sizes) && (freshMaterial.material_config as any).available_sheet_sizes.length > 0)
+          ? [...(freshMaterial.material_config as any).available_sheet_sizes]
+          : ((freshMaterial.material_config as any)?.sheet_sizes && Array.isArray((freshMaterial.material_config as any).sheet_sizes) && (freshMaterial.material_config as any).sheet_sizes.length > 0)
+          ? [...(freshMaterial.material_config as any).sheet_sizes]
+          : []
+
+        const sheetW = nominalWidthFt || Number(material.sheet_width_ft || material.width || 8)
+        const sheetL = lengthFt || Number(material.sheet_length_ft || material.length || 4)
+        const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
+
+        let matched = false
+        const updatedSizes = rawSheetSizes.map((sz: any) => {
+          let szW = sheetW
+          let szL = sheetL
+          let szLabel = typeof sz === 'string' ? sz : sz.label || `${sheetW}ft × ${sheetL}ft`
+          let szPrice = typeof sz === 'object' && sz ? Number(sz.purchase_price ?? sz.unit_cost ?? sz.default_supplier_price ?? sz.price ?? incomingUnitCost) : incomingUnitCost
+          let szQty = typeof sz === 'object' && sz ? Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.sheet_count ?? sz.count ?? 0) : 0
+          let szGsm = typeof sz === 'object' && sz ? Number(sz.gsm ?? sz.thickness_mm ?? incomingGsm) : incomingGsm
+          let szFin = typeof sz === 'object' && sz ? String(sz.finishing ?? sz.finish ?? incomingFinishing) : incomingFinishing
+
+          if (typeof sz === 'string') {
+            const match = sz.match(/(\d+(?:\.\d+)?)\s*(?:ft|')?\s*[xX*×]\s*(\d+(?:\.\d+)?)/)
+            if (match) {
+              szW = Number(match[1])
+              szL = Number(match[2])
+            }
+          } else if (typeof sz === 'object' && sz !== null) {
+            szW = Number(sz.width || sz.width_ft || sheetW)
+            szL = Number(sz.length || sz.length_ft || sheetL)
+          }
+
+          const szCanonical = normalizeInventoryGroupAttributes({
+            name: freshMaterial.name,
+            width_ft: szW,
+            length_ft: szL,
+            allowance_ft: 0,
+            purchase_price: szPrice,
+            gsm: szGsm,
+            finishing: szFin,
+            specification: freshMaterial.specification,
+            material_spec: (freshMaterial as any)?.material_spec,
+          })
+          const szKey = createInventoryGroupingKey(szCanonical)
+
+          const isExactMatch = szKey === incomingGroupKey || (Math.abs(szW - sheetW) < 0.1 && Math.abs(szL - sheetL) < 0.1)
+
+          if (isExactMatch && !matched) {
+            matched = true
+            const newQty = szQty + params.quantity
+            return {
+              ...(typeof sz === 'object' ? sz : {}),
+              id: typeof sz === 'object' && sz.id ? sz.id : `sz-${sheetW}x${sheetL}`,
+              label: `${sheetW}ft × ${sheetL}ft`,
+              width: sheetW,
+              width_ft: sheetW,
+              length: sheetL,
+              length_ft: sheetL,
+              quantity: newQty,
+              stock: newQty,
+              stock_qty: newQty,
+              sheet_count: newQty,
+              unit_cost: incomingUnitCost,
+              purchase_price: incomingUnitCost,
+              price: incomingUnitCost,
+              default_supplier_price: incomingUnitCost,
+              gsm: incomingGsm,
+              finishing: incomingFinishing,
+              total_sft: newQty * sheetArea,
+            }
+          }
+
+          return typeof sz === 'object' ? sz : {
+            id: `sz-${szW}x${szL}`,
+            label: szLabel,
+            width: szW,
+            width_ft: szW,
+            length: szL,
+            length_ft: szL,
+            quantity: szQty,
+            stock: szQty,
+            stock_qty: szQty,
+            unit_cost: szPrice,
+            purchase_price: szPrice,
+          }
+        })
+
+        if (!matched) {
+          updatedSizes.push({
+            id: `sz-${sheetW}x${sheetL}`,
+            label: `${sheetW}ft × ${sheetL}ft`,
+            width: sheetW,
+            width_ft: sheetW,
+            length: sheetL,
+            length_ft: sheetL,
+            quantity: params.quantity,
+            stock: params.quantity,
+            stock_qty: params.quantity,
+            sheet_count: params.quantity,
+            unit_cost: incomingUnitCost,
+            purchase_price: incomingUnitCost,
+            price: incomingUnitCost,
+            default_supplier_price: incomingUnitCost,
+            gsm: incomingGsm,
+            finishing: incomingFinishing,
+            total_sft: params.quantity * sheetArea,
+          })
+        }
+
+        await InventoryRepository.updateMaterial(
+          freshMaterial.id,
+          {
+            sheet_sizes: updatedSizes,
+            available_sheet_sizes: updatedSizes,
+            material_config: {
+              ...(freshMaterial.material_config as any),
+              sheet_sizes: updatedSizes,
+              available_sheet_sizes: updatedSizes,
+            },
+          },
+          params.company_id
+        )
+
+        try {
+          PrintERPDataStore.updateItem<any>(
+            STORAGE_KEYS.PRODUCTS,
+            (p: any) => p && (p.id === freshMaterial.id || (!!freshMaterial.sku && p.sku === freshMaterial.sku)),
+            {
+              available_sheet_sizes: updatedSizes,
+              sheet_sizes: updatedSizes,
+            },
+            params.company_id
+          )
+        } catch {}
+      } catch {}
+    }
+
+    // 3. Update material.variants for Liquids, Hardware, Packs, and Ready Products
+    if (isFluid || (!isRoll && !isSheet)) {
+      try {
+        const freshMaterial = (await InventoryRepository.getMaterialById(material.id, params.company_id)) || material
+        const existingVariants: any[] = Array.isArray(freshMaterial.variants) && freshMaterial.variants.length > 0
+          ? [...freshMaterial.variants]
+          : Array.isArray((freshMaterial.material_config as any)?.variants) && (freshMaterial.material_config as any).variants.length > 0
+          ? [...(freshMaterial.material_config as any).variants]
+          : []
+
+        const incomingVariantId = params.variant_id
+        const incomingVariantName = params.variant_name || params.size_label || params.notes
+        const targetCost = incomingUnitCost
+
+        if (existingVariants.length > 0) {
+          let matched = false
+          const updatedVariants = existingVariants.map((v: any) => {
+            const vId = v.id || v.variant_id
+            const vName = v.variant_name || v.name || v.color || v.size_spec || ''
+            const vQty = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+
+            const isMatch =
+              (incomingVariantId && (vId === incomingVariantId || `variant-${vId}` === incomingVariantId)) ||
+              (incomingVariantName && (
+                vName.toLowerCase() === incomingVariantName.toLowerCase() ||
+                incomingVariantName.toLowerCase().includes(vName.toLowerCase()) ||
+                vName.toLowerCase().includes(incomingVariantName.toLowerCase())
+              )) ||
+              (!matched && existingVariants.length === 1 && !incomingVariantId)
+
+            if (isMatch && !matched) {
+              matched = true
+              const newQty = vQty + params.quantity
+              return {
+                ...v,
+                quantity: newQty,
+                stock: newQty,
+                stock_qty: newQty,
+                count: newQty,
+                unit_cost: targetCost,
+                purchase_price: targetCost,
+                price: targetCost,
+              }
+            }
+            return v
+          })
+
+          if (!matched && params.variant_name) {
+            updatedVariants.push({
+              id: `var-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              variant_name: params.variant_name,
+              quantity: params.quantity,
+              stock: params.quantity,
+              stock_qty: params.quantity,
+              unit_cost: targetCost,
+              purchase_price: targetCost,
+            })
+          }
+
+          await InventoryRepository.updateMaterial(
+            freshMaterial.id,
+            {
+              variants: updatedVariants,
+              material_config: {
+                ...(freshMaterial.material_config as any),
+                variants: updatedVariants,
+              },
+            },
+            params.company_id
+          )
+
+          try {
+            PrintERPDataStore.updateItem<any>(
+              STORAGE_KEYS.PRODUCTS,
+              (p: any) => p && (p.id === freshMaterial.id || (!!freshMaterial.sku && p.sku === freshMaterial.sku)),
+              {
+                variants: updatedVariants,
+              },
+              params.company_id
+            )
+          } catch {}
+        }
       } catch {}
     }
 

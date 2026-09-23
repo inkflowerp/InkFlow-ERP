@@ -564,9 +564,11 @@ export interface ProductRecord {
   printable_material_id?: string | null
   printable_material_name?: string | null
   material_spec?: string | null
+  specification?: string | null
   description?: string | null
   description_bn?: string | null
   dimensions_spec?: string | null
+  sheet_sizes?: any[]
   base_cost: number
   selling_price: number
   min_price: number

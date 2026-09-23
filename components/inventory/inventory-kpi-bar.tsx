@@ -62,9 +62,9 @@ export function InventoryKpiBar({
   }, 0)
 
   const displayTotalValue =
-    summary.totalAvailableStockValue > 0 && summary.totalAvailableStockValue < 10000000
-      ? summary.totalAvailableStockValue
-      : (computedMaterialsValue + computedProductsValue)
+    (computedMaterialsValue + computedProductsValue) > 0
+      ? (computedMaterialsValue + computedProductsValue)
+      : (summary.totalAvailableStockValue || 0)
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">

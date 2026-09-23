@@ -200,7 +200,7 @@ export function MaterialRequestModal({
                       >
                         {materials.map((m) => (
                           <option key={m.id} value={m.id}>
-                            {m.sku} - {m.name} ({m.current_stock} {m.unit} on hand)
+                            {m.name} [SKU: {m.sku}] ({m.current_stock} {m.unit} on hand)
                           </option>
                         ))}
                       </select>

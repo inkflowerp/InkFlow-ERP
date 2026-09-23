@@ -283,6 +283,7 @@ export interface MaterialRecord {
   description?: string | null
   brand?: string | null
   specification?: string | null
+  material_spec?: string | null
   color?: string | null
   thickness?: string | null
   width?: number | null
@@ -317,8 +318,11 @@ export interface MaterialRecord {
   active_rolls?: InventoryRollRecord[]
   variants?: any[]
   available_sheet_sizes?: string[] | any[]
+  sheet_sizes?: any[]
   roll_sizes?: any[]
   material_config?: any
+  sheet_width_ft?: number | null
+  sheet_length_ft?: number | null
   purchase_price_per_sft?: number | null
   production_width_allowance?: number | null
   extra_width_allowance_ft?: number | null
