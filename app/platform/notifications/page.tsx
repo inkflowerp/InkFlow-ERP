@@ -38,6 +38,7 @@ import {
 import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 import { notify } from '@/lib/notifications/notification-bus'
 import { playNotificationSound } from '@/lib/notifications/sound-manager'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 
 export default function PlatformNotificationsPage() {
   const [filterType, setFilterType] = useState<string>('all')
@@ -46,6 +47,7 @@ export default function PlatformNotificationsPage() {
   const [showUnreadOnly, setShowUnreadOnly] = useState(false)
   const [actionInProgress, setActionInProgress] = useState<string | null>(null)
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
+  const [isClearReadConfirmOpen, setIsClearReadConfirmOpen] = useState(false)
 
   // Broadcast Modal State
   const [broadcastModalOpen, setBroadcastModalOpen] = useState(false)
@@ -131,15 +133,15 @@ export default function PlatformNotificationsPage() {
       showToast('No read notifications to clear.')
       return
     }
+    setIsClearReadConfirmOpen(true)
+  }
 
-    if (!confirm(`Are you sure you want to clear read notifications?`)) {
-      return
-    }
-
+  const confirmClearRead = async () => {
     setActionInProgress('clear-read')
     try {
       await clearAllRead()
       showToast(`Cleared read notifications.`)
+      setIsClearReadConfirmOpen(false)
     } catch {
       showToast('Failed to clear read notifications.', 'error')
     } finally {
@@ -908,6 +910,23 @@ export default function PlatformNotificationsPage() {
           </div>
         </div>
       )}
+
+      {/* Clear Read Notifications Confirm Dialog */}
+      <ConfirmDialog
+        open={isClearReadConfirmOpen}
+        onOpenChange={setIsClearReadConfirmOpen}
+        title="Clear Read Notifications?"
+        titleBn="পড়া বিজ্ঞপ্তিগুলো মুছে ফেলবেন?"
+        message="Are you sure you want to clear all read notification logs?"
+        messageBn="আপনি কি সব পড়া বিজ্ঞপ্তিগুলো মুছে ফেলতে চান?"
+        confirmText="Clear Notifications"
+        confirmTextBn="বিজ্ঞপ্তি মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={actionInProgress === 'clear-read'}
+        onConfirm={confirmClearRead}
+      />
     </div>
   )
 }

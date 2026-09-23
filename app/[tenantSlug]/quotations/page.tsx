@@ -43,6 +43,8 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { formatBDT } from '@/lib/formatters'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function QuotationsPage() {
   const params = useParams()
@@ -81,8 +83,19 @@ export default function QuotationsPage() {
     }
   }, [searchParams])
 
-  const showNotification = (msg: string) => {
+  // Trash confirm modal state
+  const [quoteToTrash, setQuoteToTrash] = useState<QuotationRecord | null>(null)
+  const [isTrashConfirmOpen, setIsTrashConfirmOpen] = useState(false)
+  const [isTrashing, setIsTrashing] = useState(false)
+
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
     setTimeout(() => setNotification(null), 3500)
   }
 
@@ -340,23 +353,31 @@ export default function QuotationsPage() {
     loadQuotations(true)
   }
 
-  const handleTrashQuotation = async (quote: QuotationRecord) => {
-    if (!confirm(`Move quotation #${quote.quotation_number} to Trash / Recycle Bin?`)) {
-      return
-    }
+  const handleTrashQuotation = (quote: QuotationRecord) => {
+    setQuoteToTrash(quote)
+    setIsTrashConfirmOpen(true)
+  }
+
+  const confirmTrashQuotation = async () => {
+    if (!quoteToTrash) return
+    setIsTrashing(true)
     try {
-      const res = await moveToTrashAction('quotations', quote, company?.id)
+      const res = await moveToTrashAction('quotations', quoteToTrash, company?.id)
       if (res.success) {
-        showNotification(`Quotation #${quote.quotation_number} moved to Trash.`)
+        showNotification(`Quotation #${quoteToTrash.quotation_number} moved to Trash.`, 'success')
         setServerQuotations((prev) =>
-          prev ? prev.filter((q) => q.id !== quote.id && q.quotation_number !== quote.quotation_number) : []
+          prev ? prev.filter((q) => q.id !== quoteToTrash.id && q.quotation_number !== quoteToTrash.quotation_number) : []
         )
+        setIsTrashConfirmOpen(false)
+        setQuoteToTrash(null)
         loadQuotations(true)
       } else {
-        showNotification(res.error || 'Failed to move quotation to trash.')
+        showNotification(res.error || 'Failed to move quotation to trash.', 'error')
       }
     } catch (err: any) {
-      showNotification(err.message || 'Error moving quotation to trash.')
+      showNotification(err.message || 'Error moving quotation to trash.', 'error')
+    } finally {
+      setIsTrashing(false)
     }
   }
 
@@ -658,6 +679,23 @@ export default function QuotationsPage() {
           quotation={followUpQuote}
           onFollowUpRecorded={handleFollowUpSaved}
           companyId={company?.id || 'c-01'}
+        />
+
+        {/* Quotation Trash Confirm Dialog */}
+        <ConfirmDialog
+          open={isTrashConfirmOpen}
+          onOpenChange={setIsTrashConfirmOpen}
+          title={`Move Quotation #${quoteToTrash?.quotation_number || ''} to Trash?`}
+          titleBn={`কোটেশন #${quoteToTrash?.quotation_number || ''} ট্র্যাশে স্থানান্তর করবেন?`}
+          message="Are you sure you want to move this quotation to Trash / Recycle Bin? It can be restored from system settings later."
+          messageBn="আপনি কি এই কোটেশনটি রিসাইকেল বিনে সরাতে চান? পরবর্তীতে সেটিংস থেকে এটি রিস্টোর করা যাবে।"
+          confirmText="Move to Trash"
+          confirmTextBn="ট্র্যাশে সরান"
+          cancelText="Cancel"
+          cancelTextBn="বাতিল"
+          isDestructive={true}
+          isLoading={isTrashing}
+          onConfirm={confirmTrashQuotation}
         />
       </div>
     </FeatureGate>

@@ -54,6 +54,8 @@ import { SupplierModal } from '@/components/suppliers/supplier-modal'
 import { PaySupplierVoucherModal } from '@/components/suppliers/pay-supplier-voucher-modal'
 import { SupplierMaterialRateModal } from '@/components/suppliers/supplier-material-rate-modal'
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 type TabKey = 'prices' | 'purchases' | 'payments' | 'ledger' | 'company_info'
 
@@ -90,8 +92,18 @@ export default function SupplierProfilePage() {
   const [priceToEdit, setPriceToEdit] = useState<SupplierMaterialPrice | null>(null)
   const [isNewPOOpen, setIsNewPOOpen] = useState(false)
 
-  const showNotification = (msg: string) => {
+  // Rate delete confirm state
+  const [rateToDelete, setRateToDelete] = useState<{ id: string; name: string } | null>(null)
+  const [isDeleteRateOpen, setIsDeleteRateOpen] = useState(false)
+
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
     setTimeout(() => setNotification(null), 3800)
   }
 
@@ -109,10 +121,16 @@ export default function SupplierProfilePage() {
 
   // Handle Delete Rate
   const handleDeleteRate = (rateId: string, rateName: string) => {
-    if (confirm(`Remove negotiated rate for "${rateName}"?`)) {
-      PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateId)
-      showNotification(`Contract rate for '${rateName}' removed.`)
-    }
+    setRateToDelete({ id: rateId, name: rateName })
+    setIsDeleteRateOpen(true)
+  }
+
+  const confirmDeleteRate = () => {
+    if (!rateToDelete) return
+    PrintERPDataStore.removeItem(STORAGE_KEYS.SUPPLIER_PRICES, rateToDelete.id)
+    showNotification(`Contract rate for '${rateToDelete.name}' removed.`, 'info')
+    setIsDeleteRateOpen(false)
+    setRateToDelete(null)
   }
 
   // Handle Save Supplier from Edit
@@ -886,6 +904,22 @@ export default function SupplierProfilePage() {
         open={isNewPOOpen}
         onOpenChange={setIsNewPOOpen}
         defaultSupplierId={supplier.id}
+      />
+
+      {/* Delete Contract Rate Confirm Dialog */}
+      <ConfirmDialog
+        open={isDeleteRateOpen}
+        onOpenChange={setIsDeleteRateOpen}
+        title={`Remove Contract Rate for "${rateToDelete?.name || 'Material'}"?`}
+        titleBn={`"${rateToDelete?.name || 'ম্যাটেরিয়াল'}" এর চুক্তির দর মুছে ফেলবেন?`}
+        message={`Are you sure you want to remove this negotiated rate from ${supplier.supplier_name}?`}
+        messageBn={`আপনি কি এই সরবরাহকারীর জন্য নির্ধারিত কাঁচামালের রেটটি মুছে ফেলতে চান?`}
+        confirmText="Remove Rate"
+        confirmTextBn="রেট মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        onConfirm={confirmDeleteRate}
       />
     </div>
   )

@@ -53,6 +53,8 @@ import { Label } from '@/components/ui/label'
 import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { useI18n } from '@/i18n/context'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function WorkflowAutomationsPage() {
   const params = useParams()
@@ -77,6 +79,11 @@ export default function WorkflowAutomationsPage() {
   const [editingRule, setEditingRule] = useState<Partial<WorkflowRule> | null>(null)
   const [simulatingRuleId, setSimulatingRuleId] = useState<string | null>(null)
   const [simulationResult, setSimulationResult] = useState<string | null>(null)
+
+  // Rule delete confirm modal state
+  const [ruleToDelete, setRuleToDelete] = useState<WorkflowRule | null>(null)
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false)
+  const [isDeletingRule, setIsDeletingRule] = useState(false)
 
   const loadData = async () => {
     const rulesRes = await getWorkflowRulesAction(activeCompanyId)
@@ -145,10 +152,35 @@ export default function WorkflowAutomationsPage() {
     await loadData()
   }
 
-  const handleDeleteRule = async (ruleId: string) => {
-    if (!confirm('Are you sure you want to delete this workflow rule?')) return
-    await deleteWorkflowRuleAction(activeCompanyId, ruleId)
-    await loadData()
+  const handleDeleteRule = (rule: WorkflowRule) => {
+    setRuleToDelete(rule)
+    setIsDeleteConfirmOpen(true)
+  }
+
+  const confirmDeleteRule = async () => {
+    if (!ruleToDelete) return
+    setIsDeletingRule(true)
+    try {
+      await deleteWorkflowRuleAction(activeCompanyId, ruleToDelete.id)
+      dispatchToast({
+        type: 'success',
+        title: 'Rule Deleted',
+        titleBn: 'ওয়ার্কফ্লো রুল মুছে ফেলা হয়েছে',
+        message: `Workflow rule "${ruleToDelete.name}" was removed.`,
+      })
+      setIsDeleteConfirmOpen(false)
+      setRuleToDelete(null)
+      await loadData()
+    } catch (err: any) {
+      dispatchToast({
+        type: 'error',
+        title: 'Error',
+        titleBn: 'ত্রুটি',
+        message: err.message || 'Failed to delete workflow rule.',
+      })
+    } finally {
+      setIsDeletingRule(false)
+    }
   }
 
   const filteredRules = rules.filter((r) => {
@@ -344,7 +376,7 @@ export default function WorkflowAutomationsPage() {
                       </label>
 
                       <button
-                        onClick={() => handleDeleteRule(rule.id)}
+                        onClick={() => handleDeleteRule(rule)}
                         className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-slate-800"
                         title="Delete Rule"
                       >
@@ -748,6 +780,23 @@ export default function WorkflowAutomationsPage() {
           </form>
         </ModalDialog>
       )}
+
+      {/* Delete Rule Confirm Dialog */}
+      <ConfirmDialog
+        open={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+        title={`Delete Workflow Rule "${ruleToDelete?.name || ''}"?`}
+        titleBn={`ওয়ার্কফ্লো রুল "${ruleToDelete?.name || ''}" মুছে ফেলবেন?`}
+        message="Are you sure you want to delete this automation rule? It will immediately stop triggering actions."
+        messageBn="আপনি কি এই অটোমেশন রুলটি মুছে ফেলতে চান? এটি তাৎক্ষণিকভাবে অ্যাকশন ট্রিগার করা বন্ধ করবে।"
+        confirmText="Delete Rule"
+        confirmTextBn="রুল মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isDeletingRule}
+        onConfirm={confirmDeleteRule}
+      />
       </div>
     </FeatureGate>
   )

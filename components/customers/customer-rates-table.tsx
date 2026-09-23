@@ -22,6 +22,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { saveCustomerRateAction, deleteCustomerRateAction } from '@/actions/customer.actions'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
 
 interface CustomerRatesTableProps {
@@ -44,11 +46,22 @@ export function CustomerRatesTable({
   const [editRateValue, setEditRateValue] = useState<string>('')
   const [editNotes, setEditNotes] = useState<string>('')
   const [isSaving, setIsSaving] = useState(false)
-  const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
-  const showFeedback = (type: 'success' | 'error', text: string) => {
-    setFeedbackMsg({ type, text })
-    setTimeout(() => setFeedbackMsg(null), 4000)
+  // Reset rate confirm state
+  const [productToReset, setProductToReset] = useState<string | null>(null)
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
+  const [isResetting, setIsResetting] = useState(false)
+
+  const showFeedback = (type: 'success' | 'error', message: string) => {
+    setFeedback({ type, message })
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : 'সফল হয়েছে',
+      message,
+    })
+    setTimeout(() => setFeedback(null), 4000)
   }
 
   const filteredRates = rates.filter((r) => {
@@ -99,17 +112,21 @@ export function CustomerRatesTable({
     }
   }
 
-  const handleResetRate = async (productId: string) => {
-    if (!confirm('Are you sure you want to remove this custom rate override and restore automatic priority?')) {
-      return
-    }
+  const handleResetRate = (productId: string) => {
+    setProductToReset(productId)
+    setIsResetConfirmOpen(true)
+  }
 
-    setIsSaving(true)
+  const confirmResetRate = async () => {
+    if (!productToReset) return
+    setIsResetting(true)
     try {
-      const res = await deleteCustomerRateAction(customerId, productId, companyId)
+      const res = await deleteCustomerRateAction(customerId, productToReset, companyId)
       if (res.success) {
         showFeedback('success', 'Custom rate override removed.')
         setEditingProductId(null)
+        setIsResetConfirmOpen(false)
+        setProductToReset(null)
         onRatesUpdated?.()
       } else {
         showFeedback('error', res.error || 'Failed to remove rate override.')
@@ -117,7 +134,7 @@ export function CustomerRatesTable({
     } catch {
       showFeedback('error', 'Network error while deleting rate.')
     } finally {
-      setIsSaving(false)
+      setIsResetting(false)
     }
   }
 
@@ -148,21 +165,21 @@ export function CustomerRatesTable({
       </div>
 
       {/* Feedback Alert */}
-      {feedbackMsg && (
+      {feedback && (
         <div
           className={cn(
             'p-3 rounded-lg text-xs font-medium flex items-center gap-2 animate-in fade-in duration-200',
-            feedbackMsg.type === 'success'
+            feedback.type === 'success'
               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
               : 'bg-rose-50 text-rose-800 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800'
           )}
         >
-          {feedbackMsg.type === 'success' ? (
+          {feedback.type === 'success' ? (
             <CheckCircle2 className="h-4 w-4 shrink-0" />
           ) : (
             <AlertCircle className="h-4 w-4 shrink-0" />
           )}
-          <span>{feedbackMsg.text}</span>
+          <span>{feedback.message}</span>
         </div>
       )}
 
@@ -493,6 +510,23 @@ export function CustomerRatesTable({
           })
         )}
       </div>
+
+      {/* Reset Rate Confirm Dialog */}
+      <ConfirmDialog
+        open={isResetConfirmOpen}
+        onOpenChange={setIsResetConfirmOpen}
+        title="Remove Custom Rate Override?"
+        titleBn="কাস্টম রেট ওভাররাইড মুছে ফেলবেন?"
+        message="Are you sure you want to remove this custom rate override and restore automatic pricing tier priority?"
+        messageBn="আপনি কি এই পণ্যের বিশেষ মূল্য বাতিল করে পূর্বের স্ট্যান্ডার্ড মূল্য পুনরুদ্ধার করতে চান?"
+        confirmText="Remove Rate"
+        confirmTextBn="রেট সরান"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isResetting}
+        onConfirm={confirmResetRate}
+      />
     </div>
   )
 }

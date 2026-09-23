@@ -22,6 +22,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import { useI18n } from '@/i18n/context'
 import type {
   FinishingOptionRecord,
@@ -70,12 +72,57 @@ export function PricingFinishingTariffs({
   // Modal State for Printing Method
   const [isMethodModalOpen, setIsMethodModalOpen] = useState(false)
   const [editingMethod, setEditingMethod] = useState<PrintingMethod | null>(null)
-  const [methodForm, setMethodForm] = useState({
+  const [methodForm, setMethodForm] = useState<Partial<PrintingMethod>>({
     name: '',
     code: '',
-    cost_per_sqft: 5,
+    cost_per_sqft: 0,
     is_active: true,
   })
+
+  // Delete confirm states
+  const [finishingToDelete, setFinishingToDelete] = useState<FinishingOptionRecord | null>(null)
+  const [isDeleteFinishingOpen, setIsDeleteFinishingOpen] = useState(false)
+  const [isDeletingFinishing, setIsDeletingFinishing] = useState(false)
+
+  const [methodToDelete, setMethodToDelete] = useState<PrintingMethod | null>(null)
+  const [isDeleteMethodOpen, setIsDeleteMethodOpen] = useState(false)
+  const [isDeletingMethod, setIsDeletingMethod] = useState(false)
+
+  const confirmDeleteFinishing = async () => {
+    if (!finishingToDelete) return
+    setIsDeletingFinishing(true)
+    try {
+      await onDeleteFinishing(finishingToDelete.id)
+      dispatchToast({
+        type: 'success',
+        title: 'Finishing Tariff Removed',
+        titleBn: 'ফিনিশিং অপশন মুছে ফেলা হয়েছে',
+        message: `Finishing option "${finishingToDelete.name}" deleted.`,
+      })
+      setIsDeleteFinishingOpen(false)
+      setFinishingToDelete(null)
+    } finally {
+      setIsDeletingFinishing(false)
+    }
+  }
+
+  const confirmDeleteMethod = async () => {
+    if (!methodToDelete) return
+    setIsDeletingMethod(true)
+    try {
+      await onDeletePrintingMethod(methodToDelete.id)
+      dispatchToast({
+        type: 'success',
+        title: 'Printing Method Removed',
+        titleBn: 'প্রিন্টিং মেথড মুছে ফেলা হয়েছে',
+        message: `Printing method "${methodToDelete.name}" deleted.`,
+      })
+      setIsDeleteMethodOpen(false)
+      setMethodToDelete(null)
+    } finally {
+      setIsDeletingMethod(false)
+    }
+  }
 
   const handleOpenAddFinishing = () => {
     setEditingFinishing(null)
@@ -141,11 +188,12 @@ export function PricingFinishingTariffs({
 
   const handleSaveMethodSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    const name = methodForm.name || ''
     await onSavePrintingMethod({
       id: editingMethod?.id,
-      name: methodForm.name,
-      code: methodForm.code || methodForm.name.toLowerCase().replace(/\s+/g, '_'),
-      cost_per_sqft: Number(methodForm.cost_per_sqft),
+      name,
+      code: methodForm.code || name.toLowerCase().replace(/\s+/g, '_'),
+      cost_per_sqft: Number(methodForm.cost_per_sqft || 0),
       is_active: methodForm.is_active,
     })
     setIsMethodModalOpen(false)
@@ -245,9 +293,8 @@ export function PricingFinishingTariffs({
                             size="sm"
                             variant="outline"
                             onClick={() => {
-                              if (confirm(`Delete finishing option "${fin.name}"?`)) {
-                                onDeleteFinishing(fin.id)
-                              }
+                              setFinishingToDelete(fin)
+                              setIsDeleteFinishingOpen(true)
                             }}
                             className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"
                             title="Delete"
@@ -328,9 +375,8 @@ export function PricingFinishingTariffs({
                           size="sm"
                           variant="outline"
                           onClick={() => {
-                            if (confirm(`Delete printing method "${m.name}"?`)) {
-                              onDeletePrintingMethod(m.id)
-                            }
+                            setMethodToDelete(m)
+                            setIsDeleteMethodOpen(true)
                           }}
                           className="h-7 px-2 text-xs text-rose-600 hover:text-rose-700"
                           title="Delete"
@@ -473,7 +519,7 @@ export function PricingFinishingTariffs({
               </Label>
               <Input
                 placeholder="e.g. uv_8pass"
-                value={methodForm.code}
+                value={methodForm.code || ''}
                 onChange={(e) => setMethodForm({ ...methodForm, code: e.target.value })}
                 className="text-xs h-9 font-mono"
               />
@@ -506,6 +552,40 @@ export function PricingFinishingTariffs({
           </div>
         </form>
       </ModalDialog>
+
+      {/* Delete Finishing Tariff Confirm Dialog */}
+      <ConfirmDialog
+        open={isDeleteFinishingOpen}
+        onOpenChange={setIsDeleteFinishingOpen}
+        title={`Delete Finishing Option "${finishingToDelete?.name || ''}"?`}
+        titleBn={`ফিনিশিং অপশন "${finishingToDelete?.name || ''}" মুছে ফেলবেন?`}
+        message="Are you sure you want to remove this finishing option from price calculation tariffs?"
+        messageBn="আপনি কি মূল্য নির্ধারণ থেকে এই ফিনিশিং অপশনটি মুছে ফেলতে চান?"
+        confirmText="Delete Option"
+        confirmTextBn="অপশন মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isDeletingFinishing}
+        onConfirm={confirmDeleteFinishing}
+      />
+
+      {/* Delete Printing Method Confirm Dialog */}
+      <ConfirmDialog
+        open={isDeleteMethodOpen}
+        onOpenChange={setIsDeleteMethodOpen}
+        title={`Delete Printing Method "${methodToDelete?.name || ''}"?`}
+        titleBn={`প্রিন্টিং মেথড "${methodToDelete?.name || ''}" মুছে ফেলবেন?`}
+        message="Are you sure you want to remove this printing surcharge tariff?"
+        messageBn="আপনি কি এই প্রিন্টিং সারচার্জ মেথডটি মুছে ফেলতে চান?"
+        confirmText="Delete Method"
+        confirmTextBn="মেথড মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isDeletingMethod}
+        onConfirm={confirmDeleteMethod}
+      />
     </div>
   )
 }

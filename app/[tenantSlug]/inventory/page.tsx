@@ -109,6 +109,9 @@ import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
 import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
 import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 import { IssueMasterRollModal } from '@/components/inventory/issue-master-roll-modal'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { PromptDialog } from '@/components/shared/prompt-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 function UnifiedInventoryContent() {
   const router = useRouter()
@@ -306,8 +309,23 @@ function UnifiedInventoryContent() {
   const [isMountModalOpen, setIsMountModalOpen] = useState(false)
   const [isMounting, setIsMounting] = useState(false)
 
-  const showNotification = (msg: string) => {
+  // Trash & Reject confirmation states
+  const [materialToTrash, setMaterialToTrash] = useState<MaterialRecord | null>(null)
+  const [isTrashConfirmOpen, setIsTrashConfirmOpen] = useState(false)
+  const [isTrashing, setIsTrashing] = useState(false)
+
+  const [rejectRequestId, setRejectRequestId] = useState<string | null>(null)
+  const [isRejectPromptOpen, setIsRejectPromptOpen] = useState(false)
+  const [isRejecting, setIsRejecting] = useState(false)
+
+  const showNotification = (msg: string, type: 'success' | 'error' | 'info' | 'warning' = 'success') => {
     setNotification(msg)
+    dispatchToast({
+      type,
+      title: type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Notification',
+      titleBn: type === 'success' ? 'সফল হয়েছে' : type === 'error' ? 'ত্রুটি' : 'বিজ্ঞপ্তি',
+      message: msg,
+    })
     setTimeout(() => setNotification(null), 4000)
   }
 
@@ -583,47 +601,66 @@ function UnifiedInventoryContent() {
   const handleApproveRequest = async (id: string) => {
     const res = await approveMaterialRequestAction(id, companyId)
     if (res.success) {
-      showNotification('Material request approved.')
+      showNotification('Material request approved.', 'success')
       loadAllData()
     } else {
-      showNotification(`Failed: ${res.error}`)
+      showNotification(`Failed: ${res.error}`, 'error')
     }
   }
 
-  const handleRejectRequest = async (id: string) => {
-    const reason = window.prompt('Enter rejection reason:')
-    if (!reason) return
-    const res = await rejectMaterialRequestAction(id, reason, companyId)
-    if (res.success) {
-      showNotification('Material request rejected.')
-      loadAllData()
-    } else {
-      showNotification(`Failed: ${res.error}`)
+  const handleRejectRequest = (id: string) => {
+    setRejectRequestId(id)
+    setIsRejectPromptOpen(true)
+  }
+
+  const confirmRejectRequest = async (reason: string) => {
+    if (!rejectRequestId) return
+    setIsRejecting(true)
+    try {
+      const res = await rejectMaterialRequestAction(rejectRequestId, reason || 'Rejected by inventory manager', companyId)
+      if (res.success) {
+        showNotification('Material request rejected.', 'info')
+        setIsRejectPromptOpen(false)
+        setRejectRequestId(null)
+        loadAllData()
+      } else {
+        showNotification(`Failed: ${res.error}`, 'error')
+      }
+    } finally {
+      setIsRejecting(false)
     }
   }
 
   const handleRemnantStatusChange = async (id: string, status: any) => {
     const res = await updateRemnantStatusAction(id, status, companyId)
     if (res.success) {
-      showNotification(`Remnant marked as ${status}.`)
+      showNotification(`Remnant marked as ${status}.`, 'info')
       loadAllData()
     }
   }
 
-  const handleTrashMaterial = async (mat: MaterialRecord) => {
-    if (!confirm(`Move material "${mat.name}" to Trash / Recycle Bin?`)) {
-      return
-    }
+  const handleTrashMaterial = (mat: MaterialRecord) => {
+    setMaterialToTrash(mat)
+    setIsTrashConfirmOpen(true)
+  }
+
+  const confirmTrashMaterial = async () => {
+    if (!materialToTrash) return
+    setIsTrashing(true)
     try {
-      const res = await moveToTrashAction('materials', mat, companyId)
+      const res = await moveToTrashAction('materials', materialToTrash, companyId)
       if (res.success) {
-        showNotification(`Material "${mat.name}" moved to Trash.`)
+        showNotification(`Material "${materialToTrash.name}" moved to Trash.`, 'success')
+        setIsTrashConfirmOpen(false)
+        setMaterialToTrash(null)
         loadAllData()
       } else {
-        showNotification(res.error || 'Failed to move material to trash.')
+        showNotification(res.error || 'Failed to move material to trash.', 'error')
       }
     } catch (err: any) {
-      showNotification(err.message || 'Error moving material to trash.')
+      showNotification(err.message || 'Error moving material to trash.', 'error')
+    } finally {
+      setIsTrashing(false)
     }
   }
 
@@ -2333,6 +2370,39 @@ function UnifiedInventoryContent() {
           initialMaterialId={initialRollMaterialId}
           companyId={companyId}
           onSuccess={() => loadAllData(true)}
+        />
+
+        {/* Material Trash Confirmation Dialog */}
+        <ConfirmDialog
+          open={isTrashConfirmOpen}
+          onOpenChange={setIsTrashConfirmOpen}
+          title={`Move "${materialToTrash?.name || 'Material'}" to Trash?`}
+          titleBn={`"${materialToTrash?.name || 'ম্যাটেরিয়াল'}" ট্র্যাশে স্থানান্তর করবেন?`}
+          message={`Are you sure you want to move this material to the Trash / Recycle Bin? It can be restored from system settings later.`}
+          messageBn={`আপনি কি এই কাঁচামালটি রিসাইকেল বিনে সরাতে চান? পরবর্তীতে সেটিংস থেকে এটি রিস্টোর করা যাবে।`}
+          confirmText="Move to Trash"
+          confirmTextBn="ট্র্যাশে সরান"
+          cancelText="Cancel"
+          cancelTextBn="বাতিল"
+          isDestructive={true}
+          isLoading={isTrashing}
+          onConfirm={confirmTrashMaterial}
+        />
+
+        {/* Reject Request Prompt Dialog */}
+        <PromptDialog
+          open={isRejectPromptOpen}
+          onOpenChange={setIsRejectPromptOpen}
+          title="Reject Material Request"
+          titleBn="রিকুইজিশন বাতিল করুন"
+          message="Enter reason for rejecting this material requisition:"
+          messageBn="কাঁচামাল রিকুইজিশন বাতিলের কারণ উল্লেখ করুন:"
+          placeholder="e.g. Insufficient stock, duplicate request, etc."
+          placeholderBn="যেমনঃ স্টকে স্বল্পতা, ডুপ্লিকেট রিকুইজিশন ইত্যাদি..."
+          confirmText="Reject Request"
+          confirmTextBn="বাতিল নিশ্চিত করুন"
+          isLoading={isRejecting}
+          onConfirm={confirmRejectRequest}
         />
       </div>
     </FeatureGate>

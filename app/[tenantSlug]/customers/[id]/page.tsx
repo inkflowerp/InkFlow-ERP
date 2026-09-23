@@ -55,6 +55,8 @@ import {
   logCustomerCommunicationAction,
 } from '@/actions/customer.actions'
 import { recordPaymentAction } from '@/actions/billing.actions'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import {
   CustomerRecord,
   ResolvedProductRate,
@@ -147,8 +149,18 @@ export default function CustomerProfilePage() {
   const [commDetails, setCommDetails] = useState('')
   const [isLoggingComm, setIsLoggingComm] = useState(false)
 
-  const showNotification = (msg: string) => {
+  // Toggle active confirm modal state
+  const [isToggleActiveConfirmOpen, setIsToggleActiveConfirmOpen] = useState(false)
+  const [pendingActiveStatus, setPendingActiveStatus] = useState<boolean | null>(null)
+
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
     setTimeout(() => setNotification(null), 3500)
   }
 
@@ -244,10 +256,10 @@ export default function CustomerProfilePage() {
         showNotification('Customer profile updated successfully.')
         loadCustomerData()
       } else {
-        alert(res.error || 'Failed to update customer.')
+        showNotification(res.error || 'Failed to update customer.', 'error')
       }
     } catch {
-      alert('Network error updating customer.')
+      showNotification('Network error updating customer.', 'error')
     } finally {
       setIsSavingEdit(false)
     }
@@ -255,11 +267,17 @@ export default function CustomerProfilePage() {
 
   // Handle Toggle Customer Active / Inactive Status
   const [isTogglingActive, setIsTogglingActive] = useState(false)
-  const handleToggleActive = async () => {
+  const handleToggleActive = () => {
     if (!companyId || !customer) return
     const newStatus = customer.is_active === false
+    setPendingActiveStatus(newStatus)
+    setIsToggleActiveConfirmOpen(true)
+  }
+
+  const confirmToggleActive = async () => {
+    if (!companyId || !customer || pendingActiveStatus === null) return
+    const newStatus = pendingActiveStatus
     const actionName = newStatus ? 'Reactivate' : 'Deactivate'
-    if (!confirm(`Are you sure you want to ${actionName.toLowerCase()} "${customer.name}"?`)) return
 
     setIsTogglingActive(true)
     try {
@@ -267,12 +285,14 @@ export default function CustomerProfilePage() {
       if (res.success && res.data) {
         setCustomer(res.data)
         showNotification(`Customer successfully ${newStatus ? 'reactivated' : 'deactivated'}.`)
+        setIsToggleActiveConfirmOpen(false)
+        setPendingActiveStatus(null)
         loadCustomerData()
       } else {
-        alert(res.error || `Failed to ${actionName.toLowerCase()} customer.`)
+        showNotification(res.error || `Failed to ${actionName.toLowerCase()} customer.`, 'error')
       }
     } catch {
-      alert(`Network error while attempting to ${actionName.toLowerCase()} customer.`)
+      showNotification(`Network error while attempting to ${actionName.toLowerCase()} customer.`, 'error')
     } finally {
       setIsTogglingActive(false)
     }
@@ -283,7 +303,7 @@ export default function CustomerProfilePage() {
     e.preventDefault()
     const amt = parseFloat(payAmount)
     if (isNaN(amt) || amt <= 0) {
-      alert('Please enter a valid payment amount.')
+      showNotification('Please enter a valid payment amount.', 'error')
       return
     }
 
@@ -304,7 +324,7 @@ export default function CustomerProfilePage() {
       )
 
       if (!res.success) {
-        alert(res.error || 'Failed to record payment.')
+        showNotification(res.error || 'Failed to record payment.', 'error')
         return
       }
 
@@ -314,7 +334,7 @@ export default function CustomerProfilePage() {
       showNotification(`Payment of ৳${amt} recorded successfully.`)
       loadCustomerData()
     } catch (err: any) {
-      alert(err?.message || 'Failed to record payment.')
+      showNotification(err?.message || 'Failed to record payment.', 'error')
     } finally {
       setIsRecordingPayment(false)
     }
@@ -338,7 +358,7 @@ export default function CustomerProfilePage() {
       )
 
       if (!res.success) {
-        alert(res.error || 'Failed to log communication.')
+        showNotification(res.error || 'Failed to log communication.', 'error')
         return
       }
 
@@ -348,7 +368,7 @@ export default function CustomerProfilePage() {
       showNotification('Communication logged successfully.')
       loadCustomerData()
     } catch {
-      alert('Failed to log communication.')
+      showNotification('Failed to log communication.', 'error')
     } finally {
       setIsLoggingComm(false)
     }
@@ -1416,6 +1436,23 @@ export default function CustomerProfilePage() {
           loadCustomerData()
           showNotification(`Invoice ${newInv.invoice_number} created & Customer 360 profile updated!`)
         }}
+      />
+
+      {/* Customer Status Toggle Confirm Dialog */}
+      <ConfirmDialog
+        open={isToggleActiveConfirmOpen}
+        onOpenChange={setIsToggleActiveConfirmOpen}
+        title={pendingActiveStatus ? `Reactivate Customer "${customer.name}"?` : `Deactivate Customer "${customer.name}"?`}
+        titleBn={pendingActiveStatus ? `কাস্টমার "${customer.name}" পুনরায় সক্রিয় করবেন?` : `কাস্টমার "${customer.name}" নিষ্ক্রিয় করবেন?`}
+        message={pendingActiveStatus ? `Reactivating this customer will allow new orders and quotations.` : `Deactivating this customer will prevent new quotations and orders while retaining existing data.`}
+        messageBn={pendingActiveStatus ? `গ্রাহক পুনরায় সক্রিয় হলে নতুন অর্ডার ও চালান তৈরি করা যাবে।` : `গ্রাহক নিষ্ক্রিয় করা হলে নতুন অর্ডার গ্রহণ বন্ধ থাকবে, তবে পুরাতন হিসেব ঠিক থাকবে।`}
+        confirmText={pendingActiveStatus ? 'Reactivate' : 'Deactivate'}
+        confirmTextBn={pendingActiveStatus ? 'সক্রিয় করুন' : 'নিষ্ক্রিয় করুন'}
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={!pendingActiveStatus}
+        isLoading={isTogglingActive}
+        onConfirm={confirmToggleActive}
       />
     </div>
   )

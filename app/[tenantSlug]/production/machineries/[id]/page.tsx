@@ -54,6 +54,8 @@ import { CompleteMaintenanceModal } from '@/components/machinery/complete-mainte
 import { ReportBreakdownModal } from '@/components/machinery/report-breakdown-modal'
 import { ResolveBreakdownModal } from '@/components/machinery/resolve-breakdown-modal'
 import { StatusChangeModal } from '@/components/machinery/status-change-modal'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function MachineryDetailPage() {
   const params = useParams()
@@ -116,19 +118,45 @@ export default function MachineryDetailPage() {
     loadData()
   }, [loadData])
 
-  const handleArchive = async () => {
-    if (!machine) return
-    if (!confirm(`Are you sure you want to retire/archive "${machine.name}"?`)) return
+  // Archive confirm modal state
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
 
+  const handleArchive = () => {
+    if (!machine) return
+    setIsArchiveConfirmOpen(true)
+  }
+
+  const confirmArchive = async () => {
+    if (!machine) return
+    setIsArchiving(true)
     try {
       const res = await archiveMachineryAction(machine.id)
       if (res.success) {
+        dispatchToast({
+          type: 'success',
+          title: 'Machinery Archived',
+          titleBn: 'মেশিন আর্কাইভ করা হয়েছে',
+          message: `Machine "${machine.name}" has been retired/archived.`,
+        })
         router.push(getTenantNavHref('/production/machineries', pathname, tenantSlug))
       } else {
-        alert(res.error || 'Failed to archive.')
+        dispatchToast({
+          type: 'error',
+          title: 'Archive Failed',
+          titleBn: 'আর্কাইভ ব্যর্থ হয়েছে',
+          message: res.error || 'Failed to archive.',
+        })
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to archive.')
+      dispatchToast({
+        type: 'error',
+        title: 'Error',
+        titleBn: 'ত্রুটি',
+        message: err.message || 'Failed to archive.',
+      })
+    } finally {
+      setIsArchiving(false)
     }
   }
 
@@ -136,12 +164,28 @@ export default function MachineryDetailPage() {
     try {
       const res = await updateAssignmentStatusAction(assignmentId, status)
       if (res.success) {
+        dispatchToast({
+          type: 'success',
+          title: 'Assignment Updated',
+          titleBn: 'অ্যাসাইনমেন্ট আপডেট হয়েছে',
+          message: `Job status updated to ${status}.`,
+        })
         loadData()
       } else {
-        alert(res.error || 'Failed to update assignment.')
+        dispatchToast({
+          type: 'error',
+          title: 'Update Failed',
+          titleBn: 'আপডেট ব্যর্থ হয়েছে',
+          message: res.error || 'Failed to update assignment.',
+        })
       }
     } catch (err: any) {
-      alert(err.message || 'An error occurred.')
+      dispatchToast({
+        type: 'error',
+        title: 'Error',
+        titleBn: 'ত্রুটি',
+        message: err.message || 'An error occurred.',
+      })
     }
   }
 
@@ -857,6 +901,23 @@ export default function MachineryDetailPage() {
         onOpenChange={setIsStatusModalOpen}
         machine={machine}
         onSuccess={() => loadData()}
+      />
+
+      {/* Machinery Archive Confirm Dialog */}
+      <ConfirmDialog
+        open={isArchiveConfirmOpen}
+        onOpenChange={setIsArchiveConfirmOpen}
+        title={`Retire / Archive "${machine?.name || 'Machine'}"?`}
+        titleBn={`"${machine?.name || 'মেশিন'}" আর্কাইভ করবেন?`}
+        message={`Are you sure you want to retire "${machine?.name}"? It will no longer accept new production job assignments.`}
+        messageBn={`আপনি কি এই মেশিনটি আর্কাইভ করতে চান? এটি আর নতুন কাজের জন্য বরাদ্দ করা যাবে না।`}
+        confirmText="Retire / Archive"
+        confirmTextBn="আর্কাইভ নিশ্চিত করুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isArchiving}
+        onConfirm={confirmArchive}
       />
     </div>
   )

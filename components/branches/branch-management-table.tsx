@@ -7,6 +7,7 @@ import {
   updateBranchAction,
   setBranchStatusAction,
 } from '../../actions/branch.actions.ts'
+import { dispatchToast } from '../shared/toast-feedback'
 
 interface BranchManagementTableProps {
   initialBranches: BranchMasterRecord[]
@@ -117,8 +118,19 @@ export function BranchManagementTable({
       setBranches((prev) =>
         prev.map((b) => (b.id === branchId ? (res.data as BranchMasterRecord) : b))
       )
+      dispatchToast({
+        type: 'success',
+        title: 'Branch Status Updated',
+        titleBn: 'শাখার স্ট্যাটাস আপডেট হয়েছে',
+        message: `Branch status set to ${status}.`,
+      })
     } catch (err: any) {
-      alert(err.message)
+      dispatchToast({
+        type: 'error',
+        title: 'Update Failed',
+        titleBn: 'আপডেট ব্যর্থ হয়েছে',
+        message: err.message || 'Failed to update branch status.',
+      })
     }
   }
 

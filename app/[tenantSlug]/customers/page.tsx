@@ -52,6 +52,8 @@ import {
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function CustomersPage() {
   const params = useParams()
@@ -92,9 +94,20 @@ export default function CustomersPage() {
   const [selectedCustomerForPayment, setSelectedCustomerForPayment] = useState<CustomerRecord | null>(null)
   const [notification, setNotification] = useState<string | null>(null)
 
-  const showNotification = (msg: string) => {
+  // Trash confirm state
+  const [customerToTrash, setCustomerToTrash] = useState<CustomerRecord | null>(null)
+  const [isTrashConfirmOpen, setIsTrashConfirmOpen] = useState(false)
+  const [isTrashing, setIsTrashing] = useState(false)
+
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
-    setTimeout(() => setNotification(null), 3500)
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
+    setTimeout(() => setNotification(null), 3800)
   }
 
   // Hydrate from localStorage on client mount safely to prevent SSR mismatch
@@ -223,20 +236,28 @@ export default function CustomersPage() {
     loadData()
   }
 
-  const handleTrashCustomer = async (cust: CustomerRecord) => {
-    if (!confirm(`Move customer "${cust.name}" to Trash / Recycle Bin?`)) {
-      return
-    }
+  const handleTrashCustomer = (cust: CustomerRecord) => {
+    setCustomerToTrash(cust)
+    setIsTrashConfirmOpen(true)
+  }
+
+  const confirmTrashCustomer = async () => {
+    if (!customerToTrash) return
+    setIsTrashing(true)
     try {
-      const res = await moveToTrashAction('customers', cust, companyId)
+      const res = await moveToTrashAction('customers', customerToTrash, companyId)
       if (res.success) {
-        showNotification(`Customer "${cust.name}" moved to Trash.`)
+        showNotification(`Customer "${customerToTrash.name}" moved to Trash.`, 'success')
+        setIsTrashConfirmOpen(false)
+        setCustomerToTrash(null)
         loadData()
       } else {
-        showNotification(res.error || 'Failed to move customer to trash.')
+        showNotification(res.error || 'Failed to move customer to trash.', 'error')
       }
     } catch (err: any) {
-      showNotification(err.message || 'Error moving customer to trash.')
+      showNotification(err.message || 'Error moving customer to trash.', 'error')
+    } finally {
+      setIsTrashing(false)
     }
   }
 
@@ -897,6 +918,23 @@ export default function CustomersPage() {
           }}
         />
       )}
+
+      {/* Customer Trash Confirm Dialog */}
+      <ConfirmDialog
+        open={isTrashConfirmOpen}
+        onOpenChange={setIsTrashConfirmOpen}
+        title={`Move "${customerToTrash?.name || 'Customer'}" to Trash?`}
+        titleBn={`"${customerToTrash?.name || 'কাস্টমার'}" ট্র্যাশে স্থানান্তর করবেন?`}
+        message="Are you sure you want to move this customer to Trash / Recycle Bin? Outstanding invoices and history will be preserved."
+        messageBn="আপনি কি এই কাস্টমারকে রিসাইকেল বিনে সরাতে চান? পূর্বের ইনভয়েস ও লেনদেন রেকর্ড সংরক্ষিত থাকবে।"
+        confirmText="Move to Trash"
+        confirmTextBn="ট্র্যাশে সরান"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isTrashing}
+        onConfirm={confirmTrashCustomer}
+      />
     </div>
   )
 }

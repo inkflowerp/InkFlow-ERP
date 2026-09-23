@@ -42,6 +42,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDate, formatTime, formatDateTime } from '@/lib/formatters'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import {
   getPlatformCompaniesAction,
   getPlatformSupportSessionsAction,
@@ -74,6 +75,10 @@ export default function PlatformSupportPage() {
   const [extendingId, setExtendingId] = useState<string | null>(null)
   const [revokingId, setRevokingId] = useState<string | null>(null)
   const [, setCopiedId] = useState<string | null>(null)
+
+  // Revoke session confirm modal state
+  const [sessionToRevoke, setSessionToRevoke] = useState<{ id: string; companyName?: string } | null>(null)
+  const [isRevokeConfirmOpen, setIsRevokeConfirmOpen] = useState(false)
 
   // Filters & Search
   const [tenantSearch, setTenantSearch] = useState('')
@@ -202,15 +207,20 @@ export default function PlatformSupportPage() {
   }
 
   // Handle Revoking / Terminating Support Session
-  const handleRevokeSession = async (sessionId: string, companyName?: string) => {
-    if (!confirm(`Are you sure you want to terminate the active support session for ${companyName || 'this tenant'}?`)) {
-      return
-    }
-    setRevokingId(sessionId)
+  const handleRevokeSession = (sessionId: string, companyName?: string) => {
+    setSessionToRevoke({ id: sessionId, companyName })
+    setIsRevokeConfirmOpen(true)
+  }
+
+  const confirmRevokeSession = async () => {
+    if (!sessionToRevoke) return
+    setRevokingId(sessionToRevoke.id)
     try {
-      const res = await revokeSupportSessionAction(sessionId, 'Terminated from Platform Support Dashboard')
+      const res = await revokeSupportSessionAction(sessionToRevoke.id, 'Terminated from Platform Support Dashboard')
       if (res.success) {
         showToast('Support session revoked immediately. Zero-trust isolation enforced.')
+        setIsRevokeConfirmOpen(false)
+        setSessionToRevoke(null)
         await loadData()
       } else {
         showToast(res.error || 'Failed to revoke support session', 'error')
@@ -1266,6 +1276,23 @@ export default function PlatformSupportPage() {
           </Card>
         </div>
       )}
+
+      {/* Revoke Session Confirm Dialog */}
+      <ConfirmDialog
+        open={isRevokeConfirmOpen}
+        onOpenChange={setIsRevokeConfirmOpen}
+        title={`Terminate Support Session for ${sessionToRevoke?.companyName || 'Tenant'}?`}
+        titleBn={`${sessionToRevoke?.companyName || 'ট্যানান্ট'} এর সাপোর্ট সেশন বন্ধ করবেন?`}
+        message="Are you sure you want to terminate this active support delegation session? The platform engineer token will be revoked immediately."
+        messageBn="আপনি কি এই সাপোর্ট সেশনটি বাতিল করতে চান? এক্সেস টোকেনটি তাৎক্ষণিকভাবে নিষ্ক্রিয় করা হবে।"
+        confirmText="Terminate Session"
+        confirmTextBn="সেশন বন্ধ করুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={Boolean(revokingId)}
+        onConfirm={confirmRevokeSession}
+      />
     </div>
   )
 }

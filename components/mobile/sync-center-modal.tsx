@@ -20,6 +20,8 @@ import { ClientSyncManager } from '../../lib/offline/client-sync.ts'
 import { LocalCacheSecurityManager } from '../../lib/offline/local-cache-security.ts'
 import { processSyncBatchAction } from '../../actions/sync.actions.ts'
 import type { SyncBatchItemPayload, SyncBatchResult } from '../../types/sync.types.ts'
+import { ConfirmDialog } from '../shared/confirm-dialog'
+import { dispatchToast } from '../shared/toast-feedback'
 
 interface SyncCenterModalProps {
   open: boolean
@@ -30,6 +32,8 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
   const [pendingItems, setPendingItems] = useState<SyncBatchItemPayload[]>([])
   const [syncing, setSyncing] = useState(false)
   const [lastResult, setLastResult] = useState<SyncBatchResult | null>(null)
+  const [isClearConfirmOpen, setIsClearConfirmOpen] = useState(false)
+  const [isClearing, setIsClearing] = useState(false)
 
   useEffect(() => {
     if (open) {
@@ -43,7 +47,7 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
   }
 
   async function handleSyncNow() {
-    if (pendingItems.length === 0) return
+    if (syncing || pendingItems.length === 0) return
     setSyncing(true)
     try {
       const res = await processSyncBatchAction(pendingItems)
@@ -54,19 +58,44 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
           .map((r) => r.idempotency_key)
         ClientSyncManager.removeProcessedItems('default', syncedKeys)
         loadPending()
+        dispatchToast({
+          type: 'success',
+          title: 'Sync Complete',
+          titleBn: 'সিঙ্ক সম্পন্ন হয়েছে',
+          message: `Synchronized ${syncedKeys.length} changes with server.`,
+        })
       }
     } catch (err) {
       console.error('Manual sync failed', err)
+      dispatchToast({
+        type: 'error',
+        title: 'Sync Failed',
+        titleBn: 'সিঙ্ক ব্যর্থ হয়েছে',
+        message: 'Could not connect to server to sync pending changes.',
+      })
     } finally {
       setSyncing(false)
     }
   }
 
   function handleClearCache() {
-    if (confirm('Clear all local offline cache and drafts for security?')) {
+    setIsClearConfirmOpen(true)
+  }
+
+  function confirmClearCache() {
+    setIsClearing(true)
+    try {
       LocalCacheSecurityManager.clearSensitiveLocalData()
       loadPending()
-      alert('Local tenant cache purged.')
+      dispatchToast({
+        type: 'info',
+        title: 'Cache Purged',
+        titleBn: 'ক্যাশ মুছে ফেলা হয়েছে',
+        message: 'Local offline cache and drafts have been securely purged.',
+      })
+      setIsClearConfirmOpen(false)
+    } finally {
+      setIsClearing(false)
     }
   }
 
@@ -164,6 +193,23 @@ export function SyncCenterModal({ open, onClose }: SyncCenterModalProps) {
           </button>
         </div>
       </div>
+
+      {/* Clear Cache Confirm Dialog */}
+      <ConfirmDialog
+        open={isClearConfirmOpen}
+        onOpenChange={setIsClearConfirmOpen}
+        title="Clear Local Offline Cache?"
+        titleBn="অফলাইন ক্যাশ মুছে ফেলবেন?"
+        message="Are you sure you want to purge all local offline storage cache and drafts? Unsynced local drafts will be permanently cleared."
+        messageBn="আপনি কি সব লোকাল অফলাইন ক্যাশ ও ড্রাফট মুছে ফেলতে চান? এটি নিরাপদ কিন্তু আন-সিঙ্কড ড্রাফট মুছে যাবে।"
+        confirmText="Purge Cache"
+        confirmTextBn="ক্যাশ মুছুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isClearing}
+        onConfirm={confirmClearCache}
+      />
     </div>
   )
 }

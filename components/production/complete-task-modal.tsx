@@ -17,6 +17,7 @@ import {
   TrendingDown,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -221,7 +222,12 @@ export function CompleteTaskModal({
       })
       onClose()
     } catch (err: any) {
-      alert(`Failed to complete task: ${err.message}`)
+      dispatchToast({
+        type: 'error',
+        title: 'Task Completion Failed',
+        titleBn: 'টাস্ক সম্পন্নকরণ ব্যর্থ হয়েছে',
+        message: err.message || 'Failed to complete task.',
+      })
     } finally {
       setIsSubmitting(false)
     }

@@ -58,6 +58,8 @@ import { AssignMachineryModal } from '@/components/machinery/assign-machinery-mo
 import { ScheduleMaintenanceModal } from '@/components/machinery/schedule-maintenance-modal'
 import { ReportBreakdownModal } from '@/components/machinery/report-breakdown-modal'
 import { StatusChangeModal } from '@/components/machinery/status-change-modal'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function MachineriesListPage() {
   const params = useParams()
@@ -156,20 +158,48 @@ export default function MachineriesListPage() {
     }
   }, [loadData])
 
-  const handleArchive = async (m: MachineryRecord) => {
-    if (!confirm(`Are you sure you want to retire/archive "${m.name}" (${m.code})? It will not accept new job assignments.`)) {
-      return
-    }
+  // Archive confirm modal state
+  const [machineToArchive, setMachineToArchive] = useState<MachineryRecord | null>(null)
+  const [isArchiveConfirmOpen, setIsArchiveConfirmOpen] = useState(false)
+  const [isArchiving, setIsArchiving] = useState(false)
 
+  const handleArchive = (m: MachineryRecord) => {
+    setMachineToArchive(m)
+    setIsArchiveConfirmOpen(true)
+  }
+
+  const confirmArchive = async () => {
+    if (!machineToArchive) return
+    setIsArchiving(true)
     try {
-      const res = await archiveMachineryAction(m.id)
+      const res = await archiveMachineryAction(machineToArchive.id)
       if (res.success) {
+        dispatchToast({
+          type: 'success',
+          title: 'Machinery Archived',
+          titleBn: 'মেশিন আর্কাইভ করা হয়েছে',
+          message: `Machine "${machineToArchive.name}" has been retired/archived.`,
+        })
+        setIsArchiveConfirmOpen(false)
+        setMachineToArchive(null)
         loadData()
       } else {
-        alert(res.error || 'Failed to archive machinery.')
+        dispatchToast({
+          type: 'error',
+          title: 'Archive Failed',
+          titleBn: 'আর্কাইভ ব্যর্থ হয়েছে',
+          message: res.error || 'Failed to archive machinery.',
+        })
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to archive.')
+      dispatchToast({
+        type: 'error',
+        title: 'Error',
+        titleBn: 'ত্রুটি',
+        message: err.message || 'Failed to archive machinery.',
+      })
+    } finally {
+      setIsArchiving(false)
     }
   }
 
@@ -769,6 +799,23 @@ export default function MachineriesListPage() {
         onOpenChange={(open) => !open && setStatusMachine(null)}
         machine={statusMachine}
         onSuccess={() => loadData()}
+      />
+
+      {/* Machinery Archive Confirm Dialog */}
+      <ConfirmDialog
+        open={isArchiveConfirmOpen}
+        onOpenChange={setIsArchiveConfirmOpen}
+        title={`Retire / Archive "${machineToArchive?.name || 'Machine'}"?`}
+        titleBn={`"${machineToArchive?.name || 'মেশিন'}" আর্কাইভ করবেন?`}
+        message={`Are you sure you want to retire "${machineToArchive?.name}" (${machineToArchive?.code})? It will no longer accept new production job assignments.`}
+        messageBn={`আপনি কি এই মেশিনটি আর্কাইভ করতে চান? এটি আর নতুন কাজের জন্য বরাদ্দ করা যাবে না।`}
+        confirmText="Retire / Archive"
+        confirmTextBn="আর্কাইভ নিশ্চিত করুন"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isArchiving}
+        onConfirm={confirmArchive}
       />
     </div>
   )

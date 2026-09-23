@@ -58,6 +58,8 @@ import {
   completeProductionTaskAction,
   resumeProductionTaskAction,
 } from '@/actions/production-planning.actions'
+import { PromptDialog } from '@/components/shared/prompt-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 import { ProductionBoardCard } from '@/components/production/production-board-card'
 import { MachineQueueView } from '@/components/production/machine-queue-view'
 import { ScheduleTaskModal } from '@/components/production/schedule-task-modal'
@@ -99,14 +101,23 @@ export default function AdvancedProductionPage() {
   const [reworkTaskTarget, setReworkTaskTarget] = useState<ProductionTaskRecord | null>(null)
   const [completeTaskTarget, setCompleteTaskTarget] = useState<ProductionTaskRecord | null>(null)
   const [jobTicketTarget, setJobTicketTarget] = useState<ProductionTaskRecord | null>(null)
+  const [taskToPause, setTaskToPause] = useState<ProductionTaskRecord | null>(null)
+  const [isPausePromptOpen, setIsPausePromptOpen] = useState(false)
+  const [isPausing, setIsPausing] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  const showNotification = (msg: string) => {
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
-    setTimeout(() => setNotification(null), 4000)
+    dispatchToast({
+      type,
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
+    setTimeout(() => setNotification(null), 3500)
   }
 
   const loadData = async (isBackground = false) => {
@@ -239,24 +250,28 @@ export default function AdvancedProductionPage() {
     }
   }
 
-  const handlePauseTask = async (task: ProductionTaskRecord) => {
-    const reason = prompt(
-      isBn
-        ? 'পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):'
-        : 'Enter pause reason (e.g. Break / Shift change / QC inspection):'
-    )
-    if (reason === null) return
+  const handlePauseTask = (task: ProductionTaskRecord) => {
+    setTaskToPause(task)
+    setIsPausePromptOpen(true)
+  }
 
+  const confirmPauseTask = async (reason: string) => {
+    if (!taskToPause) return
+    setIsPausing(true)
     try {
-      const res = await pauseProductionTaskAction(task.id, reason || 'Operator paused', undefined, task)
+      const res = await pauseProductionTaskAction(taskToPause.id, reason || 'Operator paused', undefined, taskToPause)
       if (res.success) {
-        showNotification(isBn ? `কাজ সাময়িক স্থগিত: ${task.task_name}` : `Paused task: ${task.task_name}`)
+        showNotification(isBn ? `কাজ সাময়িক স্থগিত: ${taskToPause.task_name}` : `Paused task: ${taskToPause.task_name}`, 'info')
+        setIsPausePromptOpen(false)
+        setTaskToPause(null)
         loadData()
       } else {
-        showNotification(`Error: ${res.error}`)
+        showNotification(`Error: ${res.error}`, 'error')
       }
     } catch (err: any) {
-      showNotification(`Error: ${err.message}`)
+      showNotification(`Error: ${err.message}`, 'error')
+    } finally {
+      setIsPausing(false)
     }
   }
 
@@ -842,6 +857,22 @@ export default function AdvancedProductionPage() {
             }}
           />
         )}
+
+        {/* Pause Task Prompt Modal */}
+        <PromptDialog
+          open={isPausePromptOpen}
+          onOpenChange={setIsPausePromptOpen}
+          title={isBn ? `কাজ সাময়িক স্থগিত (Pause)` : `Pause Task: ${taskToPause?.task_name || ''}`}
+          titleBn={`কাজ সাময়িক স্থগিত (Pause)`}
+          message={isBn ? 'পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):' : 'Enter pause reason (e.g. Break / Shift change / QC inspection / Media reloading):'}
+          messageBn="পজ করার কারণ লিখুন (যেমনঃ শিফট পরিবর্তন / মিডিয়া চেঞ্জ / লাঞ্চ ব্রেক):"
+          placeholder="e.g. Shift change, break, loading roll..."
+          placeholderBn="যেমনঃ শিফট পরিবর্তন, মিডিয়া লোডিং ইত্যাদি..."
+          confirmText="Pause Task"
+          confirmTextBn="স্থগিত করুন"
+          isLoading={isPausing}
+          onConfirm={confirmPauseTask}
+        />
       </div>
     </FeatureGate>
   )

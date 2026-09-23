@@ -57,6 +57,8 @@ import { SupplierMaterialRateModal } from '@/components/suppliers/supplier-mater
 import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { moveToTrashAction } from '@/actions/trash.actions'
 import type { CashBookEntryRecord } from '@/types/accounting.types'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
+import { dispatchToast } from '@/components/shared/toast-feedback'
 
 export default function SuppliersPage() {
   const params = useParams()
@@ -91,10 +93,21 @@ export default function SuppliersPage() {
   const [rateTargetSupplier, setRateTargetSupplier] = useState<SupplierRecord | null>(null)
 
   const [isNewPOOpen, setIsNewPOOpen] = useState(false)
-  const [notification, setNotification] = useState<{ message: string; type?: 'success' | 'info' } | null>(null)
+  const [notification, setNotification] = useState<{ message: string; type?: 'success' | 'info' | 'error' } | null>(null)
 
-  const showNotification = (msg: string, type: 'success' | 'info' = 'success') => {
+  // Trash confirm state
+  const [supplierToTrash, setSupplierToTrash] = useState<SupplierRecord | null>(null)
+  const [isTrashConfirmOpen, setIsTrashConfirmOpen] = useState(false)
+  const [isTrashing, setIsTrashing] = useState(false)
+
+  const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification({ message: msg, type })
+    dispatchToast({
+      type: type === 'info' ? 'info' : type === 'error' ? 'error' : 'success',
+      title: type === 'error' ? 'Error' : type === 'info' ? 'Notice' : 'Success',
+      titleBn: type === 'error' ? 'ত্রুটি' : type === 'info' ? 'বিজ্ঞপ্তি' : 'সফল হয়েছে',
+      message: msg,
+    })
     setTimeout(() => setNotification(null), 3800)
   }
 
@@ -111,20 +124,28 @@ export default function SuppliersPage() {
   }
 
   // Handle Trash Supplier
-  const handleTrashSupplier = async (sup: SupplierRecord) => {
-    if (!confirm(`Move supplier "${sup.supplier_name}" to Trash / Recycle Bin?`)) {
-      return
-    }
+  const handleTrashSupplier = (sup: SupplierRecord) => {
+    setSupplierToTrash(sup)
+    setIsTrashConfirmOpen(true)
+  }
+
+  const confirmTrashSupplier = async () => {
+    if (!supplierToTrash) return
+    setIsTrashing(true)
     try {
-      const res = await moveToTrashAction('suppliers', sup, company?.id)
+      const res = await moveToTrashAction('suppliers', supplierToTrash, company?.id)
       if (res.success) {
-        showNotification(`Supplier "${sup.supplier_name}" moved to Trash.`)
-        setSuppliers(suppliers.filter((s) => s.id !== sup.id))
+        showNotification(`Supplier "${supplierToTrash.supplier_name}" moved to Trash.`, 'success')
+        setSuppliers(suppliers.filter((s) => s.id !== supplierToTrash.id))
+        setIsTrashConfirmOpen(false)
+        setSupplierToTrash(null)
       } else {
-        showNotification(res.error || 'Failed to move supplier to trash.', 'info')
+        showNotification(res.error || 'Failed to move supplier to trash.', 'error')
       }
     } catch (err: any) {
-      showNotification(err.message || 'Error moving supplier to trash.', 'info')
+      showNotification(err.message || 'Error moving supplier to trash.', 'error')
+    } finally {
+      setIsTrashing(false)
     }
   }
 
@@ -1017,6 +1038,23 @@ export default function SuppliersPage() {
         open={isNewPOOpen}
         onOpenChange={setIsNewPOOpen}
         defaultSupplierId={payTargetSupplier?.id}
+      />
+
+      {/* Supplier Trash Confirm Dialog */}
+      <ConfirmDialog
+        open={isTrashConfirmOpen}
+        onOpenChange={setIsTrashConfirmOpen}
+        title={`Move "${supplierToTrash?.supplier_name || 'Supplier'}" to Trash?`}
+        titleBn={`"${supplierToTrash?.supplier_name || 'সাপ্লায়ার'}" ট্র্যাশে স্থানান্তর করবেন?`}
+        message="Are you sure you want to move this supplier to Trash / Recycle Bin? Associated transaction history is preserved."
+        messageBn="আপনি কি এই সরবরাহকারীকে রিসাইকেল বিনে সরাতে চান? পূর্বের লেনদেন রেকর্ড সংরক্ষিত থাকবে।"
+        confirmText="Move to Trash"
+        confirmTextBn="ট্র্যাশে সরান"
+        cancelText="Cancel"
+        cancelTextBn="বাতিল"
+        isDestructive={true}
+        isLoading={isTrashing}
+        onConfirm={confirmTrashSupplier}
       />
     </div>
   )
