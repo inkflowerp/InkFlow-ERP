@@ -564,6 +564,24 @@ export class InventoryRepository {
     })
   }
 
+  private static reconcileMaterialStock(material: any): MaterialRecord | null {
+    if (!material) return null
+    const currentStock = Number(material.current_stock ?? material.stock ?? 0)
+    const rawSizes: any[] = material.roll_sizes || material.material_config?.roll_sizes || material.pricing_formula?.roll_sizes
+    if (Array.isArray(rawSizes) && rawSizes.length > 0) {
+      const sumSft = rawSizes.reduce((sum: number, r: any) => {
+        const count = Number(r.quantity ?? r.stock_qty ?? r.stock ?? r.roll_count ?? r.count ?? 0)
+        const w = Number(r.nominal_width_ft || r.width || r.width_ft || 0)
+        const l = Number(r.length || r.length_ft || 164)
+        return sum + (count * w * l)
+      }, 0)
+      if (sumSft > 0 && currentStock <= 0) {
+        material.current_stock = sumSft
+      }
+    }
+    return material as MaterialRecord
+  }
+
   static async getMaterialById(id: string, companyId: string): Promise<MaterialRecord | null> {
     if (!id) return null
     const cleanId = String(id).trim()
@@ -631,7 +649,7 @@ export class InventoryRepository {
             if ((!matData.variants || matData.variants.length === 0) && prodData.variants?.length > 0) matData.variants = prodData.variants
           }
         } catch {}
-        return matData as unknown as MaterialRecord
+        return this.reconcileMaterialStock(matData)
       }
 
       // 2. Try products table (Commercial Masters) in Supabase
@@ -714,7 +732,7 @@ export class InventoryRepository {
           is_active: prodData.is_active !== false,
         } as unknown as MaterialRecord
 
-        return bridgedObj as unknown as MaterialRecord
+        return this.reconcileMaterialStock(bridgedObj)
       }
     } catch {}
 
@@ -737,7 +755,7 @@ export class InventoryRepository {
       const cId = (m.company_id || '').toLowerCase()
       return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
     })
-    if (foundMat) return foundMat
+    if (foundMat) return this.reconcileMaterialStock(foundMat)
 
     // 4. Fallback: Check Products in PrintERPDataStore
     const allProducts: any[] = [
@@ -796,7 +814,7 @@ export class InventoryRepository {
         PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, bridged)
       } catch {}
 
-      return bridged
+      return this.reconcileMaterialStock(bridged)
     }
 
     return null
