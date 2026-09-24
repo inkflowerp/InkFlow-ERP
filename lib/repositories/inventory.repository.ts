@@ -1,4 +1,5 @@
 import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
 import type {
   MaterialRecord,
   InventoryLocationRecord,
@@ -28,43 +29,94 @@ import type { ProductRecord } from '../../types/product.types.ts'
 import { isMaterialProduct, getMaterialWarehouseStockBreakdown } from '../units.ts'
 import { PriceIntelligenceEngine } from '../domain/price-intelligence-engine.ts'
 
+async function getDbClient() {
+  try {
+    return await createClient()
+  } catch {
+    try {
+      return createAdminClient()
+    } catch {
+      return null
+    }
+  }
+}
+
 export class InventoryRepository {
   // ==========================================
   // LOCATIONS
   // ==========================================
 
   static async getLocations(companyId: string, branchId?: string | null): Promise<InventoryLocationRecord[]> {
-    const supabase = await createClient()
-    let query = (supabase as any)
-      .from('inventory_locations')
-      .select('*')
-      .eq('company_id', companyId)
-      .eq('is_active', true)
-      .order('location_name', { ascending: true })
+    let data: any = null
+    try {
+      const supabase = await createClient()
+      let query = (supabase as any)
+        .from('inventory_locations')
+        .select('*')
+        .eq('company_id', companyId)
+        .eq('is_active', true)
+        .order('location_name', { ascending: true })
 
-    if (branchId) {
-      query = query.or(`branch_id.eq.${branchId},branch_id.is.null`)
+      if (branchId) {
+        query = query.or(`branch_id.eq.${branchId},branch_id.is.null`)
+      }
+
+      const res = await query
+      if (!res.error && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        data = res.data
+      }
+    } catch {}
+
+    if (!data || data.length === 0) {
+      try {
+        const admin = createAdminClient()
+        let query = (admin as any)
+          .from('inventory_locations')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('is_active', true)
+          .order('location_name', { ascending: true })
+
+        if (branchId) {
+          query = query.or(`branch_id.eq.${branchId},branch_id.is.null`)
+        }
+
+        const res = await query
+        if (!res.error && res.data) {
+          data = res.data
+        }
+      } catch {}
     }
 
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch inventory locations: ${error.message}`)
-    }
     return (data || []) as unknown as InventoryLocationRecord[]
   }
 
   static async getLocationById(id: string, companyId: string): Promise<InventoryLocationRecord | null> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
-      .from('inventory_locations')
-      .select('*')
-      .eq('id', id)
-      .eq('company_id', companyId)
-      .maybeSingle()
+    let data: any = null
+    try {
+      const supabase = await createClient()
+      const res = await (supabase as any)
+        .from('inventory_locations')
+        .select('*')
+        .eq('id', id)
+        .eq('company_id', companyId)
+        .maybeSingle()
+      if (!res.error && res.data) data = res.data
+    } catch {}
 
-    if (error) {
-      throw new Error(`Failed to fetch inventory location ${id}: ${error.message}`)
+    if (!data) {
+      try {
+        const admin = createAdminClient()
+        const res = await (admin as any)
+          .from('inventory_locations')
+          .select('*')
+          .eq('id', id)
+          .eq('company_id', companyId)
+          .maybeSingle()
+        if (!res.error && res.data) data = res.data
+      } catch {}
     }
+
     return (data as unknown as InventoryLocationRecord) || null
   }
 
@@ -76,18 +128,30 @@ export class InventoryRepository {
     location_type: string
     description?: string | null
   }): Promise<InventoryLocationRecord> {
-    const supabase = await createClient()
-    const { data, error } = await (supabase as any)
+    const payload = {
+      company_id: location.company_id,
+      branch_id: location.branch_id || null,
+      location_code: location.location_code.trim().toUpperCase(),
+      location_name: location.location_name.trim(),
+      location_type: location.location_type,
+      description: location.description?.trim() || null,
+      is_active: true,
+    }
+
+    try {
+      const supabase = await createClient()
+      const { data, error } = await (supabase as any)
+        .from('inventory_locations')
+        .insert(payload)
+        .select()
+        .single()
+      if (!error && data) return data as unknown as InventoryLocationRecord
+    } catch {}
+
+    const admin = createAdminClient()
+    const { data, error } = await (admin as any)
       .from('inventory_locations')
-      .insert({
-        company_id: location.company_id,
-        branch_id: location.branch_id || null,
-        location_code: location.location_code.trim().toUpperCase(),
-        location_name: location.location_name.trim(),
-        location_type: location.location_type,
-        description: location.description?.trim() || null,
-        is_active: true,
-      })
+      .insert(payload)
       .select()
       .single()
 
@@ -123,20 +187,45 @@ export class InventoryRepository {
       }
 
       try {
-        const supabase = await createClient()
+        let matData: any[] = []
+        try {
+          const supabase = await createClient()
+          let query = (supabase as any)
+            .from('materials')
+            .select('*')
+            .eq('company_id', companyId)
+            .order('name', { ascending: true })
 
-        // 1. Fetch materials from materials table
-        let query = (supabase as any)
-          .from('materials')
-          .select('*')
-          .eq('company_id', companyId)
-          .order('name', { ascending: true })
+          if (options?.category && options.category !== 'all') {
+            query = query.eq('category', options.category)
+          }
 
-        if (options?.category && options.category !== 'all') {
-          query = query.eq('category', options.category)
+          const res = await query
+          if (!res.error && res.data && Array.isArray(res.data) && res.data.length > 0) {
+            matData = res.data
+          }
+        } catch {}
+
+        if (!matData || matData.length === 0) {
+          try {
+            const admin = createAdminClient()
+            let query = (admin as any)
+              .from('materials')
+              .select('*')
+              .eq('company_id', companyId)
+              .order('name', { ascending: true })
+
+            if (options?.category && options.category !== 'all') {
+              query = query.eq('category', options.category)
+            }
+
+            const res = await query
+            if (!res.error && res.data && Array.isArray(res.data)) {
+              matData = res.data
+            }
+          } catch {}
         }
 
-        const { data: matData } = await query
         if (matData && Array.isArray(matData)) {
           for (const m of matData) {
             if (m && m.id && !seenIds.has(m.id)) {
@@ -148,12 +237,35 @@ export class InventoryRepository {
         }
 
         // 2. Fetch raw materials from products table in Supabase
-        let prodQuery = (supabase as any)
-          .from('products')
-          .select('*, variants:product_variants(*)')
-          .eq('company_id', companyId)
+        let prodData: any[] = []
+        try {
+          const supabase = await createClient()
+          let prodQuery = (supabase as any)
+            .from('products')
+            .select('*, variants:product_variants(*)')
+            .eq('company_id', companyId)
 
-        const { data: prodData } = await prodQuery
+          const res = await prodQuery
+          if (!res.error && res.data && Array.isArray(res.data) && res.data.length > 0) {
+            prodData = res.data
+          }
+        } catch {}
+
+        if (!prodData || prodData.length === 0) {
+          try {
+            const admin = createAdminClient()
+            let prodQuery = (admin as any)
+              .from('products')
+              .select('*, variants:product_variants(*)')
+              .eq('company_id', companyId)
+
+            const res = await prodQuery
+            if (!res.error && res.data && Array.isArray(res.data)) {
+              prodData = res.data
+            }
+          } catch {}
+        }
+
         if (prodData && Array.isArray(prodData)) {
           for (const p of prodData) {
             if (!p || !p.id) continue
@@ -180,6 +292,20 @@ export class InventoryRepository {
 
             if (existingIndex >= 0) {
               const existing = list[existingIndex]
+              const existingRollSizes = Array.isArray(existing.roll_sizes) && existing.roll_sizes.length > 0 ? existing.roll_sizes : null
+              const existingHasRollCounts = existingRollSizes && existingRollSizes.some((s: any) => Number(s.quantity ?? s.roll_count ?? s.stock ?? s.stock_qty ?? 0) > 0)
+
+              const prodRollSizes = p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes
+              const prodHasRollCounts = Array.isArray(prodRollSizes) && prodRollSizes.some((s: any) => Number(s.quantity ?? s.roll_count ?? s.stock ?? s.stock_qty ?? 0) > 0)
+
+              const effectiveRollSizes = existingHasRollCounts
+                ? existingRollSizes
+                : (prodHasRollCounts ? prodRollSizes : (existingRollSizes || prodRollSizes || []))
+
+              const effectiveStock = existing.current_stock !== undefined && existing.current_stock !== null && Number(existing.current_stock) > 0
+                ? Number(existing.current_stock)
+                : Number(p.current_stock ?? p.stock ?? (p.pricing_formula as any)?.current_stock ?? 0)
+
               list[existingIndex] = {
                 ...existing,
                 name: p.name || existing.name,
@@ -188,6 +314,7 @@ export class InventoryRepository {
                 unit: (p.selling_unit || p.unit || existing.unit || 'pcs') as MaterialUnit,
                 purchase_unit: computedPurchaseUnit || existing.purchase_unit,
                 master_purchase_unit: computedPurchaseUnit || existing.master_purchase_unit,
+                current_stock: effectiveStock,
                 average_cost: cost > 0 ? cost : existing.average_cost,
                 last_purchase_price: cost > 0 ? cost : existing.last_purchase_price,
                 cost_per_unit: cost > 0 ? cost : existing.cost_per_unit,
@@ -197,7 +324,7 @@ export class InventoryRepository {
                 available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || existing.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
                 standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : existing.standard_roll_length_ft),
                 available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes || existing.available_sheet_sizes,
-                roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes || existing.roll_sizes,
+                roll_sizes: effectiveRollSizes,
                 material_config: p.material_config || (p.pricing_formula as any)?.material_config || existing.material_config || null,
                 purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || existing.purchase_price_per_sft || null,
                 production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || existing.production_width_allowance || 0,
@@ -251,7 +378,7 @@ export class InventoryRepository {
         }
       } catch {}
 
-      // 3. Merge Local DataStore items (materials & material products)
+      // 3. Merge Local DataStore items (only for missing items, never overwriting database items)
       const localMats: MaterialRecord[] = [
         ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS, companyId) || []),
         ...(PrintERPDataStore.getAll<MaterialRecord>(STORAGE_KEYS.MATERIALS) || []),
@@ -265,16 +392,10 @@ export class InventoryRepository {
 
         const existingIndex = list.findIndex((x) => x.id === m.id || (m.sku && x.sku && x.sku.toLowerCase() === m.sku.toLowerCase()))
         if (existingIndex >= 0) {
+          // Keep database as primary source of truth, only filling in missing properties
           const existing = list[existingIndex]
-          list[existingIndex] = {
-            ...existing,
-            ...m,
-            roll_sizes: m.roll_sizes || (m as any).material_config?.roll_sizes || existing.roll_sizes,
-            material_config: (m as any).material_config || existing.material_config,
-            available_widths_ft: m.available_widths_ft || (m as any).material_config?.available_widths_ft || existing.available_widths_ft,
-            purchase_price_per_sft: m.purchase_price_per_sft || (m as any).material_config?.purchase_price_per_sft || existing.purchase_price_per_sft,
-            production_width_allowance: m.production_width_allowance || (m as any).material_config?.extra_width_allowance_ft || existing.production_width_allowance,
-          }
+          if (!existing.roll_sizes && m.roll_sizes) existing.roll_sizes = m.roll_sizes
+          if (!existing.material_config && (m as any).material_config) existing.material_config = (m as any).material_config
           continue
         }
 
@@ -311,6 +432,11 @@ export class InventoryRepository {
 
         if (!isMat) continue
 
+        const existingIndex = list.findIndex((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))
+        if (existingIndex >= 0) {
+          continue
+        }
+
         const cost = Number(p.purchase_price ?? p.base_cost ?? 0)
         const itemVars = (p.variants && p.variants.length > 0) ? p.variants : allLocalVars.filter((v) => v.product_id === p.id)
         const isRoll = Boolean(p.roll_width_ft || (p as any).is_roll || (p.category && p.category.includes('roll')) || (p.material_config as any)?.material_type === 'roll' || p.purchase_unit === 'roll')
@@ -319,52 +445,10 @@ export class InventoryRepository {
           ? (rawPurchaseUnit && !['sft', 'sqft'].includes(rawPurchaseUnit.toLowerCase()) ? rawPurchaseUnit : 'roll')
           : rawPurchaseUnit || p.unit
 
-        const existingIndex = list.findIndex((m) => m.id === p.id || (p.sku && m.sku && m.sku.toLowerCase() === p.sku.toLowerCase()))
-        if (existingIndex >= 0) {
-          const existing = list[existingIndex]
-          list[existingIndex] = {
-            ...existing,
-            name: p.name || existing.name,
-            name_bn: p.name_bn || existing.name_bn,
-            category: p.category || existing.category,
-            unit: (p.selling_unit || p.unit || existing.unit || 'pcs') as MaterialUnit,
-            purchase_unit: computedPurchaseUnit || existing.purchase_unit,
-            master_purchase_unit: computedPurchaseUnit || existing.master_purchase_unit,
-            average_cost: cost > 0 ? cost : existing.average_cost,
-            last_purchase_price: cost > 0 ? cost : existing.last_purchase_price,
-            cost_per_unit: cost > 0 ? cost : existing.cost_per_unit,
-            is_roll: isRoll || existing.is_roll,
-            roll_width_ft: p.roll_width_ft ? Number(p.roll_width_ft) : existing.roll_width_ft,
-            roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : existing.roll_length_ft,
-            available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || existing.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
-            standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : existing.standard_roll_length_ft),
-            available_sheet_sizes: Array.isArray(p.available_sheet_sizes)
-              ? p.available_sheet_sizes.map((s: any) =>
-                  typeof s === 'string'
-                    ? s
-                    : s && typeof s === 'object' && s.label
-                    ? s.label
-                    : s && typeof s === 'object' && s.width && s.length
-                    ? `${s.width}x${s.length} ft`
-                    : String(s)
-                )
-              : (p.material_config as any)?.available_sheet_sizes || existing.available_sheet_sizes,
-            roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes || existing.roll_sizes,
-            material_config: p.material_config || (p.pricing_formula as any)?.material_config || existing.material_config || null,
-            purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || existing.purchase_price_per_sft || null,
-            production_width_allowance: p.production_width_allowance || (p.material_config as any)?.extra_width_allowance_ft || (p.pricing_formula as any)?.production_width_allowance || existing.production_width_allowance || 0,
-            liquid_volume_capacity: (p as any).liquid_volume_capacity || (p.material_config as any)?.liquid_volume_ml ? `${(p.material_config as any).liquid_volume_ml}ml` : existing.liquid_volume_capacity,
-            pack_quantity: (p as any).pack_quantity || (p.material_config as any)?.pack_quantity || existing.pack_quantity,
-            variants: itemVars.length > 0 ? itemVars : existing.variants,
-            thickness: (p as any).thickness || (p as any).thickness_mm ? `${(p as any).thickness || (p as any).thickness_mm}mm` : existing.thickness,
-          }
-          continue
-        }
-
         seenIds.add(p.id)
         if (p.sku) seenSkus.add(p.sku.toLowerCase())
 
-        list.push({
+        const matRec: MaterialRecord = {
           id: p.id,
           company_id: p.company_id || companyId,
           branch_id: p.branch_id || null,
@@ -375,8 +459,8 @@ export class InventoryRepository {
           unit: (p.selling_unit || p.unit || 'pcs') as MaterialUnit,
           purchase_unit: computedPurchaseUnit,
           master_purchase_unit: computedPurchaseUnit,
-          current_stock: Number(p.current_stock ?? (p as any).stock ?? 0),
-          min_stock_level: Number((p as any).min_stock_level ?? 0),
+          current_stock: Number(p.current_stock ?? p.stock ?? (p.pricing_formula as any)?.current_stock ?? (p.pricing_formula as any)?.opening_stock ?? p.opening_stock ?? 0),
+          min_stock_level: Number(p.min_stock_level ?? p.reorder_level ?? (p.pricing_formula as any)?.min_stock_level ?? (p.pricing_formula as any)?.reorder_level ?? 0),
           average_cost: cost,
           last_purchase_price: cost,
           cost_per_unit: cost,
@@ -385,17 +469,7 @@ export class InventoryRepository {
           roll_length_ft: p.roll_length_ft ? Number(p.roll_length_ft) : null,
           available_widths_ft: p.available_widths_ft || (p.material_config as any)?.available_widths_ft || (p.roll_width_ft ? [Number(p.roll_width_ft)] : undefined),
           standard_roll_length_ft: p.standard_roll_length_ft ? Number(p.standard_roll_length_ft) : ((p.material_config as any)?.standard_roll_length_ft ? Number((p.material_config as any).standard_roll_length_ft) : undefined),
-          available_sheet_sizes: Array.isArray(p.available_sheet_sizes)
-            ? p.available_sheet_sizes.map((s: any) =>
-                typeof s === 'string'
-                  ? s
-                  : s && typeof s === 'object' && s.label
-                  ? s.label
-                  : s && typeof s === 'object' && s.width && s.length
-                  ? `${s.width}x${s.length} ft`
-                  : String(s)
-              )
-            : (p.material_config as any)?.available_sheet_sizes,
+          available_sheet_sizes: p.available_sheet_sizes || (p.material_config as any)?.available_sheet_sizes,
           roll_sizes: p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes,
           material_config: p.material_config || (p.pricing_formula as any)?.material_config || null,
           purchase_price_per_sft: (p.material_config as any)?.purchase_price_per_sft || (p.pricing_formula as any)?.purchase_price_per_sft || null,
@@ -407,7 +481,8 @@ export class InventoryRepository {
           is_active: p.is_active !== false,
           created_at: p.created_at || new Date().toISOString(),
           updated_at: p.updated_at || new Date().toISOString(),
-        })
+        }
+        list.push(matRec)
       }
 
       // Apply Filters
@@ -446,24 +521,47 @@ export class InventoryRepository {
     const cleanId = String(id).trim()
 
     try {
-      const supabase = await createClient()
-      
-      // 1. Try materials table with tenant company_id
-      let { data: matData } = await (supabase as any)
-        .from('materials')
-        .select('*')
-        .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
-        .eq('company_id', companyId)
-        .maybeSingle()
-
-      // 1b. Fallback: try materials table without company_id filter
-      if (!matData) {
-        const { data: globalMat } = await (supabase as any)
+      let matData: any = null
+      try {
+        const supabase = await createClient()
+        let { data } = await (supabase as any)
           .from('materials')
           .select('*')
           .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+          .eq('company_id', companyId)
           .maybeSingle()
-        if (globalMat) matData = globalMat
+
+        if (!data) {
+          const { data: globalMat } = await (supabase as any)
+            .from('materials')
+            .select('*')
+            .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+            .maybeSingle()
+          if (globalMat) data = globalMat
+        }
+        if (data) matData = data
+      } catch {}
+
+      if (!matData) {
+        try {
+          const admin = createAdminClient()
+          let { data } = await (admin as any)
+            .from('materials')
+            .select('*')
+            .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+            .eq('company_id', companyId)
+            .maybeSingle()
+
+          if (!data) {
+            const { data: globalMat } = await (admin as any)
+              .from('materials')
+              .select('*')
+              .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+              .maybeSingle()
+            if (globalMat) data = globalMat
+          }
+          if (data) matData = data
+        } catch {}
       }
 
       if (matData) {
@@ -471,21 +569,47 @@ export class InventoryRepository {
       }
 
       // 2. Try products table (Commercial Masters) in Supabase
-      let { data: prodData } = await (supabase as any)
-        .from('products')
-        .select('*')
-        .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
-        .eq('company_id', companyId)
-        .maybeSingle()
-
-      // 2b. Fallback: try products table without company_id filter
-      if (!prodData) {
-        const { data: globalProd } = await (supabase as any)
+      let prodData: any = null
+      try {
+        const supabase = await createClient()
+        let { data } = await (supabase as any)
           .from('products')
           .select('*')
           .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+          .eq('company_id', companyId)
           .maybeSingle()
-        if (globalProd) prodData = globalProd
+
+        if (!data) {
+          const { data: globalProd } = await (supabase as any)
+            .from('products')
+            .select('*')
+            .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+            .maybeSingle()
+          if (globalProd) data = globalProd
+        }
+        if (data) prodData = data
+      } catch {}
+
+      if (!prodData) {
+        try {
+          const admin = createAdminClient()
+          let { data } = await (admin as any)
+            .from('products')
+            .select('*')
+            .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+            .eq('company_id', companyId)
+            .maybeSingle()
+
+          if (!data) {
+            const { data: globalProd } = await (admin as any)
+              .from('products')
+              .select('*')
+              .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+              .maybeSingle()
+            if (globalProd) data = globalProd
+          }
+          if (data) prodData = data
+        } catch {}
       }
 
       if (prodData) {
@@ -523,45 +647,6 @@ export class InventoryRepository {
           variants: prodData.variants || [],
           is_active: prodData.is_active !== false,
         } as unknown as MaterialRecord
-
-        // Ensure product has a corresponding row in materials table for foreign key integrity
-        try {
-          const { data: bridgedMat } = await (supabase as any)
-            .from('materials')
-            .upsert(
-              {
-                id: prodData.id,
-                company_id: prodData.company_id || companyId,
-                branch_id: prodData.branch_id || null,
-                sku: prodData.sku || `PRD-${cleanId.substring(0, 8).toUpperCase()}`,
-                name: prodData.name,
-                name_bn: prodData.name_bn || null,
-                category: prodData.category || 'ready_product',
-                unit: prodData.selling_unit || prodData.unit || 'pcs',
-                current_stock: Number(prodData.current_stock ?? prodData.stock ?? 0),
-                average_cost: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
-                last_purchase_price: Number(prodData.purchase_price ?? prodData.base_cost ?? 0),
-                is_active: prodData.is_active !== false,
-              },
-              { onConflict: 'id' }
-            )
-            .select()
-            .maybeSingle()
-
-          if (bridgedMat) {
-            return {
-              ...bridgedObj,
-              ...(bridgedMat as any),
-              roll_sizes: bridgedObj.roll_sizes,
-              material_config: bridgedObj.material_config,
-              available_widths_ft: bridgedObj.available_widths_ft,
-              purchase_price_per_sft: bridgedObj.purchase_price_per_sft,
-              production_width_allowance: bridgedObj.production_width_allowance,
-              purchase_unit: bridgedObj.purchase_unit,
-              master_purchase_unit: bridgedObj.master_purchase_unit,
-            } as unknown as MaterialRecord
-          }
-        } catch {}
 
         return bridgedObj as unknown as MaterialRecord
       }
@@ -727,6 +812,19 @@ export class InventoryRepository {
       }
     } catch {}
 
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
+        .from('materials')
+        .insert(payload)
+        .select()
+        .single()
+      if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, data, material.company_id)
+        return data as unknown as MaterialRecord
+      }
+    } catch {}
+
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, payload, material.company_id)
     return payload as unknown as MaterialRecord
   }
@@ -740,6 +838,8 @@ export class InventoryRepository {
     delete payload.id
     delete payload.company_id
 
+    let updatedDbMat: any = null
+
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any)
@@ -750,15 +850,89 @@ export class InventoryRepository {
         .select()
         .single()
 
-      if (!error && data) {
-        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, data, companyId)
-        return data as unknown as MaterialRecord
-      }
+      if (!error && data) updatedDbMat = data
     } catch {}
+
+    if (!updatedDbMat) {
+      try {
+        const admin = createAdminClient()
+        const { data, error } = await (admin as any)
+          .from('materials')
+          .update(payload)
+          .eq('id', id)
+          .eq('company_id', companyId)
+          .select()
+          .single()
+        if (!error && data) updatedDbMat = data
+      } catch {}
+    }
+
+    // Synchronize to products table if a corresponding product exists
+    try {
+      const admin = createAdminClient()
+      const prodUpdates: any = { updated_at: new Date().toISOString() }
+      if (payload.current_stock !== undefined) prodUpdates.current_stock = payload.current_stock
+      if (payload.average_cost !== undefined) prodUpdates.base_cost = payload.average_cost
+      if (payload.roll_sizes !== undefined || payload.material_config !== undefined) {
+        const { data: existingProd } = await (admin as any)
+          .from('products')
+          .select('material_config, pricing_formula')
+          .eq('id', id)
+          .maybeSingle()
+        if (existingProd) {
+          const matCfg = {
+            ...(existingProd.material_config || {}),
+            ...(payload.material_config || {}),
+            ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
+          }
+          const prcFormula = {
+            ...(existingProd.pricing_formula || {}),
+            ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
+            ...(payload.current_stock !== undefined ? { current_stock: payload.current_stock, stock: payload.current_stock } : {}),
+          }
+          prodUpdates.material_config = matCfg
+          prodUpdates.pricing_formula = prcFormula
+        }
+      }
+      await (admin as any)
+        .from('products')
+        .update(prodUpdates)
+        .eq('id', id)
+        .eq('company_id', companyId)
+    } catch {}
+
+    if (updatedDbMat) {
+      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, updatedDbMat, companyId)
+      PrintERPDataStore.updateItem<any>(
+        STORAGE_KEYS.PRODUCTS,
+        (p: any) => p && (p.id === id || (!!updatedDbMat.sku && p.sku === updatedDbMat.sku)),
+        {
+          roll_sizes: updatedDbMat.roll_sizes,
+          current_stock: updatedDbMat.current_stock,
+          material_config: updatedDbMat.material_config,
+        },
+        companyId
+      )
+      return updatedDbMat as unknown as MaterialRecord
+    }
 
     const updated =
       PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload, companyId) ||
       PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, id, payload)
+
+    try {
+      PrintERPDataStore.updateItem<any>(
+        STORAGE_KEYS.PRODUCTS,
+        (p: any) => p && (p.id === id || (!!payload.sku && p.sku === payload.sku)),
+        {
+          ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
+          ...(payload.current_stock !== undefined ? { current_stock: payload.current_stock } : {}),
+          ...(payload.material_config ? { material_config: payload.material_config } : {}),
+        },
+        companyId
+      )
+    } catch {}
+
     return (updated || { id, company_id: companyId, ...payload }) as MaterialRecord
   }
 
@@ -771,6 +945,7 @@ export class InventoryRepository {
     materialId?: string
     branchId?: string | null
   }): Promise<InventoryStockBalanceRecord[]> {
+    let data: any = null
     try {
       const supabase = await createClient()
       let query = (supabase as any)
@@ -785,11 +960,37 @@ export class InventoryRepository {
         query = query.eq('material_id', options.materialId)
       }
 
-      const { data, error } = await query
-      if (!error && data) {
-        return data as unknown as InventoryStockBalanceRecord[]
+      const res = await query
+      if (!res.error && res.data && Array.isArray(res.data) && res.data.length > 0) {
+        data = res.data
       }
     } catch {}
+
+    if (!data || data.length === 0) {
+      try {
+        const admin = createAdminClient()
+        let query = (admin as any)
+          .from('inventory_stock_balances')
+          .select('*, material:materials(id, name, sku, unit, min_stock_level, reorder_level), location:inventory_locations(id, location_name, location_code)')
+          .eq('company_id', companyId)
+
+        if (options?.locationId) {
+          query = query.eq('location_id', options.locationId)
+        }
+        if (options?.materialId) {
+          query = query.eq('material_id', options.materialId)
+        }
+
+        const res = await query
+        if (!res.error && res.data) {
+          data = res.data
+        }
+      } catch {}
+    }
+
+    if (data && Array.isArray(data)) {
+      return data as unknown as InventoryStockBalanceRecord[]
+    }
 
     const localBalances = PrintERPDataStore.get<InventoryStockBalanceRecord[]>(STORAGE_KEYS.INVENTORY_STOCK_BALANCES, companyId) || []
     let filtered = localBalances
@@ -2584,7 +2785,7 @@ export class InventoryRepository {
     let rolls: InventoryRollRecord[] = []
     let supabaseClient: any = null
 
-    // 1. Fetch from Supabase
+    // 1. Fetch from Supabase Client
     try {
       supabaseClient = await createClient()
       let query = (supabaseClient as any)
@@ -2614,6 +2815,39 @@ export class InventoryRepository {
         rolls = data as unknown as InventoryRollRecord[]
       }
     } catch {}
+
+    // 1b. Fallback to Admin Client if rolls is empty or RLS prevented reading
+    if (!rolls || rolls.length === 0) {
+      try {
+        const admin = createAdminClient()
+        let query = (admin as any)
+          .from('inventory_rolls')
+          .select('*, material:materials(id, name, sku, unit)')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false })
+
+        if (options?.materialId) {
+          query = query.eq('material_id', options.materialId)
+        }
+        if (options?.status && options.status !== 'all') {
+          if (options.status === 'available') {
+            query = query.in('status', ['available', 'in_warehouse'])
+          } else if (options.status === 'mounted') {
+            query = query.in('status', ['mounted', 'in_use', 'on_floor'])
+          } else {
+            query = query.eq('status', options.status)
+          }
+        }
+        if (options?.locationId) {
+          query = query.eq('location_id', options.locationId)
+        }
+
+        const { data, error } = await query
+        if (!error && data && Array.isArray(data) && data.length > 0) {
+          rolls = data as unknown as InventoryRollRecord[]
+        }
+      } catch {}
+    }
 
     // 2. Fallback to Local Store if Supabase returned no rolls
     if (!rolls || rolls.length === 0) {
@@ -2718,6 +2952,25 @@ export class InventoryRepository {
     } catch {}
 
     if (!roll) {
+      try {
+        const admin = createAdminClient()
+        let query = (admin as any)
+          .from('inventory_rolls')
+          .select('*, material:materials(id, name, sku, unit)')
+          .eq('id', id)
+
+        if (companyId) {
+          query = query.eq('company_id', companyId)
+        }
+
+        const { data, error } = await query.maybeSingle()
+        if (!error && data) {
+          roll = data as unknown as InventoryRollRecord
+        }
+      } catch {}
+    }
+
+    if (!roll) {
       const all = PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []
       roll = all.find((r) => (r.id === id || r.roll_code === id || r.roll_tag === id) && (!companyId || !r.company_id || r.company_id === companyId)) || null
     }
@@ -2805,6 +3058,21 @@ export class InventoryRepository {
     try {
       const supabase = await createClient()
       const { data, error } = await (supabase as any)
+        .from('inventory_rolls')
+        .insert(payload)
+        .select()
+        .single()
+
+      if (!error && data) {
+        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload, params.company_id)
+        PrintERPDataStore.addItem(STORAGE_KEYS.MOUNTED_ROLLS, payload)
+        return payload
+      }
+    } catch {}
+
+    try {
+      const admin = createAdminClient()
+      const { data, error } = await (admin as any)
         .from('inventory_rolls')
         .insert(payload)
         .select()

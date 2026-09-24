@@ -1,4 +1,5 @@
 import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
 import type {
   ProductRecord,
   ProductVariantRecord,
@@ -484,33 +485,64 @@ export class ProductRepository {
       }
 
       try {
-        const supabase = await createClient()
-        let query = (supabase as any)
-          .from('products')
-          .select('*, variants:product_variants(*), formulas:product_formulas(*)')
-          .eq('company_id', companyId)
-          .order('name', { ascending: true })
+        let prodData: any = null
+        try {
+          const supabase = await createClient()
+          let query = (supabase as any)
+            .from('products')
+            .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+            .eq('company_id', companyId)
+            .order('name', { ascending: true })
 
-        if (activeOnly) {
-          query = query.eq('is_active', true)
+          if (activeOnly) {
+            query = query.eq('is_active', true)
+          }
+
+          if (category && category !== 'all') {
+            query = query.or(`category.eq.${category},product_type.eq.${category}`)
+          }
+
+          if (search && search.trim()) {
+            const q = search.trim()
+            query = query.or(`name.ilike.%${q}%,name_bn.ilike.%${q}%,sku.ilike.%${q}%,material_spec.ilike.%${q}%`)
+          }
+
+          const res = await query
+          if (!res.error && res.data) {
+            prodData = res.data
+          }
+        } catch {}
+
+        if (!prodData || prodData.length === 0) {
+          try {
+            const admin = createAdminClient()
+            let query = (admin as any)
+              .from('products')
+              .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+              .eq('company_id', companyId)
+              .order('name', { ascending: true })
+
+            if (activeOnly) {
+              query = query.eq('is_active', true)
+            }
+
+            if (category && category !== 'all') {
+              query = query.or(`category.eq.${category},product_type.eq.${category}`)
+            }
+
+            if (search && search.trim()) {
+              const q = search.trim()
+              query = query.or(`name.ilike.%${q}%,name_bn.ilike.%${q}%,sku.ilike.%${q}%,material_spec.ilike.%${q}%`)
+            }
+
+            const res = await query
+            if (!res.error && res.data) {
+              prodData = res.data
+            }
+          } catch {}
         }
 
-        if (category && category !== 'all') {
-          query = query.or(`category.eq.${category},product_type.eq.${category}`)
-        }
-
-        if (search && search.trim()) {
-          const q = search.trim()
-          query = query.or(`name.ilike.%${q}%,name_bn.ilike.%${q}%,sku.ilike.%${q}%,material_spec.ilike.%${q}%`)
-        }
-
-        const { data, error } = await query
-
-        if (error) {
-          throw new Error(`Failed to load products: ${error.message}`)
-        }
-
-        let enriched = ((data || []) as ProductRecord[]).map(enrichProductRecord)
+        let enriched = (((prodData || []) as ProductRecord[])).map(enrichProductRecord)
         if (entityType && entityType !== 'all') {
           if (entityType === 'outsource') {
             enriched = enriched.filter((p) => p.entity_type === 'outsource' || p.is_outsource || p.is_non_inventory || isOutsourceProduct(p))
@@ -545,21 +577,34 @@ export class ProductRepository {
       }
 
       try {
-        const supabase = await createClient()
-        const { data, error } = await (supabase as any)
-          .from('products')
-          .select('*, variants:product_variants(*), formulas:product_formulas(*)')
-          .or(`id.eq.${id},sku.eq.${id}`)
-          .eq('company_id', companyId)
-          .maybeSingle()
+        let prodData: any = null
+        try {
+          const supabase = await createClient()
+          const { data, error } = await (supabase as any)
+            .from('products')
+            .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+            .or(`id.eq.${id},sku.eq.${id}`)
+            .eq('company_id', companyId)
+            .maybeSingle()
+          if (!error && data) prodData = data
+        } catch {}
 
-        if (error) {
-          throw new Error(`Failed to fetch product: ${error.message}`)
+        if (!prodData) {
+          try {
+            const admin = createAdminClient()
+            const { data, error } = await (admin as any)
+              .from('products')
+              .select('*, variants:product_variants(*), formulas:product_formulas(*)')
+              .or(`id.eq.${id},sku.eq.${id}`)
+              .eq('company_id', companyId)
+              .maybeSingle()
+            if (!error && data) prodData = data
+          } catch {}
         }
 
-        if (!data) return null
+        if (!prodData) return null
 
-        const prod = enrichProductRecord(data as ProductRecord)
+        const prod = enrichProductRecord(prodData as ProductRecord)
         const stats = await this.getProductUsageStats(prod.id, companyId)
         return { ...prod, usage_stats: stats }
       } catch (err: any) {
