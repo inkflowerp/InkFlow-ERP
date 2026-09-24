@@ -378,19 +378,18 @@ export function OutsourceProductModal({
   const handleAutoFillTiers = () => {
     let sp = Number(sellingPrice) || 0
     const costFloor = Number(vendorCost) || 0
-    if (sp <= 0 && costFloor > 0) {
-      sp = parseFloat((costFloor * (1 + (targetMargin || 35) / 100)).toFixed(2))
+    if (sp <= costFloor && costFloor > 0) {
+      sp = Math.ceil(costFloor * (1 + (targetMargin || 35) / 100))
       setSellingPrice(sp)
     }
     if (sp <= 0 && costFloor <= 0) return
 
-    const effectiveSp = sp > 0 ? sp : costFloor
-    const isInt = Number.isInteger(effectiveSp)
+    const effectiveSp = sp > 0 ? sp : Math.ceil(costFloor)
 
     const clampToFloor = (calcVal: number) => {
-      const rounded = isInt ? Math.round(calcVal) : parseFloat(calcVal.toFixed(2))
-      const floored = Math.max(costFloor, rounded)
-      return parseFloat(floored.toFixed(2))
+      const rounded = Math.round(calcVal)
+      const floored = Math.max(Math.ceil(costFloor), rounded)
+      return floored
     }
 
     setPriceTiers({
@@ -398,7 +397,7 @@ export function OutsourceProductModal({
       corporate: clampToFloor(effectiveSp * 0.95), // 5% discount, clamped to costFloor
       dealer: clampToFloor(effectiveSp * 0.90),    // 10% discount, clamped to costFloor
       wholesale: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
-      custom: clampToFloor(effectiveSp),
+      custom: clampToFloor(effectiveSp * 0.75),
     })
   }
 

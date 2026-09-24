@@ -74,11 +74,6 @@ import {
   getFinishingRate,
   getAddOnRate,
 } from '@/lib/finishing-addons'
-import {
-  BANGLADESHI_PRINT_PRESETS,
-  DomainPreset,
-  getPresetsByCategory,
-} from '@/lib/quotation-presets'
 
 interface CatalogComboboxProps {
   products: ProductRecord[]
@@ -574,11 +569,6 @@ export function NewQuotationModal({
   const { locale, tBilingual } = useI18n()
   const { company, currentUser } = useTenant()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
-
-  // -------------------------------------------------------------
-  // PRESET FILTER STATE
-  // -------------------------------------------------------------
-  const [selectedPresetCategory, setSelectedPresetCategory] = useState<string>('all')
 
   // -------------------------------------------------------------
   // CUSTOMER STATE (Multi-field keyword search)
@@ -1259,68 +1249,6 @@ export function NewQuotationModal({
     })
   }
 
-  // 1-Click Apply Bangladeshi Domain Preset
-  const handleApplyDomainPreset = (preset: DomainPreset) => {
-    const tempId = `item-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`
-    
-    // Check if matching catalog product exists
-    const matchingProd = productsCatalog.find(
-      (p) => p.name.toLowerCase().includes(preset.name.toLowerCase()) || p.category === preset.category
-    )
-
-    const w = preset.width ?? 0
-    const h = preset.height ?? 0
-    const qty = preset.quantity || 1
-    const rate = preset.defaultRate
-    const dimUnit = preset.dimensionUnit || 'ft'
-
-    const lineMath = calculateLineTotal(w, h, qty, rate, matchingProd || null, dimUnit)
-
-    const newItem: ItemFormState = {
-      tempId,
-      product_id: matchingProd?.id || null,
-      item_kind: preset.itemKind,
-      category_preset: preset.category,
-      product_type: matchingProd?.product_type || (preset.category === 'signage_fabrication' ? 'fabrication_service' : 'print_service'),
-      description: preset.description,
-      description_bn: preset.descriptionBn,
-      material_spec: preset.materialSpec,
-      dimensions_spec: w > 0 && h > 0 ? `${w} × ${h} ${dimUnit}` : undefined,
-      width: w > 0 ? (w as any) : '',
-      height: h > 0 ? (h as any) : '',
-      dimension_unit: dimUnit,
-      area_sft: lineMath.area,
-      quantity: qty,
-      unit: preset.unit,
-      base_rate: rate,
-      unit_rate: rate,
-      unit_cost: preset.estimatedCostPerUnit || Math.round(rate * 0.55),
-      finishing: preset.finishing || 'None',
-      finishing_rate: 0,
-      add_on: preset.addOn || 'None',
-      add_on_rate: 0,
-      rate_source: 'default',
-      artwork_required: preset.artworkRequired || false,
-      installation_required: preset.installationRequired || false,
-      offset_specs: preset.offsetSpecs || null,
-      signage_specs: preset.signageSpecs || null,
-      item_total: lineMath.total,
-      isSignageProduct: preset.category === 'signage_fabrication',
-      isOffsetProduct: preset.category === 'offset_print',
-      showAdvanced: Boolean(preset.offsetSpecs || preset.signageSpecs),
-      available_dimension_presets: [],
-      available_finishing_options: [],
-    }
-
-    setItems((prev) => {
-      // If the first item is clean/empty default, replace it; otherwise append
-      if (prev.length === 1 && !prev[0].product_id && (!prev[0].width || prev[0].width === ('' as any))) {
-        return [newItem]
-      }
-      return [...prev, newItem]
-    })
-  }
-
   const handleToggleItemKind = (index: number, newKind: 'service' | 'ready_product') => {
     setItems((prev) => {
       const copy = [...prev]
@@ -1715,10 +1643,6 @@ export function NewQuotationModal({
     window.open(`/${company?.slug || 'classic-printer'}/quotations/${quoteToUse.id}?print=true`, '_blank')
   }
 
-  const activePresets = useMemo(() => {
-    return getPresetsByCategory(selectedPresetCategory)
-  }, [selectedPresetCategory])
-
   return (
     <>
       <ModalDialog
@@ -1738,7 +1662,7 @@ export function NewQuotationModal({
                 </span>
               </h2>
               <p className="text-xs text-slate-500">
-                Digital Print • Offset Packaging • 3D Signage • Instant 1-Click Estimator
+                Digital Print • Offset Packaging • 3D Signage
               </p>
             </div>
           </div>
@@ -1760,75 +1684,6 @@ export function NewQuotationModal({
               <span>{sendSuccessMsg}</span>
             </div>
           )}
-
-          {/* =========================================================================
-              SECTION 0: 1-CLICK BANGLADESHI INDUSTRY PRESETS (FAST ESTIMATOR)
-             ========================================================================= */}
-          <div className="rounded-xl border border-blue-200/80 dark:border-blue-900/50 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-blue-950/30 dark:via-indigo-950/20 dark:to-slate-900/40 p-3.5 space-y-2.5 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                  Bangladeshi Fast Estimator Presets (দ্রুত কোটেশন প্রি-সেট)
-                </span>
-              </div>
-
-              {/* Category Filter Pills */}
-              <div className="flex items-center gap-1 overflow-x-auto pb-0.5 scrollbar-none">
-                {[
-                  { id: 'all', label: 'All Jobs' },
-                  { id: 'digital_print', label: '🎨 Digital Print' },
-                  { id: 'offset_print', label: '📑 Offset Print' },
-                  { id: 'signage_fabrication', label: '💡 3D Signage' },
-                  { id: 'ready_merchandise', label: '🎁 Merchandise' },
-                ].map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setSelectedPresetCategory(cat.id)}
-                    className={cn(
-                      'px-2 py-0.5 rounded-md text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer',
-                      selectedPresetCategory === cat.id
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-white/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-white'
-                    )}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Presets Horizontal Card Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-              {activePresets.slice(0, 8).map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => handleApplyDomainPreset(preset)}
-                  className="p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-left hover:border-blue-400 dark:hover:border-blue-600 hover:shadow-xs transition-all cursor-pointer group flex flex-col justify-between min-h-[64px]"
-                >
-                  <div>
-                    <div className="flex items-center justify-between gap-1">
-                      <span className="text-[11px] font-bold text-slate-900 dark:text-white truncate group-hover:text-blue-600">
-                        {preset.icon} {preset.name}
-                      </span>
-                      <span className="font-mono text-[10px] font-black text-blue-600 dark:text-blue-400 shrink-0">
-                        ৳{preset.defaultRate}/{preset.unit}
-                      </span>
-                    </div>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5 font-normal">
-                      {preset.nameBn}
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-[9px] text-slate-400 mt-1">
-                    <span className="truncate">{preset.materialSpec.slice(0, 24)}...</span>
-                    <span className="text-blue-600 dark:text-blue-400 font-bold shrink-0">+ Add</span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* =========================================================================
               SECTION 1: CUSTOMER INFORMATION

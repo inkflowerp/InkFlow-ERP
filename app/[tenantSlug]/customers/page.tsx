@@ -193,7 +193,7 @@ export default function CustomersPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter, sortPreset, customers.length])
+  }, [companyId, page, pageSize, search, selectedType, selectedDueFilter, sortPreset])
 
   useEffect(() => {
     loadData(false)

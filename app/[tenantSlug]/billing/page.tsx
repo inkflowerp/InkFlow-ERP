@@ -419,7 +419,7 @@ function BillingContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [company, slug, selectedPeriod, customStartDate, customEndDate, invoices.length, payments.length])
+  }, [company?.id, company?.slug, slug, selectedPeriod, customStartDate, customEndDate])
 
   useEffect(() => {
     loadBillingData()

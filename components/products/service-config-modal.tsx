@@ -15,6 +15,7 @@ import {
   Plus,
   Trash2,
   AlertCircle,
+  AlertTriangle,
   Check,
   ChevronRight,
   ChevronLeft,
@@ -593,6 +594,18 @@ export const CATEGORY_SUBCATEGORY_MAP: Record<string, string[]> = {
     'Mesh Vinyl Banner (Wind Resistant)',
     'Clear Transparent Sticker',
   ],
+  large_format_printing: [
+    'PVC Frontlit Flex Banner (280gsm - 440gsm)',
+    'PVC Backlit Banner (Translucent)',
+    'Glossy Vinyl Sticker (Adhesive Back)',
+    'Matte Vinyl Sticker (Non-Reflective)',
+    'Frosted Glass Sticker (Sandblast Effect)',
+    'One Way Vision (Perforated Vinyl)',
+    'Reflective Vinyl Sticker (Commercial Grade)',
+    'Canvas Fabric Print (High Texture)',
+    'Mesh Vinyl Banner (Wind Resistant)',
+    'Clear Transparent Sticker',
+  ],
   solvent_printing: [
     'Heavy Duty Billboard Flex (510gsm)',
     'Frontlit Event Banner',
@@ -1050,7 +1063,7 @@ export function ServiceConfigModal({
   const [nameBn, setNameBn] = useState('')
   const [sku, setSku] = useState('')
   const [serviceType, setServiceType] = useState<'printing' | 'production' | 'finishing' | 'installation' | 'delivery' | 'general'>('printing')
-  const [category, setCategory] = useState('large_format_printing')
+  const [category, setCategory] = useState('wide_format_printing')
   const [subCategory, setSubCategory] = useState<string>('')
   const [printTechnology, setPrintTechnology] = useState<string>('Eco-Solvent')
   const [productionMethod, setProductionMethod] = useState<string>('Roll-to-Roll')
@@ -1622,7 +1635,7 @@ export function ServiceConfigModal({
     }
 
     // Align technical configuration defaults according to category
-    if (catId === 'wide_format_printing') {
+    if (catId === 'wide_format_printing' || catId === 'large_format_printing') {
       setPrintCategory('Large Format Eco-Solvent Print')
       setPrintTechnology('Eco-Solvent')
       setProductionMethod('Roll-to-Roll')
@@ -1989,7 +2002,8 @@ export function ServiceConfigModal({
       setName(initialData.name || '')
       setNameBn(initialData.name_bn || '')
       setSku(initialData.sku || '')
-      setCategory(initialData.category || 'large_format_printing')
+      const initialCat = initialData.category === 'large_format_printing' ? 'wide_format_printing' : (initialData.category || 'wide_format_printing')
+      setCategory(initialCat)
       const loadedSrvType = (initialData as any).service_type || (initialData.product_type === 'finishing' || (initialData as any).entity_type === 'finishing' ? 'finishing' : 'printing')
       setServiceType(loadedSrvType)
       setSellingUnit(initialData.selling_unit || initialData.unit || 'sft')
@@ -2156,7 +2170,7 @@ export function ServiceConfigModal({
       setName('')
       setNameBn('')
       setSku(`SRV-${Date.now().toString().slice(-5)}`)
-      setCategory('large_format_printing')
+      setCategory('wide_format_printing')
       setSubCategory('')
       setPrintTechnology('Eco-Solvent')
       setProductionMethod('Roll-to-Roll')
@@ -2628,31 +2642,35 @@ export function ServiceConfigModal({
     let sp = Number(sellingPrice) || 0
     const costFloor = Number(totalDirectCost) || 0
 
-    if (sp <= 0 && costFloor > 0) {
-      sp = parseFloat((costFloor * (1 + (targetMargin || 35) / 100)).toFixed(2))
+    // If selling price is not set OR is below direct unit cost (loss-making),
+    // automatically calculate healthy selling price using target margin (whole integer)
+    if (sp <= costFloor && costFloor > 0) {
+      const margin = (targetMargin && targetMargin > 0) ? targetMargin : 35
+      sp = Math.ceil(costFloor * (1 + margin / 100))
       setSellingPrice(sp)
     }
 
     if (sp <= 0 && costFloor <= 0) return
 
-    const effectiveSp = sp > 0 ? sp : costFloor
-    const isInt = Number.isInteger(effectiveSp)
+    const effectiveSp = sp > 0 ? sp : Math.ceil(costFloor)
 
     const clampToFloor = (calcVal: number) => {
-      const rounded = isInt ? Math.round(calcVal) : parseFloat(calcVal.toFixed(2))
-      // Strictly enforce that price tiers are NEVER less than Direct Unit Cost
-      const floored = Math.max(costFloor, rounded)
-      return parseFloat(floored.toFixed(2))
+      // Suggest clean whole integer pricing (no decimals)
+      const rounded = Math.round(calcVal)
+      // Strictly enforce that price tiers are integers and NEVER less than Direct Unit Cost
+      const floored = Math.max(Math.ceil(costFloor), rounded)
+      return floored
     }
 
     if (discountStrategy === 'reset') {
+      const baseVal = Math.round(effectiveSp)
       setPriceTiers({
-        retail: clampToFloor(effectiveSp),
-        reseller: clampToFloor(effectiveSp),
-        corporate: clampToFloor(effectiveSp),
-        agency: clampToFloor(effectiveSp),
-        regular: clampToFloor(effectiveSp),
-        custom: clampToFloor(effectiveSp),
+        retail: clampToFloor(baseVal),
+        reseller: clampToFloor(baseVal),
+        corporate: clampToFloor(baseVal),
+        agency: clampToFloor(baseVal),
+        regular: clampToFloor(baseVal),
+        custom: clampToFloor(baseVal),
       })
       return
     }
@@ -2660,11 +2678,11 @@ export function ServiceConfigModal({
     if (discountStrategy === 'aggressive') {
       setPriceTiers({
         retail: clampToFloor(effectiveSp),
-        reseller: clampToFloor(effectiveSp * 0.75), // 25% discount, clamped to costFloor
-        corporate: clampToFloor(effectiveSp * 0.85), // 15% discount, clamped to costFloor
-        agency: clampToFloor(effectiveSp * 0.70),    // 30% discount, clamped to costFloor
-        regular: clampToFloor(effectiveSp * 0.90),   // 10% discount, clamped to costFloor
-        custom: clampToFloor(effectiveSp),
+        regular: clampToFloor(effectiveSp * 0.90),   // 10% loyal client discount
+        corporate: clampToFloor(effectiveSp * 0.85), // 15% corporate contract discount
+        reseller: clampToFloor(effectiveSp * 0.75),  // 25% wholesale discount
+        agency: clampToFloor(effectiveSp * 0.70),    // 30% creative agency partner discount
+        custom: clampToFloor(effectiveSp * 0.65),    // 35% Special / VIP discount
       })
       return
     }
@@ -2672,11 +2690,11 @@ export function ServiceConfigModal({
     // Standard commercial print shop tiers in Bangladesh (clamped to Direct Unit Cost floor)
     setPriceTiers({
       retail: clampToFloor(effectiveSp),
-      reseller: clampToFloor(effectiveSp * 0.85), // 15% wholesale discount, clamped to costFloor
-      corporate: clampToFloor(effectiveSp * 0.90), // 10% corporate contract discount, clamped to costFloor
-      agency: clampToFloor(effectiveSp * 0.80),    // 20% creative agency partner discount, clamped to costFloor
-      regular: clampToFloor(effectiveSp * 0.95),   // 5% loyal client discount, clamped to costFloor
-      custom: clampToFloor(effectiveSp),
+      regular: clampToFloor(effectiveSp * 0.95),   // 5% loyal client discount
+      corporate: clampToFloor(effectiveSp * 0.90), // 10% corporate contract discount
+      reseller: clampToFloor(effectiveSp * 0.85),  // 15% wholesale discount
+      agency: clampToFloor(effectiveSp * 0.80),    // 20% creative agency partner discount
+      custom: clampToFloor(effectiveSp * 0.75),    // 25% Special / VIP discount
     })
   }
 
@@ -3792,7 +3810,7 @@ export function ServiceConfigModal({
                       </span>
                     </div>
                     <select
-                      value={category}
+                      value={category === 'large_format_printing' ? 'wide_format_printing' : category}
                       onChange={(e) => handleSelectCategory(e.target.value)}
                       className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2.5 font-medium"
                     >
@@ -3801,8 +3819,10 @@ export function ServiceConfigModal({
                           {c.name} {c.name_bn ? `(${c.name_bn})` : ''}
                         </option>
                       ))}
-                      {category && !filteredCatalogCategories.some((c) => c.id === category) && (
-                        <option value={category}>{category}</option>
+                      {category && !filteredCatalogCategories.some((c) => c.id === category || (category === 'large_format_printing' && c.id === 'wide_format_printing')) && (
+                        <option value={category}>
+                          {category.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </option>
                       )}
                     </select>
                   </div>
@@ -6382,12 +6402,29 @@ export function ServiceConfigModal({
             </div>
 
             {/* Live Profit Margin Metrics Banner */}
-            <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div className={cn(
+              "p-3.5 rounded-xl border flex flex-wrap items-center justify-between gap-3 text-xs transition-colors",
+              marginMetrics.grossMarginPercent < 0
+                ? "border-rose-300 dark:border-rose-800 bg-rose-50/70 dark:bg-rose-950/30"
+                : "border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30"
+            )}>
               <div className="flex items-center gap-3">
-                <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                {marginMetrics.grossMarginPercent < 0 ? (
+                  <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0" />
+                ) : (
+                  <TrendingUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                )}
                 <div>
-                  <span className="font-bold text-slate-900 dark:text-white block">
+                  <span className={cn(
+                    "font-bold block",
+                    marginMetrics.grossMarginPercent < 0 ? "text-rose-700 dark:text-rose-300" : "text-slate-900 dark:text-white"
+                  )}>
                     Gross Profit Margin: {marginMetrics.grossMarginPercent.toFixed(1)}%
+                    {marginMetrics.grossMarginPercent < 0 && (
+                      <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200 font-bold uppercase">
+                        Selling at a Loss
+                      </span>
+                    )}
                   </span>
                   <span className="text-[11px] text-slate-600 dark:text-slate-400 font-mono">
                     Unit Profit: ৳{(marginMetrics.grossProfit).toFixed(2)} / {sellingUnit || 'sft'} (Cost: ৳{totalDirectCost.toFixed(2)} | Sell: ৳{Number(sellingPrice || 0).toFixed(2)})
@@ -6396,12 +6433,28 @@ export function ServiceConfigModal({
               </div>
 
               <div className="flex items-center gap-1.5">
+                {totalDirectCost > 0 && Number(sellingPrice || 0) <= totalDirectCost && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const margin = (targetMargin && targetMargin > 0) ? targetMargin : 35
+                      const suggested = Math.ceil(totalDirectCost * (1 + margin / 100))
+                      setSellingPrice(suggested)
+                      handleAutoFillTiers('standard')
+                    }}
+                    className="h-8 text-xs font-bold border-rose-300 text-rose-800 dark:text-rose-200 bg-rose-100/60 hover:bg-rose-200 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 cursor-pointer"
+                  >
+                    ⚡ Fix Base Rate to ৳{Math.ceil(totalDirectCost * (1 + (targetMargin || 35) / 100))} ({targetMargin || 35}% Margin)
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   onClick={() => handleAutoFillTiers('standard')}
-                  className="h-8 text-xs font-bold border-emerald-300 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100"
+                  className="h-8 text-xs font-bold border-emerald-300 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-100 cursor-pointer"
                 >
                   Auto-Fill Price Tiers (15% Wholesale)
                 </Button>

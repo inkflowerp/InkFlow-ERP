@@ -113,7 +113,7 @@ export default function DeliveryLogisticsPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [routeSlug, company?.id, company?.slug, slug, setChallans, setInstallations, challans?.length])
+  }, [routeSlug, company?.id, company?.slug, slug])
 
   React.useEffect(() => {
     loadLogisticsData(false)

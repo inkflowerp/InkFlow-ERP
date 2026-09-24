@@ -103,7 +103,7 @@ export default function QuotationsPage() {
 
   // Fetch authoritative quotations from server with tenant slug context
   const loadQuotations = useCallback(async (isSilent = false) => {
-    if (!isSilent && !serverQuotations && (!localQuotations || localQuotations.length === 0)) {
+    if (!isSilent) {
       setIsLoading(true)
     }
     setIsRefreshing(true)
@@ -122,7 +122,7 @@ export default function QuotationsPage() {
       setIsLoading(false)
       setIsRefreshing(false)
     }
-  }, [companyId, slug, serverQuotations, localQuotations])
+  }, [companyId, slug])
 
   useEffect(() => {
     setIsMounted(true)

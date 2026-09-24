@@ -130,7 +130,7 @@ export default function MachineriesListPage() {
     } finally {
       setLoading(false)
     }
-  }, [search, statusFilter, typeFilter, deptFilter, machineries.length])
+  }, [search, statusFilter, typeFilter, deptFilter])
 
   useEffect(() => {
     loadData()

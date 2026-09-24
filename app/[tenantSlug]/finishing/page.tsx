@@ -158,7 +158,7 @@ export default function FinishingAndFabricationPage() {
     } finally {
       setLoading(false)
     }
-  }, [tasks.length, showToast])
+  }, [showToast])
 
   useEffect(() => {
     loadData(false)
