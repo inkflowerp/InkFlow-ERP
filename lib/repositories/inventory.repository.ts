@@ -667,7 +667,7 @@ export class InventoryRepository {
           rollSizesTotalSft += qty * (w * l)
         }
       }
-      if (activeSizesCount === 1 && Math.abs(rollSizesTotalSft - rootStock) > 0.5) {
+      if ((rollSizes.length === 1 || rollSizesTotalSft > rootStock) && activeSizesCount === 1 && Math.abs(rollSizesTotalSft - rootStock) > 0.5) {
         for (const s of rollSizes) {
           const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? s.count ?? 0)
           if (qty > 0) {

@@ -502,9 +502,8 @@ export class InventoryService {
           const isCompatibleSpecMatch = !matched &&
             (Math.abs(szW - incomingCanonicalAttrs.width_ft) < 0.05 || (szBaseW > 0 && Math.abs(szBaseW - incomingNominalW) < 0.05 && Math.abs(szAllowance - incomingCanonicalAttrs.allowance_ft) < 0.05)) &&
             (!szL || !incomingCanonicalAttrs.length_ft || Math.abs(szL - incomingCanonicalAttrs.length_ft) <= 5) &&
-            (szPrice === 0 || szPrice === incomingCanonicalAttrs.purchase_price) &&
-            (szGsm === 0 || szGsm === incomingCanonicalAttrs.gsm) &&
-            (szFin === 'none' || szFin === incomingCanonicalAttrs.finishing)
+            (szGsm === 0 || szGsm === incomingCanonicalAttrs.gsm || !incomingCanonicalAttrs.gsm) &&
+            (szFin === 'none' || szFin === incomingCanonicalAttrs.finishing || !incomingCanonicalAttrs.finishing || incomingCanonicalAttrs.finishing === 'none')
 
           if ((isFullCanonicalMatch || isCompatibleSpecMatch) && !matched) {
             matched = true
@@ -534,7 +533,17 @@ export class InventoryService {
               total_sft: Math.round(newQty * effW * effL * 100) / 100,
             }
           }
-          return sz
+          const preservedCount = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
+          const effW = szW || szBaseW || 4
+          const effL = szL || 164
+          return {
+            ...sz,
+            quantity: preservedCount,
+            roll_count: preservedCount,
+            stock_qty: preservedCount,
+            stock: preservedCount,
+            total_sft: Math.round(preservedCount * effW * effL * 100) / 100,
+          }
         })
 
         if (!matched && (existingRollSizes.length > 0 || params.quantity > 0)) {

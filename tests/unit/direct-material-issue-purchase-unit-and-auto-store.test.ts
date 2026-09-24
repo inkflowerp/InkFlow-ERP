@@ -45,7 +45,7 @@ test('Direct Material Issue to Production — Auto Source Store & Purchase Unit 
       unit: 'sft',
       purchase_unit: 'roll',
       master_purchase_unit: 'roll',
-      current_stock: 4920,
+      current_stock: 30340, // 10 rolls of 3x164 (4920 sft) + 31 rolls of 5x164 (25420 sft)
       average_cost: 25,
       last_purchase_price: 25,
       is_roll: true,

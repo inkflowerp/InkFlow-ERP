@@ -2450,7 +2450,11 @@ export function getMaterialWarehouseStockBreakdown(
             : (rawCost > 150 ? rawCost : rawCost * (attrs.width_ft * attrs.length_ft))
 
           if (matchedItem) {
-            // matRolls physical rolls take precedence as actual warehouse stock
+            if (explicitCount > matchedItem.roll_count) {
+              matchedItem.roll_count = explicitCount
+              matchedItem.total_sft = Math.round(explicitCount * matchedItem.width_ft * matchedItem.length_ft * 100) / 100
+              matchedItem.total_valuation = explicitCount * rollCost
+            }
           } else if (!map.has(key)) {
             const itemSft = explicitCount > 0 ? explicitCount * attrs.width_ft * attrs.length_ft : 0
             const itemVal = explicitCount * rollCost
