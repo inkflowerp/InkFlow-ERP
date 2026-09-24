@@ -187,8 +187,8 @@ function PlatformLoginForm() {
       language === 'en'
         ? 'Authorized platform administrators only.'
         : 'শুধুমাত্র অনুমোদিত প্ল্যাটফর্ম অ্যাডমিনিস্ট্রেটরদের জন্য।',
-    emailLabel: language === 'en' ? 'PLATFORM EMAIL' : 'প্ল্যাটফর্ম ইমেইল',
-    emailPlaceholder: 'admin@inkflow.com.bd',
+    emailLabel: language === 'en' ? 'EMAIL, USERNAME OR MOBILE' : 'ইমেইল, ইউজারনেম বা মোবাইল',
+    emailPlaceholder: language === 'en' ? 'admin@inkflow.com.bd, username, or 017...' : 'admin@inkflow.com.bd, ইউজারনেম বা ০১...',
     passwordLabel: language === 'en' ? 'PASSWORD' : 'পাসওয়ার্ড',
     passwordPlaceholder: language === 'en' ? 'Enter your password' : 'পাসওয়ার্ড লিখুন',
     forgotPassword: language === 'en' ? 'Forgot password?' : 'পাসওয়ার্ড ভুলে গেছেন?',
@@ -477,9 +477,9 @@ function PlatformLoginForm() {
                       </div>
                       <input
                         id="platform-email"
-                        type="email"
+                        type="text"
                         required
-                        autoComplete="email"
+                        autoComplete="username"
                         autoCapitalize="none"
                         autoCorrect="off"
                         spellCheck={false}

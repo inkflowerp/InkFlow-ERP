@@ -177,6 +177,20 @@ function getSessionFromCookie(): TenantSessionData | null {
   }
 }
 
+export function mapSessionToTenantRole(session: TenantSessionData | null): TenantRole {
+  if (!session) return 'owner'
+  const rawRole = (session.role || session.primaryRole || session.responsibilities?.[0] || '').toLowerCase().trim()
+  if (rawRole === 'business_owner' || rawRole === 'owner' || rawRole === 'platform_owner') return 'owner'
+  if (rawRole === 'sales_manager' || rawRole === 'sales' || rawRole === 'sales_executive' || rawRole === 'manager') return 'manager'
+  if (rawRole === 'graphic_designer' || rawRole === 'designer') return 'designer'
+  if (rawRole === 'machine_operator' || rawRole === 'operator' || rawRole === 'technician') return 'operator'
+  if (rawRole === 'production_manager' || rawRole === 'production') return 'manager'
+  if (rawRole === 'accountant' || rawRole === 'accounts' || rawRole === 'billing') return 'accountant'
+  if (rawRole === 'delivery_coordinator' || rawRole === 'delivery' || rawRole === 'installer') return 'installer'
+  if (rawRole === 'general_staff' || rawRole === 'staff') return 'operator'
+  return (rawRole as TenantRole) || 'operator'
+}
+
 export function TenantProvider({
   initialSlug,
   initialTenantContext,
@@ -208,21 +222,9 @@ export function TenantProvider({
   const [syncedUser, setSyncedUser] = useState<CompanyUserWithProfile | null>(null)
 
   // Map session role to TenantRole ('owner' | 'manager' | 'operator' | etc.)
-  const currentRole: TenantRole = session?.role
-    ? session.role === 'business_owner'
-      ? 'owner'
-      : session.role === 'sales_manager'
-      ? 'manager'
-      : session.role === 'graphic_designer'
-      ? 'designer'
-      : session.role === 'machine_operator'
-      ? 'operator'
-      : session.role === 'accountant'
-      ? 'accountant'
-      : session.role === 'delivery_coordinator'
-      ? 'installer'
-      : (session.role as TenantRole) || 'owner'
-    : 'owner'
+  const currentRole: TenantRole = useMemo(() => {
+    return mapSessionToTenantRole(session)
+  }, [session])
 
   // Resolve current user details deterministically
   const currentUser: CompanyUserWithProfile | null = useMemo(() => {
@@ -406,21 +408,7 @@ function getFallbackTenantContext(): TenantContextType {
     ? resolveCompanyFromContextOrStore(null, activeSession.companySlug || activeSession.companyId)
     : null
 
-  const currentRole: TenantRole = activeSession?.role
-    ? activeSession.role === 'business_owner'
-      ? 'owner'
-      : activeSession.role === 'sales_manager'
-      ? 'manager'
-      : activeSession.role === 'graphic_designer'
-      ? 'designer'
-      : activeSession.role === 'machine_operator'
-      ? 'operator'
-      : activeSession.role === 'accountant'
-      ? 'accountant'
-      : activeSession.role === 'delivery_coordinator'
-      ? 'installer'
-      : (activeSession.role as TenantRole) || 'owner'
-    : 'owner'
+  const currentRole: TenantRole = mapSessionToTenantRole(activeSession)
 
   const currentUser: CompanyUserWithProfile | null = activeSession
     ? {

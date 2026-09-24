@@ -71,6 +71,42 @@ export type TenantRole =
   | 'accountant'
   | 'delivery_coordinator'
 
+/**
+ * Safely resolves a raw role string or responsibilities list to a canonical TenantRole.
+ * Guarantees that employees never default to 'business_owner'.
+ */
+export function resolveTenantRole(
+  primaryRole?: string | null,
+  responsibilities?: string[] | null,
+  isOwner?: boolean
+): TenantRole {
+  if (isOwner) return 'business_owner'
+
+  const raw = (primaryRole || responsibilities?.[0] || '').toLowerCase().trim()
+  if (raw === 'business_owner' || raw === 'platform_owner' || raw === 'owner') {
+    return 'business_owner'
+  }
+  if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager') {
+    return 'sales_manager'
+  }
+  if (raw === 'graphic_designer' || raw === 'designer') {
+    return 'graphic_designer'
+  }
+  if (raw === 'machine_operator' || raw === 'operator' || raw === 'technician') {
+    return 'machine_operator'
+  }
+  if (raw === 'production_manager' || raw === 'production') {
+    return 'production_manager'
+  }
+  if (raw === 'accountant' || raw === 'accounts' || raw === 'billing') {
+    return 'accountant'
+  }
+  if (raw === 'delivery_coordinator' || raw === 'delivery' || raw === 'installer') {
+    return 'delivery_coordinator'
+  }
+  return 'general_staff'
+}
+
 export const TENANT_SESSION_COOKIE = 'printerp_tenant_session'
 
 export interface TenantSessionData {

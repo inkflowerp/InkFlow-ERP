@@ -928,16 +928,45 @@ export class TenantRepository {
       Object.assign(overrides, cu.overrides)
     }
 
+    // Query employees table to see if employee record has specific role or portal_credentials
+    let employeeRole: string | null = null
+    try {
+      const { data: emp } = await (admin as any)
+        .from('employees')
+        .select('role, portal_credentials')
+        .eq('company_id', company.id)
+        .eq('user_id', userId)
+        .maybeSingle()
+      if (emp) {
+        employeeRole = emp.portal_credentials?.role || emp.role || null
+      }
+    } catch {}
+
     const roleResponsibilities = roles.map((r: any) => r.slug || r.name)
     const rawResponsibilities = Array.isArray(cu.responsibilities) && cu.responsibilities.length > 0
       ? cu.responsibilities
-      : roleResponsibilities
-    const responsibilities = rawResponsibilities.length > 0 ? rawResponsibilities : ['general_staff']
+      : (employeeRole ? [employeeRole] : roleResponsibilities)
 
+    // Normalize responsibilities to match RBAC matrix slugs
+    const responsibilities = (rawResponsibilities.length > 0 ? rawResponsibilities : (employeeRole ? [employeeRole] : ['general_staff'])).map((r: string) => {
+      const lower = (r || '').toLowerCase().trim()
+      if (lower === 'sales' || lower === 'sales_executive') return 'sales_manager'
+      if (lower === 'operator' || lower === 'technician' || lower === 'machine_operator') return 'operator'
+      if (lower === 'designer' || lower === 'graphic_designer') return 'designer'
+      if (lower === 'accounts' || lower === 'billing') return 'accountant'
+      if (lower === 'delivery' || lower === 'installer') return 'delivery_coordinator'
+      if (lower === 'production') return 'production_manager'
+      return lower || 'general_staff'
+    })
+
+    const isCompanyOwner = (company as any)?.owner_id === userId
     const isOwner =
-      responsibilities.includes('owner') ||
-      responsibilities.includes('business_owner') ||
-      roles.some((r) => r.slug === 'owner' || r.slug === 'business_owner' || r.slug === 'platform_owner')
+      isCompanyOwner ||
+      (!employeeRole && (
+        responsibilities.includes('owner') ||
+        responsibilities.includes('business_owner') ||
+        roles.some((r) => r.slug === 'owner' || r.slug === 'business_owner' || r.slug === 'platform_owner')
+      ))
     const primaryRole = isOwner ? 'business_owner' : responsibilities[0] || 'general_staff'
 
     // Compute effective permissions across all responsibilities & overrides

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { AuditService } from '@/services/audit.service'
-import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole, resolveTenantRole } from '@/lib/auth/types'
 import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 
@@ -142,13 +142,8 @@ export async function GET(request: Request) {
         return redirectResponse
       }
 
-      let tenantRole: TenantRole = 'business_owner'
-      if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-      else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-      else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-      else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-      else if (primaryRole === 'accountant') tenantRole = 'accountant'
-      else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+      const isOwner = (company as any)?.owner_id === user.id || primaryRole === 'business_owner'
+      const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
       const sessionData: TenantSessionData = {
         userId: user.id,

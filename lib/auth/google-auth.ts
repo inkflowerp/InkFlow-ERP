@@ -9,8 +9,7 @@ import crypto from 'crypto'
 import { createAdminClient } from '../supabase/admin.ts'
 import { TenantRepository } from '../repositories/tenant.repository.ts'
 import { AuditService } from '../../services/audit.service.ts'
-import { TENANT_SESSION_COOKIE } from './types.ts'
-import type { TenantSessionData, TenantRole } from './types.ts'
+import { resolveTenantRole, TENANT_SESSION_COOKIE, type TenantSessionData, type TenantRole } from './types.ts'
 import type { PrimaryRole } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { isTestEnvironment } from '../security/runtime-env.ts'
@@ -524,13 +523,8 @@ export async function authenticateGoogleUser(
         }
       }
 
-      let tenantRole: TenantRole = 'business_owner'
-      if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-      else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-      else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-      else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-      else if (primaryRole === 'accountant') tenantRole = 'accountant'
-      else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+      const isOwner = (company as any)?.owner_id === userId || primaryRole === 'business_owner'
+      const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
       const sessionData: TenantSessionData = {
         userId,

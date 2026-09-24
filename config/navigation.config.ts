@@ -44,6 +44,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           isPrimaryAction: true,
           badge: 'POS',
           badgeVariant: 'fast',
+          permission: { action: 'create', resource: 'orders' },
         },
         {
           key: 'dashboard',
@@ -216,7 +217,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           titleBn: 'কর্মী ও বেতন',
           href: '/hr',
           icon: 'Users2',
-          permission: { action: 'view', resource: 'settings' },
+          permission: { action: 'view', resource: 'hr' },
         },
         {
           key: 'reports',

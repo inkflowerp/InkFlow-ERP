@@ -8,19 +8,41 @@ import { createClient as createBrowserSupabaseClient } from '../lib/supabase/cli
 import { createClient as createServerSupabaseClient } from '../lib/supabase/server.ts'
 import { createAdminClient } from '../lib/supabase/admin.ts'
 import type { ApiResponse } from '../types/common.types.ts'
-import type { TenantSessionData, TenantRole } from '../lib/auth/types.ts'
-import { TENANT_SESSION_COOKIE } from '../lib/auth/types.ts'
+import { resolveTenantRole, TENANT_SESSION_COOKIE, type TenantSessionData, type TenantRole } from '../lib/auth/types.ts'
 import type { PrimaryRole } from '../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../types/rbac.types.ts'
 import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import { AuditService } from './audit.service.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
+import {
+  parseAndNormalizePhone,
+  classifyLoginIdentifier,
+  isValidUsernameFormat,
+  sanitizeUsername,
+} from '../lib/auth/identifier-helper.ts'
 
 export interface SignInResultData {
   userId: string
   session: TenantSessionData
   requiresOnboarding?: boolean
+}
+
+export interface IdentifierUniquenessCheckParams {
+  email?: string | null
+  username?: string | null
+  phone?: string | null
+  employeeIdNumber?: string | null
+  excludeUserId?: string | null
+  excludeEmployeeId?: string | null
+  companyId?: string | null
+}
+
+export interface IdentifierUniquenessResult {
+  available: boolean
+  conflictField?: 'email' | 'username' | 'phone' | 'employee_id_number'
+  error?: string
+  errorBn?: string
 }
 
 async function getSupabaseAuthClient() {
@@ -36,7 +58,403 @@ async function getSupabaseAuthClient() {
 
 export class AuthService {
   /**
+   * Resolves any login identifier (email, username, mobile, employee ID badge)
+   * to the authoritative registered Supabase Auth email.
+   */
+  static async resolveLoginEmail(identifier: string): Promise<string> {
+    const classification = classifyLoginIdentifier(identifier)
+
+    // Direct email match
+    if (classification.type === 'email') {
+      return classification.normalized
+    }
+
+    const admin = createAdminClient()
+
+    // 1. Phone number resolution
+    if (classification.type === 'phone' && classification.phoneVariants) {
+      const candidates = classification.phoneVariants.candidates
+
+      // Check user_profiles
+      try {
+        const { data: prof } = await (admin as any)
+          .from('user_profiles')
+          .select('email, phone')
+          .in('phone', candidates)
+          .limit(1)
+          .maybeSingle()
+        if (prof?.email) return prof.email.toLowerCase()
+      } catch {}
+
+      // Check employees
+      try {
+        const { data: emp } = await (admin as any)
+          .from('employees')
+          .select('id, email, mobile, portal_credentials')
+          .in('mobile', candidates)
+          .limit(1)
+          .maybeSingle()
+
+        if (emp) {
+          const creds = emp.portal_credentials as any
+          if (creds?.email) return creds.email.toLowerCase()
+          if (emp.email) return emp.email.toLowerCase()
+        }
+      } catch {}
+
+      // Test environment / fallback data store
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const empFound = emps.find((e) => candidates.includes(e.mobile))
+        if (empFound?.portal_credentials?.email) return empFound.portal_credentials.email.toLowerCase()
+        if (empFound?.email) return empFound.email.toLowerCase()
+
+        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const userFound = users.find((u) => candidates.includes(u.phone))
+        if (userFound?.email) return userFound.email.toLowerCase()
+      } catch {}
+    }
+
+    // 2. Username or Employee Badge resolution
+    if (classification.type === 'username') {
+      const norm = classification.normalized
+
+      // Check user_profiles (username column)
+      try {
+        const { data: prof } = await (admin as any)
+          .from('user_profiles')
+          .select('email, username')
+          .ilike('username', norm)
+          .limit(1)
+          .maybeSingle()
+        if (prof?.email) return prof.email.toLowerCase()
+      } catch {}
+
+      // Check employees (employee_id_number or portal_credentials.username)
+      try {
+        const { data: empBadge } = await (admin as any)
+          .from('employees')
+          .select('id, email, mobile, portal_credentials')
+          .ilike('employee_id_number', norm)
+          .limit(1)
+          .maybeSingle()
+
+        if (empBadge) {
+          const creds = empBadge.portal_credentials as any
+          if (creds?.email) return creds.email.toLowerCase()
+          if (empBadge.email) return empBadge.email.toLowerCase()
+        }
+
+        const { data: empUser } = await (admin as any)
+          .from('employees')
+          .select('id, email, mobile, portal_credentials')
+          .filter('portal_credentials->>username', 'ilike', norm)
+          .limit(1)
+          .maybeSingle()
+
+        if (empUser) {
+          const creds = empUser.portal_credentials as any
+          if (creds?.email) return creds.email.toLowerCase()
+          if (empUser.email) return empUser.email.toLowerCase()
+        }
+      } catch {}
+
+      // Test environment / fallback data store
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const empFound = emps.find(
+          (e) =>
+            e.employee_id_number?.toLowerCase() === norm ||
+            e.portal_credentials?.username?.toLowerCase() === norm
+        )
+        if (empFound?.portal_credentials?.email) return empFound.portal_credentials.email.toLowerCase()
+        if (empFound?.email) return empFound.email.toLowerCase()
+
+        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const userFound = users.find((u) => u.username?.toLowerCase() === norm)
+        if (userFound?.email) return userFound.email.toLowerCase()
+      } catch {}
+    }
+
+    return classification.normalized
+  }
+
+  /**
+   * Authoritative duplicate check across user accounts, employee profiles, and credentials.
+   * Ensures no duplicate email, username, or phone number exists anywhere in the application.
+   */
+  static async validateIdentifierUniqueness(
+    params: IdentifierUniquenessCheckParams
+  ): Promise<IdentifierUniquenessResult> {
+    const admin = createAdminClient()
+
+    // 1. Check Email Uniqueness
+    if (params.email?.trim()) {
+      const email = params.email.trim().toLowerCase()
+
+      // A. Check user_profiles
+      try {
+        let q = (admin as any)
+          .from('user_profiles')
+          .select('id, email')
+          .ilike('email', email)
+        if (params.excludeUserId) {
+          q = q.neq('id', params.excludeUserId)
+        }
+        const { data: prof } = await q.limit(1).maybeSingle()
+        if (prof) {
+          return {
+            available: false,
+            conflictField: 'email',
+            error: `Email address '${email}' is already registered to another user account.`,
+            errorBn: `ইমেইল '${email}' ইতিমধ্যে অন্য ব্যবহারকারী অ্যাকাউন্টে নিবন্ধিত আছে।`,
+          }
+        }
+      } catch {}
+
+      // B. Check employees (email or portal_credentials.email)
+      try {
+        let q = (admin as any)
+          .from('employees')
+          .select('id, email, portal_credentials')
+          .or(`email.ilike.${email},portal_credentials->>email.ilike.${email}`)
+        if (params.excludeEmployeeId) {
+          q = q.neq('id', params.excludeEmployeeId)
+        }
+        const { data: emp } = await q.limit(1).maybeSingle()
+        if (emp) {
+          return {
+            available: false,
+            conflictField: 'email',
+            error: `Email address '${email}' is already associated with another employee record.`,
+            errorBn: `ইমেইল '${email}' ইতিমধ্যে অন্য একজন কর্মীর রেকর্ডে সংরক্ষিত আছে।`,
+          }
+        }
+      } catch {}
+
+      // C. Check PrintERPDataStore in test/mock environment
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const empConflict = emps.find(
+          (e) =>
+            e.id !== params.excludeEmployeeId &&
+            (e.email?.toLowerCase() === email || e.portal_credentials?.email?.toLowerCase() === email)
+        )
+        if (empConflict) {
+          return {
+            available: false,
+            conflictField: 'email',
+            error: `Email address '${email}' is already in use by another employee.`,
+            errorBn: `ইমেইল '${email}' ইতিমধ্যে অন্য কর্মীর অ্যাকাউন্টে ব্যবহৃত হচ্ছে।`,
+          }
+        }
+
+        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const userConflict = users.find((u) => u.id !== params.excludeUserId && u.email?.toLowerCase() === email)
+        if (userConflict) {
+          return {
+            available: false,
+            conflictField: 'email',
+            error: `Email address '${email}' is already registered.`,
+            errorBn: `ইমেইল '${email}' ইতিমধ্যে নিবন্ধিত আছে।`,
+          }
+        }
+      } catch {}
+    }
+
+    // 2. Check Username Uniqueness
+    if (params.username?.trim()) {
+      const username = sanitizeUsername(params.username)
+      const formatCheck = isValidUsernameFormat(username)
+      if (!formatCheck.valid) {
+        return {
+          available: false,
+          conflictField: 'username',
+          error: formatCheck.reason || 'Invalid username format.',
+          errorBn: 'ইউজারনেমের ফরম্যাট সঠিক নয় (ন্যূনতম ৩ অক্ষর, বর্ণ ও সংখ্যা)।',
+        }
+      }
+
+      // A. Check user_profiles
+      try {
+        let q = (admin as any)
+          .from('user_profiles')
+          .select('id, username')
+          .ilike('username', username)
+        if (params.excludeUserId) {
+          q = q.neq('id', params.excludeUserId)
+        }
+        const { data: prof } = await q.limit(1).maybeSingle()
+        if (prof) {
+          return {
+            available: false,
+            conflictField: 'username',
+            error: `Username '${username}' is already taken. Please choose another username.`,
+            errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে। অন্য একটি ইউজারনেম নির্বাচন করুন।`,
+          }
+        }
+      } catch {}
+
+      // B. Check employees portal_credentials.username
+      try {
+        let q = (admin as any)
+          .from('employees')
+          .select('id, portal_credentials')
+          .filter('portal_credentials->>username', 'ilike', username)
+        if (params.excludeEmployeeId) {
+          q = q.neq('id', params.excludeEmployeeId)
+        }
+        const { data: emp } = await q.limit(1).maybeSingle()
+        if (emp) {
+          return {
+            available: false,
+            conflictField: 'username',
+            error: `Username '${username}' is already taken by another employee portal login.`,
+            errorBn: `ইউজারনেম '${username}' ইতিমধ্যে অন্য একজন কর্মীর জন্য ব্যবহৃত হচ্ছে।`,
+          }
+        }
+      } catch {}
+
+      // C. Check PrintERPDataStore in test/mock environment
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const empConflict = emps.find(
+          (e) =>
+            e.id !== params.excludeEmployeeId &&
+            e.portal_credentials?.username?.toLowerCase() === username
+        )
+        if (empConflict) {
+          return {
+            available: false,
+            conflictField: 'username',
+            error: `Username '${username}' is already taken.`,
+            errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে।`,
+          }
+        }
+
+        const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+        const userConflict = users.find((u) => u.id !== params.excludeUserId && u.username?.toLowerCase() === username)
+        if (userConflict) {
+          return {
+            available: false,
+            conflictField: 'username',
+            error: `Username '${username}' is already taken.`,
+            errorBn: `ইউজারনেম '${username}' ইতিমধ্যে ব্যবহৃত হচ্ছে।`,
+          }
+        }
+      } catch {}
+    }
+
+    // 3. Check Phone Uniqueness
+    if (params.phone?.trim()) {
+      const parsed = parseAndNormalizePhone(params.phone)
+      if (parsed) {
+        const candidates = parsed.candidates
+
+        // A. Check user_profiles
+        try {
+          let q = (admin as any)
+            .from('user_profiles')
+            .select('id, phone')
+            .in('phone', candidates)
+          if (params.excludeUserId) {
+            q = q.neq('id', params.excludeUserId)
+          }
+          const { data: prof } = await q.limit(1).maybeSingle()
+          if (prof) {
+            return {
+              available: false,
+              conflictField: 'phone',
+              error: `Phone number '${params.phone}' is already associated with an existing user account.`,
+              errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য একটি ব্যবহারকারী অ্যাকাউন্টে যুক্ত আছে।`,
+            }
+          }
+        } catch {}
+
+        // B. Check employees mobile
+        try {
+          let q = (admin as any)
+            .from('employees')
+            .select('id, mobile')
+            .in('mobile', candidates)
+          if (params.excludeEmployeeId) {
+            q = q.neq('id', params.excludeEmployeeId)
+          }
+          const { data: emp } = await q.limit(1).maybeSingle()
+          if (emp) {
+            return {
+              available: false,
+              conflictField: 'phone',
+              error: `Phone number '${params.phone}' is already registered to another employee.`,
+              errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য একজন কর্মীর জন্য সংরক্ষিত আছে।`,
+            }
+          }
+        } catch {}
+
+        // C. Check PrintERPDataStore in test/mock environment
+        try {
+          const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+          const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+          const empConflict = emps.find(
+            (e) => e.id !== params.excludeEmployeeId && candidates.includes(e.mobile)
+          )
+          if (empConflict) {
+            return {
+              available: false,
+              conflictField: 'phone',
+              error: `Phone number '${params.phone}' is already registered to another employee.`,
+              errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য একজন কর্মীর জন্য ব্যবহৃত হচ্ছে।`,
+            }
+          }
+
+          const users = PrintERPDataStore.get<any[]>(STORAGE_KEYS.REGISTERED_USERS) || []
+          const userConflict = users.find((u) => u.id !== params.excludeUserId && candidates.includes(u.phone))
+          if (userConflict) {
+            return {
+              available: false,
+              conflictField: 'phone',
+              error: `Phone number '${params.phone}' is already registered.`,
+              errorBn: `মোবাইল নম্বর '${params.phone}' ইতিমধ্যে অন্য অ্যাকাউন্টে যুক্ত আছে।`,
+            }
+          }
+        } catch {}
+      }
+    }
+
+    // 4. Check Employee ID Number (within company)
+    if (params.employeeIdNumber?.trim() && params.companyId) {
+      const code = params.employeeIdNumber.trim()
+      try {
+        let q = (admin as any)
+          .from('employees')
+          .select('id, employee_id_number')
+          .eq('company_id', params.companyId)
+          .ilike('employee_id_number', code)
+        if (params.excludeEmployeeId) {
+          q = q.neq('id', params.excludeEmployeeId)
+        }
+        const { data: emp } = await q.limit(1).maybeSingle()
+        if (emp) {
+          return {
+            available: false,
+            conflictField: 'employee_id_number',
+            error: `Employee ID badge number '${code}' already exists in this company.`,
+            errorBn: `কর্মীর আইডি ব্যাজ নম্বর '${code}' এই প্রতিষ্ঠানে ইতিমধ্যে বিদ্যমান।`,
+          }
+        }
+      } catch {}
+    }
+
+    return { available: true }
+  }
+
+  /**
    * Browser / Client side sign in with Supabase Auth & authoritative database tenant resolution
+   * Accepts Email, Username, or Phone Number as the primary identifier.
    */
   static async signIn(
     email: string,
@@ -44,15 +462,19 @@ export class AuthService {
     targetCompanySlug?: string
   ): Promise<ApiResponse<SignInResultData>> {
     try {
-      const normalizedEmail = email.trim().toLowerCase()
+      const normalizedInput = email.trim()
 
-      if (!normalizedEmail || !password) {
-        return { success: false, error: 'Email and password are required' }
+      if (!normalizedInput || !password) {
+        return { success: false, error: 'Email, username, or phone and password are required' }
       }
+
+      // Resolve identifier (email, username, phone, or badge) to registered auth email
+      const resolvedEmail = await this.resolveLoginEmail(normalizedInput)
+      const normalizedEmail = resolvedEmail.toLowerCase()
 
       const supabase = await getSupabaseAuthClient()
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
+        email: resolvedEmail,
         password,
       })
 
@@ -166,13 +588,8 @@ export class AuthService {
         }
       }
 
-      let tenantRole: TenantRole = 'business_owner'
-      if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-      else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-      else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-      else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-      else if (primaryRole === 'accountant') tenantRole = 'accountant'
-      else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+      const isOwner = (company as any)?.owner_id === user.id || primaryRole === 'business_owner'
+      const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
       const sessionData: TenantSessionData = {
         userId: user.id,
@@ -232,6 +649,49 @@ export class AuthService {
       const normalizedEmail = email.trim().toLowerCase()
       const admin = createAdminClient()
       let userId: string | null = null
+
+      // Check phone uniqueness before creating or updating accounts
+      if (phone?.trim()) {
+        const phoneCheck = await this.validateIdentifierUniqueness({
+          phone: phone.trim(),
+        })
+        if (!phoneCheck.available && phoneCheck.conflictField === 'phone') {
+          return {
+            success: false,
+            error: phoneCheck.error || 'This phone number is already registered to another account.',
+          }
+        }
+      }
+
+      // Check if email already belongs to an existing employee record
+      try {
+        const { data: empWithEmail } = await (admin as any)
+          .from('employees')
+          .select('id, email, portal_credentials')
+          .or(`email.ilike.${normalizedEmail},portal_credentials->>email.ilike.${normalizedEmail}`)
+          .limit(1)
+          .maybeSingle()
+        if (empWithEmail) {
+          return {
+            success: false,
+            error: 'An account with this email address is already associated with an employee record. Please sign in.',
+          }
+        }
+      } catch {}
+
+      try {
+        const { PrintERPDataStore, STORAGE_KEYS } = await import('../lib/db/data-store.ts')
+        const emps = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES) || []
+        const empConflict = emps.find(
+          (e) => (e.email?.toLowerCase() === normalizedEmail || e.portal_credentials?.email?.toLowerCase() === normalizedEmail)
+        )
+        if (empConflict) {
+          return {
+            success: false,
+            error: 'An account with this email address is already associated with an employee record. Please sign in.',
+          }
+        }
+      } catch {}
 
       // 1. Check if user already exists in user_profiles
       let existingProfile: any = null
@@ -396,13 +856,8 @@ export class AuthService {
           const membership = await TenantRepository.resolveUserMembership(profile.id)
           if (membership && membership.company) {
             const { company, companyUser, effectivePermissions, primaryRole } = membership
-            let tenantRole: TenantRole = 'business_owner'
-            if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-            else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-            else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-            else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-            else if (primaryRole === 'accountant') tenantRole = 'accountant'
-            else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+            const isOwner = (company as any)?.owner_id === profile.id || primaryRole === 'business_owner'
+            const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
             const sessionData: TenantSessionData = {
               userId: profile.id,
@@ -480,13 +935,8 @@ export class AuthService {
             const membership = await TenantRepository.resolveUserMembership(testUserId)
             if (membership && membership.company) {
               const { company, companyUser, effectivePermissions, primaryRole } = membership
-              let tenantRole: TenantRole = 'business_owner'
-              if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-              else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-              else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-              else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-              else if (primaryRole === 'accountant') tenantRole = 'accountant'
-              else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+              const isOwner = (company as any)?.owner_id === testUserId || primaryRole === 'business_owner'
+              const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
               const sessionData: TenantSessionData = {
                 userId: testUserId,
@@ -724,13 +1174,8 @@ export class AuthService {
       const membership = await TenantRepository.resolveUserMembership(userId)
       if (membership && membership.company) {
         const { company, companyUser, effectivePermissions, primaryRole } = membership
-        let tenantRole: TenantRole = 'business_owner'
-        if (primaryRole === 'business_owner') tenantRole = 'business_owner'
-        else if (primaryRole === 'sales_manager' || primaryRole === 'manager') tenantRole = 'sales_manager'
-        else if (primaryRole === 'designer') tenantRole = 'graphic_designer'
-        else if (primaryRole === 'operator') tenantRole = 'machine_operator'
-        else if (primaryRole === 'accountant') tenantRole = 'accountant'
-        else if (primaryRole === 'delivery') tenantRole = 'delivery_coordinator'
+        const isOwner = (company as any)?.owner_id === userId || primaryRole === 'business_owner'
+        const tenantRole: TenantRole = resolveTenantRole(primaryRole, companyUser.responsibilities, isOwner)
 
         const sessionData: TenantSessionData = {
           userId,

@@ -5,6 +5,7 @@ import { TenantRepository } from '@/lib/repositories/tenant.repository'
 import { AuditService } from '@/services/audit.service'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { AuthService } from '@/services/auth.service'
 
 export class CompanyUsersService {
   /**
@@ -140,6 +141,16 @@ export class CompanyUsersService {
     try {
       const admin = createAdminClient()
       const normalizedEmail = params.email.trim().toLowerCase()
+
+      // Ensure no duplicate email or phone number across application
+      const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+        email: normalizedEmail,
+        phone: params.phone,
+        companyId: params.companyId,
+      })
+      if (!uniquenessCheck.available) {
+        return { success: false, error: uniquenessCheck.error }
+      }
 
       // Generate secure temporary password if none supplied
       const generatedPassword =
@@ -287,6 +298,17 @@ export class CompanyUsersService {
     try {
       const admin = createAdminClient()
       const normalizedEmail = email.trim().toLowerCase()
+
+      // Ensure no duplicate email or phone number across application
+      const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+        email: normalizedEmail,
+        phone: phone,
+        companyId,
+      })
+      if (!uniquenessCheck.available) {
+        return { success: false, error: uniquenessCheck.error }
+      }
+
       const generatedPassword = `InkFlow!${Math.random().toString(36).slice(-8)}${Math.floor(100 + Math.random() * 900)}`
 
       // 1. Create or ensure user profile exists in Supabase Auth

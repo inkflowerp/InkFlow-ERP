@@ -98,6 +98,11 @@ export interface PortalCredentials {
   email?: string
   password?: string
   role?: string
+  user_id?: string | null
+  status?: 'active' | 'invited' | 'disabled' | null
+  last_invite_sent_at?: string | null
+  invite_link?: string | null
+  send_invitation?: boolean
 }
 
 export interface DocumentAttachment {

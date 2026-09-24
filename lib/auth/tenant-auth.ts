@@ -7,7 +7,7 @@
 import { cache } from 'react'
 import { createClient } from '../supabase/server.ts'
 import { createAdminClient } from '../supabase/admin.ts'
-import type { TenantContext, TenantRole, TenantSessionData } from './types.ts'
+import { resolveTenantRole, type TenantContext, type TenantRole, type TenantSessionData } from './types.ts'
 import { TENANT_SESSION_COOKIE } from './types.ts'
 import { TenantRepository } from '../repositories/tenant.repository.ts'
 import { getCurrentPlatformUser } from './platform-auth.ts'
@@ -258,9 +258,11 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
       companyId: company.id,
       companySlug: company.slug,
       companyName: company.name,
-      companyNameBn: company.name_bn || company.name,
-      companyRole: (companyUser.roles?.[0]?.slug as TenantRole) || (primaryRole as TenantRole) || 'business_owner',
-      primaryRole: primaryRole as any,
+      companyRole: resolveTenantRole(
+        (companyUser.roles?.[0]?.slug as string) || primaryRole,
+        companyUser.responsibilities,
+        company.owner_id === user.id || primaryRole === 'business_owner'
+      ),
       branchId: companyUser.branch_id || undefined,
       branchName: companyUser.branch?.name,
       responsibilities: companyUser.responsibilities || [primaryRole],

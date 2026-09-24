@@ -10,7 +10,21 @@ export type CompanyUserRow = Database['public']['Tables']['company_users']['Row'
 export type UserRoleRow = Database['public']['Tables']['user_roles']['Row']
 export type TenantMembershipRow = Database['public']['Tables']['tenant_memberships']['Row']
 
-export type TenantRole = 'owner' | 'admin' | 'manager' | 'operator' | 'accountant' | 'designer' | 'installer'
+export type TenantRole =
+  | 'owner'
+  | 'admin'
+  | 'manager'
+  | 'operator'
+  | 'accountant'
+  | 'designer'
+  | 'installer'
+  | 'business_owner'
+  | 'sales_manager'
+  | 'graphic_designer'
+  | 'production_manager'
+  | 'machine_operator'
+  | 'general_staff'
+  | 'delivery_coordinator'
 
 export interface CompanySettings {
   invoice_prefix: string

@@ -893,23 +893,30 @@ export class AuthEmailService {
     roleName: string
     invitedByName?: string
     tenantId: string
+    userName?: string
   }): Promise<SendEmailResult> {
-    const { email, inviteUrl, companyName, roleName, invitedByName, tenantId } = params
+    const { email, inviteUrl, companyName, roleName, invitedByName, tenantId, userName } = params
+
+    const tenantGw = await EmailGatewayService.resolveGateway(tenantId, 'TENANT')
+    const scopeType: EmailScopeType = tenantGw ? 'TENANT' : 'PLATFORM'
 
     return await EmailGatewayService.sendEmail({
-      scopeType: 'TENANT',
-      tenantId,
+      scopeType,
+      tenantId: tenantGw ? tenantId : null,
       eventType: 'user_invitation',
       recipient: email,
       variables: {
+        user_name: userName || email.split('@')[0],
+        email,
         company_name: companyName,
         role_name: roleName,
         invited_by: invitedByName || 'Your Administrator',
         invite_link: inviteUrl,
+        accept_link: inviteUrl,
         timestamp: new Date().toLocaleString(),
       },
       customSubject: `Invitation to join ${companyName} on InkFlow`,
-      idempotencyKey: `invite:${tenantId}:${email}`,
+      idempotencyKey: `invite:${tenantId}:${email}:${Date.now()}`,
     })
   }
 }

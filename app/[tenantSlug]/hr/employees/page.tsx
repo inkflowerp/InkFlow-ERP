@@ -15,6 +15,7 @@ import {
   Search,
   Filter,
   Eye,
+  EyeOff,
   Edit2,
   Trash2,
   Phone,
@@ -68,6 +69,7 @@ import {
   Trash,
   Paperclip,
   Camera,
+  Send,
   ShieldAlert,
   Award,
   Sliders,
@@ -101,6 +103,8 @@ import {
   createEmployeeAction,
   updateEmployeeAction,
   deleteEmployeeAction,
+  sendEmployeeInvitationAction,
+  updateEmployeeLoginCredentialsAction,
 } from '@/actions/workforce.actions'
 
 const ROLE_PRESETS = [
@@ -267,6 +271,34 @@ function EmployeeListContent() {
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [previewDoc, setPreviewDoc] = useState<{ id?: string; name: string; type: string; url?: string; size?: string } | null>(null)
   const [isDragOverDocs, setIsDragOverDocs] = useState(false)
+
+  // Employee Login & Invitation State
+  const [isInviting, setIsInviting] = useState(false)
+  const [inviteModalData, setInviteModalData] = useState<{
+    isOpen: boolean
+    inviteUrl: string
+    email: string
+    employeeName: string
+    roleName: string
+  } | null>(null)
+  const [isEditingCredentials, setIsEditingCredentials] = useState(false)
+  const [credsForm, setCredsForm] = useState<{
+    create_login: boolean
+    email: string
+    username: string
+    password: string
+    role: string
+    send_invitation: boolean
+  }>({
+    create_login: false,
+    email: '',
+    username: '',
+    password: '',
+    role: 'operator',
+    send_invitation: true,
+  })
+  const [isSavingCreds, setIsSavingCreds] = useState(false)
+  const [showCredsPassword, setShowCredsPassword] = useState(false)
 
   const triggerCopy = (key: string) => {
     setCopiedField(key)
@@ -460,6 +492,7 @@ function EmployeeListContent() {
       email: '',
       password: '',
       role: 'operator',
+      send_invitation: true,
     },
     document_attachments: [] as {
       id: string
@@ -657,6 +690,7 @@ function EmployeeListContent() {
             email: emp.portal_credentials.email || emp.email || '',
             password: emp.portal_credentials.password || '',
             role: emp.portal_credentials.role || 'operator',
+            send_invitation: emp.portal_credentials.send_invitation ?? true,
           }
         : {
             create_login: false,
@@ -664,6 +698,7 @@ function EmployeeListContent() {
             email: emp.email || '',
             password: '',
             role: 'operator',
+            send_invitation: true,
           },
       document_attachments: (emp.document_attachments as any) || [
         { id: `doc-${Date.now()}-1`, name: 'NID_Card_Scan.pdf', type: 'National ID' },
@@ -691,7 +726,120 @@ function EmployeeListContent() {
   const handleOpen360 = (emp: EmployeeRecord) => {
     setSelectedEmployee(emp)
     setDrawerTab('overview')
+    setIsEditingCredentials(false)
+    const pc = emp.portal_credentials
+    setCredsForm({
+      create_login: pc?.create_login ?? false,
+      email: pc?.email || emp.email || '',
+      username: pc?.username || emp.name.toLowerCase().replace(/\s+/g, '.'),
+      password: pc?.password || '',
+      role: pc?.role || 'operator',
+      send_invitation: true,
+    })
     setIs360DrawerOpen(true)
+  }
+
+  const handleSendInvitation = async (emp: EmployeeRecord, overrideEmail?: string) => {
+    const targetEmail = overrideEmail || emp.portal_credentials?.email || emp.email
+    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local')) {
+      notify('Please configure a valid email address for this employee to send an invitation link.')
+      setIsEditingCredentials(true)
+      return
+    }
+
+    setIsInviting(true)
+    try {
+      const res = await sendEmployeeInvitationAction(emp.id, undefined, targetEmail)
+      if (res.success && res.data?.inviteUrl) {
+        notify(`Invitation link sent successfully to ${res.data.email || targetEmail}!`)
+        setInviteModalData({
+          isOpen: true,
+          inviteUrl: res.data.inviteUrl,
+          email: res.data.email || targetEmail,
+          employeeName: emp.name,
+          roleName: emp.portal_credentials?.role || emp.role || 'Operator',
+        })
+        const updatedPc = {
+          ...(emp.portal_credentials || {}),
+          create_login: true,
+          email: res.data.email || targetEmail,
+          status: 'invited' as const,
+          last_invite_sent_at: new Date().toISOString(),
+          invite_link: res.data.inviteUrl,
+        }
+        const updated = { ...emp, portal_credentials: updatedPc }
+        setSelectedEmployee(updated)
+        setEmployees((prev) => prev.map((e) => (e.id === emp.id ? updated : e)))
+      } else {
+        notify(res.error || 'Failed to dispatch invitation link.')
+      }
+    } catch (err: any) {
+      notify(err?.message || 'Error sending invitation.')
+    } finally {
+      setIsInviting(false)
+    }
+  }
+
+  const handleSaveCredentials = async () => {
+    if (!selectedEmployee) return
+    setIsSavingCreds(true)
+    try {
+      const res = await updateEmployeeLoginCredentialsAction(selectedEmployee.id, {
+        create_login: credsForm.create_login,
+        email: credsForm.email.trim() || undefined,
+        username: credsForm.username.trim() || undefined,
+        password: credsForm.password.trim() || undefined,
+        role: credsForm.role || 'operator',
+        send_invitation: credsForm.send_invitation,
+      })
+
+      if (res.success && res.data) {
+        notify('Login credentials updated successfully.')
+        setSelectedEmployee(res.data)
+        setEmployees((prev) => prev.map((e) => (e.id === res.data!.id ? res.data! : e)))
+        setIsEditingCredentials(false)
+
+        if (credsForm.send_invitation && res.data.portal_credentials?.invite_link) {
+          setInviteModalData({
+            isOpen: true,
+            inviteUrl: res.data.portal_credentials.invite_link,
+            email: res.data.portal_credentials.email || credsForm.email,
+            employeeName: res.data.name,
+            roleName: res.data.portal_credentials.role || 'Operator',
+          })
+        }
+      } else {
+        notify(res.error || 'Failed to update login credentials.')
+      }
+    } catch (err: any) {
+      notify(err?.message || 'Error updating credentials.')
+    } finally {
+      setIsSavingCreds(false)
+    }
+  }
+
+  const handleTogglePortalAccess = async (enable: boolean) => {
+    if (!selectedEmployee) return
+    setIsSavingCreds(true)
+    try {
+      const updatedCreds = {
+        ...(selectedEmployee.portal_credentials || {}),
+        create_login: enable,
+        status: enable ? ('active' as const) : ('disabled' as const),
+      }
+      const res = await updateEmployeeLoginCredentialsAction(selectedEmployee.id, updatedCreds)
+      if (res.success && res.data) {
+        notify(enable ? 'Portal login enabled for this employee.' : 'Portal login disabled for this employee.')
+        setSelectedEmployee(res.data)
+        setEmployees((prev) => prev.map((e) => (e.id === res.data!.id ? res.data! : e)))
+      } else {
+        notify(res.error || 'Failed to toggle portal access.')
+      }
+    } catch (err: any) {
+      notify(err?.message || 'Error updating portal access.')
+    } finally {
+      setIsSavingCreds(false)
+    }
   }
 
   const handleSelectPreset = (preset: typeof ROLE_PRESETS[0]) => {
@@ -1637,7 +1785,17 @@ function EmployeeListContent() {
                       <Input
                         placeholder="rahim@visionprint.com (Optional)"
                         value={empForm.email}
-                        onChange={(e) => setEmpForm({ ...empForm, email: e.target.value })}
+                        onChange={(e) => {
+                          const val = e.target.value
+                          setEmpForm({
+                            ...empForm,
+                            email: val,
+                            portal_credentials: {
+                              ...empForm.portal_credentials,
+                              email: empForm.portal_credentials.email ? empForm.portal_credentials.email : val,
+                            },
+                          })
+                        }}
                         className="text-xs h-9 pl-9"
                       />
                     </div>
@@ -2745,25 +2903,45 @@ function EmployeeListContent() {
                   </div>
 
                   {empForm.portal_credentials.create_login && (
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-1">
                       <div className="space-y-1">
                         <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Login Email / Username *', 'লগইন ইমেইল / ইউজারনেম *')}
+                          {tBilingual('Login Email *', 'লগইন ইমেইল *')}
                         </Label>
                         <Input
+                          type="email"
                           placeholder="e.g. rahim@company.com"
-                          value={empForm.portal_credentials.email || empForm.portal_credentials.username}
+                          value={empForm.portal_credentials.email}
                           onChange={(e) =>
                             setEmpForm({
                               ...empForm,
                               portal_credentials: {
                                 ...empForm.portal_credentials,
                                 email: e.target.value,
-                                username: e.target.value,
                               },
                             })
                           }
                           className="text-xs h-9"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
+                        </Label>
+                        <Input
+                          placeholder="e.g. rahim_operator"
+                          value={empForm.portal_credentials.username}
+                          onChange={(e) =>
+                            setEmpForm({
+                              ...empForm,
+                              portal_credentials: {
+                                ...empForm.portal_credentials,
+                                username: e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''),
+                              },
+                            })
+                          }
+                          className="text-xs h-9 font-mono"
                         />
                       </div>
 
@@ -2820,6 +2998,31 @@ function EmployeeListContent() {
                           <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
                           <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
                         </select>
+                      </div>
+
+                      <div className="col-span-1 sm:col-span-2 lg:col-span-4 pt-2 border-t border-blue-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={empForm.portal_credentials.send_invitation !== false}
+                            onChange={(e) =>
+                              setEmpForm({
+                                ...empForm,
+                                portal_credentials: {
+                                  ...empForm.portal_credentials,
+                                  send_invitation: e.target.checked,
+                                },
+                              })
+                            }
+                            className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                          />
+                          <span className="text-xs font-semibold text-blue-900 dark:text-blue-200">
+                            {tBilingual('Send invitation link to employee email upon enrollment', 'নিবন্ধনের সাথে কর্মীর ইমেইলে আমন্ত্রণ লিংক পাঠান')}
+                          </span>
+                        </label>
+                        <span className="text-[11px] text-blue-700/80 dark:text-blue-300">
+                          {tBilingual('Employee can log in using email, username or mobile', 'কর্মী ইমেইল, ইউজারনেম বা মোবাইল দিয়ে লগইন করতে পারবেন')}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -3420,7 +3623,7 @@ function EmployeeListContent() {
                 { id: 'compensation', title: '3. Salary & Commission', title_bn: 'বেতন ও কমিশন', icon: Calculator },
                 { id: 'payment', title: '4. Bank & MFS', title_bn: 'ব্যাংক ও ওয়ালেট', icon: CreditCard },
                 { id: 'idcard', title: '5. Digital ID Pass', title_bn: 'ডিজিটাল আইডি', icon: Sparkles },
-                { id: 'notes', title: '6. Docs & HR Notes', title_bn: 'ডকুমেন্টস ও নোটস', icon: FileText },
+                { id: 'notes', title: '6. Login & Docs', title_bn: 'লগইন ও ডকুমেন্টস', icon: Key },
               ].map((tab) => {
                 const isActive = drawerTab === tab.id
                 const Icon = tab.icon
@@ -3577,6 +3780,67 @@ function EmployeeListContent() {
                         'কারখানা দুর্ঘটনা ও জরুরি সহায়তার জন্য তথ্য সংরক্ষিত আছে।'
                       )}
                     </div>
+                  </div>
+                </div>
+
+                {/* Portal Access Quick Card */}
+                <div className="col-span-1 sm:col-span-2 p-3.5 rounded-xl border border-blue-500/20 bg-blue-50/50 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center shrink-0">
+                      <Key className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs text-slate-900 dark:text-white">
+                          {tBilingual('Employee Login Credentials', 'কর্মীর সফটওয়্যার লগইন তথ্য')}
+                        </span>
+                        <Badge
+                          variant="outline"
+                          className={
+                            selectedEmployee.portal_credentials?.create_login
+                              ? selectedEmployee.portal_credentials?.status === 'invited'
+                                ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
+                              : 'bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-400'
+                          }
+                        >
+                          {selectedEmployee.portal_credentials?.create_login
+                            ? selectedEmployee.portal_credentials?.status === 'invited'
+                              ? tBilingual('Invitation Sent', 'আমন্ত্রণ পাঠানো হয়েছে')
+                              : tBilingual('Login Active', 'লগইন সক্রিয়')
+                            : tBilingual('No Portal Access', 'এক্সেস নেই')}
+                        </Badge>
+                      </div>
+                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                        {selectedEmployee.portal_credentials?.create_login
+                          ? `${tBilingual('Username/Email:', 'ইউজারনেম/ইমেইল:')} ${selectedEmployee.portal_credentials.email || selectedEmployee.portal_credentials.username || selectedEmployee.email || selectedEmployee.mobile}`
+                          : tBilingual('Enable portal login to send invitation link for shop-floor & ERP access.', 'কারখানা ও সফটওয়্যার এক্সেসের জন্য লগইন চালু করুন ও আমন্ত্রণ পাঠান।')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {selectedEmployee.portal_credentials?.create_login && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900 border-blue-200 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
+                        onClick={() => handleSendInvitation(selectedEmployee)}
+                        disabled={isInviting}
+                      >
+                        {isInviting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        <span>{tBilingual('Send Invite Link', 'আমন্ত্রণ পাঠান')}</span>
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 text-xs gap-1 text-slate-700 dark:text-slate-300"
+                      onClick={() => setDrawerTab('notes')}
+                    >
+                      <span>{tBilingual('Manage Credentials', 'লগইন ম্যানেজ')}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -4073,43 +4337,410 @@ function EmployeeListContent() {
                   )}
                 </div>
 
-                {/* Portal Login Credentials Card */}
-                <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 space-y-3">
-                  <div className="flex items-center justify-between border-b border-blue-500/20 pb-2">
-                    <h4 className="font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
-                      <Key className="w-3.5 h-3.5 text-blue-600" />
-                      {tBilingual('Portal Login Account & Security Access', 'সফটওয়্যার পোর্টাল লগইন ও রোল')}
-                    </h4>
-                    <Badge
-                      variant="outline"
-                      className={
-                        selectedEmployee.portal_credentials?.create_login
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
-                          : 'bg-slate-100 text-slate-600'
-                      }
-                    >
-                      {selectedEmployee.portal_credentials?.create_login ? 'Login Enabled' : 'No Portal Access'}
-                    </Badge>
+                {/* Portal Login Account Credentials Card */}
+                <div className="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-950/20 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-500/20 pb-2.5">
+                    <div>
+                      <h4 className="font-bold text-blue-900 dark:text-blue-300 flex items-center gap-1.5">
+                        <Key className="w-4 h-4 text-blue-600" />
+                        {tBilingual('Login Account Credentials', 'সফটওয়্যার পোর্টাল লগইন ও নিরাপত্তা')}
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        {tBilingual(
+                          'Configure employee authentication credentials and dispatch secure invite links',
+                          'কর্মীর সফটওয়্যার লগইন অ্যাকাউন্ট ও ইমেইল আমন্ত্রণ লিংক নিয়ন্ত্রণ করুন'
+                        )}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="outline"
+                        className={
+                          selectedEmployee.portal_credentials?.create_login
+                            ? selectedEmployee.portal_credentials?.status === 'invited'
+                              ? 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950 dark:text-blue-300 font-bold'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300 font-bold'
+                            : 'bg-slate-100 text-slate-600 dark:bg-slate-900 dark:text-slate-400'
+                        }
+                      >
+                        {selectedEmployee.portal_credentials?.create_login
+                          ? selectedEmployee.portal_credentials?.status === 'invited'
+                            ? 'Invitation Sent'
+                            : 'Login Active'
+                          : 'No Portal Access'}
+                      </Badge>
+
+                      {selectedEmployee.portal_credentials?.create_login ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs px-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950"
+                          onClick={() => handleTogglePortalAccess(false)}
+                          disabled={isSavingCreds}
+                        >
+                          {tBilingual('Revoke Access', 'এক্সেস বন্ধ')}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 text-xs px-2.5 bg-blue-600 text-white hover:bg-blue-700 border-none"
+                          onClick={() => {
+                            setCredsForm({
+                              create_login: true,
+                              email: selectedEmployee.email || `${selectedEmployee.mobile}@company.local`,
+                              username: selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                              password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
+                              role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
+                              send_invitation: true,
+                            })
+                            setIsEditingCredentials(true)
+                          }}
+                        >
+                          {tBilingual('Enable Portal Login', 'লগইন চালু করুন')}
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  {selectedEmployee.portal_credentials?.create_login ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700 dark:text-slate-300">
-                      <div>
-                        <span className="text-slate-500 block text-[10px]">LOGIN USERNAME / EMAIL</span>
-                        <span className="font-mono font-bold text-slate-900 dark:text-white">
-                          {selectedEmployee.portal_credentials.email || selectedEmployee.portal_credentials.username || selectedEmployee.email || selectedEmployee.mobile}
-                        </span>
+
+                  {/* Credentials Content */}
+                  {selectedEmployee.portal_credentials?.create_login && !isEditingCredentials ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                            {tBilingual('Login Email', 'লগইন ইমেইল')}
+                          </span>
+                          <div className="flex items-center justify-between gap-1.5 mt-1">
+                            <span className="font-mono text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {selectedEmployee.portal_credentials.email || selectedEmployee.email || '—'}
+                            </span>
+                            {(selectedEmployee.portal_credentials.email || selectedEmployee.email) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const val = selectedEmployee.portal_credentials?.email || selectedEmployee.email || ''
+                                  navigator.clipboard?.writeText(val)
+                                  triggerCopy('login_email')
+                                }}
+                                className="text-slate-400 hover:text-blue-600"
+                                title="Copy Email"
+                              >
+                                {copiedField === 'login_email' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                            {tBilingual('Login Username', 'লগইন ইউজারনেম')}
+                          </span>
+                          <div className="flex items-center justify-between gap-1.5 mt-1">
+                            <span className="font-mono text-xs font-bold text-blue-700 dark:text-blue-300 truncate">
+                              {selectedEmployee.portal_credentials.username || '—'}
+                            </span>
+                            {selectedEmployee.portal_credentials.username && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(selectedEmployee.portal_credentials?.username || '')
+                                  triggerCopy('login_user')
+                                }}
+                                className="text-slate-400 hover:text-blue-600"
+                                title="Copy Username"
+                              >
+                                {copiedField === 'login_user' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                            {tBilingual('Login Mobile', 'লগইন মোবাইল')}
+                          </span>
+                          <div className="flex items-center justify-between gap-1.5 mt-1">
+                            <span className="font-mono text-xs font-bold text-slate-900 dark:text-white truncate">
+                              {selectedEmployee.mobile || '—'}
+                            </span>
+                            {selectedEmployee.mobile && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(selectedEmployee.mobile || '')
+                                  triggerCopy('login_mobile')
+                                }}
+                                className="text-slate-400 hover:text-blue-600"
+                                title="Copy Mobile"
+                              >
+                                {copiedField === 'login_mobile' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                            {tBilingual('Assigned Portal Role', 'পোর্টাল রোল')}
+                          </span>
+                          <div className="mt-1">
+                            <Badge variant="outline" className="capitalize bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 font-bold text-xs">
+                              {selectedEmployee.portal_credentials.role || 'Operator'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                            {tBilingual('Invitation Status', 'আমন্ত্রণ স্ট্যাটাস')}
+                          </span>
+                          <div className="mt-1 flex items-center justify-between">
+                            <span className="text-xs text-slate-700 dark:text-slate-300">
+                              {selectedEmployee.portal_credentials.last_invite_sent_at
+                                ? `${tBilingual('Sent:', 'পাঠানো হয়েছে:')} ${formatDate(selectedEmployee.portal_credentials.last_invite_sent_at)}`
+                                : tBilingual('Ready to invite', 'আমন্ত্রণের জন্য প্রস্তুত')}
+                            </span>
+                            {selectedEmployee.portal_credentials.invite_link && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  navigator.clipboard?.writeText(selectedEmployee.portal_credentials?.invite_link || '')
+                                  triggerCopy('invite_link_card')
+                                  notify('Invitation link copied to clipboard!')
+                                }}
+                                className="text-blue-600 hover:underline text-[10px] font-semibold flex items-center gap-0.5"
+                                title="Copy Last Invitation Link"
+                              >
+                                {copiedField === 'invite_link_card' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                <span>Copy Link</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-slate-500 block text-[10px]">ASSIGNED SYSTEM ROLE</span>
-                        <Badge variant="outline" className="capitalize bg-blue-50 text-blue-700 border-blue-300 font-bold">
-                          {selectedEmployee.portal_credentials.role || 'Operator'}
-                        </Badge>
+
+                      {/* Action buttons */}
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          className="h-8 text-xs gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-xs"
+                          onClick={() => handleSendInvitation(selectedEmployee)}
+                          disabled={isInviting}
+                        >
+                          {isInviting ? (
+                            <>
+                              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                              <span>{tBilingual('Sending Invitation...', 'পাঠানো হচ্ছে...')}</span>
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-3.5 h-3.5" />
+                              <span>{tBilingual('Send Invitation Link to Employee Email', 'কর্মীর ইমেইলে আমন্ত্রণ লিংক পাঠান')}</span>
+                            </>
+                          )}
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                          onClick={() => {
+                            setCredsForm({
+                              create_login: true,
+                              email: selectedEmployee.portal_credentials?.email || selectedEmployee.email || '',
+                              username: selectedEmployee.portal_credentials?.username || selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                              password: selectedEmployee.portal_credentials?.password || '',
+                              role: selectedEmployee.portal_credentials?.role || 'operator',
+                              send_invitation: true,
+                            })
+                            setIsEditingCredentials(true)
+                          }}
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-slate-500" />
+                          <span>{tBilingual('Edit Credentials / Reset Password', 'পাসওয়ার্ড ও তথ্য পরিবর্তন')}</span>
+                        </Button>
+
+                        {selectedEmployee.portal_credentials?.invite_link && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 text-xs gap-1 text-slate-600 dark:text-slate-300"
+                            onClick={() => {
+                              setInviteModalData({
+                                isOpen: true,
+                                inviteUrl: selectedEmployee.portal_credentials!.invite_link!,
+                                email: selectedEmployee.portal_credentials?.email || selectedEmployee.email || '',
+                                employeeName: selectedEmployee.name,
+                                roleName: selectedEmployee.portal_credentials?.role || 'Operator',
+                              })
+                            }}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+                            <span>{tBilingual('View Invite Details', 'আমন্ত্রণ বিবরণ দেখুন')}</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ) : selectedEmployee.portal_credentials?.create_login && isEditingCredentials ? (
+                    /* Inline Editing Mode */
+                    <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-500/20">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {tBilingual('Login Email *', 'লগইন ইমেইল *')}
+                          </Label>
+                          <Input
+                            placeholder="e.g. rahim@company.com"
+                            value={credsForm.email}
+                            onChange={(e) => setCredsForm({ ...credsForm, email: e.target.value })}
+                            className="text-xs h-9"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
+                          </Label>
+                          <Input
+                            placeholder="e.g. rahim.op"
+                            value={credsForm.username}
+                            onChange={(e) => setCredsForm({ ...credsForm, username: e.target.value.toLowerCase().replace(/\s+/g, '.') })}
+                            className="text-xs h-9 font-mono"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {tBilingual('Secure Password', 'পাসওয়ার্ড')}
+                            </Label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const pass = `Pass@${Math.floor(100000 + Math.random() * 900000)}`
+                                setCredsForm({ ...credsForm, password: pass })
+                              }}
+                              className="text-[10px] text-blue-600 hover:underline"
+                            >
+                              Generate
+                            </button>
+                          </div>
+                          <div className="relative">
+                            <Input
+                              type={showCredsPassword ? 'text' : 'password'}
+                              placeholder="Min 6 chars"
+                              value={credsForm.password}
+                              onChange={(e) => setCredsForm({ ...credsForm, password: e.target.value })}
+                              className="text-xs h-9 font-mono pr-8"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowCredsPassword(!showCredsPassword)}
+                              className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+                            >
+                              {showCredsPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {tBilingual('Assigned Portal Role', 'পোর্টাল রোল')}
+                          </Label>
+                          <select
+                            value={credsForm.role}
+                            onChange={(e) => setCredsForm({ ...credsForm, role: e.target.value })}
+                            className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
+                          >
+                            <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর')}</option>
+                            <option value="designer">{tBilingual('Graphic Designer', 'ডিজাইনার')}</option>
+                            <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
+                            <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
+                            <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
+                            <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={credsForm.send_invitation}
+                            onChange={(e) => setCredsForm({ ...credsForm, send_invitation: e.target.checked })}
+                            className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
+                          />
+                          <span className="text-xs text-slate-700 dark:text-slate-300">
+                            {tBilingual('Send invitation link to employee email upon saving', 'সংরক্ষণের সাথে কর্মীর ইমেইলে আমন্ত্রণ লিংক পাঠান')}
+                          </span>
+                        </label>
+
+                        <div className="flex items-center gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 text-xs"
+                            onClick={() => setIsEditingCredentials(false)}
+                            disabled={isSavingCreds}
+                          >
+                            {tBilingual('Cancel', 'বাতিল')}
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={handleSaveCredentials}
+                            disabled={isSavingCreds}
+                          >
+                            {isSavingCreds ? (
+                              <>
+                                <RefreshCw className="w-3.5 h-3.5 animate-spin mr-1.5" />
+                                <span>{tBilingual('Saving...', 'সংরক্ষণ হচ্ছে...')}</span>
+                              </>
+                            ) : (
+                              <span>{tBilingual('Save & Apply', 'সংরক্ষণ করুন')}</span>
+                            )}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-slate-500 italic text-[11px]">
-                      {tBilingual('This staff member does not have ERP login credentials.', 'এই কর্মীর জন্য পোর্টাল এক্সেস নেই।')}
-                    </p>
+                    /* No Portal Access Card */
+                    <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 text-center space-y-2.5">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center mx-auto text-blue-600 dark:text-blue-400">
+                        <Key className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h5 className="font-semibold text-xs text-slate-900 dark:text-white">
+                          {tBilingual('No Portal Login Credentials Configured', 'কোনো পোর্টাল লগইন নেই')}
+                        </h5>
+                        <p className="text-[11px] text-slate-500 max-w-sm mx-auto mt-0.5">
+                          {tBilingual(
+                            'Grant this employee access to the InkFlow shop-floor kiosk, designer portal, or sales workspace by creating credentials.',
+                            'এই কর্মীকে কারখানা কিয়স্ক, ডিজাইন বা সেলস পোর্টালে যুক্ত করার জন্য লগইন তৈরি করুন।'
+                          )}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
+                        onClick={() => {
+                          setCredsForm({
+                            create_login: true,
+                            email: selectedEmployee.email || `${selectedEmployee.mobile}@company.local`,
+                            username: selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                            password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
+                            role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
+                            send_invitation: true,
+                          })
+                          setIsEditingCredentials(true)
+                        }}
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        <span>{tBilingual('Configure Login & Send Invite', 'লগইন কনফিগার ও আমন্ত্রণ পাঠান')}</span>
+                      </Button>
+                    </div>
                   )}
                 </div>
 
@@ -4307,6 +4938,106 @@ function EmployeeListContent() {
             </div>
           </div>
         </ModalDialog>
+      )}
+
+      {/* Employee Invitation Dispatched Modal */}
+      {inviteModalData?.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                    {tBilingual('Invitation Link Dispatched!', 'আমন্ত্রণ লিংক সফলভাবে পাঠানো হয়েছে!')}
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {tBilingual('Employee can now accept invite and login', 'কর্মী এখন লিংকে ক্লিক করে সিস্টেমে যুক্ত হতে পারবেন')}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setInviteModalData(null)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500">{tBilingual('Recipient Employee:', 'কর্মী:')}</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">{inviteModalData.employeeName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">{tBilingual('Recipient Email:', 'ইমেইল:')}</span>
+                <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{inviteModalData.email}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">{tBilingual('Assigned Role:', 'রোল:')}</span>
+                <Badge variant="outline" className="text-[10px] capitalize bg-blue-50 text-blue-700 border-blue-200">
+                  {inviteModalData.roleName}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Generated Link Box */}
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                {tBilingual('Direct Invitation URL:', 'সরাসরি আমন্ত্রণ লিংক:')}
+              </Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  readOnly
+                  value={inviteModalData.inviteUrl}
+                  className="font-mono text-xs h-9 bg-slate-50 dark:bg-slate-900 select-all"
+                />
+                <Button
+                  size="sm"
+                  className="h-9 px-3 shrink-0 bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(inviteModalData.inviteUrl)
+                    triggerCopy('modal_invite_url')
+                    notify('Invitation URL copied to clipboard!')
+                  }}
+                >
+                  {copiedField === 'modal_invite_url' ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedField === 'modal_invite_url' ? 'Copied' : 'Copy'}</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* WhatsApp / SMS Quick Copy */}
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-8 gap-1.5 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950 flex-1"
+                onClick={() => {
+                  const msg = `*InkFlow PrintERP Invitation*\nHello ${inviteModalData.employeeName},\nYou have been invited to join the team on InkFlow PrintERP as ${inviteModalData.roleName}.\nClick the secure link below to accept and access your workspace:\n${inviteModalData.inviteUrl}`
+                  navigator.clipboard?.writeText(msg)
+                  triggerCopy('modal_whatsapp')
+                  notify('WhatsApp message template copied!')
+                }}
+              >
+                {copiedField === 'modal_whatsapp' ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Share2 className="w-3.5 h-3.5" />}
+                <span>{tBilingual('Copy WhatsApp Text', 'হোয়াটসঅ্যাপ টেক্সট কপি')}</span>
+              </Button>
+
+              <Button
+                size="sm"
+                variant="default"
+                className="text-xs h-8 px-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900"
+                onClick={() => setInviteModalData(null)}
+              >
+                {tBilingual('Done', 'সম্পন্ন')}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

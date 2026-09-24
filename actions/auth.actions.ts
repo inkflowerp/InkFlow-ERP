@@ -22,13 +22,29 @@ async function getRequestBaseUrl(): Promise<string> {
   }
 }
 
+export async function checkIdentifierAvailabilityAction(params: {
+  email?: string | null
+  username?: string | null
+  phone?: string | null
+  employeeIdNumber?: string | null
+  excludeUserId?: string | null
+  excludeEmployeeId?: string | null
+  companyId?: string | null
+}) {
+  return await AuthService.validateIdentifierUniqueness(params)
+}
+
 export async function loginAction(formData: FormData) {
-  const email = (formData.get('email') as string) || ''
+  const email =
+    (formData.get('email') as string) ||
+    (formData.get('identifier') as string) ||
+    (formData.get('username') as string) ||
+    ''
   const password = (formData.get('password') as string) || ''
   const redirectTo = (formData.get('redirectTo') as string) || ''
 
   if (!email || !password) {
-    return { success: false, error: 'Email and password are required' }
+    return { success: false, error: 'Email, username, or mobile number and password are required' }
   }
 
   // Enforce sliding window rate limit on auth attempts

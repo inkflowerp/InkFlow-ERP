@@ -8,6 +8,11 @@ import { CostingRepository } from '../lib/repositories/costing.repository.ts'
 import { FinanceRepository } from '../lib/repositories/finance.repository.ts'
 import { FinanceService } from './finance.service.ts'
 import { WorkforceCalculatorService } from './workforce-calculator.service.ts'
+import { createAdminClient } from '../lib/supabase/admin.ts'
+import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
+import { AuthEmailService } from './auth-email.service.ts'
+import { AuthService } from './auth.service.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -20,6 +25,7 @@ import type {
   WorkforceSummaryKPIs,
   EmploymentType,
   PaymentMethod,
+  PortalCredentials,
 } from '../types/workforce.types.ts'
 
 export class WorkforceService {
@@ -111,6 +117,19 @@ export class WorkforceService {
     const hourlyRate = Number(input.hourly_rate || (baseSalary > 0 ? (baseSalary / 208).toFixed(2) : 0))
     const otRate = Number(input.overtime_hourly_rate || ((hourlyRate > 0 ? hourlyRate : 100) * 1.5).toFixed(2))
 
+    // Ensure no duplicate credentials across login accounts (Email, Username, Phone, Badge ID)
+    const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+      email: input.portal_credentials?.email || input.email,
+      username: input.portal_credentials?.username,
+      phone: input.mobile,
+      employeeIdNumber: input.employee_id_number,
+      companyId: input.company_id,
+    })
+
+    if (!uniquenessCheck.available) {
+      throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+    }
+
     const employee: EmployeeRecord = {
       id: input.id || `emp-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       company_id: input.company_id,
@@ -165,6 +184,27 @@ export class WorkforceService {
 
     const created = await WorkforceRepository.createEmployee(employee)
 
+    // Synchronize Portal Login if requested
+    let finalEmployee = created
+    if (input.portal_credentials?.create_login) {
+      try {
+        const synced = await this.syncEmployeePortalLogin(
+          created,
+          input.portal_credentials,
+          actorName,
+          undefined,
+          undefined,
+          undefined,
+          Boolean(input.portal_credentials.send_invitation)
+        )
+        if (synced?.employee) {
+          finalEmployee = synced.employee
+        }
+      } catch (e) {
+        console.warn('[WorkforceService.createEmployee] Portal sync error:', e)
+      }
+    }
+
     await WorkforceRepository.logWorkforceAudit({
       id: `wfa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       company_id: input.company_id,
@@ -172,13 +212,13 @@ export class WorkforceService {
       actor_name: actorName,
       action_type: 'employee_created',
       entity_type: 'employee',
-      entity_id: created.id,
-      after_state: created as any,
-      reason: `Created employee record ${created.name} (${created.employee_id_number})`,
+      entity_id: finalEmployee.id,
+      after_state: finalEmployee as any,
+      reason: `Created employee record ${finalEmployee.name} (${finalEmployee.employee_id_number})`,
       created_at: now,
     })
 
-    return created
+    return finalEmployee
   }
 
   static async updateEmployee(
@@ -189,7 +229,45 @@ export class WorkforceService {
     actorName = 'Admin'
   ) {
     const existing = await WorkforceRepository.getEmployeeById(id, companyId)
-    const updated = await WorkforceRepository.updateEmployee(id, companyId, updates)
+    if (!existing) {
+      throw new Error('Employee record not found.')
+    }
+
+    // Ensure no duplicate credentials on update
+    const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+      email: updates.portal_credentials?.email || updates.email,
+      username: updates.portal_credentials?.username,
+      phone: updates.mobile,
+      employeeIdNumber: updates.employee_id_number,
+      excludeEmployeeId: id,
+      excludeUserId: existing.user_id,
+      companyId,
+    })
+
+    if (!uniquenessCheck.available) {
+      throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+    }
+
+    let updated = await WorkforceRepository.updateEmployee(id, companyId, updates)
+
+    if (updates.portal_credentials && updated) {
+      try {
+        const synced = await this.syncEmployeePortalLogin(
+          updated,
+          updates.portal_credentials,
+          actorName,
+          undefined,
+          undefined,
+          undefined,
+          Boolean(updates.portal_credentials.send_invitation)
+        )
+        if (synced?.employee) {
+          updated = synced.employee
+        }
+      } catch (e) {
+        console.warn('[WorkforceService.updateEmployee] Portal sync error:', e)
+      }
+    }
 
     if (updated) {
       await WorkforceRepository.logWorkforceAudit({
@@ -208,6 +286,406 @@ export class WorkforceService {
     }
 
     return updated
+  }
+
+  static async resolveRoleIdForEmployee(companyId: string, roleInput?: string): Promise<string> {
+    try {
+      const roles = await TenantRepository.getRoles(companyId)
+      const norm = (roleInput || '').toLowerCase().trim()
+
+      const byId = roles.find((r) => r.id === roleInput)
+      if (byId) return byId.id
+
+      const bySlug = roles.find((r) => r.slug?.toLowerCase() === norm)
+      if (bySlug) return bySlug.id
+
+      const mapping: Record<string, string> = {
+        operator: 'operator',
+        technician: 'operator',
+        designer: 'designer',
+        sales: 'sales_manager',
+        sales_executive: 'sales_manager',
+        accounts: 'accountant',
+        accountant: 'accountant',
+        billing: 'accountant',
+        manager: 'production_manager',
+        branch_manager: 'production_manager',
+        staff: 'general_staff',
+      }
+      const mappedSlug = mapping[norm]
+      if (mappedSlug) {
+        const matched = roles.find((r) => r.slug?.toLowerCase() === mappedSlug)
+        if (matched) return matched.id
+      }
+
+      const byName = roles.find((r) => r.name?.toLowerCase().includes(norm))
+      if (byName) return byName.id
+
+      const fallback = roles.find((r) => r.slug === 'operator') || roles.find((r) => r.slug === 'general_staff') || roles[0]
+      return fallback ? fallback.id : '00000000-0000-0000-0000-000000000005'
+    } catch {
+      return '00000000-0000-0000-0000-000000000005'
+    }
+  }
+
+  static async syncEmployeePortalLogin(
+    employee: EmployeeRecord,
+    portalCreds: PortalCredentials,
+    actorName = 'Admin',
+    companyName?: string,
+    companySlug?: string,
+    appUrl?: string,
+    sendInvite = false
+  ): Promise<{ employee: EmployeeRecord; inviteUrl?: string }> {
+    if (!portalCreds || !portalCreds.create_login) {
+      if (employee.user_id) {
+        try {
+          const admin = createAdminClient()
+          await (admin as any)
+            .from('company_users')
+            .update({ status: 'disabled', updated_at: new Date().toISOString() })
+            .eq('company_id', employee.company_id)
+            .eq('user_id', employee.user_id)
+        } catch {}
+      }
+      const updatedCreds: PortalCredentials = {
+        ...portalCreds,
+        create_login: false,
+        status: 'disabled',
+      }
+      const updated = await WorkforceRepository.updateEmployee(employee.id, employee.company_id, {
+        portal_credentials: updatedCreds,
+      })
+      return { employee: updated || { ...employee, portal_credentials: updatedCreds } }
+    }
+
+    let email = portalCreds.email?.trim().toLowerCase()
+    if (!email || !email.includes('@')) {
+      if (employee.email && employee.email.includes('@')) {
+        email = employee.email.trim().toLowerCase()
+      } else {
+        const cleanSlug = employee.company_id.replace(/^comp-/, '').replace(/^co-/, '')
+        const uname = (portalCreds.username || employee.mobile).replace(/[^a-zA-Z0-9._-]/g, '')
+        email = `${uname}@${cleanSlug}.local`
+      }
+    }
+
+    const password = portalCreds.password?.trim() || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`
+    let userId = employee.user_id || portalCreds.user_id || null
+
+    try {
+      const admin = createAdminClient()
+
+      if (!userId) {
+        const { data: userList } = await admin.auth.admin.listUsers()
+        const existingAuth = userList?.users?.find((u) => u.email?.toLowerCase() === email)
+        if (existingAuth) {
+          userId = existingAuth.id
+          if (portalCreds.password?.trim()) {
+            await admin.auth.admin.updateUserById(userId, {
+              password: portalCreds.password.trim(),
+              email_confirm: true,
+            })
+          }
+        } else {
+          const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
+            email,
+            password,
+            email_confirm: true,
+            user_metadata: {
+              full_name: employee.name,
+              name_bn: employee.name_bn || null,
+              phone: employee.mobile,
+              username: portalCreds.username || email.split('@')[0],
+              employee_id: employee.employee_id_number,
+              preferred_locale: 'bn',
+            },
+          })
+          if (!createErr && newUser?.user) {
+            userId = newUser.user.id
+          }
+        }
+      } else if (portalCreds.password?.trim()) {
+        try {
+          await admin.auth.admin.updateUserById(userId, {
+            password: portalCreds.password.trim(),
+            email_confirm: true,
+          })
+        } catch {}
+      }
+
+      if (userId) {
+        await (admin as any).from('user_profiles').upsert({
+          id: userId,
+          email,
+          username: portalCreds.username ? portalCreds.username.trim().toLowerCase() : null,
+          full_name: employee.name,
+          full_name_bn: employee.name_bn || null,
+          phone: employee.mobile || null,
+          preferred_locale: 'bn',
+          is_active: true,
+          updated_at: new Date().toISOString(),
+        })
+
+        try {
+          await (admin as any).from('profiles').upsert({
+            id: userId,
+            username: portalCreds.username ? portalCreds.username.trim().toLowerCase() : null,
+            full_name: employee.name,
+            full_name_bn: employee.name_bn || null,
+            phone: employee.mobile || null,
+            preferred_locale: 'bn',
+            updated_at: new Date().toISOString(),
+          })
+        } catch {}
+
+        const { data: existingCU } = await (admin as any)
+          .from('company_users')
+          .select('id')
+          .eq('company_id', employee.company_id)
+          .eq('user_id', userId)
+          .maybeSingle()
+
+        let companyUserId = existingCU?.id
+        const assignedRole = portalCreds.role || employee.role || 'operator'
+        const normalizedRole = assignedRole === 'sales' ? 'sales_manager' : assignedRole
+
+        if (!companyUserId) {
+          const { data: newCU } = await (admin as any)
+            .from('company_users')
+            .insert({
+              company_id: employee.company_id,
+              user_id: userId,
+              branch_id: employee.branch_id || null,
+              invited_email: email,
+              status: 'active',
+              responsibilities: [normalizedRole],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single()
+          companyUserId = newCU?.id
+        } else {
+          await (admin as any)
+            .from('company_users')
+            .update({
+              branch_id: employee.branch_id || null,
+              status: 'active',
+              responsibilities: [normalizedRole],
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', companyUserId)
+        }
+
+        // Also sync local data store for memory/offline fallback
+        try {
+          const localUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
+          const existingIdx = localUsers.findIndex((u: any) => u.user_id === userId && u.company_id === employee.company_id)
+          const updatedCuRecord = {
+            id: companyUserId || `cu-${userId}`,
+            company_id: employee.company_id,
+            user_id: userId,
+            branch_id: employee.branch_id || null,
+            responsibilities: [normalizedRole],
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          }
+          if (existingIdx >= 0) {
+            localUsers[existingIdx] = { ...localUsers[existingIdx], ...updatedCuRecord }
+          } else {
+            localUsers.push(updatedCuRecord)
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, localUsers)
+        } catch {}
+
+        const roleId = await this.resolveRoleIdForEmployee(employee.company_id, portalCreds.role || 'operator')
+        if (roleId && companyUserId) {
+          await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
+          await (admin as any).from('user_roles').insert({
+            company_user_id: companyUserId,
+            role_id: roleId,
+            company_id: employee.company_id,
+          })
+        }
+      }
+    } catch (e) {
+      console.warn('[syncEmployeePortalLogin] Auth/DB sync fallback:', e)
+    }
+
+    let inviteUrl: string | undefined = undefined
+    let inviteSentAt: string | undefined = undefined
+
+    if (sendInvite && email && !email.endsWith('.local')) {
+      try {
+        const resolvedBaseUrl = appUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+        const rec = await AuthEmailService.createVerificationRecord({
+          email,
+          purpose: 'registration',
+          userId,
+          ttlSeconds: 86400 * 7,
+        })
+
+        if (!('error' in rec)) {
+          inviteUrl = `${resolvedBaseUrl}/verify?token=${rec.token}&email=${encodeURIComponent(email)}&purpose=registration`
+          await AuthEmailService.sendUserInvitationEmail({
+            email,
+            inviteUrl,
+            companyName: companyName || 'InkFlow PrintERP',
+            roleName: portalCreds.role || employee.role || 'Team Member',
+            invitedByName: actorName,
+            tenantId: employee.company_id,
+            userName: employee.name,
+          })
+          inviteSentAt = new Date().toISOString()
+        }
+      } catch (err) {
+        console.warn('[syncEmployeePortalLogin] Invitation dispatch warning:', err)
+      }
+    }
+
+    const updatedCreds: PortalCredentials = {
+      ...portalCreds,
+      create_login: true,
+      email,
+      username: portalCreds.username || email.split('@')[0],
+      password,
+      role: portalCreds.role || 'operator',
+      user_id: userId,
+      status: inviteSentAt ? 'invited' : 'active',
+      last_invite_sent_at: inviteSentAt || portalCreds.last_invite_sent_at || null,
+      invite_link: inviteUrl || portalCreds.invite_link || null,
+    }
+
+    const updatedEmployee = await WorkforceRepository.updateEmployee(employee.id, employee.company_id, {
+      portal_credentials: updatedCreds,
+      user_id: userId,
+      email: employee.email || (email.endsWith('.local') ? null : email),
+    })
+
+    return {
+      employee: updatedEmployee || { ...employee, portal_credentials: updatedCreds, user_id: userId },
+      inviteUrl,
+    }
+  }
+
+  static async sendEmployeeInvitation(
+    employeeId: string,
+    companyId: string,
+    companyName: string,
+    companySlug: string,
+    actorName: string,
+    appUrl: string,
+    overrideEmail?: string
+  ): Promise<{ success: boolean; message: string; inviteUrl?: string; email?: string }> {
+    const employee = await WorkforceRepository.getEmployeeById(employeeId, companyId)
+    if (!employee) {
+      return { success: false, message: 'Employee record not found.' }
+    }
+
+    const targetEmail = (
+      overrideEmail ||
+      employee.portal_credentials?.email ||
+      employee.email ||
+      ''
+    ).trim().toLowerCase()
+
+    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local')) {
+      return {
+        success: false,
+        message: 'A valid email address is required to dispatch an invitation link.',
+      }
+    }
+
+    const creds: PortalCredentials = {
+      create_login: true,
+      email: targetEmail,
+      username: employee.portal_credentials?.username || targetEmail.split('@')[0],
+      role: employee.portal_credentials?.role || 'operator',
+      password: employee.portal_credentials?.password,
+      send_invitation: true,
+    }
+
+    const result = await this.syncEmployeePortalLogin(
+      employee,
+      creds,
+      actorName,
+      companyName,
+      companySlug,
+      appUrl,
+      true
+    )
+
+    if (result.inviteUrl) {
+      return {
+        success: true,
+        message: `Invitation link sent successfully to ${targetEmail}.`,
+        inviteUrl: result.inviteUrl,
+        email: targetEmail,
+      }
+    }
+
+    return {
+      success: true,
+      message: `Login account credentials verified for ${targetEmail}.`,
+      email: targetEmail,
+    }
+  }
+
+  static async updateEmployeeLoginCredentials(
+    employeeId: string,
+    companyId: string,
+    credentials: PortalCredentials,
+    actorId?: string,
+    actorName = 'Admin',
+    companyName?: string,
+    companySlug?: string,
+    appUrl?: string
+  ): Promise<EmployeeRecord> {
+    const employee = await WorkforceRepository.getEmployeeById(employeeId, companyId)
+    if (!employee) {
+      throw new Error('Employee record not found.')
+    }
+
+    // Ensure no duplicate credentials when updating credentials
+    const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+      email: credentials.email || employee.email,
+      username: credentials.username,
+      phone: employee.mobile,
+      excludeEmployeeId: employeeId,
+      excludeUserId: employee.user_id,
+      companyId,
+    })
+
+    if (!uniquenessCheck.available) {
+      throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+    }
+
+    const shouldSendInvite = Boolean(credentials.send_invitation)
+    const result = await this.syncEmployeePortalLogin(
+      employee,
+      credentials,
+      actorName,
+      companyName,
+      companySlug,
+      appUrl,
+      shouldSendInvite
+    )
+
+    await WorkforceRepository.logWorkforceAudit({
+      id: `wfa-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      company_id: companyId,
+      actor_id: actorId || null,
+      actor_name: actorName,
+      action_type: 'employee_updated',
+      entity_type: 'employee',
+      entity_id: employee.id,
+      after_state: result.employee as any,
+      reason: `Updated portal login credentials for ${employee.name}`,
+      created_at: new Date().toISOString(),
+    })
+
+    return result.employee
   }
 
   static async deleteEmployee(id: string, companyId: string) {

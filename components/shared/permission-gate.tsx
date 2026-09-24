@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react'
-import { useTenant } from '@/hooks/use-tenant'
-import { PrimaryRole } from '@/types/rbac.types'
-import { checkPermission } from '@/lib/auth/rbac.client'
+import { usePermissions } from '@/hooks/use-permissions'
+import { PrimaryRole, PermissionAction } from '@/types/rbac.types'
+import { normalizeModuleKey } from '@/lib/auth/rbac.client'
 
 interface PermissionGateProps {
-  permission?: string // e.g. "order.create", "invoice.delete"
+  permission?: string // e.g. "orders.create", "invoices.delete"
   allowedRoles?: PrimaryRole[]
   fallback?: React.ReactNode
   children: React.ReactNode
@@ -21,19 +21,26 @@ export function PermissionGate({
   fallback = null,
   children,
 }: PermissionGateProps) {
-  const { currentRole } = useTenant()
-
-  // Map tenant role to PrimaryRole
-  const role: PrimaryRole = (currentRole as PrimaryRole) || 'business_owner'
+  const { activeRole, isOwner, can, hasPermission } = usePermissions()
 
   // Role assertion
-  if (allowedRoles && !allowedRoles.includes(role)) {
+  if (allowedRoles && !allowedRoles.includes(activeRole)) {
     return <>{fallback}</>
   }
 
   // Permission assertion
-  if (permission && !checkPermission(role, permission)) {
-    return <>{fallback}</>
+  if (permission) {
+    if (isOwner) return <>{children}</>
+
+    const parts = permission.split('.')
+    if (parts.length === 2) {
+      const [mod, act] = parts
+      if (!can(act as PermissionAction, normalizeModuleKey(mod))) {
+        return <>{fallback}</>
+      }
+    } else if (!hasPermission(permission)) {
+      return <>{fallback}</>
+    }
   }
 
   return <>{children}</>

@@ -23,15 +23,64 @@ export function usePermissions() {
   const { currentRole, currentUser, responsibilities } = useTenant()
   const [simulatedRole, setSimulatedRole] = useState<PrimaryRole | null>(null)
 
-  const activeRole: PrimaryRole =
-    simulatedRole ||
-    (currentUser?.roles?.[0]?.slug as PrimaryRole) ||
-    (currentRole as PrimaryRole) ||
-    'general_staff'
+  const resolvedRoleFromUser: PrimaryRole = useMemo(() => {
+    const raw = (
+      currentUser?.roles?.[0]?.slug ||
+      currentUser?.responsibilities?.[0] ||
+      responsibilities[0] ||
+      currentRole ||
+      ''
+    ).toLowerCase().trim()
+
+    if (raw === 'business_owner' || raw === 'owner' || raw === 'platform_owner') return 'business_owner'
+    if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager') return 'sales_manager'
+    if (raw === 'designer' || raw === 'graphic_designer') return 'designer'
+    if (raw === 'operator' || raw === 'machine_operator' || raw === 'technician') return 'operator'
+    if (raw === 'production_manager' || raw === 'production') return 'production_manager'
+    return 'general_staff'
+  }, [currentUser, responsibilities, currentRole])
+
+  const activeRole: PrimaryRole = simulatedRole || resolvedRoleFromUser || 'general_staff'
 
   // Construct current user permission context
   const userCtx: UserPermissionContext = useMemo(() => {
-    const isOwner = Boolean(
+    const userResponsibilities = (currentUser?.responsibilities || (responsibilities.length > 0 ? responsibilities : [activeRole])) as string[]
+
+    const isExplicitStaff = Boolean(
+      activeRole === 'operator' ||
+        activeRole === 'designer' ||
+        activeRole === 'sales_manager' ||
+        activeRole === 'production_manager' ||
+        activeRole === 'general_staff' ||
+        (activeRole as any) === 'machine_operator' ||
+        (activeRole as any) === 'graphic_designer' ||
+        (activeRole as any) === 'accountant' ||
+        (activeRole as any) === 'delivery_coordinator' ||
+        (activeRole as any) === 'installer' ||
+        (activeRole as any) === 'store_manager' ||
+        currentRole === 'operator' ||
+        currentRole === 'designer' ||
+        currentRole === 'installer' ||
+        currentRole === 'accountant' ||
+        userResponsibilities.some((r) => [
+          'operator',
+          'machine_operator',
+          'designer',
+          'graphic_designer',
+          'sales',
+          'sales_manager',
+          'sales_executive',
+          'production',
+          'production_manager',
+          'accountant',
+          'accounts',
+          'delivery',
+          'delivery_coordinator',
+          'installer',
+        ].includes(r))
+    )
+
+    const hasOwnerClaim = Boolean(
       activeRole === 'business_owner' ||
         activeRole === 'platform_owner' ||
         (activeRole as any) === 'owner' ||
@@ -39,15 +88,20 @@ export function usePermissions() {
         (currentRole as any) === 'business_owner' ||
         (currentUser && currentUser.responsibilities?.includes('business_owner')) ||
         responsibilities.includes('business_owner') ||
-        (responsibilities as any[]).includes('owner') ||
-        !currentRole
+        (responsibilities as any[]).includes('owner')
+    )
+
+    // User is only owner if they have an owner claim AND are NOT explicit staff (unless activeRole is explicitly business_owner)
+    const isOwner = Boolean(
+      hasOwnerClaim &&
+        (activeRole === 'business_owner' || activeRole === 'platform_owner' || (activeRole as any) === 'owner' || !isExplicitStaff)
     )
 
     return {
       userId: currentUser?.user_id || currentUser?.id || 'usr-default',
       primaryRole: activeRole,
       role: activeRole,
-      responsibilities: currentUser?.responsibilities || (responsibilities.length > 0 ? responsibilities : [activeRole]),
+      responsibilities: userResponsibilities,
       overrides: currentUser?.overrides || {},
       data_scopes: currentUser?.data_scopes || {},
       isOwner,
@@ -142,6 +196,85 @@ export function usePermissions() {
     [activeRole]
   )
 
+  const respList = (userCtx.responsibilities as string[] || [])
+  const userRoleSlugs = (currentUser?.roles || []).map((r: any) => r.slug || r.name)
+
+  const isOperator =
+    !userCtx.isOwner && (
+      activeRole === 'operator' ||
+      (activeRole as any) === 'machine_operator' ||
+      (currentRole as any) === 'operator' ||
+      (currentRole as any) === 'machine_operator' ||
+      respList.includes('operator') ||
+      respList.includes('machine_operator') ||
+      userRoleSlugs.includes('operator') ||
+      userRoleSlugs.includes('machine_operator')
+    )
+
+  const isDesigner =
+    !userCtx.isOwner && (
+      activeRole === 'designer' ||
+      (activeRole as any) === 'graphic_designer' ||
+      (currentRole as any) === 'designer' ||
+      (currentRole as any) === 'graphic_designer' ||
+      respList.includes('designer') ||
+      respList.includes('graphic_designer') ||
+      userRoleSlugs.includes('designer') ||
+      userRoleSlugs.includes('graphic_designer')
+    )
+
+  const isSales =
+    !userCtx.isOwner && (
+      activeRole === 'sales_manager' ||
+      (activeRole as any) === 'sales' ||
+      (activeRole as any) === 'sales_executive' ||
+      (currentRole as any) === 'manager' ||
+      (currentRole as any) === 'sales_manager' ||
+      (currentRole as any) === 'sales' ||
+      respList.includes('sales_manager') ||
+      respList.includes('sales') ||
+      respList.includes('sales_executive') ||
+      userRoleSlugs.includes('sales_manager') ||
+      userRoleSlugs.includes('sales') ||
+      userRoleSlugs.includes('sales_executive')
+    )
+
+  const isProduction =
+    !userCtx.isOwner && (
+      activeRole === 'production_manager' ||
+      (activeRole as any) === 'production' ||
+      (currentRole as any) === 'production_manager' ||
+      respList.includes('production_manager') ||
+      respList.includes('production') ||
+      userRoleSlugs.includes('production_manager')
+    )
+
+  const isAccountant =
+    !userCtx.isOwner && (
+      activeRole === ('accountant' as any) ||
+      (currentRole as any) === 'accountant' ||
+      respList.includes('accountant') ||
+      respList.includes('accounts') ||
+      respList.includes('billing') ||
+      userRoleSlugs.includes('accountant') ||
+      userRoleSlugs.includes('accounts')
+    )
+
+  const isDelivery =
+    !userCtx.isOwner && (
+      activeRole === ('delivery' as any) ||
+      activeRole === ('delivery_coordinator' as any) ||
+      (currentRole as any) === 'delivery' ||
+      (currentRole as any) === 'delivery_coordinator' ||
+      (currentRole as any) === 'installer' ||
+      respList.includes('delivery') ||
+      respList.includes('delivery_coordinator') ||
+      respList.includes('installer') ||
+      userRoleSlugs.includes('delivery') ||
+      userRoleSlugs.includes('delivery_coordinator') ||
+      userRoleSlugs.includes('installer')
+    )
+
   return {
     activeRole,
     currentUser,
@@ -154,13 +287,13 @@ export function usePermissions() {
     hasPermission,
     hasRole,
     isOwner: userCtx.isOwner,
-    isSales: activeRole === 'sales_manager',
-    isDesigner: activeRole === 'designer',
-    isProduction: activeRole === 'production_manager',
-    isOperator: activeRole === 'operator',
-    isAccountant: activeRole === 'general_staff' && currentUser?.roles?.[0]?.slug === 'accountant',
-    isDelivery: activeRole === 'general_staff' && currentUser?.roles?.[0]?.slug === 'installer',
-    isStaff: activeRole === 'general_staff',
+    isSales,
+    isDesigner,
+    isProduction,
+    isOperator,
+    isAccountant,
+    isDelivery,
+    isStaff: !userCtx.isOwner,
   }
 }
 

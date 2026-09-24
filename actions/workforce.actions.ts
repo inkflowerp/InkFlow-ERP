@@ -6,9 +6,11 @@
 // ==============================================================================
 
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { requireTenantUser, getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { WorkforceService } from '@/services/workforce.service'
 import { WorkforceRepository } from '@/lib/repositories/workforce.repository'
+import { resolveRequestOrigin } from '@/lib/security/runtime-env'
 import type {
   EmployeeRecord,
   ShiftRecord,
@@ -19,7 +21,17 @@ import type {
   SalaryPaymentRecord,
   WorkforceSummaryKPIs,
   PaymentMethod,
+  PortalCredentials,
 } from '@/types/workforce.types'
+
+async function getRequestBaseUrl(): Promise<string> {
+  try {
+    const headerStore = await headers()
+    return resolveRequestOrigin(headerStore)
+  } catch {
+    return resolveRequestOrigin()
+  }
+}
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -176,6 +188,71 @@ export async function deleteEmployeeAction(
     return { success: true, data: result }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to delete employee.' }
+  }
+}
+
+export async function sendEmployeeInvitationAction(
+  employeeId: string,
+  companyIdParam?: string,
+  overrideEmail?: string
+): Promise<ServerActionResult<{ inviteUrl?: string; email?: string }>> {
+  try {
+    const tenant = await requireTenantUser(companyIdParam)
+    if (!hasAnyPermission(tenant, ['hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
+      return { success: false, error: 'Unauthorized: You do not have permission to invite employees.' }
+    }
+
+    const appUrl = await getRequestBaseUrl()
+    const result = await WorkforceService.sendEmployeeInvitation(
+      employeeId,
+      tenant.companyId,
+      tenant.companyName,
+      tenant.companySlug,
+      tenant.fullName || 'Admin',
+      appUrl,
+      overrideEmail
+    )
+
+    revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    return {
+      success: result.success,
+      data: { inviteUrl: result.inviteUrl, email: result.email },
+      error: result.success ? undefined : result.message,
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to send employee invitation.' }
+  }
+}
+
+export async function updateEmployeeLoginCredentialsAction(
+  employeeId: string,
+  credentials: PortalCredentials,
+  companyIdParam?: string
+): Promise<ServerActionResult<EmployeeRecord>> {
+  try {
+    const tenant = await requireTenantUser(companyIdParam)
+    if (!hasAnyPermission(tenant, ['hr.edit', 'hr.manage', 'hr.full_control', 'settings.manage'])) {
+      return { success: false, error: 'Unauthorized: You do not have permission to manage employee credentials.' }
+    }
+
+    const appUrl = await getRequestBaseUrl()
+    const result = await WorkforceService.updateEmployeeLoginCredentials(
+      employeeId,
+      tenant.companyId,
+      credentials,
+      tenant.userId,
+      tenant.fullName || 'Admin',
+      tenant.companyName,
+      tenant.companySlug,
+      appUrl
+    )
+
+    revalidatePath(`/${tenant.companySlug}/hr`)
+    revalidatePath(`/${tenant.companySlug}/hr/employees`)
+    return { success: true, data: result }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Failed to update employee login credentials.' }
   }
 }
 

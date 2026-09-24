@@ -70,8 +70,9 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
   try {
     // 2. Authoritative Supabase Auth verification
     const supabase = await createSupabaseServerClient()
+    const resolvedEmail = await AuthService.resolveLoginEmail(email)
     const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
-      email,
+      email: resolvedEmail,
       password,
     })
 

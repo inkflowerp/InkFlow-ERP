@@ -364,20 +364,20 @@ function LoginForm() {
             </div>
           )}
 
-          {/* Email Input Field */}
+          {/* Email / Username / Phone Input Field */}
           <div className="space-y-1.5">
             <Label required htmlFor="tenant-login-email">
-              {t('auth.email')}
+              {locale === 'bn' ? 'ইমেইল, মোবাইল বা ইউজারনেম' : 'Email, Username or Mobile'}
             </Label>
             <Input
               id="tenant-login-email"
-              type="email"
-              autoComplete="email"
+              type="text"
+              autoComplete="username"
               autoCapitalize="none"
               autoCorrect="off"
               spellCheck={false}
               icon={<Mail className="h-4 w-4" />}
-              placeholder="owner@alphaprint.com.bd"
+              placeholder="user@company.com or username / mobile"
               {...register('email')}
               error={errors.email?.message}
             />
