@@ -96,6 +96,14 @@ export function InventoryTabsNavigation({
       count: rollsCount,
     },
     {
+      id: 'floor_consumption',
+      labelEn: 'On Floor Material',
+      labelBn: 'ফ্লোরে ম্যাটেরিয়াল',
+      icon: Flame,
+      count: floorConsumptionsCount,
+      alert: activeFloorCount > 0,
+    },
+    {
       id: 'requests',
       labelEn: 'Material Requests',
       labelBn: 'রিকুইজিশন',
