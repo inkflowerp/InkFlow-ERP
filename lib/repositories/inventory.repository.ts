@@ -1060,37 +1060,38 @@ export class InventoryRepository {
     }
 
     // Synchronize to products table if a corresponding product exists
+    // NOTE: products table does NOT have current_stock/stock columns — stock lives in pricing_formula JSONB
     try {
       const admin = createAdminClient()
       const prodUpdates: any = { updated_at: new Date().toISOString() }
-      if (payload.current_stock !== undefined) prodUpdates.current_stock = payload.current_stock
       if (payload.average_cost !== undefined) prodUpdates.base_cost = payload.average_cost
-      if (payload.roll_sizes !== undefined || payload.material_config !== undefined) {
-        const { data: existingProd } = await (admin as any)
-          .from('products')
-          .select('material_config, pricing_formula')
-          .eq('id', id)
-          .maybeSingle()
-        if (existingProd) {
-          const matCfg = {
-            ...(existingProd.material_config || {}),
-            ...(payload.material_config || {}),
-            ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
-          }
-          const prcFormula = {
-            ...(existingProd.pricing_formula || {}),
-            ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
-            ...(payload.current_stock !== undefined ? { current_stock: payload.current_stock, stock: payload.current_stock } : {}),
-          }
-          prodUpdates.material_config = matCfg
-          prodUpdates.pricing_formula = prcFormula
-        }
-      }
-      await (admin as any)
+
+      const { data: existingProd } = await (admin as any)
         .from('products')
-        .update(prodUpdates)
+        .select('material_config, pricing_formula')
         .eq('id', id)
-        .eq('company_id', companyId)
+        .maybeSingle()
+
+      if (existingProd) {
+        const matCfg = {
+          ...(existingProd.material_config || {}),
+          ...(payload.material_config || {}),
+          ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
+        }
+        const prcFormula = {
+          ...(existingProd.pricing_formula || {}),
+          ...(payload.roll_sizes ? { roll_sizes: payload.roll_sizes } : {}),
+          ...(payload.current_stock !== undefined ? { current_stock: payload.current_stock, stock: payload.current_stock } : {}),
+        }
+        prodUpdates.material_config = matCfg
+        prodUpdates.pricing_formula = prcFormula
+
+        await (admin as any)
+          .from('products')
+          .update(prodUpdates)
+          .eq('id', id)
+          .eq('company_id', companyId)
+      }
     } catch {}
 
     if (updatedDbMat) {
@@ -1280,8 +1281,6 @@ export class InventoryRepository {
           name_bn: material.name_bn || null,
           category: material.category || 'general',
           unit: material.unit || 'pcs',
-          purchase_unit: material.purchase_unit || material.master_purchase_unit || null,
-          master_purchase_unit: material.master_purchase_unit || material.purchase_unit || null,
           current_stock: newStock,
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
           last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
@@ -1317,7 +1316,6 @@ export class InventoryRepository {
           reference_id: params.reference_id || null,
           production_task_id: params.production_task_id || null,
           notes: params.notes || null,
-          performed_by_id: params.performed_by_id || null,
           performed_by_name: params.performed_by_name,
           created_at: new Date().toISOString(),
         })
@@ -1325,17 +1323,8 @@ export class InventoryRepository {
         .single()
 
       // Also update products table if product exists (by id or sku)
+      // NOTE: products table does NOT have current_stock/stock columns — stock lives in pricing_formula JSONB
       try {
-        const prodPayload: any = {
-          current_stock: newStock,
-          stock: newStock,
-          updated_at: new Date().toISOString(),
-        }
-        if (unitCost > 0) {
-          prodPayload.purchase_price = unitCost
-          prodPayload.base_cost = unitCost
-        }
-
         const { data: existingProd } = await (supabase as any)
           .from('products')
           .select('pricing_formula, material_config')
@@ -1344,11 +1333,18 @@ export class InventoryRepository {
 
         if (existingProd) {
           const formula = (typeof existingProd.pricing_formula === 'object' && existingProd.pricing_formula !== null ? existingProd.pricing_formula : {}) as any
-          prodPayload.pricing_formula = {
-            ...formula,
-            current_stock: newStock,
-            stock: newStock,
-            ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+          const prodPayload: any = {
+            updated_at: new Date().toISOString(),
+            pricing_formula: {
+              ...formula,
+              current_stock: newStock,
+              stock: newStock,
+              ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+            },
+          }
+          if (unitCost > 0) {
+            prodPayload.purchase_price = unitCost
+            prodPayload.base_cost = unitCost
           }
           if (existingProd.material_config && typeof existingProd.material_config === 'object') {
             prodPayload.material_config = {
@@ -1356,15 +1352,12 @@ export class InventoryRepository {
               ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
             }
           }
-        }
-        if (existingMatRollSizes) {
-          prodPayload.roll_sizes = existingMatRollSizes
-        }
 
-        await (supabase as any)
-          .from('products')
-          .update(prodPayload)
-          .or(`id.eq.${material.id},sku.eq.${material.sku}`)
+          await (supabase as any)
+            .from('products')
+            .update(prodPayload)
+            .or(`id.eq.${material.id},sku.eq.${material.sku}`)
+        }
       } catch {}
 
       // Update location stock balance if location specified
@@ -1378,58 +1371,59 @@ export class InventoryRepository {
             .eq('location_id', params.location_id)
             .maybeSingle()
 
-          const prevLocQty = Number(existingBal?.quantity || 0)
+          const prevLocQty = Number(existingBal?.available_quantity ?? existingBal?.quantity ?? 0)
           const newLocQty = Math.max(0, prevLocQty + params.quantity_change)
 
           await (supabase as any).from('inventory_stock_balances').upsert({
-            id: existingBal?.id || `bal-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            id: existingBal?.id || crypto.randomUUID(),
             company_id: params.company_id,
             branch_id: params.branch_id || null,
             material_id: material.id,
             location_id: params.location_id,
-            quantity: newLocQty,
+            available_quantity: newLocQty,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'id' })
         } catch {}
       }
 
-      if (!ledgerErr && ledgerEntry) {
-        PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
-          current_stock: newStock,
-          average_cost: unitCost > 0 ? unitCost : material.average_cost,
-          last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
-          roll_sizes: existingMatRollSizes,
-        })
-        if (params.company_id) {
-          try {
-            PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
-              current_stock: newStock,
-              average_cost: unitCost > 0 ? unitCost : material.average_cost,
-              last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
-              roll_sizes: existingMatRollSizes,
-            }, params.company_id)
-          } catch {}
-        }
-        const prodUpdatePayload = {
+      // Always update DataStore local cache regardless of ledger outcome
+      PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+        current_stock: newStock,
+        average_cost: unitCost > 0 ? unitCost : material.average_cost,
+        last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
+        roll_sizes: existingMatRollSizes,
+      })
+      if (params.company_id) {
+        try {
+          PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
+            current_stock: newStock,
+            average_cost: unitCost > 0 ? unitCost : material.average_cost,
+            last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
+            roll_sizes: existingMatRollSizes,
+          }, params.company_id)
+        } catch {}
+      }
+      const prodUpdatePayload = {
+        current_stock: newStock,
+        stock: newStock,
+        base_cost: unitCost > 0 ? unitCost : undefined,
+        purchase_price: unitCost > 0 ? unitCost : undefined,
+        pricing_formula: {
           current_stock: newStock,
           stock: newStock,
-          base_cost: unitCost > 0 ? unitCost : undefined,
-          purchase_price: unitCost > 0 ? unitCost : undefined,
-          pricing_formula: {
-            current_stock: newStock,
-            stock: newStock,
-            ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
-          },
-        }
-        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
-        PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
-        if (params.company_id) {
-          try {
-            PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
-            PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
-          } catch {}
-        }
+          ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+        },
+      }
+      PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
+      PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload)
+      if (params.company_id) {
+        try {
+          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload, params.company_id)
+          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, material.id, prodUpdatePayload, params.company_id)
+        } catch {}
+      }
 
+      if (!ledgerErr && ledgerEntry) {
         return {
           material: { ...material, current_stock: newStock, roll_sizes: existingMatRollSizes, average_cost: unitCost > 0 ? unitCost : material.average_cost },
           ledgerEntry: ledgerEntry as unknown as StockLedgerRecord,
