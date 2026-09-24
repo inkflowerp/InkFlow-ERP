@@ -2428,12 +2428,13 @@ export function getMaterialWarehouseStockBreakdown(
 
           if (matchedItem) {
             if (explicitCount > matchedItem.roll_count) {
-              const diff = explicitCount - matchedItem.roll_count
               matchedItem.roll_count = explicitCount
-              matchedItem.total_sft += diff * (attrs.width_ft * attrs.length_ft)
-              matchedItem.total_valuation = (matchedItem.total_valuation || 0) + (diff * (rollCost > 0 ? rollCost : 0))
+              matchedItem.total_sft = explicitCount * (matchedItem.width_ft * matchedItem.length_ft)
+              matchedItem.total_valuation = explicitCount * (matchedItem.unit_cost || rollCost)
             }
           } else if (!map.has(key)) {
+            const itemSft = explicitCount > 0 ? explicitCount * attrs.width_ft * attrs.length_ft : 0
+            const itemVal = explicitCount * rollCost
             map.set(key, {
               key,
               name: attrs.name,
@@ -2444,12 +2445,20 @@ export function getMaterialWarehouseStockBreakdown(
               gsm: attrs.gsm,
               finishing: attrs.finishing,
               roll_count: explicitCount,
-              total_sft: explicitCount * attrs.width_ft * attrs.length_ft,
+              total_sft: itemSft,
               unit_cost: attrs.purchase_price,
-              total_valuation: explicitCount * (rollCost > 0 ? rollCost : 0),
+              total_valuation: itemVal,
               label: `${attrs.width_ft}ft × ${attrs.length_ft}ft`,
             })
           }
+        }
+      }
+
+      if (currentStock <= 0) {
+        for (const item of map.values()) {
+          item.roll_count = 0
+          item.total_sft = 0
+          item.total_valuation = 0
         }
       }
 
@@ -2571,6 +2580,14 @@ export function getMaterialWarehouseStockBreakdown(
               item.total_valuation = sets * rollCost
             }
           }
+        }
+      }
+
+      if (currentStock <= 0) {
+        for (const item of map.values()) {
+          item.roll_count = 0
+          item.total_sft = 0
+          item.total_valuation = 0
         }
       }
 
@@ -2805,18 +2822,20 @@ export function getMaterialWarehouseStockBreakdown(
         })
       }
 
-      // If explicit counts were not provided per sheet size, distribute currentStock
+      // If explicit counts were not provided per sheet size or if stock changed, distribute currentStock
       const explicitSum = Array.from(sheetMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
-      if (explicitSum === 0 && currentStock > 0) {
+      const totalExplicitSft = Array.from(sheetMap.values()).reduce((s, it) => s + (it.total_sft || 0), 0)
+
+      if (currentStock > 0 && (explicitSum === 0 || (sheetMap.size === 1 && totalExplicitSft !== currentStock))) {
         const list = Array.from(sheetMap.values())
         if (list.length === 1) {
           const it = list[0]
           const area = it.width_ft * it.length_ft > 0 ? it.width_ft * it.length_ft : defaultSheetArea
           const count = isSftCons ? Math.floor(currentStock / area) : currentStock
-          it.roll_count = Math.max(1, count)
+          it.roll_count = Math.max(0, count)
           it.total_sft = currentStock
           it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
-        } else {
+        } else if (explicitSum === 0) {
           // Multiple sizes: allocate to the best matching area or distribute
           let bestIdx = 0
           for (let i = 0; i < list.length; i++) {
@@ -2832,6 +2851,14 @@ export function getMaterialWarehouseStockBreakdown(
           it.roll_count = Math.max(1, count)
           it.total_sft = currentStock
           it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
+        }
+      }
+
+      if (currentStock <= 0) {
+        for (const it of sheetMap.values()) {
+          it.roll_count = 0
+          it.total_sft = 0
+          it.total_valuation = 0
         }
       }
 
@@ -2969,6 +2996,14 @@ export function getMaterialWarehouseStockBreakdown(
         first.roll_count = currentStock
         first.total_sft = currentStock
         first.total_valuation = currentStock * (first.purchase_price || rawCost)
+      }
+
+      if (currentStock <= 0) {
+        for (const it of varMap.values()) {
+          it.roll_count = 0
+          it.total_sft = 0
+          it.total_valuation = 0
+        }
       }
 
       rollItems = Array.from(varMap.values())
