@@ -1360,6 +1360,8 @@ export class PrintERPDataStore {
       id: orderId,
       company_id: orderData.company_id || 'default',
       order_number: orderNum,
+      quotation_id: orderData.quotation_id || null,
+      quotation_number: (orderData as any).quotation_number || null,
       customer_id: orderData.customer_id || '',
       customer_name: orderData.customer_name || '',
       customer_name_bn: orderData.customer_name_bn || null,
@@ -1384,18 +1386,25 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
 
+    const activeSlug = this.getActiveTenantSlug()
+
     // 1. Save Sales Order
     this.addItem(STORAGE_KEYS.ORDERS, newOrder)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.ORDERS, newOrder, activeSlug)
+    }
 
     // 2. Create linked Production Job Ticket if items exist
     const jobNum = `JOB-${orderNum.replace('ORD-', '')}-A`
     const newJob: JobOrderRecord = {
       id: `job-${Date.now()}`,
       company_id: newOrder.company_id,
+      order_number: newOrder.order_number,
       job_number: jobNum,
       order_id: newOrder.id,
       product_name: newOrder.items[0]?.item_name || 'Print Order Job',
       customer_name: newOrder.customer_name,
+      customer_phone: newOrder.customer_phone,
       quantity: newOrder.items[0]?.quantity || 1,
       size_spec: newOrder.items[0] ? `${newOrder.items[0].width}x${newOrder.items[0].height} ${newOrder.items[0].unit || 'sft'}` : 'Standard',
       material_spec: newOrder.items[0]?.material_spec || 'Standard Media',
@@ -1409,6 +1418,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.JOB_ORDERS, newJob)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.JOB_ORDERS, newJob, activeSlug)
+    }
 
     // 3. Create linked Production Queue Job
     const prodJob: ProductionJobRecord = {
@@ -1435,6 +1447,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob, activeSlug)
+    }
 
     // 3a. Auto-Provision V2 Production Task & V3 Material Requirement
     const taskId = `ptask-${Date.now()}`
@@ -1461,6 +1476,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.PRODUCTION_TASKS, prodTask)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.PRODUCTION_TASKS, prodTask, activeSlug)
+    }
 
     const matReqId = `tmr-${Date.now()}`
     const taskMatReq: any = {
@@ -1477,6 +1495,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS, taskMatReq)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.PRODUCTION_TASK_MATERIAL_REQUIREMENTS, taskMatReq, activeSlug)
+    }
 
     // 3b. Auto-Provision V4 Job Costing Record & Snapshot
     const costingId = `cst-${Date.now()}`
@@ -1547,6 +1568,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.JOB_COSTINGS, jobCosting)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.JOB_COSTINGS, jobCosting, activeSlug)
+    }
 
     // 4. Create Linked Invoice in Billing
     const invoiceNum = `INV-${Date.now().toString().slice(-6)}`
@@ -1578,6 +1602,9 @@ export class PrintERPDataStore {
       updated_at: new Date().toISOString(),
     }
     this.addItem(STORAGE_KEYS.INVOICES, newInvoice)
+    if (activeSlug && activeSlug !== 'default') {
+      this.addItem(STORAGE_KEYS.INVOICES, newInvoice, activeSlug)
+    }
 
     // 5. Update Customer Total Orders and Due Balance if customer exists
     if (newOrder.customer_id) {
@@ -1598,7 +1625,11 @@ export class PrintERPDataStore {
    * Converts a quotation to a formal Sales Order with connected workflow records.
    */
   static convertQuotationToSalesOrder(quotationId: string, options?: { advanceAmount?: number }): SalesOrderRecord | null {
-    const quotations = this.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []
+    const slug = this.getActiveTenantSlug()
+    const quotations = [
+      ...(this.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []),
+      ...(slug && slug !== 'default' ? (this.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS, slug) || []) : [])
+    ]
     const quote = quotations.find((q) => q.id === quotationId || q.quotation_number === quotationId)
     if (!quote) return null
 
@@ -1629,7 +1660,16 @@ export class PrintERPDataStore {
     }
 
     const order = this.createSalesOrderWithIntegrations(orderData)
-    this.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, { status: 'converted' })
+    this.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+      status: 'converted',
+      converted_order_id: order.order_number,
+    })
+    if (slug && slug !== 'default') {
+      this.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+        status: 'converted',
+        converted_order_id: order.order_number,
+      }, slug)
+    }
     return order
   }
 

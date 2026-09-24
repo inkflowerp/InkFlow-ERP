@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
+import { getOrdersAction, getJobOrdersAction } from '@/actions/order.actions'
 import type { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
 import type { InvoiceRecord } from '@/types/billing.types'
 
@@ -104,19 +105,116 @@ export default function OrdersPage() {
   // 1. Data Loader: Unify Sales Orders, Invoices, and Job Orders
   const loadData = useCallback(async () => {
     try {
-      // Ingest from PrintERPDataStore & Repositories
-      const localOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-      const localInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-      const localJobOrders = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      // 1. Ingest from Server Actions (Supabase backed)
+      let serverOrders: SalesOrderRecord[] = []
+      let serverJobs: JobOrderRecord[] = []
+
+      try {
+        const [ordersRes, jobsRes] = await Promise.allSettled([
+          getOrdersAction(companyId),
+          getJobOrdersAction(companyId),
+        ])
+        if (ordersRes.status === 'fulfilled' && ordersRes.value.success && ordersRes.value.data) {
+          serverOrders = ordersRes.value.data
+        }
+        if (jobsRes.status === 'fulfilled' && jobsRes.value.success && jobsRes.value.data) {
+          serverJobs = jobsRes.value.data
+        }
+      } catch (e) {
+        console.warn('[OrdersPage] Server action fetch fallback:', e)
+      }
+
+      // 2. Ingest from PrintERPDataStore & Browser Storage across all partitions
+      const rawOrders: SalesOrderRecord[] = [...serverOrders]
+      const rawJobs: JobOrderRecord[] = [...serverJobs]
+      const rawInvoices: InvoiceRecord[] = []
+
+      // Ingest orders across unpartitioned and tenant-partitioned keys
+      const localOrdersGlobal = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+      const localOrdersTenant = tenantSlug ? PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, tenantSlug) || [] : []
+      const localOrdersCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, companyId) || [] : []
+      rawOrders.push(...localOrdersGlobal, ...localOrdersTenant, ...localOrdersCompany)
+
+      // Ingest job orders across unpartitioned and tenant-partitioned keys
+      const localJobsGlobal = PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS) || []
+      const localJobsTenant = tenantSlug ? PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, tenantSlug) || [] : []
+      const localJobsCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<JobOrderRecord[]>(STORAGE_KEYS.JOB_ORDERS, companyId) || [] : []
+      rawJobs.push(...localJobsGlobal, ...localJobsTenant, ...localJobsCompany)
+
+      // Ingest invoices across unpartitioned and tenant-partitioned keys
+      const localInvoicesGlobal = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      const localInvoicesTenant = tenantSlug ? PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, tenantSlug) || [] : []
+      const localInvoicesCompany = companyId && companyId !== tenantSlug ? PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, companyId) || [] : []
+      rawInvoices.push(...localInvoicesGlobal, ...localInvoicesTenant, ...localInvoicesCompany)
+
+      // Scan localStorage directly for any uncommitted records across partitions
+      if (typeof window !== 'undefined') {
+        try {
+          for (let i = 0; i < window.localStorage.length; i++) {
+            const k = window.localStorage.key(i)
+            if (!k) continue
+            if (k.includes('order') || k.includes('job') || k.includes('invoice')) {
+              const val = window.localStorage.getItem(k)
+              if (val && val.startsWith('[')) {
+                try {
+                  const parsed = JSON.parse(val)
+                  if (Array.isArray(parsed)) {
+                    parsed.forEach((item) => {
+                      if (item && typeof item === 'object') {
+                        if (item.order_number && (item.items || item.final_price !== undefined || item.subtotal !== undefined)) {
+                          rawOrders.push(item)
+                        } else if (item.job_number) {
+                          rawJobs.push(item)
+                        } else if (item.invoice_number) {
+                          rawInvoices.push(item)
+                        }
+                      }
+                    })
+                  }
+                } catch {}
+              }
+            }
+          }
+        } catch {}
+      }
 
       const isMatchingTenant = (itemCompId?: string | null) => {
         if (!itemCompId || itemCompId === 'default' || !companyId || companyId === 'default') return true
-        if (itemCompId === companyId || itemCompId === tenantSlug) return true
-        return false
+        const c1 = String(itemCompId).toLowerCase()
+        const c2 = String(companyId).toLowerCase()
+        const s = String(tenantSlug).toLowerCase()
+        return c1 === c2 || c1 === s
       }
 
-      const tenantOrders = localOrders.filter((o) => isMatchingTenant(o.company_id))
-      const tenantInvoices = localInvoices.filter((i) => isMatchingTenant(i.company_id))
+      // Deduplicate Sales Orders by ID or Order Number
+      const orderDedupMap = new Map<string, SalesOrderRecord>()
+      rawOrders.filter((o) => isMatchingTenant(o.company_id)).forEach((o) => {
+        const key = o.id || o.order_number
+        if (key && !orderDedupMap.has(key)) {
+          orderDedupMap.set(key, o)
+        }
+      })
+      const tenantOrders = Array.from(orderDedupMap.values())
+
+      // Deduplicate Job Orders by ID or Job Number
+      const jobDedupMap = new Map<string, JobOrderRecord>()
+      rawJobs.filter((j) => isMatchingTenant(j.company_id)).forEach((j) => {
+        const key = j.id || j.job_number
+        if (key && !jobDedupMap.has(key)) {
+          jobDedupMap.set(key, j)
+        }
+      })
+      const tenantJobOrders = Array.from(jobDedupMap.values())
+
+      // Deduplicate Invoices by ID or Invoice Number
+      const invoiceDedupMap = new Map<string, InvoiceRecord>()
+      rawInvoices.filter((i) => isMatchingTenant(i.company_id)).forEach((i) => {
+        const key = i.id || i.invoice_number
+        if (key && !invoiceDedupMap.has(key)) {
+          invoiceDedupMap.set(key, i)
+        }
+      })
+      const tenantInvoices = Array.from(invoiceDedupMap.values())
 
       const unifiedMap = new Map<string, UnifiedOrderRecord>()
 
@@ -131,15 +229,15 @@ export default function OrdersPage() {
           return {
             id: it.id || `item-${orderId}-${idx}`,
             itemName: it.product_name || it.item_name || 'Printing Item',
-            dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+            dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || it.unit || 'ft'}` : undefined),
             width: it.width,
             height: it.height,
-            dimensionUnit: it.unit,
+            dimensionUnit: it.dimension_unit || it.unit,
             quantity: Number(it.quantity) || 1,
-            unit: it.unit || 'pcs',
+            unit: it.dimension_unit || it.unit || 'pcs',
             unitPrice: it.unit_price,
             totalPrice: it.total_price,
-            materialSpec: it.material_spec || it.material,
+            materialSpec: it.material_spec || it.material || it.media_type,
             finishing: it.finishing,
             itemKind,
             workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
@@ -147,6 +245,17 @@ export default function OrdersPage() {
             notes: it.notes,
           }
         })
+
+        // Find linked job order if any
+        const linkedJob = tenantJobOrders.find(
+          (j) =>
+            j.order_id === o.id ||
+            j.order_id === o.order_number ||
+            (j as any).sales_order_id === o.id ||
+            (j as any).sales_order_id === o.order_number ||
+            j.order_number === o.order_number ||
+            (j.job_number && o.order_number && j.job_number.replace('JOB-', '').replace(/-[A-Z]$/, '') === o.order_number.replace('ORD-', ''))
+        )
 
         let calculatedStage: OrderStage = 'new_orders'
         const ordStatus = String(o.status || '')
@@ -158,7 +267,7 @@ export default function OrdersPage() {
           calculatedStage = 'ready_delivery'
         } else if (ordStatus === 'ready' || ordStatus === 'ready_for_delivery') {
           calculatedStage = 'ready_delivery'
-        } else if (ordStatus === 'in_production' || ordStatus === 'production') {
+        } else if (ordStatus === 'in_production' || ordStatus === 'production' || (linkedJob && linkedJob.status === 'in_progress')) {
           calculatedStage = 'in_production'
         } else if (ordStatus === 'in_design' || ordStatus === 'designing') {
           calculatedStage = 'in_design'
@@ -176,10 +285,15 @@ export default function OrdersPage() {
           o.customer_name?.toLowerCase().includes('counter') ||
           (o as any).is_walkin
 
+        const originVal: any =
+          (o as any).quotation_id || (o as any).quotation_number ? 'quotation' : 'sales_order'
+
         unifiedMap.set(orderId, {
           id: o.id,
           orderNumber: o.order_number,
-          origin: 'sales_order',
+          jobNumber: linkedJob?.job_number,
+          jobOrderId: linkedJob?.id,
+          origin: originVal,
           customerId: o.customer_id || undefined,
           customerName: o.customer_name,
           customerPhone: o.customer_phone || (o as any).mobile,
@@ -200,10 +314,68 @@ export default function OrdersPage() {
           salespersonName: o.salesperson_name,
           notes: o.notes || undefined,
           rawOrder: o,
+          rawJob: linkedJob,
         })
       })
 
-      // B. Process Invoices (Merge or Synthesize Orders)
+      // B. Process Standalone Job Orders (if not already mapped)
+      tenantJobOrders.forEach((j) => {
+        const isMapped = Array.from(unifiedMap.values()).some(
+          (u) =>
+            u.id === j.order_id ||
+            u.id === (j as any).sales_order_id ||
+            u.orderNumber === j.order_number ||
+            u.jobNumber === j.job_number ||
+            u.jobOrderId === j.id
+        )
+
+        if (!isMapped) {
+          const synthOrderNumber = j.order_number || j.job_number?.replace('JOB-', 'ORD-') || `ORD-${j.id.slice(-6)}`
+          let jobStage: OrderStage = 'new_orders'
+          if (j.status === 'completed') jobStage = 'ready_delivery'
+          else if (j.status === 'in_progress') jobStage = 'in_production'
+          else if (j.artwork_status === 'pending' || j.workflow_routing === 'design_required') jobStage = 'in_design'
+
+          unifiedMap.set(j.id, {
+            id: j.id,
+            orderNumber: synthOrderNumber,
+            jobNumber: j.job_number,
+            jobOrderId: j.id,
+            origin: 'job_order',
+            customerId: (j as any).customer_id || undefined,
+            customerName: j.customer_name || 'Production Job Client',
+            customerPhone: (j as any).customer_phone || (j as any).mobile || undefined,
+            isWalkIn: false,
+            items: [
+              {
+                id: `job-item-${j.id}`,
+                itemName: j.product_name || (j as any).title || 'Production Print Job',
+                dimensions: j.size_spec,
+                quantity: Number(j.quantity) || 1,
+                unit: 'pcs',
+                materialSpec: j.material_spec,
+                itemKind: 'custom',
+                workflowRouting: j.workflow_routing || 'ready_production',
+                notes: j.production_instructions ? j.production_instructions : undefined,
+              },
+            ],
+            itemsCount: Number(j.quantity) || 1,
+            priority: (j.priority as any) || 'normal',
+            orderDate: j.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
+            deliveryDate: j.deadline ? j.deadline.split('T')[0] : '',
+            createdAt: j.created_at || new Date().toISOString(),
+            stage: jobStage,
+            paymentStatus: 'unpaid',
+            totalAmount: 0,
+            advanceAmount: 0,
+            dueAmount: 0,
+            notes: j.production_instructions || undefined,
+            rawJob: j,
+          })
+        }
+      })
+
+      // C. Process Invoices (Merge or Synthesize Orders)
       tenantInvoices.forEach((inv) => {
         const matchingKey = inv.sales_order_id || inv.order_number || inv.id
         const existing = Array.from(unifiedMap.values()).find(
@@ -325,6 +497,8 @@ export default function OrdersPage() {
       window.addEventListener('printerp_data_sync', handleSync)
       window.addEventListener('printerp_table_synced', handleSync)
       window.addEventListener('printerp_table_synced:sales_orders', handleSync)
+      window.addEventListener('printerp_table_synced:job_orders', handleSync)
+      window.addEventListener('printerp_table_synced:quotations', handleSync)
       window.addEventListener('printerp_table_synced:invoices', handleSync)
       window.addEventListener('printerp_table_synced:production_jobs', handleSync)
       window.addEventListener('printerp_table_synced:production_tasks', handleSync)
@@ -335,7 +509,9 @@ export default function OrdersPage() {
       window.addEventListener('printerp_timeline_updated', handleSync)
       window.addEventListener('storage', handleSync)
       window.addEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
+      window.addEventListener(`${STORAGE_KEYS.JOB_ORDERS}_updated`, handleSync)
       window.addEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleSync)
+      window.addEventListener(`${STORAGE_KEYS.QUOTATIONS}_updated`, handleSync)
     }
 
     return () => {
@@ -343,6 +519,8 @@ export default function OrdersPage() {
         window.removeEventListener('printerp_data_sync', handleSync)
         window.removeEventListener('printerp_table_synced', handleSync)
         window.removeEventListener('printerp_table_synced:sales_orders', handleSync)
+        window.removeEventListener('printerp_table_synced:job_orders', handleSync)
+        window.removeEventListener('printerp_table_synced:quotations', handleSync)
         window.removeEventListener('printerp_table_synced:invoices', handleSync)
         window.removeEventListener('printerp_table_synced:production_jobs', handleSync)
         window.removeEventListener('printerp_table_synced:production_tasks', handleSync)
@@ -353,7 +531,9 @@ export default function OrdersPage() {
         window.removeEventListener('printerp_timeline_updated', handleSync)
         window.removeEventListener('storage', handleSync)
         window.removeEventListener(`${STORAGE_KEYS.ORDERS}_updated`, handleSync)
+        window.removeEventListener(`${STORAGE_KEYS.JOB_ORDERS}_updated`, handleSync)
         window.removeEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleSync)
+        window.removeEventListener(`${STORAGE_KEYS.QUOTATIONS}_updated`, handleSync)
       }
     }
   }, [loadData])

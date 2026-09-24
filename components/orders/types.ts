@@ -33,7 +33,9 @@ export interface UnifiedOrderRecord {
   orderNumber: string
   invoiceNumber?: string
   invoiceId?: string
-  origin: 'invoice_created' | 'sales_order' | 'work_order' | 'quotation'
+  jobNumber?: string
+  jobOrderId?: string
+  origin: 'invoice_created' | 'sales_order' | 'work_order' | 'quotation' | 'job_order'
   customerId?: string
   customerName: string
   customerNameBn?: string | null
@@ -56,6 +58,7 @@ export interface UnifiedOrderRecord {
   notes?: string
   rawOrder?: SalesOrderRecord
   rawInvoice?: InvoiceRecord
+  rawJob?: JobOrderRecord
 }
 
 export type OrderWhatsAppTemplateKey =

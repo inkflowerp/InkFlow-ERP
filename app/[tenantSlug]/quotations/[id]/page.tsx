@@ -30,6 +30,7 @@ import {
   ShieldCheck,
   RefreshCw,
   MessageSquare,
+  ArrowUpRight,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -294,6 +295,50 @@ function QuotationDetailContent() {
       )
       setIsConvertingOrder(false)
       if (res.success && res.data) {
+        // Hydrate client DataStore immediately so Commercial Orders & Job Hub has it without refresh
+        try {
+          PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+          if (slug && slug !== 'default') {
+            PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+            if (res.data.job_order) {
+              PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+            }
+            if (res.data.production_job) {
+              PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+            }
+            PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+              status: 'converted',
+              converted_order_id: res.data.order_number,
+            }, slug)
+          }
+          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+            status: 'converted',
+            converted_order_id: res.data.order_number,
+          })
+        } catch (e) {
+          console.warn('[QuotationDetail] Client store hydration:', e)
+        }
+
+        setQuote((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: 'converted',
+                converted_order_id: res.data.order_number,
+              }
+            : prev
+        )
+
+        // Dispatch instant multi-window & cross-component sync events
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+        }
+
         showNotification(`Successfully converted to Job Order Ticket #${res.data.order_number}!`)
         fetchQuotationDetail(true)
       } else {
@@ -312,6 +357,39 @@ function QuotationDetailContent() {
       const res = await convertQuotationToInvoiceAction(quote.id, company?.id)
       setIsConvertingInvoice(false)
       if (res.success && res.data) {
+        try {
+          PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data)
+          if (slug && slug !== 'default') {
+            PrintERPDataStore.addItem(STORAGE_KEYS.INVOICES, res.data, slug)
+            PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+              status: 'converted',
+              converted_invoice_id: res.data.id || res.data.invoice_number,
+            }, slug)
+          }
+          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quote.id, {
+            status: 'converted',
+            converted_invoice_id: res.data.id || res.data.invoice_number,
+          })
+        } catch {}
+
+        const invoiceData = res.data
+        setQuote((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: 'converted',
+                converted_invoice_id: invoiceData.id || invoiceData.invoice_number,
+              }
+            : prev
+        )
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+        }
+
         showNotification(`Successfully converted to Invoice #${res.data.invoice_number}! Quoted prices preserved.`)
         fetchQuotationDetail(true)
       } else {
@@ -447,9 +525,12 @@ function QuotationDetailContent() {
                     {quote.status}
                   </Badge>
                   {quote.converted_order_id && (
-                    <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs font-mono font-bold">
-                      Job Order #{quote.converted_order_id}
-                    </Badge>
+                    <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
+                      <Badge variant="outline" className="bg-purple-900/80 text-purple-200 border-purple-400/60 text-xs font-mono font-bold hover:bg-purple-800 transition-colors cursor-pointer flex items-center gap-1">
+                        <span>Job Order #{quote.converted_order_id}</span>
+                        <ArrowUpRight className="h-3 w-3" />
+                      </Badge>
+                    </Link>
                   )}
                   {quote.converted_invoice_id && (
                     <Badge variant="outline" className="bg-emerald-900/80 text-emerald-200 border-emerald-400/60 text-xs font-mono font-bold">
@@ -590,7 +671,7 @@ function QuotationDetailContent() {
                 </Button>
 
                 {/* Convert to Job Order */}
-                {quote.status !== 'converted' && !quote.converted_order_id && (
+                {quote.status !== 'converted' && !quote.converted_order_id ? (
                   <Button
                     size="sm"
                     onClick={handleConvertToOrder}
@@ -600,7 +681,17 @@ function QuotationDetailContent() {
                     <FileCheck className="h-4 w-4" />
                     {isConvertingOrder ? 'Converting...' : 'Convert to Job Order'}
                   </Button>
-                )}
+                ) : quote.converted_order_id ? (
+                  <Link href={getTenantNavHref(`/orders?search=${quote.converted_order_id}`, pathname, slug)}>
+                    <Button
+                      size="sm"
+                      className="h-9 text-xs bg-purple-700 hover:bg-purple-800 text-white font-bold gap-1.5 shadow-md cursor-pointer"
+                    >
+                      <ArrowUpRight className="h-4 w-4" />
+                      View Job Order #{quote.converted_order_id} →
+                    </Button>
+                  </Link>
+                ) : null}
 
                 {/* Convert to Invoice */}
                 {quote.status !== 'converted' && !quote.converted_invoice_id && (

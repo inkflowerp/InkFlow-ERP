@@ -5,7 +5,7 @@ import { OrderService } from '@/services/order.service'
 import { AuditService } from '@/services/audit.service'
 import { EntitlementService } from '@/services/entitlement.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
-import { SalesOrderRecord } from '@/types/order.types'
+import { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
 
 export interface ServerActionResult<T> {
   success: boolean
@@ -398,6 +398,25 @@ export async function getOrdersAction(
     return { success: true, data }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to fetch orders' }
+  }
+}
+
+/**
+ * Server Action: Fetch job orders for tenant
+ */
+export async function getJobOrdersAction(
+  requestedCompanyId?: string,
+  orderId?: string
+): Promise<ServerActionResult<JobOrderRecord[]>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const data = await OrderService.getJobs(tenant.companyId, orderId)
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to fetch job orders' }
   }
 }
 

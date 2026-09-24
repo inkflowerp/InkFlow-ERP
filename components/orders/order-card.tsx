@@ -104,6 +104,11 @@ export const OrderCard = React.memo(function OrderCard({
                   Inv: #{order.invoiceNumber}
                 </Link>
               )}
+              {order.jobNumber && (
+                <span className="font-mono text-xs font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 px-2 py-0.5 rounded border border-purple-200 dark:border-purple-800">
+                  Job: #{order.jobNumber}
+                </span>
+              )}
               <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded uppercase">
                 {order.origin.replace('_', ' ')}
               </span>

@@ -29,7 +29,7 @@ import {
 } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
-import { getQuotationsAction } from '@/actions/quotation.actions'
+import { getQuotationsAction, convertQuotationToJobOrderAction } from '@/actions/quotation.actions'
 
 export default function SalesManagerPage() {
   const { company } = useTenant()
@@ -131,12 +131,60 @@ export default function SalesManagerPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const handleConvertToOrder = (quoteId: string) => {
-    const res = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
-    if (res) {
-      showNotification(`Quotation converted to Sales Order ${res.order_number} successfully!`)
-    } else {
-      showNotification('Quotation updated.')
+  const handleConvertToOrder = async (quoteId: string) => {
+    try {
+      const q = (quotations || []).find((item) => item.id === quoteId || item.quotation_number === quoteId)
+      const res = await convertQuotationToJobOrderAction(
+        quoteId,
+        { advanceAmount: q?.advance_amount ?? undefined },
+        companyId
+      )
+      if (res.success && res.data) {
+        PrintERPDataStore.createSalesOrderWithIntegrations(res.data)
+        if (slug && slug !== 'default') {
+          PrintERPDataStore.addItem(STORAGE_KEYS.ORDERS, res.data, slug)
+          if (res.data.job_order) {
+            PrintERPDataStore.addItem(STORAGE_KEYS.JOB_ORDERS, res.data.job_order, slug)
+          }
+          if (res.data.production_job) {
+            PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, res.data.production_job, slug)
+          }
+          PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+            status: 'converted',
+            converted_order_id: res.data.order_number,
+          }, slug)
+        }
+        PrintERPDataStore.updateItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, quoteId, {
+          status: 'converted',
+          converted_order_id: res.data.order_number,
+        })
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced'))
+        }
+        showNotification(`Quotation converted to Job Order Ticket #${res.data.order_number} successfully!`)
+      } else {
+        const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+        if (localRes) {
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:sales_orders'))
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:job_orders'))
+            window.dispatchEvent(new CustomEvent('printerp_table_synced:quotations'))
+          }
+          showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
+        } else {
+          showNotification(`Conversion failed: ${res.error || 'Unknown error'}`)
+        }
+      }
+    } catch {
+      const localRes = PrintERPDataStore.convertQuotationToSalesOrder(quoteId)
+      if (localRes) {
+        showNotification(`Quotation converted to Sales Order ${localRes.order_number} successfully!`)
+      }
     }
   }
 
@@ -299,7 +347,7 @@ export default function SalesManagerPage() {
                         </Badge>
                       </td>
                       <td className="py-3.5 px-4 text-right">
-                        {q.status !== 'approved' && q.status !== 'converted' ? (
+                        {q.status !== 'converted' && !q.converted_order_id ? (
                           <Button
                             size="sm"
                             variant="outline"
@@ -309,7 +357,12 @@ export default function SalesManagerPage() {
                             Convert to Order
                           </Button>
                         ) : (
-                          <span className="text-xs text-emerald-600 font-semibold">Converted</span>
+                          <Link
+                            href={`/orders?search=${q.converted_order_id || ''}`}
+                            className="text-xs text-purple-600 font-semibold hover:underline"
+                          >
+                            Job Order #{q.converted_order_id || 'View'} →
+                          </Link>
                         )}
                       </td>
                     </tr>
@@ -354,7 +407,7 @@ export default function SalesManagerPage() {
                     <div className="font-black font-mono text-base text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
-                    {q.status !== 'approved' && q.status !== 'converted' ? (
+                    {q.status !== 'converted' && !q.converted_order_id ? (
                       <Button
                         size="sm"
                         variant="outline"
@@ -364,7 +417,12 @@ export default function SalesManagerPage() {
                         Convert to Order
                       </Button>
                     ) : (
-                      <span className="text-xs text-emerald-600 font-bold">Converted</span>
+                      <Link
+                        href={`/orders?search=${q.converted_order_id || ''}`}
+                        className="text-xs text-purple-600 font-bold hover:underline"
+                      >
+                        Job Order #{q.converted_order_id || 'View'} →
+                      </Link>
                     )}
                   </div>
                 </div>

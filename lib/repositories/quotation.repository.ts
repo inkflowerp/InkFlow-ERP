@@ -883,8 +883,97 @@ export class QuotationRepository {
       }),
     }
 
+    // Persist to Supabase if configured and valid UUID company context
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+    try {
+      const supabase = await createClient()
+      if (uuidRegex.test(effectiveCompanyId)) {
+        const isCustUuid = quote.customer_id && uuidRegex.test(quote.customer_id)
+        const isQuoteUuid = quote.id && uuidRegex.test(quote.id)
+
+        const { data: dbOrder, error: orderErr } = await (supabase as any)
+          .from('sales_orders')
+          .insert({
+            company_id: effectiveCompanyId,
+            order_number: orderNumber,
+            quotation_id: isQuoteUuid ? quote.id : null,
+            customer_id: isCustUuid ? quote.customer_id : null,
+            customer_name: quote.customer_name,
+            customer_phone: quote.customer_phone,
+            customer_address: quote.customer_address || null,
+            salesperson_name: salesOrder.salesperson_name,
+            order_date: salesOrder.order_date,
+            delivery_date: salesOrder.delivery_date,
+            priority: salesOrder.priority,
+            status: salesOrder.status,
+            payment_terms: salesOrder.payment_terms,
+            subtotal: salesOrder.subtotal,
+            discount_amount: salesOrder.discount_amount,
+            vat_amount: salesOrder.vat_amount,
+            final_price: salesOrder.final_price,
+            advance_amount: salesOrder.advance_amount,
+            due_amount: salesOrder.due_amount,
+            notes: salesOrder.notes,
+          })
+          .select()
+          .single()
+
+        if (!orderErr && dbOrder) {
+          salesOrder.id = dbOrder.id
+
+          if (salesOrder.items && salesOrder.items.length > 0) {
+            const itemsPayload = salesOrder.items.map((it: any) => ({
+              order_id: dbOrder.id,
+              product_id: it.product_id && uuidRegex.test(it.product_id) ? it.product_id : null,
+              item_name: it.item_name,
+              material_spec: it.media_type || it.material_spec || null,
+              width: it.width || 1,
+              height: it.height || 1,
+              dimension_unit: it.dimension_unit || 'ft',
+              quantity: it.quantity || 1,
+              unit: it.unit || 'sft',
+              unit_price: it.unit_price || 0,
+              total_price: it.total_price || 0,
+            }))
+            await (supabase as any).from('sales_order_items').insert(itemsPayload)
+          }
+
+          // Insert job order in Supabase
+          const jobNum = `JOB-${orderNumber.replace('ORD-', '')}-A`
+          await (supabase as any).from('job_orders').insert({
+            company_id: effectiveCompanyId,
+            job_number: jobNum,
+            order_id: dbOrder.id,
+            product_name: salesOrder.items[0]?.item_name || 'Print Order Job',
+            customer_name: salesOrder.customer_name,
+            quantity: salesOrder.items[0]?.quantity || 1,
+            size_spec: salesOrder.items[0]?.dimensions_spec || 'Standard',
+            material_spec: salesOrder.items[0]?.media_type || 'Standard Media',
+            artwork_status: 'approved',
+            deadline: `${salesOrder.delivery_date}T18:00:00Z`,
+            assigned_department: 'wide_format_print',
+            production_instructions: salesOrder.notes || '',
+            status: 'queued',
+          })
+
+          // Insert order timeline event
+          await (supabase as any).from('order_timeline_events').insert({
+            company_id: effectiveCompanyId,
+            order_id: dbOrder.id,
+            stage: 'sales_order',
+            title: 'Order Created from Quotation',
+            description: `Converted from Quotation #${quote.quotation_number} to Order #${orderNumber}`,
+            actor_name: salesOrder.salesperson_name,
+            created_at: new Date().toISOString(),
+          })
+        }
+      }
+    } catch (dbErr) {
+      console.warn('[QuotationRepository] Supabase order insertion fallback to local:', dbErr)
+    }
+
     // Persist to DataStore with all integrated downstream records (job order, prod tasks, mat reqs, costing)
-    PrintERPDataStore.createSalesOrderWithIntegrations(salesOrder as any)
+    const integratedOrder = PrintERPDataStore.createSalesOrderWithIntegrations(salesOrder as any)
 
     // Update Quotation Status to Converted
     await this.updateQuotation(quote.id, {
@@ -903,7 +992,20 @@ export class QuotationRepository {
     }
     await this.addActivity(activity)
 
-    return salesOrder
+    const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.JOB_ORDERS) || []
+    const matchingJob = allJobs.find((j: any) => j.order_id === salesOrder.id || j.order_id === orderId)
+    const allProd = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+    const matchingProd = allProd.find((p: any) => p.sales_order_id === salesOrder.id || p.sales_order_id === orderId)
+    const allInvs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const matchingInv = allInvs.find((i: any) => i.sales_order_id === salesOrder.id || i.sales_order_id === orderId)
+
+    return {
+      ...salesOrder,
+      ...integratedOrder,
+      job_order: matchingJob,
+      production_job: matchingProd,
+      invoice: matchingInv,
+    }
   }
 
   /**
