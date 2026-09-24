@@ -2444,9 +2444,9 @@ export function getMaterialWarehouseStockBreakdown(
           const matchedItem = map.get(key) || Array.from(map.values()).find(
             (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - rawW) < 0.05) &&
               Math.abs(item.length_ft - attrs.length_ft) < 0.05 &&
-              (item.purchase_price === 0 || attrs.purchase_price === 0 || Math.abs(item.purchase_price - attrs.purchase_price) < 1) &&
-              (item.gsm === 0 || attrs.gsm === 0 || item.gsm === attrs.gsm) &&
-              (item.finishing === 'none' || attrs.finishing === 'none' || item.finishing === attrs.finishing)
+              (Number(item.purchase_price || 0) === 0 || Number(attrs.purchase_price || 0) === 0 || Math.abs(Number(item.purchase_price || 0) - Number(attrs.purchase_price || 0)) < 1) &&
+              (Number(item.gsm || 0) === 0 || Number(attrs.gsm || 0) === 0 || Number(item.gsm || 0) === Number(attrs.gsm || 0)) &&
+              (String(item.finishing || 'none') === 'none' || String(attrs.finishing || 'none') === 'none' || String(item.finishing || 'none') === String(attrs.finishing || 'none'))
           )
 
           const rollCost = attrs.purchase_price > 0
