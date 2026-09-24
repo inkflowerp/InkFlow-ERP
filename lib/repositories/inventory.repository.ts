@@ -1095,7 +1095,7 @@ export class InventoryRepository {
     }
 
     const currentStock = Number(material.current_stock ?? (material as any).stock ?? 0) || 0
-    const newStock = currentStock + params.quantity_change
+    const newStock = Math.round((currentStock + params.quantity_change) * 100) / 100
 
     // 2. Strict non-negative stock verification
     if (newStock < 0) {

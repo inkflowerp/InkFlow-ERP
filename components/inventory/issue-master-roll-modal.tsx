@@ -787,6 +787,12 @@ export function IssueMasterRollModal({
       setError('Quantity must be at least 1.')
       return
     }
+    if (isStoreShortage || currentStoreStock < totalBatchQuantity) {
+      setError(
+        `Insufficient Warehouse Stock: Current available stock is ${currentStoreStock} ${consumptionUnitName.toUpperCase()} (${currentAvailablePurchaseUnits} ${formatUnitPlural(currentAvailablePurchaseUnits, purchaseUnitName)}). Please receive stock into the warehouse before issuing.`
+      )
+      return
+    }
 
     setLoading(true)
     setError(null)
