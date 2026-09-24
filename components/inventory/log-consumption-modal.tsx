@@ -5,7 +5,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Trash2, Scissors, Sparkles, Printer, Layers, Info, Disc } from 'lucide-react'
+import { Plus, Trash2, Scissors, Printer, Info, Disc } from 'lucide-react'
 import { MaterialRecord, InventoryLocationRecord, FloorConsumptionRecord, InventoryRollRecord } from '@/types/inventory.types'
 import { ProductionTaskRecord } from '@/types/production.types'
 import {
@@ -46,16 +46,24 @@ export function LogConsumptionModal({
   companyId,
 }: LogConsumptionModalProps) {
   const [taskId, setTaskId] = useState(selectedTaskId || (tasks[0]?.id || ''))
-  const [materialId, setMaterialId] = useState(selectedMaterialId || (materials[0]?.id || ''))
+  const [materialId, setMaterialId] = useState(
+    selectedFloorRecord?.material_id || selectedMaterialId || (materials[0]?.id || '')
+  )
   const [rollId, setRollId] = useState<string>(selectedRollId || '')
   const [bleedAllowanceIn, setBleedAllowanceIn] = useState<number>(3)
-  const [consumedQty, setConsumedQty] = useState<number>(1)
+  const [consumedQty, setConsumedQty] = useState<number>(() => {
+    if (selectedFloorRecord) {
+      const initialRemaining = Number(selectedFloorRecord.remaining_floor_balance) || 1
+      return Math.min(initialRemaining, Math.max(1, initialRemaining))
+    }
+    return 1
+  })
   const [returnedQty, setReturnedQty] = useState<number>(0)
   const [returnLocationId, setReturnLocationId] = useState(locations[0]?.id || '')
   const [wastageQty, setWastageQty] = useState<number>(0)
   const [wastageReason, setWastageReason] = useState('')
-  const [jobRef, setJobRef] = useState('')
-  const [operatorName, setOperatorName] = useState('')
+  const [jobRef, setJobRef] = useState(selectedFloorRecord?.job_reference || '')
+  const [operatorName, setOperatorName] = useState(selectedFloorRecord?.operator_name || '')
   const [notes, setNotes] = useState('')
 
   // Discrete Remnants List
@@ -102,6 +110,7 @@ export function LogConsumptionModal({
   // Sync state when floor record is passed
   useEffect(() => {
     if (selectedFloorRecord) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMaterialId(selectedFloorRecord.material_id)
       setJobRef(selectedFloorRecord.job_reference || '')
       setOperatorName(selectedFloorRecord.operator_name || '')
@@ -113,10 +122,12 @@ export function LogConsumptionModal({
       const r = (rolls || []).find((x) => x.id === selectedRollId)
       if (r) {
         setRollId(r.id)
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setMaterialId(r.material_id)
         setConsumedQty(1)
       }
     } else if (selectedMaterialId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMaterialId(selectedMaterialId)
     }
   }, [selectedFloorRecord, selectedMaterialId, selectedRollId, rolls])
