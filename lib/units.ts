@@ -2454,11 +2454,14 @@ export function getMaterialWarehouseStockBreakdown(
         }
       }
 
-      if (currentStock <= 0) {
-        for (const item of map.values()) {
-          item.roll_count = 0
-          item.total_sft = 0
-          item.total_valuation = 0
+      if (currentStock <= 0 && matRolls.length === 0) {
+        const hasExplicitCount = Array.from(map.values()).some((item) => (item.roll_count || 0) > 0)
+        if (!hasExplicitCount) {
+          for (const item of map.values()) {
+            item.roll_count = 0
+            item.total_sft = 0
+            item.total_valuation = 0
+          }
         }
       }
 
@@ -2583,7 +2586,7 @@ export function getMaterialWarehouseStockBreakdown(
         }
       }
 
-      if (currentStock <= 0) {
+      if (currentStock <= 0 && currentExplicitRolls === 0) {
         for (const item of map.values()) {
           item.roll_count = 0
           item.total_sft = 0

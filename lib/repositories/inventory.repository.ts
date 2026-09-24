@@ -533,8 +533,8 @@ export class InventoryRepository {
         list.push(matRec)
       }
 
-      // Apply Filters
-      let results = list
+      // Apply Filters & Reconcile Stock
+      let results = list.map((m) => this.reconcileMaterialStock(m) || m)
 
       if (options?.category && options.category !== 'all') {
         const cat = options.category.toLowerCase()
@@ -564,9 +564,96 @@ export class InventoryRepository {
     })
   }
 
-  private static reconcileMaterialStock(material: any): MaterialRecord | null {
+  public static reconcileMaterialStock(material: any, warehouseRolls?: any[]): MaterialRecord | null {
     if (!material) return null
-    return material as MaterialRecord
+    const mat = { ...material }
+
+    // 1. Gather all roll sizes from all possible locations
+    const rollSizes: any[] = Array.isArray(mat.roll_sizes) && mat.roll_sizes.length > 0
+      ? mat.roll_sizes
+      : Array.isArray((mat.material_config as any)?.roll_sizes) && (mat.material_config as any).roll_sizes.length > 0
+      ? (mat.material_config as any).roll_sizes
+      : Array.isArray((mat.pricing_formula as any)?.roll_sizes) && (mat.pricing_formula as any).roll_sizes.length > 0
+      ? (mat.pricing_formula as any).roll_sizes
+      : Array.isArray((mat.pricing_formula as any)?.material_config?.roll_sizes) && (mat.pricing_formula as any).material_config.roll_sizes.length > 0
+      ? (mat.pricing_formula as any).material_config.roll_sizes
+      : []
+
+    if (rollSizes.length > 0) {
+      mat.roll_sizes = rollSizes
+    }
+
+    let rootStock = Number(mat.current_stock ?? mat.stock ?? (mat as any).opening_stock ?? 0)
+
+    // 2. If roll sizes exist and rootStock <= 0, compute total SFT from roll sizes with explicit quantities
+    if (rootStock <= 0 && rollSizes.length > 0) {
+      let rollSizesTotalSft = 0
+      let hasExplicitQty = false
+
+      for (const s of rollSizes) {
+        const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? s.count ?? 0)
+        if (qty > 0) {
+          hasExplicitQty = true
+          const rawW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || mat.roll_width_ft || 4)
+          const allow = Number(s.extra_allowance ?? s.allowance ?? s.allowance_ft ?? mat.production_width_allowance ?? 0)
+          const w = s.width_ft !== undefined && Number(s.width_ft) > 0 ? Number(s.width_ft) : (allow > 0 ? Math.round((rawW + allow) * 100) / 100 : rawW)
+          const l = Number(s.length || s.length_ft || mat.standard_roll_length_ft || 164)
+          rollSizesTotalSft += qty * (w * l)
+        }
+      }
+
+      if (hasExplicitQty && rollSizesTotalSft > 0) {
+        rootStock = Math.round(rollSizesTotalSft * 100) / 100
+      }
+    }
+
+    // 3. If discrete physical warehouse rolls exist for this material and rootStock <= 0
+    if (rootStock <= 0 && Array.isArray(warehouseRolls) && warehouseRolls.length > 0) {
+      const activeWarehouseRolls = warehouseRolls.filter(
+        (r) =>
+          (r.material_id === mat.id || (mat.sku && r.material?.sku && r.material.sku.toLowerCase() === mat.sku.toLowerCase())) &&
+          (r.status === 'in_warehouse' || r.status === 'available' || !r.status) &&
+          r.location_name !== 'Print Floor' &&
+          !r.mounted_machine_id &&
+          !r.mounted_machine_name
+      )
+      if (activeWarehouseRolls.length > 0) {
+        const warehouseRollsSft = activeWarehouseRolls.reduce(
+          (sum, r) => sum + Number(r.remaining_area_sft ?? r.initial_area_sft ?? (Number(r.width_ft || 4) * Number(r.current_length_ft ?? r.initial_length_ft ?? 164))),
+          0
+        )
+        if (warehouseRollsSft > 0) {
+          rootStock = Math.round(warehouseRollsSft * 100) / 100
+        }
+      }
+    }
+
+    // 4. Check variants stock if available and rootStock <= 0
+    if (rootStock <= 0 && Array.isArray(mat.variants) && mat.variants.length > 0) {
+      let variantStockSum = 0
+      let hasVariantStock = false
+      for (const v of mat.variants) {
+        const vStock = Number(v.current_stock ?? v.stock ?? v.stock_qty ?? 0)
+        if (vStock > 0) {
+          hasVariantStock = true
+          variantStockSum += vStock
+        }
+      }
+      if (hasVariantStock) {
+        rootStock = variantStockSum
+      }
+    }
+
+    // 5. Check pricing_formula stock if available and rootStock <= 0
+    if (rootStock <= 0) {
+      const pfStock = Number((mat.pricing_formula as any)?.current_stock ?? (mat.pricing_formula as any)?.opening_stock ?? 0)
+      if (pfStock > 0) {
+        rootStock = pfStock
+      }
+    }
+
+    mat.current_stock = rootStock
+    return mat as MaterialRecord
   }
 
   static async getMaterialById(id: string, companyId: string): Promise<MaterialRecord | null> {
@@ -1092,6 +1179,7 @@ export class InventoryRepository {
     notes?: string | null
     performed_by_id?: string | null
     performed_by_name: string
+    roll_sizes?: any[] | null
   }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }> {
     // 1. Fetch live material under tenant isolation
     const material = await this.getMaterialById(params.material_id, params.company_id)
@@ -1111,6 +1199,12 @@ export class InventoryRepository {
 
     const unitCost = params.unit_cost !== undefined ? params.unit_cost : Number(material.average_cost) || 0
     const totalCost = Math.abs(params.quantity_change) * unitCost
+
+    const existingMatRollSizes = params.roll_sizes !== undefined
+      ? params.roll_sizes
+      : (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
+        ? material.roll_sizes
+        : (material.material_config as any)?.roll_sizes || (material.pricing_formula as any)?.roll_sizes || null)
 
     // Try Supabase RPC or Direct Mutation
     try {
@@ -1140,9 +1234,6 @@ export class InventoryRepository {
       }
 
       // 3. Direct DB Ledger Insert & Multi-Table Sync
-      const existingMatRollSizes = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
-        ? material.roll_sizes
-        : (material.material_config as any)?.roll_sizes || (material.pricing_formula as any)?.roll_sizes || null
 
       // Ensure material row exists in Supabase materials table
       try {
@@ -1308,8 +1399,8 @@ export class InventoryRepository {
       current_stock: newStock,
       average_cost: unitCost > 0 ? unitCost : material.average_cost,
       last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
-      ...(material.roll_sizes ? { roll_sizes: material.roll_sizes } : {}),
-    }) || { ...material, current_stock: newStock }
+      ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+    }) || { ...material, current_stock: newStock, roll_sizes: existingMatRollSizes }
 
     if (params.company_id) {
       try {
@@ -1317,7 +1408,7 @@ export class InventoryRepository {
           current_stock: newStock,
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
           last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
-          ...(material.roll_sizes ? { roll_sizes: material.roll_sizes } : {}),
+          ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
         }, params.company_id)
       } catch {}
     }
@@ -1330,7 +1421,7 @@ export class InventoryRepository {
       pricing_formula: {
         current_stock: newStock,
         stock: newStock,
-        ...(material.roll_sizes ? { roll_sizes: material.roll_sizes } : {}),
+        ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
       },
     }
 
@@ -3791,11 +3882,12 @@ export class InventoryRepository {
     }
 
     // Decrement specific size group count in material.roll_sizes or material_config.roll_sizes
+    let updatedSizes: any[] | null = null
     if (isRollMedia) {
       try {
         const rawSizes = mat.roll_sizes || (mat.material_config as any)?.roll_sizes || []
         if (Array.isArray(rawSizes) && rawSizes.length > 0) {
-          const updatedSizes = rawSizes.map((s: any) => {
+          updatedSizes = rawSizes.map((s: any) => {
             if (Number(s.width || s.width_ft) === widthFt) {
               const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
               const newCount = Math.max(0, prevCount - numRolls)
@@ -3862,6 +3954,7 @@ export class InventoryRepository {
       reference_id: primaryRoll.id,
       notes: `${numRolls} ${rawPurchaseUnit.toUpperCase()}(s) [${primaryRoll.roll_code}${numRolls > 1 && isRollMedia ? ` ... (${numRolls} rolls)` : ''}] (${totalConsumptionQuantity} ${consumptionUnit.toUpperCase()}) issued to Print Floor`,
       performed_by_name: params.operator_name || 'Store Keeper',
+      roll_sizes: updatedSizes || undefined,
     })
 
     // Create synchronized MaterialIssueRecord and FloorConsumptionRecords so the item appears in floor consumption

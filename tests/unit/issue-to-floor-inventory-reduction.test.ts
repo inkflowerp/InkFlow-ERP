@@ -231,4 +231,86 @@ describe('Issue to Floor Inventory Stock Reduction & Synchronization', () => {
     assert.ok(floorItem, 'Must have floor consumption record for issued material')
     assert.strictEqual(floorItem?.remaining_floor_balance, 500)
   })
+
+  it('4. Black PVC configured with 21 rolls (2ft x 164ft = 6888 SFT) in roll_sizes and 0 raw current_stock reconciles stock and issues 1 roll (328 SFT) without integrity violation', async () => {
+    const blackPvcMaterial: MaterialRecord = {
+      id: `mat-black-pvc-58655-${Date.now()}`,
+      company_id: testCompanyId,
+      sku: 'MAT-58655',
+      name: 'Black pvc',
+      category: 'roll_media',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      master_purchase_unit: 'roll',
+      current_stock: 0, // Root column is 0 in DB
+      average_cost: 3280,
+      cost_per_unit: 10,
+      is_roll: true,
+      roll_width_ft: 2,
+      roll_length_ft: 164,
+      standard_roll_length_ft: 164,
+      roll_sizes: [
+        {
+          nominal_width_ft: 2,
+          width_ft: 2,
+          length_ft: 164,
+          roll_count: 21,
+          quantity: 21,
+          stock_qty: 21,
+          stock: 21,
+          price: 3280,
+          allowance_ft: 0,
+        },
+        {
+          nominal_width_ft: 3.25,
+          width_ft: 3.25,
+          length_ft: 164,
+          roll_count: 0,
+          quantity: 0,
+          stock_qty: 0,
+          stock: 0,
+          price: 5330,
+          allowance_ft: 0,
+        },
+      ],
+      is_active: true,
+    }
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial, testCompanyId)
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, blackPvcMaterial)
+
+    // Verify initial stock breakdown calculates 21 rolls (6,888 SFT)
+    const initialBreakdown = getMaterialWarehouseStockBreakdown(blackPvcMaterial)
+    assert.strictEqual(initialBreakdown.total_rolls, 21, 'Initial warehouse rolls must be 21')
+    assert.strictEqual(initialBreakdown.total_stock_display, '6,888 SFT')
+
+    // Issue 1 roll of 2ft x 164ft (328 SFT) to floor
+    const issueResult = await InventoryService.issueMasterRollsBatch({
+      company_id: testCompanyId,
+      material_id: blackPvcMaterial.id,
+      quantity_rolls: 1,
+      width_ft: 2,
+      length_ft: 164,
+      destination: 'floor_staging',
+      operator_name: 'Shop Floor Operator',
+    })
+
+    assert.strictEqual(issueResult.quantity_issued, 1)
+    assert.strictEqual(issueResult.total_area_sft, 328)
+
+    // Verify updated warehouse material stock is 6,560 SFT (20 rolls)
+    const updatedMat = await InventoryRepository.getMaterialById(blackPvcMaterial.id, testCompanyId)
+    assert.ok(updatedMat)
+    assert.strictEqual(updatedMat.current_stock, 6560, 'Warehouse stock must be 6,560 SFT (20 rolls * 328 SFT)')
+
+    const updatedBreakdown = getMaterialWarehouseStockBreakdown(updatedMat)
+    assert.strictEqual(updatedBreakdown.total_rolls, 20, 'Warehouse breakdown total rolls must be 20')
+    assert.strictEqual(updatedBreakdown.total_stock_display, '6,560 SFT')
+
+    // Verify floor consumption contains the issued roll
+    const floorConsumptions = await InventoryService.getFloorConsumptions(testCompanyId)
+    const floorItem = floorConsumptions.find((f) => f.material_id === blackPvcMaterial.id)
+    assert.ok(floorItem, 'Must have floor consumption record for Black PVC')
+    assert.strictEqual(floorItem?.remaining_floor_balance, 328)
+  })
 })
