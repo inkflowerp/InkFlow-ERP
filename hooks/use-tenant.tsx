@@ -380,23 +380,39 @@ export function TenantProvider({
     setIsLoading(false)
   }
 
+  const contextValue: TenantContextType = useMemo(
+    () => ({
+      company,
+      currentRole,
+      currentUser,
+      currentBranch,
+      responsibilities,
+      permissions,
+      availableCompanies,
+      branches,
+      settings,
+      isLoading,
+      switchCompany,
+      refreshTenant,
+    }),
+    [
+      company,
+      currentRole,
+      currentUser,
+      currentBranch,
+      responsibilities,
+      permissions,
+      availableCompanies,
+      branches,
+      settings,
+      isLoading,
+      switchCompany,
+      refreshTenant,
+    ]
+  )
+
   return (
-    <TenantContext.Provider
-      value={{
-        company,
-        currentRole,
-        currentUser,
-        currentBranch,
-        responsibilities,
-        permissions,
-        availableCompanies,
-        branches,
-        settings,
-        isLoading,
-        switchCompany,
-        refreshTenant,
-      }}
-    >
+    <TenantContext.Provider value={contextValue}>
       {children}
     </TenantContext.Provider>
   )

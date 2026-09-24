@@ -102,6 +102,14 @@ export function useDataStore<T = any>(
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     const effectiveKey = PrintERPDataStore.getEffectiveKey(key, slug)
 
+    let syncDebounceTimer: ReturnType<typeof setTimeout> | null = null
+    const scheduleReload = () => {
+      if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
+      syncDebounceTimer = setTimeout(() => {
+        reloadRef.current()
+      }, 50)
+    }
+
     const handleCustomSync = (e: Event) => {
       const customEvent = e as CustomEvent
       if (
@@ -109,17 +117,17 @@ export function useDataStore<T = any>(
         customEvent.detail?.effectiveKey === effectiveKey ||
         customEvent.detail?.all === true
       ) {
-        reloadRef.current()
+        scheduleReload()
       }
     }
 
     const handleKeyUpdate = () => {
-      reloadRef.current()
+      scheduleReload()
     }
 
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === key || e.key === effectiveKey) {
-        reloadRef.current()
+        scheduleReload()
       }
     }
 
@@ -135,7 +143,7 @@ export function useDataStore<T = any>(
             msg?.storageKey === key ||
             msg?.all === true
           ) {
-            reloadRef.current()
+            scheduleReload()
           }
         }
       } catch {}
@@ -145,7 +153,7 @@ export function useDataStore<T = any>(
       const customEvent = e as CustomEvent
       const payload = customEvent.detail
       if (!payload) {
-        reloadRef.current()
+        scheduleReload()
         return
       }
 
@@ -162,7 +170,7 @@ export function useDataStore<T = any>(
         payload.table === key ||
         payload.all === true
       ) {
-        reloadRef.current()
+        scheduleReload()
       }
     }
 
@@ -187,6 +195,7 @@ export function useDataStore<T = any>(
     }
 
     return () => {
+      if (syncDebounceTimer) clearTimeout(syncDebounceTimer)
       if (localBc) {
         try {
           localBc.close()

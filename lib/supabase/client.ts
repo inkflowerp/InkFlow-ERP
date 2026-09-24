@@ -2,7 +2,7 @@ import { createBrowserClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
 import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
 
-let cachedBrowserClient: ReturnType<typeof createBrowserClient<Database>> | null = null
+const GLOBAL_CLIENT_KEY = '__printErpBrowserSupabaseClient'
 let hasLoggedConfigWarning = false
 
 /**
@@ -30,8 +30,8 @@ export function isSupabaseConfigured(): boolean {
 }
 
 export function createClient() {
-  if (typeof window !== 'undefined' && cachedBrowserClient) {
-    return cachedBrowserClient
+  if (typeof window !== 'undefined' && (globalThis as any)[GLOBAL_CLIENT_KEY]) {
+    return (globalThis as any)[GLOBAL_CLIENT_KEY]
   }
 
   const supabaseUrl =
@@ -56,7 +56,7 @@ export function createClient() {
       supabaseAnonKey || 'dummy-anon-key'
     )
     if (typeof window !== 'undefined') {
-      cachedBrowserClient = fallbackClient
+      ;(globalThis as any)[GLOBAL_CLIENT_KEY] = fallbackClient
     }
     return fallbackClient
   }
@@ -69,7 +69,7 @@ export function createClient() {
   )
 
   if (typeof window !== 'undefined') {
-    cachedBrowserClient = client
+    ;(globalThis as any)[GLOBAL_CLIENT_KEY] = client
   }
 
   return client

@@ -425,7 +425,7 @@ class RealtimeSubscriptionManager {
         .on('broadcast' as never, { event } as never, (response: { payload: T }) => {
           callback(response.payload)
         })
-        .subscribe((status) => {
+        .subscribe((status: string) => {
           if (status === 'SUBSCRIBED') {
             this.setStatus('connected')
             if (channelRef) channelRef.status = 'connected'
@@ -970,7 +970,7 @@ class RealtimeSubscriptionManager {
       )
 
       // Subscribe and manage connection lifecycle
-      channel.subscribe((status) => {
+      channel.subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           this.setStatus('connected')
           this.reconnectAttempts.delete(channelName)
@@ -1078,7 +1078,7 @@ class RealtimeSubscriptionManager {
         }
       )
 
-      channel.subscribe((status) => {
+      channel.subscribe((status: string) => {
         if (status === 'SUBSCRIBED') {
           this.setStatus('connected')
           if (channelRef) channelRef.status = 'connected'

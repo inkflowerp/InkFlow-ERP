@@ -1,8 +1,13 @@
 import { createServerClient } from '@supabase/ssr'
 import type { Database } from '../../types/database.types.ts'
 import { getAuthCookieOptions } from '../tenant/tenant-resolution.ts'
+import { createClient as createBrowserClient } from './client.ts'
 
 export async function createClient() {
+  if (typeof window !== 'undefined') {
+    return createBrowserClient()
+  }
+
   let cookieStore: any = {
     getAll: () => [],
     set: () => {},

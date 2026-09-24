@@ -48,7 +48,8 @@ export function useAuth() {
       // Check live Supabase user
       try {
         const supabase = createClient()
-        supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+        supabase.auth.getUser().then(({ data }: any) => {
+          const authUser = data?.user
           if (authUser) {
             setUser({
               id: authUser.id,

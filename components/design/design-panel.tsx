@@ -149,9 +149,14 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   useEffect(() => {
     loadData()
 
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null
     const handleDataChange = () => {
-      loadData()
+      if (debounceTimer) clearTimeout(debounceTimer)
+      debounceTimer = setTimeout(() => {
+        loadData()
+      }, 150)
     }
+
     if (typeof window !== 'undefined') {
       window.addEventListener('printerp_data_sync', handleDataChange)
       window.addEventListener('printerp_table_synced', handleDataChange)
@@ -164,6 +169,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     }
 
     return () => {
+      if (debounceTimer) clearTimeout(debounceTimer)
       if (typeof window !== 'undefined') {
         window.removeEventListener('printerp_data_sync', handleDataChange)
         window.removeEventListener('printerp_table_synced', handleDataChange)
