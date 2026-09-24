@@ -1724,7 +1724,7 @@ export function NewQuotationModal({
       <ModalDialog
         open={open}
         onOpenChange={onOpenChange}
-        size="xl"
+        size="5xl"
         title={
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black shadow-sm">
