@@ -479,67 +479,16 @@ export function normalizeQuotationRecord(raw: any): QuotationRecord {
 }
 
 /**
- * Purged test/sample quotation numbers (QUO-000001 to QUO-000008)
+ * Purged test/sample quotation numbers (Empty by default so valid quotations are never purged)
  */
-export const PURGED_QUOTATION_IDENTIFIERS = new Set<string>([
-  'QUO-000001',
-  'QUO-000002',
-  'QUO-000003',
-  'QUO-000004',
-  'QUO-000005',
-  'QUO-000006',
-  'QUO-000007',
-  'QUO-000008',
-  'QUO-00001',
-  'QUO-00002',
-  'QUO-00003',
-  'QUO-00004',
-  'QUO-00005',
-  'QUO-00006',
-  'QUO-00007',
-  'QUO-00008',
-  'QUO-0001',
-  'QUO-0002',
-  'QUO-0003',
-  'QUO-0004',
-  'QUO-0005',
-  'QUO-0006',
-  'QUO-0007',
-  'QUO-0008',
-  'QUO-001',
-  'QUO-002',
-  'QUO-003',
-  'QUO-004',
-  'QUO-005',
-  'QUO-006',
-  'QUO-007',
-  'QUO-008',
-  'QUO-01',
-  'QUO-02',
-  'QUO-03',
-  'QUO-04',
-  'QUO-05',
-  'QUO-06',
-  'QUO-07',
-  'QUO-08',
-  'QUO-1',
-  'QUO-2',
-  'QUO-3',
-  'QUO-4',
-  'QUO-5',
-  'QUO-6',
-  'QUO-7',
-  'QUO-8',
-])
+export const PURGED_QUOTATION_IDENTIFIERS = new Set<string>()
 
 export function isPurgedQuotation(recordOrNumber: any): boolean {
   if (!recordOrNumber) return false
   if (typeof recordOrNumber === 'string') {
     const upper = recordOrNumber.trim().toUpperCase()
     if (!upper) return false
-    if (PURGED_QUOTATION_IDENTIFIERS.has(upper)) return true
-    if (/^QUO-0*([1-8])$/i.test(upper)) return true
-    return false
+    return PURGED_QUOTATION_IDENTIFIERS.has(upper)
   }
 
   if (typeof recordOrNumber === 'object') {
@@ -555,7 +504,6 @@ export function isPurgedQuotation(recordOrNumber: any): boolean {
       if (c && typeof c === 'string') {
         const upper = c.trim().toUpperCase()
         if (PURGED_QUOTATION_IDENTIFIERS.has(upper)) return true
-        if (/^QUO-0*([1-8])$/i.test(upper)) return true
       }
     }
   }
@@ -652,7 +600,11 @@ export function extractQuotationsFromAny(input: any): any[] {
 /**
  * Deduplicates and normalizes a collection of quotation records by canonical ID and quotation number.
  */
-export function deduplicateQuotations(rawList: any[], targetCompanyId?: string): QuotationRecord[] {
+export function deduplicateQuotations(
+  rawList: any[],
+  targetCompanyId?: string,
+  targetSlug?: string
+): QuotationRecord[] {
   const quoteMap = new Map<string, QuotationRecord>()
   const keyAliases = new Map<string, string>()
 
@@ -666,9 +618,16 @@ export function deduplicateQuotations(rawList: any[], targetCompanyId?: string):
 
     // Tenant isolation check: if targetCompanyId is specified and strict tenant boundary applies
     if (targetCompanyId && targetCompanyId !== 'all') {
-      const cId = norm.company_id
-      if (cId && cId !== targetCompanyId && cId.toLowerCase() !== targetCompanyId.toLowerCase()) {
-        continue
+      const cId = norm.company_id ? String(norm.company_id).toLowerCase().trim() : null
+      const targetId = String(targetCompanyId).toLowerCase().trim()
+      const targetS = targetSlug ? String(targetSlug).toLowerCase().trim() : null
+
+      if (cId && cId !== 'default' && cId !== 'c-01') {
+        const matchesTargetId = cId === targetId
+        const matchesTargetSlug = targetS ? cId === targetS : false
+        if (!matchesTargetId && !matchesTargetSlug && targetId !== 'default' && targetId !== 'c-01') {
+          continue
+        }
       }
     }
 

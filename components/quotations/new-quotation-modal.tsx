@@ -502,6 +502,7 @@ export interface NewQuotationModalProps {
   onOpenChange: (open: boolean) => void
   onQuotationCreated?: (quote: QuotationRecord) => void
   companyId?: string
+  tenantSlug?: string
 }
 
 interface ItemFormState extends CreateQuotationItemInput {
@@ -564,11 +565,13 @@ export function NewQuotationModal({
   open,
   onOpenChange,
   onQuotationCreated,
-  companyId = 'c-01',
+  companyId,
+  tenantSlug,
 }: NewQuotationModalProps) {
   const { locale, tBilingual } = useI18n()
   const { company, currentUser } = useTenant()
   const { checkCanCreate, openLimitExceededModal, refreshUsage } = useSubscription()
+  const slug = tenantSlug || company?.slug || PrintERPDataStore.getActiveTenantSlug() || 'classic-printer'
 
   // -------------------------------------------------------------
   // CUSTOMER STATE (Multi-field keyword search)
@@ -665,7 +668,7 @@ export function NewQuotationModal({
   const companySearchRef = useRef<HTMLDivElement>(null)
   const emailSearchRef = useRef<HTMLDivElement>(null)
   const sendDropdownRef = useRef<HTMLDivElement>(null)
-  const effectiveCompanyId = company?.id || companyId
+  const effectiveCompanyId = company?.id || company?.slug || slug || companyId
 
   const handleOpenQuickAdd = (index: number) => {
     setQuickAddIndex(index)
@@ -1550,9 +1553,14 @@ export function NewQuotationModal({
 
     try {
       const payload = buildPayload()
-      const res = await createQuotationAction(payload, effectiveCompanyId)
+      const res = await createQuotationAction(payload, effectiveCompanyId, slug)
 
       if (res.success && res.data) {
+        try {
+          PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data, slug)
+          PrintERPDataStore.addItem<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, res.data)
+        } catch {}
+
         setSaveSuccessQuote(res.data)
         refreshUsage()
         if (onQuotationCreated) {

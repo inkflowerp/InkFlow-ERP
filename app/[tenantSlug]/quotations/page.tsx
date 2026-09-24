@@ -126,11 +126,6 @@ export default function QuotationsPage() {
 
   useEffect(() => {
     setIsMounted(true)
-    // Purge test quotations QUO-000001 to QUO-000008 from all local storage partitions
-    if (typeof window !== 'undefined') {
-      PrintERPDataStore.purgeQuotationsByNumbers()
-    }
-
     loadQuotations(false)
 
     // Listen for storage, sync, or offline draft updates
@@ -213,7 +208,7 @@ export default function QuotationsPage() {
     }
 
     // 5. Clean, deduplicate and sort
-    return deduplicateQuotations(rawList, companyId)
+    return deduplicateQuotations(rawList, companyId, slug)
   }, [serverQuotations, localQuotations, slug, companyId, localTick, isMounted])
 
   // Sector Counts for Tab Badges
@@ -669,7 +664,8 @@ export default function QuotationsPage() {
           open={isNewOpen}
           onOpenChange={setIsNewOpen}
           onQuotationCreated={handleQuotationCreated}
-          companyId={company?.id || 'c-01'}
+          companyId={company?.id}
+          tenantSlug={slug}
         />
 
         {/* Follow-up Logging Modal */}

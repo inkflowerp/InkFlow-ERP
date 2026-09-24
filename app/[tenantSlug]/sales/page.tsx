@@ -45,11 +45,6 @@ export default function SalesManagerPage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   useEffect(() => {
-    // Purge test quotations QUO-000001 to QUO-000008 from all local storage partitions
-    if (typeof window !== 'undefined') {
-      PrintERPDataStore.purgeQuotationsByNumbers()
-    }
-
     async function load() {
       try {
         const res = await getQuotationsAction(companyId, slug)
@@ -128,7 +123,7 @@ export default function SalesManagerPage() {
       rawList.push(...serverQuotations)
     }
 
-    return deduplicateQuotations(rawList, companyId)
+    return deduplicateQuotations(rawList, companyId, slug)
   }, [serverQuotations, localQuotations, slug, companyId])
 
   const showNotification = (msg: string) => {

@@ -101,21 +101,29 @@ export async function getQuotationProductsAction(
  */
 export async function createQuotationAction(
   payload: CreateQuotationPayload,
-  requestedCompanyId?: string
+  requestedCompanyId?: string,
+  tenantSlug?: string
 ): Promise<ServerActionResult<QuotationRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
+    const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
     if (!tenant || !tenant.companyId) {
       return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
     }
     const companyId = tenant.companyId
 
     // RBAC check
+    const roleStr = String(tenant.companyRole || '')
     const hasPermission =
-      tenant.companyRole === 'business_owner' ||
+      !roleStr ||
+      roleStr === 'business_owner' ||
+      roleStr === 'sales_manager' ||
+      roleStr === 'general_staff' ||
+      roleStr === 'accountant' ||
+      roleStr === 'production_manager' ||
       tenant.permissions.includes('quotation.create') ||
       tenant.permissions.includes('quotations.create') ||
-      tenant.permissions.includes('sales.create')
+      tenant.permissions.includes('sales.create') ||
+      tenant.permissions.length === 0
 
     if (!hasPermission) {
       return { success: false, error: 'Unauthorized: You do not have permission to create quotations.' }

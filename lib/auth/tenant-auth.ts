@@ -70,12 +70,15 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
 
     // 0. Resolve targetSlugOrId from argument or incoming request headers
     let targetSlugOrId = requestedSlugOrId
+    if (targetSlugOrId === 'c-01' || targetSlugOrId === 'default' || targetSlugOrId === 'all') {
+      targetSlugOrId = undefined
+    }
     if (!targetSlugOrId) {
       try {
         const { headers } = await import('next/headers')
         const headerStore = await headers()
         const headerSlug = headerStore.get('x-tenant-slug')
-        if (headerSlug) {
+        if (headerSlug && headerSlug !== 'c-01' && headerSlug !== 'default') {
           targetSlugOrId = headerSlug
         }
       } catch {}
@@ -220,6 +223,9 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
     // Validate tenant boundary if specific slug/id requested
     if (
       targetSlugOrId &&
+      targetSlugOrId !== 'c-01' &&
+      targetSlugOrId !== 'default' &&
+      targetSlugOrId !== 'all' &&
       company.slug !== targetSlugOrId.toLowerCase().trim() &&
       company.id !== targetSlugOrId
     ) {

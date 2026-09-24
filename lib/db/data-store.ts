@@ -1262,18 +1262,16 @@ export class PrintERPDataStore {
    * Purges specific quotation numbers across all localStorage partitions, in-memory caches, drafts, and outbox queues
    */
   static purgeQuotationsByNumbers(targetNumbers?: string[]): number {
-    const defaultTargets = [
-      'QUO-000001', 'QUO-000002', 'QUO-000003', 'QUO-000004',
-      'QUO-000005', 'QUO-000006', 'QUO-000007', 'QUO-000008',
-    ]
-    const targets = new Set((targetNumbers && targetNumbers.length > 0 ? targetNumbers : defaultTargets).map((n) => n.trim().toUpperCase()))
+    if (!targetNumbers || targetNumbers.length === 0) {
+      return 0
+    }
+    const targets = new Set(targetNumbers.map((n) => n.trim().toUpperCase()))
     let purgedCount = 0
 
     const isMatch = (q: any): boolean => {
       if (!q || typeof q !== 'object') return false
       const qNum = String(q.quotation_number || q.quote_number || q.quotationNo || q.number || q.id || '').toUpperCase().trim()
       if (targets.has(qNum)) return true
-      if (/^QUO-0*([1-8])$/i.test(qNum)) return true
       for (const t of targets) {
         if (qNum === t || qNum.endsWith(t)) return true
       }
