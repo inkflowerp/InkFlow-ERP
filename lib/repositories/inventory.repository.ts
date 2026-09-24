@@ -652,6 +652,40 @@ export class InventoryRepository {
       }
     }
 
+    // 6. If rootStock is known and rollSizes has explicit counts exceeding rootStock, adjust rollSizes
+    if (rootStock > 0 && rollSizes.length > 0) {
+      let rollSizesTotalSft = 0
+      let activeSizesCount = 0
+      for (const s of rollSizes) {
+        const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? s.count ?? 0)
+        if (qty > 0) {
+          activeSizesCount++
+          const rawW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || mat.roll_width_ft || 4)
+          const allow = Number(s.extra_allowance ?? s.allowance ?? s.allowance_ft ?? mat.production_width_allowance ?? 0)
+          const w = s.width_ft !== undefined && Number(s.width_ft) > 0 ? Number(s.width_ft) : (allow > 0 ? Math.round((rawW + allow) * 100) / 100 : rawW)
+          const l = Number(s.length || s.length_ft || mat.standard_roll_length_ft || 164)
+          rollSizesTotalSft += qty * (w * l)
+        }
+      }
+      if (activeSizesCount === 1 && Math.abs(rollSizesTotalSft - rootStock) > 0.5) {
+        for (const s of rollSizes) {
+          const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? s.count ?? 0)
+          if (qty > 0) {
+            const rawW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || mat.roll_width_ft || 4)
+            const allow = Number(s.extra_allowance ?? s.allowance ?? s.allowance_ft ?? mat.production_width_allowance ?? 0)
+            const w = s.width_ft !== undefined && Number(s.width_ft) > 0 ? Number(s.width_ft) : (allow > 0 ? Math.round((rawW + allow) * 100) / 100 : rawW)
+            const l = Number(s.length || s.length_ft || mat.standard_roll_length_ft || 164)
+            const area = w * l
+            const newQty = area > 0 ? Math.max(0, Math.round(rootStock / area)) : 0
+            s.quantity = newQty
+            s.stock_qty = newQty
+            s.stock = newQty
+            s.roll_count = newQty
+          }
+        }
+      }
+    }
+
     mat.current_stock = rootStock
     return mat as MaterialRecord
   }
@@ -1304,7 +1338,7 @@ export class InventoryRepository {
 
         const { data: existingProd } = await (supabase as any)
           .from('products')
-          .select('pricing_formula')
+          .select('pricing_formula, material_config')
           .or(`id.eq.${material.id},sku.eq.${material.sku}`)
           .maybeSingle()
 
@@ -1316,6 +1350,15 @@ export class InventoryRepository {
             stock: newStock,
             ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
           }
+          if (existingProd.material_config && typeof existingProd.material_config === 'object') {
+            prodPayload.material_config = {
+              ...existingProd.material_config,
+              ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+            }
+          }
+        }
+        if (existingMatRollSizes) {
+          prodPayload.roll_sizes = existingMatRollSizes
         }
 
         await (supabase as any)
@@ -3885,10 +3928,12 @@ export class InventoryRepository {
     let updatedSizes: any[] | null = null
     if (isRollMedia) {
       try {
-        const rawSizes = mat.roll_sizes || (mat.material_config as any)?.roll_sizes || []
+        const rawSizes = mat.roll_sizes || (mat.material_config as any)?.roll_sizes || (mat.pricing_formula as any)?.roll_sizes || (mat.pricing_formula as any)?.material_config?.roll_sizes || []
         if (Array.isArray(rawSizes) && rawSizes.length > 0) {
+          let matched = false
           updatedSizes = rawSizes.map((s: any) => {
-            if (Number(s.width || s.width_ft) === widthFt) {
+            if (Number(s.width || s.width_ft || s.nominal_width_ft || s.size) === widthFt) {
+              matched = true
               const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
               const newCount = Math.max(0, prevCount - numRolls)
               return {
@@ -3901,6 +3946,18 @@ export class InventoryRepository {
             }
             return s
           })
+          if (!matched && updatedSizes.length === 1) {
+            const s = updatedSizes[0]
+            const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
+            const newCount = Math.max(0, prevCount - numRolls)
+            updatedSizes[0] = {
+              ...s,
+              quantity: newCount,
+              stock_qty: newCount,
+              stock: newCount,
+              roll_count: newCount,
+            }
+          }
           mat.roll_sizes = updatedSizes
           if (mat.material_config) {
             mat.material_config.roll_sizes = updatedSizes
@@ -3919,7 +3976,7 @@ export class InventoryRepository {
 
             const { data: existingProd } = await (supabase as any)
               .from('products')
-              .select('pricing_formula')
+              .select('pricing_formula, material_config')
               .or(`id.eq.${mat.id},sku.eq.${mat.sku}`)
               .maybeSingle()
 
@@ -3928,6 +3985,7 @@ export class InventoryRepository {
               await (supabase as any)
                 .from('products')
                 .update({
+                  roll_sizes: updatedSizes,
                   pricing_formula: {
                     ...formula,
                     roll_sizes: updatedSizes,
@@ -3937,6 +3995,38 @@ export class InventoryRepository {
                 .or(`id.eq.${mat.id},sku.eq.${mat.sku}`)
             }
           } catch {}
+        }
+      } catch {}
+    }
+
+    // Decrement specific sheet size group count for rigid sheets
+    let updatedSheetSizes: any[] | null = null
+    if (isSheet) {
+      try {
+        const rawSheetSizes = (mat as any).sheet_sizes || mat.available_sheet_sizes || (mat.material_config as any)?.sheet_sizes || (mat.material_config as any)?.available_sheet_sizes || (mat.pricing_formula as any)?.available_sheet_sizes || []
+        if (Array.isArray(rawSheetSizes) && rawSheetSizes.length > 0) {
+          updatedSheetSizes = rawSheetSizes.map((s: any) => {
+            if (typeof s === 'object' && s !== null) {
+              const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.sheet_count ?? s.count ?? 1)
+              const newCount = Math.max(0, prevCount - numRolls)
+              return {
+                ...s,
+                quantity: newCount,
+                stock_qty: newCount,
+                stock: newCount,
+                sheet_count: newCount,
+              }
+            }
+            return s
+          })
+          ;(mat as any).sheet_sizes = updatedSheetSizes
+          mat.available_sheet_sizes = updatedSheetSizes
+          if (mat.material_config) {
+            ;(mat.material_config as any).sheet_sizes = updatedSheetSizes
+            mat.material_config.available_sheet_sizes = updatedSheetSizes
+          }
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
         }
       } catch {}
     }
