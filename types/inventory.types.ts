@@ -220,6 +220,10 @@ export interface IssueMasterRollParams {
   actor_email?: string
   request_id?: string | null
   production_task_id?: string | null
+  group_key?: string | null
+  size_label?: string | null
+  variant_id?: string | null
+  variant_name?: string | null
 }
 
 export interface IssueMasterRollResult {

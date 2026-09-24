@@ -652,8 +652,8 @@ export class InventoryRepository {
       }
     }
 
-    // 6. If rootStock is known and rollSizes has explicit counts exceeding rootStock, adjust rollSizes
-    if (rootStock > 0 && rollSizes.length > 0) {
+    // 6. If rollSizes has explicit counts and rootStock <= 0, total SFT is the authoritative sum
+    if (rootStock <= 0 && rollSizes.length > 0) {
       let rollSizesTotalSft = 0
       let activeSizesCount = 0
       for (const s of rollSizes) {
@@ -667,22 +667,58 @@ export class InventoryRepository {
           rollSizesTotalSft += qty * (w * l)
         }
       }
-      if (rollSizesTotalSft > rootStock && activeSizesCount === 1 && Math.abs(rollSizesTotalSft - rootStock) > 0.5) {
-        for (const s of rollSizes) {
-          const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? s.count ?? 0)
+      if (activeSizesCount > 0 && rollSizesTotalSft > 0) {
+        rootStock = Math.round(rollSizesTotalSft * 100) / 100
+      }
+    }
+
+    // 7. If sheetSizes has explicit counts and rootStock <= 0, total stock is the authoritative sum
+    const rawSheetSizes: any[] = Array.isArray(mat.sheet_sizes) && mat.sheet_sizes.length > 0
+      ? mat.sheet_sizes
+      : Array.isArray(mat.available_sheet_sizes) && mat.available_sheet_sizes.length > 0
+      ? mat.available_sheet_sizes
+      : Array.isArray((mat.material_config as any)?.sheet_sizes) && (mat.material_config as any).sheet_sizes.length > 0
+      ? (mat.material_config as any).sheet_sizes
+      : Array.isArray((mat.material_config as any)?.available_sheet_sizes) && (mat.material_config as any).available_sheet_sizes.length > 0
+      ? (mat.material_config as any).available_sheet_sizes
+      : []
+
+    if (rootStock <= 0 && rawSheetSizes.length > 0) {
+      let sheetTotal = 0
+      let activeSheetCount = 0
+      const isSftCons = ['sft', 'sqft'].includes(String(mat.unit || (mat as any).selling_unit || 'pcs').toLowerCase())
+      for (const s of rawSheetSizes) {
+        if (typeof s === 'object' && s !== null) {
+          const qty = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.sheet_count ?? s.count ?? 0)
           if (qty > 0) {
-            const rawW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || mat.roll_width_ft || 4)
-            const allow = Number(s.extra_allowance ?? s.allowance ?? s.allowance_ft ?? mat.production_width_allowance ?? 0)
-            const w = s.width_ft !== undefined && Number(s.width_ft) > 0 ? Number(s.width_ft) : (allow > 0 ? Math.round((rawW + allow) * 100) / 100 : rawW)
-            const l = Number(s.length || s.length_ft || mat.standard_roll_length_ft || 164)
-            const area = w * l
-            const newQty = area > 0 ? Math.max(0, Math.round(rootStock / area)) : 0
-            s.quantity = newQty
-            s.stock_qty = newQty
-            s.stock = newQty
-            s.roll_count = newQty
+            activeSheetCount++
+            const w = Number(s.width || s.width_ft || mat.sheet_width_ft || mat.width || 4)
+            const l = Number(s.length || s.length_ft || mat.sheet_length_ft || mat.length || 8)
+            const area = w * l > 0 ? w * l : 32
+            sheetTotal += isSftCons ? qty * area : qty
           }
         }
+      }
+      if (activeSheetCount > 0 && sheetTotal > 0) {
+        rootStock = Math.round(sheetTotal * 100) / 100
+      }
+    }
+
+    // 8. If variants has explicit counts and rootStock <= 0, total stock is the authoritative sum
+    if (rootStock <= 0 && Array.isArray(mat.variants) && mat.variants.length > 0) {
+      let variantTotal = 0
+      let activeVariantCount = 0
+      for (const v of mat.variants) {
+        if (typeof v === 'object' && v !== null) {
+          const qty = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? v.current_stock ?? 0)
+          if (qty > 0) {
+            activeVariantCount++
+            variantTotal += qty
+          }
+        }
+      }
+      if (activeVariantCount > 0 && variantTotal > 0) {
+        rootStock = Math.round(variantTotal * 100) / 100
       }
     }
 
@@ -1215,6 +1251,8 @@ export class InventoryRepository {
     performed_by_id?: string | null
     performed_by_name: string
     roll_sizes?: any[] | null
+    sheet_sizes?: any[] | null
+    variants?: any[] | null
   }): Promise<{ material: MaterialRecord; ledgerEntry: StockLedgerRecord }> {
     // 1. Fetch live material under tenant isolation
     const material = await this.getMaterialById(params.material_id, params.company_id)
@@ -1240,6 +1278,18 @@ export class InventoryRepository {
       : (Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
         ? material.roll_sizes
         : (material.material_config as any)?.roll_sizes || (material.pricing_formula as any)?.roll_sizes || null)
+
+    const existingMatSheetSizes = params.sheet_sizes !== undefined
+      ? params.sheet_sizes
+      : (Array.isArray((material as any).sheet_sizes) && (material as any).sheet_sizes.length > 0
+        ? (material as any).sheet_sizes
+        : (material as any).available_sheet_sizes || (material.material_config as any)?.sheet_sizes || (material.material_config as any)?.available_sheet_sizes || null)
+
+    const existingMatVariants = params.variants !== undefined
+      ? params.variants
+      : (Array.isArray(material.variants) && material.variants.length > 0
+        ? material.variants
+        : (material.material_config as any)?.variants || null)
 
     // Try Supabase RPC or Direct Mutation
     try {
@@ -1289,11 +1339,18 @@ export class InventoryRepository {
           roll_length_ft: material.roll_length_ft || null,
           available_widths_ft: material.available_widths_ft || (material.material_config as any)?.available_widths_ft || null,
           standard_roll_length_ft: material.standard_roll_length_ft || (material.material_config as any)?.standard_roll_length_ft || null,
-          available_sheet_sizes: material.available_sheet_sizes || (material.material_config as any)?.available_sheet_sizes || null,
+          available_sheet_sizes: existingMatSheetSizes,
+          sheet_sizes: existingMatSheetSizes,
+          variants: existingMatVariants,
           production_width_allowance: material.production_width_allowance || 0,
           purchase_price_per_sft: material.purchase_price_per_sft || null,
           roll_sizes: existingMatRollSizes,
-          material_config: material.material_config || null,
+          material_config: {
+            ...(material.material_config || {}),
+            ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+            ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+            ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+          },
           is_active: material.is_active !== false,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' })
@@ -1323,7 +1380,6 @@ export class InventoryRepository {
         .single()
 
       // Also update products table if product exists (by id or sku)
-      // NOTE: products table does NOT have current_stock/stock columns — stock lives in pricing_formula JSONB
       try {
         const { data: existingProd } = await (supabase as any)
           .from('products')
@@ -1340,16 +1396,27 @@ export class InventoryRepository {
               current_stock: newStock,
               stock: newStock,
               ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+              ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+              ...(existingMatVariants ? { variants: existingMatVariants } : {}),
             },
           }
           if (unitCost > 0) {
             prodPayload.purchase_price = unitCost
             prodPayload.base_cost = unitCost
           }
+          if (existingMatSheetSizes) {
+            prodPayload.available_sheet_sizes = existingMatSheetSizes
+            prodPayload.sheet_sizes = existingMatSheetSizes
+          }
+          if (existingMatVariants) {
+            prodPayload.variants = existingMatVariants
+          }
           if (existingProd.material_config && typeof existingProd.material_config === 'object') {
             prodPayload.material_config = {
               ...existingProd.material_config,
               ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+              ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+              ...(existingMatVariants ? { variants: existingMatVariants } : {}),
             }
           }
 
@@ -1392,7 +1459,10 @@ export class InventoryRepository {
         average_cost: unitCost > 0 ? unitCost : material.average_cost,
         last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
         roll_sizes: existingMatRollSizes,
-      })
+        sheet_sizes: existingMatSheetSizes,
+        available_sheet_sizes: existingMatSheetSizes,
+        variants: existingMatVariants,
+      } as any)
       if (params.company_id) {
         try {
           PrintERPDataStore.updateItem<MaterialRecord>(STORAGE_KEYS.MATERIALS, material.id, {
@@ -1400,7 +1470,10 @@ export class InventoryRepository {
             average_cost: unitCost > 0 ? unitCost : material.average_cost,
             last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
             roll_sizes: existingMatRollSizes,
-          }, params.company_id)
+            sheet_sizes: existingMatSheetSizes,
+            available_sheet_sizes: existingMatSheetSizes,
+            variants: existingMatVariants,
+          } as any, params.company_id)
         } catch {}
       }
       const prodUpdatePayload = {
@@ -1408,10 +1481,15 @@ export class InventoryRepository {
         stock: newStock,
         base_cost: unitCost > 0 ? unitCost : undefined,
         purchase_price: unitCost > 0 ? unitCost : undefined,
+        available_sheet_sizes: existingMatSheetSizes || undefined,
+        sheet_sizes: existingMatSheetSizes || undefined,
+        variants: existingMatVariants || undefined,
         pricing_formula: {
           current_stock: newStock,
           stock: newStock,
           ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+          ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+          ...(existingMatVariants ? { variants: existingMatVariants } : {}),
         },
       }
       PrintERPDataStore.updateItem<any>(STORAGE_KEYS.PRODUCTS, (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)), prodUpdatePayload)
@@ -1425,7 +1503,15 @@ export class InventoryRepository {
 
       if (!ledgerErr && ledgerEntry) {
         return {
-          material: { ...material, current_stock: newStock, roll_sizes: existingMatRollSizes, average_cost: unitCost > 0 ? unitCost : material.average_cost },
+          material: {
+            ...material,
+            current_stock: newStock,
+            roll_sizes: existingMatRollSizes,
+            sheet_sizes: existingMatSheetSizes,
+            available_sheet_sizes: existingMatSheetSizes,
+            variants: existingMatVariants,
+            average_cost: unitCost > 0 ? unitCost : material.average_cost,
+          } as any,
           ledgerEntry: ledgerEntry as unknown as StockLedgerRecord,
         }
       }
@@ -1437,7 +1523,16 @@ export class InventoryRepository {
       average_cost: unitCost > 0 ? unitCost : material.average_cost,
       last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
       ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
-    }) || { ...material, current_stock: newStock, roll_sizes: existingMatRollSizes }
+      ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+      ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+    } as any) || {
+      ...material,
+      current_stock: newStock,
+      roll_sizes: existingMatRollSizes,
+      sheet_sizes: existingMatSheetSizes,
+      available_sheet_sizes: existingMatSheetSizes,
+      variants: existingMatVariants,
+    }
 
     if (params.company_id) {
       try {
@@ -1446,7 +1541,9 @@ export class InventoryRepository {
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
           last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
           ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
-        }, params.company_id)
+          ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+          ...(existingMatVariants ? { variants: existingMatVariants } : {}),
+        } as any, params.company_id)
       } catch {}
     }
 
@@ -1455,10 +1552,15 @@ export class InventoryRepository {
       stock: newStock,
       base_cost: unitCost > 0 ? unitCost : undefined,
       purchase_price: unitCost > 0 ? unitCost : undefined,
+      available_sheet_sizes: existingMatSheetSizes || undefined,
+      sheet_sizes: existingMatSheetSizes || undefined,
+      variants: existingMatVariants || undefined,
       pricing_formula: {
         current_stock: newStock,
         stock: newStock,
         ...(existingMatRollSizes ? { roll_sizes: existingMatRollSizes } : {}),
+        ...(existingMatSheetSizes ? { sheet_sizes: existingMatSheetSizes, available_sheet_sizes: existingMatSheetSizes } : {}),
+        ...(existingMatVariants ? { variants: existingMatVariants } : {}),
       },
     }
 
@@ -2094,6 +2196,8 @@ export class InventoryRepository {
     // Deduct stock, update roll sizes, and log ledger entry
     for (const it of params.items) {
       let updatedRollSizes: any[] | undefined = undefined
+      let updatedSheetSizes: any[] | undefined = undefined
+      let updatedVariants: any[] | undefined = undefined
 
       try {
         const targetMat = await this.getMaterialById(it.material_id, params.company_id)
@@ -2116,6 +2220,56 @@ export class InventoryRepository {
               return sz
             })
           }
+
+          const rawSheetSizes = (targetMat as any).sheet_sizes || targetMat.available_sheet_sizes || (targetMat.material_config as any)?.sheet_sizes
+          if (Array.isArray(rawSheetSizes) && rawSheetSizes.length > 0) {
+            let matchedSheet = false
+            updatedSheetSizes = rawSheetSizes.map((sz: any) => {
+              if (typeof sz === 'object' && sz !== null) {
+                const sW = Number(sz.width || sz.width_ft || 0)
+                const sL = Number(sz.length || sz.length_ft || 0)
+                const isMatch = !matchedSheet && (
+                  (itemWidth && itemLength && Math.abs(sW - itemWidth) < 0.1 && Math.abs(sL - itemLength) < 0.1) ||
+                  ((it as any).size_label && sz.label && sz.label.includes((it as any).size_label)) ||
+                  (rawSheetSizes.length === 1)
+                )
+                if (isMatch) {
+                  matchedSheet = true
+                  const currentCount = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.sheet_count ?? sz.count ?? 1)
+                  const newCount = Math.max(0, currentCount - purchaseQty)
+                  return { ...sz, quantity: newCount, stock_qty: newCount, stock: newCount, sheet_count: newCount }
+                }
+              }
+              return sz
+            })
+          }
+
+          const rawVariants = Array.isArray(targetMat.variants) && targetMat.variants.length > 0
+            ? targetMat.variants
+            : Array.isArray((targetMat.material_config as any)?.variants)
+            ? (targetMat.material_config as any).variants
+            : []
+          if (rawVariants.length > 0) {
+            let matchedVar = false
+            const targetVariantId = (it as any).variant_id
+            const targetVariantName = (it as any).variant_name || (it as any).size_label
+            updatedVariants = rawVariants.map((v: any) => {
+              const vId = v.id || v.variant_id
+              const vName = v.variant_name || v.name || v.color || ''
+              const isMatch = !matchedVar && (
+                (targetVariantId && (vId === targetVariantId || `variant-${vId}` === targetVariantId)) ||
+                (targetVariantName && vName.toLowerCase().includes(targetVariantName.toLowerCase())) ||
+                (rawVariants.length === 1)
+              )
+              if (isMatch) {
+                matchedVar = true
+                const currentCount = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 1)
+                const newCount = Math.max(0, currentCount - purchaseQty)
+                return { ...v, quantity: newCount, stock: newCount, stock_qty: newCount, count: newCount }
+              }
+              return v
+            })
+          }
         }
       } catch {}
 
@@ -2134,6 +2288,8 @@ export class InventoryRepository {
         performed_by_id: params.issued_by_id,
         performed_by_name: params.issued_by_name,
         roll_sizes: updatedRollSizes,
+        sheet_sizes: updatedSheetSizes,
+        variants: updatedVariants,
       })
 
       // Transition physical rolls if applicable
@@ -3627,16 +3783,16 @@ export class InventoryRepository {
       ['bottle', 'can', 'liter', 'ltr'].includes(rawPurchaseUnit) ||
       ['ink', 'fluid', 'solvent'].some((c) => (mat.category || '').toLowerCase().includes(c))
 
-    const widthFt = Number(params.width_ft) || (isRollMedia ? Number(mat.roll_width_ft || mat.width || 3) : 1)
-    const lengthFt = Number(params.length_ft) || (isRollMedia ? Number(mat.standard_roll_length_ft || mat.roll_length_ft || mat.length || 164) : 1)
+    const widthFt = Number(params.width_ft) || (isRollMedia ? Number(mat.roll_width_ft || mat.width || 3) : isSheet ? Number((mat as any).sheet_width_ft || mat.width || 4) : 1)
+    const lengthFt = Number(params.length_ft) || (isRollMedia ? Number(mat.standard_roll_length_ft || mat.roll_length_ft || mat.length || 164) : isSheet ? Number((mat as any).sheet_length_ft || mat.length || 8) : 1)
     const numRolls = Math.max(1, Number(params.quantity_rolls) || 1)
 
     let singleUnitConsumptionQuantity = 1
     if (isRollMedia) {
       singleUnitConsumptionQuantity = Math.round(widthFt * lengthFt * 100) / 100
     } else if (isSheet) {
-      const sheetW = Number((mat as any).sheet_width_ft || mat.width || 4)
-      const sheetL = Number((mat as any).sheet_length_ft || mat.length || 8)
+      const sheetW = widthFt > 0 ? widthFt : Number((mat as any).sheet_width_ft || mat.width || 4)
+      const sheetL = lengthFt > 0 ? lengthFt : Number((mat as any).sheet_length_ft || mat.length || 8)
       const sheetArea = sheetW * sheetL > 0 ? sheetW * sheetL : 32
       const isSft = ['sft', 'sqft'].includes(consumptionUnit)
       singleUnitConsumptionQuantity = isSft ? sheetArea : 1
@@ -3898,30 +4054,45 @@ export class InventoryRepository {
         if (Array.isArray(rawSizes) && rawSizes.length > 0) {
           let matched = false
           updatedSizes = rawSizes.map((s: any) => {
-            if (Number(s.width || s.width_ft || s.nominal_width_ft || s.size) === widthFt) {
+            const szNominalW = Number(s.nominal_width_ft || s.width || s.size || 0)
+            const szEffectiveW = Number(s.width_ft || szNominalW)
+            const szL = Number(s.length || s.length_ft || 164)
+            const isWidthMatch = (szNominalW > 0 && Math.abs(szNominalW - widthFt) < 0.05) ||
+                                 (szEffectiveW > 0 && Math.abs(szEffectiveW - widthFt) < 0.05)
+            const isLengthMatch = !lengthFt || Math.abs(szL - lengthFt) <= 5
+            const isKeyMatch = Boolean(params.group_key && s.key === params.group_key)
+            const isLabelMatch = Boolean(params.size_label && (s.label === params.size_label || s.size_spec === params.size_label))
+
+            if (!matched && (isKeyMatch || isLabelMatch || (isWidthMatch && isLengthMatch))) {
               matched = true
-              const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
+              const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 0)
               const newCount = Math.max(0, prevCount - numRolls)
+              const effW = szEffectiveW || widthFt || 4
+              const effL = szL || lengthFt || 164
               return {
                 ...s,
                 quantity: newCount,
                 stock_qty: newCount,
                 stock: newCount,
                 roll_count: newCount,
+                total_sft: Math.round(newCount * effW * effL * 100) / 100,
               }
             }
             return s
           })
           if (!matched && updatedSizes.length === 1) {
             const s = updatedSizes[0]
-            const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 1)
+            const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.roll_count ?? 0)
             const newCount = Math.max(0, prevCount - numRolls)
+            const effW = Number(s.width_ft || s.nominal_width_ft || widthFt || 4)
+            const effL = Number(s.length_ft || s.length || lengthFt || 164)
             updatedSizes[0] = {
               ...s,
               quantity: newCount,
               stock_qty: newCount,
               stock: newCount,
               roll_count: newCount,
+              total_sft: Math.round(newCount * effW * effL * 100) / 100,
             }
           }
           mat.roll_sizes = updatedSizes
@@ -3971,16 +4142,27 @@ export class InventoryRepository {
       try {
         const rawSheetSizes = (mat as any).sheet_sizes || mat.available_sheet_sizes || (mat.material_config as any)?.sheet_sizes || (mat.material_config as any)?.available_sheet_sizes || (mat.pricing_formula as any)?.available_sheet_sizes || []
         if (Array.isArray(rawSheetSizes) && rawSheetSizes.length > 0) {
+          let matchedSheet = false
           updatedSheetSizes = rawSheetSizes.map((s: any) => {
             if (typeof s === 'object' && s !== null) {
-              const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.sheet_count ?? s.count ?? 1)
-              const newCount = Math.max(0, prevCount - numRolls)
-              return {
-                ...s,
-                quantity: newCount,
-                stock_qty: newCount,
-                stock: newCount,
-                sheet_count: newCount,
+              const sW = Number(s.width || s.width_ft || 0)
+              const sL = Number(s.length || s.length_ft || 0)
+              const isMatch = !matchedSheet && (
+                (widthFt > 0 && lengthFt > 0 && Math.abs(sW - widthFt) < 0.1 && Math.abs(sL - lengthFt) < 0.1) ||
+                (params.size_label && s.label && s.label.includes(params.size_label)) ||
+                (rawSheetSizes.length === 1)
+              )
+              if (isMatch) {
+                matchedSheet = true
+                const prevCount = Number(s.quantity ?? s.stock_qty ?? s.stock ?? s.sheet_count ?? s.count ?? 0)
+                const newCount = Math.max(0, prevCount - numRolls)
+                return {
+                  ...s,
+                  quantity: newCount,
+                  stock_qty: newCount,
+                  stock: newCount,
+                  sheet_count: newCount,
+                }
               }
             }
             return s
@@ -3990,6 +4172,50 @@ export class InventoryRepository {
           if (mat.material_config) {
             ;(mat.material_config as any).sheet_sizes = updatedSheetSizes
             mat.material_config.available_sheet_sizes = updatedSheetSizes
+          }
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
+          PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
+        }
+      } catch {}
+    }
+
+    // Decrement specific variant count for liquids, hardware, packs, and consumables
+    let updatedVariants: any[] | null = null
+    if (isFluid || (!isRollMedia && !isSheet)) {
+      try {
+        const rawVariants = Array.isArray(mat.variants) && mat.variants.length > 0
+          ? mat.variants
+          : Array.isArray((mat.material_config as any)?.variants) && (mat.material_config as any).variants.length > 0
+          ? (mat.material_config as any).variants
+          : []
+        if (rawVariants.length > 0) {
+          let matchedVar = false
+          updatedVariants = rawVariants.map((v: any) => {
+            const vId = v.id || v.variant_id
+            const vName = v.variant_name || v.name || v.color || v.size_spec || ''
+            const isMatch = !matchedVar && (
+              (params.variant_id && (vId === params.variant_id || `variant-${vId}` === params.variant_id)) ||
+              (params.variant_name && (vName.toLowerCase() === params.variant_name.toLowerCase() || vName.toLowerCase().includes(params.variant_name.toLowerCase()))) ||
+              (params.size_label && (vName.toLowerCase() === params.size_label.toLowerCase() || vName.toLowerCase().includes(params.size_label.toLowerCase()))) ||
+              (rawVariants.length === 1)
+            )
+            if (isMatch) {
+              matchedVar = true
+              const prevCount = Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+              const newCount = Math.max(0, prevCount - numRolls)
+              return {
+                ...v,
+                quantity: newCount,
+                stock: newCount,
+                stock_qty: newCount,
+                count: newCount,
+              }
+            }
+            return v
+          })
+          mat.variants = updatedVariants
+          if (mat.material_config) {
+            (mat.material_config as any).variants = updatedVariants
           }
           PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat, companyId)
           PrintERPDataStore.updateItem(STORAGE_KEYS.MATERIALS, mat.id, mat)
@@ -4011,6 +4237,8 @@ export class InventoryRepository {
       notes: `${numRolls} ${rawPurchaseUnit.toUpperCase()}(s) [${primaryRoll.roll_code}${numRolls > 1 && isRollMedia ? ` ... (${numRolls} rolls)` : ''}] (${totalConsumptionQuantity} ${consumptionUnit.toUpperCase()}) issued to Print Floor`,
       performed_by_name: params.operator_name || 'Store Keeper',
       roll_sizes: updatedSizes || undefined,
+      sheet_sizes: updatedSheetSizes || undefined,
+      variants: updatedVariants || undefined,
     })
 
     // Create synchronized MaterialIssueRecord and FloorConsumptionRecords so the item appears in floor consumption

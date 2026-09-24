@@ -2615,58 +2615,21 @@ export function getMaterialWarehouseStockBreakdown(
             }
           }
         }
-      } else if (currentExplicitRolls > 0 && Math.abs(currentExplicitSft - effectiveCurrentStock) > 0.5) {
-        // Explicit count in static roll_sizes differs from live effectiveCurrentStock (e.g. after issue to floor)
+      } else if (currentExplicitRolls > 0) {
+        // Explicit count in roll_sizes is the single source of truth for each discrete group
         const configuredList = Array.from(map.values())
-        if (configuredList.length === 1) {
+        if (configuredList.length === 1 && effectiveCurrentStock === 0 && currentExplicitRolls > 0 && configuredList[0].roll_count === 0) {
           const item = configuredList[0]
-          const area = item.width_ft * item.length_ft
-          const count = area > 0 ? Math.max(0, Math.round(effectiveCurrentStock / area)) : 0
-          item.roll_count = count
-          item.total_sft = effectiveCurrentStock
-          const price = Number(item.purchase_price || 0)
-          const rollCost = price > 0
-            ? (price > 150 ? price : price * area)
-            : (rawCost > 150 ? rawCost : rawCost * area)
-          item.total_valuation = count * rollCost
-        } else {
-          const activeItems = configuredList.filter((it) => (it.roll_count || 0) > 0)
-          if (activeItems.length === 1) {
-            const item = activeItems[0]
-            const area = item.width_ft * item.length_ft
-            const count = area > 0 ? Math.max(0, Math.round(effectiveCurrentStock / area)) : 0
-            item.roll_count = count
-            item.total_sft = effectiveCurrentStock
-            const price = Number(item.purchase_price || 0)
-            const rollCost = price > 0
-              ? (price > 150 ? price : price * area)
-              : (rawCost > 150 ? rawCost : rawCost * area)
-            item.total_valuation = count * rollCost
-          } else if (activeItems.length > 1 && currentExplicitSft > effectiveCurrentStock) {
-            let excessSft = currentExplicitSft - effectiveCurrentStock
-            for (const item of activeItems) {
-              const area = item.width_ft * item.length_ft
-              if (area <= 0 || excessSft <= 0.5) break
-              const rollsToDeduct = Math.min(item.roll_count, Math.round(excessSft / area))
-              if (rollsToDeduct > 0) {
-                item.roll_count -= rollsToDeduct
-                item.total_sft = Math.max(0, item.roll_count * area)
-                const price = Number(item.purchase_price || 0)
-                const rollCost = price > 0
-                  ? (price > 150 ? price : price * area)
-                  : (rawCost > 150 ? rawCost : rawCost * area)
-                item.total_valuation = item.roll_count * rollCost
-                excessSft -= rollsToDeduct * area
-              }
-            }
-          }
+          item.roll_count = 0
+          item.total_sft = 0
+          item.total_valuation = 0
         }
       }
 
       rollItems = Array.from(map.values()).sort((a, b) => a.width_ft - b.width_ft || a.length_ft - b.length_ft)
-      totalRolls = effectiveCurrentStock <= 0 ? 0 : rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
-      totalSft = effectiveCurrentStock <= 0 ? 0 : rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
-      totalValuationCalculated = effectiveCurrentStock <= 0 ? 0 : rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
+      totalRolls = rollItems.reduce((sum, it) => sum + (it.roll_count || 0), 0)
+      totalSft = rollItems.reduce((sum, it) => sum + (it.total_sft || 0), 0)
+      totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
     } else {
       const effectiveInferredW = inferredWidth
       const areaPerRoll = effectiveInferredW * standardLength
@@ -2898,7 +2861,7 @@ export function getMaterialWarehouseStockBreakdown(
       const explicitSum = Array.from(sheetMap.values()).reduce((s, it) => s + (it.roll_count || 0), 0)
       const totalExplicitSft = Array.from(sheetMap.values()).reduce((s, it) => s + (it.total_sft || 0), 0)
 
-      if (currentStock > 0 && (explicitSum === 0 || (sheetMap.size === 1 && totalExplicitSft !== currentStock))) {
+      if (currentStock > 0 && explicitSum === 0) {
         const list = Array.from(sheetMap.values())
         if (list.length === 1) {
           const it = list[0]
@@ -2907,7 +2870,7 @@ export function getMaterialWarehouseStockBreakdown(
           it.roll_count = Math.max(0, count)
           it.total_sft = currentStock
           it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
-        } else if (explicitSum === 0) {
+        } else {
           // Multiple sizes: allocate to the best matching area or distribute
           let bestIdx = 0
           for (let i = 0; i < list.length; i++) {
@@ -2924,9 +2887,7 @@ export function getMaterialWarehouseStockBreakdown(
           it.total_sft = currentStock
           it.total_valuation = it.roll_count * (it.purchase_price || rawCost)
         }
-      }
-
-      if (currentStock <= 0) {
+      } else if (currentStock <= 0 && explicitSum === 0) {
         for (const it of sheetMap.values()) {
           it.roll_count = 0
           it.total_sft = 0

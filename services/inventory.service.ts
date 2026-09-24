@@ -571,36 +571,17 @@ export class InventoryService {
           })
         }
 
-        // If there was previously existing unallocated stock on other configured sizes and no sizes had explicit stock, preserve legacy stock count
-        const hadAnyExplicitRollsBefore = existingRollSizes.some((sz: any) => Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) > 0)
-        const prevStockBeforeIntake = Math.max(0, Number(freshMaterial.current_stock || 0) - stockChangeQty)
-        if (!hadAnyExplicitRollsBefore && prevStockBeforeIntake > 0) {
-          const zeroSizes = updatedSizes.filter((sz: any) => Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0) === 0)
-          if (zeroSizes.length > 0) {
-            const exactPrevMatchIdx = zeroSizes.findIndex((sz: any) => {
-              const szW = Number(sz.width_ft || sz.width || sz.nominal_width_ft || 4)
-              const szL = Number(sz.length_ft || sz.length || 164)
-              const szArea = szW * szL
-              return szArea > 0 && Math.abs(prevStockBeforeIntake % szArea) < 0.5
-            })
-            if (exactPrevMatchIdx !== -1) {
-              const targetZero = zeroSizes[exactPrevMatchIdx]
-              const szW = Number(targetZero.width_ft || targetZero.width || targetZero.nominal_width_ft || 4)
-              const szL = Number(targetZero.length_ft || targetZero.length || 164)
-              const szArea = szW * szL
-              const prevCount = Math.max(1, Math.round(prevStockBeforeIntake / szArea))
-              targetZero.quantity = prevCount
-              targetZero.roll_count = prevCount
-              targetZero.stock_qty = prevCount
-              targetZero.stock = prevCount
-              targetZero.total_sft = prevCount * szArea
-            }
-          }
-        }
+        const totalRollsSft = updatedSizes.reduce((sum: number, sz: any) => {
+          const q = Number(sz.quantity ?? sz.stock_qty ?? sz.stock ?? sz.roll_count ?? 0)
+          const w = Number(sz.width_ft || sz.width || sz.nominal_width_ft || 4)
+          const l = Number(sz.length_ft || sz.length || 164)
+          return sum + (q * w * l)
+        }, 0)
 
         await InventoryRepository.updateMaterial(
           material.id,
           {
+            current_stock: totalRollsSft > 0 ? totalRollsSft : freshMaterial.current_stock,
             roll_sizes: updatedSizes,
             material_config: {
               ...(material.material_config as any),
@@ -616,6 +597,7 @@ export class InventoryService {
             (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)),
             (p: any) => ({
               ...p,
+              current_stock: totalRollsSft > 0 ? totalRollsSft : p?.current_stock,
               roll_sizes: updatedSizes,
               material_config: {
                 ...(p?.material_config || {}),
@@ -623,6 +605,7 @@ export class InventoryService {
               },
               pricing_formula: {
                 ...(p?.pricing_formula || {}),
+                current_stock: totalRollsSft > 0 ? totalRollsSft : p?.pricing_formula?.current_stock,
                 roll_sizes: updatedSizes,
               },
             }),
@@ -835,9 +818,14 @@ export class InventoryService {
             })
           }
 
+          const totalVariantStock = updatedVariants.reduce((sum: number, v: any) => {
+            return sum + Number(v.quantity ?? v.stock ?? v.stock_qty ?? v.count ?? 0)
+          }, 0)
+
           await InventoryRepository.updateMaterial(
             freshMaterial.id,
             {
+              current_stock: totalVariantStock > 0 ? totalVariantStock : freshMaterial.current_stock,
               variants: updatedVariants,
               material_config: {
                 ...(freshMaterial.material_config as any),
@@ -852,6 +840,7 @@ export class InventoryService {
               STORAGE_KEYS.PRODUCTS,
               (p: any) => p && (p.id === freshMaterial.id || (!!freshMaterial.sku && p.sku === freshMaterial.sku)),
               {
+                current_stock: totalVariantStock > 0 ? totalVariantStock : undefined,
                 variants: updatedVariants,
               },
               params.company_id

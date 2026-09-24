@@ -679,6 +679,10 @@ export function IssueMasterRollModal({
         operator_name: operatorName.trim() || 'Floor Operator',
         request_id: request?.id || null,
         production_task_id: request?.production_task_id || null,
+        group_key: activeSelectedSizeOption?.key || selectedSizeKey || undefined,
+        size_label: activeSelectedSizeOption?.label || undefined,
+        variant_id: (activeSelectedSizeOption as any)?.variant_id || (activeSelectedSizeOption as any)?.id || undefined,
+        variant_name: (activeSelectedSizeOption as any)?.variant_name || (activeSelectedSizeOption as any)?.name || undefined,
         notes:
           notes.trim() ||
           (request?.request_number
