@@ -9,7 +9,115 @@ import type {
 } from '../../types/tenant.types.ts'
 import type { DataScope } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
-import { checkPermission } from '../auth/rbac.client.ts'
+import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES } from '../auth/rbac.client.ts'
+
+export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
+  {
+    id: 'role-owner',
+    company_id: null,
+    name: 'Business Owner',
+    name_bn: 'ব্যবসা স্বত্বাধিকারী',
+    slug: 'business_owner',
+    description: 'Universal administrative authority and organization governance.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-sales',
+    company_id: null,
+    name: 'Sales Manager',
+    name_bn: 'সেলস ম্যানেজার',
+    slug: 'sales_manager',
+    description: 'Quotations, pricing, customer relations, invoicing, and order handling.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-designer',
+    company_id: null,
+    name: 'Graphic Designer',
+    name_bn: 'গ্রাফিক ডিজাইনার',
+    slug: 'designer',
+    description: 'Artwork proofs, customer approvals, pre-press checks, and design revisions.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-production',
+    company_id: null,
+    name: 'Production Manager',
+    name_bn: 'প্রোডাকশন ম্যানেজার',
+    slug: 'production_manager',
+    description: 'Plant machine queues, raw media allocation, stages, and quality control.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-operator',
+    company_id: null,
+    name: 'Machine Operator',
+    name_bn: 'মেশিন অপারেটর',
+    slug: 'operator',
+    description: 'Floor press runs, finishing works, task completions, and machine logs.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-store',
+    company_id: null,
+    name: 'Store & Inventory Manager',
+    name_bn: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+    slug: 'store_manager',
+    description: 'Raw media rolls, inks, boards, store ledger, and material dispatches.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-accountant',
+    company_id: null,
+    name: 'Accountant & Billing Officer',
+    name_bn: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+    slug: 'accountant',
+    description: 'Invoicing, receipts, payment recording, banking, and financial reports.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-delivery',
+    company_id: null,
+    name: 'Delivery & Challan Coordinator',
+    name_bn: 'ডেলিভারি ও চালান সমন্বয়ক',
+    slug: 'delivery_coordinator',
+    description: 'Delivery challans, site installation sign-offs, and dispatch routing.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+  {
+    id: 'role-staff',
+    company_id: null,
+    name: 'General Staff',
+    name_bn: 'সাধারণ কর্মী',
+    slug: 'general_staff',
+    description: 'Standard workspace member with basic operational view access.',
+    is_system: true,
+    created_at: '2026-01-01T00:00:00.000Z',
+  },
+]
+
+export function getDefaultRolePermissions(slug: string): string[] {
+  const normSlug = slug === 'owner' ? 'business_owner' : slug
+  const matrix = (DEFAULT_RESPONSIBILITY_MATRICES as any)[normSlug]
+  if (!matrix) return ['tasks.view']
+  const permissions: string[] = []
+  for (const [mod, actions] of Object.entries(matrix)) {
+    for (const [act, granted] of Object.entries(actions as Record<string, boolean>)) {
+      if (granted && act !== 'full_control') {
+        permissions.push(`${mod}.${act}`)
+      }
+    }
+  }
+  return permissions
+}
 
 export class TenantRepository {
   private static membershipCache = new Map<string, { data: any; expiresAt: number }>()
@@ -333,46 +441,65 @@ export class TenantRepository {
   }
 
   static async getBranches(companyId: string): Promise<BranchRow[]> {
-    const supabase = await createClient()
-    const { data, error } = await supabase
-      .from('branches')
-      .select('*')
-      .eq('company_id', companyId)
-      .order('is_main', { ascending: false })
+    try {
+      if (!companyId) return []
+      const supabase = await createClient()
+      const { data, error } = await supabase
+        .from('branches')
+        .select('*')
+        .eq('company_id', companyId)
+        .order('is_main', { ascending: false })
 
-    if (error) {
-      throw new Error(`Failed to fetch branches: ${error.message}`)
+      if (error) {
+        console.warn(`[TenantRepository] getBranches query warning: ${error.message}`)
+        return []
+      }
+      return (data || []) as BranchRow[]
+    } catch (err: any) {
+      console.warn(`[TenantRepository] getBranches error: ${err?.message}`)
+      return []
     }
-    return (data || []) as BranchRow[]
   }
 
   static async getRoles(companyId?: string): Promise<RoleRow[]> {
-    const admin = createAdminClient()
-    let query = admin.from('roles').select('*')
-    if (companyId) {
-      query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+    try {
+      const admin = createAdminClient()
+      let query = admin.from('roles').select('*')
+      if (companyId) {
+        query = query.or(`company_id.eq.${companyId},company_id.is.null`)
+      }
+      const { data, error } = await query
+      if (error) {
+        console.warn(`[TenantRepository] getRoles query warning: ${error.message}, falling back to default system roles`)
+        return DEFAULT_SYSTEM_ROLES
+      }
+      if (!data || data.length === 0) {
+        return DEFAULT_SYSTEM_ROLES
+      }
+      return data as RoleRow[]
+    } catch (err: any) {
+      console.warn(`[TenantRepository] getRoles failed: ${err?.message}, falling back to default system roles`)
+      return DEFAULT_SYSTEM_ROLES
     }
-    const { data, error } = await query
-    if (error) {
-      throw new Error(`Failed to fetch roles: ${error.message}`)
-    }
-    return (data || []) as RoleRow[]
   }
 
   static async getCompanyUsers(companyId: string): Promise<CompanyUserWithProfile[]> {
-    const admin = createAdminClient()
-    const { data, error } = await admin
-      .from('company_users')
-      .select(`
-        *,
-        branch:branches(*),
-        user_roles(role:roles(*))
-      `)
-      .eq('company_id', companyId)
+    try {
+      if (!companyId) return []
+      const admin = createAdminClient()
+      const { data, error } = await admin
+        .from('company_users')
+        .select(`
+          *,
+          branch:branches(*),
+          user_roles(role:roles(*))
+        `)
+        .eq('company_id', companyId)
 
-    if (error) {
-      throw new Error(`Failed to fetch company users: ${error.message}`)
-    }
+      if (error) {
+        console.warn(`[TenantRepository] getCompanyUsers error: ${error.message}`)
+        return []
+      }
 
     const cuList = data || []
     const userIds = cuList.map((c: any) => c.user_id).filter(Boolean)
@@ -477,6 +604,10 @@ export class TenantRepository {
         branch: cu.branch || null,
       } as CompanyUserWithProfile
     })
+    } catch (err: any) {
+      console.warn(`[TenantRepository] getCompanyUsers failed: ${err?.message}`)
+      return []
+    }
   }
 
   static async getCompanySettings(companyId: string): Promise<CompanySettingsRow | null> {
@@ -703,32 +834,47 @@ export class TenantRepository {
    * Custom Role Management Methods
    */
   static async getRolesWithPermissions(companyId?: string) {
-    const admin = createAdminClient()
-    const roles = await TenantRepository.getRoles(companyId)
-    const roleIds = roles.map((r) => r.id)
+    try {
+      const admin = createAdminClient()
+      const roles = await TenantRepository.getRoles(companyId)
+      const roleList = Array.isArray(roles) && roles.length > 0 ? roles : DEFAULT_SYSTEM_ROLES
+      const roleIds = roleList.map((r) => r.id)
 
-    const permMap = new Map<string, string[]>()
-    if (roleIds.length > 0) {
-      try {
-        const { data: rps } = await (admin as any)
-          .from('role_permissions')
-          .select('role_id, permission:permissions(code)')
-          .in('role_id', roleIds)
-        ;(rps || []).forEach((rp: any) => {
-          if (!permMap.has(rp.role_id)) {
-            permMap.set(rp.role_id, [])
-          }
-          if (rp.permission?.code) {
-            permMap.get(rp.role_id)!.push(rp.permission.code)
-          }
-        })
-      } catch {}
+      const permMap = new Map<string, string[]>()
+      if (roleIds.length > 0) {
+        try {
+          const { data: rps } = await (admin as any)
+            .from('role_permissions')
+            .select('role_id, permission:permissions(code)')
+            .in('role_id', roleIds)
+          ;(rps || []).forEach((rp: any) => {
+            if (!permMap.has(rp.role_id)) {
+              permMap.set(rp.role_id, [])
+            }
+            if (rp.permission?.code) {
+              permMap.get(rp.role_id)!.push(rp.permission.code)
+            }
+          })
+        } catch (permErr: any) {
+          console.warn('[TenantRepository] role_permissions fetch warning:', permErr?.message)
+        }
+      }
+
+      return roleList.map((r) => {
+        const dbPerms = permMap.get(r.id) || []
+        const perms = dbPerms.length > 0 ? dbPerms : getDefaultRolePermissions(r.slug)
+        return {
+          ...r,
+          permissions: perms,
+        }
+      })
+    } catch (err: any) {
+      console.error('[TenantRepository] getRolesWithPermissions error:', err?.message)
+      return DEFAULT_SYSTEM_ROLES.map((r) => ({
+        ...r,
+        permissions: getDefaultRolePermissions(r.slug),
+      }))
     }
-
-    return roles.map((r) => ({
-      ...r,
-      permissions: permMap.get(r.id) || [],
-    }))
   }
 
   static async createCustomRole(params: {

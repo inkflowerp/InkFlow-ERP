@@ -1,8 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { getNavigationConfig, type NavItem } from '../../config/navigation.config.ts'
-import { resolveTenantRole } from '../../lib/auth/types.ts'
-import { mapSessionToTenantRole } from '../../hooks/use-tenant.tsx'
+import { resolveTenantRole, mapSessionToTenantRole } from '../../lib/auth/types.ts'
 import {
   getPermissionDetail,
   normalizeModuleKey,

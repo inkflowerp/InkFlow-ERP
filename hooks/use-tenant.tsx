@@ -177,19 +177,7 @@ function getSessionFromCookie(): TenantSessionData | null {
   }
 }
 
-export function mapSessionToTenantRole(session: TenantSessionData | null): TenantRole {
-  if (!session) return 'owner'
-  const rawRole = (session.role || session.primaryRole || session.responsibilities?.[0] || '').toLowerCase().trim()
-  if (rawRole === 'business_owner' || rawRole === 'owner' || rawRole === 'platform_owner') return 'owner'
-  if (rawRole === 'sales_manager' || rawRole === 'sales' || rawRole === 'sales_executive' || rawRole === 'manager') return 'manager'
-  if (rawRole === 'graphic_designer' || rawRole === 'designer') return 'designer'
-  if (rawRole === 'machine_operator' || rawRole === 'operator' || rawRole === 'technician') return 'operator'
-  if (rawRole === 'production_manager' || rawRole === 'production') return 'manager'
-  if (rawRole === 'accountant' || rawRole === 'accounts' || rawRole === 'billing') return 'accountant'
-  if (rawRole === 'delivery_coordinator' || rawRole === 'delivery' || rawRole === 'installer') return 'installer'
-  if (rawRole === 'general_staff' || rawRole === 'staff') return 'operator'
-  return (rawRole as TenantRole) || 'operator'
-}
+export { mapSessionToTenantRole } from '@/lib/auth/types'
 
 export function TenantProvider({
   initialSlug,

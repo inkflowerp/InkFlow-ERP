@@ -1,8 +1,8 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { QuotationRepository } from '../../lib/repositories/quotation.repository'
-import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store'
-import { QuotationRecord } from '../../types/quotation.types'
+import { QuotationRepository } from '../../lib/repositories/quotation.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import type { QuotationRecord } from '../../types/quotation.types.ts'
 
 test('Quotation to Job Order: verifies order, job ticket, and cross-partition sync for Commercial Orders & Job Hub', async (t) => {
   const companyId = 'comp-sync-test'

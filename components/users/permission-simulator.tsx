@@ -65,16 +65,19 @@ const HIGH_RISK_ACTIONS: { code: string; module: PermissionModule; action: Permi
 ]
 
 export function PermissionSimulator({
-  users,
-  roles,
-  branches,
+  users = [],
+  roles = [],
+  branches = [],
   companySlug,
   onEditUserPermissions,
 }: PermissionSimulatorProps) {
   const [activeMode, setActiveMode] = useState<'simulate' | 'audit'>('simulate')
 
+  const safeUsers = Array.isArray(users) ? users : []
+  const safeBranches = Array.isArray(branches) ? branches : []
+
   // Simulation state
-  const [selectedUserId, setSelectedUserId] = useState<string>(users[0]?.id || '')
+  const [selectedUserId, setSelectedUserId] = useState<string>(safeUsers[0]?.id || '')
   const [selectedModule, setSelectedModule] = useState<PermissionModule>('invoices')
   const [selectedAction, setSelectedAction] = useState<PermissionAction>('create')
   const [selectedBranchId, setSelectedBranchId] = useState<string>('all')
@@ -85,8 +88,8 @@ export function PermissionSimulator({
 
   // Target User for Simulation
   const selectedUser = useMemo(() => {
-    return users.find((u) => u.id === selectedUserId) || users[0] || null
-  }, [users, selectedUserId])
+    return safeUsers.find((u) => u.id === selectedUserId) || safeUsers[0] || null
+  }, [safeUsers, selectedUserId])
 
   // Available actions for chosen module
   const availableActions = useMemo(() => {
@@ -176,7 +179,7 @@ export function PermissionSimulator({
       sourceType: string
     }[] = []
 
-    users.forEach((u) => {
+    safeUsers.forEach((u) => {
       const detail = getPermissionDetail(u, mod, act)
       if (detail.isGranted) {
         matchedUsers.push({
@@ -203,7 +206,7 @@ export function PermissionSimulator({
   // Export audit summary to CSV
   const handleExportAuditCSV = () => {
     const headers = ['User Name', 'Email', 'Role', 'Status', 'Target Permission', 'Access Source']
-    const rows = auditResults.map((r) => [
+    const rows = (Array.isArray(auditResults) ? auditResults : []).map((r) => [
       `"${getUserDisplayName(r.user)}"`,
       `"${getUserEmail(r.user)}"`,
       `"${getUserRoleLabel(r.user)}"`,
@@ -288,7 +291,7 @@ export function PermissionSimulator({
                     onChange={(e) => setSelectedUserId(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   >
-                    {users.map((u) => (
+                    {safeUsers.map((u) => (
                       <option key={u.id} value={u.id}>
                         {getUserDisplayName(u)} ({getUserRoleLabel(u)}) {u.status === 'disabled' ? '⛔ Disabled' : ''}
                       </option>
@@ -349,7 +352,7 @@ export function PermissionSimulator({
                     className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="all">Any Branch / General Context (যে কোনো শাখা)</option>
-                    {branches.map((b) => (
+                    {safeBranches.map((b) => (
                       <option key={b.id} value={b.id}>
                         {b.name} ({b.name_bn || b.code || 'Branch'}) {b.is_main ? '⭐ Main' : ''}
                       </option>
@@ -641,14 +644,14 @@ export function PermissionSimulator({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-800/60">
-                      {auditResults.length === 0 ? (
+                      {!Array.isArray(auditResults) || auditResults.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
                             No team members have been granted this permission.
                           </td>
                         </tr>
                       ) : (
-                        auditResults.map(({ user, source, isExplicitOverride, sourceType }) => (
+                        (Array.isArray(auditResults) ? auditResults : []).map(({ user, source, isExplicitOverride, sourceType }) => (
                           <tr key={user.id} className="hover:bg-slate-900/40 transition-colors">
                             <td className="px-4 py-3">
                               <div className="font-semibold text-white">{getUserDisplayName(user)}</div>

@@ -105,8 +105,8 @@ export function UserPermissionsDrawer({
   onClose,
   onSaved,
   companyId,
-  allBranches,
-  allRoles,
+  allBranches = [],
+  allRoles = [],
 }: UserPermissionsDrawerProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedResponsibilities, setSelectedResponsibilities] = useState<string[]>([])
@@ -128,7 +128,7 @@ export function UserPermissionsDrawer({
   // Combine standard responsibilities with custom company roles
   const availableResponsibilities = useMemo(() => {
     const list = [...BASE_RESPONSIBILITIES]
-    if (allRoles && allRoles.length > 0) {
+    if (Array.isArray(allRoles) && allRoles.length > 0) {
       allRoles.forEach((r) => {
         if (!r.is_system && !list.some((item) => item.slug === r.slug)) {
           list.push({
@@ -148,9 +148,9 @@ export function UserPermissionsDrawer({
     if (!user) return
 
     const initialResp =
-      user.responsibilities && user.responsibilities.length > 0
+      Array.isArray(user.responsibilities) && user.responsibilities.length > 0
         ? user.responsibilities
-        : user.roles?.map((r) => r.slug || 'general_staff') || ['general_staff']
+        : (Array.isArray(user.roles) ? user.roles.map((r) => r.slug || 'general_staff') : ['general_staff'])
 
     setSelectedResponsibilities(initialResp)
     setOverrides(user.overrides || {})
@@ -352,9 +352,9 @@ export function UserPermissionsDrawer({
 
   const handleResetToUserInitial = () => {
     const initialResp =
-      user.responsibilities && user.responsibilities.length > 0
+      Array.isArray(user.responsibilities) && user.responsibilities.length > 0
         ? user.responsibilities
-        : user.roles?.map((r) => r.slug || 'general_staff') || ['general_staff']
+        : (Array.isArray(user.roles) ? user.roles.map((r) => r.slug || 'general_staff') : ['general_staff'])
 
     setSelectedResponsibilities(initialResp)
     setOverrides(user.overrides || {})
@@ -441,7 +441,7 @@ export function UserPermissionsDrawer({
                   className="w-full h-8 px-2.5 text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-md text-slate-800 dark:text-slate-200"
                 >
                   <option value="">All Branches / Central HQ</option>
-                  {allBranches.map((b) => (
+                  {(Array.isArray(allBranches) ? allBranches : []).map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.name}
                     </option>
@@ -548,7 +548,7 @@ export function UserPermissionsDrawer({
                     </button>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {selectedResponsibilities.map((slug) => {
+                    {(Array.isArray(selectedResponsibilities) ? selectedResponsibilities : []).map((slug) => {
                       const r = availableResponsibilities.find((item) => item.slug === slug)
                       return (
                         <Badge
@@ -699,8 +699,8 @@ export function UserPermissionsDrawer({
                 </div>
 
                 <div className="grid grid-cols-1 gap-2.5">
-                  {availableResponsibilities.map((r) => {
-                    const isSelected = selectedResponsibilities.includes(r.slug)
+                  {(Array.isArray(availableResponsibilities) ? availableResponsibilities : []).map((r) => {
+                    const isSelected = Array.isArray(selectedResponsibilities) && selectedResponsibilities.includes(r.slug)
 
                     return (
                       <div
@@ -763,8 +763,8 @@ export function UserPermissionsDrawer({
                 </div>
 
                 <div className="grid grid-cols-1 gap-2">
-                  {allBranches.map((b) => {
-                    const isChecked = authorizedBranchIds.includes(b.id)
+                  {(Array.isArray(allBranches) ? allBranches : []).map((b) => {
+                    const isChecked = Array.isArray(authorizedBranchIds) && authorizedBranchIds.includes(b.id)
                     const isPrimary = branchId === b.id
 
                     return (
@@ -1136,12 +1136,12 @@ export function UserPermissionsDrawer({
               <RotateCcw className="w-4 h-4 animate-spin text-primary" />
               Loading user audit trail...
             </div>
-          ) : auditLogs.length === 0 ? (
+          ) : !Array.isArray(auditLogs) || auditLogs.length === 0 ? (
             <div className="p-6 text-center text-xs text-slate-400 italic">
               No previous security or permission modifications recorded for this user.
             </div>
           ) : (
-            auditLogs.map((log) => (
+            (Array.isArray(auditLogs) ? auditLogs : []).map((log) => (
               <div
                 key={log.id}
                 className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs space-y-1"

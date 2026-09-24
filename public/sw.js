@@ -3,7 +3,7 @@
 // Provides fast loading, asset caching, and offline status handling.
 // ==============================================================================
 
-const CACHE_NAME = 'printerp-static-v2'
+const CACHE_NAME = 'printerp-static-v3'
 const STATIC_ASSETS = [
   '/manifest.json',
   '/globe.svg',
@@ -47,14 +47,29 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Never intercept Supabase, auth, API, Next.js internal files, or Server Action calls
+  // Detect Next.js RSC and Action headers
+  const isRSC =
+    request.headers.has('rsc') ||
+    request.headers.has('RSC') ||
+    request.headers.has('next-router-state-tree') ||
+    request.headers.has('Next-Router-State-Tree') ||
+    request.headers.has('next-router-prefetch') ||
+    request.headers.has('Next-Router-Prefetch') ||
+    request.headers.has('next-action') ||
+    request.headers.has('Next-Action') ||
+    request.headers.has('next-url') ||
+    request.headers.has('Next-Url') ||
+    request.headers.get('accept')?.includes('text/x-component')
+
+  // Never intercept Supabase, auth, API, Next.js internal files, RSC, or Server Action calls
   if (
     url.hostname.includes('supabase.co') ||
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/auth/') ||
     url.pathname.startsWith('/_next/') ||
     url.pathname.includes('/_next/') ||
-    request.headers.get('accept')?.includes('application/json')
+    request.headers.get('accept')?.includes('application/json') ||
+    isRSC
   ) {
     return
   }
@@ -81,24 +96,29 @@ self.addEventListener('fetch', (event) => {
     return
   }
 
-  // Dynamic pages / navigation: Network First, fallback to offline notice
+  // Dynamic pages / navigation: Network First, fallback to offline notice ONLY for top-level navigation
   event.respondWith(
     fetch(request)
       .then((networkResponse) => {
         return networkResponse
       })
-      .catch(async () => {
+      .catch(async (error) => {
         const cached = await caches.match(request)
         if (cached) return cached
 
-        // Return offline payload if completely disconnected
-        return new Response(
-          '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline - PrintERP</title><style>body{font-family:sans-serif;background:#0f172a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:1rem;text-align:center}button{margin-top:1rem;padding:0.75rem 1.5rem;background:#06b6d4;color:#000;border:none;border-radius:0.5rem;font-weight:bold;cursor:pointer}</style></head><body><h2>Offline / সংযোগ বিচ্ছিন্ন</h2><p>PrintERP requires an active connection for real-time ERP data. Changes are queued.</p><button onclick="window.location.reload()">Retry / পুনরায় চেষ্টা করুন</button></body></html>',
-          {
-            headers: { 'Content-Type': 'text/html; charset=utf-8' },
-            status: 503,
-          }
-        )
+        // Return offline payload only for direct document navigations
+        if (request.mode === 'navigate') {
+          return new Response(
+            '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Offline - PrintERP</title><style>body{font-family:sans-serif;background:#0f172a;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;padding:1rem;text-align:center}button{margin-top:1rem;padding:0.75rem 1.5rem;background:#06b6d4;color:#000;border:none;border-radius:0.5rem;font-weight:bold;cursor:pointer}</style></head><body><h2>Offline / সংযোগ বিচ্ছিন্ন</h2><p>PrintERP requires an active connection for real-time ERP data. Changes are queued.</p><button onclick="window.location.reload()">Retry / পুনরায় চেষ্টা করুন</button></body></html>',
+            {
+              headers: { 'Content-Type': 'text/html; charset=utf-8' },
+              status: 200,
+            }
+          )
+        }
+
+        // For non-navigation subrequests, propagate error cleanly to callers
+        throw error
       })
   )
 })

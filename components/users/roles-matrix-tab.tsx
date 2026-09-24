@@ -105,6 +105,129 @@ const MODULE_CATEGORIES: Record<ModuleCategory, { labelEn: string; labelBn: stri
   },
 }
 
+const DEFAULT_CLIENT_ROLES: RoleItem[] = [
+  {
+    id: 'role-owner',
+    name: 'Business Owner',
+    name_bn: 'ব্যবসা স্বত্বাধিকারী',
+    slug: 'business_owner',
+    description: 'Universal administrative authority and organization governance.',
+    is_system: true,
+    permissions: Object.entries(MODULE_ACTION_SPECS).flatMap(([mod, spec]) =>
+      spec.actions.map((act) => `${mod}.${act}`)
+    ),
+  },
+  {
+    id: 'role-sales',
+    name: 'Sales Manager',
+    name_bn: 'সেলস ম্যানেজার',
+    slug: 'sales_manager',
+    description: 'Quotations, pricing, customer relations, invoicing, and order handling.',
+    is_system: true,
+    permissions: [
+      'customers.view', 'customers.create', 'customers.edit', 'customers.export',
+      'quotations.view', 'quotations.create', 'quotations.edit', 'quotations.approve', 'quotations.send', 'quotations.print',
+      'orders.view', 'orders.create', 'orders.edit', 'orders.assign', 'orders.print',
+      'design.view', 'design.send', 'design.download',
+      'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.approve', 'invoices.cancel', 'invoices.print', 'invoices.download', 'invoices.send',
+      'payments.view', 'payments.create', 'payments.print',
+      'production.view', 'machineries.view', 'delivery.view', 'delivery.assign',
+      'inventory.view', 'reports.view', 'reports.export', 'products.view', 'products.create', 'products.edit', 'pricing.view', 'pricing.create', 'pricing.edit'
+    ],
+  },
+  {
+    id: 'role-designer',
+    name: 'Graphic Designer',
+    name_bn: 'গ্রাফিক ডিজাইনার',
+    slug: 'designer',
+    description: 'Artwork proofs, customer approvals, pre-press checks, and design revisions.',
+    is_system: true,
+    permissions: [
+      'customers.view', 'quotations.view', 'orders.view', 'orders.create', 'orders.edit', 'orders.print',
+      'design.view', 'design.create', 'design.edit', 'design.send', 'design.download', 'design.approve',
+      'invoices.view', 'production.view', 'machineries.view', 'tasks.view', 'notifications.view'
+    ],
+  },
+  {
+    id: 'role-production',
+    name: 'Production Manager',
+    name_bn: 'প্রোডাকশন ম্যানেজার',
+    slug: 'production_manager',
+    description: 'Plant machine queues, raw media allocation, stages, and quality control.',
+    is_system: true,
+    permissions: [
+      'orders.view', 'orders.edit', 'orders.assign', 'orders.complete',
+      'production.view', 'production.create', 'production.edit', 'production.assign', 'production.complete', 'production.cancel',
+      'machineries.view', 'machineries.create', 'machineries.edit', 'machineries.assign',
+      'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
+      'delivery.view', 'delivery.assign', 'reports.view', 'tasks.view', 'tasks.complete'
+    ],
+  },
+  {
+    id: 'role-operator',
+    name: 'Machine Operator',
+    name_bn: 'মেশিন অপারেটর',
+    slug: 'operator',
+    description: 'Floor press runs, finishing works, task completions, and machine logs.',
+    is_system: true,
+    permissions: [
+      'orders.view', 'production.view', 'production.complete',
+      'machineries.view', 'delivery.view', 'tasks.view', 'tasks.complete'
+    ],
+  },
+  {
+    id: 'role-store',
+    name: 'Store & Inventory Manager',
+    name_bn: 'স্টোর ও ইনভেন্টরি ম্যানেজার',
+    slug: 'store_manager',
+    description: 'Raw media rolls, inks, boards, store ledger, and material dispatches.',
+    is_system: true,
+    permissions: [
+      'inventory.view', 'inventory.create', 'inventory.edit', 'inventory.approve',
+      'products.view', 'delivery.view', 'delivery.create', 'orders.view', 'tasks.view'
+    ],
+  },
+  {
+    id: 'role-accountant',
+    name: 'Accountant & Billing Officer',
+    name_bn: 'হিসাবরক্ষক ও বিলিং কর্মকর্তা',
+    slug: 'accountant',
+    description: 'Invoicing, receipts, payment recording, banking, and financial reports.',
+    is_system: true,
+    permissions: [
+      'customers.view', 'customers.create', 'quotations.view',
+      'orders.view', 'invoices.view', 'invoices.create', 'invoices.edit', 'invoices.approve', 'invoices.cancel', 'invoices.print', 'invoices.download', 'invoices.send',
+      'payments.view', 'payments.create', 'payments.edit', 'payments.print',
+      'reports.view', 'reports.export', 'pricing.view', 'hr.view', 'hr.create', 'hr.edit', 'hr.approve'
+    ],
+  },
+  {
+    id: 'role-delivery',
+    name: 'Delivery & Challan Coordinator',
+    name_bn: 'ডেলিভারি ও চালান সমন্বয়ক',
+    slug: 'delivery_coordinator',
+    description: 'Delivery challans, site installation sign-offs, and dispatch routing.',
+    is_system: true,
+    permissions: [
+      'customers.view', 'orders.view', 'invoices.view', 'invoices.print',
+      'production.view', 'machineries.view',
+      'delivery.view', 'delivery.create', 'delivery.edit', 'delivery.assign', 'delivery.complete', 'delivery.cancel',
+      'tasks.view', 'tasks.complete'
+    ],
+  },
+  {
+    id: 'role-staff',
+    name: 'General Staff',
+    name_bn: 'সাধারণ কর্মী',
+    slug: 'general_staff',
+    description: 'Standard workspace member with basic operational view access.',
+    is_system: true,
+    permissions: [
+      'orders.view', 'machineries.view', 'delivery.view', 'tasks.view', 'notifications.view', 'support.view'
+    ],
+  },
+]
+
 interface RolesMatrixTabProps {
   companyId: string
   tenantSlug: string
@@ -112,10 +235,12 @@ interface RolesMatrixTabProps {
 }
 
 export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesMatrixTabProps) {
-  const [roles, setRoles] = useState<RoleItem[]>([])
-  const [selectedRoleId, setSelectedRoleId] = useState<string>('')
-  const [currentPermissions, setCurrentPermissions] = useState<Set<string>>(new Set())
-  const [isLoading, setIsLoading] = useState(true)
+  const [roles, setRoles] = useState<RoleItem[]>(DEFAULT_CLIENT_ROLES)
+  const [selectedRoleId, setSelectedRoleId] = useState<string>('role-sales')
+  const [currentPermissions, setCurrentPermissions] = useState<Set<string>>(() => {
+    return new Set(DEFAULT_CLIENT_ROLES[1].permissions)
+  })
+  const [isLoading, setIsLoading] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<ModuleCategory>('all')
@@ -140,15 +265,17 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
     setIsLoading(true)
     try {
       const data = await listRolesWithPermissionsAction(companyId)
-      setRoles(data || [])
-      if (data && data.length > 0) {
-        const found = selectedRoleId ? data.find((r) => r.id === selectedRoleId) : data[0]
-        const target = found || data[0]
+      const safeData = Array.isArray(data) && data.length > 0 ? data : DEFAULT_CLIENT_ROLES
+      setRoles(safeData)
+      if (safeData.length > 0) {
+        const found = selectedRoleId ? safeData.find((r) => r.id === selectedRoleId) : safeData[0]
+        const target = found || safeData[0]
         setSelectedRoleId(target.id)
         setCurrentPermissions(new Set(target.permissions || []))
       }
     } catch (err) {
       console.error('Failed to load roles:', err)
+      setRoles((prev) => (Array.isArray(prev) && prev.length > 0 ? prev : DEFAULT_CLIENT_ROLES))
     } finally {
       setIsLoading(false)
     }
@@ -159,7 +286,8 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
   }, [companyId])
 
   const selectedRole = useMemo(() => {
-    return roles.find((r) => r.id === selectedRoleId) || roles[0] || null
+    const list = Array.isArray(roles) && roles.length > 0 ? roles : DEFAULT_CLIENT_ROLES
+    return list.find((r) => r.id === selectedRoleId) || list[0] || null
   }, [roles, selectedRoleId])
 
   // Select Role Handler
@@ -406,14 +534,14 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
           <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-md">
             <CardHeader className="pb-3">
               <CardTitle className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Select Role Template ({roles.length})
+                Select Role Template ({Array.isArray(roles) ? roles.length : 0})
               </CardTitle>
             </CardHeader>
             <CardContent className="p-2 space-y-1">
               {isLoading ? (
                 <div className="p-6 text-center text-xs text-slate-500">Loading roles...</div>
               ) : (
-                roles.map((role) => {
+                (Array.isArray(roles) ? roles : []).map((role) => {
                   const isSelected = selectedRoleId === role.id
                   return (
                     <button
@@ -458,7 +586,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
 
         {/* Right: Matrix Editor Column */}
         <div className="lg:col-span-9 space-y-4">
-          {selectedRole && (
+          {selectedRole ? (
             <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-md">
               {/* Role Header & Save Toolbar */}
               <CardHeader className="pb-3 border-b border-slate-800">
@@ -694,6 +822,14 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                 </div>
               </CardContent>
             </Card>
+          ) : (
+            <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-md p-10 text-center text-slate-400">
+              <p className="text-sm font-semibold text-slate-300">No Role Selected / কোনো রোল নির্বাচন করা হয়নি</p>
+              <p className="text-xs text-slate-500 mt-1">Please select a role from the left menu or click reload to refresh permissions.</p>
+              <Button variant="outline" size="sm" onClick={loadRoles} className="mt-4 border-slate-700 text-xs">
+                Reload Roles / রোল রিফ্রেশ করুন
+              </Button>
+            </Card>
           )}
         </div>
       </div>
@@ -736,7 +872,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               onChange={(e) => setNewRoleBaseSlug(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
             >
-              {roles.map((r) => (
+              {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.slug} value={r.slug}>
                   {r.name} ({r.permissions?.length || 0} permissions)
                 </option>

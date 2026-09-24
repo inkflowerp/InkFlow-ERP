@@ -165,19 +165,42 @@ export async function assignUserBranchAction(
 }
 
 export async function listCompanyUsersAction(companyId: string) {
-  return await CompanyUsersService.listCompanyUsers(companyId)
+  try {
+    return await CompanyUsersService.listCompanyUsers(companyId)
+  } catch (error: any) {
+    console.error('[Action] listCompanyUsersAction error:', error?.message)
+    return { success: false, error: error?.message || 'Failed to list users', data: [] }
+  }
 }
 
 export async function listRolesAction(companyId?: string) {
-  return await CompanyUsersService.listRoles(companyId)
+  try {
+    const roles = await CompanyUsersService.listRoles(companyId)
+    return Array.isArray(roles) ? roles : []
+  } catch (error: any) {
+    console.error('[Action] listRolesAction error:', error?.message)
+    return []
+  }
 }
 
 export async function listRolesWithPermissionsAction(companyId?: string) {
-  return await CompanyUsersService.listRolesWithPermissions(companyId)
+  try {
+    const roles = await CompanyUsersService.listRolesWithPermissions(companyId)
+    return Array.isArray(roles) ? roles : []
+  } catch (error: any) {
+    console.error('[Action] listRolesWithPermissionsAction error:', error?.message)
+    return []
+  }
 }
 
 export async function listBranchesAction(companyId: string) {
-  return await CompanyUsersService.listBranches(companyId)
+  try {
+    const branches = await CompanyUsersService.listBranches(companyId)
+    return Array.isArray(branches) ? branches : []
+  } catch (error: any) {
+    console.error('[Action] listBranchesAction error:', error?.message)
+    return []
+  }
 }
 
 export async function updateUserAccessAndPermissionsAction(params: {

@@ -194,50 +194,58 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
   // Load users, roles, branches, and workforce roster
   const loadData = async () => {
     if (!company) return
-    const [uRes, rRes, bRes, empRes] = await Promise.all([
-      listCompanyUsersAction(company.id),
-      listRolesAction(company.id),
-      listBranchesAction(company.id),
-      getEmployeesAction(undefined, company.id),
-    ])
+    setIsLoading(true)
+    try {
+      const [uRes, rRes, bRes, empRes] = await Promise.all([
+        listCompanyUsersAction(company.id).catch((err) => ({ success: false, data: [] })),
+        listRolesAction(company.id).catch((err) => []),
+        listBranchesAction(company.id).catch((err) => []),
+        getEmployeesAction(undefined, company.id).catch((err) => ({ success: false, data: [] })),
+      ])
 
-    if (uRes.data) {
-      setUsers(uRes.data)
-      if (typeof window !== 'undefined') {
-        try {
-          PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, uRes.data)
-        } catch {}
+      const safeUsers = uRes && Array.isArray(uRes.data) ? uRes.data : []
+      if (safeUsers.length > 0) {
+        setUsers(safeUsers)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, safeUsers)
+          } catch {}
+        }
       }
-    }
-    if (empRes.success && empRes.data) {
-      setEmployees(empRes.data)
-    }
-    if (rRes && rRes.length > 0) {
-      setRoles(rRes)
-      if (typeof window !== 'undefined') {
-        try {
-          PrintERPDataStore.set(STORAGE_KEYS.ROLES, rRes)
-        } catch {}
+
+      if (empRes && empRes.success && Array.isArray(empRes.data)) {
+        setEmployees(empRes.data)
       }
-    }
-    if (bRes && bRes.length > 0) {
-      setBranches(bRes)
-      if (typeof window !== 'undefined') {
-        try {
-          PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, bRes)
-        } catch {}
+
+      const safeRoles = Array.isArray(rRes) ? rRes : []
+      if (safeRoles.length > 0) {
+        setRoles(safeRoles)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.ROLES, safeRoles)
+          } catch {}
+        }
+        setInviteRoleId((prev) => prev || safeRoles[0].id)
+        setAddRoleId((prev) => prev || safeRoles[0].id)
       }
+
+      const safeBranches = Array.isArray(bRes) ? bRes : []
+      if (safeBranches.length > 0) {
+        setBranches(safeBranches)
+        if (typeof window !== 'undefined') {
+          try {
+            PrintERPDataStore.set(STORAGE_KEYS.BRANCHES, safeBranches)
+          } catch {}
+        }
+        setInviteBranchId((prev) => prev || safeBranches[0].id)
+        setAddBranchId((prev) => prev || safeBranches[0].id)
+      }
+    } catch (err) {
+      console.error('Failed to load user management data:', err)
+    } finally {
+      setIsLoading(false)
+      setMounted(true)
     }
-    if (rRes.length > 0) {
-      setInviteRoleId((prev) => prev || rRes[0].id)
-      setAddRoleId((prev) => prev || rRes[0].id)
-    }
-    if (bRes && bRes.length > 0) {
-      setInviteBranchId((prev) => prev || bRes[0].id)
-      setAddBranchId((prev) => prev || bRes[0].id)
-    }
-    setIsLoading(false)
-    setMounted(true)
   }
 
   useEffect(() => {
@@ -706,8 +714,8 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                   onChange={(e) => setRoleFilter(e.target.value)}
                   className="h-8 px-2.5 text-xs bg-slate-950 border border-slate-800 rounded-lg text-slate-200 focus:outline-none"
                 >
-                  <option value="all">All Roles ({roles.length})</option>
-                  {roles.map((r) => (
+                  <option value="all">All Roles ({Array.isArray(roles) ? roles.length : 0})</option>
+                  {(Array.isArray(roles) ? roles : []).map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
                     </option>
@@ -722,7 +730,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 >
                   <option value="all">All Locations</option>
                   <option value="global">Central / All Branches</option>
-                  {branches.map((b) => (
+                  {(Array.isArray(branches) ? branches : []).map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.name} ({b.code})
                     </option>
@@ -1125,7 +1133,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               onChange={(e) => setInviteRoleId(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
             >
-              {roles.map((r) => (
+              {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
                 </option>
@@ -1141,7 +1149,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
             >
               <option value="">All Branches / Global</option>
-              {branches.map((b) => (
+              {(Array.isArray(branches) ? branches : []).map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name} ({b.code})
                 </option>
@@ -1261,7 +1269,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 onChange={(e) => setAddRoleId(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
               >
-                {roles.map((r) => (
+                {(Array.isArray(roles) ? roles : []).map((r) => (
                   <option key={r.id} value={r.id}>
                     {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
                   </option>
@@ -1277,7 +1285,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
               >
                 <option value="">All Branches / Global</option>
-                {branches.map((b) => (
+                {(Array.isArray(branches) ? branches : []).map((b) => (
                   <option key={b.id} value={b.id}>
                     {b.name} ({b.code})
                   </option>
@@ -1318,7 +1326,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               onChange={(e) => setTargetRoleId(e.target.value)}
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
             >
-              {roles.map((r) => (
+              {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.id} value={r.id}>
                   {r.name} {r.name_bn ? `(${r.name_bn})` : ''}
                 </option>
@@ -1358,7 +1366,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
             >
               <option value="">All Branches / Global Central</option>
-              {branches.map((b) => (
+              {(Array.isArray(branches) ? branches : []).map((b) => (
                 <option key={b.id} value={b.id}>
                   {b.name} ({b.code})
                 </option>
