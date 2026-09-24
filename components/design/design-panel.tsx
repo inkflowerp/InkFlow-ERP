@@ -19,8 +19,9 @@ import { useI18n } from '@/i18n/context'
 import { PageHeader } from '@/components/shared/page-header'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
+import { sendToPrintOperatorAction } from '@/actions/design.actions'
 import type { DesignJobRecord } from '@/types/design.types'
-import type { ProductionJobRecord } from '@/types/production.types'
+import type { ProductionJobRecord, ProductionTaskRecord } from '@/types/production.types'
 
 import {
   type PreflightState,
@@ -406,55 +407,153 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const handlePreflightConfirmAndRoute = useCallback(
     async (job: DesignJobRecord, targetMachineId: string) => {
       const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
+      const now = new Date().toISOString()
+      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number) || job.commercial_status === 'invoice_created'
       const updated: DesignJobRecord = {
         ...job,
         status: 'approved',
         workflow_routing: 'ready_production',
+        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
         is_locked: true,
-        updated_at: new Date().toISOString(),
+        updated_at: now,
       }
       PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
       setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
 
-      // Update Production Jobs
+      // Update / Create Production Jobs
       const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      const updatedProd = allProdJobs.map((pj) => {
-        if (
+      const matchedProdJobIdx = allProdJobs.findIndex(
+        (pj) =>
           pj.id === (job as any).production_job_id ||
           (pj.customer_name === job.customer_name && pj.product_name === job.title) ||
           (job.invoice_number && pj.production_job_number && pj.production_job_number.includes(job.invoice_number.replace('INV-', '')))
-        ) {
-          return {
-            ...pj,
-            stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
-            status: 'queued' as const,
-            updated_at: new Date().toISOString(),
-          }
+      )
+      if (matchedProdJobIdx >= 0) {
+        allProdJobs[matchedProdJobIdx] = {
+          ...allProdJobs[matchedProdJobIdx],
+          stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
+          status: 'queued' as const,
+          commercial_gate_status: hasInvoice ? 'ready_for_production' : 'invoice_required',
+          is_blocked_by_commercial_gate: !hasInvoice,
+          is_blocked_by_design_gate: false,
+          updated_at: now,
         }
-        return pj
-      })
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, updatedProd)
-      setProductionJobs(updatedProd)
+      } else {
+        allProdJobs.unshift({
+          id: crypto.randomUUID(),
+          company_id: companyId,
+          job_order_id: (job as any).job_order_id || crypto.randomUUID(),
+          sales_order_id: job.sales_order_id || null,
+          customer_name: job.customer_name,
+          product_name: job.title,
+          dimensions_spec: job.dimensions_spec,
+          quantity: job.quantity || 1,
+          status: 'queued',
+          stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
+          commercial_gate_status: hasInvoice ? 'ready_for_production' : 'invoice_required',
+          is_blocked_by_commercial_gate: !hasInvoice,
+          is_blocked_by_design_gate: false,
+          created_at: now,
+          updated_at: now,
+        } as any)
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allProdJobs)
+      setProductionJobs(allProdJobs)
 
-      // Unblock linked production tasks in queue
+      // Provision or Unblock linked production tasks in queue
       try {
         const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-        const updatedTasks = allTasks.map((t) => {
-          if (
-            t.job_order_id === (job as any).job_order_id ||
-            (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
-          ) {
-            return {
-              ...t,
+        const baseNum = (job.design_number || '001').replace('DSN-', '')
+        const taskNum1 = `TSK-${baseNum}-1`
+        const taskNum2 = `TSK-${baseNum}-2`
+
+        const matchingTaskIndices = allTasks
+          .map((t, idx) => ({ t, idx }))
+          .filter(
+            ({ t }) =>
+              t.job_order_id === (job as any).job_order_id ||
+              t.task_number === taskNum1 ||
+              t.task_number === taskNum2 ||
+              (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
+          )
+
+        if (matchingTaskIndices.length > 0) {
+          for (const { idx } of matchingTaskIndices) {
+            allTasks[idx] = {
+              ...allTasks[idx],
               is_blocked_by_design_gate: false,
-              assigned_machine_name: machineObj?.name || t.assigned_machine_name || 'Press Floor',
-              status: t.status === 'on_hold' ? 'queued' : t.status,
-              updated_at: new Date().toISOString(),
+              is_blocked_by_commercial_gate: !hasInvoice,
+              assigned_machine_name: machineObj?.name || allTasks[idx].assigned_machine_name || 'Press Floor',
+              assigned_machine_id: machineObj?.id || allTasks[idx].assigned_machine_id || null,
+              status: allTasks[idx].status === 'on_hold' ? 'queued' : allTasks[idx].status,
+              customer_name: allTasks[idx].customer_name || job.customer_name,
+              product_name: allTasks[idx].product_name || job.title,
+              job_number: allTasks[idx].job_number || job.invoice_number || job.design_number,
+              job_deadline: allTasks[idx].job_deadline || job.deadline,
+              updated_at: now,
             }
           }
-          return t
+        } else {
+          const task1Id = crypto.randomUUID()
+          const task2Id = crypto.randomUUID()
+          const task1 = {
+            id: task1Id,
+            company_id: companyId,
+            job_order_id: (job as any).job_order_id || crypto.randomUUID(),
+            task_number: taskNum1,
+            task_name: `Print: ${job.title}`,
+            customer_name: job.customer_name,
+            product_name: job.title,
+            job_number: job.invoice_number || job.design_number,
+            job_deadline: job.deadline,
+            task_type: 'printing',
+            department: 'printing',
+            sequence_order: 1,
+            quantity: job.quantity || 1,
+            unit: job.unit || 'pcs',
+            priority: job.priority || 'normal',
+            status: 'queued',
+            assigned_machine_id: machineObj?.id || null,
+            assigned_machine_name: machineObj?.name || 'Press Floor',
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            created_at: now,
+            updated_at: now,
+          }
+          const task2 = {
+            id: task2Id,
+            company_id: companyId,
+            job_order_id: (job as any).job_order_id || task1.job_order_id,
+            task_number: taskNum2,
+            task_name: `Finishing & QC: ${job.title}`,
+            customer_name: job.customer_name,
+            product_name: job.title,
+            job_number: job.invoice_number || job.design_number,
+            job_deadline: job.deadline,
+            task_type: 'finishing',
+            department: 'finishing',
+            sequence_order: 2,
+            quantity: job.quantity || 1,
+            unit: job.unit || 'pcs',
+            priority: job.priority || 'normal',
+            status: 'queued',
+            is_blocked_by_commercial_gate: !hasInvoice,
+            is_blocked_by_design_gate: false,
+            created_at: now,
+            updated_at: now,
+          }
+          allTasks.unshift(task2, task1)
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+      } catch {}
+
+      // Call backend server action in background for multi-terminal sync
+      try {
+        await sendToPrintOperatorAction(job.id, companyId, updated, {
+          assignedMachineId: machineObj?.id,
+          assignedMachineName: machineObj?.name,
+          actorName: user?.profile?.full_name || 'Prepress Designer',
         })
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, updatedTasks)
       } catch {}
 
       // Update linked sales order stage to in_production
@@ -469,7 +568,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         if (matchedOrder && matchedOrder.stage !== 'delivered') {
           PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
             stage: 'in_production',
-            updated_at: new Date().toISOString(),
+            updated_at: now,
           })
         }
       } catch {}
@@ -480,9 +579,21 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         [job.id]: { cmyk: true, dpi300: true, bleed: true, curves: true },
       }))
 
+      // Realtime cross-tab broadcast for Production Planning & Shop Floor Terminals
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(
+          new CustomEvent('printerp_data_sync', {
+            detail: { type: 'production_tasks_updated', source: 'design_preflight', jobId: job.id },
+          })
+        )
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+        window.dispatchEvent(new CustomEvent('printerp_table_synced:design_jobs'))
+      }
+
       showNotification(`জব #${job.design_number} প্রেসে সফলভাবে পাঠানো হয়েছে (${machineObj?.name})!`, 'success')
     },
-    [showNotification]
+    [companyId, user, showNotification]
   )
 
   const handlePauseProduction = useCallback(

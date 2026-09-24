@@ -36,8 +36,12 @@ export class ProductionTaskRepository {
     if (
       requestedCompanyId === 'default' ||
       requestedCompanyId === 'my-company' ||
+      requestedCompanyId === 'c-01' ||
+      requestedCompanyId === 'all' ||
       recordCompanyId === 'default' ||
-      recordCompanyId === 'my-company'
+      recordCompanyId === 'my-company' ||
+      recordCompanyId === 'c-01' ||
+      recordCompanyId === 'all'
     ) {
       return true
     }

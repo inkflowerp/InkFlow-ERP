@@ -125,17 +125,117 @@ export default function AdvancedProductionPage() {
       setLoading(true)
     }
     try {
+      const effCompany = company?.id || (slug !== 'my-company' ? slug : 'default')
       const [taskRes, queueRes] = await Promise.all([
-        getProductionTasksAction({ department: selectedDept }),
-        getMachineQueuesAction(),
+        getProductionTasksAction({ department: selectedDept }, effCompany),
+        getMachineQueuesAction(undefined, effCompany),
       ])
 
+      // Get local tasks from store as well
+      const localStoreTasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+      const taskMap = new Map<string, ProductionTaskRecord>()
+
+      // 1. Populate from local datastore
+      for (const t of localStoreTasks) {
+        if (t?.id) taskMap.set(t.id, t)
+      }
+
+      // 2. Merge server-resolved tasks
       if (taskRes.success && taskRes.data) {
-        setTasks(taskRes.data)
+        for (const t of taskRes.data) {
+          if (t?.id) taskMap.set(t.id, t)
+        }
+      }
+
+      // 3. Scan local approved design jobs to auto-materialize tasks if missing
+      const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const now = new Date().toISOString()
+      let addedAnyLocal = false
+
+      for (const dj of localDesignJobs) {
+        const isApproved =
+          dj.status === 'approved' ||
+          dj.is_locked ||
+          dj.workflow_routing === 'ready_production' ||
+          dj.workflow_routing === 'design_ok' ||
+          (dj.versions && dj.versions.some((v: any) => v.is_approved)) ||
+          dj.customer_approval_required === false
+
+        if (isApproved && dj.workflow_routing !== 'ready_product') {
+          const baseNum = (dj.design_number || '001').replace('DSN-', '')
+          const taskNum1 = `TSK-${baseNum}-1`
+          const taskNum2 = `TSK-${baseNum}-2`
+
+          const hasExisting = Array.from(taskMap.values()).some(
+            (t) =>
+              (dj.job_order_id && t.job_order_id === dj.job_order_id) ||
+              t.task_number === taskNum1 ||
+              t.task_number === taskNum2 ||
+              (t.customer_name === dj.customer_name && (t.product_name === dj.title || t.task_name?.includes(dj.title)))
+          )
+
+          if (!hasExisting) {
+            const hasInvoice = Boolean(dj.invoice_id) || Boolean(dj.invoice_number) || dj.commercial_status === 'invoice_created'
+            const task1: any = {
+              id: crypto.randomUUID(),
+              company_id: effCompany,
+              job_order_id: dj.job_order_id || crypto.randomUUID(),
+              task_number: taskNum1,
+              task_name: `Print: ${dj.title}`,
+              customer_name: dj.customer_name,
+              product_name: dj.product_name || dj.title,
+              job_number: dj.invoice_number || dj.design_number,
+              job_deadline: dj.deadline,
+              task_type: 'printing',
+              department: 'printing',
+              sequence_order: 1,
+              quantity: dj.quantity || 1,
+              unit: dj.unit || 'pcs',
+              priority: dj.priority || 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: !hasInvoice,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            const task2: any = {
+              id: crypto.randomUUID(),
+              company_id: effCompany,
+              job_order_id: task1.job_order_id,
+              task_number: taskNum2,
+              task_name: `Finishing & QC: ${dj.title}`,
+              customer_name: dj.customer_name,
+              product_name: dj.product_name || dj.title,
+              job_number: dj.invoice_number || dj.design_number,
+              job_deadline: dj.deadline,
+              task_type: 'finishing',
+              department: 'finishing',
+              sequence_order: 2,
+              quantity: dj.quantity || 1,
+              unit: dj.unit || 'pcs',
+              priority: dj.priority || 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: !hasInvoice,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            taskMap.set(task1.id, task1)
+            taskMap.set(task2.id, task2)
+            addedAnyLocal = true
+          }
+        }
+      }
+
+      const mergedTasks = Array.from(taskMap.values())
+      setTasks(mergedTasks)
+
+      if (addedAnyLocal || taskRes.success) {
         try {
-          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, taskRes.data, false)
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, mergedTasks, false)
         } catch {}
       }
+
       if (queueRes.success && queueRes.data) {
         setMachineQueues(queueRes.data)
       }

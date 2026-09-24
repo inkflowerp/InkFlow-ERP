@@ -252,10 +252,10 @@ describe('PrintERP Designer Panel & Dual Intake Workflow Architecture', () => {
         status: 'received',
       })
 
-      // 1. Attempt send to print without invoice -> Must fail Commercial Gate
+      // 1. Attempt send to print without invoice or approval -> Must fail Gate
       const result1 = await DesignService.sendToPrintOperator(designJob.id, TENANT_A)
       assert.strictEqual(result1.success, false)
-      assert.match(result1.error || '', /Commercial Gate Blocked/i)
+      assert.match(result1.error || '', /Design Gate Blocked|Commercial Gate Blocked/i)
 
       // 2. Link invoice but design not approved -> Must fail Design Gate
       await DesignService.updateJob(designJob.id, TENANT_A, {

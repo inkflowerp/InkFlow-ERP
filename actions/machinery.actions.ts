@@ -29,6 +29,29 @@ export interface ServerActionResult<T> {
   error?: string
 }
 
+async function resolveTenantContext(requestedCompanyId?: string) {
+  let companyId = requestedCompanyId || ''
+  let userId = 'system'
+  let userEmail = 'system@printerp.local'
+  let userName = 'Operator'
+
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (tenant?.companyId) {
+      companyId = tenant.companyId
+      userId = tenant.userId || userId
+      userEmail = tenant.userEmail || userEmail
+      userName = tenant.fullName || userName
+    }
+  } catch {}
+
+  if (!companyId) {
+    companyId = requestedCompanyId || 'default'
+  }
+
+  return { companyId, userId, userEmail, userName }
+}
+
 /**
  * Server Action: Fetches filtered list of machineries
  */
@@ -37,12 +60,7 @@ export async function getMachineriesAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<MachineryRecord[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const machineries = await MachineryService.getMachineries(companyId, filters)
     return { success: true, data: machineries }
   } catch (err: any) {
@@ -58,12 +76,7 @@ export async function getMachineryByIdAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<MachineryRecord | null>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const machine = await MachineryService.getMachineryById(id, companyId)
     if (!machine) {
       return { success: false, error: 'Machine not found.' }

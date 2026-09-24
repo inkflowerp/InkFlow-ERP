@@ -95,10 +95,10 @@ export class DesignService {
   static async sendToPrintOperator(
     id: string,
     companyId: string,
-    actorName: string = 'Designer'
+    actorOrOptions: string | { actorName?: string; assignedMachineId?: string; assignedMachineName?: string } = 'Designer'
   ): Promise<{ success: boolean; error?: string; designJob?: DesignJobRecord }> {
     if (!id || !companyId) return { success: false, error: 'Design job ID and company context required.' }
-    return await DesignRepository.sendToPrintOperator(id, companyId, actorName)
+    return await DesignRepository.sendToPrintOperator(id, companyId, actorOrOptions)
   }
 
   static async deleteJob(id: string, companyId: string): Promise<boolean> {

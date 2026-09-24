@@ -1142,24 +1142,119 @@ function DesignDetailContent() {
   // Customer Approval & Lock
   const handleApproveAndLock = (e: React.FormEvent) => {
     e.preventDefault()
+    const now = new Date().toISOString()
     const updatedVersions = (job.versions || []).map((v: DesignVersionRecord) => ({
       ...v,
       is_approved: v.version_number === activeVersionNumber,
     }))
 
-    const updatedJob = {
+    const updatedJob: DesignJobRecord = {
+      ...job,
       status: 'approved' as const,
+      workflow_routing: 'ready_production',
+      commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
       approved_version: activeVersionNumber,
       approved_by: approverName || 'Authorized Approver',
       approval_timestamp: new Date().toLocaleString(),
       approval_note: approvalNote,
       is_locked: true,
       versions: updatedVersions,
-      updated_at: new Date().toISOString(),
+      updated_at: now,
     }
 
     PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updatedJob)
     setIsApproveOpen(false)
+
+    // Direct Production Tasks provisioning
+    try {
+      const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+      const baseNum = (job.design_number || '001').replace('DSN-', '')
+      const taskNum1 = `TSK-${baseNum}-1`
+      const taskNum2 = `TSK-${baseNum}-2`
+
+      const matchingTasks = allTasks.filter(
+        (t) =>
+          t.job_order_id === (job as any).job_order_id ||
+          t.task_number === taskNum1 ||
+          t.task_number === taskNum2 ||
+          (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
+      )
+
+      if (matchingTasks.length > 0) {
+        for (const t of matchingTasks) {
+          t.is_blocked_by_design_gate = false
+          t.is_blocked_by_commercial_gate = !hasInvoice
+          if (t.status === 'on_hold') t.status = 'queued'
+          t.customer_name = t.customer_name || job.customer_name
+          t.product_name = t.product_name || job.title
+          t.job_number = t.job_number || job.invoice_number || job.design_number
+          t.updated_at = now
+        }
+      } else {
+        const task1 = {
+          id: crypto.randomUUID(),
+          company_id: companyId,
+          job_order_id: (job as any).job_order_id || crypto.randomUUID(),
+          task_number: taskNum1,
+          task_name: `Print: ${job.title}`,
+          customer_name: job.customer_name,
+          product_name: job.title,
+          job_number: job.invoice_number || job.design_number,
+          job_deadline: job.deadline,
+          task_type: 'printing',
+          department: 'printing',
+          sequence_order: 1,
+          quantity: job.quantity || 1,
+          unit: job.unit || 'pcs',
+          priority: job.priority || 'normal',
+          status: 'queued',
+          is_blocked_by_commercial_gate: !hasInvoice,
+          is_blocked_by_design_gate: false,
+          created_at: now,
+          updated_at: now,
+        }
+        const task2 = {
+          id: crypto.randomUUID(),
+          company_id: companyId,
+          job_order_id: (job as any).job_order_id || task1.job_order_id,
+          task_number: taskNum2,
+          task_name: `Finishing & QC: ${job.title}`,
+          customer_name: job.customer_name,
+          product_name: job.title,
+          job_number: job.invoice_number || job.design_number,
+          job_deadline: job.deadline,
+          task_type: 'finishing',
+          department: 'finishing',
+          sequence_order: 2,
+          quantity: job.quantity || 1,
+          unit: job.unit || 'pcs',
+          priority: job.priority || 'normal',
+          status: 'queued',
+          is_blocked_by_commercial_gate: !hasInvoice,
+          is_blocked_by_design_gate: false,
+          created_at: now,
+          updated_at: now,
+        }
+        allTasks.unshift(task2, task1)
+      }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+    } catch {}
+
+    // Dispatch backend action & events
+    const effectiveId = job.id || job.design_number || jobId
+    const effectiveCompany = job.company_id || company?.id || slug
+    sendToPrintOperatorAction(effectiveId, effectiveCompany, updatedJob).catch(() => {})
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('printerp_data_sync', {
+          detail: { type: 'production_tasks_updated', source: 'design_approval', jobId: job.id },
+        })
+      )
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
+      window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+    }
+
     showNotification(`Version ${activeVersionNumber} officially approved & locked for print production!`)
   }
 
@@ -1181,15 +1276,103 @@ function DesignDetailContent() {
         const effectiveCompany = job.company_id || company?.id || slug
         const now = new Date().toISOString()
 
-        await sendToPrintOperatorAction(effectiveId, effectiveCompany, job)
-
-        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, {
-          status: 'approved',
-          workflow_routing: 'ready_production',
-          commercial_status: hasInvoice ? 'invoice_created' : 'invoice_required',
+        const updated = {
+          ...job,
+          status: 'approved' as const,
+          workflow_routing: 'ready_production' as const,
+          commercial_status: hasInvoice ? 'invoice_created' as const : (job.commercial_status || 'invoice_required'),
           is_locked: true,
           updated_at: now,
-        })
+        }
+
+        await sendToPrintOperatorAction(effectiveId, effectiveCompany, updated)
+
+        PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+
+        // Provision/update tasks in local store
+        try {
+          const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+          const baseNum = (job.design_number || '001').replace('DSN-', '')
+          const taskNum1 = `TSK-${baseNum}-1`
+          const taskNum2 = `TSK-${baseNum}-2`
+
+          const matchingTasks = allTasks.filter(
+            (t) =>
+              t.job_order_id === (job as any).job_order_id ||
+              t.task_number === taskNum1 ||
+              t.task_number === taskNum2 ||
+              (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
+          )
+
+          if (matchingTasks.length > 0) {
+            for (const t of matchingTasks) {
+              t.is_blocked_by_design_gate = false
+              t.is_blocked_by_commercial_gate = !hasInvoice
+              if (t.status === 'on_hold') t.status = 'queued'
+              t.customer_name = t.customer_name || job.customer_name
+              t.product_name = t.product_name || job.title
+              t.job_number = t.job_number || job.invoice_number || job.design_number
+              t.updated_at = now
+            }
+          } else {
+            const task1 = {
+              id: crypto.randomUUID(),
+              company_id: companyId,
+              job_order_id: (job as any).job_order_id || crypto.randomUUID(),
+              task_number: taskNum1,
+              task_name: `Print: ${job.title}`,
+              customer_name: job.customer_name,
+              product_name: job.title,
+              job_number: job.invoice_number || job.design_number,
+              job_deadline: job.deadline,
+              task_type: 'printing',
+              department: 'printing',
+              sequence_order: 1,
+              quantity: job.quantity || 1,
+              unit: job.unit || 'pcs',
+              priority: job.priority || 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: !hasInvoice,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            const task2 = {
+              id: crypto.randomUUID(),
+              company_id: companyId,
+              job_order_id: (job as any).job_order_id || task1.job_order_id,
+              task_number: taskNum2,
+              task_name: `Finishing & QC: ${job.title}`,
+              customer_name: job.customer_name,
+              product_name: job.title,
+              job_number: job.invoice_number || job.design_number,
+              job_deadline: job.deadline,
+              task_type: 'finishing',
+              department: 'finishing',
+              sequence_order: 2,
+              quantity: job.quantity || 1,
+              unit: job.unit || 'pcs',
+              priority: job.priority || 'normal',
+              status: 'queued',
+              is_blocked_by_commercial_gate: !hasInvoice,
+              is_blocked_by_design_gate: false,
+              created_at: now,
+              updated_at: now,
+            }
+            allTasks.unshift(task2, task1)
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
+        } catch {}
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('printerp_data_sync', {
+              detail: { type: 'production_tasks_updated', source: 'design_send_print', jobId: job.id },
+            })
+          )
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
+        }
 
         showNotification(`Job #${job.design_number} dispatched to Print Floor Queue!`, 'success')
       } catch (err: any) {
@@ -1360,7 +1543,7 @@ function DesignDetailContent() {
             )}
 
             {/* Send to Print Operator Queue */}
-            {hasInvoice && (job.status === 'approved' || job.is_locked) && (
+            {(job.status === 'approved' || job.is_locked || job.workflow_routing === 'ready_production') && (
               <Button
                 size="sm"
                 onClick={handleSendToPrint}

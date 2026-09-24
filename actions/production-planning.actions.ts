@@ -22,6 +22,29 @@ export interface ServerActionResult<T> {
   error?: string
 }
 
+async function resolveTenantContext(requestedCompanyId?: string) {
+  let companyId = requestedCompanyId || ''
+  let userId = 'system'
+  let userEmail = 'system@printerp.local'
+  let userName = 'Operator'
+
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId)
+    if (tenant?.companyId) {
+      companyId = tenant.companyId
+      userId = tenant.userId || userId
+      userEmail = tenant.userEmail || userEmail
+      userName = tenant.fullName || userName
+    }
+  } catch {}
+
+  if (!companyId) {
+    companyId = requestedCompanyId || 'default'
+  }
+
+  return { companyId, userId, userEmail, userName }
+}
+
 /**
  * Server Action: Fetch production tasks
  */
@@ -30,12 +53,7 @@ export async function getProductionTasksAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<ProductionTaskRecord[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.getTasks(companyId, filters)
     return { success: true, data: tasks }
   } catch (err: any) {
@@ -52,12 +70,7 @@ export async function getProductionTaskByIdAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.getTaskById(id, companyId, taskPayload)
     if (!task) {
       return { success: false, error: 'Production task not found.' }
@@ -77,14 +90,7 @@ export async function createProductionTaskAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-
+    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.createTask(data, companyId)
 
     try {
@@ -117,14 +123,7 @@ export async function scheduleProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-
+    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.scheduleTask(input, companyId, taskPayload)
 
     try {
@@ -158,15 +157,7 @@ export async function startProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-    const userName = tenant.fullName || 'Operator'
-
+    const { companyId, userId, userEmail, userName } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.startTask(
       taskId,
       companyId,
@@ -208,12 +199,7 @@ export async function pauseProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.pauseTask(taskId, reason, companyId, taskPayload)
 
     revalidatePath('/[tenantSlug]/production', 'layout')
@@ -245,14 +231,7 @@ export async function completeProductionTaskAction(
   }>
 > {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-
+    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const result = await ProductionPlanningService.completeTask(taskId, companyId, completionData, taskPayload)
 
     try {
@@ -302,12 +281,7 @@ export async function generateProductionTasksFromOrderAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<ProductionTaskRecord[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.generateTasksFromOrderOrProduct(input, companyId)
     revalidatePath('/[tenantSlug]/production', 'layout')
     return { success: true, data: tasks }
@@ -324,12 +298,7 @@ export async function getCompatibleMachineriesForTaskAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<Array<{ machine: any; isCompatible: boolean; incompatibilityReasons: string[]; currentLoadMinutes: number }>>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const data = await ProductionPlanningService.getCompatibleMachinesForTask(taskId, companyId)
     return { success: true, data }
   } catch (err: any) {
@@ -346,12 +315,7 @@ export async function reassignHeldTasksAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<{ reassignedCount: number; tasks: ProductionTaskRecord[] }>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const result = await ProductionPlanningService.reassignHeldTasks(companyId, sourceMachineId, targetMachineId)
     revalidatePath('/[tenantSlug]/production', 'layout')
     revalidatePath('/[tenantSlug]/operator', 'layout')
@@ -370,14 +334,7 @@ export async function holdProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-
+    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.holdTask(input, companyId, taskPayload)
 
     try {
@@ -410,12 +367,7 @@ export async function resumeProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const task = await ProductionPlanningService.resumeTask(taskId, companyId, taskPayload)
 
     revalidatePath('/[tenantSlug]/production', 'layout')
@@ -434,16 +386,8 @@ export async function reworkProductionTaskAction(
   taskPayload?: Partial<ProductionTaskRecord>
 ): Promise<ServerActionResult<ProductionTaskRecord>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-    const userEmail = tenant.userEmail || null
-    const userName = tenant.fullName || 'QC Inspector'
-
-    const task = await ProductionPlanningService.createReworkTask(input, companyId, userName, taskPayload)
+    const { companyId, userId, userEmail, userName } = await resolveTenantContext(requestedCompanyId)
+    const task = await ProductionPlanningService.createReworkTask(input, companyId, userName || 'QC Inspector', taskPayload)
 
     try {
       await AuditService.logEvent(
@@ -474,12 +418,7 @@ export async function getMachineQueuesAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<MachineQueueGroup[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-
+    const { companyId } = await resolveTenantContext(requestedCompanyId)
     const queues = await ProductionPlanningService.getMachineQueues(companyId, branchId)
     return { success: true, data: queues }
   } catch (err: any) {
@@ -494,13 +433,7 @@ export async function getMyAssignedTasksAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<ProductionTaskRecord[]>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
-    const userId = tenant.userId
-
+    const { companyId, userId } = await resolveTenantContext(requestedCompanyId)
     const tasks = await ProductionPlanningService.getTasks(companyId, {
       assigned_operator_id: userId,
     })
@@ -524,11 +457,7 @@ export async function reportProductionProblemAction(
   requestedCompanyId?: string
 ): Promise<ServerActionResult<any>> {
   try {
-    const tenant = await getCurrentTenant(requestedCompanyId)
-    if (!tenant || !tenant.companyId) {
-      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
-    }
-    const companyId = tenant.companyId
+    const { companyId, userId, userEmail } = await resolveTenantContext(requestedCompanyId)
 
     // 1. Hold / Pause the task
     const updatedTask = await ProductionPlanningService.holdTask(
@@ -552,8 +481,8 @@ export async function reportProductionProblemAction(
         notes: params.notes,
         photo_attached: Boolean(params.photo_url),
       },
-      userEmail: tenant?.userEmail || 'Operator',
-      userId: tenant?.userId,
+      userEmail: userEmail || 'Operator',
+      userId: userId,
     })
 
     revalidatePath('/production')

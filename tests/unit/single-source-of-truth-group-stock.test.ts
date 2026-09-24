@@ -1,10 +1,10 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { InventoryService } from '@/services/inventory.service'
-import { InventoryRepository } from '@/lib/repositories/inventory.repository'
-import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { getMaterialWarehouseStockBreakdown } from '@/lib/units'
-import { MaterialRecord } from '@/types/inventory.types'
+import { InventoryService } from '../../services/inventory.service.ts'
+import { InventoryRepository } from '../../lib/repositories/inventory.repository.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
+import { getMaterialWarehouseStockBreakdown } from '../../lib/units.ts'
+import type { MaterialRecord } from '../../types/inventory.types.ts'
 
 test('Single Source of Truth: Group stock isolation on receive and issue', async (t) => {
   const companyId = `test-comp-${Date.now()}`

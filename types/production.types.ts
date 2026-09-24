@@ -72,6 +72,9 @@ export interface ProductionJobRecord {
   has_rework: boolean
   rework_count: number
   reworks?: ProductionReworkRecord[]
+  commercial_gate_status?: string | null
+  is_blocked_by_commercial_gate?: boolean
+  is_blocked_by_design_gate?: boolean
   created_at: string
   updated_at: string
 }
