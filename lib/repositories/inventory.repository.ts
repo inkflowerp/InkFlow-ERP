@@ -1716,8 +1716,9 @@ export class InventoryRepository {
           if ((!existing.items || existing.items.length === 0) && iss.items && iss.items.length > 0) {
             list[existingIdx] = { ...existing, ...iss }
           } else if (existing.items && iss.items) {
+            const issItems = iss.items
             list[existingIdx].items = existing.items.map((it, idx) => {
-              const localIt = iss.items[idx] || iss.items.find((x) => x.material_id === it.material_id)
+              const localIt = issItems[idx] || issItems.find((x) => x.material_id === it.material_id)
               return {
                 ...it,
                 roll_id: it.roll_id || localIt?.roll_id,
