@@ -43,7 +43,6 @@ import {
   InventoryRollRecord,
   MaterialRequestRecord,
 } from '@/types/inventory.types'
-import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { returnFloorStockToStoreAction } from '@/actions/inventory.actions'
@@ -150,10 +149,6 @@ export function PrintFloorConsumptionUnit({
 
   // Aggregate KPI Calculations
   const kpis = useMemo(() => {
-    let totalDispatchedValue = 0
-    let totalConsumedValue = 0
-    let totalWastageValue = 0
-    let totalRemainingFloorValue = 0
     let totalDispatchedQty = 0
     let totalConsumedQty = 0
     let totalWastageQty = 0
@@ -161,7 +156,6 @@ export function PrintFloorConsumptionUnit({
     let activeFloorItemsCount = 0
 
     for (const rec of floorConsumptions) {
-      const cost = Number(rec.unit_cost) || 0
       const issued = Number(rec.issued_quantity) || 0
       const consumed = Number(rec.consumed_quantity) || 0
       const wastage = Number(rec.wastage_quantity) || 0
@@ -172,11 +166,6 @@ export function PrintFloorConsumptionUnit({
       totalWastageQty += wastage
       totalRemainingQty += remaining
 
-      totalDispatchedValue += issued * cost
-      totalConsumedValue += consumed * cost
-      totalWastageValue += wastage * cost
-      totalRemainingFloorValue += remaining * cost
-
       if (remaining > 0) {
         activeFloorItemsCount++
       }
@@ -186,10 +175,6 @@ export function PrintFloorConsumptionUnit({
       totalDispatchedQty > 0 ? Math.round((totalWastageQty / totalDispatchedQty) * 1000) / 10 : 0
 
     return {
-      totalDispatchedValue,
-      totalConsumedValue,
-      totalWastageValue,
-      totalRemainingFloorValue,
       totalDispatchedQty,
       totalConsumedQty,
       totalWastageQty,
@@ -201,19 +186,18 @@ export function PrintFloorConsumptionUnit({
 
   // Scrap Reasons Breakdown Aggregation
   const scrapReasonsBreakdown = useMemo(() => {
-    const map: Record<string, { count: number; qty: number; cost: number }> = {}
+    const map: Record<string, { count: number; qty: number }> = {}
     for (const rec of floorConsumptions) {
       if (rec.wastage_quantity > 0) {
         const reason = rec.wastage_reason || 'General Cutting / Margin Loss'
         if (!map[reason]) {
-          map[reason] = { count: 0, qty: 0, cost: 0 }
+          map[reason] = { count: 0, qty: 0 }
         }
         map[reason].count++
         map[reason].qty += Number(rec.wastage_quantity) || 0
-        map[reason].cost += Number(rec.wastage_cost) || (Number(rec.wastage_quantity) * Number(rec.unit_cost))
       }
     }
-    return Object.entries(map).sort((a, b) => b[1].cost - a[1].cost)
+    return Object.entries(map).sort((a, b) => b[1].qty - a[1].qty)
   }, [floorConsumptions])
 
   const handleOpenReturnModal = (item: FloorConsumptionRecord) => {
@@ -289,11 +273,11 @@ export function PrintFloorConsumptionUnit({
             </div>
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-lg font-black text-slate-900 dark:text-white font-mono">
-              {formatBDT(kpis.totalDispatchedValue)}
+            <span className="text-xl font-black text-slate-900 dark:text-white font-mono">
+              {kpis.totalDispatchedQty.toLocaleString()}
             </span>
             <span className="text-[11px] text-slate-500 font-semibold font-mono">
-              {kpis.totalDispatchedQty.toLocaleString()} units
+              {floorConsumptions.length} {tBilingual('lines', 'লাইন')}
             </span>
           </div>
         </Card>
@@ -309,11 +293,11 @@ export function PrintFloorConsumptionUnit({
             </div>
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-lg font-black text-emerald-700 dark:text-emerald-400 font-mono">
-              {formatBDT(kpis.totalConsumedValue)}
+            <span className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
+              {kpis.totalConsumedQty.toLocaleString()}
             </span>
             <span className="text-[11px] text-slate-500 font-semibold font-mono">
-              {kpis.totalConsumedQty.toLocaleString()} units
+              {kpis.totalDispatchedQty > 0 ? Math.round((kpis.totalConsumedQty / kpis.totalDispatchedQty) * 100) : 0}% {tBilingual('consumed', 'ব্যবহৃত')}
             </span>
           </div>
         </Card>
@@ -329,8 +313,8 @@ export function PrintFloorConsumptionUnit({
             </div>
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-lg font-black text-blue-700 dark:text-blue-400 font-mono">
-              {formatBDT(kpis.totalRemainingFloorValue)}
+            <span className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
+              {kpis.totalRemainingQty.toLocaleString()}
             </span>
             <Badge variant="outline" className="text-[10px] font-mono bg-blue-50 dark:bg-blue-950 text-blue-700">
               {kpis.activeFloorItemsCount} active lines
@@ -338,19 +322,19 @@ export function PrintFloorConsumptionUnit({
           </div>
         </Card>
 
-        {/* KPI 4: Scrap & Wastage Loss */}
+        {/* KPI 4: Scrap & Wastage */}
         <Card className="p-3.5 bg-linear-to-br from-rose-50/70 to-rose-100/40 dark:from-rose-950/40 dark:to-rose-900/20 border-rose-200 dark:border-rose-900/60 shadow-xs">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-bold uppercase text-rose-700 dark:text-rose-400 tracking-wider">
-              {tBilingual('Scrap & Wastage Loss', 'অপচয় / স্ক্র্যাপ ক্ষতি')}
+              {tBilingual('Scrap & Wastage', 'অপচয় / স্ক্র্যাপ')}
             </span>
             <div className="h-7 w-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <Flame className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-2 flex items-baseline justify-between">
-            <span className="text-lg font-black text-rose-700 dark:text-rose-400 font-mono">
-              {formatBDT(kpis.totalWastageValue)}
+            <span className="text-xl font-black text-rose-700 dark:text-rose-400 font-mono">
+              {kpis.totalWastageQty.toLocaleString()}
             </span>
             <span className="text-[11px] font-bold text-rose-600 font-mono">
               {kpis.scrapRatePercent}% rate
@@ -733,18 +717,12 @@ export function PrintFloorConsumptionUnit({
                         <div className="font-bold font-mono text-slate-900 dark:text-white">
                           {issued.toLocaleString()} {rec.unit}
                         </div>
-                        <div className="text-[10px] font-mono text-slate-400">
-                          {formatBDT(rec.total_cost)}
-                        </div>
                       </td>
 
                       {/* Consumed Qty */}
                       <td className="p-3 text-right">
                         <div className="font-bold font-mono text-emerald-700 dark:text-emerald-400">
                           {consumed.toLocaleString()} {rec.unit}
-                        </div>
-                        <div className="text-[10px] font-mono text-slate-400">
-                          {formatBDT(consumed * rec.unit_cost)}
                         </div>
                       </td>
 
@@ -755,9 +733,11 @@ export function PrintFloorConsumptionUnit({
                             <span className="font-bold font-mono text-rose-600 dark:text-rose-400">
                               {wastage.toLocaleString()} {rec.unit}
                             </span>
-                            <div className="text-[10px] text-rose-500 font-semibold truncate max-w-[120px]" title={rec.wastage_reason || ''}>
-                              {rec.wastage_reason || 'Scrap Loss'} ({formatBDT(rec.wastage_cost)})
-                            </div>
+                            {rec.wastage_reason && (
+                              <div className="text-[10px] text-rose-500 font-semibold truncate max-w-[140px]" title={rec.wastage_reason}>
+                                {rec.wastage_reason}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <span className="text-slate-400 font-mono">0 {rec.unit}</span>
@@ -769,11 +749,6 @@ export function PrintFloorConsumptionUnit({
                         <div className={cn('font-bold', balance > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-slate-400')}>
                           {balance.toLocaleString()} {rec.unit}
                         </div>
-                        {balance > 0 && (
-                          <span className="text-[10px] text-slate-400">
-                            {formatBDT(balance * rec.unit_cost)}
-                          </span>
-                        )}
                       </td>
 
                       {/* Visual Progress Bar */}
@@ -862,7 +837,7 @@ export function PrintFloorConsumptionUnit({
           <div className="flex items-center gap-2 mb-3">
             <ShieldAlert className="h-4 w-4 text-rose-600 dark:text-rose-400" />
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-              {tBilingual('Print Floor Scrap & Root Cause Cost Analysis', 'ফ্লোর অপচয়ের কারণ ও ক্ষতি বিশ্লেষণ')}
+              {tBilingual('Print Floor Scrap & Root Cause Analysis', 'ফ্লোর অপচয়ের কারণ ও বিশ্লেষণ')}
             </h3>
           </div>
 
@@ -880,10 +855,10 @@ export function PrintFloorConsumptionUnit({
                 </div>
                 <div className="flex items-baseline justify-between mt-1">
                   <span className="text-sm font-black text-rose-700 dark:text-rose-400 font-mono">
-                    {formatBDT(stats.cost)}
+                    {stats.qty.toLocaleString()} units
                   </span>
                   <span className="text-[11px] font-mono text-slate-500 font-semibold">
-                    {stats.qty.toLocaleString()} units scrap
+                    {stats.count} {tBilingual('records', 'লগ')}
                   </span>
                 </div>
               </div>
