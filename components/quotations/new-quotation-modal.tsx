@@ -28,7 +28,6 @@ import {
   UserCheck,
   Sparkles,
   Layers,
-  Search,
   BookOpen,
   DollarSign,
   Palette,
@@ -1753,10 +1752,8 @@ export function NewQuotationModal({
                     className="text-xs h-9 pr-8 font-medium"
                     autoFocus
                   />
-                  {isSearchingCustomers && activeCustomerSearchField === 'name' ? (
+                  {isSearchingCustomers && activeCustomerSearchField === 'name' && (
                     <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  ) : (
-                    <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                   )}
                 </div>
 
@@ -1791,10 +1788,8 @@ export function NewQuotationModal({
                     onKeyDown={(e) => handleCustomerKeyDown('phone', e)}
                     className="text-xs h-9 pr-8 font-numeric tabular-nums"
                   />
-                  {isSearchingCustomers && activeCustomerSearchField === 'phone' ? (
+                  {isSearchingCustomers && activeCustomerSearchField === 'phone' && (
                     <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  ) : (
-                    <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                   )}
                 </div>
 
@@ -1829,10 +1824,8 @@ export function NewQuotationModal({
                     onKeyDown={(e) => handleCustomerKeyDown('company', e)}
                     className="text-xs h-9 pr-8"
                   />
-                  {isSearchingCustomers && activeCustomerSearchField === 'company' ? (
+                  {isSearchingCustomers && activeCustomerSearchField === 'company' && (
                     <Loader2 className="absolute right-2.5 top-2.5 h-4 w-4 animate-spin text-slate-400" />
-                  ) : (
-                    <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                   )}
                 </div>
 

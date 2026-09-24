@@ -16,7 +16,6 @@ import {
   Smartphone,
   ShieldCheck,
   RefreshCw,
-  Search,
   X,
   UserCheck,
   CreditCard,
@@ -1778,7 +1777,6 @@ export function NewInvoiceModal({
                   className="text-xs h-9 pr-8"
                   required
                 />
-                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Suggestions */}
@@ -1811,7 +1809,6 @@ export function NewInvoiceModal({
                   className="text-xs h-9 pr-8 font-mono"
                   required
                 />
-                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Suggestions */}
@@ -1841,7 +1838,6 @@ export function NewInvoiceModal({
                   onKeyDown={(e) => handleCustomerKeyDown('company', e)}
                   className="text-xs h-9 pr-8"
                 />
-                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Suggestions */}
@@ -1886,7 +1882,6 @@ export function NewInvoiceModal({
                   onKeyDown={(e) => handleCustomerKeyDown('email', e)}
                   className="text-xs h-9 pr-8"
                 />
-                <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
               </div>
 
               {/* Suggestions */}

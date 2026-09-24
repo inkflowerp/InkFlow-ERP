@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react'
 import {
   FileText,
-  Search,
   User,
   Phone,
   Building,
@@ -1070,7 +1069,7 @@ export function WorkOrderModal({
                   className="text-xs h-9 pr-8"
                   required
                 />
-                {customerName ? (
+                {customerName && (
                   <button
                     type="button"
                     onClick={handleClearCustomer}
@@ -1078,8 +1077,6 @@ export function WorkOrderModal({
                   >
                     <X className="h-3.5 w-3.5" />
                   </button>
-                ) : (
-                  <Search className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
                 )}
               </div>
 
