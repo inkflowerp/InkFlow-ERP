@@ -4047,7 +4047,7 @@ export class InventoryRepository {
     }
 
     // Decrement specific size group count in material.roll_sizes or material_config.roll_sizes
-    let updatedSizes: any[] | null = null
+    let updatedSizes: any[] | undefined = undefined
     if (isRollMedia) {
       try {
         const rawSizes = mat.roll_sizes || (mat.material_config as any)?.roll_sizes || (mat.pricing_formula as any)?.roll_sizes || (mat.pricing_formula as any)?.material_config?.roll_sizes || []
@@ -4137,7 +4137,7 @@ export class InventoryRepository {
     }
 
     // Decrement specific sheet size group count for rigid sheets
-    let updatedSheetSizes: any[] | null = null
+    let updatedSheetSizes: any[] | undefined = undefined
     if (isSheet) {
       try {
         const rawSheetSizes = (mat as any).sheet_sizes || mat.available_sheet_sizes || (mat.material_config as any)?.sheet_sizes || (mat.material_config as any)?.available_sheet_sizes || (mat.pricing_formula as any)?.available_sheet_sizes || []
@@ -4180,7 +4180,7 @@ export class InventoryRepository {
     }
 
     // Decrement specific variant count for liquids, hardware, packs, and consumables
-    let updatedVariants: any[] | null = null
+    let updatedVariants: any[] | undefined = undefined
     if (isFluid || (!isRollMedia && !isSheet)) {
       try {
         const rawVariants = Array.isArray(mat.variants) && mat.variants.length > 0
