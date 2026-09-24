@@ -51,7 +51,7 @@ export default function InvoiceCockpitPage() {
   const pathname = usePathname()
   const invId = (params?.id as string) || ''
   const { company } = useTenant()
-  const { locale } = useI18n()
+  const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
   const companyId = company?.id || 'comp-default'
 
@@ -487,13 +487,13 @@ export default function InvoiceCockpitPage() {
               </div>
               <div className="text-right space-y-1">
                 <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
-                  INVOICE / বিল
+                  {tBilingual('INVOICE', 'চালান')}
                 </div>
                 <div className="font-mono font-bold text-sm text-slate-800 dark:text-slate-200">
                   {invoice.invoice_number}
                 </div>
                 <div className="text-slate-500">
-                  Date (তারিখ): <strong className="text-slate-900 dark:text-white font-mono">{invoice.invoice_date}</strong>
+                  {tBilingual('Date:', 'তারিখ:')} <strong className="text-slate-900 dark:text-white font-mono">{invoice.invoice_date}</strong>
                 </div>
                 <div className="text-red-600 font-bold">
                   Due Date: <span className="font-mono">{invoice.due_date}</span>
@@ -640,7 +640,7 @@ export default function InvoiceCockpitPage() {
                 <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-900/50 space-y-1.5 text-xs">
                   <div className="font-bold text-blue-900 dark:text-blue-200 flex items-center gap-1.5">
                     <CreditCard className="h-3.5 w-3.5 text-blue-600" />
-                    <span>Official Payment Remittance (মূল্য পরিশোধের তথ্য):</span>
+                    <span>{tBilingual('Official Payment Remittance:', 'মূল্য পরিশোধের তথ্য:')}</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-300 font-mono">
                     <div>
@@ -664,32 +664,32 @@ export default function InvoiceCockpitPage() {
               {/* Right Column: Financial Totals */}
               <div className="sm:col-span-5 space-y-1.5 font-mono text-xs">
                 <div className="flex justify-between text-slate-500">
-                  <span>Subtotal (সাবটোটাল):</span>
+                  <span>{tBilingual('Subtotal:', 'মোট বিল:')}</span>
                   <span>{formatBDT(invoice.subtotal)}</span>
                 </div>
                 {invoice.discount_amount > 0 && (
                   <div className="flex justify-between text-amber-600 font-medium">
-                    <span>Discount (ছাড়):</span>
+                    <span>{tBilingual('Discount:', 'ছাড়:')}</span>
                     <span>- {formatBDT(invoice.discount_amount)}</span>
                   </div>
                 )}
                 {invoice.vat_amount > 0 && (
                   <div className="flex justify-between text-slate-500">
-                    <span>NBR VAT ({invoice.vat_percentage}%):</span>
+                    <span>{tBilingual(`NBR VAT (${invoice.vat_percentage}%):`, `এনবিআর ভ্যাট (${invoice.vat_percentage}%):`)}</span>
                     <span>+ {formatBDT(invoice.vat_amount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-sm text-slate-900 dark:text-white pt-1.5 border-t">
-                  <span>Grand Total (সর্বমোট বিল):</span>
+                  <span>{tBilingual('Grand Total:', 'সর্বমোট বিল:')}</span>
                   <span>{formatBDT(invoice.grand_total)}</span>
                 </div>
                 <div className="flex justify-between text-blue-700 dark:text-blue-400 font-bold">
-                  <span>Advance / Paid (অগ্রিম পরিশোধ):</span>
+                  <span>{tBilingual('Advance / Paid:', 'অগ্রিম পরিশোধ:')}</span>
                   <span>{formatBDT(invoice.paid_amount)}</span>
                 </div>
                 {invoice.write_off_amount > 0 && (
                   <div className="flex justify-between text-slate-400 line-through">
-                    <span>Waiver / Adjustment:</span>
+                    <span>{tBilingual('Waiver / Adjustment:', 'ছাড় / সমন্বয়:')}</span>
                     <span>{formatBDT(invoice.write_off_amount)}</span>
                   </div>
                 )}
@@ -697,7 +697,7 @@ export default function InvoiceCockpitPage() {
                   'flex justify-between font-black text-sm pt-1.5 border-t',
                   invoice.due_amount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'
                 )}>
-                  <span>Due Balance (বকেয়া বিল):</span>
+                  <span>{tBilingual('Due Balance:', 'বকেয়া বিল:')}</span>
                   <span>{formatBDT(invoice.due_amount)}</span>
                 </div>
               </div>
@@ -706,14 +706,14 @@ export default function InvoiceCockpitPage() {
             {/* Terms & Signatures */}
             {invoice.terms_and_conditions && (
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-[11px] text-slate-500">
-                <strong>শর্তাবলী ও নির্দেশিকা (Terms): </strong> {invoice.terms_and_conditions}
+                <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions}
               </div>
             )}
 
             <div className="pt-10 flex justify-between items-end text-xs text-slate-600 dark:text-slate-400">
               <div className="text-center">
                 <div className="border-t border-slate-300 dark:border-slate-700 w-44 pt-1 font-semibold">
-                  Customer Signature (গ্রহীতা)
+                  {tBilingual('Customer Signature', 'গ্রাহকের স্বাক্ষর')}
                 </div>
               </div>
               <div className="text-center">
@@ -733,7 +733,7 @@ export default function InvoiceCockpitPage() {
               <h1 className="text-xl font-black">{company?.name || 'Printing & Signage Solutions'}</h1>
               <div className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</div>
               <div className="inline-block mt-2 px-4 py-1 rounded-full bg-emerald-100 text-emerald-900 font-black text-sm tracking-wider uppercase">
-                Official Money Receipt (মানি রিসিট)
+                {tBilingual('Official Money Receipt', 'অফিসিয়াল মানি রিসিট')}
               </div>
             </div>
 

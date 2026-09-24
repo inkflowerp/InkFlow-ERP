@@ -1878,10 +1878,10 @@ export function NewQuotationModal({
                   onChange={(e) => setCustomerType(e.target.value)}
                   className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
                 >
-                  <option value="retail">Retail / Walk-in (খুচরা)</option>
-                  <option value="reseller">Reseller / Dealer (রিসেলার)</option>
-                  <option value="corporate">Corporate (কর্পোরেট)</option>
-                  <option value="government">Government / Org (সরকারি)</option>
+                  <option value="retail">{tBilingual('Retail / Walk-in', 'খুচরা গ্রাহক')}</option>
+                  <option value="reseller">{tBilingual('Reseller / Dealer', 'রিসেলার / ডিলার')}</option>
+                  <option value="corporate">{tBilingual('Corporate', 'কর্পোরেট')}</option>
+                  <option value="government">{tBilingual('Government / Org', 'সরকারি প্রতিষ্ঠান')}</option>
                 </select>
               </div>
             </div>
@@ -2256,9 +2256,9 @@ export function NewQuotationModal({
                             onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
                             className="w-full h-9 px-1 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                           >
-                            <option value="ft">ft (ফুট)</option>
-                            <option value="inch">inch (ইঞ্চি)</option>
-                            <option value="m">m (মিটার)</option>
+                            <option value="ft">{tBilingual('ft', 'ফুট')}</option>
+                            <option value="inch">{tBilingual('inch', 'ইঞ্চি')}</option>
+                            <option value="m">{tBilingual('m', 'মিটার')}</option>
                           </select>
                         </div>
 
@@ -2382,12 +2382,12 @@ export function NewQuotationModal({
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                             className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                           >
-                            <option value="pcs">pcs (পিস)</option>
-                            <option value="set">set (সেট)</option>
-                            <option value="pack">pack (প্যাক)</option>
-                            <option value="box">box (বক্স)</option>
-                            <option value="pair">pair (জোড়া)</option>
-                            <option value="carton">carton (কার্টুন)</option>
+                            <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
+                            <option value="set">{tBilingual('set', 'সেট')}</option>
+                            <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
+                            <option value="box">{tBilingual('box', 'বক্স')}</option>
+                            <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                            <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
                           </select>
                         </div>
 
@@ -2684,7 +2684,7 @@ export function NewQuotationModal({
 
                 <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-amber-300 uppercase font-bold block">ডেলিভারির সময় প্রদেয় (Due on Delivery)</span>
+                    <span className="text-[10px] text-amber-300 uppercase font-bold block">{tBilingual('Due on Delivery', 'ডেলিভারির সময় প্রদেয়')}</span>
                     <span className="text-xs text-amber-200 font-medium">Upon Challan delivery</span>
                   </div>
                   <span className="font-mono font-black text-amber-300 text-lg">
@@ -2732,9 +2732,9 @@ export function NewQuotationModal({
                   onChange={(e) => setDeliveryMethod(e.target.value as QuotationDeliveryMethod)}
                   className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                 >
-                  <option value="customer_pickup">Customer Pickup (গ্রাহক পিকআপ)</option>
-                  <option value="company_delivery">Company Delivery (আমাদের ডেলিভারি)</option>
-                  <option value="courier">Courier Service (সুন্দরবন / এসএ পরিবহন / রেডএক্স)</option>
+                  <option value="customer_pickup">{tBilingual('Customer Pickup', 'গ্রাহক পিকআপ')}</option>
+                  <option value="company_delivery">{tBilingual('Company Delivery', 'আমাদের ডেলিভারি')}</option>
+                  <option value="courier">{tBilingual('Courier Service', 'কুরিয়ার সার্ভিস (সুন্দরবন / এসএ)')}</option>
                 </select>
               </div>
 
@@ -2972,11 +2972,11 @@ export function NewQuotationModal({
                 onChange={(e) => setQuickAddUnit(e.target.value)}
                 className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium uppercase font-mono"
               >
-                <option value="sft">sft (স্কয়ার ফুট)</option>
-                <option value="pcs">pcs (পিস)</option>
-                <option value="rft">rft (রানিং ফুট)</option>
-                <option value="set">set (সেট)</option>
-                <option value="box">box (বক্স)</option>
+                <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
+                <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
+                <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
+                <option value="set">{tBilingual('set', 'সেট')}</option>
+                <option value="box">{tBilingual('box', 'বক্স')}</option>
               </select>
             </div>
           </div>

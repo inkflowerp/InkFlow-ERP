@@ -1006,7 +1006,7 @@ export function WorkOrderModal({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 )}
               >
-                Retail (খুচরা)
+                {tBilingual('Retail', 'খুচরা')}
               </button>
               <button
                 type="button"
@@ -1018,7 +1018,7 @@ export function WorkOrderModal({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 )}
               >
-                Corporate (কর্পোরেট)
+                {tBilingual('Corporate', 'কর্পোরেট')}
               </button>
               <button
                 type="button"
@@ -1030,7 +1030,7 @@ export function WorkOrderModal({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 )}
               >
-                Reseller (রিসেলার)
+                {tBilingual('Reseller', 'রিসেলার')}
               </button>
               <button
                 type="button"
@@ -1042,7 +1042,7 @@ export function WorkOrderModal({
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
                 )}
               >
-                Govt (সরকারি)
+                {tBilingual('Govt', 'সরকারি')}
               </button>
             </div>
           </div>
@@ -1457,10 +1457,10 @@ export function WorkOrderModal({
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="ft">ft (ফুট)</option>
-                          <option value="inch">inch (ইঞ্চি)</option>
-                          <option value="m">m (মিটার)</option>
-                          <option value="mm">mm (মিলিমিটার)</option>
+                          <option value="ft">{tBilingual('ft', 'ফুট')}</option>
+                          <option value="inch">{tBilingual('inch', 'ইঞ্চি')}</option>
+                          <option value="m">{tBilingual('m', 'মিটার')}</option>
+                          <option value="mm">{tBilingual('mm', 'মিলিমিটার')}</option>
                         </select>
                       </div>
 
@@ -1553,12 +1553,12 @@ export function WorkOrderModal({
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="pcs">pcs (পিস)</option>
-                          <option value="set">set (সেট)</option>
-                          <option value="pack">pack (প্যাক)</option>
-                          <option value="box">box (বক্স)</option>
-                          <option value="pair">pair (জোড়া)</option>
-                          <option value="carton">carton (কার্টুন)</option>
+                          <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
+                          <option value="set">{tBilingual('set', 'সেট')}</option>
+                          <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
+                          <option value="box">{tBilingual('box', 'বক্স')}</option>
+                          <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                          <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
                         </select>
                       </div>
                     </div>
@@ -1587,13 +1587,13 @@ export function WorkOrderModal({
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="roll">roll (রোল)</option>
-                          <option value="sheet">sheet (শিট)</option>
-                          <option value="sft">sft (স্কয়ার ফুট)</option>
-                          <option value="rft">rft (রানিং ফুট)</option>
-                          <option value="kg">kg (কেজি)</option>
-                          <option value="liter">liter (লিটার)</option>
-                          <option value="pcs">pcs (পিস)</option>
+                          <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                          <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                          <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
+                          <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
+                          <option value="kg">{tBilingual('kg', 'কেজি')}</option>
+                          <option value="liter">{tBilingual('liter', 'লিটার')}</option>
+                          <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
                         </select>
                       </div>
 

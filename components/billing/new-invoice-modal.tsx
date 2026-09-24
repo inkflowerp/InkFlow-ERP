@@ -35,7 +35,7 @@ import { Badge } from '@/components/ui/badge'
 import { CustomerRecord, ResolvedProductRate } from '@/types/crm.types'
 import { InvoiceRecord, InvoiceType } from '@/types/billing.types'
 import { ProductRecord } from '@/types/product.types'
-import { formatBDT, tBilingual } from '@/lib/formatters'
+import { formatBDT } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import {
   searchInvoiceCustomersAction,
@@ -606,7 +606,8 @@ export function NewInvoiceModal({
 }: NewInvoiceModalProps) {
   const router = useRouter()
   const { company } = useTenant()
-  const { locale } = useI18n()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
   const tenantSlug = company?.slug || 'my-company'
 
   // Products catalog & pricing cache
@@ -1896,16 +1897,16 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Customer Type</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Customer Type', 'গ্রাহকের ধরন')}</Label>
               <select
                 value={customerType}
                 onChange={(e) => setCustomerType(e.target.value as any)}
                 className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
               >
-                <option value="retail">Retail / Walk-in (খুচরা)</option>
-                <option value="corporate">Corporate (কর্পোরেট)</option>
-                <option value="reseller">Reseller / Dealer (রিসেলার)</option>
-                <option value="government">Government / Org (সরকারি)</option>
+                <option value="retail">{tBilingual('Retail / Walk-in', 'খুচরা গ্রাহক')}</option>
+                <option value="corporate">{tBilingual('Corporate', 'কর্পোরেট')}</option>
+                <option value="reseller">{tBilingual('Reseller / Dealer', 'রিসেলার / ডিলার')}</option>
+                <option value="government">{tBilingual('Government / Org', 'সরকারি প্রতিষ্ঠান')}</option>
               </select>
             </div>
           </div>
@@ -2437,17 +2438,17 @@ export function NewInvoiceModal({
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="pcs">pcs (পিস)</option>
-                          <option value="piece">piece (পিস)</option>
-                          <option value="set">set (সেট)</option>
-                          <option value="box">box (বক্স)</option>
-                          <option value="pack">pack (প্যাক)</option>
-                          <option value="pair">pair (জোড়া)</option>
-                          <option value="carton">carton (কার্টুন)</option>
-                          <option value="kg">kg (কেজি)</option>
-                          <option value="sheet">sheet (শিট)</option>
-                          <option value="roll">roll (রোল)</option>
-                          <option value="bag">bag (ব্যাগ)</option>
+                          <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
+                          <option value="piece">{tBilingual('piece', 'পিস')}</option>
+                          <option value="set">{tBilingual('set', 'সেট')}</option>
+                          <option value="box">{tBilingual('box', 'বক্স')}</option>
+                          <option value="pack">{tBilingual('pack', 'প্যাক')}</option>
+                          <option value="pair">{tBilingual('pair', 'জোড়া')}</option>
+                          <option value="carton">{tBilingual('carton', 'কার্টুন')}</option>
+                          <option value="kg">{tBilingual('kg', 'কেজি')}</option>
+                          <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                          <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                          <option value="bag">{tBilingual('bag', 'ব্যাগ')}</option>
                         </select>
                       </div>
 
@@ -2488,13 +2489,13 @@ export function NewInvoiceModal({
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
-                          <option value="roll">roll (রোল)</option>
-                          <option value="sheet">sheet (শিট)</option>
-                          <option value="sft">sft (স্কয়ার ফুট)</option>
-                          <option value="rft">rft (রানিং ফুট)</option>
-                          <option value="kg">kg (কেজি)</option>
-                          <option value="liter">liter (লিটার)</option>
-                          <option value="pcs">pcs (পিস)</option>
+                          <option value="sft">{tBilingual('sft', 'বর্গফুট')}</option>
+                          <option value="rft">{tBilingual('rft', 'রানিং ফুট')}</option>
+                          <option value="sheet">{tBilingual('sheet', 'শিট')}</option>
+                          <option value="roll">{tBilingual('roll', 'রোল')}</option>
+                          <option value="pcs">{tBilingual('pcs', 'পিস')}</option>
+                          <option value="kg">{tBilingual('kg', 'কেজি')}</option>
+                          <option value="liter">{tBilingual('liter', 'লিটার')}</option>
                         </select>
                       </div>
 
@@ -2538,7 +2539,7 @@ export function NewInvoiceModal({
                           <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
                           <div>
                             <span className="text-xs font-bold text-blue-950 dark:text-blue-100 flex items-center gap-1.5">
-                              Pre-Press Verified (ডিজাইন যাচাই সম্পন্ন)
+                              {tBilingual('Pre-Press Verified', 'ডিজাইন যাচাই সম্পন্ন')}
                             </span>
                             <span className="text-[11px] text-blue-700/80 dark:text-blue-300/80 block">
                               Artwork is pre-press approved in Design Studio. Sent directly to Production Planning & Shop Floor.
@@ -2636,7 +2637,7 @@ export function NewInvoiceModal({
                       {(item.category_preset === 'offset_print' || item.offset_specs) && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
                           <div>
-                            <Label className="text-[10px] font-semibold mb-1 block">Paper GSM (জিএসএম)</Label>
+                            <Label className="text-[10px] font-semibold mb-1 block">{tBilingual('Paper GSM', 'কাগজের জিএসএম')}</Label>
                             <select
                               value={item.offset_specs?.paper_gsm || ''}
                               onChange={(e) =>
@@ -2647,20 +2648,20 @@ export function NewInvoiceModal({
                               }
                               className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                             >
-                              <option value="">Select GSM</option>
-                              <option value="55">55 GSM (NCR Carbonless)</option>
-                              <option value="70">70 GSM (Offset Paper)</option>
-                              <option value="80">80 GSM (Executive Offset)</option>
-                              <option value="100">100 GSM (White Offset)</option>
-                              <option value="120">120 GSM (Art Paper)</option>
-                              <option value="150">150 GSM (Art Paper)</option>
-                              <option value="300">300 GSM (Art Card)</option>
-                              <option value="350">350 GSM (Swedish Card)</option>
+                              <option value="">{tBilingual('Select GSM', 'জিএসএম নির্বাচন')}</option>
+                              <option value="55">{tBilingual('55 GSM (NCR Carbonless)', '৫৫ জিএসএম (এনসিআর)')}</option>
+                              <option value="70">{tBilingual('70 GSM (Offset Paper)', '৭০ জিএসএম (অফসেট)')}</option>
+                              <option value="80">{tBilingual('80 GSM (Executive Offset)', '৮০ জিএসএম (এক্সিকিউটিভ)')}</option>
+                              <option value="100">{tBilingual('100 GSM (White Offset)', '১০০ জিএসএম (সাদা অফসেট)')}</option>
+                              <option value="120">{tBilingual('120 GSM (Art Paper)', '১২০ জিএসএম (আর্ট পেপার)')}</option>
+                              <option value="150">{tBilingual('150 GSM (Art Paper)', '১৫০ জিএসএম (আর্ট পেপার)')}</option>
+                              <option value="300">{tBilingual('300 GSM (Art Card)', '৩০০ জিএসএম (আর্ট কার্ড)')}</option>
+                              <option value="350">{tBilingual('350 GSM (Swedish Card)', '৩৫০ জিএসএম (সুইডিশ কার্ড)')}</option>
                             </select>
                           </div>
 
                           <div>
-                            <Label className="text-[10px] font-semibold mb-1 block">Color Mode (রঙের মোড)</Label>
+                            <Label className="text-[10px] font-semibold mb-1 block">{tBilingual('Color Mode', 'রঙের মোড')}</Label>
                             <select
                               value={item.offset_specs?.color_mode || ''}
                               onChange={(e) =>
@@ -2671,15 +2672,15 @@ export function NewInvoiceModal({
                               }
                               className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                             >
-                              <option value="1/0 Single Color">1/0 Single Color (১ রঙ)</option>
-                              <option value="2/0 Two Color">2/0 Two Color (২ রঙ)</option>
-                              <option value="4/0 Single-side CMYK">4/0 Single-side 4-Color (একপাশে ৪ রঙ)</option>
-                              <option value="4/4 Both-side CMYK">4/4 Both-side 4-Color (উভয়পাশে ৪ রঙ)</option>
+                              <option value="1/0 Single Color">{tBilingual('1/0 Single Color', '১ রঙ (একপাশ)')}</option>
+                              <option value="2/0 Two Color">{tBilingual('2/0 Two Color', '২ রঙ (একপাশ)')}</option>
+                              <option value="4/0 Single-side CMYK">{tBilingual('4/0 Single-side 4-Color', 'একপাশে ৪ রঙ')}</option>
+                              <option value="4/4 Both-side CMYK">{tBilingual('4/4 Both-side 4-Color', 'উভয়পাশে ৪ রঙ')}</option>
                             </select>
                           </div>
 
                           <div>
-                            <Label className="text-[10px] font-semibold mb-1 block">Binding / Packaging</Label>
+                            <Label className="text-[10px] font-semibold mb-1 block">{tBilingual('Binding / Packaging', 'বাইন্ডিং ও প্যাকেজিং')}</Label>
                             <select
                               value={item.offset_specs?.binding_type || ''}
                               onChange={(e) =>
@@ -2690,17 +2691,17 @@ export function NewInvoiceModal({
                               }
                               className="w-full h-8 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                             >
-                              <option value="Bundle Pack">Bundle Pack (বান্ডিল)</option>
-                              <option value="Top Gumming">Top Gumming Pad (গাম প্যাড)</option>
-                              <option value="Carbonless NCR Pad Binding">NCR Pad Binding (এনসিআর প্যাড)</option>
-                              <option value="Saddle Stitch">Saddle Stitch / Staple (পিন বাইন্ডিং)</option>
-                              <option value="Hard Binding">Hard Binding (বই বাইন্ডিং)</option>
-                              <option value="Box Packaging">Box Packaging (বক্স প্যাকিং)</option>
+                              <option value="Bundle Pack">{tBilingual('Bundle Pack', 'বান্ডিল')}</option>
+                              <option value="Top Gumming">{tBilingual('Top Gumming Pad', 'গাম প্যাড')}</option>
+                              <option value="Carbonless NCR Pad Binding">{tBilingual('NCR Pad Binding', 'এনসিআর প্যাড')}</option>
+                              <option value="Saddle Stitch">{tBilingual('Saddle Stitch / Staple', 'পিন বাইন্ডিং')}</option>
+                              <option value="Hard Binding">{tBilingual('Hard Binding', 'বই বাইন্ডিং')}</option>
+                              <option value="Box Packaging">{tBilingual('Box Packaging', 'বক্স প্যাকিং')}</option>
                             </select>
                           </div>
 
                           <div>
-                            <Label className="text-[10px] font-semibold mb-1 block">Numbering / NCR Part</Label>
+                            <Label className="text-[10px] font-semibold mb-1 block">{tBilingual('Numbering / NCR Part', 'নম্বর বা পার্ট')}</Label>
                             <Input
                               placeholder="e.g. 0001 - 0500, 3-Part"
                               value={item.offset_specs?.numbering_range || ''}
@@ -2721,7 +2722,7 @@ export function NewInvoiceModal({
                       {(item.category_preset === 'signage_fabrication' || item.signage_specs) && (
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-950/70 rounded-lg border border-slate-200/80 dark:border-slate-800">
                           <div>
-                            <Label className="text-[10px] font-semibold mb-1 block">Letter Height (ইঞ্চি)</Label>
+                            <Label className="text-[10px] font-semibold mb-1 block">{tBilingual('Letter Height (inch)', 'অক্ষরের উচ্চতা (ইঞ্চি)')}</Label>
                             <Input
                               type="number"
                               placeholder="e.g. 12"
@@ -2867,21 +2868,21 @@ export function NewInvoiceModal({
                 3
               </div>
               <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Financial Totals & Commercial Settlement (চালান ও পেমেন্ট)
+                {tBilingual('Financial Totals & Commercial Settlement', 'চালান ও মূল্য পরিশোধের হিসাব')}
               </h3>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Subtotal (মোট বিল)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Subtotal', 'মোট বিল')}</Label>
               <div className="h-9 px-3 flex items-center bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
                 {formatBDT(subtotal)}
               </div>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Discount (ছাড় ৳)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Discount (৳)', 'ছাড় (৳)')}</Label>
               <Input
                 type="number"
                 value={discountAmount || ''}
@@ -2894,7 +2895,7 @@ export function NewInvoiceModal({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs font-semibold block">NBR VAT (ভ্যাট %)</Label>
+                <Label className="text-xs font-semibold block">{tBilingual('NBR VAT (%)', 'এনবিআর ভ্যাট (%)')}</Label>
                 <div className="flex items-center gap-1">
                   {[0, 5, 7.5, 15].map((rate) => (
                     <button
@@ -2925,7 +2926,7 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Grand Total (সর্বমোট বিল)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Grand Total', 'সর্বমোট বিল')}</Label>
               <div className="h-9 px-3 flex items-center bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300 text-sm">
                 {formatBDT(grandTotal)}
               </div>
@@ -2933,7 +2934,7 @@ export function NewInvoiceModal({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs font-semibold block">Advance Paid (অগ্রিম ৳)</Label>
+                <Label className="text-xs font-semibold block">{tBilingual('Advance Paid (৳)', 'অগ্রিম পরিশোধ (৳)')}</Label>
                 <div className="flex items-center gap-1">
                   <button
                     type="button"
@@ -2943,7 +2944,7 @@ export function NewInvoiceModal({
                     }}
                     className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer"
                   >
-                    ৫০%
+                    {isBn ? '৫০%' : '50%'}
                   </button>
                   <button
                     type="button"
@@ -2953,7 +2954,7 @@ export function NewInvoiceModal({
                     }}
                     className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer"
                   >
-                    ১০০%
+                    {isBn ? '১০০%' : '100%'}
                   </button>
                 </div>
               </div>
@@ -2975,7 +2976,7 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Balance Due (ডেলিভারিতে বাকি)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Balance Due', 'ডেলিভারিতে বাকি')}</Label>
               <div className={cn(
                 'h-9 px-3 flex items-center rounded-md font-mono font-black text-sm border',
                 dueAmount > 0
@@ -2987,23 +2988,23 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Payment Method (পরিশোধ মাধ্যম)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}</Label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as any)}
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
               >
-                <option value="cash">Cash Counter (ক্যাশ কাউন্টার)</option>
-                <option value="bkash">bKash Merchant (বিকাশ)</option>
-                <option value="nagad">Nagad Wallet (নগদ)</option>
-                <option value="bank">Bank Transfer (ব্যাংক ট্রান্সফার)</option>
-                <option value="cheque">Bank Cheque (ব্যাংক চেক)</option>
-                <option value="other_mfs">Other MFS (অন্যান্য)</option>
+                <option value="cash">{tBilingual('Cash Counter', 'ক্যাশ কাউন্টার')}</option>
+                <option value="bkash">{tBilingual('bKash Merchant', 'বিকাশ')}</option>
+                <option value="nagad">{tBilingual('Nagad Wallet', 'নগদ')}</option>
+                <option value="bank">{tBilingual('Bank Transfer', 'ব্যাংক ট্রান্সফার')}</option>
+                <option value="cheque">{tBilingual('Bank Cheque', 'ব্যাংক চেক')}</option>
+                <option value="other_mfs">{tBilingual('Other MFS', 'অন্যান্য')}</option>
               </select>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">Due Date (পরিশোধের শেষ তারিখ)</Label>
+              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</Label>
               <Input
                 type="date"
                 value={dueDate}
@@ -3017,7 +3018,7 @@ export function NewInvoiceModal({
           {/* Additional Commercial Details (Reference, Delivery & Payment Notes) */}
           <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <Label className="text-[11px] font-semibold mb-1 block">Ref / Customer PO No. (রেফারেন্স)</Label>
+              <Label className="text-[11px] font-semibold mb-1 block">{tBilingual('Ref / Customer PO No.', 'রেফারেন্স / পিও নং')}</Label>
               <Input
                 placeholder="e.g. PO-2026-9812 / Work Order Ref"
                 value={referenceNo}
@@ -3027,7 +3028,7 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-[11px] font-semibold mb-1 block">Payment Note / Trx ID (ট্রানজেকশন তথ্য)</Label>
+              <Label className="text-[11px] font-semibold mb-1 block">{tBilingual('Payment Note / Trx ID', 'ট্রানজেকশন তথ্য / নোট')}</Label>
               <Input
                 placeholder="e.g. bKash TrxID: 9X29A887B / Cheque No: 48912"
                 value={paymentMethodNote}
@@ -3037,7 +3038,7 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-[11px] font-semibold mb-1 block">Delivery Date & Location (ডেলিভারি)</Label>
+              <Label className="text-[11px] font-semibold mb-1 block">{tBilingual('Delivery Date & Method', 'ডেলিভারির তারিখ ও মাধ্যম')}</Label>
               <div className="grid grid-cols-2 gap-1.5">
                 <Input
                   type="date"
@@ -3050,9 +3051,9 @@ export function NewInvoiceModal({
                   onChange={(e) => setDeliveryMethod(e.target.value as any)}
                   className="h-9 px-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                 >
-                  <option value="customer_pickup">কাস্টমার পিকআপ</option>
-                  <option value="company_delivery">কোম্পানি ডেলিভারি</option>
-                  <option value="courier">সুন্দরবন / এসএ পরিবহন</option>
+                  <option value="customer_pickup">{tBilingual('Customer Pickup', 'কাস্টমার পিকআপ')}</option>
+                  <option value="company_delivery">{tBilingual('Company Delivery', 'কোম্পানি ডেলিভারি')}</option>
+                  <option value="courier">{tBilingual('Courier (Sundarban / SA)', 'কুরিয়ার (সুন্দরবন / এসএ)')}</option>
                 </select>
               </div>
             </div>
