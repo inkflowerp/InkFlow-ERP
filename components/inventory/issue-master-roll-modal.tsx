@@ -11,19 +11,14 @@ import {
   Minus,
   CheckCircle2,
   AlertTriangle,
-  QrCode,
   Barcode,
   Sparkles,
-  DollarSign,
   Building,
   Tag,
   Clock,
-  Printer as PrintIcon,
   HelpCircle,
-  ShieldCheck,
-  RotateCcw,
-  ArrowRight,
   Package,
+  ArrowRight,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Button } from '@/components/ui/button'
@@ -39,7 +34,6 @@ import {
   IssueMasterRollParams,
   IssueMasterRollResult,
 } from '@/types/inventory.types'
-import { formatBDT } from '@/lib/formatters'
 import { useI18n } from '@/i18n/context'
 import { cn } from '@/lib/utils'
 import { issueMasterRollsBatchAction } from '@/actions/inventory.actions'
@@ -117,7 +111,7 @@ export function IssueMasterRollModal({
   onSuccess,
   companyId,
 }: IssueMasterRollModalProps) {
-  const { locale, tBilingual } = useI18n()
+  const { tBilingual } = useI18n()
 
   // 1. Show ALL available inventory materials (including fallback discovery from storage & inventory products)
   const availableMaterials = useMemo(() => {
@@ -251,7 +245,7 @@ export function IssueMasterRollModal({
     return getMaterialWarehouseStockBreakdown(selectedMaterial, effectiveRolls)
   }, [selectedMaterial, effectiveRolls])
 
-  // Active Configured Sizes & Economics Resolver for Selected Material
+  // Active Available Options for Selected Material (Sizes, Dimensions, Variants)
   const configuredSizeOptions = useMemo(() => {
     if (!selectedMaterial) return []
 
@@ -267,17 +261,11 @@ export function IssueMasterRollModal({
       roll_count: number
       total_sft: number
       unit_cost: number
-      cost_display: string
       stock_display: string
-      economics_display: string
+      option_display: string
       is_custom?: boolean
     }[] = []
 
-    const globalAllowance = Number(
-      selectedMaterial.production_width_allowance ??
-      (selectedMaterial.material_config as any)?.extra_width_allowance_ft ??
-      0
-    )
     const baseCost = Number(
       selectedMaterial.average_cost ||
       selectedMaterial.last_purchase_price ||
@@ -295,13 +283,9 @@ export function IssueMasterRollModal({
           const itemPrice = Number(item.purchase_price ?? 0)
           const price = itemPrice > 0 ? itemPrice : baseCost
           const pricePerRoll = price > 150 ? price : (price > 0 && singleArea > 0 ? Math.round(price * singleArea * 100) / 100 : 0)
-          const pricePerSft = singleArea > 0 && pricePerRoll > 0 ? Math.round((pricePerRoll / singleArea) * 100) / 100 : 0
 
-          const costDisp = pricePerRoll > 0
-            ? `৳ ${pricePerRoll.toLocaleString()} / Roll${pricePerSft > 0 ? ` (৳ ${pricePerSft.toFixed(2)}/SFT)` : ''}`
-            : '—'
           const stockDisp = `${item.roll_count} ${item.roll_count === 1 ? 'Roll' : 'Rolls'} (${area.toLocaleString()} SFT)`
-          const economicsDisp = `${w}ft × ${l}ft (${singleArea} SFT/Roll) — Stock: ${stockDisp} — Rate: ${costDisp}`
+          const optDisp = `${w}ft × ${l}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
 
           list.push({
             key: item.key || `${w}x${l}|p:${price}|gsm:${item.gsm || 0}|f:${item.finishing || 'none'}`,
@@ -315,9 +299,8 @@ export function IssueMasterRollModal({
             roll_count: Number(item.roll_count || 0),
             total_sft: area,
             unit_cost: pricePerRoll,
-            cost_display: costDisp,
             stock_display: stockDisp,
-            economics_display: economicsDisp,
+            option_display: optDisp,
           })
         }
       } else {
@@ -326,13 +309,9 @@ export function IssueMasterRollModal({
         const singleArea = Math.round(defW * defL * 100) / 100
         const stockRolls = singleArea > 0 ? Math.floor(Number(selectedMaterial.current_stock || 0) / singleArea) : 0
         const pricePerRoll = baseCost > 150 ? baseCost : (baseCost > 0 && singleArea > 0 ? Math.round(baseCost * singleArea * 100) / 100 : 0)
-        const pricePerSft = singleArea > 0 && pricePerRoll > 0 ? Math.round((pricePerRoll / singleArea) * 100) / 100 : 0
 
-        const costDisp = pricePerRoll > 0
-          ? `৳ ${pricePerRoll.toLocaleString()} / Roll${pricePerSft > 0 ? ` (৳ ${pricePerSft.toFixed(2)}/SFT)` : ''}`
-          : '—'
         const stockDisp = `${stockRolls} Rolls (${Number(selectedMaterial.current_stock || 0).toLocaleString()} SFT)`
-        const economicsDisp = `${defW}ft × ${defL}ft (${singleArea} SFT/Roll) — Stock: ${stockDisp} — Rate: ${costDisp}`
+        const optDisp = `${defW}ft × ${defL}ft (${singleArea} SFT/Roll) — Available: ${stockDisp}`
 
         list.push({
           key: `${defW}x${defL}`,
@@ -346,17 +325,15 @@ export function IssueMasterRollModal({
           roll_count: stockRolls,
           total_sft: Number(selectedMaterial.current_stock || 0),
           unit_cost: pricePerRoll,
-          cost_display: costDisp,
           stock_display: stockDisp,
-          economics_display: economicsDisp,
+          option_display: optDisp,
         })
       }
     } else {
       const unitName = (selectedMaterial.purchase_unit || selectedMaterial.unit || 'pcs').toUpperCase()
       const stock = Number(selectedMaterial.current_stock || 0)
-      const costDisp = baseCost > 0 ? `৳ ${baseCost.toLocaleString()} / ${unitName}` : '—'
       const stockDisp = `${stock.toLocaleString()} ${unitName}`
-      const economicsDisp = `Standard Unit (${unitName}) — Available: ${stockDisp} — Rate: ${costDisp}`
+      const optDisp = `Standard Unit (${unitName}) — Available: ${stockDisp}`
 
       list.push({
         key: 'standard',
@@ -370,9 +347,8 @@ export function IssueMasterRollModal({
         roll_count: stock,
         total_sft: stock,
         unit_cost: baseCost,
-        cost_display: costDisp,
         stock_display: stockDisp,
-        economics_display: economicsDisp,
+        option_display: optDisp,
       })
     }
 
@@ -437,7 +413,7 @@ export function IssueMasterRollModal({
   const [customRollTag, setCustomRollTag] = useState<string>('')
   const [showAdvancedTag, setShowAdvancedTag] = useState<boolean>(false)
 
-  // Notes & Operator
+  // Request by / Operator & Remarks
   const [notes, setNotes] = useState<string>('')
   const [operatorName, setOperatorName] = useState<string>('Floor Operator')
 
@@ -644,123 +620,7 @@ export function IssueMasterRollModal({
   const isStoreShortage =
     currentStoreStock < totalBatchQuantity || currentAvailablePurchaseUnits < quantityRolls
 
-  // Robust Pricing & Total Valuation Resolver
-  const { unitCostPerPurchaseUnit, costPerConsumptionUnit } = useMemo(() => {
-    if (!selectedMaterial) {
-      return { unitCostPerPurchaseUnit: 0, costPerConsumptionUnit: 0 }
-    }
-
-    if (activeSelectedSizeOption && activeSelectedSizeOption.unit_cost > 0) {
-      const uCost = activeSelectedSizeOption.unit_cost
-      const cCost = singleUnitQuantity > 0 ? Math.round((uCost / singleUnitQuantity) * 100) / 100 : uCost
-      return {
-        unitCostPerPurchaseUnit: uCost,
-        costPerConsumptionUnit: cCost,
-      }
-    }
-
-    if (warehouseBreakdown.cost_per_purchase_unit > 0 && warehouseBreakdown.cost_per_consumption_unit > 0) {
-      return {
-        unitCostPerPurchaseUnit: warehouseBreakdown.cost_per_purchase_unit,
-        costPerConsumptionUnit: warehouseBreakdown.cost_per_consumption_unit,
-      }
-    }
-
-    const explicitPerSft = Number(
-      selectedMaterial.purchase_price_per_sft ||
-      (selectedMaterial.material_config as any)?.purchase_price_per_sft ||
-      (selectedMaterial.pricing_formula as any)?.purchase_price_per_sft ||
-      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price_per_sft ||
-      0
-    )
-
-    const rawCostCandidates = [
-      warehouseBreakdown.cost_per_purchase_unit,
-      warehouseBreakdown.cost_per_consumption_unit,
-      selectedMaterial.cost_per_unit,
-      selectedMaterial.average_cost,
-      selectedMaterial.last_purchase_price,
-      selectedMaterial.manual_cost,
-      (selectedMaterial as any).purchase_price_per_sft,
-      (selectedMaterial as any).unit_cost,
-      (selectedMaterial as any).purchase_price,
-      (selectedMaterial as any).base_cost,
-      (selectedMaterial as any).cost_price,
-      (selectedMaterial as any).cost,
-      (selectedMaterial.material_config as any)?.purchase_price_per_sft,
-      (selectedMaterial.material_config as any)?.cost_per_unit,
-      (selectedMaterial.material_config as any)?.purchase_price,
-      (selectedMaterial.material_config as any)?.average_cost,
-      (selectedMaterial.material_config as any)?.last_purchase_price,
-      (selectedMaterial.material_config as any)?.base_cost,
-      (selectedMaterial.pricing_formula as any)?.material_rate,
-      (selectedMaterial.pricing_formula as any)?.base_cost,
-      (selectedMaterial.pricing_formula as any)?.base_rate,
-      (selectedMaterial.pricing_formula as any)?.cost_breakdown?.material,
-      (selectedMaterial.pricing_formula as any)?.cost_breakdown?.material_cost,
-      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price,
-      (selectedMaterial.pricing_formula as any)?.material_config?.purchase_price_per_sft,
-      (selectedMaterial as any).cost_breakdown?.material,
-      (selectedMaterial as any).cost_breakdown?.material_cost,
-      (selectedMaterial as any).selling_price,
-    ]
-
-    let resolvedRaw = 0
-    for (const c of rawCostCandidates) {
-      const val = Number(c)
-      if (!isNaN(val) && val > 0) {
-        resolvedRaw = val
-        break
-      }
-    }
-
-    let costPerPur = 0
-    let costPerCons = 0
-
-    if (explicitPerSft > 0) {
-      costPerCons = explicitPerSft
-      costPerPur = Math.round(explicitPerSft * singleUnitQuantity * 100) / 100
-    } else if (resolvedRaw > 0) {
-      if (isRollMedia && singleUnitQuantity > 1) {
-        if (resolvedRaw > 100) {
-          costPerPur = resolvedRaw
-          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
-        } else {
-          costPerCons = resolvedRaw
-          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
-        }
-      } else if (isRigidSheet && singleUnitQuantity > 1) {
-        if (resolvedRaw > 150) {
-          costPerPur = resolvedRaw
-          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
-        } else {
-          costPerCons = resolvedRaw
-          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
-        }
-      } else if (isPackBox && singleUnitQuantity > 1) {
-        if (resolvedRaw > 50) {
-          costPerPur = resolvedRaw
-          costPerCons = Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100
-        } else {
-          costPerCons = resolvedRaw
-          costPerPur = Math.round(resolvedRaw * singleUnitQuantity * 100) / 100
-        }
-      } else {
-        costPerPur = resolvedRaw
-        costPerCons = singleUnitQuantity > 1 ? Math.round((resolvedRaw / singleUnitQuantity) * 100) / 100 : resolvedRaw
-      }
-    }
-
-    return {
-      unitCostPerPurchaseUnit: costPerPur,
-      costPerConsumptionUnit: costPerCons,
-    }
-  }, [selectedMaterial, activeSelectedSizeOption, warehouseBreakdown, singleUnitQuantity, isRollMedia, isRigidSheet, isPackBox])
-
-  const totalValuation = useMemo(() => {
-    return Math.round(unitCostPerPurchaseUnit * quantityRolls * 100) / 100
-  }, [unitCostPerPurchaseUnit, quantityRolls])
-
+  // Source Warehouse Name
   const sourceLocationName = useMemo(() => {
     return effectiveLocations.find((l) => l.id === sourceLocationId)?.location_name || 'Warehouse Store'
   }, [effectiveLocations, sourceLocationId])
@@ -824,7 +684,7 @@ export function IssueMasterRollModal({
           (request?.request_number
             ? `Issued against Requisition ${request.request_number} (${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)}) to Print Floor`
             : `Requisitioned ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} for Print Floor`),
-        unit_cost: costPerConsumptionUnit > 0 ? costPerConsumptionUnit : (singleUnitQuantity > 0 ? Math.round((unitCostPerPurchaseUnit / singleUnitQuantity) * 100) / 100 : unitCostPerPurchaseUnit),
+        unit_cost: 0,
       }
 
       const res = await issueMasterRollsBatchAction(payload, companyId)
@@ -836,7 +696,7 @@ export function IssueMasterRollModal({
 
       const result = res.data
       setSuccess(
-        `Successfully issued ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName.toUpperCase()}, ${formatBDT(totalValuation)}) to Print Floor!`
+        `Successfully issued ${quantityRolls} ${formatUnitPlural(quantityRolls, purchaseUnitName)} (${result.total_area_sft || totalBatchQuantity} ${consumptionUnitName.toUpperCase()}) to Print Floor!`
       )
 
       if (onSuccess) {
@@ -857,7 +717,7 @@ export function IssueMasterRollModal({
     <ModalDialog
       open={open}
       onOpenChange={onOpenChange}
-      size="3xl"
+      size="2xl"
       hideFooter={true}
       title={
         <div className="flex items-center gap-2.5">
@@ -873,8 +733,8 @@ export function IssueMasterRollModal({
             </div>
             <div className="text-xs font-medium text-slate-500 dark:text-slate-400">
               {tBilingual(
-                'Directly issue raw materials, substrates, and supplies from warehouse stock to machines or staging.',
-                'গুদাম স্টক থেকে সরাসরি প্রিন্টিং মেশিনে কাঁচামাল বা মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
+                'Issue materials, rolls, sheets, or supplies directly from warehouse inventory to production floor.',
+                'গুদাম স্টক থেকে সরাসরি ফ্লোরে কাঁচামাল বা মাস্টার রোল বরাদ্দ ও মাউন্ট করুন।'
               )}
             </div>
           </div>
@@ -901,13 +761,13 @@ export function IssueMasterRollModal({
         )}
 
         {/* ========================================================= */}
-        {/* STEP 1: SUBSTRATE MATERIAL & SOURCE WAREHOUSE */}
+        {/* FIELD 1: MATERIAL NAME & SOURCE STORE */}
         {/* ========================================================= */}
         <div className="space-y-3.5 p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xs">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <span className="font-bold text-xs uppercase text-slate-700 dark:text-slate-300 tracking-wider flex items-center gap-1.5">
               <Layers className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              1. {tBilingual('Material Substrate & Warehouse Source', 'কাঁচামাল ও সোর্স গুদাম')}
+              1. {tBilingual('Material Name & Source Location', 'কাঁচামালের নাম ও সোর্স গুদাম')}
             </span>
             {selectedMaterial && (
               <Badge
@@ -919,22 +779,19 @@ export function IssueMasterRollModal({
                     : 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
                 )}
               >
-                Store Stock: {warehouseBreakdown.purchase_unit_display} • {currentStoreStock.toLocaleString()}{' '}
-                {consumptionUnitName.toUpperCase()} Available
+                Stock: {warehouseBreakdown.purchase_unit_display} ({currentStoreStock.toLocaleString()}{' '}
+                {consumptionUnitName.toUpperCase()})
               </Badge>
             )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            {/* Substrate Select (Shows ALL Available Materials with Sizes & Economics) */}
+            {/* Material Name Selector */}
             <div>
               <Label className="text-xs font-semibold mb-1.5 flex items-center justify-between">
                 <span>
-                  {tBilingual('Inventory Material Item', 'গুদামের কাঁচামাল')}{' '}
+                  {tBilingual('Material Name', 'কাঁচামালের নাম')} (e.g. Black PVC, PVC){' '}
                   <span className="text-rose-500">*</span>
-                </span>
-                <span className="text-[10px] text-blue-600 dark:text-blue-400 font-bold">
-                  ({availableMaterials.length} Available Items)
                 </span>
               </Label>
               <select
@@ -944,24 +801,15 @@ export function IssueMasterRollModal({
                   setCustomWidthFt(undefined)
                   setCustomLengthFt(undefined)
                 }}
-                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
+                className="w-full h-10 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs"
                 required
               >
-                <option value="">-- Select Inventory Material --</option>
+                <option value="">-- Select Material Name --</option>
                 {availableMaterials.map((m) => {
                   const bd = getMaterialWarehouseStockBreakdown(m, effectiveRolls)
-                  const sizesSummary = bd.is_roll && bd.roll_items.length > 0
-                    ? bd.roll_items.map((it) => `${it.width_ft}×${it.length_ft}ft`).join(', ')
-                    : `${m.unit || 'pcs'}`
-                  const rateSummary = bd.cost_display_primary && bd.cost_display_primary !== '—'
-                    ? `Rate: ${bd.cost_display_primary}`
-                    : ''
-                  const valSummary = bd.total_valuation > 0 ? `Val: ৳${bd.total_valuation.toLocaleString()}` : ''
-                  const economicsPart = [rateSummary, valSummary].filter(Boolean).join(' • ')
-
                   return (
                     <option key={m.id} value={m.id}>
-                      {m.name} ({m.sku || 'No SKU'}) | Sizes: {sizesSummary} | Stock: {bd.purchase_unit_display} {economicsPart ? `| ${economicsPart}` : ''}
+                      {m.name} ({m.sku || 'No SKU'}) • Stock: {bd.purchase_unit_display}
                     </option>
                   )
                 })}
@@ -990,93 +838,93 @@ export function IssueMasterRollModal({
                 ))}
               </select>
             </div>
-
-            {/* Dedicated Option: Material Name, Active Configured Size & Economics */}
-            {configuredSizeOptions.length > 0 && (
-              <div className="sm:col-span-2 p-3.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 space-y-2.5 shadow-2xs">
-                <div className="flex items-center justify-between flex-wrap gap-1">
-                  <Label className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
-                    <Disc className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-                    <span>{tBilingual('Active Configured Size & Economics', 'সক্রিয় কনফিগার করা সাইজ ও মূল্য/রেট')}</span>
-                    <span className="text-rose-500">*</span>
-                  </Label>
-                  <span className="text-[11px] text-blue-700 dark:text-blue-300 font-mono font-medium">
-                    {configuredSizeOptions.length} {configuredSizeOptions.length === 1 ? 'Size Group Available' : 'Size Groups Available'}
-                  </span>
-                </div>
-
-                <select
-                  value={selectedSizeKey}
-                  onChange={(e) => {
-                    const k = e.target.value
-                    setSelectedSizeKey(k)
-                    const opt = configuredSizeOptions.find((o) => o.key === k)
-                    if (opt) {
-                      setCustomWidthFt(opt.width_ft)
-                      setCustomLengthFt(opt.length_ft)
-                    }
-                  }}
-                  className="w-full h-10 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs font-mono"
-                >
-                  {configuredSizeOptions.map((opt) => (
-                    <option key={opt.key} value={opt.key}>
-                      {selectedMaterial?.name}: {opt.economics_display}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Quick Select Chips for Multiple Size Groups */}
-                {configuredSizeOptions.length > 1 && (
-                  <div className="flex items-center gap-2 flex-wrap pt-1">
-                    {configuredSizeOptions.map((opt) => {
-                      const isSelected = selectedSizeKey === opt.key
-                      return (
-                        <button
-                          key={opt.key}
-                          type="button"
-                          onClick={() => {
-                            setSelectedSizeKey(opt.key)
-                            setCustomWidthFt(opt.width_ft)
-                            setCustomLengthFt(opt.length_ft)
-                          }}
-                          className={cn(
-                            'px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border shadow-2xs text-left',
-                            isSelected
-                              ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-xs'
-                              : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/40'
-                          )}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span>{opt.label}</span>
-                            <span className={cn('text-[10px] font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
-                              • {opt.stock_display}
-                            </span>
-                          </div>
-                          <div className={cn('text-[11px] font-extrabold', isSelected ? 'text-blue-100' : 'text-emerald-600 dark:text-emerald-400')}>
-                            {opt.cost_display}
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 2: REQUISITION QUANTITY & DESTINATION */}
+        {/* FIELD 2: SELECTED MATERIAL'S AVAILABLE OPTIONS (SIZES/VARIANTS) */}
+        {/* ========================================================= */}
+        {configuredSizeOptions.length > 0 && (
+          <div className="p-4 bg-blue-50/70 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between flex-wrap gap-1">
+              <Label className="text-xs font-bold text-blue-950 dark:text-blue-200 flex items-center gap-1.5">
+                <Disc className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <span>
+                  2. {tBilingual("Selected Material's Available Options", 'নির্বাচিত কাঁচামালের উপলব্ধ সাইজ ও অপশন')} (e.g. 2ft x 164ft, 3.25ft x 164ft)
+                </span>
+                <span className="text-rose-500">*</span>
+              </Label>
+              <Badge variant="outline" className="text-[11px] font-mono font-medium border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 bg-blue-100/50 dark:bg-blue-900/50">
+                {configuredSizeOptions.length} {configuredSizeOptions.length === 1 ? 'Option Available' : 'Options Available'}
+              </Badge>
+            </div>
+
+            <select
+              value={selectedSizeKey}
+              onChange={(e) => {
+                const k = e.target.value
+                setSelectedSizeKey(k)
+                const opt = configuredSizeOptions.find((o) => o.key === k)
+                if (opt) {
+                  setCustomWidthFt(opt.width_ft)
+                  setCustomLengthFt(opt.length_ft)
+                }
+              }}
+              className="w-full h-10 rounded-lg border border-blue-300 dark:border-blue-700 bg-white dark:bg-slate-900 px-3 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 shadow-2xs font-mono"
+            >
+              {configuredSizeOptions.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {selectedMaterial?.name}: {opt.option_display}
+                </option>
+              ))}
+            </select>
+
+            {/* Quick-Select Chips for Options */}
+            {configuredSizeOptions.length > 1 && (
+              <div className="flex items-center gap-2 flex-wrap pt-0.5">
+                {configuredSizeOptions.map((opt) => {
+                  const isSelected = selectedSizeKey === opt.key
+                  return (
+                    <button
+                      key={opt.key}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSizeKey(opt.key)
+                        setCustomWidthFt(opt.width_ft)
+                        setCustomLengthFt(opt.length_ft)
+                      }}
+                      className={cn(
+                        'px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer border shadow-2xs text-left',
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-700 ring-2 ring-blue-400 shadow-xs'
+                          : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-slate-300 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-blue-900/40'
+                      )}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>{opt.label}</span>
+                        <span className={cn('text-[10px] font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
+                          • {opt.stock_display}
+                        </span>
+                      </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ========================================================= */}
+        {/* FIELD 3: QUANTITY (UNIT BASED ON SELECTED MATERIAL) */}
         {/* ========================================================= */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {/* Multi-Unit Quantity in Purchase Units */}
           <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
             <div className="flex items-center justify-between">
               <Label className="text-xs font-semibold block">
-                {tBilingual(
-                  `Requisition Quantity (${purchaseUnitName.toUpperCase()})`,
-                  `ইস্যুকৃত পরিমাণ (${purchaseUnitName})`
-                )}
+                3. {tBilingual(
+                  `Quantity (${purchaseUnitName})`,
+                  `পরিমাণ (${purchaseUnitName})`
+                )} (e.g. Roll, Bottle, Sheet) <span className="text-rose-500">*</span>
               </Label>
               <Badge variant="secondary" className="text-[10px] font-mono font-bold">
                 {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
@@ -1128,7 +976,7 @@ export function IssueMasterRollModal({
             </div>
           </div>
 
-          {/* Machine Mount or Floor Staging */}
+          {/* Destination & Machine Assignment */}
           <div className="p-4 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2.5 shadow-2xs">
             <Label className="text-xs font-semibold block">
               {tBilingual('Workstation Destination & Assignment', 'ফ্লোর গন্তব্য ও মাউন্টিং')}
@@ -1173,14 +1021,46 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 3: SMART IDENTIFIER TAG AUTO-GENERATOR */}
+        {/* FIELD 4 & 5: REQUEST BY / OPERATOR & REMARK */}
         {/* ========================================================= */}
-        <div className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-2xs space-y-2.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1.5">
+              <User className="h-3.5 w-3.5 text-slate-500" />
+              <span>4. {tBilingual('Request by / Operator', 'অনুরোধকারী / অপারেটরের নাম')}</span>
+              <span className="text-rose-500">*</span>
+            </Label>
+            <Input
+              value={operatorName}
+              onChange={(e) => setOperatorName(e.target.value)}
+              placeholder="e.g. Kamal Hossain / Floor Operator"
+              className="h-10 text-xs font-medium"
+              required
+            />
+          </div>
+          <div>
+            <Label className="text-xs font-semibold mb-1.5 flex items-center gap-1.5">
+              <HelpCircle className="h-3.5 w-3.5 text-slate-500" />
+              <span>5. {tBilingual('Remark', 'মন্তব্য / রিমার্ক')}</span>
+            </Label>
+            <Input
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. Urgent run for Job #1042 / Banner Printing"
+              className="h-10 text-xs font-medium"
+            />
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* SMART IDENTIFIER TAG & BARCODE TRACKING */}
+        {/* ========================================================= */}
+        <div className="p-3.5 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-900/60 shadow-2xs space-y-2.5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Tag className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
               <span className="font-bold text-xs text-indigo-950 dark:text-indigo-200">
-                {tBilingual('Auto-Generated Identifier Tag', 'স্বয়ংক্রিয় ট্র্যাকিং ট্যাগ আইডি')}
+                {tBilingual('Tracking Identifier Tag', 'ট্র্যাকিং ট্যাগ আইডি')}
               </span>
             </div>
             <Button
@@ -1190,7 +1070,7 @@ export function IssueMasterRollModal({
               onClick={() => setShowAdvancedTag(!showAdvancedTag)}
               className="h-6 text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold px-2 cursor-pointer"
             >
-              {showAdvancedTag ? 'Hide Custom Lot' : 'Customize Lot / Tag'}
+              {showAdvancedTag ? 'Hide Custom Tag' : 'Customize Tag / Lot'}
             </Button>
           </div>
 
@@ -1200,8 +1080,7 @@ export function IssueMasterRollModal({
               {quantityRolls > 1 && ` (to ...-${String(quantityRolls).padStart(2, '0')})`}
             </Badge>
             <span className="text-[11px] text-slate-500 font-medium font-mono">
-              Unit Rate: {formatBDT(unitCostPerPurchaseUnit)} / {purchaseUnitName}
-              {costPerConsumptionUnit > 0 && ` (${formatBDT(costPerConsumptionUnit)} / ${consumptionUnitName.toUpperCase()})`}
+              Auto-tracked for Factory Floor Consumption
             </span>
           </div>
 
@@ -1230,11 +1109,11 @@ export function IssueMasterRollModal({
         </div>
 
         {/* ========================================================= */}
-        {/* STEP 4: LIVE TELEMETRY, VALUATION & STORE IMPACT */}
+        {/* SUMMARY TELEMETRY & WAREHOUSE IMPACT CARDS */}
         {/* ========================================================= */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Size / Measure</span>
+            <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Measure</span>
             <span className="text-sm font-black text-slate-900 dark:text-white font-mono truncate block" title={unitMeasureDisplay}>
               {unitMeasureDisplay}
             </span>
@@ -1243,7 +1122,7 @@ export function IssueMasterRollModal({
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
             <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block">
-              Requisition Batch
+              Issue Quantity
             </span>
             <span className="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">
               {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
@@ -1254,14 +1133,16 @@ export function IssueMasterRollModal({
           </Card>
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 block">
-              Total Valuation
+            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
+              Destination
             </span>
-            <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono">
-              {formatBDT(totalValuation)}
+            <span className="text-sm font-black text-slate-800 dark:text-slate-200 font-mono truncate block">
+              {destination === 'machine'
+                ? machineryList.find((m) => m.id === machineId)?.name || 'Machine Press'
+                : 'Floor Staging'}
             </span>
             <span className="text-[10px] text-slate-500 block">
-              @{formatBDT(unitCostPerPurchaseUnit)} / {purchaseUnitName}
+              {destination === 'machine' ? 'Mounted to Press' : 'Floor Staging Area'}
             </span>
           </Card>
 
@@ -1283,20 +1164,18 @@ export function IssueMasterRollModal({
               {projectedRemainingUnits} {formatUnitPlural(projectedRemainingUnits, purchaseUnitName)} ({Math.max(0, projectedStoreBalance).toLocaleString()}{' '}
               {consumptionUnitName.toUpperCase()})
             </span>
-            <span className="text-[10px] text-slate-500 block">
-              {isStoreShortage ? `⚠️ Stock Shortage (${Math.abs(projectedStoreBalance).toLocaleString()} ${consumptionUnitName.toUpperCase()} deficit)` : `Remaining in ${sourceLocationName}`}
+            <span className="text-[10px] text-slate-500 block truncate">
+              {isStoreShortage ? `⚠️ Deficit (${Math.abs(projectedStoreBalance).toLocaleString()} ${consumptionUnitName.toUpperCase()})` : `in ${sourceLocationName}`}
             </span>
           </Card>
         </div>
 
-        {/* ========================================================= */}
-        {/* STEP 5: PRINTABLE INDUSTRIAL TAG PREVIEW */}
-        {/* ========================================================= */}
+        {/* Printable Industrial Tag Preview */}
         <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
           <div className="p-3 bg-slate-100 dark:bg-slate-800/80 flex items-center justify-between">
             <span className="font-bold text-xs text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
               <Barcode className="h-4 w-4 text-slate-600 dark:text-slate-400" />
-              {tBilingual('Printable Industrial Physical Tag Preview', 'প্রিন্টযোগ্য ট্যাগ / বারকোড প্রিভিউ')}
+              {tBilingual('Printable Ticket Preview', 'প্রিন্টযোগ্য ট্যাগ প্রিভিউ')}
             </span>
             <Button
               type="button"
@@ -1361,28 +1240,6 @@ export function IssueMasterRollModal({
             </div>
           )}
         </div>
-
-        {/* Operator & Notes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          <div>
-            <Label className="text-xs font-semibold mb-1 block">Requisitioned By / Operator</Label>
-            <Input
-              value={operatorName}
-              onChange={(e) => setOperatorName(e.target.value)}
-              placeholder="Operator Name"
-              className="h-9 text-xs font-medium"
-            />
-          </div>
-          <div>
-            <Label className="text-xs font-semibold mb-1 block">Requisition Notes / Job Reference</Label>
-            <Input
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Urgent run for Job #1042"
-              className="h-9 text-xs font-medium"
-            />
-          </div>
-        </div>
       </div>
 
       {/* FIXED DEDICATED MODAL FOOTER */}
@@ -1391,9 +1248,6 @@ export function IssueMasterRollModal({
           <Badge variant="secondary" className="font-mono text-xs font-bold py-1 px-2.5">
             {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)} ({totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()})
           </Badge>
-          <span className="text-xs font-bold text-slate-700 dark:text-slate-300 font-mono">
-            {formatBDT(totalValuation)}
-          </span>
         </div>
 
         <div className="flex items-center gap-2">
@@ -1436,4 +1290,3 @@ export const MaterialIssueModal = IssueMasterRollModal
 export type MaterialIssueModalProps = IssueMasterRollModalProps
 export const FloorIssueModal = IssueMasterRollModal
 export type FloorIssueModalProps = IssueMasterRollModalProps
-
