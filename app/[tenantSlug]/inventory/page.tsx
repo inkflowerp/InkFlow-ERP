@@ -963,7 +963,8 @@ function UnifiedInventoryContent() {
           for (const item of breakdown.roll_items) {
             const count = item.roll_count || (item.total_sft > 0 && item.width_ft * item.length_ft > 0 ? Math.round(item.total_sft / (item.width_ft * item.length_ft)) : 0)
             const area = item.total_sft || (count * item.width_ft * item.length_ft)
-            const allow = item.allowance_ft ?? allowance
+            const isWholeW = Math.floor(item.width_ft) === item.width_ft
+            const allow = item.allowance_ft !== undefined ? item.allowance_ft : (isWholeW ? allowance : 0)
             const price = item.purchase_price ?? Number(mat.average_cost || mat.last_purchase_price || 0)
             const gsm = item.gsm ?? Number(mat.gsm || (mat as any)?.weight_gsm || 0)
             const fin = item.finishing ?? String(mat.default_finishing || (mat as any)?.finish || 'none')
@@ -1594,7 +1595,7 @@ function UnifiedInventoryContent() {
                                     {row.width_ft}ft × {row.length_ft}ft
                                   </span>
                                 )}
-                                {row.allowance_ft > 0 && (
+                                {row.allowance_ft > 0 && Math.floor(row.width_ft) === row.width_ft && (
                                   <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-medium bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                                     +{row.allowance_ft}ft allow
                                   </span>
@@ -2223,7 +2224,7 @@ function UnifiedInventoryContent() {
                                             {group.finishing}
                                           </span>
                                         )}
-                                        {group.allowance_ft > 0 && (
+                                        {group.allowance_ft > 0 && Math.floor(group.width_ft) === group.width_ft && (
                                           <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                                             +{group.allowance_ft}ft allow
                                           </span>
