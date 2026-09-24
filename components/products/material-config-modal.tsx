@@ -692,27 +692,51 @@ export function MaterialConfigModal({
       let initialRolls: MaterialRollSizeConfig[] = []
       if (matCfg.roll_sizes && Array.isArray(matCfg.roll_sizes) && matCfg.roll_sizes.length > 0) {
         initialRolls = matCfg.roll_sizes
-          .map((r: any) => ({
-            width: Number(r.width),
-            extra_allowance: r.extra_allowance !== undefined ? Number(r.extra_allowance) : (rawAllowance !== undefined ? Number(rawAllowance) : 0),
-            length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
-          }))
+          .map((r: any) => {
+            const w = Number(r.width)
+            const isWhole = Math.floor(w) === w
+            return {
+              width: w,
+              extra_allowance: r.extra_allowance !== undefined
+                ? Number(r.extra_allowance)
+                : r.allowance_ft !== undefined
+                ? Number(r.allowance_ft)
+                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+              length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
+            }
+          })
           .filter((r: MaterialRollSizeConfig) => !isNaN(r.width) && r.width > 0)
       } else if (formula.roll_sizes && Array.isArray(formula.roll_sizes) && formula.roll_sizes.length > 0) {
         initialRolls = formula.roll_sizes
-          .map((r: any) => ({
-            width: Number(r.width),
-            extra_allowance: r.extra_allowance !== undefined ? Number(r.extra_allowance) : (rawAllowance !== undefined ? Number(rawAllowance) : 0),
-            length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
-          }))
+          .map((r: any) => {
+            const w = Number(r.width)
+            const isWhole = Math.floor(w) === w
+            return {
+              width: w,
+              extra_allowance: r.extra_allowance !== undefined
+                ? Number(r.extra_allowance)
+                : r.allowance_ft !== undefined
+                ? Number(r.allowance_ft)
+                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+              length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
+            }
+          })
           .filter((r: MaterialRollSizeConfig) => !isNaN(r.width) && r.width > 0)
       } else if ((initialData as any).roll_sizes && Array.isArray((initialData as any).roll_sizes) && (initialData as any).roll_sizes.length > 0) {
         initialRolls = (initialData as any).roll_sizes
-          .map((r: any) => ({
-            width: Number(r.width),
-            extra_allowance: r.extra_allowance !== undefined ? Number(r.extra_allowance) : (rawAllowance !== undefined ? Number(rawAllowance) : 0),
-            length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
-          }))
+          .map((r: any) => {
+            const w = Number(r.width)
+            const isWhole = Math.floor(w) === w
+            return {
+              width: w,
+              extra_allowance: r.extra_allowance !== undefined
+                ? Number(r.extra_allowance)
+                : r.allowance_ft !== undefined
+                ? Number(r.allowance_ft)
+                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+              length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
+            }
+          })
           .filter((r: MaterialRollSizeConfig) => !isNaN(r.width) && r.width > 0)
       } else {
         const rawWidths: any[] = (matCfg.available_widths_ft && matCfg.available_widths_ft.length > 0)
@@ -727,7 +751,7 @@ export function MaterialConfigModal({
           .filter((w: number) => !isNaN(w) && w > 0)
           .map((w: number) => ({
             width: w,
-            extra_allowance: parsedRawAllowance,
+            extra_allowance: (Math.floor(w) === w) ? parsedRawAllowance : 0,
             length: Number(stdLen) || 164,
           }))
       }
@@ -1184,7 +1208,9 @@ export function MaterialConfigModal({
         : (activeRoll?.width || 10)
 
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
-      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? 0.25) : parsedAllowance
+      const isWholeW = Math.floor(currentW) === currentW
+      const defaultAllowance = isWholeW ? 0.25 : 0
+      const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? defaultAllowance) : parsedAllowance
 
       const len = currentLen
 

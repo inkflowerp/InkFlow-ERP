@@ -518,11 +518,12 @@ function UnifiedInventoryContent() {
       if (breakdown.roll_items && breakdown.roll_items.length > 0) {
         // Expand each distinct 7-attribute inventory group as its own first-class table row
         for (const item of breakdown.roll_items) {
+          const isWholeW = Math.floor(item.width_ft) === item.width_ft
           const canonicalAttrs = normalizeInventoryGroupAttributes({
             name: mat.name,
             width_ft: item.width_ft,
             length_ft: item.length_ft,
-            allowance_ft: item.allowance_ft ?? globalAllowance,
+            allowance_ft: item.allowance_ft !== undefined ? item.allowance_ft : (isWholeW ? globalAllowance : 0),
             purchase_price: item.purchase_price ?? baseCost,
             gsm: item.gsm ?? Number(mat.gsm || 0),
             finishing: item.finishing ?? String(mat.default_finishing || 'none'),
@@ -648,11 +649,12 @@ function UnifiedInventoryContent() {
         const defaultWidth = Number(mat.roll_width_ft || mat.width || 0)
         const defaultLength = Number(mat.standard_roll_length_ft || mat.roll_length_ft || mat.length || 0)
 
+        const isWholeDefaultW = Math.floor(defaultWidth) === defaultWidth
         const canonicalAttrs = normalizeInventoryGroupAttributes({
           name: mat.name,
           width_ft: defaultWidth,
           length_ft: defaultLength,
-          allowance_ft: globalAllowance,
+          allowance_ft: isWholeDefaultW ? globalAllowance : 0,
           purchase_price: baseCost,
           gsm: Number(mat.gsm || 0),
           finishing: String(mat.default_finishing || 'none'),
@@ -871,7 +873,16 @@ function UnifiedInventoryContent() {
         for (const r of matRolls) {
           const w = Number(r.width_ft || mat.roll_width_ft || 4)
           const l = Number(r.current_length_ft ?? r.initial_length_ft ?? mat.standard_roll_length_ft ?? 164)
-          const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? allowance ?? 0)
+          const isWholeW = Math.floor(w) === w
+          const allow = Number(
+            (r as any).allowance_ft !== undefined
+              ? (r as any).allowance_ft
+              : (r as any).extra_allowance !== undefined
+              ? (r as any).extra_allowance
+              : (r as any).allowance !== undefined
+              ? (r as any).allowance
+              : (isWholeW ? allowance : 0)
+          )
           const pPrice = Number(r.unit_cost ?? mat.average_cost ?? mat.last_purchase_price ?? mat.cost_per_unit ?? 0)
           const gsm = Number((r as any).gsm ?? mat.gsm ?? (mat as any)?.weight_gsm ?? 0)
           const fin = String((r as any).finishing ?? (r as any).finish ?? mat.default_finishing ?? (mat as any)?.finish ?? 'none')

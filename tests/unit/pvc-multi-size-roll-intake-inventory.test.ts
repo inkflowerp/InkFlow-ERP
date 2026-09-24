@@ -318,5 +318,61 @@ describe('PVC Multi-Size Roll Stock Intake & Distinct Inventory Grouping', () =>
     assert.strictEqual(fallbackActive[0].length_ft, 100)
     assert.strictEqual(fallbackActive[0].total_sft, 225, 'Fallback SFT must be 225, NOT 8,384')
   })
+
+  it('5. should receive PVC 3.25ft x 164ft roll without auto-adding +0.25ft allowance to become 3.5ft', async () => {
+    const pvcMat: MaterialRecord = {
+      id: 'mat-pvc-325-test',
+      company_id: testCompanyId,
+      sku: 'MAT-52408',
+      name: 'PVC',
+      category: 'flex_banner',
+      unit: 'sft',
+      purchase_unit: 'roll',
+      is_roll: true,
+      production_width_allowance: 0.25,
+      roll_width_ft: 3.25,
+      standard_roll_length_ft: 164,
+      available_widths_ft: [2, 3.25],
+      current_stock: 0,
+      average_cost: 10,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    await InventoryService.createMaterial(pvcMat)
+
+    // Receive 1 Roll of 3.25ft x 164ft
+    const intake = await InventoryService.receiveStock({
+      company_id: testCompanyId,
+      material_id: pvcMat.id,
+      location_id: 'loc-main-store',
+      quantity: 1,
+      unit_cost: 5330,
+      width_ft: 3.25,
+      length_ft: 164,
+      size_label: '3.25ft × 164ft',
+      physical_form: 'roll',
+      purchase_unit: 'roll',
+      supplier_name: 'Supplier PVC',
+      performed_by_name: 'Store Manager',
+    })
+
+    assert.strictEqual(intake.rollsCreated?.length, 1, 'Must create 1 physical roll')
+    assert.strictEqual(intake.rollsCreated![0].width_ft, 3.25, 'Width must remain exactly 3.25ft, NOT 3.5ft')
+    assert.strictEqual(intake.rollsCreated![0].allowance_ft, 0, 'Allowance for 3.25ft must be 0, NOT 0.25')
+    assert.strictEqual(intake.rollsCreated![0].remaining_area_sft, 533, 'Area must be 533 SFT, NOT 574 SFT')
+
+    const storeRolls = await InventoryRepository.getInventoryRolls(testCompanyId, {
+      materialId: pvcMat.id,
+    })
+    const updatedMat = await InventoryRepository.getMaterialById(pvcMat.id, testCompanyId)
+    const breakdown = getMaterialWarehouseStockBreakdown(updatedMat!, storeRolls)
+
+    const active325 = breakdown.roll_items.find((r) => Math.abs(r.width_ft - 3.25) < 0.05)
+    assert.ok(active325, '3.25ft roll group must exist')
+    assert.strictEqual(active325.width_ft, 3.25, 'Roll width must be 3.25ft')
+    assert.strictEqual(active325.allowance_ft, 0, 'Allowance must be 0')
+    assert.strictEqual(active325.total_sft, 533, 'Total SFT must be 533 (3.25 * 164)')
+  })
 })
+
 

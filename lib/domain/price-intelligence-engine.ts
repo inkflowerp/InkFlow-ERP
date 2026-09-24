@@ -285,10 +285,55 @@ export class PriceIntelligenceEngine {
       if (rawRollSizes && rawRollSizes.length > 0) {
         for (const rs of rawRollSizes) {
           if (rs && (rs.is_active !== false)) {
-            const w = Number(rs.width !== undefined ? rs.width : (rs.width_ft !== undefined ? rs.width_ft : 3))
+            const rawNominal = rs.nominal_width_ft !== undefined ? Number(rs.nominal_width_ft) : undefined
+            const rawWidthFt = rs.width_ft !== undefined ? Number(rs.width_ft) : undefined
+            const rawWidth = rs.width !== undefined ? Number(rs.width) : (rs.size !== undefined ? Number(rs.size) : undefined)
             const l = Number(rs.length !== undefined ? rs.length : (rs.length_ft !== undefined ? rs.length_ft : standardLengthFt))
-            const allowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : globalAllowance))
-            const effectiveW = w + allowance
+
+            const hasExplicitAllowance = rs.extra_allowance !== undefined || rs.allowance !== undefined || rs.allowance_ft !== undefined
+            const explicitAllowance = Number(rs.extra_allowance !== undefined ? rs.extra_allowance : (rs.allowance !== undefined ? rs.allowance : (rs.allowance_ft !== undefined ? rs.allowance_ft : 0)))
+
+            let w: number
+            let allowance: number
+            let effectiveW: number
+
+            if (rawNominal !== undefined && rawWidthFt !== undefined && rawWidthFt >= rawNominal) {
+              w = rawNominal
+              effectiveW = rawWidthFt
+              allowance = hasExplicitAllowance ? explicitAllowance : (rawWidthFt > rawNominal ? Math.round((rawWidthFt - rawNominal) * 10000) / 10000 : 0)
+            } else if (rawWidthFt !== undefined && rawWidthFt > 0) {
+              const isFractional = Math.floor(rawWidthFt) !== rawWidthFt
+              if (hasExplicitAllowance) {
+                allowance = explicitAllowance
+                w = rawNominal !== undefined ? rawNominal : (allowance > 0 && isFractional && rawWidthFt > allowance ? Math.round((rawWidthFt - allowance) * 10000) / 10000 : rawWidthFt)
+                effectiveW = rawNominal !== undefined ? Math.round((rawNominal + allowance) * 10000) / 10000 : (allowance > 0 && isFractional ? rawWidthFt : Math.round((rawWidthFt + allowance) * 10000) / 10000)
+              } else if (isFractional) {
+                allowance = 0
+                w = rawWidthFt
+                effectiveW = rawWidthFt
+              } else {
+                allowance = globalAllowance
+                w = rawWidthFt
+                effectiveW = Math.round((w + allowance) * 10000) / 10000
+              }
+            } else {
+              const baseW = rawWidth !== undefined ? rawWidth : 3
+              const isFractional = Math.floor(baseW) !== baseW
+              if (hasExplicitAllowance) {
+                allowance = explicitAllowance
+                w = baseW
+                effectiveW = Math.round((w + allowance) * 10000) / 10000
+              } else if (isFractional) {
+                allowance = 0
+                w = baseW
+                effectiveW = baseW
+              } else {
+                allowance = globalAllowance
+                w = baseW
+                effectiveW = Math.round((w + allowance) * 10000) / 10000
+              }
+            }
+
             const physicalArea = Math.round(effectiveW * l * 10) / 10
             const nominalArea = Math.round(w * l * 10) / 10
 
@@ -348,7 +393,10 @@ export class PriceIntelligenceEngine {
         const refArea = refEffectiveW * standardLengthFt
 
         for (const w of widths) {
-          const effectiveW = (globalAllowance > 0 && Math.floor(w) === w) ? Math.round((w + globalAllowance) * 100) / 100 : w
+          const isWhole = Math.floor(w) === w
+          const allowance = isWhole ? globalAllowance : 0
+          const nominalW = w
+          const effectiveW = (isWhole && globalAllowance > 0) ? Math.round((w + globalAllowance) * 100) / 100 : w
           const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
 
           let defaultPrice = 0
@@ -364,15 +412,15 @@ export class PriceIntelligenceEngine {
           }
 
           const lengthLabel = standardLengthFt === 164 ? '164ft' : `${standardLengthFt}ft`
-          const allowanceLabel = globalAllowance > 0 ? ` (+${globalAllowance}ft)` : ''
+          const allowanceLabel = allowance > 0 ? ` (+${allowance}ft)` : ''
 
           activeSizes.push({
             id: `width-${w}ft`,
-            label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
+            label: `${nominalW}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
             physical_form: 'roll',
             width_ft: effectiveW,
-            nominal_width_ft: w,
-            allowance_ft: globalAllowance,
+            nominal_width_ft: nominalW,
+            allowance_ft: allowance,
             length_ft: standardLengthFt,
             standard_area_sft: physicalArea,
             default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,
@@ -385,7 +433,10 @@ export class PriceIntelligenceEngine {
       // If single roll_width_ft is registered
       if (activeSizes.length === 0 && material.roll_width_ft) {
         const w = Number(material.roll_width_ft)
-        const effectiveW = (globalAllowance > 0 && Math.floor(w) === w) ? Math.round((w + globalAllowance) * 100) / 100 : w
+        const isWhole = Math.floor(w) === w
+        const allowance = isWhole ? globalAllowance : 0
+        const nominalW = w
+        const effectiveW = (isWhole && globalAllowance > 0) ? Math.round((w + globalAllowance) * 100) / 100 : w
         const physicalArea = Math.round(effectiveW * standardLengthFt * 10) / 10
         let defaultPrice = 0
         if (perSftCost > 0) {
@@ -397,15 +448,15 @@ export class PriceIntelligenceEngine {
         }
 
         const lengthLabel = standardLengthFt === 164 ? '164ft' : `${standardLengthFt}ft`
-        const allowanceLabel = globalAllowance > 0 ? ` (+${globalAllowance}ft)` : ''
+        const allowanceLabel = allowance > 0 ? ` (+${allowance}ft)` : ''
 
         activeSizes.push({
           id: `width-${w}ft`,
-          label: `${w}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
+          label: `${nominalW}ft${allowanceLabel} × ${lengthLabel} (${Math.round(physicalArea)} sqft)`,
           physical_form: 'roll',
           width_ft: effectiveW,
-          nominal_width_ft: w,
-          allowance_ft: globalAllowance,
+          nominal_width_ft: nominalW,
+          allowance_ft: allowance,
           length_ft: standardLengthFt,
           standard_area_sft: physicalArea,
           default_supplier_price: defaultPrice > 0 ? defaultPrice : undefined,

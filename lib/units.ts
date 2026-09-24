@@ -2323,7 +2323,8 @@ export function getMaterialWarehouseStockBreakdown(
       for (const r of matRolls) {
         const w = Number(r.width_ft) || inferredWidth
         const l = Number(r.current_length_ft ?? r.initial_length_ft) || standardLength
-        const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? globalAllowance ?? 0)
+        const isWholeW = Math.floor(w) === w
+        const allow = Number((r as any).allowance_ft ?? (r as any).extra_allowance ?? (r as any).allowance ?? (isWholeW ? globalAllowance : 0))
         let pPrice = Number(r.unit_cost ?? (r as any).purchase_price ?? 0)
         if (pPrice <= 0) {
           if (derivedPerSft > 0) {
@@ -2380,17 +2381,18 @@ export function getMaterialWarehouseStockBreakdown(
       // If there are configured sizes not represented in physical rolls, add them with explicit count if any, or 0 count
       if (rawRollSizes.length > 0) {
         for (const rs of rawRollSizes) {
-          const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+          const rawW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+          const isWhole = Math.floor(rawW) === rawW
           const allowance = rs.extra_allowance !== undefined
             ? Number(rs.extra_allowance)
             : rs.allowance !== undefined
             ? Number(rs.allowance)
             : rs.allowance_ft !== undefined
             ? Number(rs.allowance_ft)
-            : 0
+            : (isWhole ? globalAllowance : 0)
           const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
             ? Number(rs.width_ft)
-            : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+            : ((allowance > 0 && isWhole) ? Math.round((rawW + allowance) * 100) / 100 : rawW)
           const l = Number(rs.length || rs.length_ft || standardLength)
           const explicitCount = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
           const rollArea = w * l
@@ -2421,7 +2423,7 @@ export function getMaterialWarehouseStockBreakdown(
           const key = createInventoryGroupingKey(attrs)
 
           const matchedItem = Array.from(map.values()).find(
-            (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - baseW) < 0.05) && Math.abs(item.length_ft - attrs.length_ft) < 0.05
+            (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - rawW) < 0.05) && Math.abs(item.length_ft - attrs.length_ft) < 0.05
           )
 
           const rollCost = attrs.purchase_price > 0
@@ -2461,17 +2463,18 @@ export function getMaterialWarehouseStockBreakdown(
       totalValuationCalculated = rollItems.reduce((sum, it) => sum + (it.total_valuation || 0), 0)
     } else if (rawRollSizes.length > 0) {
       for (const rs of rawRollSizes) {
-        const baseW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+        const rawW = Number(rs.nominal_width_ft || rs.width || rs.width_ft || rs.size || inferredWidth || 4)
+        const isWhole = Math.floor(rawW) === rawW
         const allowance = rs.extra_allowance !== undefined
           ? Number(rs.extra_allowance)
           : rs.allowance !== undefined
           ? Number(rs.allowance)
           : rs.allowance_ft !== undefined
           ? Number(rs.allowance_ft)
-          : 0
+          : (isWhole ? globalAllowance : 0)
         const w = rs.width_ft !== undefined && Number(rs.width_ft) > 0
           ? Number(rs.width_ft)
-          : ((allowance > 0 && Math.floor(baseW) === baseW) ? Math.round((baseW + allowance) * 100) / 100 : baseW)
+          : ((allowance > 0 && isWhole) ? Math.round((rawW + allowance) * 100) / 100 : rawW)
         const l = Number(rs.length || rs.length_ft || standardLength)
         const explicitCount = Number(rs.quantity ?? rs.stock_qty ?? rs.stock ?? rs.roll_count ?? rs.count ?? 0)
         const rollArea = w * l
