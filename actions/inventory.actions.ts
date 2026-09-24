@@ -409,7 +409,9 @@ export async function issueMaterialAction(
     })
 
     revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
     revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     return { success: true, data: issue }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to issue material' }
@@ -460,7 +462,9 @@ export async function logProductionConsumptionAction(
     })
 
     revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
     revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     revalidatePath('/[tenantSlug]/operator', 'page')
     return { success: true, data: { remnantsCreated: result.remnantsCreated } }
   } catch (error: any) {
@@ -537,7 +541,9 @@ export async function logFloorConsumptionAction(
     })
 
     revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
     revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     return { success: true, data: result.floorRecord }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to log floor consumption' }
@@ -569,6 +575,9 @@ export async function returnFloorStockToStoreAction(
     })
 
     revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
+    revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     return { success: true, data: result }
   } catch (error: any) {
     return { success: false, error: error.message || 'Failed to return floor stock to store' }
@@ -975,7 +984,9 @@ export async function issueMasterRollsBatchAction(
     })
 
     revalidatePath('/[tenantSlug]/inventory', 'page')
+    revalidatePath('/[tenantSlug]/inventory/rolls', 'page')
     revalidatePath('/[tenantSlug]/production', 'page')
+    revalidatePath('/[tenantSlug]/production/floor-consumption', 'page')
     revalidatePath('/[tenantSlug]/operator', 'page')
     revalidatePath('/[tenantSlug]/machinery', 'page')
 

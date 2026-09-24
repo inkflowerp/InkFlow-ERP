@@ -212,5 +212,90 @@ describe('Material Requisition & Factory Floor Consumption Workflow Tests', () =
         Boolean(r.mounted_machine_id)
     )
     assert.ok(floorRolls.length >= 2, 'Should have both the mounted roll and staging roll on floor')
+
+    const floorConsumptions = await InventoryRepository.getFloorConsumptions(companyId)
+    assert.ok(floorConsumptions.length >= 2, 'Floor consumption should include both requisition and direct issue items')
+  })
+
+  test('5. Non-roll substrate (Rigid Sheet / Ink / Hardware) direct issue immediately moves to Floor Consumption', async () => {
+    const mockSheetMat: MaterialRecord = {
+      id: `mat-acrylic-${Date.now()}`,
+      company_id: companyId,
+      sku: 'ACR-CLEAR-3MM',
+      name: 'Clear Cast Acrylic Sheet 3mm (4x8ft)',
+      category: 'rigid_sheet',
+      unit: 'sft',
+      purchase_unit: 'sheet',
+      conversion_factor: 32, // 4ft x 8ft = 32 SFT per sheet
+      current_stock: 320, // 10 sheets = 320 SFT
+      average_cost: 45,
+      last_purchase_price: 1440,
+      is_roll: false,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    PrintERPDataStore.addItem(STORAGE_KEYS.MATERIALS, mockSheetMat, companyId)
+
+    // Issue 3 acrylic sheets to CNC Router Workstation
+    const sheetIssueResult = await InventoryRepository.issueMasterRollsBatch({
+      company_id: companyId,
+      material_id: mockSheetMat.id,
+      width_ft: 4,
+      length_ft: 8,
+      quantity_rolls: 3, // 3 sheets
+      destination: 'machine',
+      machine_id: 'cnc',
+      machine_name: 'CNC Router Workstation',
+      operator_name: 'CNC Operator Rakib',
+      notes: 'Direct 3 Sheets issued to CNC Router',
+      unit_cost: 45,
+    })
+
+    assert.ok(sheetIssueResult.roll, 'Should create floor item record for non-roll substrate')
+    assert.strictEqual(sheetIssueResult.quantity_issued, 3, 'Should issue 3 sheets')
+    assert.strictEqual(sheetIssueResult.total_area_sft, 96, 'Should issue 96 SFT (3 * 32)')
+
+    // Check warehouse stock deducted
+    const sheetMatAfter = await InventoryRepository.getMaterialById(mockSheetMat.id, companyId)
+    assert.strictEqual(sheetMatAfter?.current_stock, 224, 'Warehouse stock should be 320 - 96 = 224 SFT (7 sheets)')
+
+    // Check floor consumptions contains the acrylic sheets
+    const floorConsumptions = await InventoryRepository.getFloorConsumptions(companyId)
+    const acrylicFloorItem = floorConsumptions.find((fc) => fc.material_id === mockSheetMat.id)
+    assert.ok(acrylicFloorItem, 'Floor consumption must contain the issued acrylic sheets')
+    assert.strictEqual(acrylicFloorItem?.machine_name, 'CNC Router Workstation')
+    assert.strictEqual(acrylicFloorItem?.issued_quantity, 96)
+    assert.strictEqual(acrylicFloorItem?.remaining_floor_balance, 96)
+    assert.strictEqual(acrylicFloorItem?.status, 'on_floor')
+  })
+
+  test('6. Logging floor consumption from floor item updates remaining balance and transitions status', async () => {
+    const floorConsumptions = await InventoryRepository.getFloorConsumptions(companyId)
+    const activeItem = floorConsumptions.find((fc) => fc.remaining_floor_balance > 0)
+    assert.ok(activeItem, 'Must have at least one active item on floor')
+
+    const initialBal = activeItem.remaining_floor_balance
+    const consumeQty = Math.min(50, Math.floor(initialBal / 2))
+
+    // Log consumption
+    const logRes = await InventoryRepository.logFloorConsumption({
+      company_id: companyId,
+      issue_id: activeItem.issue_id,
+      issue_item_id: activeItem.issue_item_id,
+      material_id: activeItem.material_id,
+      consumed_quantity: consumeQty,
+      unit: activeItem.unit,
+      wastage_quantity: 2,
+      wastage_reason: 'Margin Trim',
+      operator_name: 'Floor Operator Shakil',
+    })
+
+    assert.ok(logRes.floorRecord, 'Should return updated floor record')
+    assert.strictEqual(logRes.floorRecord.consumed_quantity, consumeQty)
+    assert.strictEqual(logRes.floorRecord.wastage_quantity, 2)
+    assert.strictEqual(logRes.floorRecord.remaining_floor_balance, initialBal - consumeQty - 2)
+    assert.strictEqual(logRes.floorRecord.status, 'partially_consumed')
   })
 })

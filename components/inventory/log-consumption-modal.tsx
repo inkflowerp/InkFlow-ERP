@@ -77,7 +77,14 @@ export function LogConsumptionModal({
   const availableRollsOnFloor = useMemo(() => {
     return (rolls || []).filter((r) => {
       const matchMat = !materialId || r.material_id === materialId
-      const matchStatus = r.status === 'mounted' || r.status === 'available' || r.status === 'in_use'
+      const matchStatus =
+        r.status === 'mounted' ||
+        r.status === 'available' ||
+        r.status === 'in_use' ||
+        r.status === 'on_floor' ||
+        r.location_name === 'Print Floor' ||
+        Boolean(r.mounted_machine_id) ||
+        Boolean(r.mounted_machine_name)
       const len = Number(r.current_length_ft ?? r.remaining_area_sft)
       return matchMat && matchStatus && len > 0
     })

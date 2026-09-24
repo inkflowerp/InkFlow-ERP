@@ -1701,15 +1701,42 @@ export class InventoryRepository {
     ]
 
     for (const iss of localIssues) {
-      if (!iss || !iss.id || seenIds.has(iss.id)) continue
+      if (!iss || !iss.id) continue
       if (companyId && iss.company_id) {
         const c = iss.company_id.toLowerCase()
         if (c !== normTarget && c !== cleanTarget && !c.includes(cleanTarget)) continue
       }
       if (options?.taskId && iss.production_task_id !== options.taskId) continue
       if (options?.requestId && iss.request_id !== options.requestId) continue
-      seenIds.add(iss.id)
-      list.push(iss)
+
+      if (seenIds.has(iss.id)) {
+        const existingIdx = list.findIndex((x) => x.id === iss.id)
+        if (existingIdx >= 0) {
+          const existing = list[existingIdx]
+          if ((!existing.items || existing.items.length === 0) && iss.items && iss.items.length > 0) {
+            list[existingIdx] = { ...existing, ...iss }
+          } else if (existing.items && iss.items) {
+            list[existingIdx].items = existing.items.map((it, idx) => {
+              const localIt = iss.items[idx] || iss.items.find((x) => x.material_id === it.material_id)
+              return {
+                ...it,
+                roll_id: it.roll_id || localIt?.roll_id,
+                roll_code: it.roll_code || localIt?.roll_code,
+                machine_id: it.machine_id || localIt?.machine_id,
+                machine_name: it.machine_name || localIt?.machine_name,
+                job_reference: it.job_reference || localIt?.job_reference,
+                consumed_quantity: it.consumed_quantity ?? localIt?.consumed_quantity ?? 0,
+                wastage_quantity: it.wastage_quantity ?? localIt?.wastage_quantity ?? 0,
+                returned_quantity: it.returned_quantity ?? localIt?.returned_quantity ?? 0,
+                remaining_floor_balance: it.remaining_floor_balance ?? localIt?.remaining_floor_balance ?? it.issued_quantity,
+              }
+            })
+          }
+        }
+      } else {
+        seenIds.add(iss.id)
+        list.push(iss)
+      }
     }
 
     return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
@@ -1813,6 +1840,7 @@ export class InventoryRepository {
       const { data: issue, error: issueErr } = await (supabase as any)
         .from('material_issues')
         .insert({
+          id: issueId,
           company_id: params.company_id,
           branch_id: params.branch_id || null,
           issue_number: issueNumber,
@@ -1823,6 +1851,7 @@ export class InventoryRepository {
           issued_by_id: params.issued_by_id || null,
           issued_by_name: params.issued_by_name,
           received_by_name: params.received_by_name || null,
+          assigned_machine: assignedMach,
           status: 'completed',
           notes: params.notes?.trim() || null,
         })
@@ -1833,18 +1862,19 @@ export class InventoryRepository {
         createdIssue.id = issue.id
         for (const it of params.items) {
           const unitCost = it.unit_cost || 0
-          const totalCost = it.issued_quantity * unitCost
+          const targetMat = await this.getMaterialById(it.material_id, params.company_id)
 
           await (supabase as any)
             .from('material_issue_items')
             .insert({
+              company_id: params.company_id,
               issue_id: issue.id,
               request_item_id: it.request_item_id || null,
               material_id: it.material_id,
+              material_name: targetMat?.name || 'Raw Material',
               issued_quantity: it.issued_quantity,
               unit: it.unit,
               unit_cost: unitCost,
-              total_cost: totalCost,
             })
         }
       }
@@ -1852,6 +1882,52 @@ export class InventoryRepository {
 
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue, params.company_id)
     PrintERPDataStore.addItem(STORAGE_KEYS.MATERIAL_ISSUES, createdIssue)
+
+    // Register FloorConsumptionRecords for immediate floor display
+    for (const item of createdIssue.items || []) {
+      const targetMat = await this.getMaterialById(item.material_id, params.company_id)
+      const floorRecord: FloorConsumptionRecord = {
+        id: `fc-${createdIssue.id}-${item.id || item.material_id}`,
+        company_id: params.company_id,
+        branch_id: params.branch_id || null,
+        issue_id: createdIssue.id,
+        issue_number: issueNumber,
+        issue_item_id: item.id,
+        material_id: item.material_id,
+        material_name: targetMat?.name || 'Raw Material',
+        sku: targetMat?.sku || 'MAT',
+        roll_id: (item as any).roll_id || null,
+        roll_code: (item as any).roll_code || null,
+        machine_id: (item as any).machine_id || null,
+        machine_name: item.machine_name || assignedMach || 'General Production Floor',
+        job_order_id: null,
+        job_reference: item.job_reference || jobRef || params.production_task_id || null,
+        production_task_id: params.production_task_id || null,
+        operator_id: params.issued_by_id || null,
+        operator_name: params.received_by_name || params.issued_by_name || 'Floor Operator',
+        issued_quantity: item.issued_quantity,
+        consumed_quantity: 0,
+        unit: (item.unit || targetMat?.unit || 'pcs') as MaterialUnit,
+        unit_cost: item.unit_cost || 0,
+        total_cost: item.total_cost || 0,
+        wastage_quantity: 0,
+        wastage_reason: null,
+        wastage_cost: 0,
+        returned_quantity: 0,
+        return_location_id: null,
+        return_location_name: null,
+        remnants_count: 0,
+        remnants_area_sft: 0,
+        remaining_floor_balance: item.issued_quantity,
+        status: 'on_floor',
+        notes: createdIssue.notes,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        material: targetMat || undefined,
+      }
+      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord, params.company_id)
+      PrintERPDataStore.addItem(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorRecord)
+    }
 
     // Deduct stock and log ledger entry
     for (const it of params.items) {
@@ -1967,19 +2043,22 @@ export class InventoryRepository {
       return cId === normTarget || cId === cleanTarget || cId.includes(cleanTarget)
     })
 
-    // 3. Load active mounted rolls & floor substrates from DataStore
-    const floorRolls = [
-      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
-      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
-    ].filter((r) => {
+    // 3. Load active mounted rolls & floor substrates
+    const allRolls = await this.getInventoryRolls(companyId)
+    const floorRolls = (allRolls || []).filter((r) => {
       if (!r) return false
       if (companyId && r.company_id) {
         const cId = (r.company_id || '').toLowerCase()
         if (cId !== normTarget && cId !== cleanTarget && !cId.includes(cleanTarget)) return false
       }
-      return r.location_name === 'Print Floor' || r.status === 'mounted' || r.status === 'in_use' || Boolean(r.mounted_machine_id) || Boolean(r.mounted_machine_name)
+      return (
+        r.location_name === 'Print Floor' ||
+        r.status === 'mounted' ||
+        r.status === 'in_use' ||
+        r.status === 'on_floor' ||
+        Boolean(r.mounted_machine_id) ||
+        Boolean(r.mounted_machine_name)
+      )
     })
 
     const results: FloorConsumptionRecord[] = []
@@ -2950,33 +3029,36 @@ export class InventoryRepository {
       } catch {}
     }
 
-    // 2. Fallback to Local Store if Supabase returned no rolls
-    if (!rolls || rolls.length === 0) {
-      const allLocal = [
-        ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-        ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
-        ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
-        ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
-      ]
-      const uniqueMap = new Map<string, InventoryRollRecord>()
-      for (const r of allLocal) {
-        if (r && r.id && !uniqueMap.has(r.id)) {
-          uniqueMap.set(r.id, r)
-        }
+    const seenRollIds = new Set<string>()
+    for (const r of rolls) {
+      if (r && r.id) seenRollIds.add(r.id)
+    }
+
+    // 2. Merge with Local Store
+    const allLocal = [
+      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) || []),
+      ...(PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+      ...(PrintERPDataStore.getAll<InventoryRollRecord>(STORAGE_KEYS.MOUNTED_ROLLS) || []),
+    ]
+    const normTarget = companyId ? companyId.toLowerCase() : ''
+    const cleanTarget = normTarget.replace(/^comp-/, '').replace(/^co-/, '')
+
+    for (const r of allLocal) {
+      if (!r || !r.id) continue
+      if (companyId && r.company_id) {
+        const cId = r.company_id.toLowerCase()
+        if (cId !== normTarget && cId !== cleanTarget && !cId.includes(cleanTarget)) continue
       }
-      const all = Array.from(uniqueMap.values())
-      rolls = all.filter((r) => {
-        if (r.company_id && r.company_id !== companyId) return false
-        if (options?.materialId && r.material_id !== options.materialId) return false
-        if (options?.status && options.status !== 'all') {
-          if (options.status === 'available' && (r.status === 'available' || r.status === 'in_warehouse' || !r.status)) return true
-          if (options.status === 'mounted' && (r.status === 'mounted' || r.status === 'in_use' || r.status === 'on_floor')) return true
-          if (options.status === 'depleted' && (r.status === 'depleted' || (r.remaining_length_ft != null && r.remaining_length_ft <= 0.5))) return true
-          if (r.status !== options.status) return false
+      if (seenRollIds.has(r.id)) {
+        const existingIdx = rolls.findIndex((x) => x.id === r.id)
+        if (existingIdx >= 0) {
+          rolls[existingIdx] = { ...rolls[existingIdx], ...r }
         }
-        if (options?.locationId && r.location_id !== options.locationId) return false
-        return true
-      })
+      } else {
+        seenRollIds.add(r.id)
+        rolls.push(r)
+      }
     }
 
     // 3. Enrich Material metadata on all rolls
@@ -3019,7 +3101,10 @@ export class InventoryRepository {
 
     // 5. Final Filter pass
     return rolls.filter((r) => {
-      if (r.company_id && r.company_id !== companyId) return false
+      if (r.company_id && companyId) {
+        const cId = r.company_id.toLowerCase()
+        if (cId !== normTarget && cId !== cleanTarget && !cId.includes(cleanTarget)) return false
+      }
       if (options?.materialId && r.material_id !== options.materialId) return false
       if (options?.status && options.status !== 'all') {
         if (options.status === 'available' && (r.status === 'available' || r.status === 'in_warehouse' || !r.status)) return true
@@ -3474,7 +3559,7 @@ export class InventoryRepository {
             await (supabase as any)
               .from('inventory_rolls')
               .update({
-                status: rollRecord.status,
+                status: rollRecord.status === 'on_floor' ? 'in_use' : rollRecord.status,
                 location_name: 'Print Floor',
                 mounted_machine_id: rollMachineId,
                 mounted_machine_name: rollMachineName,
@@ -3544,7 +3629,9 @@ export class InventoryRepository {
               initial_area_sft: singleUnitConsumptionQuantity,
               remaining_area_sft: singleUnitConsumptionQuantity,
               consumed_area_sft: 0,
-              status: rollRecord.status,
+              current_area_sft: singleUnitConsumptionQuantity,
+              status: rollRecord.status === 'on_floor' ? 'in_use' : rollRecord.status,
+              location_name: 'Print Floor',
               mounted_machine_id: rollMachineId,
               mounted_machine_name: rollMachineName,
               unit_cost: rollRecord.unit_cost,
@@ -3610,7 +3697,9 @@ export class InventoryRepository {
           initial_area_sft: floorRecord.initial_area_sft,
           remaining_area_sft: floorRecord.remaining_area_sft,
           consumed_area_sft: 0,
-          status: floorRecord.status,
+          current_area_sft: floorRecord.current_area_sft,
+          status: floorRecord.status === 'on_floor' ? 'in_use' : floorRecord.status,
+          location_name: 'Print Floor',
           mounted_machine_id: floorRecord.mounted_machine_id,
           mounted_machine_name: floorRecord.mounted_machine_name,
           unit_cost: floorRecord.unit_cost,
@@ -3766,12 +3855,13 @@ export class InventoryRepository {
       if (dbIssue) {
         for (const it of issueRecord.items || []) {
           await (supabase as any).from('material_issue_items').insert({
+            company_id: companyId,
             issue_id: dbIssue.id,
             material_id: it.material_id,
+            material_name: it.material_name || mat.name,
             issued_quantity: it.issued_quantity,
             unit: it.unit,
             unit_cost: it.unit_cost,
-            total_cost: it.total_cost,
           })
         }
       }
