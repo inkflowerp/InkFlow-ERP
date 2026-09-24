@@ -20,7 +20,6 @@ import {
   X,
   UserCheck,
   CreditCard,
-  Sparkles,
   AlertOctagon,
   FileText,
   Clock,
@@ -78,11 +77,6 @@ export interface NewInvoiceModalProps {
   onInvoiceCreated?: (invoice: InvoiceRecord) => void
 }
 
-import {
-  BANGLADESHI_PRINT_PRESETS,
-  getPresetsByCategory,
-  type DomainPreset,
-} from '@/lib/quotation-presets'
 
 interface ItemRowState {
   id: string
@@ -652,8 +646,6 @@ export function NewInvoiceModal({
   const [quotationId, setQuotationId] = useState<string | undefined>(preselectedQuotationId)
   const [salesOrderId, setSalesOrderId] = useState<string | undefined>(preselectedSalesOrderId)
 
-  // Presets Category Filter
-  const [selectedPresetCategory, setSelectedPresetCategory] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
 
   // Credit Limit Override
   const [creditOverrideReason, setCreditOverrideReason] = useState('')
@@ -699,51 +691,6 @@ export function NewInvoiceModal({
   const [advanceAmount, setAdvanceAmount] = useState<number>(0)
   const [advancePercentage, setAdvancePercentage] = useState<number>(50)
 
-  const handleApplyDomainPreset = (preset: DomainPreset) => {
-    const newItem: ItemRowState = {
-      id: `item-${Date.now()}-${items.length + 1}`,
-      productId: '',
-      category_preset: preset.category,
-      itemName: preset.name,
-      description_bn: preset.nameBn,
-      material_spec: preset.materialSpec,
-      dimensions_spec: preset.width && preset.height ? `${preset.width} × ${preset.height} ${preset.dimensionUnit || 'ft'}` : undefined,
-      width: preset.width ? String(preset.width) : '',
-      height: preset.height ? String(preset.height) : '',
-      dimension_unit: preset.dimensionUnit || 'ft',
-      quantity: preset.quantity || 1,
-      unit: preset.unit || 'pcs',
-      base_rate: preset.defaultRate,
-      rate: preset.defaultRate,
-      finishing: preset.finishing || 'None',
-      finishing_rate: 0,
-      add_on: preset.addOn || 'None',
-      add_on_rate: 0,
-      rateSource: 'default',
-      item_kind: preset.itemKind,
-      unit_cost: preset.estimatedCostPerUnit || 0,
-      offset_specs: preset.offsetSpecs || null,
-      signage_specs: preset.signageSpecs || null,
-      artwork_required: Boolean(preset.artworkRequired),
-      installation_required: Boolean(preset.installationRequired),
-      design_required: preset.itemKind !== 'ready_product' && preset.artworkRequired !== false,
-      customer_approval_required: true,
-      workflow_routing: preset.itemKind === 'ready_product' ? 'ready_product' : preset.artworkRequired ? 'design_required' : 'ready_production',
-      showAdvanced: preset.category === 'offset_print' || preset.category === 'signage_fabrication',
-    }
-
-    if (
-      items.length === 1 &&
-      !items[0].productId &&
-      !items[0].width &&
-      !items[0].height &&
-      items[0].itemName === 'Pana Flex Banner Print'
-    ) {
-      setItems([newItem])
-    } else {
-      setItems([...items, newItem])
-    }
-  }
 
   // Feedback & Action states
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -2071,64 +2018,6 @@ export function NewInvoiceModal({
             </Badge>
           </div>
 
-          {/* =========================================================================
-              1-CLICK BANGLADESHI INDUSTRY PRESETS BAR
-             ========================================================================= */}
-          <div className="p-3 bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/70 dark:from-slate-900/80 dark:via-blue-950/30 dark:to-indigo-950/40 rounded-xl border border-blue-200/80 dark:border-blue-900/40 space-y-2.5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-bold shrink-0">
-                <Sparkles className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                <span>{tBilingual('Fast 1-Click BD Presets:', '১-ক্লিক প্রিন্ট প্রিসেট:')}</span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1">
-                {(
-                  [
-                    { key: 'all', label: 'All Presets', label_bn: 'সকল প্রিসেট' },
-                    { key: 'digital_print', label: '🎨 Digital', label_bn: '🎨 ডিজিটাল' },
-                    { key: 'offset_print', label: '📑 Offset', label_bn: '📑 অফসেট' },
-                    { key: 'signage_fabrication', label: '💡 3D Sign', label_bn: '💡 ৩ডি সাইনেজ' },
-                    { key: 'ready_merchandise', label: '🎯 Ready', label_bn: '🎯 রেডি পণ্য' },
-                  ] as const
-                ).map((cat) => (
-                  <button
-                    key={cat.key}
-                    type="button"
-                    onClick={() => setSelectedPresetCategory(cat.key)}
-                    className={cn(
-                      'px-2 py-0.5 rounded-md text-[11px] font-bold transition-all cursor-pointer',
-                      selectedPresetCategory === cat.key
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-white/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700'
-                    )}
-                  >
-                    {tBilingual(cat.label, cat.label_bn)}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1.5 max-h-36 overflow-y-auto pr-1">
-              {(selectedPresetCategory === 'all'
-                ? BANGLADESHI_PRINT_PRESETS
-                : getPresetsByCategory(selectedPresetCategory as any)
-              ).map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => handleApplyDomainPreset(preset)}
-                  className="group px-2.5 py-1 bg-white dark:bg-slate-800/90 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 border border-slate-200 dark:border-slate-700 hover:border-blue-600 rounded-lg text-xs font-semibold text-slate-700 dark:text-slate-200 shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
-                  title={preset.description}
-                >
-                  <span className="text-sm">{preset.icon}</span>
-                  <span className="truncate max-w-[170px]">{preset.nameBn || preset.name}</span>
-                  <span className="font-mono text-[10px] font-bold px-1 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 group-hover:bg-blue-700 group-hover:text-white">
-                    ৳{preset.defaultRate}/{preset.unit}
-                  </span>
-                  <Plus className="h-3 w-3 opacity-60 group-hover:opacity-100" />
-                </button>
-              ))}
-            </div>
-          </div>
 
           <div className="space-y-4">
             {items.map((item, index) => {

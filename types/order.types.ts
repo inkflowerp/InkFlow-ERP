@@ -104,6 +104,7 @@ export interface SalesOrderRecord {
   company_id: string
   order_number: string
   quotation_id?: string | null
+  quotation_number?: string | null
   customer_id?: string | null
   customer_name: string
   customer_name_bn?: string | null
