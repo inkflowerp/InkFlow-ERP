@@ -10,7 +10,7 @@ export default function DirectFloorConsumptionRedirectPage() {
   const slug = (params?.tenantSlug as string) || 'my-company'
 
   useEffect(() => {
-    router.replace(getTenantNavHref(slug, '/production/floor-consumption'))
+    router.replace(getTenantNavHref('/production/floor-consumption', null, slug))
   }, [router, slug])
 
   return (

@@ -499,7 +499,9 @@ export class InventoryService {
           // Strict 7-attribute canonical comparison or exact matching spec match
           const incomingNominalW = incomingCanonicalAttrs.width_ft - incomingCanonicalAttrs.allowance_ft
           const isFullCanonicalMatch = szKey === incomingGroupKey
+          const isPriceCompatible = szPrice === 0 || incomingCanonicalAttrs.purchase_price === 0 || Math.abs(szPrice - incomingCanonicalAttrs.purchase_price) < 1
           const isCompatibleSpecMatch = !matched &&
+            isPriceCompatible &&
             (Math.abs(szW - incomingCanonicalAttrs.width_ft) < 0.05 || (szBaseW > 0 && Math.abs(szBaseW - incomingNominalW) < 0.05 && Math.abs(szAllowance - incomingCanonicalAttrs.allowance_ft) < 0.05)) &&
             (!szL || !incomingCanonicalAttrs.length_ft || Math.abs(szL - incomingCanonicalAttrs.length_ft) <= 5) &&
             (szGsm === 0 || szGsm === incomingCanonicalAttrs.gsm || !incomingCanonicalAttrs.gsm) &&

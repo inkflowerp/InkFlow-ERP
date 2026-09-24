@@ -20,7 +20,6 @@ export type InventoryViewTab =
   | 'materials'
   | 'ready_products'
   | 'rolls'
-  | 'floor_consumption'
   | 'requests'
   | 'remnants'
   | 'locations'
@@ -43,8 +42,6 @@ export interface InventoryTabsNavigationProps {
   materialsCount: number
   readyProductsCount: number
   rollsCount: number
-  floorConsumptionsCount?: number
-  activeFloorCount?: number
   requestsCount: number
   pendingRequestsCount: number
   remnantsCount: number
@@ -60,8 +57,6 @@ export function InventoryTabsNavigation({
   materialsCount,
   readyProductsCount,
   rollsCount,
-  floorConsumptionsCount = 0,
-  activeFloorCount = 0,
   requestsCount,
   pendingRequestsCount,
   remnantsCount,
@@ -94,14 +89,6 @@ export function InventoryTabsNavigation({
       labelBn: 'রোল তালিকা ও প্রেস',
       icon: Disc,
       count: rollsCount,
-    },
-    {
-      id: 'floor_consumption',
-      labelEn: 'On Floor Material',
-      labelBn: 'ফ্লোরে ম্যাটেরিয়াল',
-      icon: Flame,
-      count: floorConsumptionsCount,
-      alert: activeFloorCount > 0,
     },
     {
       id: 'requests',

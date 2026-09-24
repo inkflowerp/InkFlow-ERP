@@ -110,7 +110,6 @@ import { NewPurchaseModal } from '@/components/purchases/new-purchase-modal'
 import { InventoryKpiBar } from '@/components/inventory/inventory-kpi-bar'
 import { InventoryActionBar } from '@/components/inventory/inventory-action-bar'
 import { InventoryTabsNavigation, InventoryViewTab } from '@/components/inventory/inventory-tabs-navigation'
-import { PrintFloorConsumptionUnit } from '@/components/inventory/print-floor-consumption-unit'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PromptDialog } from '@/components/shared/prompt-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -133,9 +132,16 @@ function UnifiedInventoryContent() {
 
   // URL-addressable view tab
   const rawView = searchParams.get('view')
+
+  // Automatically redirect legacy /inventory?view=floor_consumption to dedicated /production/floor-consumption
+  useEffect(() => {
+    if (rawView === 'floor_consumption' || rawView === 'floor' || rawView === 'consumption') {
+      router.replace(getTenantNavHref('/production/floor-consumption', pathname, slug))
+    }
+  }, [rawView, pathname, router, slug])
+
   const currentView: InventoryViewTab = useMemo(() => {
     if (rawView === 'ready_products' || rawView === 'products') return 'ready_products'
-    if (rawView === 'floor_consumption' || rawView === 'floor' || rawView === 'consumption') return 'floor_consumption'
     if (rawView === 'rolls') return 'rolls'
     if (rawView === 'requests') return 'requests'
     if (rawView === 'remnants') return 'remnants'
@@ -1426,10 +1432,6 @@ function UnifiedInventoryContent() {
             setSelectedRequestForIssue(null)
             setIsFloorIssueOpen(true)
           }}
-          onLogConsumption={() => {
-            setSelectedFloorRecordForConsumption(null)
-            setIsConsumptionOpen(true)
-          }}
           onTransfer={() => setIsTransferOpen(true)}
           onAdjustment={() => setIsAdjustmentOpen(true)}
           onNewPurchase={() => setIsNewPurchaseOpen(true)}
@@ -1437,7 +1439,7 @@ function UnifiedInventoryContent() {
         />
 
         {/* ========================================================= */}
-        {/* 10-TAB PRIMARY WORKSPACE NAVIGATION */}
+        {/* PRIMARY WORKSPACE NAVIGATION */}
         {/* ========================================================= */}
         <InventoryTabsNavigation
           currentView={currentView}
@@ -1448,8 +1450,6 @@ function UnifiedInventoryContent() {
           materialsCount={inventoryGroupRows.length}
           readyProductsCount={readyProducts.length}
           rollsCount={totalPhysicalRollsCount || rolls.length}
-          floorConsumptionsCount={floorConsumptions.length}
-          activeFloorCount={floorConsumptions.filter((f) => f.status === 'on_floor' || f.status === 'partially_consumed').length}
           requestsCount={requests.length}
           pendingRequestsCount={pendingRequestsCount}
           remnantsCount={remnants.length}
@@ -1766,49 +1766,6 @@ function UnifiedInventoryContent() {
                 </table>
               </div>
             </Card>
-          </div>
-        )}
-
-        {/* ========================================================= */}
-        {/* VIEW: PRINT FLOOR CONSUMPTION & SCRAP UNIT TAB */}
-        {/* ========================================================= */}
-        {currentView === 'floor_consumption' && (
-          <div className="space-y-4">
-            <Card className="border-amber-500/30 bg-amber-950/20 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <Flame className="h-6 w-6 text-amber-400 shrink-0" />
-                <div>
-                  <h4 className="text-sm font-semibold text-amber-200">
-                    {isBn ? 'প্রিন্ট ফ্লোর কনজাম্পশন স্থানান্তরিত হয়েছে' : 'Floor Consumption moved to Factory & Floor'}
-                  </h4>
-                  <p className="text-xs text-amber-300/80">
-                    {isBn
-                      ? 'এখন থেকে সাইডবারের "কারখানা ও প্রোডাকশন" (Factory & Floor) মেনুতে ডেডিকেটেড ফ্লোর কনজাম্পশন ওয়ার্কস্টেশন পাবেন।'
-                      : 'You can now access the full dedicated Floor Consumption workstation directly from the "Factory & Floor" sidebar menu.'}
-                  </p>
-                </div>
-              </div>
-              <Link href={getTenantNavHref('/production/floor-consumption', pathname, slug)}>
-                <Button size="sm" className="bg-amber-600 hover:bg-amber-500 text-white gap-2 font-medium shrink-0 cursor-pointer">
-                  <span>{isBn ? 'ফ্লোর কনজাম্পশনে যান' : 'Go to Floor Consumption'}</span>
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-            </Card>
-
-            <PrintFloorConsumptionUnit
-              floorConsumptions={floorConsumptions}
-              materials={materials}
-              locations={locations}
-              issues={issues}
-              rolls={rolls}
-              onOpenLogConsumption={(record) => {
-                setSelectedFloorRecordForConsumption(record || null)
-                setIsConsumptionOpen(true)
-              }}
-              onRefresh={() => loadAllData()}
-              companyId={companyId}
-            />
           </div>
         )}
 

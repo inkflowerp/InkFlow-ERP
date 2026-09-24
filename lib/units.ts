@@ -2441,8 +2441,12 @@ export function getMaterialWarehouseStockBreakdown(
           })
           const key = createInventoryGroupingKey(attrs)
 
-          const matchedItem = Array.from(map.values()).find(
-            (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - rawW) < 0.05) && Math.abs(item.length_ft - attrs.length_ft) < 0.05
+          const matchedItem = map.get(key) || Array.from(map.values()).find(
+            (item) => (Math.abs(item.width_ft - attrs.width_ft) < 0.05 || Math.abs(item.width_ft - rawW) < 0.05) &&
+              Math.abs(item.length_ft - attrs.length_ft) < 0.05 &&
+              (item.purchase_price === 0 || attrs.purchase_price === 0 || Math.abs(item.purchase_price - attrs.purchase_price) < 1) &&
+              (item.gsm === 0 || attrs.gsm === 0 || item.gsm === attrs.gsm) &&
+              (item.finishing === 'none' || attrs.finishing === 'none' || item.finishing === attrs.finishing)
           )
 
           const rollCost = attrs.purchase_price > 0
