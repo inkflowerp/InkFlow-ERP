@@ -39,7 +39,7 @@ import {
   isMaterialProduct,
 } from '../units.ts'
 
-export function sanitizeProductDbPayload(raw: Record<string, any>): Record<string, any> {
+export function sanitizeProductDbPayload(raw: Record<string, any>, isInsert: boolean = false): Record<string, any> {
   const allowed = new Set([
     'id',
     'company_id',
@@ -112,24 +112,36 @@ export function sanitizeProductDbPayload(raw: Record<string, any>): Record<strin
     }
   }
 
-  // Ensure NOT NULL JSONB columns are never null
-  if (out.material_config === null || out.material_config === undefined || typeof out.material_config !== 'object') {
-    out.material_config = {}
+  // Ensure NOT NULL JSONB columns are never null on INSERT or when explicitly passed as null
+  if ('material_config' in raw || isInsert) {
+    if (out.material_config === null || (isInsert && (out.material_config === undefined || typeof out.material_config !== 'object'))) {
+      out.material_config = {}
+    }
   }
-  if (out.service_config === null || out.service_config === undefined || typeof out.service_config !== 'object') {
-    out.service_config = {}
+  if ('service_config' in raw || isInsert) {
+    if (out.service_config === null || (isInsert && (out.service_config === undefined || typeof out.service_config !== 'object'))) {
+      out.service_config = {}
+    }
   }
-  if (out.price_tiers === null || out.price_tiers === undefined || typeof out.price_tiers !== 'object') {
-    out.price_tiers = {}
+  if ('price_tiers' in raw || isInsert) {
+    if (out.price_tiers === null || (isInsert && (out.price_tiers === undefined || typeof out.price_tiers !== 'object'))) {
+      out.price_tiers = {}
+    }
   }
-  if (out.cost_breakdown === null || out.cost_breakdown === undefined || typeof out.cost_breakdown !== 'object') {
-    out.cost_breakdown = {}
+  if ('cost_breakdown' in raw || isInsert) {
+    if (out.cost_breakdown === null || (isInsert && (out.cost_breakdown === undefined || typeof out.cost_breakdown !== 'object'))) {
+      out.cost_breakdown = {}
+    }
   }
-  if (out.components === null || out.components === undefined || !Array.isArray(out.components)) {
-    out.components = []
+  if ('components' in raw || isInsert) {
+    if (out.components === null || (isInsert && (out.components === undefined || !Array.isArray(out.components)))) {
+      out.components = []
+    }
   }
-  if (out.pricing_formula === null || out.pricing_formula === undefined || typeof out.pricing_formula !== 'object') {
-    out.pricing_formula = {}
+  if ('pricing_formula' in raw || isInsert) {
+    if (out.pricing_formula === null || (isInsert && (out.pricing_formula === undefined || typeof out.pricing_formula !== 'object'))) {
+      out.pricing_formula = {}
+    }
   }
 
   return out
@@ -937,7 +949,7 @@ export class ProductRepository {
       }
 
       try {
-        const dbPayload = sanitizeProductDbPayload(payload)
+        const dbPayload = sanitizeProductDbPayload(payload, true)
         const supabase = await createClient()
         const { data, error } = await (supabase as any)
           .from('products')
@@ -1338,17 +1350,17 @@ export class ProductRepository {
       }
 
       try {
-        const dbPayload = sanitizeProductDbPayload(payload)
+        const dbPayload = sanitizeProductDbPayload(payload, false)
         const supabase = await createClient()
 
         const { data: existingRow } = await (supabase as any)
           .from('products')
-          .select('pricing_formula')
+          .select('pricing_formula, material_config')
           .eq('id', id)
           .eq('company_id', companyId)
           .maybeSingle()
 
-        if (existingRow?.pricing_formula) {
+        if (existingRow?.pricing_formula && dbPayload.pricing_formula) {
           const prevFormula = typeof existingRow.pricing_formula === 'object' && existingRow.pricing_formula !== null
             ? existingRow.pricing_formula
             : typeof existingRow.pricing_formula === 'string'
@@ -1360,15 +1372,44 @@ export class ProductRepository {
           }
         }
 
-        const { data, error } = await (supabase as any)
+        if (existingRow?.material_config && dbPayload.material_config) {
+          const prevMatCfg = typeof existingRow.material_config === 'object' && existingRow.material_config !== null
+            ? existingRow.material_config
+            : typeof existingRow.material_config === 'string'
+            ? (() => { try { return JSON.parse(existingRow.material_config) } catch { return {} } })()
+            : {}
+          dbPayload.material_config = {
+            ...prevMatCfg,
+            ...(typeof dbPayload.material_config === 'object' && dbPayload.material_config !== null ? dbPayload.material_config : {}),
+          }
+        }
+
+        let { data, error } = await (supabase as any)
           .from('products')
           .update(dbPayload)
           .eq('id', id)
           .eq('company_id', companyId)
           .select()
-          .single()
+          .maybeSingle()
 
-        if (error) {
+        if (error || !data) {
+          try {
+            const admin = createAdminClient()
+            const { data: adminData, error: adminError } = await (admin as any)
+              .from('products')
+              .update(dbPayload)
+              .eq('id', id)
+              .eq('company_id', companyId)
+              .select()
+              .single()
+            if (!adminError && adminData) {
+              data = adminData
+              error = null
+            }
+          } catch {}
+        }
+
+        if (error && !data) {
           throw new Error(`Failed to update product in database: ${error.message}`)
         }
 

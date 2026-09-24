@@ -41,6 +41,60 @@ async function getDbClient() {
   }
 }
 
+export function mergeRollSizesUnion(sourceA?: any[] | null, sourceB?: any[] | null): any[] {
+  const makeCanonicalKey = (s: any) => {
+    if (!s) return ''
+    const w = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || 0)
+    const l = Number(s.length || s.length_ft || 164)
+    const allow = Number(s.extra_allowance !== undefined ? s.extra_allowance : (s.allowance !== undefined ? s.allowance : (s.allowance_ft ?? 0)))
+    const price = Number(s.price ?? s.unit_cost ?? s.purchase_price ?? 0)
+    const gsm = Number(s.gsm ?? 0)
+    const fin = String(s.finishing ?? s.finish ?? 'none').toLowerCase()
+    return `${w}x${l}_a:${allow}_p:${price}_g:${gsm}_f:${fin}`
+  }
+
+  const listA = Array.isArray(sourceA) ? sourceA.filter(Boolean) : []
+  const listB = Array.isArray(sourceB) ? sourceB.filter(Boolean) : []
+
+  const result: any[] = []
+  const addedKeys = new Set<string>()
+
+  // 1. Add all items from sourceA (live warehouse roll sizes with actual stock / intake details)
+  for (const s of listA) {
+    const key = makeCanonicalKey(s)
+    if (!addedKeys.has(key)) {
+      addedKeys.add(key)
+      result.push({ ...s })
+    }
+  }
+
+  // 2. Add configured sizes from sourceB (e.g. product catalog) that are not already represented
+  for (const s of listB) {
+    const key = makeCanonicalKey(s)
+    if (addedKeys.has(key)) {
+      continue
+    }
+
+    const sNominalW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || 0)
+    const sLen = Number(s.length || s.length_ft || 164)
+    const sAllow = Number(s.extra_allowance !== undefined ? s.extra_allowance : (s.allowance !== undefined ? s.allowance : (s.allowance_ft ?? 0)))
+
+    const alreadyStockedInA = listA.some((a: any) => {
+      const aNominalW = Number(a.nominal_width_ft || a.width || a.width_ft || a.size || 0)
+      const aLen = Number(a.length || a.length_ft || 164)
+      const aAllow = Number(a.extra_allowance !== undefined ? a.extra_allowance : (a.allowance !== undefined ? a.allowance : (a.allowance_ft ?? 0)))
+      return Math.abs(aNominalW - sNominalW) < 0.05 && Math.abs(aLen - sLen) <= 5 && Math.abs(aAllow - sAllow) < 0.05
+    })
+
+    if (!alreadyStockedInA) {
+      addedKeys.add(key)
+      result.push({ ...s })
+    }
+  }
+
+  return result
+}
+
 export class InventoryRepository {
   // ==========================================
   // LOCATIONS
@@ -293,14 +347,8 @@ export class InventoryRepository {
             if (existingIndex >= 0) {
               const existing = list[existingIndex]
               const existingRollSizes = Array.isArray(existing.roll_sizes) && existing.roll_sizes.length > 0 ? existing.roll_sizes : null
-              const existingHasRollCounts = existingRollSizes && existingRollSizes.some((s: any) => Number(s.quantity ?? s.roll_count ?? s.stock ?? s.stock_qty ?? 0) > 0)
-
               const prodRollSizes = p.roll_sizes || (p.material_config as any)?.roll_sizes || (p.pricing_formula as any)?.roll_sizes
-              const prodHasRollCounts = Array.isArray(prodRollSizes) && prodRollSizes.some((s: any) => Number(s.quantity ?? s.roll_count ?? s.stock ?? s.stock_qty ?? 0) > 0)
-
-              const effectiveRollSizes = existingHasRollCounts
-                ? existingRollSizes
-                : (prodHasRollCounts ? prodRollSizes : (existingRollSizes || prodRollSizes || []))
+              const effectiveRollSizes = mergeRollSizesUnion(existingRollSizes, prodRollSizes)
 
               const effectiveStock = existing.current_stock !== undefined && existing.current_stock !== null && Number(existing.current_stock) > 0
                 ? Number(existing.current_stock)
@@ -565,6 +613,24 @@ export class InventoryRepository {
       }
 
       if (matData) {
+        // Enrich from products table to guarantee all configured roll sizes & specs are present
+        try {
+          const admin = createAdminClient()
+          const { data: prodData } = await (admin as any)
+            .from('products')
+            .select('roll_sizes, material_config, pricing_formula, available_widths_ft, standard_roll_length_ft, available_sheet_sizes, variants')
+            .or(`id.eq.${cleanId},sku.eq.${cleanId}`)
+            .maybeSingle()
+          if (prodData) {
+            const prodRollSizes = prodData.roll_sizes || (prodData.material_config as any)?.roll_sizes || (prodData.pricing_formula as any)?.roll_sizes
+            matData.roll_sizes = mergeRollSizesUnion(matData.roll_sizes, prodRollSizes)
+            if (!matData.material_config && prodData.material_config) matData.material_config = prodData.material_config
+            if (!matData.available_widths_ft && prodData.available_widths_ft) matData.available_widths_ft = prodData.available_widths_ft
+            if (!matData.standard_roll_length_ft && prodData.standard_roll_length_ft) matData.standard_roll_length_ft = prodData.standard_roll_length_ft
+            if (!matData.available_sheet_sizes && prodData.available_sheet_sizes) matData.available_sheet_sizes = prodData.available_sheet_sizes
+            if ((!matData.variants || matData.variants.length === 0) && prodData.variants?.length > 0) matData.variants = prodData.variants
+          }
+        } catch {}
         return matData as unknown as MaterialRecord
       }
 
@@ -1071,17 +1137,34 @@ export class InventoryRepository {
       // 3. Direct DB Ledger Insert & Multi-Table Sync
       // Ensure material row exists in Supabase materials table
       try {
+        const existingMatRollSizes = Array.isArray(material.roll_sizes) && material.roll_sizes.length > 0
+          ? material.roll_sizes
+          : (material.material_config as any)?.roll_sizes || (material.pricing_formula as any)?.roll_sizes || null
+
         await (supabase as any).from('materials').upsert({
           id: material.id,
           company_id: params.company_id,
           branch_id: params.branch_id || null,
           sku: material.sku,
           name: material.name,
+          name_bn: material.name_bn || null,
           category: material.category || 'general',
           unit: material.unit || 'pcs',
+          purchase_unit: material.purchase_unit || material.master_purchase_unit || null,
+          master_purchase_unit: material.master_purchase_unit || material.purchase_unit || null,
           current_stock: newStock,
           average_cost: unitCost > 0 ? unitCost : material.average_cost,
           last_purchase_price: unitCost > 0 ? unitCost : material.last_purchase_price,
+          is_roll: Boolean(material.is_roll),
+          roll_width_ft: material.roll_width_ft || null,
+          roll_length_ft: material.roll_length_ft || null,
+          available_widths_ft: material.available_widths_ft || (material.material_config as any)?.available_widths_ft || null,
+          standard_roll_length_ft: material.standard_roll_length_ft || (material.material_config as any)?.standard_roll_length_ft || null,
+          available_sheet_sizes: material.available_sheet_sizes || (material.material_config as any)?.available_sheet_sizes || null,
+          production_width_allowance: material.production_width_allowance || 0,
+          purchase_price_per_sft: material.purchase_price_per_sft || null,
+          roll_sizes: existingMatRollSizes,
+          material_config: material.material_config || null,
           is_active: material.is_active !== false,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'id' })

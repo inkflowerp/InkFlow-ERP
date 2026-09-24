@@ -20,7 +20,7 @@ import type {
   IssueMasterRollParams,
   IssueMasterRollResult,
 } from '../types/inventory.types.ts'
-import { InventoryRepository } from '../lib/repositories/inventory.repository.ts'
+import { InventoryRepository, mergeRollSizesUnion } from '../lib/repositories/inventory.repository.ts'
 import { AuditRepository } from '../lib/repositories/audit.repository.ts'
 import { ProductRepository } from '../lib/repositories/product.repository.ts'
 import type {
@@ -422,11 +422,43 @@ export class InventoryService {
     if (isRoll) {
       try {
         const freshMaterial = (await InventoryRepository.getMaterialById(material.id, params.company_id)) || material
-        const existingRollSizes: any[] = Array.isArray(freshMaterial.roll_sizes) && freshMaterial.roll_sizes.length > 0
-          ? [...freshMaterial.roll_sizes]
-          : Array.isArray((freshMaterial.material_config as any)?.roll_sizes) && (freshMaterial.material_config as any).roll_sizes.length > 0
-          ? [...(freshMaterial.material_config as any).roll_sizes]
+        const existingRollSizes: any[] = mergeRollSizesUnion(
+          Array.isArray(freshMaterial.roll_sizes) ? freshMaterial.roll_sizes : (freshMaterial.material_config as any)?.roll_sizes,
+          Array.isArray(material.roll_sizes) ? material.roll_sizes : (material.material_config as any)?.roll_sizes
+        )
+
+        const availWidths: number[] = Array.isArray(freshMaterial.available_widths_ft) && freshMaterial.available_widths_ft.length > 0
+          ? freshMaterial.available_widths_ft
+          : Array.isArray(material.available_widths_ft) && material.available_widths_ft.length > 0
+          ? material.available_widths_ft
           : []
+        
+        for (const w of availWidths) {
+          const numW = Number(w)
+          if (numW > 0) {
+            const hasW = existingRollSizes.some((s: any) => {
+              const szW = Number(s.nominal_width_ft || s.width || s.width_ft || s.size || 0)
+              return Math.abs(szW - numW) < 0.05
+            })
+            if (!hasW) {
+              const stdLen = Number(freshMaterial.standard_roll_length_ft || material.standard_roll_length_ft || 164)
+              const allow = Number(freshMaterial.production_width_allowance || material.production_width_allowance || 0)
+              existingRollSizes.push({
+                width: numW,
+                nominal_width_ft: numW,
+                width_ft: numW + allow,
+                length: stdLen,
+                length_ft: stdLen,
+                allowance_ft: allow,
+                extra_allowance: allow,
+                quantity: 0,
+                roll_count: 0,
+                stock: 0,
+                stock_qty: 0,
+              })
+            }
+          }
+        }
 
         let matched = false
         const updatedSizes = existingRollSizes.map((sz: any) => {
@@ -567,9 +599,18 @@ export class InventoryService {
           PrintERPDataStore.updateItem<any>(
             STORAGE_KEYS.PRODUCTS,
             (p: any) => p && (p.id === material.id || (!!material.sku && p.sku === material.sku)),
-            {
+            (p: any) => ({
+              ...p,
               roll_sizes: updatedSizes,
-            },
+              material_config: {
+                ...(p?.material_config || {}),
+                roll_sizes: updatedSizes,
+              },
+              pricing_formula: {
+                ...(p?.pricing_formula || {}),
+                roll_sizes: updatedSizes,
+              },
+            }),
             params.company_id
           )
         } catch {}
