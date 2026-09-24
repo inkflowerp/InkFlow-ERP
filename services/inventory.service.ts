@@ -260,10 +260,9 @@ export class InventoryService {
 
     // Check if this matches a specific configured roll size
     let widthFt = Number(params.width_ft || nominalWidthFt)
-    const isFractionalInput = (widthFt > 0 && Math.floor(widthFt) !== widthFt) || (nominalWidthFt > 0 && Math.floor(nominalWidthFt) !== nominalWidthFt)
     let matchedConfigAllowance = params.allowance_ft !== undefined
       ? Number(params.allowance_ft)
-      : (isZeroAllowanceExplicit || isFractionalInput ? 0 : globalAllowance)
+      : 0
     let hasExplicitConfig = false
     let matchingConfigSize: any = null
 
@@ -291,10 +290,9 @@ export class InventoryService {
           ? Number(matchingConfigSize.allowance_ft)
           : undefined
 
-        const isFractionalNominal = Math.floor(nominalWidthFt) !== nominalWidthFt
         matchedConfigAllowance = params.allowance_ft !== undefined
           ? Number(params.allowance_ft)
-          : (isZeroAllowanceExplicit ? 0 : (szAllowance !== undefined ? szAllowance : (isFractionalNominal ? 0 : globalAllowance)))
+          : (isZeroAllowanceExplicit ? 0 : (szAllowance !== undefined ? szAllowance : 0))
         nominalWidthFt = Number(matchingConfigSize.nominal_width_ft || matchingConfigSize.width || matchingConfigSize.size || nominalWidthFt)
         
         if (params.width_ft && Number(params.width_ft) > 0) {
@@ -364,14 +362,13 @@ export class InventoryService {
               : params.unit_cost))
       : (material.average_cost ?? material.last_purchase_price ?? 0)
 
-    const isWholeWidth = Math.floor(widthFt) === widthFt
     const incomingAllowance = params.allowance_ft !== undefined
       ? Number(params.allowance_ft)
       : (widthFt > nominalWidthFt)
       ? Math.round((widthFt - nominalWidthFt) * 100) / 100
       : (matchingConfigSize
-          ? Number(matchingConfigSize.allowance_ft ?? matchingConfigSize.extra_allowance ?? matchingConfigSize.allowance ?? (isWholeWidth ? globalAllowance : 0))
-          : ((isWholeWidth && !isZeroAllowanceExplicit) ? globalAllowance : 0))
+          ? Number(matchingConfigSize.allowance_ft ?? matchingConfigSize.extra_allowance ?? matchingConfigSize.allowance ?? 0)
+          : 0)
     const incomingGsm = Number((params as any)?.gsm ?? (material as any)?.gsm ?? (material as any)?.weight_gsm ?? (material as any)?.thickness_mm ?? 0)
     const incomingFinishing = String((params as any)?.finishing ?? (material as any)?.default_finishing ?? (material as any)?.finish ?? 'none')
 
@@ -449,16 +446,15 @@ export class InventoryService {
             })
             if (!hasW) {
               const stdLen = Number(freshMaterial.standard_roll_length_ft || material.standard_roll_length_ft || 164)
-              const isWhole = Math.floor(numW) === numW
-              const allow = isWhole ? Number(freshMaterial.production_width_allowance || material.production_width_allowance || 0) : 0
+              const allow = 0
               existingRollSizes.push({
                 width: numW,
                 nominal_width_ft: numW,
-                width_ft: (isWhole && allow > 0) ? Math.round((numW + allow) * 100) / 100 : numW,
+                width_ft: numW,
                 length: stdLen,
                 length_ft: stdLen,
-                allowance_ft: allow,
-                extra_allowance: allow,
+                allowance_ft: 0,
+                extra_allowance: 0,
                 quantity: 0,
                 roll_count: 0,
                 stock: 0,

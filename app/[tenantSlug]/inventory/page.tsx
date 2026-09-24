@@ -523,7 +523,7 @@ function UnifiedInventoryContent() {
             name: mat.name,
             width_ft: item.width_ft,
             length_ft: item.length_ft,
-            allowance_ft: item.allowance_ft !== undefined ? item.allowance_ft : (isWholeW ? globalAllowance : 0),
+            allowance_ft: item.allowance_ft !== undefined ? item.allowance_ft : 0,
             purchase_price: item.purchase_price ?? baseCost,
             gsm: item.gsm ?? Number(mat.gsm || 0),
             finishing: item.finishing ?? String(mat.default_finishing || 'none'),
@@ -654,7 +654,7 @@ function UnifiedInventoryContent() {
           name: mat.name,
           width_ft: defaultWidth,
           length_ft: defaultLength,
-          allowance_ft: isWholeDefaultW ? globalAllowance : 0,
+          allowance_ft: 0,
           purchase_price: baseCost,
           gsm: Number(mat.gsm || 0),
           finishing: String(mat.default_finishing || 'none'),
@@ -881,7 +881,7 @@ function UnifiedInventoryContent() {
               ? (r as any).extra_allowance
               : (r as any).allowance !== undefined
               ? (r as any).allowance
-              : (isWholeW ? allowance : 0)
+              : 0
           )
           const pPrice = Number(r.unit_cost ?? mat.average_cost ?? mat.last_purchase_price ?? mat.cost_per_unit ?? 0)
           const gsm = Number((r as any).gsm ?? mat.gsm ?? (mat as any)?.weight_gsm ?? 0)
@@ -963,8 +963,7 @@ function UnifiedInventoryContent() {
           for (const item of breakdown.roll_items) {
             const count = item.roll_count || (item.total_sft > 0 && item.width_ft * item.length_ft > 0 ? Math.round(item.total_sft / (item.width_ft * item.length_ft)) : 0)
             const area = item.total_sft || (count * item.width_ft * item.length_ft)
-            const isWholeW = Math.floor(item.width_ft) === item.width_ft
-            const allow = item.allowance_ft !== undefined ? item.allowance_ft : (isWholeW ? allowance : 0)
+            const allow = item.allowance_ft !== undefined ? item.allowance_ft : 0
             const price = item.purchase_price ?? Number(mat.average_cost || mat.last_purchase_price || 0)
             const gsm = item.gsm ?? Number(mat.gsm || (mat as any)?.weight_gsm || 0)
             const fin = item.finishing ?? String(mat.default_finishing || (mat as any)?.finish || 'none')

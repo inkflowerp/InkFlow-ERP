@@ -701,7 +701,7 @@ export function MaterialConfigModal({
                 ? Number(r.extra_allowance)
                 : r.allowance_ft !== undefined
                 ? Number(r.allowance_ft)
-                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+                : 0,
               length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
             }
           })
@@ -717,7 +717,7 @@ export function MaterialConfigModal({
                 ? Number(r.extra_allowance)
                 : r.allowance_ft !== undefined
                 ? Number(r.allowance_ft)
-                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+                : 0,
               length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
             }
           })
@@ -733,7 +733,7 @@ export function MaterialConfigModal({
                 ? Number(r.extra_allowance)
                 : r.allowance_ft !== undefined
                 ? Number(r.allowance_ft)
-                : (isWhole && rawAllowance !== undefined ? Number(rawAllowance) : 0),
+                : 0,
               length: r.length !== undefined ? Number(r.length) : Number(stdLen) || 164,
             }
           })
@@ -751,7 +751,7 @@ export function MaterialConfigModal({
           .filter((w: number) => !isNaN(w) && w > 0)
           .map((w: number) => ({
             width: w,
-            extra_allowance: (Math.floor(w) === w) ? parsedRawAllowance : 0,
+            extra_allowance: 0,
             length: Number(stdLen) || 164,
           }))
       }
@@ -1208,8 +1208,7 @@ export function MaterialConfigModal({
         : (activeRoll?.width || 10)
 
       const parsedAllowance = typeof extraWidthAllowance === 'number' ? extraWidthAllowance : (parseFloat(extraWidthAllowance) || 0)
-      const isWholeW = Math.floor(currentW) === currentW
-      const defaultAllowance = isWholeW ? 0.25 : 0
+      const defaultAllowance = 0
       const allowance = isNaN(parsedAllowance) || parsedAllowance < 0 ? (activeRoll?.extra_allowance ?? defaultAllowance) : parsedAllowance
 
       const len = currentLen
