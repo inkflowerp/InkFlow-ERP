@@ -30,8 +30,14 @@ export function getTenantBaseUrl(slug: string): string {
     return `http://${cleanSlug}.localhost${port}`
   }
 
-  // Handle remote / production subdomain (e.g. vision.inkflow.com.bd or vision.inkflow-erp.vercel.app)
-  const isProd = process.env.NODE_ENV === 'production' || rootDomain.includes('vercel.app') || rootDomain.includes('.')
+  // On Vercel domains (*.vercel.app), wildcard subdomains do not exist.
+  // Return path-based base URL.
+  if (rootDomain.endsWith('.vercel.app')) {
+    return `https://${rootDomain}/${cleanSlug}`
+  }
+
+  // Handle remote / production subdomain (e.g. vision.inkflow.com.bd)
+  const isProd = process.env.NODE_ENV === 'production' || rootDomain.includes('.')
   const protocol = isProd ? 'https' : 'http'
   return `${protocol}://${cleanSlug}.${rootDomain}`
 }
@@ -43,8 +49,17 @@ export function getTenantBaseUrl(slug: string): string {
  * getTenantLink('vision', 'dashboard') -> https://vision.inkflow.com.bd/dashboard
  */
 export function getTenantLink(slug: string, path: string = ''): string {
-  const baseUrl = getTenantBaseUrl(slug)
+  const cleanSlug = (slug || '').toLowerCase().trim()
   const cleanPath = path.startsWith('/') ? path : `/${path}`
+  const rootDomain = getRootDomain()
+
+  // On Vercel domains (*.vercel.app), wildcard subdomains do not exist.
+  // Generate safe path-based URL: https://project.vercel.app/slug/path
+  if (rootDomain.endsWith('.vercel.app')) {
+    return cleanSlug ? `https://${rootDomain}/${cleanSlug}${cleanPath}` : `https://${rootDomain}${cleanPath}`
+  }
+
+  const baseUrl = getTenantBaseUrl(slug)
   return `${baseUrl}${cleanPath}`
 }
 

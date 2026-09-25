@@ -1055,6 +1055,14 @@ export function ServiceConfigModal({
   additionalMasterOptions = [],
   installationMasterOptions = [],
 }: ServiceConfigModalProps) {
+  const safeCategories = Array.isArray(categories) ? categories : []
+  const safeAvailableMaterials = Array.isArray(availableMaterials) ? availableMaterials : []
+  const safeMachineries = Array.isArray(machineries) ? machineries : []
+  const safePrintingMethods = Array.isArray(printingMethods) ? printingMethods : []
+  const safeFinishingMasterOptions = Array.isArray(finishingMasterOptions) ? finishingMasterOptions : []
+  const safeAdditionalMasterOptions = Array.isArray(additionalMasterOptions) ? additionalMasterOptions : []
+  const safeInstallationMasterOptions = Array.isArray(installationMasterOptions) ? installationMasterOptions : []
+
   // 5 Responsive Tabs (Dimensions Tab Removed)
   const [activeTab, setActiveTab] = useState<'basic' | 'materials' | 'finishing' | 'additionals' | 'pricing'>('basic')
 
@@ -3987,7 +3995,7 @@ export function ServiceConfigModal({
                         className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 font-medium"
                       >
                         <option value="">-- Auto-Match Best Available Machine --</option>
-                        {machineries.map((m) => (
+                        {safeMachineries.map((m) => (
                           <option key={m.id} value={m.id}>
                             {m.name} ({m.code || 'NO-CODE'}) — {m.category} {m.max_print_width_inches ? `[Max: ${m.max_print_width_inches}"]` : ''} • Rate: ৳{m.hourly_rate_bdt || 0}/hr • Speed: {m.speed_sqft_per_hour || m.speed_sheets_per_hour || 'N/A'} {m.speed_sheets_per_hour ? 'sheets/hr' : 'sqft/hr'}
                           </option>
@@ -4511,7 +4519,7 @@ export function ServiceConfigModal({
                         className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2 font-medium"
                       >
                         <option value="">-- Auto-Match Workshop Equipment --</option>
-                        {machineries.map((m) => (
+                        {safeMachineries.map((m) => (
                           <option key={m.id} value={m.id}>
                             {m.name} ({m.code || 'NO-CODE'}) — {m.category} • Rate: ৳{m.hourly_rate_bdt || 0}/hr
                           </option>
@@ -5995,7 +6003,7 @@ export function ServiceConfigModal({
                           className="w-full h-8 text-xs rounded border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                         >
                           <option value="">-- Optional: Link Raw Material --</option>
-                          {availableMaterials.map((m) => (
+                          {safeAvailableMaterials.map((m) => (
                             <option key={m.id} value={m.id}>
                               {m.name} ({m.sku})
                             </option>

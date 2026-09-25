@@ -7,9 +7,17 @@ import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function updateSession(request: NextRequest) {
   try {
+    // 0. Next.js Server Actions: NEVER intercept, redirect or block Server Actions!
+    // Next.js App Router Server Actions authenticate internally via getVerifiedTenant/getOptionalTenant.
+    // Returning a redirect on Server Action breaks client with "An unexpected response was received from the server".
+    if (request.headers.has('next-action')) {
+      return NextResponse.next({ request })
+    }
+
     const rawHost = request.headers.get('host') || request.nextUrl.host
     const hostResolution = resolveHostname(rawHost)
     const { hostType, tenantSlug, rootDomain, isDevelopment } = hostResolution
+    const hostWithoutPort = (rawHost || '').toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0].split(':')[0]
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
@@ -353,6 +361,20 @@ export async function updateSession(request: NextRequest) {
         firstSegment.startsWith('_')
 
       if (!isKnownRootSegment && pathParts.length > 0 && isValidSlugFormat(firstSegment)) {
+        // If we are on vercel.app, localhost, or subdomain routing is not explicitly enabled,
+        // NEVER redirect away! Allow App Router `app/[tenantSlug]/...` to handle the request directly.
+        if (
+          hostWithoutPort.endsWith('.vercel.app') ||
+          isDevelopment ||
+          hostWithoutPort.includes('localhost') ||
+          hostWithoutPort.includes('127.0.0.1') ||
+          process.env.ENABLE_SUBDOMAIN_ROUTING !== 'true'
+        ) {
+          const res = NextResponse.next({ request })
+          responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
+          return res
+        }
+
         const potentialSlug = firstSegment.toLowerCase().trim()
         const subPath = pathParts.slice(1).join('/')
         const tenantUrl = getTenantLink(potentialSlug, subPath ? `/${subPath}${search}` : `/dashboard${search}`)

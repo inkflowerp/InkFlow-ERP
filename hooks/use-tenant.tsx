@@ -285,8 +285,9 @@ export function TenantProvider({
       setSettings(persistedSettings)
     }
 
-    const platformCompanies =
-      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES) || []
+    const rawPlatformCompanies =
+      PrintERPDataStore.get<PlatformTenantCompany[]>(STORAGE_KEYS.PLATFORM_COMPANIES)
+    const platformCompanies = Array.isArray(rawPlatformCompanies) ? rawPlatformCompanies : []
     const converted = platformCompanies.map(platformCompanyToRow)
 
     if (resolved && !converted.some((c) => c.slug === resolved.slug)) {

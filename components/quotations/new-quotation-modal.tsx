@@ -82,11 +82,12 @@ interface CatalogComboboxProps {
 }
 
 function CatalogItemCombobox({
-  products,
+  products = [],
   selectedProductId,
   onSelectProduct,
   onCustomSelect,
 }: CatalogComboboxProps) {
+  const safeProducts = Array.isArray(products) ? products : []
   const [isOpen, setIsOpen] = useState(false)
   const [keyword, setKeyword] = useState('')
   const [highlightedIndex, setHighlightedIndex] = useState(0)
@@ -94,8 +95,8 @@ function CatalogItemCombobox({
   const itemRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   const selectedProduct = useMemo(() => {
-    return products.find((p) => p.id === selectedProductId)
-  }, [products, selectedProductId])
+    return safeProducts.find((p) => p.id === selectedProductId)
+  }, [safeProducts, selectedProductId])
 
   // Close when clicked outside
   useEffect(() => {
@@ -110,8 +111,8 @@ function CatalogItemCombobox({
 
   const filteredProducts = useMemo(() => {
     const term = keyword.toLowerCase().trim()
-    if (!term) return products
-    return products.filter((p) => {
+    if (!term) return safeProducts
+    return safeProducts.filter((p) => {
       return (
         p.name.toLowerCase().includes(term) ||
         (p.sku && p.sku.toLowerCase().includes(term)) ||
@@ -733,11 +734,15 @@ export function NewQuotationModal({
   // Load products catalog on modal open
   useEffect(() => {
     if (open) {
-      getQuotationProductsAction(effectiveCompanyId).then((res) => {
-        if (res.success && res.data) {
-          setProductsCatalog(res.data)
-        }
-      })
+      getQuotationProductsAction(effectiveCompanyId)
+        .then((res) => {
+          if (res && res.success && Array.isArray(res.data)) {
+            setProductsCatalog(res.data)
+          }
+        })
+        .catch((err) => {
+          console.warn('[NewQuotationModal] getQuotationProductsAction error:', err?.message)
+        })
     }
   }, [open, effectiveCompanyId])
 
@@ -2201,7 +2206,7 @@ export function NewQuotationModal({
                     </div>
 
                     {/* Standard Dimension Presets */}
-                    {isService && item.available_dimension_presets && item.available_dimension_presets.length > 0 && (
+                    {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                         <span className="text-[11px] font-bold text-slate-400 mr-1">Standard Sizes:</span>
                         {item.available_dimension_presets.map((preset, pIdx) => (
@@ -2287,7 +2292,7 @@ export function NewQuotationModal({
                             onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
                             className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                           >
-                            {item.available_finishing_options && item.available_finishing_options.length > 0 ? (
+                            {Array.isArray(item.available_finishing_options) && item.available_finishing_options.length > 0 ? (
                               <>
                                 <option value="None">None (+৳0)</option>
                                 {item.available_finishing_options.map((f) => (
@@ -2296,12 +2301,14 @@ export function NewQuotationModal({
                                   </option>
                                 ))}
                               </>
-                            ) : (
+                            ) : Array.isArray(STANDARD_FINISHING_OPTIONS) ? (
                               STANDARD_FINISHING_OPTIONS.map((f) => (
                                 <option key={f.id} value={f.name}>
                                   {f.name} {f.rate > 0 ? `(+৳${f.rate})` : '(+৳0)'}
                                 </option>
                               ))
+                            ) : (
+                              <option value="None">None</option>
                             )}
                           </select>
                         </div>
@@ -2320,7 +2327,7 @@ export function NewQuotationModal({
                             onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
                             className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                           >
-                            {STANDARD_ADD_ON_OPTIONS.map((a) => (
+                            {Array.isArray(STANDARD_ADD_ON_OPTIONS) && STANDARD_ADD_ON_OPTIONS.map((a) => (
                               <option key={a.id} value={a.name}>
                                 {a.name} {a.rate > 0 ? `(+৳${a.rate})` : '(+৳0)'}
                               </option>

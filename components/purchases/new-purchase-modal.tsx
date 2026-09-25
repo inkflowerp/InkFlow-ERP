@@ -223,7 +223,7 @@ export function NewPurchaseModal({
       // Fetch fresh active materials from server in background
       getMaterialsAction(company?.id)
         .then((res) => {
-          if (res.success && res.data && res.data.length > 0) {
+          if (res.success && Array.isArray(res.data) && res.data.length > 0) {
             setMaterials(res.data)
           }
         })
@@ -232,7 +232,7 @@ export function NewPurchaseModal({
       // Fetch fresh active products from server in background
       getProductsAction(company?.id, false)
         .then((res) => {
-          if (res.success && res.data && res.data.length > 0) {
+          if (res.success && Array.isArray(res.data) && res.data.length > 0) {
             const valid = res.data.filter(
               (p) => p.is_active !== false && !isServiceProduct(p) && !isOutsourceProduct(p) && p.entity_type !== 'service' && p.product_type !== 'service'
             )
@@ -327,7 +327,8 @@ export function NewPurchaseModal({
     }
 
     // 1. Process Active Registered Materials
-    const activeMaterials = materials.filter((m) => m && m.is_active !== false)
+    const safeMaterials = Array.isArray(materials) ? materials : []
+    const activeMaterials = safeMaterials.filter((m) => m && m.is_active !== false)
 
     for (const mat of activeMaterials) {
       if (!mat.id) continue
@@ -454,9 +455,10 @@ export function NewPurchaseModal({
     }
 
     // 2. Process Material Purchase Configs (if any defined)
-    for (const cfg of purchaseConfigs) {
+    const safePurchaseConfigs = Array.isArray(purchaseConfigs) ? purchaseConfigs : []
+    for (const cfg of safePurchaseConfigs) {
       if (!cfg || !cfg.id) continue
-      const parentMat = materials.find((m) => m.id === cfg.material_id)
+      const parentMat = safeMaterials.find((m) => m.id === cfg.material_id)
       const sqft = Number(cfg.width_ft) * Number(cfg.length_ft)
       const cost = Number(cfg.purchase_price) || 0
       addOption({
@@ -479,7 +481,8 @@ export function NewPurchaseModal({
     }
 
     // 3. Process Active Products & Ready Merchandise (excluding already processed materials)
-    for (const prod of readyProducts) {
+    const safeReadyProducts = Array.isArray(readyProducts) ? readyProducts : []
+    for (const prod of safeReadyProducts) {
       if (!prod || !prod.id || seenMaterialIds.has(prod.id)) continue
 
       const isMat = Boolean(
@@ -1240,7 +1243,7 @@ export function NewPurchaseModal({
                       required
                     >
                       <option value="">-- Choose Registered Material Vendor --</option>
-                      {suppliers.map((s) => (
+                      {Array.isArray(suppliers) && suppliers.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.supplier_name} {s.category ? `[${s.category.replace('_', ' ')}]` : ''} — 📞 {s.mobile}
                         </option>
@@ -1383,7 +1386,7 @@ export function NewPurchaseModal({
                     className="w-full h-9 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-medium"
                     required
                   >
-                    {locations.length > 0 ? (
+                    {Array.isArray(locations) && locations.length > 0 ? (
                       locations.map((loc) => (
                         <option key={loc.id} value={loc.id}>
                           {loc.location_name} {loc.location_code ? `(${loc.location_code})` : ''}
@@ -1577,7 +1580,7 @@ export function NewPurchaseModal({
                         required
                       >
                         <option value="">-- Choose Item from Catalog --</option>
-                        {groupedCatalog.roll_media && groupedCatalog.roll_media.length > 0 && (
+                        {Array.isArray(groupedCatalog?.roll_media) && groupedCatalog.roll_media.length > 0 && (
                           <optgroup label="🌀 Large Format Roll Media Substrates">
                             {groupedCatalog.roll_media.map((opt) => (
                               <option key={opt.key} value={opt.key}>
@@ -1586,7 +1589,7 @@ export function NewPurchaseModal({
                             ))}
                           </optgroup>
                         )}
-                        {groupedCatalog.rigid_sheet && groupedCatalog.rigid_sheet.length > 0 && (
+                        {Array.isArray(groupedCatalog?.rigid_sheet) && groupedCatalog.rigid_sheet.length > 0 && (
                           <optgroup label="📐 Rigid Sheet Media & Boards">
                             {groupedCatalog.rigid_sheet.map((opt) => (
                               <option key={opt.key} value={opt.key}>
@@ -1595,7 +1598,7 @@ export function NewPurchaseModal({
                             ))}
                           </optgroup>
                         )}
-                        {groupedCatalog.ink_chemistry && groupedCatalog.ink_chemistry.length > 0 && (
+                        {Array.isArray(groupedCatalog?.ink_chemistry) && groupedCatalog.ink_chemistry.length > 0 && (
                           <optgroup label="🧪 Inks & Chemical Consumables">
                             {groupedCatalog.ink_chemistry.map((opt) => (
                               <option key={opt.key} value={opt.key}>
@@ -1604,7 +1607,7 @@ export function NewPurchaseModal({
                             ))}
                           </optgroup>
                         )}
-                        {groupedCatalog.raw_material && groupedCatalog.raw_material.length > 0 && (
+                        {Array.isArray(groupedCatalog?.raw_material) && groupedCatalog.raw_material.length > 0 && (
                           <optgroup label="🧵 Raw Materials & Finishing Hardware">
                             {groupedCatalog.raw_material.map((opt) => (
                               <option key={opt.key} value={opt.key}>
@@ -1613,7 +1616,7 @@ export function NewPurchaseModal({
                             ))}
                           </optgroup>
                         )}
-                        {groupedCatalog.ready_product && groupedCatalog.ready_product.length > 0 && (
+                        {Array.isArray(groupedCatalog?.ready_product) && groupedCatalog.ready_product.length > 0 && (
                           <optgroup label="✨ Ready Display Products & Merchandise">
                             {groupedCatalog.ready_product.map((opt) => (
                               <option key={opt.key} value={opt.key}>

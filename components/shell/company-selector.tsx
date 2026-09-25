@@ -70,7 +70,7 @@ export function CompanySelector() {
           </div>
 
           <div className="space-y-1 my-1">
-            {availableCompanies.map((c) => {
+            {Array.isArray(availableCompanies) && availableCompanies.map((c) => {
               const isSelected = c.slug === company?.slug
               const name = tBilingual(c.name, c.name_bn || c.name)
 

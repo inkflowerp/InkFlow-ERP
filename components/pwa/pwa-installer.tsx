@@ -43,9 +43,6 @@ export function PWAInstaller() {
           keys.forEach((key) => caches.delete(key))
         }).catch(() => {})
       }
-      navigator.serviceWorker
-        .register('/sw.js')
-        .catch(() => {})
     }
 
     return () => {

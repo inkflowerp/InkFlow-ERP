@@ -424,12 +424,12 @@ export function MobileNav() {
             </div>
 
             {/* Navigation Sections */}
-            {filteredNavSections.length === 0 ? (
+            {(!Array.isArray(filteredNavSections) || filteredNavSections.length === 0) ? (
               <div className="py-8 text-center text-xs text-slate-400 bangla-text">
                 {tBilingual(`No modules matching "${searchQuery}"`, `"${searchQuery}" এর জন্য কোনো মেনু পাওয়া যায়নি`)}
               </div>
             ) : (
-              filteredNavSections.map((section) => {
+              (Array.isArray(filteredNavSections) ? filteredNavSections : []).map((section) => {
                 const sectionTitle = tBilingual(section.title, section.titleBn)
                 const isExpanded = searchQuery ? true : (expandedGroups[section.id] ?? true)
 

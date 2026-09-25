@@ -1402,7 +1402,7 @@ export function WorkOrderModal({
                   </div>
 
                   {/* Dimension Presets for Services */}
-                  {isService && item.available_dimension_presets && item.available_dimension_presets.length > 0 && (
+                  {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
                       <span className="text-[11px] font-bold text-slate-400 mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
@@ -1484,17 +1484,19 @@ export function WorkOrderModal({
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
                           <option value="None">None</option>
-                          {item.available_finishing_options && item.available_finishing_options.length > 0
+                          {Array.isArray(item.available_finishing_options) && item.available_finishing_options.length > 0
                             ? item.available_finishing_options.map((f) => (
                                 <option key={f.id} value={f.name}>
                                   {f.name}
                                 </option>
                               ))
-                            : STANDARD_FINISHING_OPTIONS.map((f) => (
+                            : Array.isArray(STANDARD_FINISHING_OPTIONS)
+                            ? STANDARD_FINISHING_OPTIONS.map((f) => (
                                 <option key={f.id} value={f.name}>
                                   {f.name} ({f.name_bn})
                                 </option>
-                              ))}
+                              ))
+                            : null}
                         </select>
                       </div>
 
@@ -1506,7 +1508,7 @@ export function WorkOrderModal({
                           className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                         >
                           <option value="None">None</option>
-                          {STANDARD_ADD_ON_OPTIONS.map((a) => (
+                          {Array.isArray(STANDARD_ADD_ON_OPTIONS) && STANDARD_ADD_ON_OPTIONS.map((a) => (
                             <option key={a.id} value={a.name}>
                               {a.name} ({a.name_bn})
                             </option>

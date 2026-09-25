@@ -196,8 +196,8 @@ export function usePermissions() {
     [activeRole]
   )
 
-  const respList = (userCtx.responsibilities as string[] || [])
-  const userRoleSlugs = (currentUser?.roles || []).map((r: any) => r.slug || r.name)
+  const respList = (Array.isArray(userCtx.responsibilities) ? userCtx.responsibilities : []) as string[]
+  const userRoleSlugs = Array.isArray(currentUser?.roles) ? currentUser.roles.map((r: any) => r?.slug || r?.name || '') : []
 
   const isOperator =
     !userCtx.isOwner && (
