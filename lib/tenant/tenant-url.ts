@@ -7,37 +7,36 @@ import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolut
 
 /**
  * Returns the fully qualified origin for a given tenant subdomain.
+ * Format is strictly: [tenantSlug].app.TLD
  * Examples:
- * Production: https://vision.inkflow.com.bd
- * Development: http://vision.localhost:3000
+ * - https://rangao.inkflow-erp.vercel.app
+ * - https://rangao.inkflow.bd
+ * - https://vision-sign.inkflow.com
+ * - https://vision.inkflow.com.bd
+ * - http://vision.localhost:3000
  */
-export function getTenantBaseUrl(slug: string): string {
+export function getTenantBaseUrl(slug: string, customRootDomain?: string): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
-  const rawRootDomain = getRootDomain()
-  const rootDomain = rawRootDomain.replace(/^www\./i, '')
+  const rawRootDomain = customRootDomain || getRootDomain()
+  const rootDomain = rawRootDomain.replace(/^https?:\/\//i, '').split('/')[0].replace(/^www\./i, '')
 
   const isLocalhost =
     rootDomain.includes('localhost') ||
     rootDomain.includes('127.0.0.1')
 
   if (!cleanSlug) {
-    const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('vercel.app')) && !isLocalhost
+    const isProd = (process.env.NODE_ENV === 'production' || rootDomain.includes('.')) && !isLocalhost
     return `${isProd ? 'https' : 'http'}://${rootDomain}`
   }
 
-  // Handle localhost development
+  // Handle localhost development: http://${cleanSlug}.localhost:3000
   if (isLocalhost) {
     const port = rootDomain.includes(':') ? `:${rootDomain.split(':')[1]}` : ':3000'
     return `http://${cleanSlug}.localhost${port}`
   }
 
-  // On Vercel domains (*.vercel.app), wildcard subdomains do not exist.
-  // Return path-based base URL.
-  if (rootDomain.endsWith('.vercel.app')) {
-    return `https://${rootDomain}/${cleanSlug}`
-  }
-
-  // Handle remote / production subdomain (e.g. vision.inkflow.com.bd)
+  // Handle remote / production subdomain: https://${cleanSlug}.${rootDomain}
+  // All tenants MUST be: [tenantSlug].app.TLD
   const isProd = process.env.NODE_ENV === 'production' || rootDomain.includes('.')
   const protocol = isProd ? 'https' : 'http'
   return `${protocol}://${cleanSlug}.${rootDomain}`
@@ -46,10 +45,11 @@ export function getTenantBaseUrl(slug: string): string {
 /**
  * Generates a full tenant-scoped URL for a specific resource path.
  * Examples:
- * getTenantLink('vision', '/invoices/INV-001') -> https://vision.inkflow.com.bd/invoices/INV-001
- * getTenantLink('vision', 'dashboard') -> https://vision.inkflow.com.bd/dashboard
+ * getTenantLink('rangao', '/invoices/INV-001', 'inkflow-erp.vercel.app') -> https://rangao.inkflow-erp.vercel.app/invoices/INV-001
+ * getTenantLink('rangao', 'dashboard', 'inkflow.bd') -> https://rangao.inkflow.bd/dashboard
+ * getTenantLink('vision-sign', '/orders', 'inkflow.com') -> https://vision-sign.inkflow.com/orders
  */
-export function getTenantLink(slug: string, path: string = ''): string {
+export function getTenantLink(slug: string, path: string = '', customRootDomain?: string): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
   let cleanPath = path.startsWith('/') ? path : `/${path}`
   if (cleanSlug && cleanPath.startsWith(`/${cleanSlug}/`)) {
@@ -57,15 +57,8 @@ export function getTenantLink(slug: string, path: string = ''): string {
   } else if (cleanSlug && cleanPath === `/${cleanSlug}`) {
     cleanPath = ''
   }
-  const rootDomain = getRootDomain().replace(/^www\./i, '')
 
-  // On Vercel domains (*.vercel.app), wildcard subdomains do not exist.
-  // Generate safe path-based URL: https://project.vercel.app/slug/path
-  if (rootDomain.endsWith('.vercel.app')) {
-    return cleanSlug ? `https://${rootDomain}/${cleanSlug}${cleanPath}` : `https://${rootDomain}${cleanPath}`
-  }
-
-  const baseUrl = getTenantBaseUrl(slug)
+  const baseUrl = getTenantBaseUrl(slug, customRootDomain)
   return `${baseUrl}${cleanPath}`
 }
 
@@ -79,21 +72,22 @@ export function getTenantLink(slug: string, path: string = ''): string {
 export function formatDocumentUrl(
   slug: string,
   type: 'invoice' | 'quotation' | 'receipt' | 'challan' | 'order',
-  docNumberOrId: string
+  docNumberOrId: string,
+  customRootDomain?: string
 ): string {
   switch (type) {
     case 'invoice':
-      return getTenantLink(slug, `/invoices/${encodeURIComponent(docNumberOrId)}`)
+      return getTenantLink(slug, `/invoices/${encodeURIComponent(docNumberOrId)}`, customRootDomain)
     case 'quotation':
-      return getTenantLink(slug, `/quotations/${encodeURIComponent(docNumberOrId)}`)
+      return getTenantLink(slug, `/quotations/${encodeURIComponent(docNumberOrId)}`, customRootDomain)
     case 'receipt':
-      return getTenantLink(slug, `/billing?receipt=${encodeURIComponent(docNumberOrId)}`)
+      return getTenantLink(slug, `/billing?receipt=${encodeURIComponent(docNumberOrId)}`, customRootDomain)
     case 'challan':
-      return getTenantLink(slug, `/delivery?challan=${encodeURIComponent(docNumberOrId)}`)
+      return getTenantLink(slug, `/delivery?challan=${encodeURIComponent(docNumberOrId)}`, customRootDomain)
     case 'order':
-      return getTenantLink(slug, `/orders/${encodeURIComponent(docNumberOrId)}`)
+      return getTenantLink(slug, `/orders/${encodeURIComponent(docNumberOrId)}`, customRootDomain)
     default:
-      return getTenantLink(slug, `/dashboard`)
+      return getTenantLink(slug, `/dashboard`, customRootDomain)
   }
 }
 

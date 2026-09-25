@@ -78,6 +78,105 @@ export const RESERVED_SLUGS = new Set([
   'demo',
 ])
 
+/**
+ * Standard two-part ccTLDs where the registry requires second-level registration
+ * (e.g. inkflow.com.bd, not inkflow.bd).
+ */
+export const TWO_PART_TLDS = new Set([
+  'com.bd',
+  'net.bd',
+  'org.bd',
+  'edu.bd',
+  'gov.bd',
+  'ac.bd',
+  'mil.bd',
+  'co.uk',
+  'org.uk',
+  'ac.uk',
+  'gov.uk',
+  'co.nz',
+  'net.nz',
+  'org.nz',
+  'com.au',
+  'net.au',
+  'org.au',
+  'co.in',
+  'net.in',
+  'org.in',
+  'co.jp',
+  'ne.jp',
+  'or.jp',
+  'com.br',
+  'net.br',
+  'org.br',
+  'com.sg',
+  'com.my',
+  'com.ph',
+  'com.pk',
+])
+
+/**
+ * Extracts the canonical root domain from any raw host across all environments.
+ * Examples:
+ * - 'rangao.inkflow-erp.vercel.app' -> 'inkflow-erp.vercel.app'
+ * - 'inkflow-erp.vercel.app' -> 'inkflow-erp.vercel.app'
+ * - 'rangao.inkflow.bd' -> 'inkflow.bd'
+ * - 'inkflow.bd' -> 'inkflow.bd'
+ * - 'vision-sign.inkflow.com' -> 'inkflow.com'
+ * - 'inkflow.com' -> 'inkflow.com'
+ * - 'vision.inkflow.com.bd' -> 'inkflow.com.bd'
+ * - 'inkflow.com.bd' -> 'inkflow.com.bd'
+ * - 'vision.localhost:3000' -> 'localhost:3000'
+ * - 'localhost:3000' -> 'localhost:3000'
+ */
+export function extractCanonicalRootDomain(rawHost: string | null | undefined): string {
+  if (!rawHost || typeof rawHost !== 'string' || !rawHost.trim()) {
+    return 'localhost:3000'
+  }
+
+  const fullHost = rawHost.toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0]
+  const hostWithoutPort = fullHost.split(':')[0]
+  const port = fullHost.includes(':') ? `:${fullHost.split(':')[1]}` : ''
+
+  // 1. Localhost and local IP development hosts
+  if (
+    hostWithoutPort === 'localhost' ||
+    hostWithoutPort === '127.0.0.1' ||
+    hostWithoutPort.endsWith('.localhost') ||
+    hostWithoutPort.endsWith('.local') ||
+    hostWithoutPort.startsWith('192.168.') ||
+    hostWithoutPort.startsWith('10.') ||
+    hostWithoutPort.startsWith('172.')
+  ) {
+    return `localhost${port || ':3000'}`
+  }
+
+  // 2. Vercel deployment URLs (*.vercel.app)
+  if (hostWithoutPort.endsWith('.vercel.app')) {
+    const parts = hostWithoutPort.split('.')
+    if (parts.length >= 3) {
+      return parts.slice(-3).join('.') + port
+    }
+    return hostWithoutPort + port
+  }
+
+  // 3. General domain parsing (Two-part TLD vs Single-part TLD)
+  const parts = hostWithoutPort.split('.')
+  if (parts.length >= 2) {
+    const lastTwo = parts.slice(-2).join('.')
+    if (TWO_PART_TLDS.has(lastTwo)) {
+      if (parts.length >= 3) {
+        return parts.slice(-3).join('.') + port
+      }
+      return hostWithoutPort + port
+    } else {
+      return parts.slice(-2).join('.') + port
+    }
+  }
+
+  return hostWithoutPort + port
+}
+
 let runtimeRootDomain: string | null = null
 
 /**
@@ -93,13 +192,19 @@ export function setRuntimeRootDomain(domain: string | null | undefined): void {
 
 /**
  * Normalizes and extracts the configured root domain.
- * Defaults to 'inkflow.com.bd' in production, 'localhost:3000' in development.
+ * Context-aware: In browser context, derives the active root domain directly from window.location.host.
  */
 export function getRootDomain(): string {
   if (runtimeRootDomain) {
     return runtimeRootDomain
   }
 
+  // 1. Client-side browser runtime: Extract canonical root from active browser host
+  if (typeof window !== 'undefined' && window.location && window.location.host) {
+    return extractCanonicalRootDomain(window.location.host)
+  }
+
+  // 2. Explicit server environment variables
   const configured =
     process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
     process.env.NEXT_PUBLIC_APP_DOMAIN ||
@@ -111,40 +216,6 @@ export function getRootDomain(): string {
     // Strip protocol if present and strip leading www.
     const clean = configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
     return clean.replace(/^www\./i, '')
-  }
-
-  // Client-side fallback: check window.location.host
-  if (typeof window !== 'undefined' && window.location && window.location.host) {
-    const browserHost = window.location.host.toLowerCase().trim()
-    const hostWithoutPort = browserHost.split(':')[0]
-    const port = window.location.port ? `:${window.location.port}` : (browserHost.includes(':') ? `:${browserHost.split(':')[1]}` : '')
-
-    if (
-      hostWithoutPort === 'localhost' ||
-      hostWithoutPort.endsWith('.localhost') ||
-      hostWithoutPort.includes('127.0.0.1')
-    ) {
-      return `localhost${port}`
-    }
-
-    if (hostWithoutPort.endsWith('.vercel.app')) {
-      const parts = hostWithoutPort.split('.')
-      // e.g. inkflow-erp.vercel.app (3 parts) or vision.inkflow-erp.vercel.app (4 parts)
-      if (parts.length >= 3) {
-        return parts.slice(-3).join('.') + port
-      }
-      return browserHost
-    }
-
-    if (hostWithoutPort.endsWith('.inkflow.com.bd')) {
-      return `inkflow.com.bd${port}`
-    }
-
-    if (hostWithoutPort.startsWith('www.')) {
-      return hostWithoutPort.replace(/^www\./i, '') + port
-    }
-
-    return browserHost
   }
 
   if (process.env.NODE_ENV === 'production') {
@@ -238,8 +309,7 @@ export function resolveHostname(
   rawHost: string | null | undefined,
   overrideRootDomain?: string
 ): HostnameResolution {
-  const rootDomain = (overrideRootDomain || getRootDomain()).toLowerCase().trim()
-  const cleanRoot = rootDomain.split(':')[0].replace(/^www\./i, '') // strip port and www for comparison
+  const fallbackRoot = (overrideRootDomain || getRootDomain()).toLowerCase().trim()
 
   if (!rawHost || typeof rawHost !== 'string' || !rawHost.trim()) {
     return {
@@ -248,15 +318,16 @@ export function resolveHostname(
       tenantSlug: null,
       isLocalhost: true,
       isDevelopment: process.env.NODE_ENV !== 'production',
-      rootDomain,
+      rootDomain: fallbackRoot,
     }
   }
 
   // Normalize host: lowercase, strip protocol, strip port for analysis
   const fullHost = rawHost.toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0]
   const hostWithoutPort = fullHost.split(':')[0]
+  const port = fullHost.includes(':') ? `:${fullHost.split(':')[1]}` : ''
 
-  // Check for malformed double dots or empty segments
+  // Reject malformed hostnames (double dots, leading/trailing dots)
   if (hostWithoutPort.includes('..') || hostWithoutPort.startsWith('.') || hostWithoutPort.endsWith('.')) {
     return {
       hostname: fullHost,
@@ -264,7 +335,7 @@ export function resolveHostname(
       tenantSlug: null,
       isLocalhost: false,
       isDevelopment: process.env.NODE_ENV !== 'production',
-      rootDomain,
+      rootDomain: fallbackRoot,
     }
   }
 
@@ -272,16 +343,15 @@ export function resolveHostname(
     hostWithoutPort === 'localhost' ||
     hostWithoutPort === '127.0.0.1' ||
     hostWithoutPort.endsWith('.localhost') ||
-    hostWithoutPort.endsWith('.local')
+    hostWithoutPort.endsWith('.local') ||
+    hostWithoutPort.startsWith('192.168.') ||
+    hostWithoutPort.startsWith('10.') ||
+    hostWithoutPort.startsWith('172.')
 
-  const isDevelopment = isLocalhost || (process.env.NODE_ENV !== 'production' && !hostWithoutPort.endsWith('inkflow.com.bd'))
+  const isDevelopment = isLocalhost
 
-  // 1. Exact Root Domain matches (e.g. inkflow.com.bd, www.inkflow.com.bd, localhost, 127.0.0.1)
+  // 1. Explicit Localhost / Development IP Root
   if (
-    hostWithoutPort === cleanRoot ||
-    hostWithoutPort === 'inkflow.com.bd' ||
-    hostWithoutPort === 'www.inkflow.com.bd' ||
-    hostWithoutPort === `www.${cleanRoot}` ||
     hostWithoutPort === 'localhost' ||
     hostWithoutPort === '127.0.0.1' ||
     hostWithoutPort.startsWith('192.168.') ||
@@ -292,94 +362,25 @@ export function resolveHostname(
       hostname: fullHost,
       hostType: 'root',
       tenantSlug: null,
-      isLocalhost,
-      isDevelopment,
-      rootDomain: hostWithoutPort.endsWith('inkflow.com.bd') ? 'inkflow.com.bd' : rootDomain,
+      isLocalhost: true,
+      isDevelopment: true,
+      rootDomain: `localhost${port || ':3000'}`,
     }
   }
 
-  // 2. Vercel preview / deployment URLs (e.g. printerp-xxx.vercel.app or rangao.inkflow-erp.vercel.app)
-  if (hostWithoutPort.endsWith('.vercel.app')) {
-    if (hostWithoutPort === cleanRoot || hostWithoutPort === `www.${cleanRoot}`) {
-      return {
-        hostname: fullHost,
-        hostType: 'root',
-        tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
-        rootDomain,
-      }
-    }
-    const vercelParts = hostWithoutPort.split('.')
-    if (vercelParts.length <= 3) {
-      return {
-        hostname: fullHost,
-        hostType: 'root',
-        tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
-        rootDomain,
-      }
-    }
-    // Handle tenant subdomain on Vercel: e.g. rangao.inkflow-erp.vercel.app (>= 4 parts)
-    if (vercelParts.length >= 4) {
-      const vercelRoot = vercelParts.slice(-3).join('.')
-      const subParts = vercelParts.slice(0, -3).filter((p) => p !== 'www')
-      const slug = subParts[subParts.length - 1] || ''
-
-      if (!slug || slug === 'www') {
-        return {
-          hostname: fullHost,
-          hostType: 'root',
-          tenantSlug: null,
-          isLocalhost,
-          isDevelopment,
-          rootDomain: vercelRoot,
-        }
-      }
-
-      if (isReservedSlug(slug)) {
-        return {
-          hostname: fullHost,
-          hostType: slug === 'platform' ? 'platform' : 'reserved',
-          tenantSlug: slug,
-          isLocalhost,
-          isDevelopment,
-          rootDomain: vercelRoot,
-        }
-      }
-      if (!isValidSlugFormat(slug)) {
-        return {
-          hostname: fullHost,
-          hostType: 'invalid',
-          tenantSlug: null,
-          isLocalhost,
-          isDevelopment,
-          rootDomain: vercelRoot,
-        }
-      }
-      return {
-        hostname: fullHost,
-        hostType: 'tenant',
-        tenantSlug: slug,
-        isLocalhost,
-        isDevelopment,
-        rootDomain: vercelRoot,
-      }
-    }
-  }
-
-  // 3. Localhost Subdomains (e.g. vision.localhost, abc.localhost:3000)
+  // 2. Localhost Subdomains (e.g. vision.localhost, rangao.localhost:3000)
   if (hostWithoutPort.endsWith('.localhost')) {
     const slug = hostWithoutPort.replace(/\.localhost$/, '').toLowerCase().trim()
-    if (!slug) {
+    const targetRoot = `localhost${port || ':3000'}`
+
+    if (!slug || slug === 'www') {
       return {
         hostname: fullHost,
         hostType: 'root',
         tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
-        rootDomain,
+        isLocalhost: true,
+        isDevelopment: true,
+        rootDomain: targetRoot,
       }
     }
 
@@ -388,9 +389,9 @@ export function resolveHostname(
         hostname: fullHost,
         hostType: slug === 'platform' ? 'platform' : 'reserved',
         tenantSlug: slug,
-        isLocalhost,
-        isDevelopment,
-        rootDomain,
+        isLocalhost: true,
+        isDevelopment: true,
+        rootDomain: targetRoot,
       }
     }
 
@@ -399,9 +400,9 @@ export function resolveHostname(
         hostname: fullHost,
         hostType: 'invalid',
         tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
-        rootDomain,
+        isLocalhost: true,
+        isDevelopment: true,
+        rootDomain: targetRoot,
       }
     }
 
@@ -409,18 +410,37 @@ export function resolveHostname(
       hostname: fullHost,
       hostType: 'tenant',
       tenantSlug: slug,
-      isLocalhost,
-      isDevelopment,
-      rootDomain,
+      isLocalhost: true,
+      isDevelopment: true,
+      rootDomain: targetRoot,
     }
   }
 
-  // 4. Production Domain Subdomains (e.g. vision.inkflow.com.bd, or subdomains of cleanRoot)
-  const canonicalRoot = hostWithoutPort.endsWith('.inkflow.com.bd') ? 'inkflow.com.bd' : cleanRoot
+  // 3. Determine the canonical root domain for this request
+  const canonicalRoot = (
+    overrideRootDomain
+      ? overrideRootDomain.toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0].split(':')[0].replace(/^www\./i, '')
+      : extractCanonicalRootDomain(hostWithoutPort).split(':')[0]
+  )
+
+  // 4. Exact Root Domain matches (e.g. inkflow-erp.vercel.app, inkflow.bd, inkflow.com, inkflow.com.bd, and www.*)
+  if (
+    hostWithoutPort === canonicalRoot ||
+    hostWithoutPort === `www.${canonicalRoot}`
+  ) {
+    return {
+      hostname: fullHost,
+      hostType: 'root',
+      tenantSlug: null,
+      isLocalhost: false,
+      isDevelopment: false,
+      rootDomain: canonicalRoot,
+    }
+  }
+
+  // 5. Canonical Subdomain matching on canonicalRoot
   if (hostWithoutPort.endsWith(`.${canonicalRoot}`)) {
     const rawSubdomain = hostWithoutPort.slice(0, -(canonicalRoot.length + 1)).toLowerCase().trim()
-
-    // Handle nested subdomains if any (take the deepest label: e.g. vision in vision.inkflow.com.bd)
     const slugParts = rawSubdomain.split('.').filter((p) => Boolean(p) && p !== 'www')
     const slug = slugParts[slugParts.length - 1] || ''
 
@@ -429,8 +449,8 @@ export function resolveHostname(
         hostname: fullHost,
         hostType: 'root',
         tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
+        isLocalhost: false,
+        isDevelopment: false,
         rootDomain: canonicalRoot,
       }
     }
@@ -440,8 +460,8 @@ export function resolveHostname(
         hostname: fullHost,
         hostType: slug === 'platform' ? 'platform' : 'reserved',
         tenantSlug: slug,
-        isLocalhost,
-        isDevelopment,
+        isLocalhost: false,
+        isDevelopment: false,
         rootDomain: canonicalRoot,
       }
     }
@@ -451,8 +471,8 @@ export function resolveHostname(
         hostname: fullHost,
         hostType: 'invalid',
         tenantSlug: null,
-        isLocalhost,
-        isDevelopment,
+        isLocalhost: false,
+        isDevelopment: false,
         rootDomain: canonicalRoot,
       }
     }
@@ -461,20 +481,71 @@ export function resolveHostname(
       hostname: fullHost,
       hostType: 'tenant',
       tenantSlug: slug,
-      isLocalhost,
-      isDevelopment,
+      isLocalhost: false,
+      isDevelopment: false,
       rootDomain: canonicalRoot,
     }
   }
 
-  // 5. Standalone or custom domain resolution fallback
+  // 6. Dynamic multi-domain fallback:
+  // If an overrideRootDomain was provided that didn't match the host, check host's intrinsic root
+  const hostRoot = extractCanonicalRootDomain(hostWithoutPort).split(':')[0]
+  if (hostRoot !== hostWithoutPort && hostWithoutPort.endsWith(`.${hostRoot}`)) {
+    const rawSubdomain = hostWithoutPort.slice(0, -(hostRoot.length + 1)).toLowerCase().trim()
+    const slugParts = rawSubdomain.split('.').filter((p) => Boolean(p) && p !== 'www')
+    const slug = slugParts[slugParts.length - 1] || ''
+
+    if (!slug || slug === 'www') {
+      return {
+        hostname: fullHost,
+        hostType: 'root',
+        tenantSlug: null,
+        isLocalhost: false,
+        isDevelopment: false,
+        rootDomain: hostRoot,
+      }
+    }
+
+    if (isReservedSlug(slug)) {
+      return {
+        hostname: fullHost,
+        hostType: slug === 'platform' ? 'platform' : 'reserved',
+        tenantSlug: slug,
+        isLocalhost: false,
+        isDevelopment: false,
+        rootDomain: hostRoot,
+      }
+    }
+
+    if (!isValidSlugFormat(slug)) {
+      return {
+        hostname: fullHost,
+        hostType: 'invalid',
+        tenantSlug: null,
+        isLocalhost: false,
+        isDevelopment: false,
+        rootDomain: hostRoot,
+      }
+    }
+
+    return {
+      hostname: fullHost,
+      hostType: 'tenant',
+      tenantSlug: slug,
+      isLocalhost: false,
+      isDevelopment: false,
+      rootDomain: hostRoot,
+    }
+  }
+
+  // 7. Standalone domain fallback
   return {
     hostname: fullHost,
     hostType: 'root',
     tenantSlug: null,
     isLocalhost,
     isDevelopment,
-    rootDomain,
+    rootDomain: canonicalRoot || hostWithoutPort,
   }
 }
 

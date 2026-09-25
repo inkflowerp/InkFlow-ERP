@@ -320,8 +320,8 @@ export async function updateSession(request: NextRequest) {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
         if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
-          const tenantUrl = getTenantLink(targetSlug, `/dashboard`)
-          return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl)))
+          const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
+          return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
         } else if (hasAuthError && hasValidTenantCookie) {
           const res = NextResponse.next({ request })
           res.cookies.delete(TENANT_SESSION_COOKIE)
@@ -335,17 +335,17 @@ export async function updateSession(request: NextRequest) {
       if (pathname === '/dashboard') {
         if (hasValidTenantCookie && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
-          const tenantUrl = getTenantLink(targetSlug, `/dashboard`)
-          return NextResponse.redirect(new URL(tenantUrl))
+          const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
+          return NextResponse.redirect(new URL(tenantUrl), 307)
         } else {
           const loginUrl = request.nextUrl.clone()
           loginUrl.pathname = '/login'
-          return NextResponse.redirect(loginUrl)
+          return NextResponse.redirect(loginUrl, 307)
         }
       }
 
-      // 3. If user visits path with legitimate tenant slug on root domain (e.g. inkflow.com.bd/vision/invoices):
-      // Redirect to canonical tenant subdomain https://vision.inkflow.com.bd/invoices
+      // 3. If user visits path with legitimate tenant slug on root domain (e.g. inkflow-erp.vercel.app/rangao/invoices):
+      // Redirect to canonical tenant subdomain https://rangao.inkflow-erp.vercel.app/invoices
       const pathParts = pathname.split('/').filter(Boolean)
       const firstSegment = pathParts[0] || ''
 
@@ -361,24 +361,14 @@ export async function updateSession(request: NextRequest) {
         firstSegment.startsWith('_')
 
       if (!isKnownRootSegment && pathParts.length > 0 && isValidSlugFormat(firstSegment)) {
-        // If we are on vercel.app, localhost, or subdomain routing is not explicitly enabled,
-        // NEVER redirect away! Allow App Router `app/[tenantSlug]/...` to handle the request directly.
-        if (
-          hostWithoutPort.endsWith('.vercel.app') ||
-          isDevelopment ||
-          hostWithoutPort.includes('localhost') ||
-          hostWithoutPort.includes('127.0.0.1') ||
-          process.env.ENABLE_SUBDOMAIN_ROUTING !== 'true'
-        ) {
-          const res = NextResponse.next({ request })
-          responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
-          return res
-        }
-
         const potentialSlug = firstSegment.toLowerCase().trim()
         const subPath = pathParts.slice(1).join('/')
-        const tenantUrl = getTenantLink(potentialSlug, subPath ? `/${subPath}${search}` : `/dashboard${search}`)
-        return NextResponse.redirect(new URL(tenantUrl))
+        const tenantUrl = getTenantLink(
+          potentialSlug,
+          subPath ? `/${subPath}${search}` : `/dashboard${search}`,
+          rootDomain
+        )
+        return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
       }
 
       const res = NextResponse.next({ request })

@@ -223,4 +223,114 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     const opts = getAuthCookieOptions('www.inkflow.com.bd')
     assert.equal(opts.domain, '.inkflow.com.bd')
   })
+
+  test('24. Resolves [tenantSlug].app.TLD subdomains across Vercel, .bd, .com, and .com.bd', () => {
+    // Vercel deployment: rangao.inkflow-erp.vercel.app
+    const vercelTenant = resolveHostname('rangao.inkflow-erp.vercel.app')
+    assert.equal(vercelTenant.hostType, 'tenant')
+    assert.equal(vercelTenant.tenantSlug, 'rangao')
+    assert.equal(vercelTenant.rootDomain, 'inkflow-erp.vercel.app')
+
+    const vercelRoot = resolveHostname('inkflow-erp.vercel.app')
+    assert.equal(vercelRoot.hostType, 'root')
+    assert.equal(vercelRoot.tenantSlug, null)
+
+    // ccTLD (.bd): rangao.inkflow.bd
+    const bdTenant = resolveHostname('rangao.inkflow.bd')
+    assert.equal(bdTenant.hostType, 'tenant')
+    assert.equal(bdTenant.tenantSlug, 'rangao')
+    assert.equal(bdTenant.rootDomain, 'inkflow.bd')
+
+    const bdRoot = resolveHostname('inkflow.bd')
+    assert.equal(bdRoot.hostType, 'root')
+    assert.equal(bdRoot.tenantSlug, null)
+
+    // gTLD (.com): vision-sign.inkflow.com
+    const comTenant = resolveHostname('vision-sign.inkflow.com')
+    assert.equal(comTenant.hostType, 'tenant')
+    assert.equal(comTenant.tenantSlug, 'vision-sign')
+    assert.equal(comTenant.rootDomain, 'inkflow.com')
+
+    const comRoot = resolveHostname('inkflow.com')
+    assert.equal(comRoot.hostType, 'root')
+    assert.equal(comRoot.tenantSlug, null)
+
+    // Second-level ccTLD (.com.bd): vision.inkflow.com.bd
+    const comBdTenant = resolveHostname('vision.inkflow.com.bd')
+    assert.equal(comBdTenant.hostType, 'tenant')
+    assert.equal(comBdTenant.tenantSlug, 'vision')
+    assert.equal(comBdTenant.rootDomain, 'inkflow.com.bd')
+
+    const comBdRoot = resolveHostname('inkflow.com.bd')
+    assert.equal(comBdRoot.hostType, 'root')
+    assert.equal(comBdRoot.tenantSlug, null)
+  })
+
+  test('25. getTenantBaseUrl strictly formats [tenantSlug].app.TLD without path-based fallbacks', () => {
+    assert.equal(
+      getTenantBaseUrl('rangao', 'inkflow-erp.vercel.app'),
+      'https://rangao.inkflow-erp.vercel.app'
+    )
+    assert.equal(
+      getTenantBaseUrl('rangao', 'inkflow.bd'),
+      'https://rangao.inkflow.bd'
+    )
+    assert.equal(
+      getTenantBaseUrl('vision-sign', 'inkflow.com'),
+      'https://vision-sign.inkflow.com'
+    )
+    assert.equal(
+      getTenantBaseUrl('vision', 'inkflow.com.bd'),
+      'https://vision.inkflow.com.bd'
+    )
+    assert.equal(
+      getTenantBaseUrl('rangao', 'localhost:3000'),
+      'http://rangao.localhost:3000'
+    )
+  })
+
+  test('26. getTenantLink generates canonical subdomain paths across all domains', () => {
+    assert.equal(
+      getTenantLink('rangao', '/orders', 'inkflow-erp.vercel.app'),
+      'https://rangao.inkflow-erp.vercel.app/orders'
+    )
+    assert.equal(
+      getTenantLink('rangao', 'dashboard', 'inkflow.bd'),
+      'https://rangao.inkflow.bd/dashboard'
+    )
+    assert.equal(
+      getTenantLink('vision-sign', '/invoices/INV-2026-001', 'inkflow.com'),
+      'https://vision-sign.inkflow.com/invoices/INV-2026-001'
+    )
+    assert.equal(
+      getTenantLink('vision', '/quotations/QUO-2026-001', 'inkflow.com.bd'),
+      'https://vision.inkflow.com.bd/quotations/QUO-2026-001'
+    )
+    assert.equal(
+      getTenantLink('rangao', '/production', 'localhost:3000'),
+      'http://rangao.localhost:3000/production'
+    )
+  })
+
+  test('27. formatDocumentUrl generates public links using [tenantSlug].app.TLD', () => {
+    assert.equal(
+      formatDocumentUrl('rangao', 'invoice', 'INV-100', 'inkflow-erp.vercel.app'),
+      'https://rangao.inkflow-erp.vercel.app/invoices/INV-100'
+    )
+    assert.equal(
+      formatDocumentUrl('rangao', 'quotation', 'QUO-200', 'inkflow.bd'),
+      'https://rangao.inkflow.bd/quotations/QUO-200'
+    )
+    assert.equal(
+      formatDocumentUrl('vision-sign', 'receipt', 'MR-300', 'inkflow.com'),
+      'https://vision-sign.inkflow.com/billing?receipt=MR-300'
+    )
+  })
+
+  test('28. getAuthCookieOptions sets proper cookie domains for .bd, .com, .com.bd and omits for PSL', () => {
+    assert.equal(getAuthCookieOptions('inkflow.bd').domain, '.inkflow.bd')
+    assert.equal(getAuthCookieOptions('inkflow.com').domain, '.inkflow.com')
+    assert.equal(getAuthCookieOptions('inkflow.com.bd').domain, '.inkflow.com.bd')
+    assert.equal(getAuthCookieOptions('inkflow-erp.vercel.app').domain, undefined)
+  })
 })
