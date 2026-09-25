@@ -3,7 +3,7 @@
 // Supports SSL, TLS, and STARTTLS with connection verification.
 // ==============================================================================
 
-import nodemailer, { type Transporter, type SendMailOptions } from 'nodemailer'
+import type { Transporter, SendMailOptions } from 'nodemailer'
 import type {
   IEmailProvider,
   OutgoingEmailPayload,
@@ -19,10 +19,11 @@ export class SmtpProviderAdapter implements IEmailProvider {
 
   constructor(config: DecryptedGatewayConfig) {
     this.config = config
-    this.initializeTransporter()
   }
 
-  private initializeTransporter(): void {
+  private async getTransporter(): Promise<Transporter> {
+    if (this.transporter) return this.transporter
+
     const host = this.config.smtp_host || 'localhost'
     const port = Number(this.config.smtp_port) || 587
     const encryption = this.config.encryption_type || 'tls'
@@ -46,16 +47,16 @@ export class SmtpProviderAdapter implements IEmailProvider {
       tls: {
         rejectUnauthorized: process.env.NODE_ENV === 'production',
       },
-    } as any
+    }
 
+    const nodemailerModule = await import('nodemailer')
+    const nodemailer = nodemailerModule.default || nodemailerModule
     this.transporter = nodemailer.createTransport(transportOptions)
+    return this.transporter
   }
 
   async sendEmail(payload: OutgoingEmailPayload): Promise<ProviderSendResult> {
-    const startTime = Date.now()
-    if (!this.transporter) {
-      this.initializeTransporter()
-    }
+    const transporter = await this.getTransporter()
 
     try {
       const fromAddress =
@@ -84,7 +85,7 @@ export class SmtpProviderAdapter implements IEmailProvider {
         })),
       }
 
-      const info = await this.transporter!.sendMail(mailOptions)
+      const info = await transporter.sendMail(mailOptions)
 
       return {
         success: true,
@@ -127,12 +128,10 @@ export class SmtpProviderAdapter implements IEmailProvider {
 
   async verifyConnection(): Promise<ProviderConnectionResult> {
     const startTime = Date.now()
-    if (!this.transporter) {
-      this.initializeTransporter()
-    }
 
     try {
-      await this.transporter!.verify()
+      const transporter = await this.getTransporter()
+      await transporter.verify()
       const latencyMs = Date.now() - startTime
 
       return {

@@ -63,7 +63,7 @@ import {
   numberToWordsBDT,
   numberToWordsBangla,
 } from '@/lib/formatters'
-import { QuotationService } from '@/services/quotation.service'
+import * as QuotationService from '@/lib/quotations/quotation-utils'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NegotiationModal } from '@/components/quotations/negotiation-modal'
 import { useDataStore } from '@/hooks/use-data-store'

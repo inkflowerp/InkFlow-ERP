@@ -23,6 +23,21 @@ const nextConfig: NextConfig = {
       fullUrl: false,
     },
   },
+  turbopack: {},
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        dns: false,
+        child_process: false,
+        crypto: false,
+      };
+    }
+    return config;
+  },
   async redirects() {
     return [
       {

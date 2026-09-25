@@ -63,7 +63,6 @@ import type {
 } from '../types/platform.types.ts'
 import { DEFAULT_PLATFORM_BRANDING } from '../types/platform.types.ts'
 import { setRuntimeRootDomain } from '../lib/tenant/tenant-resolution.ts'
-import { AuthEmailService } from './auth-email.service.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
 import type { SubscriptionPlanRecord } from '../types/subscription.types.ts'
@@ -1168,6 +1167,7 @@ export class PlatformService {
         .eq('email', normalizedEmail)
         .maybeSingle()
 
+      const { AuthEmailService } = await import('./auth-email.service.ts')
       const res = await AuthEmailService.sendRegistrationVerificationEmail({
         email: normalizedEmail,
         fullName: profile?.full_name || normalizedEmail.split('@')[0],
@@ -1307,6 +1307,7 @@ export class PlatformService {
 
       // 5. Clean up from AuthEmailService in-memory test store & DB
       if (targetEmail) {
+        const { AuthEmailService } = await import('./auth-email.service.ts')
         await AuthEmailService.deleteVerificationRecords(targetEmail)
       }
 

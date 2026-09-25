@@ -3,7 +3,7 @@
 // High-throughput delivery via Amazon Simple Email Service (SES) with region config.
 // ==============================================================================
 
-import nodemailer, { type Transporter } from 'nodemailer'
+import type { Transporter } from 'nodemailer'
 import type {
   IEmailProvider,
   OutgoingEmailPayload,
@@ -19,13 +19,17 @@ export class SesProviderAdapter implements IEmailProvider {
 
   constructor(config: DecryptedGatewayConfig) {
     this.config = config
-    this.initializeTransporter()
   }
 
-  private initializeTransporter(): void {
+  private async getTransporter(): Promise<Transporter> {
+    if (this.transporter) return this.transporter
+
     const region = this.config.extra_settings?.aws_region || 'ap-south-1'
     const host = this.config.smtp_host || `email-smtp.${region}.amazonaws.com`
     const port = Number(this.config.smtp_port) || 587
+
+    const nodemailerModule = await import('nodemailer')
+    const nodemailer = nodemailerModule.default || nodemailerModule
 
     this.transporter = nodemailer.createTransport({
       host,
@@ -41,12 +45,11 @@ export class SesProviderAdapter implements IEmailProvider {
       connectionTimeout: 15000,
       socketTimeout: 20000,
     })
+    return this.transporter
   }
 
   async sendEmail(payload: OutgoingEmailPayload): Promise<ProviderSendResult> {
-    if (!this.transporter) {
-      this.initializeTransporter()
-    }
+    const transporter = await this.getTransporter()
 
     try {
       const fromAddress =
@@ -61,7 +64,7 @@ export class SesProviderAdapter implements IEmailProvider {
         headers['X-SES-CONFIGURATION-SET'] = this.config.extra_settings.ses_config_set
       }
 
-      const info = await this.transporter!.sendMail({
+      const info = await transporter.sendMail({
         from: fromAddress,
         to: payload.to,
         cc: payload.cc,
@@ -100,12 +103,10 @@ export class SesProviderAdapter implements IEmailProvider {
 
   async verifyConnection(): Promise<ProviderConnectionResult> {
     const startTime = Date.now()
-    if (!this.transporter) {
-      this.initializeTransporter()
-    }
 
     try {
-      await this.transporter!.verify()
+      const transporter = await this.getTransporter()
+      await transporter.verify()
       const latencyMs = Date.now() - startTime
       const region = this.config.extra_settings?.aws_region || 'ap-south-1'
 

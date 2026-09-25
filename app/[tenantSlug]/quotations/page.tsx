@@ -31,7 +31,7 @@ import {
   extractQuotationsFromAny,
   deduplicateQuotations,
 } from '@/types/quotation.types'
-import { QuotationService } from '@/services/quotation.service'
+import * as QuotationService from '@/lib/quotations/quotation-utils'
 import { getQuotationsAction } from '@/actions/quotation.actions'
 import { moveToTrashAction } from '@/actions/trash.actions'
 import { QuotationKpiBar } from '@/components/quotations/quotation-kpi-bar'
