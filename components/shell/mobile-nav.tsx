@@ -201,6 +201,10 @@ export function MobileNav() {
 
     if (pathname === itemHref || cleanPath === itemHref) return true
 
+    if (itemHref === '/settings/users' && (cleanPath === '/settings/roles' || cleanPath.startsWith('/settings/roles/'))) {
+      return true
+    }
+
     if (exact || itemHref === '/' || itemHref === '/settings') {
       return false
     }

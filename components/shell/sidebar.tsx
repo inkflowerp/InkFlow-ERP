@@ -262,6 +262,10 @@ export function Sidebar() {
 
     if (pathname === itemHref || cleanPath === itemHref) return true
 
+    if (itemHref === '/settings/users' && (cleanPath === '/settings/roles' || cleanPath.startsWith('/settings/roles/'))) {
+      return true
+    }
+
     // Exact matches or /settings base must not claim child routes
     if (exact || itemHref === '/' || itemHref === '/settings') {
       return false

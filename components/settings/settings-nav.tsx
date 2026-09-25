@@ -65,12 +65,6 @@ export function SettingsNav() {
       icon: Globe2,
     },
     {
-      title: 'Tax & NBR BIN/TIN',
-      titleBn: 'ট্যাক্স ও ভ্যাট',
-      href: '/settings/tax',
-      icon: FileCheck2,
-    },
-    {
       title: 'Document Numbering',
       titleBn: 'ডকুমেন্ট নাম্বারিং',
       href: '/settings/document-numbering',
@@ -113,28 +107,17 @@ export function SettingsNav() {
       icon: Mail,
     },
     {
-      title: 'Team Users',
-      titleBn: 'টিম মেম্বার',
+      title: 'Users & Permissions',
+      titleBn: 'টিম ও অনুমতি',
       href: '/settings/users',
-      icon: Users,
-    },
-    {
-      title: 'Roles & Matrix',
-      titleBn: 'অনুমতি ম্যাট্রিক্স',
-      href: '/settings/roles',
       icon: ShieldCheck,
+      matchExtra: ['/settings/roles'],
     },
     {
       title: 'Subscription',
       titleBn: 'সাবস্ক্রিপশন',
       href: '/settings/subscription',
       icon: Crown,
-    },
-    {
-      title: 'Trash & Recycle Bin',
-      titleBn: 'ট্র্যাশ ও রিসাইকেল বিন',
-      href: '/settings/trash',
-      icon: Trash2,
     },
   ]
 
@@ -150,7 +133,12 @@ export function SettingsNav() {
         if (link.exact) {
           isActive = pathname === link.href || cleanPath === link.href || cleanPath === '/settings' || pathname === `/${company?.slug}/settings`
         } else {
-          isActive = pathname === link.href || cleanPath === link.href || cleanPath.startsWith(`${link.href}/`) || pathname.endsWith(link.href)
+          isActive =
+            pathname === link.href ||
+            cleanPath === link.href ||
+            cleanPath.startsWith(`${link.href}/`) ||
+            pathname.endsWith(link.href) ||
+            Boolean((link as any).matchExtra?.some((m: string) => cleanPath === m || cleanPath.startsWith(`${m}/`)))
         }
 
         const targetHref = getTenantNavHref(link.href, pathname, tenantSlug)
