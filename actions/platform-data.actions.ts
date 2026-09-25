@@ -306,7 +306,7 @@ export async function getPlatformCustomerSuccessMetricsAction(): Promise<ApiResp
 }
 
 /**
- * Server Action: Get Platform System Settings
+ * Server Action: Get Platform System Settings (Admin only)
  */
 export async function getPlatformSettingsAction(): Promise<ApiResponse<PlatformSystemSettings>> {
   try {
@@ -317,6 +317,19 @@ export async function getPlatformSettingsAction(): Promise<ApiResponse<PlatformS
     return await PlatformService.getPlatformSettings()
   } catch (err: any) {
     return { success: false, error: err?.message || 'Failed to fetch platform settings' }
+  }
+}
+
+/**
+ * Server Action: Get Public Platform Branding, Domain & Contact Settings
+ * Safe for public consumption across marketing, login, tenant layouts.
+ */
+export async function getPublicPlatformSettingsAction(): Promise<ApiResponse<PlatformSystemSettings>> {
+  try {
+    const settings = await PlatformService.getPublicPlatformSettings()
+    return { success: true, data: settings }
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Failed to fetch public platform settings' }
   }
 }
 

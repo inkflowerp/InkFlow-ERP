@@ -201,4 +201,26 @@ describe('Tenant Subdomain Resolution & DNS Utility Unit Tests', () => {
     assert.equal(getTenantNavHref('/sales/new-work', '/rangao/production', 'rangao'), '/rangao/sales/new-work')
     assert.equal(getTenantNavHref('/orders', '/vision/dashboard', 'vision'), '/vision/orders')
   })
+
+  test('21. Resolves nested www on Vercel preview domain cleanly', () => {
+    const res = resolveHostname('www.vision.inkflow-erp.vercel.app', 'inkflow-erp.vercel.app')
+    assert.equal(res.hostType, 'tenant')
+    assert.equal(res.tenantSlug, 'vision')
+    assert.equal(res.rootDomain, 'inkflow-erp.vercel.app')
+  })
+
+  test('22. getTenantBaseUrl and getTenantLink strip www. prefixes from root domain', () => {
+    const base = getTenantBaseUrl('vision')
+    assert.ok(!base.includes('www.inkflow.com.bd'))
+    assert.ok(base.includes('vision.'))
+
+    const link = getTenantLink('vision', '/vision/orders')
+    assert.ok(!link.includes('/vision/vision/orders'))
+    assert.ok(link.endsWith('/orders'))
+  })
+
+  test('23. getAuthCookieOptions normalizes www root domain', () => {
+    const opts = getAuthCookieOptions('www.inkflow.com.bd')
+    assert.equal(opts.domain, '.inkflow.com.bd')
+  })
 })

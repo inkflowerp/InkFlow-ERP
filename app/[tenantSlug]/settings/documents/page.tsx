@@ -56,7 +56,7 @@ import {
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
-import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { getTenantNavHref, getTenantBaseUrl, formatDocumentUrl } from '@/lib/tenant/tenant-url'
 
 export default function DocumentDesignerPage() {
   const { company } = useTenant()
@@ -139,7 +139,7 @@ export default function DocumentDesignerPage() {
     company_phone: company?.phone || '+880 1711-000000',
     company_email: company?.email || 'billing@example.com',
     company_address: company?.address || '12/A Motijheel C/A, Dhaka',
-    company_website: company?.website || `https://${slug}.printerp.app`,
+    company_website: company?.website || getTenantBaseUrl(slug),
 
     // Customer
     customer_name: 'Ashiqur Rahman',
@@ -183,7 +183,7 @@ export default function DocumentDesignerPage() {
     date: new Date().toISOString().split('T')[0],
     due_date: 'Due Upon Receipt',
     items_summary: '• PVC Flex Vinyl Banner (120 sqft) - ৳ 18,000\n• Acrylic LED 3D Letter Signboard (1 set) - ৳ 27,500',
-    document_link: `https://printerp.app/${slug}/${selectedDoc === 'quotation' ? 'quotations' : 'billing'}/sample-preview`,
+    document_link: formatDocumentUrl(slug, selectedDoc === 'quotation' ? 'quotation' : 'invoice', 'sample-preview'),
   }
 
   // Active Document Available Variables

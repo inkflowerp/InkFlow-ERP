@@ -20,6 +20,8 @@ import {
 import { loginSchema, LoginFormData } from '@/features/auth/auth.schemas'
 import { signInAction, signInWithGoogleAction } from '@/actions/auth.actions'
 import { GoogleOAuthProvider } from '@/lib/auth/auth-providers'
+import { resolveHostname } from '@/lib/tenant/tenant-resolution'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -165,25 +167,47 @@ function LoginForm() {
         const targetSlug = res.data.session.companySlug || 'my-company'
         const paramRedirect = searchParams.get('redirectTo')
 
-        // Preserve redirectTo and map to the authenticated tenant's route
-        let destination = `/${targetSlug}/dashboard`
-        if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
-          const cleanPath = paramRedirect.split('?')[0]
-          const queryPart = paramRedirect.includes('?') ? `?${paramRedirect.split('?')[1]}` : ''
-          const parts = cleanPath.split('/').filter(Boolean)
-
-          if (parts.length > 1) {
-            const subPath = parts.slice(1).join('/')
-            destination = `/${targetSlug}/${subPath}${queryPart}`
-          } else if (parts.length === 1) {
-            if (parts[0] === targetSlug || parts[0] === 'dashboard') {
-              destination = `/${targetSlug}/dashboard${queryPart}`
-            } else {
-              destination = `/${targetSlug}/${parts[0]}${queryPart}`
-            }
-          } else {
-            destination = paramRedirect
+        // Resolve active host topology to avoid redundant slug prefixes on subdomains
+        let isCurrentHostSubdomain = false
+        let currentHostTenantSlug: string | null = null
+        if (typeof window !== 'undefined') {
+          const resHost = resolveHostname(window.location.host)
+          if (resHost.hostType === 'tenant') {
+            isCurrentHostSubdomain = true
+            currentHostTenantSlug = resHost.tenantSlug
           }
+        }
+
+        let destination: string
+        if (isCurrentHostSubdomain) {
+          if (currentHostTenantSlug && currentHostTenantSlug !== targetSlug) {
+            // User logged in on workspace A, but account belongs to workspace B
+            window.location.href = getTenantLink(targetSlug, paramRedirect || '/dashboard')
+            return
+          }
+          // Authenticated directly on matching tenant subdomain -> clean relative URL
+          let clean = '/dashboard'
+          if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
+            clean = paramRedirect
+            if (clean.startsWith(`/${targetSlug}/`)) {
+              clean = clean.slice(`/${targetSlug}`.length) || '/dashboard'
+            } else if (clean === `/${targetSlug}`) {
+              clean = '/dashboard'
+            }
+          }
+          destination = clean
+        } else {
+          // On root domain (e.g. inkflow.com.bd, localhost:3000)
+          let cleanSubPath = '/dashboard'
+          if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
+            cleanSubPath = paramRedirect
+            if (cleanSubPath.startsWith(`/${targetSlug}/`)) {
+              cleanSubPath = cleanSubPath.slice(`/${targetSlug}`.length) || '/dashboard'
+            } else if (cleanSubPath === `/${targetSlug}`) {
+              cleanSubPath = '/dashboard'
+            }
+          }
+          destination = getTenantLink(targetSlug, cleanSubPath)
         }
 
         // Hard redirect to force HTTP request headers to include the updated tenant session cookie

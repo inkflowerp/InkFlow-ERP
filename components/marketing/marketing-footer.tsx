@@ -14,9 +14,11 @@ import {
 } from 'lucide-react'
 import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
 export function MarketingFooter() {
   const { locale, setLocale, tBilingual } = useI18n()
+  const { appName, appLogoUrl, contactAddress, contactPhone, contactEmail, supportHelpline } = usePlatformSettings()
 
   return (
     <footer className="bg-slate-950 text-slate-400 border-t border-slate-800/80 pt-12 sm:pt-16 pb-8 sm:pb-12">
@@ -25,16 +27,24 @@ export function MarketingFooter() {
           {/* Col 1: Brand Info (Full on mobile, 2 cols on md) */}
           <div className="col-span-1 xs:col-span-2 md:col-span-2 space-y-4">
             <Link href="/" className="flex items-center gap-2.5 sm:gap-3 group">
-              <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-md shrink-0">
-                <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
-                <div className="absolute -bottom-1 -right-1 flex gap-0.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-500" />
-                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+              {appLogoUrl ? (
+                <img
+                  src={appLogoUrl}
+                  alt={appName}
+                  className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-md shrink-0"
+                />
+              ) : (
+                <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-md shrink-0">
+                  <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <div className="absolute -bottom-1 -right-1 flex gap-0.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-500" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
+                  </div>
                 </div>
-              </div>
+              )}
               <span className="text-xl font-black tracking-tight text-white">
-                Print<span className="text-cyan-400">ERP</span>
+                {appName}
               </span>
             </Link>
 
@@ -48,15 +58,15 @@ export function MarketingFooter() {
             <div className="space-y-1.5 text-xs text-slate-400 pt-1 font-mono">
               <div className="flex items-center gap-2">
                 <MapPin className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>Arambagh Press Cluster, Motijheel, Dhaka-1000</span>
+                <span>{contactAddress || 'Arambagh Press Cluster, Motijheel, Dhaka-1000'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span>+880 1819-876543 (Dhaka Desk)</span>
+                <span>{contactPhone || supportHelpline || '+880 1819-876543 (Dhaka Desk)'}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                <span className="break-all sm:break-normal">support@printerp.com.bd</span>
+                <span className="break-all sm:break-normal">{contactEmail || 'support@printerp.com.bd'}</span>
               </div>
             </div>
           </div>
@@ -156,7 +166,7 @@ export function MarketingFooter() {
           </div>
 
           <div className="text-slate-500 text-center sm:text-right text-[11px] sm:text-xs">
-            © {new Date().getFullYear()} PrintERP SaaS Ltd. All rights reserved.
+            © {new Date().getFullYear()} {appName} Ltd. All rights reserved.
           </div>
         </div>
       </div>

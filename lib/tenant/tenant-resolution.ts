@@ -78,11 +78,28 @@ export const RESERVED_SLUGS = new Set([
   'demo',
 ])
 
+let runtimeRootDomain: string | null = null
+
+/**
+ * Sets the active platform-configured root domain dynamically.
+ */
+export function setRuntimeRootDomain(domain: string | null | undefined): void {
+  if (domain && domain.trim()) {
+    runtimeRootDomain = domain.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
+  } else {
+    runtimeRootDomain = null
+  }
+}
+
 /**
  * Normalizes and extracts the configured root domain.
  * Defaults to 'inkflow.com.bd' in production, 'localhost:3000' in development.
  */
 export function getRootDomain(): string {
+  if (runtimeRootDomain) {
+    return runtimeRootDomain
+  }
+
   const configured =
     process.env.NEXT_PUBLIC_ROOT_DOMAIN ||
     process.env.NEXT_PUBLIC_APP_DOMAIN ||
@@ -91,31 +108,43 @@ export function getRootDomain(): string {
     process.env.NEXT_PUBLIC_VERCEL_URL
 
   if (configured && configured.trim() !== '') {
-    // Strip protocol if present
-    return configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
+    // Strip protocol if present and strip leading www.
+    const clean = configured.replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim()
+    return clean.replace(/^www\./i, '')
   }
 
   // Client-side fallback: check window.location.host
   if (typeof window !== 'undefined' && window.location && window.location.host) {
     const browserHost = window.location.host.toLowerCase().trim()
+    const hostWithoutPort = browserHost.split(':')[0]
+    const port = window.location.port ? `:${window.location.port}` : (browserHost.includes(':') ? `:${browserHost.split(':')[1]}` : '')
+
     if (
-      browserHost.includes('localhost') ||
-      browserHost.includes('127.0.0.1') ||
-      browserHost.endsWith('.vercel.app')
+      hostWithoutPort === 'localhost' ||
+      hostWithoutPort.endsWith('.localhost') ||
+      hostWithoutPort.includes('127.0.0.1')
     ) {
-      if (browserHost.endsWith('.vercel.app')) {
-        const parts = browserHost.split('.')
-        // e.g. inkflow-erp.vercel.app (3 parts)
-        if (parts.length === 3) {
-          return browserHost
-        }
-        // e.g. vision.inkflow-erp.vercel.app (4 parts) -> root is inkflow-erp.vercel.app
-        if (parts.length === 4) {
-          return parts.slice(1).join('.')
-        }
+      return `localhost${port}`
+    }
+
+    if (hostWithoutPort.endsWith('.vercel.app')) {
+      const parts = hostWithoutPort.split('.')
+      // e.g. inkflow-erp.vercel.app (3 parts) or vision.inkflow-erp.vercel.app (4 parts)
+      if (parts.length >= 3) {
+        return parts.slice(-3).join('.') + port
       }
       return browserHost
     }
+
+    if (hostWithoutPort.endsWith('.inkflow.com.bd')) {
+      return `inkflow.com.bd${port}`
+    }
+
+    if (hostWithoutPort.startsWith('www.')) {
+      return hostWithoutPort.replace(/^www\./i, '') + port
+    }
+
+    return browserHost
   }
 
   if (process.env.NODE_ENV === 'production') {
@@ -210,7 +239,7 @@ export function resolveHostname(
   overrideRootDomain?: string
 ): HostnameResolution {
   const rootDomain = (overrideRootDomain || getRootDomain()).toLowerCase().trim()
-  const cleanRoot = rootDomain.split(':')[0] // strip port for comparison
+  const cleanRoot = rootDomain.split(':')[0].replace(/^www\./i, '') // strip port and www for comparison
 
   if (!rawHost || typeof rawHost !== 'string' || !rawHost.trim()) {
     return {
@@ -271,7 +300,7 @@ export function resolveHostname(
 
   // 2. Vercel preview / deployment URLs (e.g. printerp-xxx.vercel.app or rangao.inkflow-erp.vercel.app)
   if (hostWithoutPort.endsWith('.vercel.app')) {
-    if (hostWithoutPort === cleanRoot) {
+    if (hostWithoutPort === cleanRoot || hostWithoutPort === `www.${cleanRoot}`) {
       return {
         hostname: fullHost,
         hostType: 'root',
@@ -292,10 +321,23 @@ export function resolveHostname(
         rootDomain,
       }
     }
-    // Handle tenant subdomain on Vercel: e.g. rangao.inkflow-erp.vercel.app (4 parts)
-    if (vercelParts.length === 4) {
-      const slug = vercelParts[0].toLowerCase().trim()
-      const vercelRoot = vercelParts.slice(1).join('.')
+    // Handle tenant subdomain on Vercel: e.g. rangao.inkflow-erp.vercel.app (>= 4 parts)
+    if (vercelParts.length >= 4) {
+      const vercelRoot = vercelParts.slice(-3).join('.')
+      const subParts = vercelParts.slice(0, -3).filter((p) => p !== 'www')
+      const slug = subParts[subParts.length - 1] || ''
+
+      if (!slug || slug === 'www') {
+        return {
+          hostname: fullHost,
+          hostType: 'root',
+          tenantSlug: null,
+          isLocalhost,
+          isDevelopment,
+          rootDomain: vercelRoot,
+        }
+      }
+
       if (isReservedSlug(slug)) {
         return {
           hostname: fullHost,
@@ -379,7 +421,7 @@ export function resolveHostname(
     const rawSubdomain = hostWithoutPort.slice(0, -(canonicalRoot.length + 1)).toLowerCase().trim()
 
     // Handle nested subdomains if any (take the deepest label: e.g. vision in vision.inkflow.com.bd)
-    const slugParts = rawSubdomain.split('.').filter(Boolean)
+    const slugParts = rawSubdomain.split('.').filter((p) => Boolean(p) && p !== 'www')
     const slug = slugParts[slugParts.length - 1] || ''
 
     if (!slug || slug === 'www') {
@@ -455,7 +497,7 @@ export function extractTenantSlug(
  */
 export function getAuthCookieOptions(customDomain?: string) {
   const rootDomain = (customDomain || getRootDomain()).toLowerCase().trim()
-  const cleanRoot = rootDomain.split(':')[0]
+  const cleanRoot = rootDomain.split(':')[0].replace(/^www\./i, '')
   const isLocalhost =
     cleanRoot === 'localhost' ||
     cleanRoot === '127.0.0.1' ||

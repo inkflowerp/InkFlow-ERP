@@ -58,6 +58,7 @@ import {
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem, type NavSection } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { useTenant } from '@/hooks/use-tenant'
 import { usePermissions } from '@/hooks/use-permissions'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -120,6 +121,7 @@ const EXPANDED_SUB_NAV_STORAGE_KEY = 'inkflow_nav_expanded_sub_nav'
 export function Sidebar() {
   const pathname = usePathname()
   const { company } = useTenant()
+  const { appName, appLogoUrl, tagline } = usePlatformSettings()
   const { can, isOwner } = usePermissions()
   const { hasFeature, isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
@@ -333,32 +335,46 @@ export function Sidebar() {
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
             className="flex items-center gap-2.5 group cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-lg p-0.5"
           >
-            {/* CMYK Symbol: 4 distinct printing dots */}
-            <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 dark:bg-slate-800 shadow-xs group-hover:scale-105 transition-transform">
-              <span className="h-2 w-2 rounded-full bg-cyan-400" />
-              <span className="h-2 w-2 rounded-full bg-pink-500" />
-              <span className="h-2 w-2 rounded-full bg-yellow-400" />
-              <span className="h-2 w-2 rounded-full bg-slate-200" />
-            </div>
+            {/* CMYK Symbol or Custom Logo */}
+            {appLogoUrl ? (
+              <img
+                src={appLogoUrl}
+                alt={appName}
+                className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+              />
+            ) : (
+              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 dark:bg-slate-800 shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                <span className="h-2 w-2 rounded-full bg-pink-500" />
+                <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                <span className="h-2 w-2 rounded-full bg-slate-200" />
+              </div>
+            )}
             <div className="flex flex-col text-left">
               <span className="font-black tracking-tight text-base text-slate-900 dark:text-white leading-tight">
-                Ink<span className="text-blue-600">Flow</span>
+                {appName}
               </span>
-              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400">
-                {tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 truncate max-w-[130px]">
+                {tagline || tBilingual('Print ERP System', 'প্রিন্ট ইআরপি সফটওয়্যার')}
               </span>
             </div>
           </Link>
         ) : (
           <Link
             href={getTenantNavHref('/dashboard', pathname, company?.slug)}
-            className="mx-auto grid grid-cols-2 gap-0.5 p-1 rounded-md bg-slate-900 dark:bg-slate-800 hover:scale-105 transition-transform cursor-pointer"
-            title="InkFlow ERP Dashboard"
+            className="mx-auto flex items-center justify-center p-1 rounded-md bg-slate-900 dark:bg-slate-800 hover:scale-105 transition-transform cursor-pointer h-8 w-8"
+            title={`${appName} Dashboard`}
           >
-            <span className="h-2 w-2 rounded-full bg-cyan-400" />
-            <span className="h-2 w-2 rounded-full bg-pink-500" />
-            <span className="h-2 w-2 rounded-full bg-yellow-400" />
-            <span className="h-2 w-2 rounded-full bg-slate-200" />
+            {appLogoUrl ? (
+              <img src={appLogoUrl} alt={appName} className="h-6 w-6 object-contain" />
+            ) : (
+              <div className="grid grid-cols-2 gap-0.5">
+                <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                <span className="h-2 w-2 rounded-full bg-pink-500" />
+                <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                <span className="h-2 w-2 rounded-full bg-slate-200" />
+              </div>
+            )}
           </Link>
         )}
 

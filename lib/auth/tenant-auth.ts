@@ -287,16 +287,27 @@ export const getCurrentTenant = cache(async function getCurrentTenant(
  */
 export async function requireTenantUser(requestedSlugOrId?: string): Promise<TenantContext> {
   let targetSlug = requestedSlugOrId
-  if (!targetSlug) {
-    try {
-      const { headers } = await import('next/headers')
-      const headerStore = await headers()
-      const headerSlug = headerStore.get('x-tenant-slug')
-      if (headerSlug) {
-        targetSlug = headerSlug
+  let isSubdomain = false
+
+  try {
+    const { headers } = await import('next/headers')
+    const headerStore = await headers()
+    const headerSlug = headerStore.get('x-tenant-slug')
+    if (headerSlug && !targetSlug) {
+      targetSlug = headerSlug
+    }
+    const headerHost = headerStore.get('x-tenant-hostname') || headerStore.get('host')
+    if (headerHost) {
+      const { resolveHostname } = await import('../tenant/tenant-resolution.ts')
+      const resolution = resolveHostname(headerHost)
+      if (resolution.hostType === 'tenant') {
+        isSubdomain = true
+        if (!targetSlug && resolution.tenantSlug) {
+          targetSlug = resolution.tenantSlug
+        }
       }
-    } catch {}
-  }
+    }
+  } catch {}
 
   const tenant = await getCurrentTenant(targetSlug)
 
@@ -310,6 +321,26 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
 
     if (hasPlatformCookie) {
       await performRedirect('/platform')
+    }
+
+    // Verify if workspace actually exists and is active
+    if (targetSlug) {
+      try {
+        const company = await TenantRepository.getCompanyBySlug(targetSlug)
+        if (!company) {
+          await performRedirect(`/tenant-not-found?slug=${encodeURIComponent(targetSlug)}`)
+          throw new Error('Tenant Not Found')
+        }
+        if (company.is_active === false) {
+          await performRedirect(`/tenant-suspended?slug=${encodeURIComponent(targetSlug)}`)
+          throw new Error('Tenant Suspended')
+        }
+      } catch (err: any) {
+        if (err?.message?.startsWith('REDIRECT:') || err?.digest?.startsWith('NEXT_REDIRECT')) {
+          throw err
+        }
+        // Fall through if lookup error
+      }
     }
 
     // Check if the user is authenticated in Supabase but lacks access to THIS tenant (Cross-tenant access attempt)
@@ -326,8 +357,9 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       throw new Error('Forbidden: Cross-Tenant Access Denied')
     }
 
+    const redirectPath = isSubdomain ? '/dashboard' : (targetSlug ? `/${targetSlug}/dashboard` : '/dashboard')
     await performRedirect(
-      `/login${targetSlug ? `?error=unauthorized&redirectTo=/${targetSlug}/dashboard` : '?error=unauthorized'}`
+      `/login?error=unauthorized&redirectTo=${encodeURIComponent(redirectPath)}`
     )
     throw new Error('Unauthorized')
   }

@@ -228,15 +228,15 @@ export function PermissionSimulator({
   return (
     <div className="space-y-6">
       {/* Mode Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-2 rounded-xl border border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-2">
           <Button
             variant={activeMode === 'simulate' ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setActiveMode('simulate')}
             className={cn(
-              'gap-2 rounded-lg font-medium text-xs sm:text-sm',
-              activeMode === 'simulate' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-400 hover:text-white'
+              'gap-2 rounded-lg font-medium text-xs sm:text-sm cursor-pointer',
+              activeMode === 'simulate' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
             <Sliders className="w-4 h-4" />
@@ -248,19 +248,19 @@ export function PermissionSimulator({
             size="sm"
             onClick={() => setActiveMode('audit')}
             className={cn(
-              'gap-2 rounded-lg font-medium text-xs sm:text-sm',
-              activeMode === 'audit' ? 'bg-amber-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              'gap-2 rounded-lg font-medium text-xs sm:text-sm cursor-pointer',
+              activeMode === 'audit' ? 'bg-amber-600 hover:bg-amber-500 text-white shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             )}
           >
             <ShieldAlert className="w-4 h-4" />
             Reverse Permission Auditor (কে কী করতে পারে?)
-            <Badge variant="outline" className="ml-1 bg-amber-500/20 text-amber-300 border-amber-500/30 text-[10px]">
+            <Badge variant="outline" className="ml-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]">
               {HIGH_RISK_ACTIONS.length}
             </Badge>
           </Button>
         </div>
 
-        <div className="text-xs text-slate-400 px-2 flex items-center gap-1.5">
+        <div className="text-xs text-slate-500 dark:text-slate-400 px-2 flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-primary" />
           Real-time RBAC + ABAC Resolution Engine
         </div>
@@ -271,13 +271,13 @@ export function PermissionSimulator({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Controls Column */}
           <div className="lg:col-span-5 space-y-4">
-            <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-md">
+            <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md shadow-xs">
               <CardHeader className="pb-4">
-                <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                  <User className="w-4 h-4 text-sky-400" />
+                <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <User className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   Select Test Context (টেস্ট প্যারামিটার)
                 </CardTitle>
-                <CardDescription className="text-xs text-slate-400">
+                <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
                   Select a team user, target ERP module, action, and branch to evaluate exact runtime clearance.
                 </CardDescription>
               </CardHeader>
@@ -285,11 +285,11 @@ export function PermissionSimulator({
               <CardContent className="space-y-4">
                 {/* User Selector */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-300 font-medium">1. Target User (ব্যবহারকারী)</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">1. Target User (ব্যবহারকারী)</Label>
                   <select
                     value={selectedUserId}
                     onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {safeUsers.map((u) => (
                       <option key={u.id} value={u.id}>
@@ -301,11 +301,11 @@ export function PermissionSimulator({
 
                 {/* Module Selector */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-300 font-medium">2. ERP Module (মডিউল)</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">2. ERP Module (মডিউল)</Label>
                   <select
                     value={selectedModule}
                     onChange={(e) => setSelectedModule(e.target.value as PermissionModule)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {Object.entries(MODULE_ACTION_SPECS).map(([key, spec]) => (
                       <option key={key} value={key}>
@@ -317,7 +317,7 @@ export function PermissionSimulator({
 
                 {/* Action Selector */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-300 font-medium">3. Desired Action (অনুরোধকৃত কাজ)</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">3. Desired Action (অনুরোধকৃত কাজ)</Label>
                   <div className="grid grid-cols-3 gap-2">
                     {availableActions.map((act) => {
                       const isSelected = selectedAction === act
@@ -328,12 +328,12 @@ export function PermissionSimulator({
                           type="button"
                           onClick={() => setSelectedAction(act)}
                           className={cn(
-                            'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all text-center flex items-center justify-center gap-1',
+                            'px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all text-center flex items-center justify-center gap-1 cursor-pointer',
                             isSelected
                               ? isDestructive
-                                ? 'bg-rose-500/20 border-rose-500 text-rose-300 shadow-sm'
-                                : 'bg-primary/20 border-primary text-primary-foreground shadow-sm'
-                              : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                                ? 'bg-rose-50 dark:bg-rose-500/20 border-rose-300 dark:border-rose-500 text-rose-800 dark:text-rose-300 shadow-xs'
+                                : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary text-primary dark:text-primary-foreground shadow-xs font-semibold'
+                              : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'
                           )}
                         >
                           {ACTION_LABELS[act]?.label || act}
@@ -345,11 +345,11 @@ export function PermissionSimulator({
 
                 {/* Branch Scope Selector */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-slate-300 font-medium">4. Context Branch (লোকেশন বা শাখা)</Label>
+                  <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">4. Context Branch (লোকেশন বা শাখা)</Label>
                   <select
                     value={selectedBranchId}
                     onChange={(e) => setSelectedBranchId(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="all">Any Branch / General Context (যে কোনো শাখা)</option>
                     {safeBranches.map((b) => (
@@ -365,7 +365,7 @@ export function PermissionSimulator({
                     variant="outline"
                     size="sm"
                     onClick={() => onEditUserPermissions(selectedUser)}
-                    className="w-full mt-2 border-slate-700 hover:bg-slate-800 text-xs text-slate-300 gap-1.5"
+                    className="w-full mt-2 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs text-slate-700 dark:text-slate-300 gap-1.5"
                   >
                     <Sliders className="w-3.5 h-3.5 text-primary" />
                     Configure Overrides for {getUserDisplayName(selectedUser).split(' ')[0]}
@@ -378,23 +378,23 @@ export function PermissionSimulator({
           {/* Resolution Pipeline Column */}
           <div className="lg:col-span-7 space-y-4">
             {evaluationResult && selectedUser && (
-              <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md overflow-hidden shadow-lg">
+              <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md overflow-hidden shadow-xs">
                 {/* Result Header Banner */}
                 <div
                   className={cn(
                     'p-4 border-b flex items-center justify-between',
                     evaluationResult.finalGranted
-                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                      : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-800 dark:text-emerald-300'
+                      : 'bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-300'
                   )}
                 >
                   <div className="flex items-center gap-3">
                     {evaluationResult.finalGranted ? (
-                      <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                      <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40">
                         <CheckCircle2 className="w-6 h-6" />
                       </div>
                     ) : (
-                      <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                      <div className="p-2 rounded-xl bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/40">
                         <XCircle className="w-6 h-6" />
                       </div>
                     )}
@@ -402,8 +402,8 @@ export function PermissionSimulator({
                       <div className="text-lg font-bold tracking-tight">
                         {evaluationResult.finalGranted ? 'ACCESS GRANTED (অনুমোদিত)' : 'ACCESS DENIED (নিষিদ্ধ)'}
                       </div>
-                      <div className="text-xs opacity-90">
-                        User <span className="font-semibold text-white">{getUserDisplayName(selectedUser)}</span> is{' '}
+                      <div className="text-xs opacity-90 text-slate-600 dark:text-slate-300">
+                        User <span className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(selectedUser)}</span> is{' '}
                         {evaluationResult.finalGranted ? 'authorized' : 'not permitted'} to execute{' '}
                         <Badge variant="outline" className="mx-1 px-1.5 py-0 text-[10px] uppercase font-mono">
                           {selectedModule}.{selectedAction}
@@ -417,8 +417,8 @@ export function PermissionSimulator({
                     className={cn(
                       'text-xs font-bold px-2.5 py-1',
                       evaluationResult.finalGranted
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                        : 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                        ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/40'
+                        : 'bg-rose-500/20 text-rose-700 dark:text-rose-400 border-rose-500/40'
                     )}
                   >
                     {evaluationResult.detail.source.toUpperCase()}
@@ -428,39 +428,39 @@ export function PermissionSimulator({
                 <CardContent className="p-5 space-y-5">
                   {/* Step-by-Step Resolution Pathway */}
                   <div className="space-y-3">
-                    <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-                      <Layers className="w-3.5 h-3.5 text-sky-400" />
+                    <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                      <Layers className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                       Evaluation Decision Tree (সিদ্ধান্ত নেওয়ার ধাপসমূহ)
                     </div>
 
                     <div className="space-y-2 text-xs">
                       {/* Step 1: User Account & Ownership */}
-                      <div className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px] mt-0.5">01</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">01</div>
                           <div>
-                            <div className="font-medium text-slate-200">Account Status & Base Role</div>
-                            <div className="text-slate-400 text-[11px]">
-                              Status: <span className={selectedUser.status === 'active' ? 'text-emerald-400' : 'text-rose-400'}>{selectedUser.status || 'active'}</span> • Primary Role: <span className="text-sky-300 font-medium">{getUserRoleLabel(selectedUser)}</span>
+                            <div className="font-medium text-slate-900 dark:text-slate-200">Account Status & Base Role</div>
+                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                              Status: <span className={selectedUser.status === 'active' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-rose-600 dark:text-rose-400 font-medium'}>{selectedUser.status || 'active'}</span> • Primary Role: <span className="text-sky-700 dark:text-sky-300 font-medium">{getUserRoleLabel(selectedUser)}</span>
                             </div>
                           </div>
                         </div>
                         {selectedUser.status === 'disabled' ? (
                           <Badge variant="destructive" className="text-[10px]">Account Disabled</Badge>
                         ) : evaluationResult.isOwner ? (
-                          <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-[10px]">Owner Full Access</Badge>
+                          <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]">Owner Full Access</Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-slate-800 text-slate-300 text-[10px]">Active Member</Badge>
+                          <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-[10px]">Active Member</Badge>
                         )}
                       </div>
 
                       {/* Step 2: Inherited Responsibilities */}
-                      <div className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px] mt-0.5">02</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">02</div>
                           <div>
-                            <div className="font-medium text-slate-200">Role & Responsibilities Matrix</div>
-                            <div className="text-slate-400 text-[11px]">
+                            <div className="font-medium text-slate-900 dark:text-slate-200">Role & Responsibilities Matrix</div>
+                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
                               Assigned: {evaluationResult.responsibilities.join(', ')}
                             </div>
                           </div>
@@ -470,8 +470,8 @@ export function PermissionSimulator({
                           className={cn(
                             'text-[10px]',
                             evaluationResult.detail.source === 'inherited'
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                              : 'bg-slate-800 text-slate-400'
+                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-medium'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                           )}
                         >
                           {evaluationResult.detail.source === 'inherited' ? 'Granted in Matrix' : 'Evaluated'}
@@ -479,12 +479,12 @@ export function PermissionSimulator({
                       </div>
 
                       {/* Step 3: Explicit User Overrides */}
-                      <div className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px] mt-0.5">03</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">03</div>
                           <div>
-                            <div className="font-medium text-slate-200">Direct User Overrides (+Grant / -Deny)</div>
-                            <div className="text-slate-400 text-[11px]">
+                            <div className="font-medium text-slate-900 dark:text-slate-200">Direct User Overrides (+Grant / -Deny)</div>
+                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
                               {evaluationResult.detail.source === 'override_allow' && 'Explicit user grant override applied'}
                               {evaluationResult.detail.source === 'override_deny' && 'Explicit user revoke override applied'}
                               {!evaluationResult.detail.source.startsWith('override') && 'No specific override for this action'}
@@ -496,10 +496,10 @@ export function PermissionSimulator({
                           className={cn(
                             'text-[10px]',
                             evaluationResult.detail.source === 'override_allow'
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 font-bold'
+                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold'
                               : evaluationResult.detail.source === 'override_deny'
-                              ? 'bg-rose-500/20 text-rose-300 border-rose-500/30 font-bold'
-                              : 'bg-slate-800 text-slate-500'
+                              ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30 font-bold'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700'
                           )}
                         >
                           {evaluationResult.detail.source === 'override_allow'
@@ -511,13 +511,13 @@ export function PermissionSimulator({
                       </div>
 
                       {/* Step 4: Branch Scope & Data Isolation */}
-                      <div className="p-3 rounded-lg bg-slate-950/70 border border-slate-800 flex items-start justify-between gap-3">
+                      <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-800 text-slate-300 font-mono text-[10px] mt-0.5">04</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">04</div>
                           <div>
-                            <div className="font-medium text-slate-200">Branch & Data Scope Filter</div>
-                            <div className="text-slate-400 text-[11px]">
-                              Scope: <span className="text-sky-300 uppercase">{evaluationResult.moduleScope}</span> • {evaluationResult.branchReason}
+                            <div className="font-medium text-slate-900 dark:text-slate-200">Branch & Data Scope Filter</div>
+                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                              Scope: <span className="text-sky-700 dark:text-sky-300 font-semibold uppercase">{evaluationResult.moduleScope}</span> • {evaluationResult.branchReason}
                             </div>
                           </div>
                         </div>
@@ -526,8 +526,8 @@ export function PermissionSimulator({
                           className={cn(
                             'text-[10px]',
                             evaluationResult.branchAccessGranted
-                              ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                              : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                              ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                              : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30'
                           )}
                         >
                           {evaluationResult.branchAccessGranted ? 'Branch Passed' : 'Branch Restricted'}
@@ -537,12 +537,12 @@ export function PermissionSimulator({
                   </div>
 
                   {/* Summary Box */}
-                  <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
-                    <div className="text-slate-400">
-                      Authoritative resolution: <span className="font-semibold text-white">{evaluationResult.detail.sourceDetail}</span>
+                  <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
+                    <div className="text-slate-600 dark:text-slate-400">
+                      Authoritative resolution: <span className="font-semibold text-slate-900 dark:text-white">{evaluationResult.detail.sourceDetail}</span>
                     </div>
                     <div className="text-slate-500 text-[11px]">
-                      Module: <span className="text-slate-300 font-mono">{selectedModule}</span>
+                      Module: <span className="text-slate-700 dark:text-slate-300 font-mono font-medium">{selectedModule}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -555,15 +555,15 @@ export function PermissionSimulator({
       {/* MODE 2: REVERSE PERMISSION AUDITOR */}
       {activeMode === 'audit' && (
         <div className="space-y-4">
-          <Card className="border-slate-800 bg-slate-900/50 backdrop-blur-md shadow-md">
+          <Card className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50 backdrop-blur-md shadow-xs">
             <CardHeader className="pb-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base font-semibold text-white flex items-center gap-2">
-                    <ShieldAlert className="w-4 h-4 text-amber-400" />
+                  <CardTitle className="text-base font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <ShieldAlert className="w-4 h-4 text-amber-500" />
                     High-Risk Permission Security Audit (সংবেদনশীল অনুমতি নিরীক্ষা)
                   </CardTitle>
-                  <CardDescription className="text-xs text-slate-400">
+                  <CardDescription className="text-xs text-slate-500 dark:text-slate-400">
                     Audit exactly which team members hold dangerous permissions across the company.
                   </CardDescription>
                 </div>
@@ -572,7 +572,7 @@ export function PermissionSimulator({
                   variant="outline"
                   size="sm"
                   onClick={handleExportAuditCSV}
-                  className="border-slate-700 text-xs text-slate-300 hover:bg-slate-800 gap-1.5 self-start md:self-auto"
+                  className="border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 self-start md:self-auto cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5 text-primary" />
                   Export Compliance CSV
@@ -583,7 +583,7 @@ export function PermissionSimulator({
             <CardContent className="space-y-4">
               {/* High-Risk Selector Pills */}
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium">Select Critical Operation to Audit:</Label>
+                <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Select Critical Operation to Audit:</Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                   {HIGH_RISK_ACTIONS.map((item) => {
                     const isSelected = auditTargetCode === item.code
@@ -593,19 +593,19 @@ export function PermissionSimulator({
                         type="button"
                         onClick={() => setAuditTargetCode(item.code)}
                         className={cn(
-                          'p-2.5 rounded-xl border text-left transition-all relative',
+                          'p-2.5 rounded-xl border text-left transition-all relative cursor-pointer',
                           isSelected
-                            ? 'bg-amber-500/10 border-amber-500/50 text-white shadow-sm ring-1 ring-amber-500/30'
-                            : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                            ? 'bg-amber-500/10 border-amber-500/50 text-slate-900 dark:text-white shadow-xs ring-1 ring-amber-500/30'
+                            : 'bg-slate-50 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-slate-200'
                         )}
                       >
                         <div className="flex items-center justify-between gap-1">
-                          <span className="font-semibold text-xs text-slate-200">{item.label}</span>
-                          <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 uppercase bg-slate-900 border-slate-700">
+                          <span className="font-semibold text-xs text-slate-900 dark:text-slate-200">{item.label}</span>
+                          <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                             {item.code}
                           </Badge>
                         </div>
-                        <div className="text-[11px] text-slate-400 mt-1 line-clamp-1">{item.desc}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">{item.desc}</div>
                       </button>
                     )
                   })}
@@ -615,26 +615,26 @@ export function PermissionSimulator({
               {/* Filter Search Bar */}
               <div className="flex items-center justify-between gap-3 pt-2">
                 <div className="relative flex-1 max-w-sm">
-                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" />
                   <Input
                     type="text"
                     placeholder="Filter audit results by name or email..."
                     value={auditSearchQuery}
                     onChange={(e) => setAuditSearchQuery(e.target.value)}
-                    className="pl-9 h-8 text-xs bg-slate-950 border-slate-800"
+                    className="pl-9 h-8 text-xs bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
                   />
                 </div>
 
-                <div className="text-xs text-slate-400">
-                  Found <span className="font-bold text-amber-400">{auditResults.length}</span> user(s) with this privilege
+                <div className="text-xs text-slate-600 dark:text-slate-400">
+                  Found <span className="font-bold text-amber-600 dark:text-amber-400">{auditResults.length}</span> user(s) with this privilege
                 </div>
               </div>
 
               {/* Audit Results Table */}
-              <div className="rounded-xl border border-slate-800 overflow-hidden bg-slate-950/60">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950/60 shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-900/90 text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-800">
+                    <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className="px-4 py-3">Team Member</th>
                         <th className="px-4 py-3">Role / Department</th>
@@ -643,7 +643,7 @@ export function PermissionSimulator({
                         <th className="px-4 py-3 text-right">Quick Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-800/60">
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                       {!Array.isArray(auditResults) || auditResults.length === 0 ? (
                         <tr>
                           <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
@@ -652,14 +652,14 @@ export function PermissionSimulator({
                         </tr>
                       ) : (
                         (Array.isArray(auditResults) ? auditResults : []).map(({ user, source, isExplicitOverride, sourceType }) => (
-                          <tr key={user.id} className="hover:bg-slate-900/40 transition-colors">
+                          <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                             <td className="px-4 py-3">
-                              <div className="font-semibold text-white">{getUserDisplayName(user)}</div>
-                              <div className="text-slate-400 text-[11px] font-mono">{getUserEmail(user)}</div>
+                              <div className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(user)}</div>
+                              <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">{getUserEmail(user)}</div>
                             </td>
 
                             <td className="px-4 py-3">
-                              <Badge variant="outline" className="bg-slate-900 border-slate-700 text-slate-300 text-[10px]">
+                              <Badge variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[10px]">
                                 {getUserRoleLabel(user)}
                               </Badge>
                               {user.department && (
@@ -673,8 +673,8 @@ export function PermissionSimulator({
                                 className={cn(
                                   'text-[10px]',
                                   user.status === 'active'
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                                    : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
+                                    ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                                    : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
                                 )}
                               >
                                 {user.status || 'active'}
@@ -688,10 +688,10 @@ export function PermissionSimulator({
                                   className={cn(
                                     'text-[10px]',
                                     sourceType === 'owner'
-                                      ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                      ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
                                       : isExplicitOverride
-                                      ? 'bg-purple-500/20 text-purple-300 border-purple-500/30 font-bold'
-                                      : 'bg-slate-800 text-slate-300'
+                                      ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30 font-bold'
+                                      : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                                   )}
                                 >
                                   {source}
@@ -705,7 +705,7 @@ export function PermissionSimulator({
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => onEditUserPermissions(user)}
-                                  className="h-7 px-2.5 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-500/10"
+                                  className="h-7 px-2.5 text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-500/10"
                                 >
                                   Modify Access
                                 </Button>

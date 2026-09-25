@@ -71,6 +71,11 @@ export function resolveAppBaseUrl(explicitUrl?: string): string {
 }
 
 /**
+ * Convenient alias for resolveAppBaseUrl.
+ */
+export const getAppUrl = resolveAppBaseUrl
+
+/**
  * Resolves request origin dynamically from Request or Headers (e.g., x-forwarded-host, host)
  */
 export function resolveRequestOrigin(

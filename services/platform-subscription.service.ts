@@ -21,6 +21,7 @@ import { GatewayService } from './gateway.service.ts'
 import { createPaymentProvider } from '../lib/payments/provider.factory.ts'
 import { CommunicationService } from './communication-server.service.ts'
 import { decryptSecret } from '../lib/security/encryption.ts'
+import { getAppUrl } from '../lib/security/runtime-env.ts'
 
 export interface InitiatePlatformCheckoutInput {
   platformAccountId?: string
@@ -216,9 +217,9 @@ export class PlatformSubscriptionService {
           customerName: 'Platform Owner / SaaS Cluster Admin',
           customerEmail: input.adminEmail || 'admin@inkflow.io',
           customerPhone: input.adminPhone || '+8801700000000',
-          redirectUrl: input.returnUrl || 'http://localhost:3000/platform/billing?status=processing',
-          cancelUrl: input.cancelUrl || 'http://localhost:3000/platform/billing?status=cancelled',
-          callbackUrl: 'http://localhost:3000/api/webhooks/' + gateway.provider,
+          redirectUrl: input.returnUrl || `${getAppUrl()}/platform/billing?status=processing`,
+          cancelUrl: input.cancelUrl || `${getAppUrl()}/platform/billing?status=cancelled`,
+          callbackUrl: `${getAppUrl()}/api/webhooks/${gateway.provider}`,
           metadata: {
             internal_trx_id: internalTrxId,
             billing_context: 'PLATFORM',

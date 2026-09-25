@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Briefcase,
   FileSpreadsheet,
@@ -30,8 +31,10 @@ import {
 import { SalesOrderRecord } from '@/types/order.types'
 import { formatBDT } from '@/lib/formatters'
 import { getQuotationsAction, convertQuotationToJobOrderAction } from '@/actions/quotation.actions'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function SalesManagerPage() {
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = company?.slug || 'my-company'
@@ -208,7 +211,7 @@ export default function SalesManagerPage() {
           </Badge>
         }
         actions={
-          <Link href="/quotations">
+          <Link href={getTenantNavHref('/quotations', pathname, slug)}>
             <Button className="bg-blue-600 hover:bg-blue-700 bangla-text">
               <Plus className="mr-1.5 h-4 w-4" />
               {tBilingual('New Quotation', 'নতুন কোটেশন')}
@@ -275,7 +278,7 @@ export default function SalesManagerPage() {
             {orders.filter((o) => o.status === 'ready_for_delivery').length} Orders
           </div>
           <div className="text-[11px] text-purple-600 mt-1">
-            <Link href="/delivery" className="hover:underline">
+            <Link href={getTenantNavHref('/delivery', pathname, slug)} className="hover:underline">
               Generate Challans &rarr;
             </Link>
           </div>

@@ -36,7 +36,34 @@ export type ConditionOperator =
   | 'not_equals'
   | 'greater_than'
   | 'less_than'
+  | 'greater_than_or_equal'
+  | 'less_than_or_equal'
   | 'contains'
+  | 'not_contains'
+  | 'in'
+  | 'is_empty'
+  | 'is_not_empty'
+
+export interface ConditionOperatorDefinition {
+  operator: ConditionOperator
+  label: string
+  labelBn: string
+  symbol: string
+}
+
+export const CONDITION_OPERATOR_DEFINITIONS: ConditionOperatorDefinition[] = [
+  { operator: 'equals', label: 'Equals', labelBn: 'সমান (=)', symbol: '=' },
+  { operator: 'not_equals', label: 'Not Equals', labelBn: 'সমান নয় (≠)', symbol: '≠' },
+  { operator: 'greater_than', label: 'Greater Than', labelBn: 'বেশি (>)', symbol: '>' },
+  { operator: 'less_than', label: 'Less Than', labelBn: 'কম (<)', symbol: '<' },
+  { operator: 'greater_than_or_equal', label: 'Greater Than or Equal', labelBn: 'বেশি বা সমান (≥)', symbol: '≥' },
+  { operator: 'less_than_or_equal', label: 'Less Than or Equal', labelBn: 'কম বা সমান (≤)', symbol: '≤' },
+  { operator: 'contains', label: 'Contains', labelBn: 'অন্তর্ভুক্ত রয়েছে', symbol: '⊇' },
+  { operator: 'not_contains', label: 'Does Not Contain', labelBn: 'অন্তর্ভুক্ত নেই', symbol: '⊅' },
+  { operator: 'in', label: 'Is One Of (Comma-separated)', labelBn: 'তালিকায় আছে', symbol: '∈' },
+  { operator: 'is_empty', label: 'Is Empty / Unset', labelBn: 'খালি বা তথ্য নেই', symbol: '∅' },
+  { operator: 'is_not_empty', label: 'Is Not Empty', labelBn: 'তথ্য বিদ্যমান', symbol: '!∅' },
+]
 
 export interface WorkflowCondition {
   field: string
@@ -54,6 +81,7 @@ export interface WorkflowRule {
   id: string
   company_id: string
   name: string
+  name_bn?: string | null
   description?: string
   is_active: boolean
   trigger_type: WorkflowTriggerType
@@ -78,8 +106,10 @@ export interface WorkflowExecutionLog {
   status: 'success' | 'failed' | 'skipped'
   actions_taken: Array<{
     action_type: string
-    status: 'completed' | 'failed'
+    status: 'completed' | 'failed' | 'skipped'
     detail: string
+    latency_ms?: number
+    timestamp?: string
   }>
   error_message?: string | null
   executed_at: string
@@ -102,6 +132,13 @@ export interface ActionOptionDefinition {
 
 export const TRIGGER_DEFINITIONS: TriggerOptionDefinition[] = [
   {
+    type: 'status_changed',
+    label: 'Status Changed',
+    labelBn: 'স্ট্যাটাস পরিবর্তন',
+    description: 'Triggers when an entity transitions to a target state (e.g. Approved, Confirmed, Ready, Completed)',
+    supportedEntities: ['quotation', 'order', 'job', 'invoice', 'delivery'],
+  },
+  {
     type: 'record_created',
     label: 'Record Created',
     labelBn: 'নতুন রেকর্ড তৈরি',
@@ -109,11 +146,11 @@ export const TRIGGER_DEFINITIONS: TriggerOptionDefinition[] = [
     supportedEntities: ['quotation', 'order', 'invoice', 'customer', 'material'],
   },
   {
-    type: 'status_changed',
-    label: 'Status Changed',
-    labelBn: 'স্ট্যাটাস পরিবর্তন',
-    description: 'Triggers when an entity transitions to a target state (e.g. Approved, Ready, Completed)',
-    supportedEntities: ['quotation', 'order', 'job', 'invoice', 'delivery'],
+    type: 'approval_completed',
+    label: 'Approval Completed',
+    labelBn: 'অনুমোদন সম্পন্ন',
+    description: 'Triggers when pre-press proof, artwork proof, or pricing is approved',
+    supportedEntities: ['design', 'quotation', 'order'],
   },
   {
     type: 'payment_received',
@@ -135,13 +172,6 @@ export const TRIGGER_DEFINITIONS: TriggerOptionDefinition[] = [
     labelBn: 'স্টক সংকট সীমা',
     description: 'Triggers when material inventory drops below minimum buffer stock',
     supportedEntities: ['material'],
-  },
-  {
-    type: 'approval_completed',
-    label: 'Approval Completed',
-    labelBn: 'অনুমোদন সম্পন্ন',
-    description: 'Triggers when pre-press proof, price override, or artwork is approved',
-    supportedEntities: ['design', 'quotation', 'order'],
   },
 ]
 

@@ -23,8 +23,10 @@ import { GlobalSearchDialog } from './global-search-dialog'
 import { PlatformNotificationsPopover } from './platform-notifications-popover'
 import { platformLogoutAction, getPlatformSessionUserAction } from '@/actions/platform-auth.actions'
 import { PlatformUserRecord } from '@/lib/auth/types'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
 export function PlatformHeader() {
+  const { appName, appLogoUrl } = usePlatformSettings()
   const [searchOpen, setSearchOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<PlatformUserRecord | null>(null)
@@ -100,12 +102,20 @@ export function PlatformHeader() {
           </button>
 
           <Link href="/platform" className="flex items-center gap-2 sm:gap-2.5 group">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform shrink-0">
-              <Server className="h-4 w-4" />
-            </div>
+            {appLogoUrl ? (
+              <img
+                src={appLogoUrl}
+                alt={appName}
+                className="h-8 w-8 rounded-lg object-contain bg-slate-950 border border-slate-700/60 p-1 shadow-md ring-1 ring-white/20 shrink-0"
+              />
+            ) : (
+              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 ring-1 ring-white/20 group-hover:scale-105 transition-transform shrink-0">
+                <Server className="h-4 w-4" />
+              </div>
+            )}
             <div className="hidden xs:block sm:block">
               <div className="text-xs font-black tracking-tight text-white flex items-center gap-1.5">
-                InkFlow SaaS
+                {appName} SaaS
                 <span className="text-[9px] px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 font-mono font-bold border border-indigo-500/30">
                   ROOT
                 </span>

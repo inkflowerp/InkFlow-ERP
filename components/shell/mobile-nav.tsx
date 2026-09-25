@@ -59,6 +59,7 @@ import {
 } from 'lucide-react'
 import { getNavigationConfig, type NavItem } from '@/config/navigation.config'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { useTenant } from '@/hooks/use-tenant'
 import { useAuth } from '@/hooks/use-auth'
 import { usePermissions } from '@/hooks/use-permissions'
@@ -136,6 +137,7 @@ export function MobileNav() {
   const pathname = usePathname()
   const { signOut } = useAuth()
   const { company, currentRole, currentBranch, currentUser } = useTenant()
+  const { appName, appLogoUrl, tagline } = usePlatformSettings()
   const { can, isOwner } = usePermissions()
   const { isTrial, daysRemainingInTrial, timeRemainingInTrial, currentPlan, openUpgradeModal } = useSubscription()
   const { tBilingual } = useI18n()
@@ -300,18 +302,26 @@ export function MobileNav() {
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 group cursor-pointer"
             >
-              <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform">
-                <span className="h-2 w-2 rounded-full bg-cyan-400" />
-                <span className="h-2 w-2 rounded-full bg-pink-500" />
-                <span className="h-2 w-2 rounded-full bg-yellow-400" />
-                <span className="h-2 w-2 rounded-full bg-slate-200" />
-              </div>
+              {appLogoUrl ? (
+                <img
+                  src={appLogoUrl}
+                  alt={appName}
+                  className="h-8 w-8 rounded-lg object-contain bg-slate-900 border border-slate-700/60 p-0.5 shadow-xs shrink-0"
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-0.5 p-1 rounded-lg bg-slate-900 shadow-xs ring-1 ring-slate-800 group-hover:scale-105 transition-transform shrink-0">
+                  <span className="h-2 w-2 rounded-full bg-cyan-400" />
+                  <span className="h-2 w-2 rounded-full bg-pink-500" />
+                  <span className="h-2 w-2 rounded-full bg-yellow-400" />
+                  <span className="h-2 w-2 rounded-full bg-slate-200" />
+                </div>
+              )}
               <div className="flex flex-col text-left">
                 <span className="font-black text-base text-slate-900 dark:text-white leading-tight">
-                  Ink<span className="text-blue-600">Flow</span>
+                  {appName}
                 </span>
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">
-                  Print ERP
+                  {tagline || 'Print ERP'}
                 </span>
               </div>
             </Link>
@@ -340,7 +350,7 @@ export function MobileNav() {
                       {userName}
                     </span>
                     <span className="block text-xs text-slate-500 dark:text-slate-400 truncate">
-                      {company?.name || 'InkFlow Workspace'}
+                      {company?.name || `${appName} Workspace`}
                     </span>
                   </div>
                 </div>
@@ -620,7 +630,7 @@ export function MobileNav() {
               <Headphones className="h-3.5 w-3.5" />
               <span>{company?.phone || '24/7 Live Desk'}</span>
             </Link>
-            <span className="text-xs text-slate-400">InkFlow ERP</span>
+            <span className="text-xs text-slate-400">{appName}</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">

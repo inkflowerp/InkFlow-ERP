@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   ShoppingBag,
   ArrowLeft,
@@ -45,9 +45,11 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { MaterialRecord, StockLedgerRecord, MaterialUnit } from '@/types/inventory.types'
 import { CashBookEntryRecord } from '@/types/accounting.types'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function PurchaseOrderDetailPage() {
   const params = useParams()
+  const pathname = usePathname()
   const poId = (params?.id as string) || ''
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
@@ -83,7 +85,7 @@ export default function PurchaseOrderDetailPage() {
     return (
       <div className="space-y-6 max-w-7xl">
         <Link
-          href="/inventory?view=purchases"
+          href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
@@ -96,7 +98,7 @@ export default function PurchaseOrderDetailPage() {
             The purchase order record you are looking for does not exist in your organization.
           </p>
           <Button asChild className="mt-4" size="sm">
-            <Link href="/inventory?view=purchases">View All Purchase Orders</Link>
+            <Link href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}>View All Purchase Orders</Link>
           </Button>
         </Card>
       </div>
@@ -252,7 +254,7 @@ export default function PurchaseOrderDetailPage() {
       {/* Back Link & Header */}
       <div>
         <Link
-          href="/inventory?view=purchases"
+          href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 print:hidden"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

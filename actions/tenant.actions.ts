@@ -7,7 +7,7 @@ import { TenantService, CreateCompanyInput } from '@/services/tenant.service'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { createClient } from '@/lib/supabase/server'
 import { TenantRepository } from '@/lib/repositories/tenant.repository'
-import { TENANT_SESSION_COOKIE, TenantSessionData } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE, TenantSessionData, resolveTenantRole } from '@/lib/auth/types'
 import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantBaseUrl } from '@/lib/tenant/tenant-url'
 import type { ApiResponse } from '@/types/common.types'
@@ -79,6 +79,60 @@ export async function createCompanyAction(
 }
 
 export async function switchCompanyAction(slug: string) {
+  const company = await TenantRepository.getCompanyBySlug(slug)
+  if (!company) {
+    return { success: false, error: 'Target workspace not found.' }
+  }
+  if (company.is_active === false) {
+    return { success: false, error: 'Target workspace is currently suspended.' }
+  }
+
+  const currentTenant = await getCurrentTenant()
+  let userId = currentTenant?.userId
+  if (!userId) {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.getUser()
+    userId = data?.user?.id
+  }
+
+  if (!userId) {
+    return { success: false, error: 'User is not authenticated.' }
+  }
+
+  const membership = await TenantRepository.resolveUserMembership(userId, company.id)
+  if (!membership || !membership.companyUser) {
+    return { success: false, error: 'User does not belong to target workspace.' }
+  }
+
+  const resolvedRole = resolveTenantRole(membership.primaryRole)
+
+  const sessionData: TenantSessionData = {
+    userId,
+    userEmail: membership.companyUser.profile?.email || currentTenant?.userEmail || '',
+    fullName: membership.companyUser.profile?.full_name || currentTenant?.fullName || 'Workspace User',
+    fullNameBn: membership.companyUser.profile?.full_name_bn || currentTenant?.fullNameBn || null,
+    phone: membership.companyUser.profile?.phone || currentTenant?.phone || null,
+    companyId: company.id,
+    companySlug: company.slug,
+    companyName: company.name,
+    companyNameBn: company.name_bn || null,
+    branchId: membership.companyUser.branch_id || currentTenant?.branchId || null,
+    branchName: membership.companyUser.branch?.name || currentTenant?.branchName || 'Main Branch',
+    role: resolvedRole,
+    primaryRole: membership.primaryRole || resolvedRole,
+    responsibilities: [resolvedRole],
+    permissions: membership.effectivePermissions || [],
+    loginTime: new Date().toISOString(),
+    token: `auth-${userId}`,
+  }
+
+  const cookieStore = await cookies()
+  cookieStore.set(
+    TENANT_SESSION_COOKIE,
+    encodeURIComponent(JSON.stringify(sessionData)),
+    getAuthCookieOptions()
+  )
+
   revalidatePath('/', 'layout')
   const targetSubdomainUrl = `${getTenantBaseUrl(slug)}/dashboard`
   redirect(targetSubdomainUrl)

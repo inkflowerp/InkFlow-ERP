@@ -5,6 +5,7 @@ import { MarketingNavbar } from '@/components/marketing/marketing-navbar'
 import { MarketingFooter } from '@/components/marketing/marketing-footer'
 import { DemoModal } from '@/components/marketing/demo-modal'
 import { useI18n } from '@/i18n/context'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 import { Button } from '@/components/ui/button'
 import {
   Phone,
@@ -22,6 +23,7 @@ export default function PublicContactPage() {
   const [demoOpen, setDemoOpen] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const { tBilingual } = useI18n()
+  const { appName, supportHelpline, contactPhone, contactEmail, contactAddress } = usePlatformSettings()
 
   const [form, setForm] = useState({
     name: '',
@@ -73,9 +75,9 @@ export default function PublicContactPage() {
                   <div className="flex items-start gap-3">
                     <MapPin className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-white block">Arambagh Press Cluster</span>
+                      <span className="font-bold text-white block">Official Address</span>
                       <span className="text-slate-400">
-                        Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh
+                        {contactAddress || 'Level 4, Modern Bhaban, Motijheel C/A, Dhaka-1000, Bangladesh'}
                       </span>
                     </div>
                   </div>
@@ -83,8 +85,10 @@ export default function PublicContactPage() {
                   <div className="flex items-start gap-3">
                     <Phone className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
                     <div>
-                      <span className="font-bold text-white block">Direct Phone & WhatsApp Hotline</span>
-                      <span className="text-cyan-400 font-mono">+880 1819-876543 / +880 1711-234567</span>
+                      <span className="font-bold text-white block">Direct Phone & Support Helpline</span>
+                      <span className="text-cyan-400 font-mono">
+                        {supportHelpline || contactPhone || '+880 1819-876543 / +880 1711-234567'}
+                      </span>
                     </div>
                   </div>
 
@@ -92,7 +96,9 @@ export default function PublicContactPage() {
                     <Mail className="h-5 w-5 text-cyan-400 shrink-0 mt-0.5" />
                     <div>
                       <span className="font-bold text-white block">Email Inquiries</span>
-                      <span className="text-slate-400 font-mono">support@printerp.com.bd</span>
+                      <span className="text-slate-400 font-mono">
+                        {contactEmail || 'support@printerp.com.bd'}
+                      </span>
                     </div>
                   </div>
 
@@ -109,7 +115,7 @@ export default function PublicContactPage() {
 
                 <div className="pt-4 border-t border-slate-800">
                   <a
-                    href="https://wa.me/8801819876543"
+                    href={`https://wa.me/${(supportHelpline || contactPhone || '8801819876543').replace(/\D/g, '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors"
@@ -134,8 +140,8 @@ export default function PublicContactPage() {
                     </h3>
                     <p className="text-sm text-slate-300 max-w-sm mx-auto leading-relaxed bangla-text">
                       {tBilingual(
-                        'Thank you for reaching out. A PrintERP technical specialist will get back to you within 2 hours.',
-                        'আমাদের টেকনিক্যাল সাপোর্ট টিম দ্রুততম সময়ের মধ্যে আপনার সাথে যোগাযোগ করবে।'
+                        `Thank you for reaching out. A ${appName} technical specialist will get back to you within 2 hours.`,
+                        `আমাদের টেকনিক্যাল সাপোর্ট টিম দ্রুততম সময়ের মধ্যে আপনার সাথে যোগাযোগ করবে।`
                       )}
                     </p>
                   </div>

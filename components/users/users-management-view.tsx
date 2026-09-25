@@ -592,20 +592,26 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       </div>
 
       {/* Control Center Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto scrollbar-thin">
         <button
           type="button"
           onClick={() => handleTabChange('users')}
           className={cn(
-            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
+            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'users'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
           )}
         >
-          <Users className="w-4 h-4" />
+          <Users className="w-4 h-4 shrink-0" />
           <span>Team Directory (টিম সদস্য তালিকা)</span>
-          <Badge variant="outline" className={cn('text-[10px] ml-1 border-0', activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400')}>
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[10px] ml-1 border-0 font-bold',
+              activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            )}
+          >
             {users.length}
           </Badge>
         </button>
@@ -614,15 +620,21 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           type="button"
           onClick={() => handleTabChange('roles')}
           className={cn(
-            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
+            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'roles'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
           )}
         >
-          <Sliders className="w-4 h-4" />
+          <Sliders className="w-4 h-4 shrink-0" />
           <span>Roles & Matrix Studio (রোল ও পারমিশন)</span>
-          <Badge variant="outline" className={cn('text-[10px] ml-1 border-0', activeTab === 'roles' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400')}>
+          <Badge
+            variant="outline"
+            className={cn(
+              'text-[10px] ml-1 border-0 font-bold',
+              activeTab === 'roles' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+            )}
+          >
             {roles.length}
           </Badge>
         </button>
@@ -631,13 +643,13 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           type="button"
           onClick={() => handleTabChange('simulator')}
           className={cn(
-            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
+            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'simulator'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
           )}
         >
-          <ShieldAlert className="w-4 h-4 text-amber-500" />
+          <ShieldAlert className={cn('w-4 h-4 shrink-0', activeTab === 'simulator' ? 'text-white' : 'text-amber-500')} />
           <span>Permission Inspector & Simulator (অ্যাক্সেস নিরীক্ষক)</span>
         </button>
 
@@ -645,13 +657,13 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           type="button"
           onClick={() => handleTabChange('audit')}
           className={cn(
-            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer',
+            'flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0',
             activeTab === 'audit'
               ? 'bg-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60'
           )}
         >
-          <History className="w-4 h-4" />
+          <History className="w-4 h-4 shrink-0" />
           <span>Security Audit Trail (অডিট লগ)</span>
         </button>
       </div>
@@ -811,8 +823,8 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                           <tr
                             key={user.id}
                             className={cn(
-                              'hover:bg-slate-800/40 transition-colors',
-                              isUserDisabled && 'opacity-60 bg-slate-950/40'
+                              'hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors',
+                              isUserDisabled && 'opacity-60 bg-slate-100/50 dark:bg-slate-950/40'
                             )}
                           >
                             {/* Member Info */}
@@ -822,29 +834,29 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                   className={cn(
                                     'h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                                     isUserDisabled
-                                      ? 'bg-slate-800 text-slate-500'
+                                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-500'
                                       : 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white'
                                   )}
                                 >
                                   {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
                                 </div>
                                 <div>
-                                  <div className="font-semibold text-slate-100 flex items-center gap-1.5">
+                                  <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5">
                                     {profile?.full_name || user.invited_email}
                                     {profile?.full_name_bn && (
-                                      <span className="text-xs font-normal text-slate-400">
+                                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                                         ({profile.full_name_bn})
                                       </span>
                                     )}
                                   </div>
-                                  <div className="text-xs text-slate-400 flex items-center gap-2">
+                                  <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                                     <span>{profile?.email || user.invited_email}</span>
                                     {profile?.phone && <span>• {profile.phone}</span>}
                                   </div>
                                   {linkedEmp && (
                                     <div className="mt-1 flex items-center gap-1.5 text-[10px]">
-                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-950/60 border border-sky-900 text-sky-300 font-medium">
-                                        <Briefcase className="h-2.5 w-2.5 mr-1 text-sky-400" />
+                                      <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-900 text-sky-700 dark:text-sky-300 font-medium">
+                                        <Briefcase className="h-2.5 w-2.5 mr-1 text-sky-600 dark:text-sky-400" />
                                         Workforce: {linkedEmp.employee_id_number} • {linkedEmp.department}
                                       </span>
                                     </div>
@@ -858,23 +870,23 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                               {isOwner ? (
                                 <Badge
                                   variant="outline"
-                                  className="font-semibold text-xs border-amber-500/40 bg-amber-500/10 text-amber-300"
+                                  className="font-semibold text-xs border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300"
                                 >
-                                  <Crown className="mr-1 h-3.5 w-3.5 text-amber-400" />
+                                  <Crown className="mr-1 h-3.5 w-3.5 text-amber-500 dark:text-amber-400" />
                                   <span>Owner (Universal Clearance)</span>
                                 </Badge>
                               ) : (
                                 <div className="flex flex-wrap items-center gap-1.5">
                                   <Badge
                                     variant="outline"
-                                    className="font-medium text-xs border-sky-500/30 bg-sky-500/10 text-sky-300"
+                                    className="font-medium text-xs border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300"
                                   >
                                     <Shield className="mr-1 h-3 w-3" />
                                     {primaryRole?.name || (user as any).role || 'Team Member'}
                                     {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
                                   </Badge>
                                   {user.responsibilities && user.responsibilities.length > 1 && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-slate-800 text-slate-300 border-slate-700">
+                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                                       +{user.responsibilities.length - 1} responsibilities
                                     </Badge>
                                   )}
@@ -883,31 +895,31 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                             </td>
 
                             {/* Branch */}
-                            <td className="py-3.5 px-4 text-xs text-slate-300">
+                            <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300">
                               {user.branch ? (
                                 <div className="flex items-center gap-1.5">
-                                  <Building className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+                                  <Building className="h-3.5 w-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                                   <span className="truncate max-w-[180px]">{user.branch.name}</span>
                                 </div>
                               ) : (
-                                <span className="text-slate-500 italic">All Branches (Global)</span>
+                                <span className="text-slate-400 dark:text-slate-500 italic">All Branches (Global)</span>
                               )}
                             </td>
 
                             {/* Status Badge */}
                             <td className="py-3.5 px-4">
                               {isUserActive && (
-                                <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">
+                                <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
                                   Active
                                 </Badge>
                               )}
                               {isUserDisabled && (
-                                <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/30 text-[10px]">
+                                <Badge className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30 text-[10px]">
                                   Disabled
                                 </Badge>
                               )}
                               {isUserInvited && (
-                                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/30 text-[10px]">
+                                <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px]">
                                   Pending Invite
                                 </Badge>
                               )}
@@ -919,21 +931,21 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 px-2.5 text-xs text-sky-400 bg-sky-950/40 hover:bg-sky-900/60 border-sky-800/80 font-semibold rounded-xl"
+                                  className="h-8 px-2.5 text-xs text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 hover:bg-sky-100 dark:hover:bg-sky-900/60 border-sky-300 dark:border-sky-800/80 font-semibold rounded-xl"
                                   onClick={() => {
                                     setSelectedUserForPermissions(user)
                                     setIsPermissionsDrawerOpen(true)
                                   }}
                                   title="Configure Access & Permissions"
                                 >
-                                  <Shield className="mr-1 h-3.5 w-3.5 text-sky-400" />
+                                  <Shield className="mr-1 h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
                                   Permissions
                                 </Button>
 
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 px-2 text-xs rounded-xl text-slate-300 hover:text-white"
+                                  className="h-8 px-2 text-xs rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                                   onClick={() => {
                                     setSelectedUser(user)
                                     setTargetRoleId(primaryRole?.id || roles[0]?.id || '')
@@ -948,7 +960,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 px-2 text-xs rounded-xl text-slate-300 hover:text-white"
+                                  className="h-8 px-2 text-xs rounded-xl text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800"
                                   onClick={() => {
                                     setSelectedUser(user)
                                     setTargetBranchId(user.branch_id || '')
@@ -962,7 +974,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 px-2 text-xs text-sky-400 hover:text-sky-300 rounded-xl"
+                                  className="h-8 px-2 text-xs text-sky-600 dark:text-sky-400 hover:text-sky-700 dark:hover:text-sky-300 hover:bg-sky-50 dark:hover:bg-sky-950/50 rounded-xl"
                                   onClick={() => handleResetAccess(user)}
                                   title="Send Password Reset"
                                 >
@@ -974,8 +986,8 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                     variant="ghost"
                                     size="sm"
                                     className={cn(
-                                      'h-8 px-2 text-xs rounded-xl',
-                                      isUserDisabled ? 'text-emerald-400 hover:text-emerald-300' : 'text-rose-400 hover:text-rose-300'
+                                      'h-8 px-2 text-xs rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800',
+                                      isUserDisabled ? 'text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300' : 'text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300'
                                     )}
                                     onClick={() => {
                                       setSelectedUser(user)
@@ -1002,6 +1014,13 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 <div className="md:hidden p-3 space-y-3">
                   {filteredUsers.map((user) => {
                     const profile = user.profile
+                    const primaryRole = user.roles?.[0]
+                    const primaryRoleSlug = primaryRole?.slug || (user as any).role || ''
+                    const isOwner =
+                      primaryRoleSlug === 'owner' ||
+                      primaryRoleSlug === 'business_owner' ||
+                      user.responsibilities?.includes('business_owner') ||
+                      user.responsibilities?.includes('owner')
                     const isUserActive = user.status === 'active'
                     const isUserDisabled = user.status === 'disabled'
                     const isUserInvited = user.status === 'invited'
@@ -1010,42 +1029,75 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                       <div
                         key={user.id}
                         className={cn(
-                          'p-4 rounded-2xl border border-slate-800 bg-slate-950/60 shadow-xs space-y-3',
-                          isUserDisabled && 'opacity-65 bg-slate-950/40'
+                          'p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950/60 shadow-xs space-y-3',
+                          isUserDisabled && 'opacity-65 bg-slate-50 dark:bg-slate-950/40'
                         )}
                       >
                         <div className="flex items-start justify-between gap-2.5">
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center text-sm font-bold shrink-0">
+                            <div
+                              className={cn(
+                                'h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0',
+                                isUserDisabled
+                                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-500'
+                                  : 'bg-gradient-to-br from-sky-600 to-indigo-700 text-white'
+                              )}
+                            >
                               {(profile?.full_name || user.invited_email || 'U')[0].toUpperCase()}
                             </div>
                             <div className="min-w-0">
-                              <div className="font-semibold text-sm text-white truncate">
+                              <div className="font-semibold text-sm text-slate-900 dark:text-white truncate">
                                 {profile?.full_name || user.invited_email}
                               </div>
-                              <div className="text-xs text-slate-400 truncate">
+                              <div className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                 {profile?.email || user.invited_email}
                               </div>
+                              {profile?.phone && (
+                                <div className="text-[11px] text-slate-400 truncate">
+                                  {profile.phone}
+                                </div>
+                              )}
                             </div>
                           </div>
 
                           <Badge
                             className={cn(
                               'text-[10px]',
-                              isUserActive && 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
-                              isUserDisabled && 'bg-rose-500/10 text-rose-400 border-rose-500/30',
-                              isUserInvited && 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+                              isUserActive && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+                              isUserDisabled && 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
+                              isUserInvited && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
                             )}
                           >
                             {user.status || 'active'}
                           </Badge>
                         </div>
 
-                        <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
+                        {/* Mobile Role & Branch info */}
+                        <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                          {isOwner ? (
+                            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px]">
+                              <Crown className="mr-1 h-3 w-3 text-amber-500" />
+                              Owner
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[11px]">
+                              <Shield className="mr-1 h-3 w-3" />
+                              {primaryRole?.name || (user as any).role || 'Team Member'}
+                            </Badge>
+                          )}
+                          <span className="text-slate-400">•</span>
+                          <span className="text-slate-600 dark:text-slate-300 flex items-center gap-1">
+                            <Building className="h-3 w-3 text-slate-400" />
+                            {user.branch ? user.branch.name : 'All Branches'}
+                          </span>
+                        </div>
+
+                        {/* Mobile Actions */}
+                        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex-1 h-8 text-xs border-sky-800 text-sky-400"
+                            className="flex-1 h-8 text-xs border-sky-300 dark:border-sky-800 text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/40 rounded-xl"
                             onClick={() => {
                               setSelectedUserForPermissions(user)
                               setIsPermissionsDrawerOpen(true)
@@ -1054,6 +1106,64 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                             <Shield className="w-3.5 h-3.5 mr-1" />
                             Permissions
                           </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2.5 text-xs rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setTargetRoleId(primaryRole?.id || roles[0]?.id || '')
+                              setIsChangeRoleOpen(true)
+                            }}
+                            disabled={isOwner}
+                          >
+                            Role
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2.5 text-xs rounded-xl border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setTargetBranchId(user.branch_id || '')
+                              setIsAssignBranchOpen(true)
+                            }}
+                          >
+                            Branch
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 text-xs rounded-xl border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-950/50"
+                            onClick={() => handleResetAccess(user)}
+                            title="Reset Password"
+                          >
+                            <KeyRound className="h-3.5 w-3.5" />
+                          </Button>
+
+                          {!isOwner && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn(
+                                'h-8 px-2 text-xs rounded-xl border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800',
+                                isUserDisabled ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+                              )}
+                              onClick={() => {
+                                setSelectedUser(user)
+                                if (isUserDisabled) {
+                                  handleToggleStatus(user)
+                                } else {
+                                  setIsDisableConfirmOpen(true)
+                                }
+                              }}
+                            >
+                              {isUserDisabled ? <RotateCcw className="h-3.5 w-3.5" /> : <Ban className="h-3.5 w-3.5" />}
+                            </Button>
+                          )}
                         </div>
                       </div>
                     )
@@ -1117,23 +1227,23 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       >
         <form onSubmit={handleInvite} className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300 font-medium">Email Address</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Email Address</Label>
             <Input
               type="email"
               required
               placeholder="colleague@example.com"
               value={inviteEmail}
               onChange={(e) => setInviteEmail(e.target.value)}
-              className="bg-slate-950 border-slate-800"
+              className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300 font-medium">Assign Role</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Assign Role</Label>
             <select
               value={inviteRoleId}
               onChange={(e) => setInviteRoleId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.id} value={r.id}>
@@ -1144,11 +1254,11 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300 font-medium">Primary Branch</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Primary Branch</Label>
             <select
               value={inviteBranchId}
               onChange={(e) => setInviteBranchId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               <option value="">All Branches / Global</option>
               {(Array.isArray(branches) ? branches : []).map((b) => (
@@ -1165,7 +1275,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               variant="outline"
               size="sm"
               onClick={() => setIsInviteOpen(false)}
-              className="border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>
@@ -1186,59 +1296,59 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
         <form onSubmit={handleAddUser} className="space-y-4 pt-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Full Name (English)</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Full Name (English)</Label>
               <Input
                 type="text"
                 required
                 placeholder="e.g. Shakil Ahmed"
                 value={addFullName}
                 onChange={(e) => setAddFullName(e.target.value)}
-                className="bg-slate-950 border-slate-800"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Full Name (বাংলা - ঐচ্ছিক)</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Full Name (বাংলা - ঐচ্ছিক)</Label>
               <Input
                 type="text"
                 placeholder="যেমনঃ শাকিল আহমেদ"
                 value={addFullNameBn}
                 onChange={(e) => setAddFullNameBn(e.target.value)}
-                className="bg-slate-950 border-slate-800"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Email Address</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Email Address</Label>
               <Input
                 type="email"
                 required
                 placeholder="shakil@company.com"
                 value={addEmail}
                 onChange={(e) => setAddEmail(e.target.value)}
-                className="bg-slate-950 border-slate-800"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Mobile Phone (মোবাইল)</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Mobile Phone (মোবাইল)</Label>
               <Input
                 type="tel"
                 placeholder="017XXXXXXXX"
                 value={addPhone}
                 onChange={(e) => setAddPhone(e.target.value)}
-                className="bg-slate-950 border-slate-800"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label className="text-xs text-slate-300 font-medium">Initial Login Password</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Initial Login Password</Label>
               <button
                 type="button"
                 onClick={generateNewPassword}
-                className="text-[11px] text-primary hover:underline flex items-center gap-1"
+                className="text-[11px] text-primary hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Sparkles className="w-3 h-3" />
                 Regenerate
@@ -1249,27 +1359,27 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 type="text"
                 value={addPassword}
                 onChange={(e) => setAddPassword(e.target.value)}
-                className="bg-slate-950 border-slate-800 font-mono text-xs"
+                className="bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 font-mono text-xs"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleCopyPassword}
-                className="border-slate-800 text-xs shrink-0"
+                className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs shrink-0"
               >
-                {copiedPassword ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copiedPassword ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               </Button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Role</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Role</Label>
               <select
                 value={addRoleId}
                 onChange={(e) => setAddRoleId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
               >
                 {(Array.isArray(roles) ? roles : []).map((r) => (
                   <option key={r.id} value={r.id}>
@@ -1280,11 +1390,11 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300 font-medium">Branch Location</Label>
+              <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Branch Location</Label>
               <select
                 value={addBranchId}
                 onChange={(e) => setAddBranchId(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+                className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
               >
                 <option value="">All Branches / Global</option>
                 {(Array.isArray(branches) ? branches : []).map((b) => (
@@ -1302,7 +1412,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               variant="outline"
               size="sm"
               onClick={() => setIsAddUserOpen(false)}
-              className="border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>
@@ -1322,11 +1432,11 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       >
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300 font-medium">Select New Role</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Select New Role</Label>
             <select
               value={targetRoleId}
               onChange={(e) => setTargetRoleId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.id} value={r.id}>
@@ -1341,7 +1451,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               variant="outline"
               size="sm"
               onClick={() => setIsChangeRoleOpen(false)}
-              className="border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>
@@ -1361,11 +1471,11 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       >
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300 font-medium">Select Branch</Label>
+            <Label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Select Branch</Label>
             <select
               value={targetBranchId}
               onChange={(e) => setTargetBranchId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-200"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               <option value="">All Branches / Global Central</option>
               {(Array.isArray(branches) ? branches : []).map((b) => (
@@ -1381,7 +1491,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               variant="outline"
               size="sm"
               onClick={() => setIsAssignBranchOpen(false)}
-              className="border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>

@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils'
 import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
 interface NavItem {
   title: string
@@ -107,6 +108,7 @@ const SIDEBAR_SECTIONS: NavSection[] = [
 
 export function PlatformSidebar() {
   const pathname = usePathname()
+  const { appName } = usePlatformSettings()
   const [collapsed, setCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -364,7 +366,7 @@ export function PlatformSidebar() {
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 BD-Central Cluster
               </span>
-              <span className="font-mono text-slate-500 text-[9px] font-bold">InkFlow SaaS</span>
+              <span className="font-mono text-slate-500 text-[9px] font-bold">{appName} SaaS</span>
             </div>
 
             <Link
@@ -408,7 +410,7 @@ export function PlatformSidebar() {
           {!collapsed ? (
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400 truncate">
-                InkFlow Control Plane
+                {appName} Control Plane
               </span>
             </div>
           ) : (
@@ -443,7 +445,7 @@ export function PlatformSidebar() {
               <Server className="h-4 w-4" />
             </div>
             <div className="text-left">
-              <span className="font-bold text-sm text-white block">InkFlow Platform</span>
+              <span className="font-bold text-sm text-white block">{appName} Platform</span>
               <span className="text-[10px] text-indigo-400 font-mono">Control Center</span>
             </div>
           </div>

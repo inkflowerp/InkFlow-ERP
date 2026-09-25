@@ -195,7 +195,7 @@ class DesignDetailErrorBoundary extends React.Component<ErrorBoundaryProps, Erro
               Reload Workbench
             </Button>
             <Button size="sm" asChild>
-              <Link href="/design">Back to Design Studio</Link>
+              <Link href={getTenantNavHref('/design')}>Back to Design Studio</Link>
             </Button>
           </div>
         </div>

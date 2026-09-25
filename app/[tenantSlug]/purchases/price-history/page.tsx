@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import {
   TrendingUp,
   ArrowLeft,
@@ -26,9 +26,11 @@ import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { SupplierPriceHistoryRecord } from '@/types/purchase.types'
 import { formatBDT } from '@/lib/formatters'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 export default function SupplierPriceHistoryPage() {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
   const { locale, tBilingual } = useI18n()
   const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
@@ -54,7 +56,7 @@ export default function SupplierPriceHistoryPage() {
       {/* Back Link & Header */}
       <div>
         <Link
-          href="/inventory?view=purchases"
+          href={getTenantNavHref('/inventory?view=purchases', pathname, slug)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white mb-3 bangla-text"
         >
           <ArrowLeft className="h-3.5 w-3.5" />

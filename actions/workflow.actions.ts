@@ -66,14 +66,43 @@ export async function getWorkflowExecutionLogsAction(companyId?: string) {
 
 export async function testTriggerWorkflowRuleAction(
   companyId: string,
-  ruleId: string
+  ruleId: string,
+  customPayload?: Record<string, any>
 ) {
   const tenant = await getCurrentTenant(companyId)
   if (!tenant) {
     return { success: false, message: 'Unauthorized: Session expired or invalid.' }
   }
 
-  const res = await WorkflowService.simulateRuleRun(tenant.companyId, ruleId)
+  const res = await WorkflowService.simulateRuleRun(tenant.companyId, ruleId, customPayload)
   revalidatePath('/[tenantSlug]/settings/automations', 'page')
   return res
 }
+
+export async function dispatchWorkflowEventAction(
+  companyId: string,
+  triggerType: any,
+  entityType: any,
+  entityId: string,
+  payload: Record<string, any> = {}
+) {
+  const tenant = await getCurrentTenant(companyId)
+  if (!tenant) {
+    return { success: false, message: 'Unauthorized: Session expired or invalid.' }
+  }
+
+  try {
+    const logs = await WorkflowService.dispatchTrigger(
+      tenant.companyId,
+      triggerType,
+      entityType,
+      entityId,
+      payload
+    )
+    revalidatePath('/[tenantSlug]/settings/automations', 'page')
+    return { success: true, data: logs }
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Failed to dispatch workflow trigger' }
+  }
+}
+

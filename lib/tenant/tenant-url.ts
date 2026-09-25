@@ -3,7 +3,7 @@
 // Canonical URL builders for tenant-scoped links, document sharing, and notifications.
 // ==============================================================================
 
-import { getRootDomain } from './tenant-resolution.ts'
+import { getRootDomain, isReservedSlug, resolveHostname } from './tenant-resolution.ts'
 
 /**
  * Returns the fully qualified origin for a given tenant subdomain.
@@ -13,7 +13,8 @@ import { getRootDomain } from './tenant-resolution.ts'
  */
 export function getTenantBaseUrl(slug: string): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
-  const rootDomain = getRootDomain()
+  const rawRootDomain = getRootDomain()
+  const rootDomain = rawRootDomain.replace(/^www\./i, '')
 
   const isLocalhost =
     rootDomain.includes('localhost') ||
@@ -50,8 +51,13 @@ export function getTenantBaseUrl(slug: string): string {
  */
 export function getTenantLink(slug: string, path: string = ''): string {
   const cleanSlug = (slug || '').toLowerCase().trim()
-  const cleanPath = path.startsWith('/') ? path : `/${path}`
-  const rootDomain = getRootDomain()
+  let cleanPath = path.startsWith('/') ? path : `/${path}`
+  if (cleanSlug && cleanPath.startsWith(`/${cleanSlug}/`)) {
+    cleanPath = cleanPath.slice(`/${cleanSlug}`.length)
+  } else if (cleanSlug && cleanPath === `/${cleanSlug}`) {
+    cleanPath = ''
+  }
+  const rootDomain = getRootDomain().replace(/^www\./i, '')
 
   // On Vercel domains (*.vercel.app), wildcard subdomains do not exist.
   // Generate safe path-based URL: https://project.vercel.app/slug/path
@@ -131,21 +137,22 @@ export function getTenantNavHref(
   if (href.startsWith('http://') || href.startsWith('https://')) return href
 
   const cleanHref = href.startsWith('/') ? href : `/${href}`
-  const cleanSlug = (tenantSlug || '').toLowerCase().trim()
+  let cleanSlug = (tenantSlug || '').toLowerCase().trim()
+  const activePath = pathname || (typeof window !== 'undefined' ? window.location?.pathname || '' : '')
+  if (!cleanSlug && activePath) {
+    const firstSegment = activePath.split('/')[1]?.toLowerCase().trim()
+    if (firstSegment && !isReservedSlug(firstSegment)) {
+      cleanSlug = firstSegment
+    }
+  }
 
   // 1. Client-Side Resolution (Browser context with window.location)
   if (typeof window !== 'undefined') {
     const host = window.location.host.toLowerCase().trim()
-    const hostWithoutPort = host.split(':')[0]
     const browserPathname = window.location.pathname
 
-    // Check if host is a tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.localhost:3000)
-    const isSubdomain =
-      (cleanSlug && host.startsWith(`${cleanSlug}.`)) ||
-      (hostWithoutPort.endsWith('.vercel.app') && hostWithoutPort.split('.').length === 4) ||
-      (hostWithoutPort.endsWith('.inkflow.com.bd') && hostWithoutPort.split('.').length >= 4) ||
-      (hostWithoutPort.endsWith('.localhost') && hostWithoutPort !== 'localhost') ||
-      (hostWithoutPort.split('.').length > 1 && !hostWithoutPort.includes('127.0.0.1') && hostWithoutPort !== 'localhost')
+    // Check if host is an authoritative tenant subdomain (e.g. rangao.inkflow-erp.vercel.app or vision.inkflow.com.bd or vision.localhost:3000)
+    const isSubdomain = resolveHostname(host).hostType === 'tenant'
 
     if (isSubdomain) {
       // On subdomain routing, NEVER prefix with slug in browser pathname

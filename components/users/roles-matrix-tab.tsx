@@ -680,7 +680,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                 </div>
 
                 {/* Category Selector Tabs */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-slate-200 dark:border-slate-800/80">
+                <div className="flex items-center gap-1.5 overflow-x-auto pt-3 border-t border-slate-200 dark:border-slate-800/80 no-scrollbar">
                   {(Object.keys(MODULE_CATEGORIES) as ModuleCategory[]).map((catKey) => {
                     const isSelected = selectedCategory === catKey
                     return (
@@ -689,7 +689,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         type="button"
                         onClick={() => setSelectedCategory(catKey)}
                         className={cn(
-                          'px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap',
+                          'px-2.5 py-1 rounded-lg text-xs font-medium transition-all whitespace-nowrap shrink-0 cursor-pointer',
                           isSelected
                             ? 'bg-slate-900 text-white dark:bg-slate-800 dark:text-white border border-slate-900 dark:border-slate-700 shadow-xs'
                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-900'
@@ -717,7 +717,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-1">Batch:</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-1 font-medium">Batch:</span>
                     <Button
                       variant="outline"
                       size="sm"
@@ -790,15 +790,20 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                                 type="button"
                                 onClick={() => handleTogglePermission(moduleKey, act)}
                                 className={cn(
-                                  'p-2 rounded-lg border text-left transition-all text-xs flex items-center justify-between gap-1.5',
+                                  'p-2 rounded-lg border text-left transition-all text-xs flex items-center justify-between gap-1.5 cursor-pointer',
                                   isChecked
                                     ? isHighRisk
-                                      ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/50 text-rose-800 dark:text-rose-200 font-medium'
-                                      : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/50 text-primary dark:text-primary-foreground font-medium'
-                                    : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
+                                      ? 'bg-rose-50 dark:bg-rose-500/15 border-rose-300 dark:border-rose-500/50 text-rose-800 dark:text-rose-200 font-medium shadow-2xs'
+                                      : 'bg-primary/10 dark:bg-primary/20 border-primary/40 dark:border-primary/50 text-primary dark:text-primary-foreground font-medium shadow-2xs'
+                                    : isHighRisk
+                                      ? 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 hover:border-rose-300 dark:hover:border-rose-900/50'
+                                      : 'bg-slate-50/60 dark:bg-slate-900/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700'
                                 )}
                               >
-                                <span className="truncate">{ACTION_LABELS[act]?.label || act}</span>
+                                <span className="truncate flex items-center gap-1">
+                                  {isHighRisk && <ShieldAlert className="w-3 h-3 text-rose-500 shrink-0" />}
+                                  {ACTION_LABELS[act]?.label || act}
+                                </span>
 
                                 {isChecked ? (
                                   <div
@@ -870,7 +875,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
             <select
               value={newRoleBaseSlug}
               onChange={(e) => setNewRoleBaseSlug(e.target.value)}
-              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-slate-200 focus:outline-none"
             >
               {(Array.isArray(roles) ? roles : []).map((r) => (
                 <option key={r.slug} value={r.slug}>
@@ -897,7 +902,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               variant="outline"
               size="sm"
               onClick={() => setIsCreateRoleOpen(false)}
-              className="border-slate-200 dark:border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>
@@ -953,7 +958,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
               variant="outline"
               size="sm"
               onClick={() => setIsEditRoleOpen(false)}
-              className="border-slate-200 dark:border-slate-800 text-xs"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs"
             >
               Cancel
             </Button>

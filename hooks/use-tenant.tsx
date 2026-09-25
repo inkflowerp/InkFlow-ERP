@@ -14,6 +14,7 @@ import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenant
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
+import { switchCompanyAction } from '@/actions/tenant.actions'
 
 const TenantContext = createContext<TenantContextType | null>(null)
 
@@ -348,21 +349,18 @@ export function TenantProvider({
     if (target) {
       setCompany(target)
     }
+
+    try {
+      const res = await switchCompanyAction(targetSlug)
+      if (res && !res.success && res.error) {
+        console.error('[TenantContext] Failed to switch company:', res.error)
+      }
+    } catch {
+      // switchCompanyAction triggers server-side redirect() which Next.js throws
+      return
+    }
+
     if (typeof window !== 'undefined') {
-      try {
-        const storedSession = getSessionFromCookie() || session
-        if (storedSession && target) {
-          const updatedSession: TenantSessionData = {
-            ...storedSession,
-            companyId: target.id,
-            companySlug: target.slug,
-            companyName: target.name,
-            companyNameBn: target.name_bn || null,
-          }
-          setSession(updatedSession)
-          document.cookie = `${TENANT_SESSION_COOKIE}=${encodeURIComponent(JSON.stringify(updatedSession))}; path=/; max-age=604800; SameSite=Lax`
-        }
-      } catch {}
       window.location.href = getTenantLink(targetSlug, '/dashboard')
       return
     }

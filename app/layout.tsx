@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Hind_Siliguri, JetBrains_Mono } from 'next/font/google'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { I18nProvider } from '@/i18n/context'
+import { PlatformSettingsProvider } from '@/components/providers/platform-settings-provider'
+import { PlatformService } from '@/services/platform.service'
 import './globals.css'
 
 const inter = Inter({
@@ -36,23 +38,36 @@ export const viewport: Viewport = {
   ],
 }
 
-export const metadata: Metadata = {
-  title: 'PrintERP SaaS - Operating System for Printing & Signage in Bangladesh',
-  description:
-    'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.',
-  manifest: '/manifest.json',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'PrintERP',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await PlatformService.getPublicPlatformSettings()
+  const title = settings.app_title || `${settings.app_name || 'PrintERP'} SaaS - Operating System for Printing & Signage in Bangladesh`
+  const description = settings.app_description || 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.'
+  const favicon = settings.favicon_url || '/favicon.ico'
+
+  return {
+    title,
+    description,
+    icons: {
+      icon: favicon,
+      shortcut: favicon,
+      apple: favicon,
+    },
+    manifest: '/manifest.json',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'black-translucent',
+      title: settings.app_name || 'PrintERP',
+    },
+  }
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const initialSettings = await PlatformService.getPublicPlatformSettings()
+
   return (
     <html
       lang="bn"
@@ -82,9 +97,11 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased min-h-screen bg-slate-50/70 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500 selection:text-white">
-        <ThemeProvider>
-          <I18nProvider>{children}</I18nProvider>
-        </ThemeProvider>
+        <PlatformSettingsProvider initialSettings={initialSettings}>
+          <ThemeProvider>
+            <I18nProvider>{children}</I18nProvider>
+          </ThemeProvider>
+        </PlatformSettingsProvider>
       </body>
     </html>
   )

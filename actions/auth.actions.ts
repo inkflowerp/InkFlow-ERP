@@ -22,6 +22,28 @@ async function getRequestBaseUrl(): Promise<string> {
   }
 }
 
+export async function clearTenantSessionCookie() {
+  const cookieStore = await cookies()
+  const opts = getAuthCookieOptions()
+
+  // 1. Clear host-scoped cookie
+  cookieStore.delete(TENANT_SESSION_COOKIE)
+  cookieStore.set(TENANT_SESSION_COOKIE, '', {
+    path: '/',
+    maxAge: 0,
+    expires: new Date(0),
+  })
+
+  // 2. Clear domain-scoped cookie if wildcard domain is configured
+  if (opts.domain) {
+    cookieStore.set(TENANT_SESSION_COOKIE, '', {
+      ...opts,
+      maxAge: 0,
+      expires: new Date(0),
+    })
+  }
+}
+
 export async function checkIdentifierAvailabilityAction(params: {
   email?: string | null
   username?: string | null
@@ -58,8 +80,7 @@ export async function loginAction(formData: FormData) {
 
   const result = await AuthService.signIn(email, password)
   if (!result.success || !result.data) {
-    const cookieStore = await cookies()
-    cookieStore.delete(TENANT_SESSION_COOKIE)
+    await clearTenantSessionCookie()
     return result
   }
 
@@ -67,7 +88,7 @@ export async function loginAction(formData: FormData) {
 
   // Store server-side tenant session cookie across subdomains
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
 
   // Audit track successful login with the verified user ID and company
   if (session.companyId) {
@@ -106,14 +127,13 @@ export async function signInAction(email: string, pass: string) {
 
   const result = await AuthService.signIn(email, pass)
   if (!result.success || !result.data) {
-    const cookieStore = await cookies()
-    cookieStore.delete(TENANT_SESSION_COOKIE)
+    await clearTenantSessionCookie()
     return result
   }
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, JSON.stringify(session), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
 
   if (session.companyId) {
     try {
@@ -323,8 +343,7 @@ export async function confirmPasswordResetAction(
   const result = await AuthService.confirmPasswordReset(email, resetToken, newPassword)
 
   if (result.success) {
-    const cookieStore = await cookies()
-    cookieStore.delete(TENANT_SESSION_COOKIE)
+    await clearTenantSessionCookie()
   }
 
   return result
@@ -349,12 +368,11 @@ export async function signOutAction() {
     }
   }
 
-  const cookieStore = await cookies()
-  cookieStore.delete(TENANT_SESSION_COOKIE)
+  await clearTenantSessionCookie()
 
   await AuthService.signOut()
   revalidatePath('/', 'layout')
-  redirect('/login')
+  redirect('/login?logged_out=true')
 }
 
 export async function signInWithGoogleAction(redirectTo?: string) {

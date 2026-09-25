@@ -108,7 +108,35 @@ export class QuotationService {
     companyId: string = 'c-01',
     actorName?: string
   ): Promise<QuotationRecord | null> {
-    return QuotationRepository.updateStatus(quotationId, newStatus, reason, companyId, actorName)
+    const updated = await QuotationRepository.updateStatus(quotationId, newStatus, reason, companyId, actorName)
+    if (updated) {
+      try {
+        const { WorkflowService } = await import('@/services/workflow.service')
+        await WorkflowService.dispatchTrigger(companyId, 'status_changed', 'quotation', quotationId, {
+          to_status: newStatus,
+          status: newStatus,
+          quotation_number: updated.quotation_number || updated.id,
+          total_amount: updated.grand_total || updated.subtotal || 0,
+          grand_total: updated.grand_total || 0,
+          customer_name: updated.customer_name,
+          customer_phone: updated.customer_phone,
+          customer: {
+            name: updated.customer_name,
+            phone: updated.customer_phone,
+            email: updated.customer_email,
+          },
+          pricing: {
+            total_amount: updated.grand_total || 0,
+            grand_total: updated.grand_total || 0,
+          },
+          reason,
+          actorName,
+        })
+      } catch (e) {
+        console.error('[QuotationService] Workflow dispatch error:', e)
+      }
+    }
+    return updated
   }
 
   static async getActivities(quotationId: string, companyId: string = 'c-01'): Promise<QuotationActivityRecord[]> {

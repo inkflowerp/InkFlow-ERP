@@ -61,6 +61,8 @@ import type {
   IncompleteRegistrationStage,
   IncompleteRegistrationsOverview,
 } from '../types/platform.types.ts'
+import { DEFAULT_PLATFORM_BRANDING } from '../types/platform.types.ts'
+import { setRuntimeRootDomain } from '../lib/tenant/tenant-resolution.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import type { PlatformRole } from '../lib/auth/types.ts'
 import type { ApiResponse } from '../types/common.types.ts'
@@ -5797,6 +5799,9 @@ export class PlatformService {
         .maybeSingle()
 
       if (data && !error) {
+        if (data.app_domain) {
+          setRuntimeRootDomain(data.app_domain)
+        }
         return {
           success: true,
           data: {
@@ -5812,6 +5817,17 @@ export class PlatformService {
             incident_alert_webhook: data.incident_alert_webhook || undefined,
             backup_retention_days: data.backup_retention_days ?? 90,
             auto_backup_enabled: data.auto_backup_enabled ?? true,
+            app_name: data.app_name || DEFAULT_PLATFORM_BRANDING.app_name,
+            app_logo_url: data.app_logo_url || DEFAULT_PLATFORM_BRANDING.app_logo_url,
+            app_tagline: data.app_tagline || DEFAULT_PLATFORM_BRANDING.app_tagline,
+            favicon_url: data.favicon_url || DEFAULT_PLATFORM_BRANDING.favicon_url,
+            app_title: data.app_title || DEFAULT_PLATFORM_BRANDING.app_title,
+            app_description: data.app_description || DEFAULT_PLATFORM_BRANDING.app_description,
+            support_helpline: data.support_helpline || DEFAULT_PLATFORM_BRANDING.support_helpline,
+            app_domain: data.app_domain || DEFAULT_PLATFORM_BRANDING.app_domain,
+            contact_email: data.contact_email || DEFAULT_PLATFORM_BRANDING.contact_email,
+            contact_phone: data.contact_phone || DEFAULT_PLATFORM_BRANDING.contact_phone,
+            contact_address: data.contact_address || DEFAULT_PLATFORM_BRANDING.contact_address,
             updated_at: data.updated_at,
           },
         }
@@ -5823,7 +5839,26 @@ export class PlatformService {
     // Fallback to local data store if present
     const saved = PrintERPDataStore.get<PlatformSystemSettings>(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS)
     if (saved) {
-      return { success: true, data: saved }
+      if (saved.app_domain) {
+        setRuntimeRootDomain(saved.app_domain)
+      }
+      return {
+        success: true,
+        data: {
+          ...saved,
+          app_name: saved.app_name || DEFAULT_PLATFORM_BRANDING.app_name,
+          app_logo_url: saved.app_logo_url || DEFAULT_PLATFORM_BRANDING.app_logo_url,
+          app_tagline: saved.app_tagline || DEFAULT_PLATFORM_BRANDING.app_tagline,
+          favicon_url: saved.favicon_url || DEFAULT_PLATFORM_BRANDING.favicon_url,
+          app_title: saved.app_title || DEFAULT_PLATFORM_BRANDING.app_title,
+          app_description: saved.app_description || DEFAULT_PLATFORM_BRANDING.app_description,
+          support_helpline: saved.support_helpline || DEFAULT_PLATFORM_BRANDING.support_helpline,
+          app_domain: saved.app_domain || DEFAULT_PLATFORM_BRANDING.app_domain,
+          contact_email: saved.contact_email || DEFAULT_PLATFORM_BRANDING.contact_email,
+          contact_phone: saved.contact_phone || DEFAULT_PLATFORM_BRANDING.contact_phone,
+          contact_address: saved.contact_address || DEFAULT_PLATFORM_BRANDING.contact_address,
+        },
+      }
     }
 
     return {
@@ -5840,7 +5875,32 @@ export class PlatformService {
         maintenance_message: 'InkFlow is currently undergoing scheduled platform upgrades.',
         backup_retention_days: 90,
         auto_backup_enabled: true,
+        ...DEFAULT_PLATFORM_BRANDING,
       },
+    }
+  }
+
+  /**
+   * Retrieves public platform identity and contact metadata without requiring admin privileges.
+   */
+  static async getPublicPlatformSettings(): Promise<PlatformSystemSettings> {
+    const res = await this.getPlatformSettings()
+    if (res.success && res.data) {
+      return res.data
+    }
+    return {
+      session_timeout_minutes: 120,
+      mfa_required_for_admins: false,
+      rate_limit_requests_per_minute: 120,
+      max_export_records: 10000,
+      default_trial_days: 14,
+      default_currency: 'BDT',
+      default_vat_rate_pct: 15,
+      maintenance_mode_enabled: false,
+      maintenance_message: 'InkFlow is currently undergoing scheduled platform upgrades.',
+      backup_retention_days: 90,
+      auto_backup_enabled: true,
+      ...DEFAULT_PLATFORM_BRANDING,
     }
   }
 
@@ -6445,6 +6505,17 @@ export class PlatformService {
         incident_alert_webhook: settings.incident_alert_webhook?.trim() || null,
         backup_retention_days: Number(settings.backup_retention_days) || 90,
         auto_backup_enabled: settings.auto_backup_enabled !== undefined ? Boolean(settings.auto_backup_enabled) : true,
+        app_name: (settings.app_name !== undefined ? settings.app_name : DEFAULT_PLATFORM_BRANDING.app_name).trim(),
+        app_logo_url: (settings.app_logo_url || '').trim(),
+        app_tagline: (settings.app_tagline !== undefined ? settings.app_tagline : DEFAULT_PLATFORM_BRANDING.app_tagline).trim(),
+        favicon_url: (settings.favicon_url !== undefined ? settings.favicon_url : DEFAULT_PLATFORM_BRANDING.favicon_url).trim(),
+        app_title: (settings.app_title !== undefined ? settings.app_title : DEFAULT_PLATFORM_BRANDING.app_title).trim(),
+        app_description: (settings.app_description !== undefined ? settings.app_description : DEFAULT_PLATFORM_BRANDING.app_description).trim(),
+        support_helpline: (settings.support_helpline !== undefined ? settings.support_helpline : DEFAULT_PLATFORM_BRANDING.support_helpline).trim(),
+        app_domain: (settings.app_domain || DEFAULT_PLATFORM_BRANDING.app_domain).replace(/^https?:\/\//i, '').split('/')[0].toLowerCase().trim(),
+        contact_email: (settings.contact_email !== undefined ? settings.contact_email : DEFAULT_PLATFORM_BRANDING.contact_email).trim(),
+        contact_phone: (settings.contact_phone !== undefined ? settings.contact_phone : DEFAULT_PLATFORM_BRANDING.contact_phone).trim(),
+        contact_address: (settings.contact_address !== undefined ? settings.contact_address : DEFAULT_PLATFORM_BRANDING.contact_address).trim(),
         updated_at: new Date().toISOString(),
       }
 
@@ -6472,10 +6543,18 @@ export class PlatformService {
         } catch {}
       }
 
+      // Sync active domain
+      if (payload.app_domain) {
+        setRuntimeRootDomain(payload.app_domain)
+      }
+
       // Sync with transient local store
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, payload)
     } catch {
       // Non-blocking fallback
+      if (settings.app_domain) {
+        setRuntimeRootDomain(settings.app_domain)
+      }
       PrintERPDataStore.set(STORAGE_KEYS.PLATFORM_SYSTEM_SETTINGS, settings)
     }
 

@@ -719,7 +719,35 @@ export interface PlatformSystemSettings {
   auto_backup_enabled?: boolean
   updated_at?: string
   updated_by_name?: string
+
+  // Dynamic Platform Identity, Domain & Contact Settings
+  app_name?: string
+  app_logo_url?: string
+  app_tagline?: string
+  favicon_url?: string
+  app_title?: string
+  app_description?: string
+  support_helpline?: string
+  app_domain?: string
+  contact_email?: string
+  contact_phone?: string
+  contact_address?: string
 }
+
+export const DEFAULT_PLATFORM_BRANDING = {
+  app_name: 'InkFlow ERP',
+  app_logo_url: '',
+  app_tagline: 'The Complete Printing & Signage Operating System',
+  favicon_url: '/favicon.ico',
+  app_title: 'PrintERP SaaS - Operating System for Printing & Signage in Bangladesh',
+  app_description: 'Production-ready SaaS for digital printing, offset press, flex/banner, stickers, packaging, LED signage, acrylic fabrication, and installation businesses in Bangladesh.',
+  support_helpline: '+880 1819-876543',
+  app_domain: 'inkflow.com.bd',
+  contact_email: 'support@printerp.com.bd',
+  contact_phone: '+880 1819-876543',
+  contact_address: 'Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh',
+} as const
+
 
 export interface PlatformTenantUserItem {
   id: string

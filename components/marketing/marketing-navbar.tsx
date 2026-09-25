@@ -16,12 +16,14 @@ import { LanguageSwitcher } from '@/components/shell/language-switcher'
 import { useI18n } from '@/i18n/context'
 import { MARKETING_NAV_ITEMS } from '@/lib/marketing/marketing-data'
 import { usePublicSubscriptionPlans, toBengaliDigits } from '@/hooks/use-public-plans'
+import { usePlatformSettings } from '@/hooks/use-platform-settings'
 
 interface MarketingNavbarProps {
   onOpenDemo?: () => void
 }
 
 export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
+  const { appName, appLogoUrl, tagline } = usePlatformSettings()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const pathname = usePathname()
@@ -69,27 +71,35 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
         <div className="flex items-center justify-between h-16 sm:h-20 gap-3 sm:gap-4">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2 sm:gap-3 group shrink-0">
-            <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0">
-              <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
-              {/* CMYK Accent Dots */}
-              <div className="absolute -bottom-1 -right-1 flex gap-0.5">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" title="Cyan" />
-                <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-500" title="Magenta" />
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Yellow" />
-                <span className="h-1.5 w-1.5 rounded-full bg-slate-900 border border-slate-700" title="Key" />
+            {appLogoUrl ? (
+              <img
+                src={appLogoUrl}
+                alt={appName}
+                className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl object-contain bg-slate-900 border border-slate-700/60 p-1 shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0"
+              />
+            ) : (
+              <div className="relative flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-700 text-white shadow-md shadow-cyan-500/20 group-hover:scale-105 transition-transform shrink-0">
+                <Printer className="h-4 w-4 sm:h-5 sm:w-5" />
+                {/* CMYK Accent Dots */}
+                <div className="absolute -bottom-1 -right-1 flex gap-0.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" title="Cyan" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-fuchsia-500" title="Magenta" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-400" title="Yellow" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-900 border border-slate-700" title="Key" />
+                </div>
               </div>
-            </div>
+            )}
             <div className="flex flex-col shrink-0">
               <div className="flex items-center gap-1.5">
                 <span className="text-lg sm:text-xl font-black tracking-tight text-white nav-link-nowrap">
-                  Print<span className="text-cyan-400">ERP</span>
+                  {appName}
                 </span>
                 <span className="rounded bg-cyan-500/10 px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-cyan-400 border border-cyan-500/20 nav-link-nowrap">
                   BD SaaS
                 </span>
               </div>
               <span className="text-[10px] text-slate-400 font-medium hidden sm:inline leading-none nav-link-nowrap">
-                Printing & Signage OS
+                {tagline || 'Printing & Signage OS'}
               </span>
             </div>
           </Link>
@@ -203,7 +213,7 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
               onClick={() => setMobileMenuOpen(false)}
               className="px-3.5 py-2.5 rounded-lg text-sm font-medium text-slate-200 hover:bg-slate-900 hover:text-cyan-400 transition-colors bangla-text"
             >
-              {tBilingual('About PrintERP', 'প্রিন্টইআরপি পরিচিতি')}
+              {tBilingual(`About ${appName}`, `${appName} পরিচিতি`)}
             </Link>
             <Link
               href="/contact"

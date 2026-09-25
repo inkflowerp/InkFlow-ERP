@@ -32,6 +32,14 @@ import {
   Users,
   Send,
   RotateCcw,
+  Palette,
+  Sparkles,
+  Phone,
+  MapPin,
+  Globe2,
+  Image as ImageIcon,
+  Headphones,
+  Compass,
 } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -116,6 +124,9 @@ export default function PlatformSettingsPage() {
         showNotification('Platform parameters updated and recorded to compliance audit trail.', 'success')
         setOriginalSettings(JSON.parse(JSON.stringify(settings)))
         setReason('')
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('inkflow_platform_settings_updated', { detail: settings }))
+        }
       } else {
         showNotification((res as any).error || 'Failed to update settings', 'error')
       }
@@ -540,6 +551,255 @@ export default function PlatformSettingsPage() {
       {/* Global System Settings Form */}
       {settings && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Application Identity & Branding */}
+          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">
+                  <Palette className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-bold text-white">Application Identity &amp; Branding</CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    Application name, logo, tagline, and favicon dynamically synchronized platform-wide.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Application Name
+                </label>
+                <Input
+                  value={settings.app_name || ''}
+                  onChange={(e) => setSettings({ ...settings, app_name: e.target.value })}
+                  placeholder="e.g. InkFlow ERP or PrintERP"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Reflected across marketing headers, tenant sidebars, emails, and platform console.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Application Tagline
+                </label>
+                <Input
+                  value={settings.app_tagline || ''}
+                  onChange={(e) => setSettings({ ...settings, app_tagline: e.target.value })}
+                  placeholder="e.g. The Complete Printing &amp; Signage Operating System"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Displayed on auth showcase, public landing page, and documentation headers.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Application Logo URL
+                </label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    value={settings.app_logo_url || ''}
+                    onChange={(e) => setSettings({ ...settings, app_logo_url: e.target.value })}
+                    placeholder="https://example.com/logo.png (or leave empty for SVG mark)"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 font-mono"
+                  />
+                  {settings.app_logo_url ? (
+                    <div className="relative h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                      <img
+                        src={settings.app_logo_url}
+                        alt="Logo preview"
+                        className="max-h-full max-w-full object-contain"
+                        onError={(e) => {
+                          ;(e.target as any).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="h-9 w-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                      <ImageIcon className="h-4 w-4" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  PNG/SVG URL for navigation bars and official platform branding.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Favicon URL
+                </label>
+                <div className="flex items-center gap-3">
+                  <Input
+                    value={settings.favicon_url || ''}
+                    onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
+                    placeholder="/favicon.ico or https://example.com/favicon.png"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl flex-1 font-mono"
+                  />
+                  <div className="h-9 w-9 rounded-xl bg-slate-950 border border-slate-800 p-1.5 flex items-center justify-center shrink-0">
+                    <img
+                      src={settings.favicon_url || '/favicon.ico'}
+                      alt="Favicon"
+                      className="h-4 w-4 object-contain"
+                      onError={(e) => {
+                        ;(e.target as any).style.display = 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Browser tab shortcut icon, dynamically updated in head link tags.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* SEO & Root Domain Configuration */}
+          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                  <Globe2 className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-bold text-white">SEO &amp; Primary Domain</CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    Custom root domain routing, document meta title, and search engine description.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4">
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Primary Domain / Host
+                </label>
+                <Input
+                  value={settings.app_domain || ''}
+                  onChange={(e) => setSettings({ ...settings, app_domain: e.target.value })}
+                  placeholder="e.g. inkflow.com.bd or localhost:3000"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Root domain for tenant subdomains (e.g. customer.domain.com), OAuth redirects, and link generation.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Application Title (Browser Title &amp; OG Meta)
+                </label>
+                <Input
+                  value={settings.app_title || ''}
+                  onChange={(e) => setSettings({ ...settings, app_title: e.target.value })}
+                  placeholder="e.g. PrintERP SaaS - Operating System for Printing &amp; Signage in Bangladesh"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Title tag rendered across browser tabs and search engine results.
+                </span>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Meta Description
+                </label>
+                <textarea
+                  value={settings.app_description || ''}
+                  onChange={(e) => setSettings({ ...settings, app_description: e.target.value })}
+                  placeholder="Production-ready SaaS for digital printing, offset press..."
+                  rows={3}
+                  className="w-full p-2.5 text-xs bg-slate-950 border border-slate-800 text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-600 resize-none"
+                />
+                <span className="text-[10px] text-slate-500 mt-0.5 block">
+                  Used in HTML meta description tags and social link previews.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Customer Support, Helpline & Official Contact Directory */}
+          <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl md:col-span-2">
+            <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">
+              <div className="flex items-center gap-2.5">
+                <div className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <Headphones className="h-4 w-4" />
+                </div>
+                <div>
+                  <CardTitle className="text-sm font-bold text-white">Helpline &amp; Official Contact Channels</CardTitle>
+                  <CardDescription className="text-xs text-slate-400">
+                    Emergency customer support hotline, email desk, and official headquarters coordinates.
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-5 space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">
+                    Customer Support Helpline / Hotline
+                  </label>
+                  <Input
+                    value={settings.support_helpline || ''}
+                    onChange={(e) => setSettings({ ...settings, support_helpline: e.target.value })}
+                    placeholder="e.g. +880 1819-876543 / +880 1711-234567"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">
+                    Shown in customer support &amp; inquiries.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Official Contact Email</label>
+                  <Input
+                    type="email"
+                    value={settings.contact_email || ''}
+                    onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })}
+                    placeholder="support@printerp.com.bd"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">
+                    Official email address for correspondence.
+                  </span>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-slate-300 block mb-1">Contact Phone</label>
+                  <Input
+                    value={settings.contact_phone || ''}
+                    onChange={(e) => setSettings({ ...settings, contact_phone: e.target.value })}
+                    placeholder="+880 1819-876543"
+                    className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-1 block">
+                    Telephone for direct caller desk.
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                  Head Office / Physical Address
+                </label>
+                <Input
+                  value={settings.contact_address || ''}
+                  onChange={(e) => setSettings({ ...settings, contact_address: e.target.value })}
+                  placeholder="e.g. Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh"
+                  className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Displayed in public website footer, contact page, and platform disclosures.
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Security & Access Policies */}
           <Card className="bg-slate-900/90 border-slate-800 rounded-2xl overflow-hidden shadow-xl">
             <CardHeader className="border-b border-slate-800 pb-3.5 bg-slate-950/40">

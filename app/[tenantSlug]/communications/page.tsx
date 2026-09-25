@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -344,7 +345,7 @@ export default function CommunicationsHubPage() {
               <div className="flex items-center justify-end sm:justify-start gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
                 {notif.action_url && (
                   <Link
-                    href={`/${slug}${notif.action_url}`}
+                    href={getTenantNavHref(notif.action_url, null, slug)}
                     className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50"
                   >
                     View <ExternalLink className="h-3 w-3 ml-1" />
