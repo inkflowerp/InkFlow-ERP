@@ -134,17 +134,15 @@ export function CompleteTaskModal({
     })
   }, [task, isOpen])
 
-  if (!task) return null
-
   const selectedRoll = availableRolls.find((r) => r.id === selectedRollId)
 
   // Job Dimensions in Feet
-  const jobWidthFt = Number(task.width) || (task.unit === 'ft' || task.unit === 'sft' ? 3 : 1)
-  const jobLengthFt = Number(task.height) || (task.unit === 'ft' || task.unit === 'sft' ? 5 : 1)
+  const jobWidthFt = task ? (Number(task.width) || (task.unit === 'ft' || task.unit === 'sft' ? 3 : 1)) : 1
+  const jobLengthFt = task ? (Number(task.height) || (task.unit === 'ft' || task.unit === 'sft' ? 5 : 1)) : 1
 
   // Deterministic Roll Feed Calculation
   const rollCalc: RollFeedCalculationResult | null = useMemo(() => {
-    if (!selectedRoll) return null
+    if (!task || !selectedRoll) return null
     return RollConsumptionEngine.calculateRollLinearFeed({
       roll_width_ft: selectedRoll.width_ft,
       roll_current_length_ft: Number(selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)),
@@ -156,7 +154,9 @@ export function CompleteTaskModal({
       wastage_length_ft: hasScrap ? Number(scrapWastageLengthFt) || 0 : 0,
       wastage_reason: hasScrap && defectReason ? defectReason : undefined,
     })
-  }, [selectedRoll, jobWidthFt, jobLengthFt, goodQty, orientation, bleedInches, hasScrap, scrapWastageLengthFt, defectReason])
+  }, [task, selectedRoll, jobWidthFt, jobLengthFt, goodQty, orientation, bleedInches, hasScrap, scrapWastageLengthFt, defectReason])
+
+  if (!task) return null
 
   const isSftUnit = task.unit === 'sft' || task.unit === 'sqft' || (task.width && task.height)
   const taskAreaSft = (task.width && task.height)

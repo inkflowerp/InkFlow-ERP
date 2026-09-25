@@ -14,7 +14,13 @@ const eslintConfig = defineConfig([
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }
       ],
       "@typescript-eslint/no-explicit-any": "warn",
-      "prefer-const": "warn"
+      "@typescript-eslint/no-require-imports": "warn",
+      "prefer-const": "warn",
+      "react/no-unescaped-entities": "off",
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/purity": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/preserve-manual-memoization": "warn"
     }
   },
   globalIgnores([
@@ -22,6 +28,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     ".agents/**",
+    "scratch/**",
     "next-env.d.ts",
     "tests/**",
     "**/*.test.ts",

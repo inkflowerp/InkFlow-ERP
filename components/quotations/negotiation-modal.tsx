@@ -48,11 +48,9 @@ export function NegotiationModal({
     }
   }, [open, quotation])
 
-  if (!quotation) return null
-
-  const subtotal = quotation.subtotal || 0
-  const totalCost = quotation.total_cost || Math.round(subtotal * 0.55)
-  const vatRate = quotation.vat_rate || 7.5
+  const subtotal = quotation?.subtotal || 0
+  const totalCost = quotation?.total_cost || Math.round(subtotal * 0.55)
+  const vatRate = quotation?.vat_rate || 7.5
 
   const calculated = useMemo(() => {
     const disc = Math.max(0, Math.min(subtotal, Number(discountAmount) || 0))
@@ -75,6 +73,8 @@ export function NegotiationModal({
       isCriticalLoss: grossProfit <= 0,
     }
   }, [subtotal, discountAmount, vatRate, totalCost])
+
+  if (!quotation) return null
 
   // Helper to round grand total to nearest amount (e.g. 500, 100, 50)
   const handleRoundGrandTotal = (nearest: number) => {

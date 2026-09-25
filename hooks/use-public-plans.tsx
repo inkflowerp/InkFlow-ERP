@@ -259,12 +259,7 @@ export function PublicPlansProvider({
   return <PublicPlansContext.Provider value={value}>{children}</PublicPlansContext.Provider>
 }
 
-export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null) {
-  const context = useContext(PublicPlansContext)
-  if (context) {
-    return context
-  }
-
+function useStandalonePublicSubscriptionPlans(initialData?: PublicPlansData | null) {
   // Fallback standalone hook if used outside PublicPlansProvider
   const seed = useMemo(() => getInitialPublicSeed(initialData), [initialData])
   const [plans, setPlans] = useState<SubscriptionPlanRecord[]>(() => seed.plans)
@@ -381,4 +376,11 @@ export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null)
     toBengaliDigits,
   }
 }
+
+export function usePublicSubscriptionPlans(initialData?: PublicPlansData | null) {
+  const context = useContext(PublicPlansContext)
+  const standalone = useStandalonePublicSubscriptionPlans(context ? null : initialData)
+  return context || standalone
+}
+
 
