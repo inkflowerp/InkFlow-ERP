@@ -155,32 +155,32 @@ export default function AccountingPage() {
     try {
       setIsLoading(true)
       const [accRes, dashRes, pnlRes, bsRes, cfRes, tbRes, glRes, arRes, apRes, jpRes, expRes] = await Promise.all([
-        getAccountsAction(),
-        getFinancialDashboardAction(),
-        getProfitAndLossAction(),
-        getBalanceSheetAction(),
-        getCashFlowAction(),
-        getTrialBalanceAction(),
-        getGeneralLedgerAction({ accountId: selectedLedgerAccountId || undefined }),
-        getReceivablesAgingAction(),
-        getPayablesAgingAction(),
-        getJobProfitabilityAction(),
-        getExpensesAction(),
+        getAccountsAction().catch(() => ({ success: false, data: [] })),
+        getFinancialDashboardAction().catch(() => ({ success: false, data: null })),
+        getProfitAndLossAction().catch(() => ({ success: false, data: null })),
+        getBalanceSheetAction().catch(() => ({ success: false, data: null })),
+        getCashFlowAction().catch(() => ({ success: false, data: null })),
+        getTrialBalanceAction().catch(() => ({ success: false, data: null })),
+        getGeneralLedgerAction({ accountId: selectedLedgerAccountId || undefined }).catch(() => ({ success: false, data: [] })),
+        getReceivablesAgingAction().catch(() => ({ success: false, data: null })),
+        getPayablesAgingAction().catch(() => ({ success: false, data: null })),
+        getJobProfitabilityAction().catch(() => ({ success: false, data: [] })),
+        getExpensesAction().catch(() => ({ success: false, data: null })),
       ])
 
-      if (accRes.success && accRes.data) setAccounts(accRes.data)
-      if (dashRes.success && dashRes.data) setDashboardMetrics(dashRes.data)
-      if (pnlRes.success && pnlRes.data) setPnl(pnlRes.data)
-      if (bsRes.success && bsRes.data) setBalanceSheet(bsRes.data)
-      if (cfRes.success && cfRes.data) setCashFlow(cfRes.data)
-      if (tbRes.success && tbRes.data) setTrialBalance(tbRes.data)
-      if (glRes.success && glRes.data) setLedgerEntries(glRes.data)
-      if (arRes.success && arRes.data) setReceivables(arRes.data)
-      if (apRes.success && apRes.data) setPayables(apRes.data)
-      if (jpRes.success && jpRes.data) setJobProfitability(jpRes.data)
-      if (expRes.success && expRes.data) setExpensesReport(expRes.data)
+      if (accRes && accRes.success && Array.isArray(accRes.data)) setAccounts(accRes.data)
+      if (dashRes && dashRes.success && dashRes.data) setDashboardMetrics(dashRes.data)
+      if (pnlRes && pnlRes.success && pnlRes.data) setPnl(pnlRes.data)
+      if (bsRes && bsRes.success && bsRes.data) setBalanceSheet(bsRes.data)
+      if (cfRes && cfRes.success && cfRes.data) setCashFlow(cfRes.data)
+      if (tbRes && tbRes.success && tbRes.data) setTrialBalance(tbRes.data)
+      if (glRes && glRes.success && Array.isArray(glRes.data)) setLedgerEntries(glRes.data)
+      if (arRes && arRes.success && arRes.data) setReceivables(arRes.data)
+      if (apRes && apRes.success && apRes.data) setPayables(apRes.data)
+      if (jpRes && jpRes.success && Array.isArray(jpRes.data)) setJobProfitability(jpRes.data)
+      if (expRes && expRes.success && expRes.data) setExpensesReport(expRes.data)
     } catch (err: any) {
-      console.error('Failed to load finance data:', err)
+      console.warn('Failed to load finance data:', err)
     } finally {
       setIsLoading(false)
     }

@@ -286,15 +286,15 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
 
   // Dashboard Data Aggregation
   const rawData = useMemo(() => ({
-    orders,
-    productionJobs,
-    designJobs,
-    customers,
-    invoices,
-    payments,
-    expenses,
-    materials,
-    deliveryChallans,
+    orders: Array.isArray(orders) ? orders : [],
+    productionJobs: Array.isArray(productionJobs) ? productionJobs : [],
+    designJobs: Array.isArray(designJobs) ? designJobs : [],
+    customers: Array.isArray(customers) ? customers : [],
+    invoices: Array.isArray(invoices) ? invoices : [],
+    payments: Array.isArray(payments) ? payments : [],
+    expenses: Array.isArray(expenses) ? expenses : [],
+    materials: Array.isArray(materials) ? materials : [],
+    deliveryChallans: Array.isArray(deliveryChallans) ? deliveryChallans : [],
   }), [orders, productionJobs, designJobs, customers, invoices, payments, expenses, materials, deliveryChallans])
 
   // Resolved Authorized Engine Elements

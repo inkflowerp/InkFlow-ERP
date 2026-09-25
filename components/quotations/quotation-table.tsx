@@ -35,7 +35,7 @@ export interface QuotationTableProps {
 }
 
 export function QuotationTable({
-  quotations,
+  quotations = [],
   tenantSlug,
   companyName = 'InkFlow',
   onOpenFollowUp,
@@ -44,6 +44,7 @@ export function QuotationTable({
   const pathname = usePathname()
   const { locale } = useI18n()
   const isBn = locale === 'bn'
+  const safeQuotations = Array.isArray(quotations) ? quotations : []
 
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
@@ -122,7 +123,7 @@ export function QuotationTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {quotations.map((q) => {
+            {safeQuotations.map((q) => {
               const nextAction = QuotationService.calculateNextAction(q)
               const primaryItem = q.items?.[0]
               const sector = QuotationService.getSectorForQuotation(q)
@@ -303,7 +304,7 @@ export function QuotationTable({
 
       {/* Mobile & Tablet Card View */}
       <div className="lg:hidden divide-y divide-slate-100 dark:divide-slate-800">
-        {quotations.map((q) => {
+        {safeQuotations.map((q) => {
           const nextAction = QuotationService.calculateNextAction(q)
           const primaryItem = q.items?.[0]
           const sector = QuotationService.getSectorForQuotation(q)

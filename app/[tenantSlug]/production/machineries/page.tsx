@@ -116,7 +116,7 @@ export default function MachineriesListPage() {
         getMachineryDashboardMetricsAction(),
       ])
 
-      if (machRes.success && machRes.data) {
+      if (machRes.success && Array.isArray(machRes.data)) {
         setMachineries(machRes.data)
       } else {
         setError(machRes.error || 'Failed to load machineries.')
@@ -677,7 +677,7 @@ export default function MachineriesListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {machineries.map((m) => (
+              {(Array.isArray(machineries) ? machineries : []).map((m) => (
                 <tr key={m.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                   <td className="p-3">
                     <Link

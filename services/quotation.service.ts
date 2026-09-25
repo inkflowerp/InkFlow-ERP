@@ -266,8 +266,9 @@ export class QuotationService {
   static getKpiMetrics(quotes: QuotationRecord[]) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const safeQuotes = Array.isArray(quotes) ? quotes : []
 
-    const activeQuotes = quotes.filter(
+    const activeQuotes = safeQuotes.filter(
       (q) => q.status !== 'converted' && q.status !== 'rejected' && q.status !== 'expired'
     )
 
@@ -319,8 +320,9 @@ export class QuotationService {
   static getNeedsAttentionQuotes(quotes: QuotationRecord[]): QuotationRecord[] {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
+    const safeQuotes = Array.isArray(quotes) ? quotes : []
 
-    return quotes
+    return safeQuotes
       .filter((q) => {
         if (q.status === 'converted' || q.status === 'rejected') return false
 

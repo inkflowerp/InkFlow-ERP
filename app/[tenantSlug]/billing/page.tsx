@@ -232,29 +232,29 @@ function BillingContent() {
           : undefined
 
       const [overviewRes, invRes, payRes, agingRes, reqRes] = await Promise.all([
-        getBillingOverviewAction(selectedPeriod, customRange, company.id),
-        getInvoicesAction(undefined, company.id),
-        getPaymentsAction(undefined, company.id),
-        getReceivablesAgingAction(company.id),
-        getInvoiceRequestsAction(undefined, company.id),
+        getBillingOverviewAction(selectedPeriod, customRange, company.id).catch(() => ({ success: false, data: null })),
+        getInvoicesAction(undefined, company.id).catch(() => ({ success: false, data: [] })),
+        getPaymentsAction(undefined, company.id).catch(() => ({ success: false, data: [] })),
+        getReceivablesAgingAction(company.id).catch(() => ({ success: false, data: null })),
+        getInvoiceRequestsAction(undefined, company.id).catch(() => ({ success: false, data: [] })),
       ])
 
-      if (overviewRes.success && overviewRes.data) {
+      if (overviewRes && overviewRes.success && overviewRes.data) {
         setOverviewMetrics(overviewRes.data.metrics)
         setPriorityItems(overviewRes.data.priorityItems)
         setPaymentMethodsSummary(overviewRes.data.paymentMethods)
         setSalespersonStats(overviewRes.data.salespersonStats)
       }
 
-      if (invRes.success && invRes.data) {
+      if (invRes && invRes.success && Array.isArray(invRes.data)) {
         setInvoices(invRes.data)
       }
 
-      if (payRes.success && payRes.data) {
+      if (payRes && payRes.success && Array.isArray(payRes.data)) {
         setPayments(payRes.data)
       }
 
-      if (agingRes.success && agingRes.data) {
+      if (agingRes && agingRes.success && agingRes.data) {
         setReceivablesAging(agingRes.data)
       }
 

@@ -32,7 +32,7 @@ export interface NeedsAttentionPanelProps {
 }
 
 export function NeedsAttentionPanel({
-  quotations,
+  quotations = [],
   tenantSlug,
   companyName = 'InkFlow',
   onOpenFollowUp,
@@ -40,7 +40,10 @@ export function NeedsAttentionPanel({
   const pathname = usePathname()
   const { locale } = useI18n()
   const isBn = locale === 'bn'
-  const urgentQuotes = QuotationService.getNeedsAttentionQuotes(quotations)
+  const safeQuotations = Array.isArray(quotations) ? quotations : []
+  const urgentQuotes = Array.isArray(QuotationService.getNeedsAttentionQuotes(safeQuotations))
+    ? QuotationService.getNeedsAttentionQuotes(safeQuotations)
+    : []
 
   if (urgentQuotes.length === 0) {
     return null

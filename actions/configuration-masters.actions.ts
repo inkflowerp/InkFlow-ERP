@@ -23,10 +23,29 @@ async function getVerifiedTenant() {
   return tenant
 }
 
+async function getOptionalTenant() {
+  try {
+    const tenant = await getCurrentTenant()
+    if (!tenant || !tenant.companyId) {
+      return null
+    }
+    return tenant
+  } catch {
+    return null
+  }
+}
+
 // 1. PRINTING METHODS ACTIONS
 export async function getPrintingMethodsAction() {
-  const tenant = await getVerifiedTenant()
-  return PrintingMethodRepository.getPrintingMethods(tenant.companyId, { includeInactive: true })
+  try {
+    const tenant = await getOptionalTenant()
+    if (!tenant) return []
+    const data = await PrintingMethodRepository.getPrintingMethods(tenant.companyId, { includeInactive: true })
+    return Array.isArray(data) ? data : []
+  } catch (err: any) {
+    console.warn('[Action] getPrintingMethodsAction error:', err?.message)
+    return []
+  }
 }
 
 export async function savePrintingMethodAction(data: Partial<PrintingMethod>) {
@@ -50,8 +69,15 @@ export async function deletePrintingMethodAction(id: string) {
 
 // 2. MATERIAL PURCHASE CONFIG ACTIONS
 export async function getMaterialPurchaseConfigsAction(materialId: string) {
-  const tenant = await getVerifiedTenant()
-  return MaterialPurchaseConfigRepository.getConfigsByMaterial(tenant.companyId, materialId, { includeInactive: true })
+  try {
+    const tenant = await getOptionalTenant()
+    if (!tenant) return []
+    const data = await MaterialPurchaseConfigRepository.getConfigsByMaterial(tenant.companyId, materialId, { includeInactive: true })
+    return Array.isArray(data) ? data : []
+  } catch (err: any) {
+    console.warn('[Action] getMaterialPurchaseConfigsAction error:', err?.message)
+    return []
+  }
 }
 
 export async function saveMaterialPurchaseConfigAction(data: Partial<MaterialPurchaseConfig>) {
@@ -75,12 +101,20 @@ export async function deleteMaterialPurchaseConfigAction(id: string) {
 
 // 3. FINISHING OPTION ACTIONS
 export async function getFinishingOptionsAction() {
-  const tenant = await getVerifiedTenant()
-  return FinishingOptionRepository.getFinishingOptions(tenant.companyId, { includeInactive: true })
+  try {
+    const tenant = await getOptionalTenant()
+    if (!tenant) return []
+    const data = await FinishingOptionRepository.getFinishingOptions(tenant.companyId, { includeInactive: true })
+    return Array.isArray(data) ? data : []
+  } catch (err: any) {
+    console.warn('[Action] getFinishingOptionsAction error:', err?.message)
+    return []
+  }
 }
 
 export async function saveFinishingOptionAction(data: Partial<FinishingOptionRecord>) {
   const tenant = await getVerifiedTenant()
+  if (!tenant) throw new Error('Unauthorized')
   if (data.id) {
     const res = await FinishingOptionRepository.updateFinishingOption(tenant.companyId, data.id, data)
     revalidatePath(`/${tenant.companySlug}/products`)
@@ -93,6 +127,7 @@ export async function saveFinishingOptionAction(data: Partial<FinishingOptionRec
 
 export async function deleteFinishingOptionAction(id: string) {
   const tenant = await getVerifiedTenant()
+  if (!tenant) throw new Error('Unauthorized')
   const res = await FinishingOptionRepository.deleteFinishingOption(tenant.companyId, id)
   revalidatePath(`/${tenant.companySlug}/products`)
   return res
@@ -100,12 +135,20 @@ export async function deleteFinishingOptionAction(id: string) {
 
 // 4. ADDITIONAL OPTION ACTIONS
 export async function getAdditionalOptionsAction() {
-  const tenant = await getVerifiedTenant()
-  return AdditionalOptionRepository.getAdditionalOptions(tenant.companyId, { includeInactive: true })
+  try {
+    const tenant = await getOptionalTenant()
+    if (!tenant) return []
+    const data = await AdditionalOptionRepository.getAdditionalOptions(tenant.companyId, { includeInactive: true })
+    return Array.isArray(data) ? data : []
+  } catch (err: any) {
+    console.warn('[Action] getAdditionalOptionsAction error:', err?.message)
+    return []
+  }
 }
 
 export async function saveAdditionalOptionAction(data: Partial<AdditionalOptionRecord>) {
   const tenant = await getVerifiedTenant()
+  if (!tenant) throw new Error('Unauthorized')
   if (data.id) {
     const res = await AdditionalOptionRepository.updateAdditionalOption(tenant.companyId, data.id, data)
     revalidatePath(`/${tenant.companySlug}/products`)
@@ -118,6 +161,7 @@ export async function saveAdditionalOptionAction(data: Partial<AdditionalOptionR
 
 export async function deleteAdditionalOptionAction(id: string) {
   const tenant = await getVerifiedTenant()
+  if (!tenant) throw new Error('Unauthorized')
   const res = await AdditionalOptionRepository.deleteAdditionalOption(tenant.companyId, id)
   revalidatePath(`/${tenant.companySlug}/products`)
   return res
@@ -125,8 +169,15 @@ export async function deleteAdditionalOptionAction(id: string) {
 
 // 5. INSTALLATION OPTION ACTIONS
 export async function getInstallationOptionsAction() {
-  const tenant = await getVerifiedTenant()
-  return InstallationOptionRepository.getInstallationOptions(tenant.companyId, { includeInactive: true })
+  try {
+    const tenant = await getOptionalTenant()
+    if (!tenant) return []
+    const data = await InstallationOptionRepository.getInstallationOptions(tenant.companyId, { includeInactive: true })
+    return Array.isArray(data) ? data : []
+  } catch (err: any) {
+    console.warn('[Action] getInstallationOptionsAction error:', err?.message)
+    return []
+  }
 }
 
 export async function saveInstallationOptionAction(data: Partial<InstallationOptionRecord>) {

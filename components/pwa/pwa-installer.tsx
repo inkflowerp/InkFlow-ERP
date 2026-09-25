@@ -31,24 +31,21 @@ export function PWAInstaller() {
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
 
-    // Register Service Worker in production only, cleanup in development
+    // Ensure all stale service workers and caches are un-registered to prevent 503 intercepts on Next.js Server Actions
     if ('serviceWorker' in navigator) {
-      const isLocalhost =
-        window.location.hostname === 'localhost' ||
-        window.location.hostname === '127.0.0.1'
-
-      if (process.env.NODE_ENV === 'production' && !isLocalhost) {
-        navigator.serviceWorker
-          .register('/sw.js')
-          .catch((err) => console.debug('SW registration error:', err))
-      } else {
-        // In local development, unregister any existing service workers to avoid intercepting dev server requests
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const registration of registrations) {
-            registration.unregister()
-          }
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister()
+        }
+      }).catch(() => {})
+      if (typeof window !== 'undefined' && 'caches' in window) {
+        caches.keys().then((keys) => {
+          keys.forEach((key) => caches.delete(key))
         }).catch(() => {})
       }
+      navigator.serviceWorker
+        .register('/sw.js')
+        .catch(() => {})
     }
 
     return () => {

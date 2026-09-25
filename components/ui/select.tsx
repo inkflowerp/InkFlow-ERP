@@ -25,7 +25,7 @@ const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           {...props}
         >
-          {options
+          {Array.isArray(options)
             ? options.map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}

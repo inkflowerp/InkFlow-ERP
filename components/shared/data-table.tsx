@@ -29,8 +29,8 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T extends Record<string, unknown>>({
-  columns,
-  data,
+  columns = [],
+  data = [],
   keyExtractor,
   isLoading = false,
   emptyTitle,
@@ -44,6 +44,9 @@ export function DataTable<T extends Record<string, unknown>>({
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
   const { t, tBilingual } = useI18n()
 
+  const safeColumns = Array.isArray(columns) ? columns : []
+  const safeData = Array.isArray(data) ? data : []
+
   const handleSort = (key: string) => {
     if (sortKey === key) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
@@ -53,8 +56,8 @@ export function DataTable<T extends Record<string, unknown>>({
   }
 
   const sortedData = React.useMemo(() => {
-    if (!sortKey) return data
-    return [...data].sort((a, b) => {
+    if (!sortKey) return safeData
+    return [...safeData].sort((a, b) => {
       const aVal = a[sortKey]
       const bVal = b[sortKey]
       if (aVal === bVal) return 0
@@ -63,13 +66,13 @@ export function DataTable<T extends Record<string, unknown>>({
       const comparison = aVal < bVal ? -1 : 1
       return sortDirection === 'asc' ? comparison : -comparison
     })
-  }, [data, sortKey, sortDirection])
+  }, [safeData, sortKey, sortDirection])
 
   if (isLoading) {
     return <LoadingState variant="table" rows={6} />
   }
 
-  if (!data || data.length === 0) {
+  if (safeData.length === 0) {
     return (
       <EmptyState
         title={emptyTitle || t('common.no_data')}
@@ -95,7 +98,7 @@ export function DataTable<T extends Record<string, unknown>>({
           <table className="w-full text-left text-xs sm:text-sm text-slate-700 dark:text-slate-200">
             <thead className="border-b border-slate-200/80 bg-slate-50/75 text-xs font-bold uppercase tracking-wider text-slate-600 dark:border-slate-800 dark:bg-slate-800/60 dark:text-slate-300">
               <tr>
-                {columns.map((col, idx) => (
+                {safeColumns.map((col, idx) => (
                   <th
                     key={String(col.key) || idx}
                     className={cn(
@@ -135,7 +138,7 @@ export function DataTable<T extends Record<string, unknown>>({
                     onRowClick && 'cursor-pointer'
                   )}
                 >
-                  {columns.map((col, cIdx) => (
+                  {safeColumns.map((col, cIdx) => (
                     <td
                       key={String(col.key) || cIdx}
                       className={cn('px-4 py-3.5 text-xs sm:text-sm text-slate-800 dark:text-slate-200 bangla-text', col.className)}
@@ -162,18 +165,20 @@ export function DataTable<T extends Record<string, unknown>>({
             )}
           >
             {/* First Column as Primary Header */}
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
-              <div className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
-                {columns[0].render ? columns[0].render(row) : String(row[columns[0].key as string] ?? '')}
+            {safeColumns.length > 0 && (
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800/80">
+                <div className="font-bold text-sm text-slate-900 dark:text-white bangla-text">
+                  {safeColumns[0].render ? safeColumns[0].render(row) : String(row[safeColumns[0].key as string] ?? '')}
+                </div>
+                {onRowClick && (
+                  <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
+                )}
               </div>
-              {onRowClick && (
-                <ChevronRight className="h-4 w-4 text-slate-400 shrink-0" />
-              )}
-            </div>
+            )}
 
             {/* Remaining Columns as Key-Value Pairs */}
             <div className="space-y-1.5 text-xs sm:text-sm">
-              {columns.slice(1).map((col, cIdx) => (
+              {safeColumns.slice(1).map((col, cIdx) => (
                 <div key={cIdx} className="flex items-center justify-between gap-2">
                   <span className="text-slate-500 dark:text-slate-400 font-medium bangla-text">{renderColumnHeader(col)}:</span>
                   <span className="text-slate-800 dark:text-slate-200 font-semibold text-right bangla-text">

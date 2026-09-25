@@ -376,7 +376,7 @@ export default function ProductsCatalogPage() {
   const loadCategories = async () => {
     try {
       const res = await getCategoriesAction(companyId, false)
-      if (res.success && res.data) {
+      if (res && res.success && Array.isArray(res.data)) {
         setCategories(res.data)
       }
     } catch (err) {
@@ -388,7 +388,7 @@ export default function ProductsCatalogPage() {
   const loadPrintingMethods = async () => {
     try {
       const data = await getPrintingMethodsAction()
-      if (data) setPrintingMethods(data)
+      if (Array.isArray(data)) setPrintingMethods(data)
     } catch (err) {
       console.error('Failed to load printing methods', err)
     }
@@ -397,7 +397,7 @@ export default function ProductsCatalogPage() {
   const loadFinishingOptions = async () => {
     try {
       const data = await getFinishingOptionsAction()
-      if (data) setFinishingOptions(data)
+      if (Array.isArray(data)) setFinishingOptions(data)
     } catch (err) {
       console.error('Failed to load finishing options', err)
     }
@@ -406,7 +406,7 @@ export default function ProductsCatalogPage() {
   const loadAdditionalOptions = async () => {
     try {
       const data = await getAdditionalOptionsAction()
-      if (data) setAdditionalOptions(data)
+      if (Array.isArray(data)) setAdditionalOptions(data)
     } catch (err) {
       console.error('Failed to load additional options', err)
     }
@@ -415,7 +415,7 @@ export default function ProductsCatalogPage() {
   const loadInstallationOptions = async () => {
     try {
       const data = await getInstallationOptionsAction()
-      if (data) setInstallationOptions(data)
+      if (Array.isArray(data)) setInstallationOptions(data)
     } catch (err) {
       console.error('Failed to load installation options', err)
     }
@@ -424,7 +424,7 @@ export default function ProductsCatalogPage() {
   const loadMachineries = async () => {
     try {
       const res = await getMachineriesAction()
-      if (res.success && res.data) {
+      if (res && res.success && Array.isArray(res.data)) {
         setMachineries(res.data)
       }
     } catch (err) {

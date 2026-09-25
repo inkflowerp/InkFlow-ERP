@@ -84,7 +84,7 @@ export default function BranchesSettingsPage() {
   const loadLiveBranches = useCallback(async () => {
     try {
       const res = await listBranchesAction({ includeInactive: true })
-      if (res.success && res.data && res.data.length > 0) {
+      if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
         const mapped: BranchItem[] = res.data.map((b: any) => ({
           id: b.id,
           code: b.code || 'BR',

@@ -31,7 +31,7 @@ interface PricingMatrixTableProps {
 }
 
 export function PricingMatrixTable({
-  products,
+  products = [],
   onOpenEditProductPrice,
   tenantSlug,
 }: PricingMatrixTableProps) {
@@ -40,9 +40,10 @@ export function PricingMatrixTable({
   const [search, setSearch] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)))
+  const safeProducts = Array.isArray(products) ? products : []
+  const categories = Array.from(new Set(safeProducts.map((p) => p.category).filter(Boolean)))
 
-  const filteredProducts = products.filter((p) => {
+  const filteredProducts = safeProducts.filter((p) => {
     const q = search.toLowerCase()
     const matchSearch =
       p.name.toLowerCase().includes(q) ||

@@ -112,11 +112,11 @@ export default function HrmDashboardPage() {
       ])
 
       if (sumRes.success && sumRes.data) setSummary(sumRes.data)
-      if (empRes.success && empRes.data) setEmployees(empRes.data)
-      if (attRes.success && attRes.data) setTodayAttendance(attRes.data)
-      if (otRes.success && otRes.data) setPendingOvertime(otRes.data)
-      if (advRes.success && advRes.data) setRecentAdvances(advRes.data)
-      if (payRes.success && payRes.data) setPayrollPeriods(payRes.data)
+      if (empRes.success && Array.isArray(empRes.data)) setEmployees(empRes.data)
+      if (attRes.success && Array.isArray(attRes.data)) setTodayAttendance(attRes.data)
+      if (otRes.success && Array.isArray(otRes.data)) setPendingOvertime(otRes.data)
+      if (advRes.success && Array.isArray(advRes.data)) setRecentAdvances(advRes.data)
+      if (payRes.success && Array.isArray(payRes.data)) setPayrollPeriods(payRes.data)
     } catch (err: any) {
       console.error('Failed to load HRM Dashboard data', err)
     } finally {
@@ -689,7 +689,7 @@ export default function HrmDashboardPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-border/40 max-h-96 overflow-y-auto">
-                  {todayAttendance.slice(0, 8).map((record) => {
+                  {(Array.isArray(todayAttendance) ? todayAttendance.slice(0, 8) : []).map((record) => {
                     const emp = employees.find((e) => e.id === record.employee_id)
                     const isLate = record.status === 'late' || (record.late_minutes && record.late_minutes > 0)
                     return (
@@ -811,7 +811,7 @@ export default function HrmDashboardPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800/60 max-h-80 overflow-y-auto">
-                  {pendingOvertime.map((ot) => (
+                  {(Array.isArray(pendingOvertime) ? pendingOvertime : []).map((ot) => (
                     <div key={ot.id} className="p-3.5 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-900/40 transition-colors">
                       <div className="flex items-start justify-between">
                         <div>

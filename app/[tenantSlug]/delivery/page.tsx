@@ -98,18 +98,18 @@ export default function DeliveryLogisticsPage() {
     }
     try {
       const [challansRes, insRes] = await Promise.all([
-        getChallansAction(targetCompanyId),
-        getInstallationsAction(targetCompanyId),
+        getChallansAction(targetCompanyId).catch(() => ({ success: false, data: [] })),
+        getInstallationsAction(targetCompanyId).catch(() => ({ success: false, data: [] })),
       ])
 
-      if (challansRes.success && Array.isArray(challansRes.data)) {
+      if (challansRes && challansRes.success && Array.isArray(challansRes.data)) {
         setChallans(challansRes.data)
       }
-      if (insRes.success && Array.isArray(insRes.data)) {
+      if (insRes && insRes.success && Array.isArray(insRes.data)) {
         setInstallations(insRes.data)
       }
     } catch (err) {
-      console.error('Failed to load logistics data:', err)
+      console.warn('Failed to load logistics data:', err)
     } finally {
       setIsLoading(false)
     }
