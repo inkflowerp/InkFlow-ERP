@@ -357,7 +357,7 @@ export async function requireTenantUser(requestedSlugOrId?: string): Promise<Ten
       throw new Error('Forbidden: Cross-Tenant Access Denied')
     }
 
-    const redirectPath = isSubdomain ? '/dashboard' : (targetSlug ? `/${targetSlug}/dashboard` : '/dashboard')
+    const redirectPath = '/dashboard'
     await performRedirect(
       `/login?error=unauthorized&redirectTo=${encodeURIComponent(redirectPath)}`
     )

@@ -10,6 +10,7 @@ import assert from 'node:assert'
 import { AuthEmailService } from '../../services/auth-email.service.ts'
 import { AuthService } from '../../services/auth.service.ts'
 import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
+import { getTenantLink } from '../../lib/tenant/tenant-url.ts'
 
 describe('Email Verification & OTP Security Unit Tests', () => {
   it('1. Generates 6-digit numeric OTP', () => {
@@ -340,7 +341,7 @@ describe('Email Verification & OTP Security Unit Tests', () => {
       assert.strictEqual(statusRes.success, true)
       assert.strictEqual(statusRes.data?.isVerified, true)
       assert.strictEqual(statusRes.data?.requiresOnboarding, false)
-      assert.strictEqual(statusRes.data?.destinationUrl, '/speedy-print/dashboard')
+      assert.strictEqual(statusRes.data?.destinationUrl, getTenantLink('speedy-print', '/dashboard'))
       assert.strictEqual(statusRes.data?.session?.companySlug, 'speedy-print')
 
       const finalizeRes = await AuthService.finalizeRegistrationVerification(email)

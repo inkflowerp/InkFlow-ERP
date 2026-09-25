@@ -15,6 +15,7 @@ import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import { AuditService } from './audit.service.ts'
 import { isTestEnvironment } from '../lib/security/runtime-env.ts'
+import { getTenantLink } from '../lib/tenant/tenant-url.ts'
 import {
   parseAndNormalizePhone,
   classifyLoginIdentifier,
@@ -885,7 +886,7 @@ export class AuthService {
                 isVerified: true,
                 requiresOnboarding: false,
                 session: sessionData,
-                destinationUrl: `/${company.slug}/dashboard`,
+                destinationUrl: getTenantLink(company.slug, '/dashboard'),
               },
             }
           }
@@ -964,7 +965,7 @@ export class AuthService {
                   isVerified: true,
                   requiresOnboarding: false,
                   session: sessionData,
-                  destinationUrl: `/${company.slug}/dashboard`,
+                  destinationUrl: getTenantLink(company.slug, '/dashboard'),
                 },
               }
             }
@@ -1026,7 +1027,7 @@ export class AuthService {
                   data: {
                     isVerified: true,
                     requiresOnboarding: false,
-                    destinationUrl: `/${membership.company.slug}/dashboard`,
+                    destinationUrl: getTenantLink(membership.company.slug, '/dashboard'),
                   },
                 }
               }

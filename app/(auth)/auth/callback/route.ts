@@ -6,6 +6,7 @@ import { AuditService } from '@/services/audit.service'
 import { TENANT_SESSION_COOKIE, TenantSessionData, TenantRole, resolveTenantRole } from '@/lib/auth/types'
 import { PrimaryRole, MODULE_ACTION_SPECS } from '@/types/rbac.types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -173,19 +174,23 @@ export async function GET(request: Request) {
       }
 
       // Determine safe redirect destination
-      let destination = `/${company.slug}/dashboard`
+      let destination = getTenantLink(company.slug, '/dashboard')
       if (
         next &&
         next.startsWith('/') &&
         !next.startsWith('/login') &&
         !next.startsWith('/auth')
       ) {
-        if (next.startsWith(`/${company.slug}`)) {
-          destination = next
+        let cleanNext = next
+        if (cleanNext.startsWith(`/${company.slug}/`)) {
+          cleanNext = cleanNext.slice(`/${company.slug}`.length)
+        } else if (cleanNext === `/${company.slug}`) {
+          cleanNext = '/dashboard'
         }
+        destination = getTenantLink(company.slug, cleanNext)
       }
 
-      const redirectResponse = NextResponse.redirect(`${origin}${destination}`)
+      const redirectResponse = NextResponse.redirect(destination)
       redirectResponse.cookies.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionData)), {
         path: '/',
         maxAge: 60 * 60 * 24 * 7,

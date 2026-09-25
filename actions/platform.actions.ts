@@ -19,6 +19,7 @@ import {
   hasPlatformPermission,
   getCurrentPlatformUser,
 } from '@/lib/auth/platform-auth'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 /**
  * 1. Tenant Lifecycle Actions
@@ -439,8 +440,8 @@ export async function createBusinessAction(formData: FormData) {
         slug: newCompany.slug,
         email: ownerEmail || newCompany.email || 'owner@' + newCompany.slug + '.com',
         password: defaultOwnerPassword,
-        loginUrl: `/${newCompany.slug}/login`,
-        dashboardUrl: `/${newCompany.slug}/dashboard`,
+        loginUrl: getTenantLink(newCompany.slug, '/login'),
+        dashboardUrl: getTenantLink(newCompany.slug, '/dashboard'),
         plan: plan,
       },
     }
@@ -498,7 +499,7 @@ export async function startTenantSupportSessionAction(
     })
 
     revalidatePath('/platform/support')
-    return { success: true, redirectUrl: `/${companySlug}/dashboard` }
+    return { success: true, redirectUrl: getTenantLink(companySlug, '/dashboard') }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to initiate support session' }
   }

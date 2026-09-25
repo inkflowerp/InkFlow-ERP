@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { useI18n } from '@/i18n/context'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 function VerifyEmailForm() {
   const searchParams = useSearchParams()
@@ -129,7 +130,7 @@ function VerifyEmailForm() {
           const res = await verifyRegistrationTokenAction(tokenParam, email)
           if (res.success) {
             const dest = (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
-              ? `/${(res.data as any).session.companySlug}/dashboard`
+              ? getTenantLink((res.data as any).session.companySlug, '/dashboard')
               : undefined
             handleVerifiedSuccess(true, dest)
           } else {
@@ -276,7 +277,7 @@ function VerifyEmailForm() {
       const res = await verifyRegistrationOtpAction(email, otp)
       if (res.success) {
         const dest = (res.data as any)?.session?.companySlug && !(res.data as any)?.requiresOnboarding
-          ? `/${(res.data as any).session.companySlug}/dashboard`
+          ? getTenantLink((res.data as any).session.companySlug, '/dashboard')
           : undefined
         handleVerifiedSuccess(false, dest)
       } else {

@@ -13,6 +13,7 @@ import { resolveTenantRole, TENANT_SESSION_COOKIE, type TenantSessionData, type 
 import type { PrimaryRole } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { isTestEnvironment } from '../security/runtime-env.ts'
+import { getTenantLink } from '../tenant/tenant-url.ts'
 import type { ApiResponse } from '../../types/common.types.ts'
 
 export interface GoogleAuthStatePayload {
@@ -551,13 +552,17 @@ export async function authenticateGoogleUser(
         await AuditService.trackLogin(company.id, userId, normalizedEmail)
       } catch {}
 
-      // Safe return destination
-      let destinationUrl = `/${company.slug}/dashboard`
+      // Safe return destination on canonical tenant subdomain
+      let destinationUrl = getTenantLink(company.slug, '/dashboard')
       const next = options?.next
       if (next && next.startsWith('/') && !next.startsWith('/login') && !next.startsWith('/auth')) {
-        if (next.startsWith(`/${company.slug}`)) {
-          destinationUrl = next
+        let cleanNext = next
+        if (cleanNext.startsWith(`/${company.slug}/`)) {
+          cleanNext = cleanNext.slice(`/${company.slug}`.length)
+        } else if (cleanNext === `/${company.slug}`) {
+          cleanNext = '/dashboard'
         }
+        destinationUrl = getTenantLink(company.slug, cleanNext)
       }
 
       return {

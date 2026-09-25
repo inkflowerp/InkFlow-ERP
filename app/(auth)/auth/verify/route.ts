@@ -3,6 +3,7 @@ import { AuthService } from '@/services/auth.service'
 import { AuthEmailService } from '@/services/auth-email.service'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function GET(request: Request) {
   const urlObj = new URL(request.url)
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
         const session = authRes.data.session
         const destination =
           session.companySlug && !authRes.data.requiresOnboarding
-            ? `${origin}/${session.companySlug}/dashboard`
+            ? getTenantLink(session.companySlug, '/dashboard')
             : `${origin}/onboarding`
 
         const redirectResponse = NextResponse.redirect(destination)

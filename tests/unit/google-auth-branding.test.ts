@@ -19,6 +19,7 @@ import {
   type GoogleVerifiedIdentity,
 } from '../../lib/auth/google-auth.ts'
 import { TenantRepository } from '../../lib/repositories/tenant.repository.ts'
+import { getTenantLink } from '../../lib/tenant/tenant-url.ts'
 
 describe('Google Auth Branding & Security Audit Tests', () => {
   const originalEnv = { ...process.env }
@@ -203,7 +204,7 @@ describe('Google Auth Branding & Security Audit Tests', () => {
       const res = await authenticateGoogleUser(identity)
       assert.strictEqual(res.success, true)
       assert.strictEqual(res.data?.requiresOnboarding, false)
-      assert.strictEqual(res.data?.destinationUrl, '/speedy-print/dashboard')
+      assert.strictEqual(res.data?.destinationUrl, getTenantLink('speedy-print', '/dashboard'))
       assert.strictEqual(res.data?.session?.companySlug, 'speedy-print')
     } finally {
       (TenantRepository as any).resolveUserMembership = origResolve

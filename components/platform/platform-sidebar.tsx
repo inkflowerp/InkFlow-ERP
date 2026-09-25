@@ -41,6 +41,7 @@ import { Sheet, SheetHeader, SheetContent } from '@/components/ui/sheet'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { usePlatformNotifications } from '@/hooks/use-platform-notifications'
 import { usePlatformSettings } from '@/hooks/use-platform-settings'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 interface NavItem {
   title: string
@@ -355,7 +356,7 @@ export function PlatformSidebar() {
   }
 
   const renderFooter = (isMobile = false, isCollapsed = false) => {
-    const businessHref = `/${businessSlug}/dashboard`
+    const businessHref = getTenantLink(businessSlug, '/dashboard')
 
     return (
       <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">

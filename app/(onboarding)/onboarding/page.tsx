@@ -123,7 +123,7 @@ function OnboardingWizard() {
         if (session) {
           // If tenant has already created their company workspace, redirect to dashboard
           if (session.companySlug && session.companyId) {
-            window.location.href = `/${session.companySlug}/dashboard`
+            window.location.href = getTenantLink(session.companySlug, '/dashboard')
             return
           }
           if (session.fullName) setValue('owner_name', session.fullName)

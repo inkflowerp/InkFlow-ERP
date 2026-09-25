@@ -78,6 +78,7 @@ import {
   resendIncompleteRegistrationVerificationAction,
   deleteIncompleteRegistrationAction,
 } from '@/actions/platform.actions'
+import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export default function PlatformTenantsPage() {
   const [companies, setCompanies] = useState<PlatformTenantCompany[]>([])
@@ -355,8 +356,8 @@ export default function PlatformTenantsPage() {
           slug: res.data.slug,
           email: provisionOwnerEmail.trim() || res.data.email || `owner@${res.data.slug}.com`,
           password: provisionPassword.trim() || 'PrintERP2026!Owner',
-          loginUrl: `/${res.data.slug}/login`,
-          dashboardUrl: `/${res.data.slug}/dashboard`,
+          loginUrl: getTenantLink(res.data.slug, '/login'),
+          dashboardUrl: getTenantLink(res.data.slug, '/dashboard'),
           plan: provisionPlan,
         },
       })

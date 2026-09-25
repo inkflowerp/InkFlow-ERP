@@ -677,7 +677,7 @@ export default function PlatformSupportPage() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0 self-end md:self-center flex-wrap">
-                    <Link href={`/${sess.company_slug}/dashboard`}>
+                    <Link href={sess.company_slug ? getTenantLink(sess.company_slug, '/dashboard') : '#'}>
                       <Button
                         size="sm"
                         className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs h-8 px-3 rounded-lg shadow-md shadow-amber-500/20"
@@ -993,7 +993,7 @@ export default function PlatformSupportPage() {
                       <td className="py-3 px-3.5 text-right">
                         {isActive ? (
                           <div className="flex items-center justify-end gap-1.5">
-                            <Link href={`/${sess.company_slug}/dashboard`}>
+                            <Link href={sess.company_slug ? getTenantLink(sess.company_slug, '/dashboard') : '#'}>
                               <Button
                                 size="sm"
                                 className="h-7 text-[11px] font-bold px-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg"
