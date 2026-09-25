@@ -44,12 +44,14 @@ import {
   getInvoicesAction,
   getInvoiceByIdAction,
 } from '@/actions/billing.actions'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 export interface RecordPaymentModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   preselectedCustomerId?: string
   preselectedInvoiceId?: string
+  initialInvoices?: InvoiceRecord[]
   onPaymentRecorded?: (payment: PaymentRecord) => void
   onSuccess?: () => void
 }
@@ -68,16 +70,35 @@ export function RecordPaymentModal({
   onOpenChange,
   preselectedCustomerId,
   preselectedInvoiceId,
+  initialInvoices,
   onPaymentRecorded,
   onSuccess,
 }: RecordPaymentModalProps) {
   const { company } = useTenant()
   const { locale } = useI18n()
 
-  // Invoices list for search
-  const [invoices, setInvoices] = useState<InvoiceRecord[]>([])
+  // Invoices list for search with instant initial hydration
+  const [invoices, setInvoices] = useState<InvoiceRecord[]>(() => {
+    return initialInvoices && initialInvoices.length > 0 ? initialInvoices : []
+  })
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Sync initialInvoices if passed and non-empty
+  useEffect(() => {
+    if (initialInvoices && initialInvoices.length > 0) {
+      setInvoices((prev) => {
+        const map = new Map<string, InvoiceRecord>()
+        prev.forEach((i) => {
+          if (i && i.id) map.set(i.id, i)
+        })
+        initialInvoices.forEach((i) => {
+          if (i && i.id) map.set(i.id, i)
+        })
+        return Array.from(map.values())
+      })
+    }
+  }, [initialInvoices])
 
   // Selected Invoice & Customer State
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceRecord | null>(null)
@@ -110,23 +131,46 @@ export function RecordPaymentModal({
   const [savedPayment, setSavedPayment] = useState<PaymentRecord | null>(null)
   const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false)
 
-  // Load unpaid invoices on modal open
+  // Load unpaid invoices on modal open with resilient multi-tier fallback
   const loadInvoices = React.useCallback(async () => {
-    if (!company?.id) return
     setIsLoadingInvoices(true)
     try {
-      const res = await getInvoicesAction({ status: 'unpaid' }, company.id)
-      if (res.success && res.data) {
-        setInvoices(res.data)
-      } else {
-        setInvoices([])
+      const mergedMap = new Map<string, InvoiceRecord>()
+
+      // 1. Initial invoices from parent
+      if (initialInvoices && initialInvoices.length > 0) {
+        initialInvoices.forEach((i) => {
+          if (i && i.id) mergedMap.set(i.id, i)
+        })
+      }
+
+      // 2. Local storage invoices
+      try {
+        const cached = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+        cached.forEach((i) => {
+          if (i && i.id) mergedMap.set(i.id, i)
+        })
+      } catch {}
+
+      // 3. PostgreSQL server action
+      if (company?.id) {
+        const res = await getInvoicesAction({ status: 'unpaid' }, company.id).catch(() => ({ success: false, data: [] }))
+        if (res && res.success && Array.isArray(res.data) && res.data.length > 0) {
+          res.data.forEach((i) => {
+            if (i && i.id) mergedMap.set(i.id, i)
+          })
+        }
+      }
+
+      if (mergedMap.size > 0) {
+        setInvoices(Array.from(mergedMap.values()))
       }
     } catch {
-      setInvoices([])
+      // Keep existing state on error
     } finally {
       setIsLoadingInvoices(false)
     }
-  }, [company])
+  }, [company?.id, initialInvoices])
 
   useEffect(() => {
     if (open) {
@@ -265,6 +309,34 @@ export function RecordPaymentModal({
 
       const payment = res.data
       setSavedPayment(payment)
+
+      // Synchronize client-side store
+      try {
+        const localInvs = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+        const updatedInvs = localInvs.map((inv) => {
+          if (inv.id === selectedInvoice.id) {
+            const newPaid = Number(inv.paid_amount || 0) + numericAmount
+            const newDue = Math.max(0, Number(inv.grand_total || 0) - newPaid)
+            return {
+              ...inv,
+              paid_amount: newPaid,
+              due_amount: newDue,
+              status: (newDue <= 0.01 ? 'paid' : 'partially_paid') as any,
+            }
+          }
+          return inv
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, updatedInvs)
+
+        const localPays = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+        PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, [payment, ...localPays.filter((p) => p.id !== payment.id)])
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:invoices'))
+          window.dispatchEvent(new CustomEvent('printerp_table_synced:payments'))
+          window.dispatchEvent(new CustomEvent('printerp_data_sync'))
+        }
+      } catch {}
 
       if (onPaymentRecorded) {
         onPaymentRecorded(payment)

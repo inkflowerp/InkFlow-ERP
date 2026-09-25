@@ -95,6 +95,7 @@ import type {
 import type { SubscriptionPlanRecord } from '../../types/subscription.types.ts'
 import { DEFAULT_PLANS } from '../subscription/subscription-constants.ts'
 import { DEFAULT_ROLE_MATRICES } from '../auth/rbac.client.ts'
+import { extractTenantSlug } from '../tenant/tenant-resolution.ts'
 
 // Storage keys
 export const STORAGE_KEYS = {
@@ -573,19 +574,20 @@ export class PrintERPDataStore {
    */
   static getActiveTenantSlug(): string {
     if (typeof window !== 'undefined') {
-      const path = window.location.pathname
-      const match = path.match(/^\/([a-zA-Z0-9_-]+)/)
-      if (match && match[1]) {
-        const seg = match[1].toLowerCase()
+      // 1. Resolve tenant slug directly from subdomain hostname (e.g. rangao.inkflow-erp.vercel.app -> rangao)
+      try {
+        const hostSlug = extractTenantSlug(window.location.hostname)
         if (
-          !['login', 'register', 'verify', 'auth', 'onboarding', 'platform', 'forgot-password', 'reset-password', 'api', '403'].includes(
-            seg
+          hostSlug &&
+          !['login', 'register', 'verify', 'auth', 'onboarding', 'platform', 'billing', 'orders', 'sales', 'customers', 'inventory', 'production', 'delivery', 'settings', 'reports', 'quotations', 'trash', 'expenses', 'accounts'].includes(
+            hostSlug.toLowerCase()
           )
         ) {
-          return seg
+          return hostSlug.toLowerCase()
         }
-      }
+      } catch {}
 
+      // 2. Resolve from authenticated tenant session cookie
       try {
         const cookieRow = document.cookie
           .split('; ')
@@ -598,6 +600,21 @@ export class PrintERPDataStore {
           }
         }
       } catch {}
+
+      // 3. Fallback to path prefix if not a reserved system or feature route
+      const path = window.location.pathname
+      const match = path.match(/^\/([a-zA-Z0-9_-]+)/)
+      if (match && match[1]) {
+        const seg = match[1].toLowerCase()
+        const reservedRoutes = [
+          'login', 'register', 'verify', 'auth', 'onboarding', 'platform', 'forgot-password', 'reset-password', 'api', '403',
+          'billing', 'invoices', 'orders', 'sales', 'customers', 'inventory', 'production', 'delivery', 'settings', 'reports',
+          'quotations', 'trash', 'expenses', 'accounts', 'machinery', 'employees', 'attendance', 'payroll', 'design', 'pricing'
+        ]
+        if (!reservedRoutes.includes(seg)) {
+          return seg
+        }
+      }
     }
     return 'default'
   }

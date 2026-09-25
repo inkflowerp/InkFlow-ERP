@@ -94,6 +94,399 @@ import { cn } from '@/lib/utils'
 
 export type BillingTab = 'overview' | 'invoices' | 'requests' | 'payments' | 'receivables'
 
+function getTodayDateStr(): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Dhaka',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date())
+  } catch {
+    return new Date().toISOString().split('T')[0]
+  }
+}
+
+function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): InvoiceRecord[] {
+  if (typeof window === 'undefined') return []
+  const invoiceMap = new Map<string, InvoiceRecord>()
+
+  const candidateKeys = [
+    STORAGE_KEYS.INVOICES,
+    slug ? `${STORAGE_KEYS.INVOICES}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.INVOICES}__${companyId}` : null,
+    `${STORAGE_KEYS.INVOICES}__rangao`,
+    `${STORAGE_KEYS.INVOICES}__billing`,
+    `${STORAGE_KEYS.INVOICES}__default`,
+  ].filter(Boolean) as string[]
+
+  candidateKeys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((inv) => {
+            if (inv && inv.id) invoiceMap.set(inv.id, inv)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith(STORAGE_KEYS.INVOICES)) {
+        try {
+          const raw = localStorage.getItem(k)
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed)) {
+              parsed.forEach((inv) => {
+                if (inv && inv.id) invoiceMap.set(inv.id, inv)
+              })
+            }
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []),
+    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []),
+    ...(PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
+  ]
+  storeItems.forEach((inv) => {
+    if (inv && inv.id) invoiceMap.set(inv.id, inv)
+  })
+
+  return Array.from(invoiceMap.values())
+}
+
+function getLocalPayments(slug?: string, companySlug?: string, companyId?: string): PaymentRecord[] {
+  if (typeof window === 'undefined') return []
+  const paymentMap = new Map<string, PaymentRecord>()
+
+  const candidateKeys = [
+    STORAGE_KEYS.PAYMENTS,
+    slug ? `${STORAGE_KEYS.PAYMENTS}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.PAYMENTS}__${companyId}` : null,
+    `${STORAGE_KEYS.PAYMENTS}__rangao`,
+    `${STORAGE_KEYS.PAYMENTS}__billing`,
+    `${STORAGE_KEYS.PAYMENTS}__default`,
+  ].filter(Boolean) as string[]
+
+  candidateKeys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((p) => {
+            if (p && p.id) paymentMap.set(p.id, p)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (k && k.startsWith(STORAGE_KEYS.PAYMENTS)) {
+        try {
+          const raw = localStorage.getItem(k)
+          if (raw) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed)) {
+              parsed.forEach((p) => {
+                if (p && p.id) paymentMap.set(p.id, p)
+              })
+            }
+          }
+        } catch {}
+      }
+    }
+  } catch {}
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []),
+    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
+    ...(PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []),
+  ]
+  storeItems.forEach((p) => {
+    if (p && p.id) paymentMap.set(p.id, p)
+  })
+
+  return Array.from(paymentMap.values())
+}
+
+function calculateBillingOverview(
+  invoices: InvoiceRecord[],
+  payments: PaymentRecord[],
+  period: BillingPeriod,
+  customRange?: { start: string; end: string }
+): {
+  metrics: BillingOverviewMetrics
+  priorityItems: CollectionPriorityItem[]
+  paymentMethods: PaymentMethodSummaryItem[]
+  salespersonStats: SalespersonCollectionStat[]
+} {
+  const todayStr = getTodayDateStr()
+  let startDate = todayStr
+  let endDate = todayStr
+  let periodLabel = 'This Month'
+
+  if (period === 'today') {
+    startDate = todayStr
+    endDate = todayStr
+    periodLabel = 'Today'
+  } else if (period === 'this_week') {
+    const d = new Date()
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    const monday = new Date(new Date().setDate(diff))
+    try {
+      startDate = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Dhaka',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(monday)
+    } catch {
+      startDate = monday.toISOString().split('T')[0]
+    }
+    endDate = todayStr
+    periodLabel = 'This Week'
+  } else if (period === 'this_month') {
+    startDate = `${todayStr.slice(0, 7)}-01`
+    endDate = todayStr
+    periodLabel = 'This Month'
+  } else if (period === 'all_time') {
+    startDate = '2000-01-01'
+    endDate = todayStr
+    periodLabel = 'All Time'
+  } else if (period === 'custom' && customRange) {
+    startDate = customRange.start || `${todayStr.slice(0, 7)}-01`
+    endDate = customRange.end || todayStr
+    periodLabel = 'Custom Date'
+  }
+
+  // Filter invoices for the period
+  const periodInvoices = invoices.filter((inv) => {
+    if (inv.status === 'cancelled') return false
+    if (period === 'all_time') return true
+    const invDate = inv.invoice_date || inv.created_at?.slice(0, 10) || todayStr
+    return invDate >= startDate && invDate <= endDate
+  })
+
+  const salesAmount = periodInvoices.reduce((sum, inv) => sum + Number(inv.grand_total || 0), 0)
+  const salesCount = periodInvoices.length
+
+  // Filter payments for the period
+  const periodPayments = payments.filter((p) => {
+    if (period === 'all_time') return true
+    const pDate = p.payment_date || p.created_at?.slice(0, 10) || todayStr
+    return pDate >= startDate && pDate <= endDate
+  })
+
+  const collectionAmount = periodPayments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+  const collectionCount = periodPayments.length
+
+  // Open invoices for receivables (current balance)
+  const openInvoices = invoices.filter((inv) => Number(inv.due_amount || 0) > 0.01 && inv.status !== 'cancelled')
+  const totalReceivables = openInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
+
+  const dueTodayInvoices = openInvoices.filter((inv) => (inv.due_date || '').slice(0, 10) === todayStr)
+  const dueTodayAmount = dueTodayInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
+  const dueTodayCount = dueTodayInvoices.length
+
+  const overdueInvoices = openInvoices.filter((inv) => calculateDaysOverdue(inv.due_date) > 0)
+  const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + Number(inv.due_amount || 0), 0)
+  const overdueCount = overdueInvoices.length
+
+  const outstandingDue = totalReceivables
+  const outstandingDueCount = openInvoices.length
+
+  const collectionRate =
+    salesAmount > 0
+      ? Math.min(100, Math.round((collectionAmount / salesAmount) * 100))
+      : collectionAmount > 0
+      ? 100
+      : 0
+
+  const metrics: BillingOverviewMetrics = {
+    period,
+    periodLabel,
+    startDate,
+    endDate,
+    salesAmount,
+    salesCount,
+    collectionAmount,
+    collectionCount,
+    dueTodayAmount,
+    dueTodayCount,
+    outstandingDue,
+    outstandingDueCount,
+    overdueAmount,
+    overdueCount,
+    totalReceivables,
+    collectionRate,
+  }
+
+  // Priority items
+  const priorityItems: CollectionPriorityItem[] = []
+  const seenIds = new Set<string>()
+
+  // 1. Overdue
+  const sortedOverdue = [...overdueInvoices].sort((a, b) => Number(b.due_amount) - Number(a.due_amount))
+  for (const inv of sortedOverdue.slice(0, 20)) {
+    if (!seenIds.has(inv.id)) {
+      seenIds.add(inv.id)
+      priorityItems.push({
+        id: inv.id,
+        invoiceId: inv.id,
+        invoiceNumber: inv.invoice_number,
+        customerId: inv.customer_id || '',
+        customerName: inv.customer_name,
+        customerCompany: inv.customer_company,
+        customerPhone: inv.customer_phone,
+        invoiceDate: inv.invoice_date,
+        dueDate: inv.due_date,
+        grandTotal: Number(inv.grand_total || 0),
+        paidAmount: Number(inv.paid_amount || 0),
+        dueAmount: Number(inv.due_amount || 0),
+        daysOverdue: calculateDaysOverdue(inv.due_date),
+        salespersonName: inv.salesperson_name || inv.created_by_name,
+        status: inv.status,
+        priorityReason: 'overdue',
+      })
+    }
+  }
+
+  // 2. Due today
+  for (const inv of dueTodayInvoices) {
+    if (!seenIds.has(inv.id)) {
+      seenIds.add(inv.id)
+      priorityItems.push({
+        id: inv.id,
+        invoiceId: inv.id,
+        invoiceNumber: inv.invoice_number,
+        customerId: inv.customer_id || '',
+        customerName: inv.customer_name,
+        customerCompany: inv.customer_company,
+        customerPhone: inv.customer_phone,
+        invoiceDate: inv.invoice_date,
+        dueDate: inv.due_date,
+        grandTotal: Number(inv.grand_total || 0),
+        paidAmount: Number(inv.paid_amount || 0),
+        dueAmount: Number(inv.due_amount || 0),
+        daysOverdue: 0,
+        salespersonName: inv.salesperson_name || inv.created_by_name,
+        status: inv.status,
+        priorityReason: 'due_today',
+      })
+    }
+  }
+
+  // 3. High value due (>= 25,000)
+  for (const inv of openInvoices.filter((i) => Number(i.due_amount || 0) >= 25000)) {
+    if (!seenIds.has(inv.id)) {
+      seenIds.add(inv.id)
+      priorityItems.push({
+        id: inv.id,
+        invoiceId: inv.id,
+        invoiceNumber: inv.invoice_number,
+        customerId: inv.customer_id || '',
+        customerName: inv.customer_name,
+        customerCompany: inv.customer_company,
+        customerPhone: inv.customer_phone,
+        invoiceDate: inv.invoice_date,
+        dueDate: inv.due_date,
+        grandTotal: Number(inv.grand_total || 0),
+        paidAmount: Number(inv.paid_amount || 0),
+        dueAmount: Number(inv.due_amount || 0),
+        daysOverdue: calculateDaysOverdue(inv.due_date),
+        salespersonName: inv.salesperson_name || inv.created_by_name,
+        status: inv.status,
+        priorityReason: 'high_value',
+      })
+    }
+  }
+
+  // Payment methods breakdown
+  const paymentsForMethods = periodPayments.length > 0 ? periodPayments : payments
+  const methodMap: Record<string, { label: string; labelBn: string; icon: string; total: number; count: number }> = {
+    cash: { label: 'Cash Counter', labelBn: 'ক্যাশ কাউন্টার', icon: '💵', total: 0, count: 0 },
+    bkash: { label: 'bKash Merchant', labelBn: 'বিকাশ মার্চেন্ট', icon: '📱', total: 0, count: 0 },
+    nagad: { label: 'Nagad Wallet', labelBn: 'নগদ ওয়ালেট', icon: '📱', total: 0, count: 0 },
+    bank: { label: 'Bank Transfer (EFT / RTGS)', labelBn: 'ব্যাংক ট্রান্সফার', icon: '🏦', total: 0, count: 0 },
+    cheque: { label: 'Bank Cheque', labelBn: 'ব্যাংক চেক', icon: '📝', total: 0, count: 0 },
+    other_mfs: { label: 'Rocket / Other MFS', labelBn: 'অন্যান্য এমএফএস', icon: '💳', total: 0, count: 0 },
+  }
+
+  for (const p of paymentsForMethods) {
+    const m = p.payment_method || 'cash'
+    if (methodMap[m]) {
+      methodMap[m].total += Number(p.amount || 0)
+      methodMap[m].count += 1
+    }
+  }
+
+  const paymentMethods: PaymentMethodSummaryItem[] = Object.entries(methodMap)
+    .filter(([_, v]) => v.count > 0 || periodPayments.length === 0)
+    .map(([key, item]) => ({
+      method: key as any,
+      label: item.label,
+      labelBn: item.labelBn,
+      icon: item.icon,
+      totalAmount: item.total,
+      transactionCount: item.count,
+    }))
+
+  // Commercial performance by salesperson
+  const salespersonMap = new Map<string, SalespersonCollectionStat>()
+  for (const inv of invoices) {
+    const spName = inv.salesperson_name || inv.created_by_name || 'Commercial Desk'
+    const existing = salespersonMap.get(spName) || {
+      salespersonId: inv.salesperson_id || null,
+      salespersonName: spName,
+      totalBilled: 0,
+      totalCollected: 0,
+      outstandingDue: 0,
+      overdueAmount: 0,
+      customerCount: 0,
+      oldestDueDays: 0,
+    }
+
+    existing.totalBilled += Number(inv.grand_total || 0)
+    existing.totalCollected += Number(inv.paid_amount || 0)
+    if (Number(inv.due_amount || 0) > 0.01 && inv.status !== 'cancelled') {
+      existing.outstandingDue += Number(inv.due_amount || 0)
+      const days = calculateDaysOverdue(inv.due_date)
+      if (days > 0) {
+        existing.overdueAmount += Number(inv.due_amount || 0)
+        existing.oldestDueDays = Math.max(existing.oldestDueDays, days)
+      }
+    }
+    existing.customerCount += 1
+    salespersonMap.set(spName, existing)
+  }
+
+  const salespersonStats = Array.from(salespersonMap.values()).sort((a, b) => b.outstandingDue - a.outstandingDue)
+
+  return {
+    metrics,
+    priorityItems,
+    paymentMethods,
+    salespersonStats,
+  }
+}
+
 function BillingContent() {
   const router = useRouter()
   const params = useParams()
@@ -144,6 +537,46 @@ function BillingContent() {
   const [salespersonStats, setSalespersonStats] = useState<SalespersonCollectionStat[]>([])
   const [receivablesAging, setReceivablesAging] = useState<ReceivablesAgingSummary | null>(null)
 
+  // Reactive client-side metrics calculation from live invoices and payments
+  const clientOverview = useMemo(() => {
+    return calculateBillingOverview(
+      invoices,
+      payments,
+      selectedPeriod,
+      selectedPeriod === 'custom' && customStartDate && customEndDate
+        ? { start: customStartDate, end: customEndDate }
+        : undefined
+    )
+  }, [invoices, payments, selectedPeriod, customStartDate, customEndDate])
+
+  const effectiveMetrics = useMemo(() => {
+    if (invoices.length > 0 || payments.length > 0) {
+      return clientOverview.metrics
+    }
+    return overviewMetrics || clientOverview.metrics
+  }, [invoices.length, payments.length, clientOverview.metrics, overviewMetrics])
+
+  const effectivePriorities = useMemo(() => {
+    if (invoices.length > 0) {
+      return clientOverview.priorityItems
+    }
+    return priorityItems.length > 0 ? priorityItems : clientOverview.priorityItems
+  }, [invoices.length, clientOverview.priorityItems, priorityItems])
+
+  const effectivePaymentMethods = useMemo(() => {
+    if (payments.length > 0) {
+      return clientOverview.paymentMethods
+    }
+    return paymentMethodsSummary.length > 0 ? paymentMethodsSummary : clientOverview.paymentMethods
+  }, [payments.length, clientOverview.paymentMethods, paymentMethodsSummary])
+
+  const effectiveSalespersonStats = useMemo(() => {
+    if (invoices.length > 0) {
+      return clientOverview.salespersonStats
+    }
+    return salespersonStats.length > 0 ? salespersonStats : clientOverview.salespersonStats
+  }, [invoices.length, clientOverview.salespersonStats, salespersonStats])
+
   // Modals State
   const actionParam = searchParams?.get('action')
   const orderIdParam = searchParams?.get('order_id') || undefined
@@ -192,19 +625,19 @@ function BillingContent() {
   useEffect(() => {
     setIsMounted(true)
     try {
-      const cachedInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-      const cachedPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+      const localInvs = getLocalInvoices(slug, company?.slug, company?.id)
+      const localPays = getLocalPayments(slug, company?.slug, company?.id)
       const cachedRequests = PrintERPDataStore.get<InvoiceRequestRecord[]>(STORAGE_KEYS.INVOICE_REQUESTS) || []
-      if (cachedInvoices.length > 0) setInvoices(cachedInvoices)
-      if (cachedPayments.length > 0) setPayments(cachedPayments)
+      if (localInvs.length > 0) setInvoices(localInvs)
+      if (localPays.length > 0) setPayments(localPays)
       if (cachedRequests.length > 0) setInvoiceRequests(cachedRequests)
-      if (cachedInvoices.length > 0 || cachedPayments.length > 0) {
+      if (localInvs.length > 0 || localPays.length > 0) {
         setIsLoading(false)
       }
     } catch {
       // ignore
     }
-  }, [])
+  }, [slug, company?.slug, company?.id])
 
   // Sync tab changes with URL search parameter
   const handleTabChange = (tab: BillingTab) => {
@@ -247,12 +680,42 @@ function BillingContent() {
         setSalespersonStats(overviewRes.data.salespersonStats)
       }
 
-      if (invRes && invRes.success && Array.isArray(invRes.data)) {
-        setInvoices(invRes.data)
+      // Merge Invoices safely: Server updates matching IDs, but server NEVER wipes local invoices!
+      const localInvs = getLocalInvoices(slug, company?.slug, company?.id)
+      const invMap = new Map<string, InvoiceRecord>()
+      invoices.forEach((inv) => {
+        if (inv && inv.id) invMap.set(inv.id, inv)
+      })
+      localInvs.forEach((inv) => {
+        if (inv && inv.id) invMap.set(inv.id, inv)
+      })
+      if (invRes && invRes.success && Array.isArray(invRes.data) && invRes.data.length > 0) {
+        invRes.data.forEach((inv) => {
+          if (inv && inv.id) invMap.set(inv.id, inv)
+        })
+      }
+      const finalInvoices = Array.from(invMap.values())
+      if (finalInvoices.length > 0) {
+        setInvoices(finalInvoices)
       }
 
-      if (payRes && payRes.success && Array.isArray(payRes.data)) {
-        setPayments(payRes.data)
+      // Merge Payments safely: Server updates matching IDs, but server NEVER wipes local payments!
+      const localPays = getLocalPayments(slug, company?.slug, company?.id)
+      const payMap = new Map<string, PaymentRecord>()
+      payments.forEach((p) => {
+        if (p && p.id) payMap.set(p.id, p)
+      })
+      localPays.forEach((p) => {
+        if (p && p.id) payMap.set(p.id, p)
+      })
+      if (payRes && payRes.success && Array.isArray(payRes.data) && payRes.data.length > 0) {
+        payRes.data.forEach((p) => {
+          if (p && p.id) payMap.set(p.id, p)
+        })
+      }
+      const finalPayments = Array.from(payMap.values())
+      if (finalPayments.length > 0) {
+        setPayments(finalPayments)
       }
 
       if (agingRes && agingRes.success && agingRes.data) {
@@ -420,7 +883,7 @@ function BillingContent() {
     } finally {
       setIsLoading(false)
     }
-  }, [company?.id, company?.slug, slug, selectedPeriod, customStartDate, customEndDate, invoices.length, payments.length])
+  }, [company?.id, company?.slug, slug, selectedPeriod, customStartDate, customEndDate])
 
   useEffect(() => {
     loadBillingData()
@@ -538,9 +1001,9 @@ function BillingContent() {
 
   // Filtered Priority Items
   const filteredPriorityItems = useMemo(() => {
-    if (priorityTab === 'all') return priorityItems
-    return priorityItems.filter((item) => item.priorityReason === priorityTab)
-  }, [priorityItems, priorityTab])
+    if (priorityTab === 'all') return effectivePriorities
+    return effectivePriorities.filter((item) => item.priorityReason === priorityTab)
+  }, [effectivePriorities, priorityTab])
 
   // Filtered Payments
   const filteredPayments = useMemo(() => {
@@ -729,7 +1192,7 @@ function BillingContent() {
   }
 
   // Calculate health tier from collection rate
-  const collectionRateNum = Number(overviewMetrics?.collectionRate || 0)
+  const collectionRateNum = Number(effectiveMetrics?.collectionRate || 0)
   const healthTier =
     collectionRateNum >= 80
       ? { label: 'Optimal Flow', color: 'text-emerald-600 dark:text-emerald-400', bar: 'bg-emerald-500' }
@@ -887,7 +1350,7 @@ function BillingContent() {
             <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
               <Calendar className="h-3.5 w-3.5 text-blue-500" />
               <span>
-                {overviewMetrics?.startDate} to {overviewMetrics?.endDate}
+                {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
               </span>
             </div>
             <button
@@ -910,10 +1373,10 @@ function BillingContent() {
               <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-              {formatBDT(overviewMetrics?.salesAmount || 0)}
+              {formatBDT(effectiveMetrics?.salesAmount || 0)}
             </div>
             <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">{overviewMetrics?.salesCount || 0}</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-300">{effectiveMetrics?.salesCount || 0}</span>
               <span>Bills Generated</span>
             </div>
           </Card>
@@ -926,10 +1389,10 @@ function BillingContent() {
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
-              {formatBDT(overviewMetrics?.collectionAmount || 0)}
+              {formatBDT(effectiveMetrics?.collectionAmount || 0)}
             </div>
             <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{overviewMetrics?.collectionCount || 0}</span>
+              <span className="font-semibold">{effectiveMetrics?.collectionCount || 0}</span>
               <span>Payments Received</span>
             </div>
           </Card>
@@ -942,10 +1405,10 @@ function BillingContent() {
               <Clock className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
-              {formatBDT(overviewMetrics?.outstandingDue ?? overviewMetrics?.totalReceivables ?? 0)}
+              {formatBDT(effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0)}
             </div>
             <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{overviewMetrics?.outstandingDueCount ?? overviewMetrics?.dueTodayCount ?? 0}</span>
+              <span className="font-semibold">{effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}</span>
               <span>Bills Pending</span>
             </div>
           </Card>
@@ -955,17 +1418,17 @@ function BillingContent() {
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
             <div className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
               <span>Overdue</span>
-              {(overviewMetrics?.overdueAmount || 0) > 0 ? (
+              {(effectiveMetrics?.overdueAmount || 0) > 0 ? (
                 <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
               ) : (
                 <CheckCircle2 className="h-3.5 w-3.5 text-slate-300 dark:text-slate-600" />
               )}
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5">
-              {formatBDT(overviewMetrics?.overdueAmount || 0)}
+              {formatBDT(effectiveMetrics?.overdueAmount || 0)}
             </div>
             <div className="text-[11px] text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
-              <span className="font-semibold">{overviewMetrics?.overdueCount || 0}</span>
+              <span className="font-semibold">{effectiveMetrics?.overdueCount || 0}</span>
               <span>Overdue Bills</span>
             </div>
           </Card>
@@ -978,7 +1441,7 @@ function BillingContent() {
               <Building className="h-3.5 w-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
-              {formatBDT(overviewMetrics?.totalReceivables || 0)}
+              {formatBDT(effectiveMetrics?.totalReceivables || 0)}
             </div>
             <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1">All Open Accounts</div>
           </Card>
@@ -991,7 +1454,7 @@ function BillingContent() {
               <Activity className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1.5 flex items-baseline gap-1">
-              <span>{overviewMetrics?.collectionRate || 0}%</span>
+              <span>{effectiveMetrics?.collectionRate || 0}%</span>
               <span className={cn('text-[10px] font-bold', healthTier.color)}>({healthTier.label})</span>
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
@@ -1287,15 +1750,15 @@ function BillingContent() {
                 <div className="flex items-center justify-between mb-3">
                   <CardTitle className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
                     <Wallet className="h-4 w-4 text-emerald-500" />
-                    <span>Collection Channels ({overviewMetrics?.periodLabel || 'Selected Period'})</span>
+                    <span>Collection Channels ({effectiveMetrics?.periodLabel || 'Selected Period'})</span>
                   </CardTitle>
                 </div>
                 <div className="space-y-2.5">
-                  {paymentMethodsSummary.length === 0 ? (
+                  {effectivePaymentMethods.length === 0 ? (
                     <p className="text-xs text-slate-500 italic py-4 text-center">No payments received in this period.</p>
                   ) : (
-                    paymentMethodsSummary.map((pm) => {
-                      const totalCollected = Number(overviewMetrics?.collectionAmount) || 1
+                    effectivePaymentMethods.map((pm) => {
+                      const totalCollected = Number(effectiveMetrics?.collectionAmount) || 1
                       const pct = Math.min(100, Math.round((pm.totalAmount / totalCollected) * 100))
                       return (
                         <div key={pm.method} className="space-y-1">
@@ -1325,10 +1788,10 @@ function BillingContent() {
                   </CardTitle>
                 </div>
                 <div className="space-y-2">
-                  {salespersonStats.length === 0 ? (
+                  {effectiveSalespersonStats.length === 0 ? (
                     <p className="text-xs text-slate-500 italic py-4 text-center">No commercial collection records available.</p>
                   ) : (
-                    salespersonStats.map((sp) => (
+                    effectiveSalespersonStats.map((sp) => (
                       <div key={sp.salespersonId || sp.salespersonName} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                         <div>
                           <span className="font-bold text-slate-800 dark:text-slate-200">{sp.salespersonName}</span>
@@ -2241,6 +2704,7 @@ function BillingContent() {
         onOpenChange={setIsReceivePaymentOpen}
         preselectedCustomerId={selectedCustomerIdForPayment}
         preselectedInvoiceId={selectedInvoiceIdForPayment}
+        initialInvoices={invoices}
         onPaymentRecorded={(payment) => {
           showNotification(`Payment of ${formatBDT(payment.amount)} received successfully!`)
           loadBillingData()
