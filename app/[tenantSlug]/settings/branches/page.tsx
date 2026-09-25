@@ -299,7 +299,8 @@ export default function BranchesSettingsPage() {
     }
   }
 
-  const filteredBranches = branches.filter((b) => {
+  const safeBranches = Array.isArray(branches) ? branches : DEFAULT_MAIN_BRANCH
+  const filteredBranches = safeBranches.filter((b) => {
     if (!searchQuery.trim()) return true
     const q = searchQuery.toLowerCase().trim()
     return (

@@ -42,11 +42,56 @@ const INITIAL_SEQUENCES: SequenceConfig[] = [
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
 
+function normalizeSequences(stored: any, settings?: any): SequenceConfig[] {
+  let list: SequenceConfig[] = []
+  if (Array.isArray(stored) && stored.length > 0) {
+    list = stored
+  } else if (stored && typeof stored === 'object' && Array.isArray(stored.sequences) && stored.sequences.length > 0) {
+    list = stored.sequences
+  } else {
+    const obj = (typeof stored === 'object' && stored !== null && !Array.isArray(stored)) ? stored : {}
+    list = INITIAL_SEQUENCES.map((def) => {
+      let prefix = def.prefix
+      if (def.doc_type === 'invoice') prefix = (obj.invoice_prefix || def.prefix).replace(/-$/, '')
+      else if (def.doc_type === 'quotation') prefix = (obj.quotation_prefix || def.prefix).replace(/-$/, '')
+      else if (def.doc_type === 'challan') prefix = (obj.challan_prefix || def.prefix).replace(/-$/, '')
+      else if (def.doc_type === 'order') prefix = (obj.order_prefix || def.prefix).replace(/-$/, '')
+      else if (def.doc_type === 'payment') prefix = (obj.money_receipt_prefix || def.prefix).replace(/-$/, '')
+      else if (def.doc_type === 'purchase') prefix = (obj.purchase_prefix || def.prefix).replace(/-$/, '')
+      return {
+        ...def,
+        prefix,
+        current_val: obj[`seq_${def.doc_type}`] || def.current_val || 1,
+        padding: obj[`pad_${def.doc_type}`] || def.padding || 6,
+      }
+    })
+  }
+
+  // Overlay settings from company_settings if present
+  return list.map((s) => {
+    let prefix = s.prefix
+    if (s.doc_type === 'invoice' && settings?.invoice_prefix) {
+      prefix = settings.invoice_prefix.replace(/-$/, '')
+    } else if (s.doc_type === 'quotation' && settings?.quotation_prefix) {
+      prefix = settings.quotation_prefix.replace(/-$/, '')
+    } else if (s.doc_type === 'challan' && settings?.challan_prefix) {
+      prefix = settings.challan_prefix.replace(/-$/, '')
+    }
+    return {
+      ...s,
+      prefix: (prefix || '').toUpperCase(),
+      current_val: s.current_val || 1,
+      padding: s.padding || 6,
+    }
+  })
+}
+
 export default function DocumentNumberingSettingsPage() {
   const { company, settings, refreshTenant } = useTenant()
   const { locale, tBilingual } = useI18n()
   const [mounted, setMounted] = useState(false)
-  const [sequences, setSequences] = useDataStore<SequenceConfig[]>(STORAGE_KEYS.DOCUMENT_NUMBERING, INITIAL_SEQUENCES)
+  const [storeData, setStoreData] = useDataStore<any>(STORAGE_KEYS.DOCUMENT_NUMBERING)
+  const [sequences, setSequences] = useState<SequenceConfig[]>(() => normalizeSequences(storeData, settings))
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -54,36 +99,23 @@ export default function DocumentNumberingSettingsPage() {
     setMounted(true)
   }, [])
 
-  // Sync with company_settings on load
-  React.useEffect(() => {
-    if (settings) {
-      setSequences((prev) =>
-        prev.map((s) => {
-          if (s.doc_type === 'invoice' && settings.invoice_prefix) {
-            return { ...s, prefix: settings.invoice_prefix }
-          }
-          if (s.doc_type === 'quotation' && settings.quotation_prefix) {
-            return { ...s, prefix: settings.quotation_prefix }
-          }
-          if (s.doc_type === 'challan' && settings.challan_prefix) {
-            return { ...s, prefix: settings.challan_prefix }
-          }
-          return s
-        })
-      )
-    }
-  }, [settings])
+  // Sync with storeData or company_settings on load/change
+  useEffect(() => {
+    setSequences(normalizeSequences(storeData, settings))
+  }, [storeData, settings])
 
   const handlePrefixChange = (doc_type: DocumentType, newPrefix: string) => {
-    setSequences(
-      sequences.map((s) => (s.doc_type === doc_type ? { ...s, prefix: newPrefix.toUpperCase() } : s))
-    )
+    setSequences((prev) => {
+      const safe = Array.isArray(prev) ? prev : INITIAL_SEQUENCES
+      return safe.map((s) => (s.doc_type === doc_type ? { ...s, prefix: newPrefix.toUpperCase() } : s))
+    })
   }
 
   const handlePaddingChange = (doc_type: DocumentType, newPadding: number) => {
-    setSequences(
-      sequences.map((s) => (s.doc_type === doc_type ? { ...s, padding: Math.max(3, Math.min(8, newPadding)) } : s))
-    )
+    setSequences((prev) => {
+      const safe = Array.isArray(prev) ? prev : INITIAL_SEQUENCES
+      return safe.map((s) => (s.doc_type === doc_type ? { ...s, padding: Math.max(3, Math.min(8, newPadding)) } : s))
+    })
   }
 
   const handleSave = async (e: React.FormEvent) => {
@@ -91,19 +123,35 @@ export default function DocumentNumberingSettingsPage() {
     setIsLoading(true)
     setIsSaved(false)
     try {
-      if (company?.id) {
-        const invPrefix = sequences.find((s) => s.doc_type === 'invoice')?.prefix || 'INV'
-        const quoPrefix = sequences.find((s) => s.doc_type === 'quotation')?.prefix || 'QUO'
-        const chlPrefix = sequences.find((s) => s.doc_type === 'challan')?.prefix || 'CHL'
+      const safeList = Array.isArray(sequences) ? sequences : INITIAL_SEQUENCES
+      const invPrefix = safeList.find((s) => s.doc_type === 'invoice')?.prefix || 'INV'
+      const quoPrefix = safeList.find((s) => s.doc_type === 'quotation')?.prefix || 'QUO'
+      const chlPrefix = safeList.find((s) => s.doc_type === 'challan')?.prefix || 'CHL'
+      const ordPrefix = safeList.find((s) => s.doc_type === 'order')?.prefix || 'ORD'
+      const payPrefix = safeList.find((s) => s.doc_type === 'payment')?.prefix || 'PAY'
+      const purPrefix = safeList.find((s) => s.doc_type === 'purchase')?.prefix || 'PUR'
 
+      if (company?.id) {
         await updateCompanySettingsAction(company.id, {
-          invoice_prefix: invPrefix,
-          quotation_prefix: quoPrefix,
-          challan_prefix: chlPrefix,
+          invoice_prefix: `${invPrefix}-`,
+          quotation_prefix: `${quoPrefix}-`,
+          challan_prefix: `${chlPrefix}-`,
         })
         await refreshTenant()
       }
-      setSequences(sequences)
+
+      const updatedConfig = {
+        ...(typeof storeData === 'object' && storeData !== null && !Array.isArray(storeData) ? storeData : {}),
+        order_prefix: `${ordPrefix}-`,
+        quotation_prefix: `${quoPrefix}-`,
+        invoice_prefix: `${invPrefix}-`,
+        challan_prefix: `${chlPrefix}-`,
+        job_prefix: 'JOB-',
+        money_receipt_prefix: `${payPrefix}-`,
+        purchase_prefix: `${purPrefix}-`,
+        sequences: safeList,
+      }
+      setStoreData(updatedConfig)
       setIsSaved(true)
       setTimeout(() => setIsSaved(false), 3500)
     } finally {
@@ -112,7 +160,7 @@ export default function DocumentNumberingSettingsPage() {
   }
 
   const formatPreview = (s: SequenceConfig) => {
-    return `${s.prefix}-${String(s.current_val).padStart(s.padding, '0')}`
+    return `${s.prefix}-${String(s.current_val || 1).padStart(s.padding || 6, '0')}`
   }
 
   if (!mounted) {
@@ -181,7 +229,7 @@ export default function DocumentNumberingSettingsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                  {sequences.map((seq) => (
+                  {(Array.isArray(sequences) ? sequences : INITIAL_SEQUENCES).map((seq) => (
                     <tr key={seq.doc_type} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/50">
                       <td className="py-3 px-4">
                         <div className="font-semibold text-slate-900 dark:text-white">
@@ -230,7 +278,7 @@ export default function DocumentNumberingSettingsPage() {
 
             {/* Mobile Touch Cards View */}
             <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-              {sequences.map((seq) => (
+              {(Array.isArray(sequences) ? sequences : INITIAL_SEQUENCES).map((seq) => (
                 <div key={seq.doc_type} className="p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>

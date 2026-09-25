@@ -60,6 +60,12 @@ export function useDataStore<T = any>(
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     const cached = PrintERPDataStore.get<T>(key, slug)
     if (cached !== undefined && cached !== null) {
+      if (Array.isArray(initialSeed) && !Array.isArray(cached)) {
+        if (typeof cached === 'object' && Array.isArray((cached as any).sequences)) {
+          return (cached as any).sequences as T
+        }
+        return initialSeed
+      }
       if (Array.isArray(cached) && cached.length === 0 && initialSeed !== undefined && Array.isArray(initialSeed) && initialSeed.length > 0) {
         return initialSeed
       }
@@ -73,6 +79,9 @@ export function useDataStore<T = any>(
     }
     const seed = getInitialSeedData(key, slug)
     if (seed !== null && seed !== undefined) {
+      if (Array.isArray(initialSeed) && !Array.isArray(seed)) {
+        return initialSeed
+      }
       return seed as T
     }
     return [] as unknown as T
@@ -82,7 +91,15 @@ export function useDataStore<T = any>(
     const slug = customTenantSlug || PrintERPDataStore.getActiveTenantSlug()
     const latest = PrintERPDataStore.get<T>(key, slug)
     if (latest !== undefined && latest !== null) {
-      setData(latest)
+      if (Array.isArray(initialSeedRef.current) && !Array.isArray(latest)) {
+        if (typeof latest === 'object' && Array.isArray((latest as any).sequences)) {
+          setData((latest as any).sequences as T)
+        } else {
+          setData(initialSeedRef.current)
+        }
+      } else {
+        setData(latest)
+      }
     } else if (isTransactionalKey(key)) {
       setData([] as unknown as T)
     } else if (initialSeedRef.current !== undefined) {

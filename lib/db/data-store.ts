@@ -1845,7 +1845,8 @@ export class PrintERPDataStore {
     companyId: string,
     type: 'order' | 'quotation' | 'invoice' | 'challan' | 'job' | 'receipt' | 'purchase'
   ): string {
-    const numberingConfig = this.get<any>(STORAGE_KEYS.DOCUMENT_NUMBERING) || {
+    const rawStored = this.get<any>(STORAGE_KEYS.DOCUMENT_NUMBERING)
+    let numberingConfig: any = {
       order_prefix: 'ORD-',
       quotation_prefix: 'QUO-',
       invoice_prefix: 'INV-',
@@ -1853,6 +1854,23 @@ export class PrintERPDataStore {
       job_prefix: 'JOB-',
       money_receipt_prefix: 'MR-',
       purchase_prefix: 'PO-',
+    }
+
+    if (Array.isArray(rawStored)) {
+      for (const item of rawStored) {
+        if (!item || !item.doc_type) continue
+        const pref = item.prefix ? (item.prefix.endsWith('-') ? item.prefix : `${item.prefix}-`) : ''
+        if (item.doc_type === 'order') numberingConfig.order_prefix = pref
+        else if (item.doc_type === 'quotation') numberingConfig.quotation_prefix = pref
+        else if (item.doc_type === 'invoice') numberingConfig.invoice_prefix = pref
+        else if (item.doc_type === 'challan') numberingConfig.challan_prefix = pref
+        else if (item.doc_type === 'payment') numberingConfig.money_receipt_prefix = pref
+        else if (item.doc_type === 'purchase') numberingConfig.purchase_prefix = pref
+        if (typeof item.current_val === 'number') numberingConfig[`seq_${item.doc_type}`] = item.current_val
+      }
+      numberingConfig.sequences = rawStored
+    } else if (rawStored && typeof rawStored === 'object') {
+      numberingConfig = { ...numberingConfig, ...rawStored }
     }
 
     const currentYear = new Date().getFullYear()
@@ -1914,6 +1932,11 @@ export class PrintERPDataStore {
 
     currentSeq += 1
     numberingConfig[sequenceKey] = currentSeq
+    if (Array.isArray(numberingConfig.sequences)) {
+      numberingConfig.sequences = numberingConfig.sequences.map((s: any) =>
+        s.doc_type === type ? { ...s, current_val: currentSeq } : s
+      )
+    }
     this.set(STORAGE_KEYS.DOCUMENT_NUMBERING, numberingConfig)
 
     const paddedNum = String(currentSeq).padStart(6, '0')
