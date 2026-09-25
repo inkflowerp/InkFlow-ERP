@@ -10,7 +10,7 @@ import {
   CompanySettingsRow,
   CompanyUserWithProfile,
 } from '@/types/tenant.types'
-import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenantContext } from '@/lib/auth/types'
+import { TENANT_SESSION_COOKIE, TenantSessionData, TenantContext as ServerTenantContext, mapSessionToTenantRole } from '@/lib/auth/types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { PlatformTenantCompany } from '@/types/platform.types'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
@@ -177,7 +177,7 @@ function getSessionFromCookie(): TenantSessionData | null {
   }
 }
 
-export { mapSessionToTenantRole } from '@/lib/auth/types'
+export { mapSessionToTenantRole }
 
 export function TenantProvider({
   initialSlug,
