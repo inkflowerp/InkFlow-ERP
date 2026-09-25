@@ -49,7 +49,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(settingsSection.title, 'System & Settings')
     assert.equal(settingsSection.titleBn, 'সেটিংস ও প্রশাসন')
     const settingsItems = settingsSection.items.map((i) => i.key)
-    assert.deepEqual(settingsItems, ['company_settings'])
+    assert.deepEqual(settingsItems, ['company_settings', 'tax', 'trash'])
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
@@ -213,12 +213,12 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     }
   })
 
-  it('7. Settings Sub-Modules: Company settings contains all 16 submodules with verified physical routes', () => {
+  it('7. Settings Sub-Modules: Company settings contains all 14 submodules with verified physical routes', () => {
     const settingsSection = navSections.find((s) => s.id === 'settings')!
     const companySettingsItem = settingsSection.items.find((i) => i.key === 'company_settings')!
     assert.ok(companySettingsItem, 'company_settings must exist')
     assert.ok(companySettingsItem.children, 'company_settings must have children')
-    assert.equal(companySettingsItem.children!.length, 16, 'Must contain all 16 settings sub-modules')
+    assert.equal(companySettingsItem.children!.length, 14, 'Must contain all 14 settings sub-modules')
 
     const appDir = path.resolve(process.cwd(), 'app', '[tenantSlug]')
 
