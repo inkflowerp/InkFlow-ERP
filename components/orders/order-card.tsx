@@ -9,20 +9,25 @@ import {
   Clock,
   Printer,
   FileText,
-  FileCheck,
   Truck,
   Layers,
   ArrowRight,
   MessageSquare,
   PackageCheck,
-  RotateCcw,
   CheckCircle2,
   AlertTriangle,
-  Receipt,
+  UserCheck,
   ExternalLink,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { UnifiedOrderRecord, OrderStage } from './types'
+import { useI18n } from '@/i18n/context'
+import {
+  type UnifiedOrderRecord,
+  type OrderStage,
+  type OrderLiveStatus,
+  ORDER_LIVE_STATUSES,
+  formatOrderItemQuantityAndUnit,
+} from './types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
 interface OrderCardProps {
@@ -30,8 +35,10 @@ interface OrderCardProps {
   tenantSlug: string
   onOpenWhatsApp: (order: UnifiedOrderRecord, tpl?: any) => void
   onOpenJobTicket: (order: UnifiedOrderRecord) => void
+  onPrintJobTicket: (order: UnifiedOrderRecord) => void
   onOpenQuickStatus: (order: UnifiedOrderRecord) => void
   onAdvanceStage: (orderId: string, nextStage: OrderStage) => void
+  onUpdateLiveStatus?: (orderId: string, newStatus: OrderLiveStatus) => void
 }
 
 export const OrderCard = React.memo(function OrderCard({
@@ -39,14 +46,23 @@ export const OrderCard = React.memo(function OrderCard({
   tenantSlug,
   onOpenWhatsApp,
   onOpenJobTicket,
+  onPrintJobTicket,
   onOpenQuickStatus,
   onAdvanceStage,
+  onUpdateLiveStatus,
 }: OrderCardProps) {
   const pathname = usePathname()
+  const { tBilingual } = useI18n()
   const isUrgent = order.priority === 'urgent' || order.priority === 'very_urgent'
   const isDueToday = order.deliveryDate?.includes(new Date().toISOString().split('T')[0])
   const isPaid = order.paymentStatus === 'paid'
   const isPartial = order.paymentStatus === 'partial'
+
+  // Current live status config
+  const currentStatusConfig =
+    ORDER_LIVE_STATUSES.find((s) => s.id === order.currentStatus) ||
+    ORDER_LIVE_STATUSES.find((s) => s.stage === order.stage) ||
+    ORDER_LIVE_STATUSES[0]
 
   return (
     <div
@@ -58,33 +74,36 @@ export const OrderCard = React.memo(function OrderCard({
     >
       {/* Top Notification Strip */}
       {(isUrgent || isDueToday || order.isWalkIn) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
           <div className="flex items-center gap-2">
             {order.isWalkIn && (
-              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
-                🏃 দোকানে বসা কাস্টমার (Walk-in Counter)
+              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+                <UserCheck className="h-3 w-3" />
+                <span>{tBilingual('Walk-in Counter Customer', 'দোকানে বসা কাস্টমার')}</span>
               </span>
             )}
             {isDueToday && (
-              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
-                ⏰ আজকের ডেলিভারি (Due Today)
+              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                <span>{tBilingual('Due Today', 'আজকের ডেলিভারি')}</span>
               </span>
             )}
             {isUrgent && !isDueToday && (
-              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
-                🚨 অতি জরুরী অর্ডার (Urgent)
+              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" />
+                <span>{tBilingual('Urgent Order', 'অতি জরুরী অর্ডার')}</span>
               </span>
             )}
           </div>
           <span className="text-slate-500 text-[10px] font-mono">
-            {order.deliveryDate ? `ডেলিভারি টার্গেট: ${order.deliveryDate}` : ''}
+            {order.deliveryDate ? `${tBilingual('Delivery Target: ', 'ডেলিভারি টার্গেট: ')}${order.deliveryDate}` : ''}
           </span>
         </div>
       )}
 
       {/* Main 3-Column Card Layout */}
       <div className="p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Left Column: Customer & Order Metadata (3.5 Cols) */}
+        {/* Left Column: Customer & Order Metadata (4 Cols) */}
         <div className="lg:col-span-4 flex flex-col justify-between space-y-2.5 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-3 lg:pb-0 lg:pr-4">
           <div>
             {/* Order # & Badges */}
@@ -139,8 +158,8 @@ export const OrderCard = React.memo(function OrderCard({
 
           {/* Quick Date Footer */}
           <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
-            <span>বুকিং: {order.orderDate}</span>
-            <span>ডেলিভারি: {order.deliveryDate || 'N/A'}</span>
+            <span>{tBilingual('Booking: ', 'বুকিং: ')}{order.orderDate}</span>
+            <span>{tBilingual('Delivery: ', 'ডেলিভারি: ')}{order.deliveryDate || 'N/A'}</span>
           </div>
         </div>
 
@@ -148,12 +167,14 @@ export const OrderCard = React.memo(function OrderCard({
         <div className="lg:col-span-5 flex flex-col justify-between space-y-2 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-3 lg:pb-0 lg:pr-4">
           <div className="space-y-1.5">
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>কাজের বিবরণ ও স্পেক ({order.items.length} Works):</span>
-              <span className="font-mono text-slate-500">মোট আইটেম: {order.itemsCount}</span>
+              <span>{tBilingual(`Work Specs (${order.items.length} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length}টি):`)}</span>
+              <span className="font-mono text-slate-500">
+                {tBilingual(`Total Items: ${order.itemsCount}`, `মোট আইটেম: ${order.itemsCount}`)}
+              </span>
             </div>
 
             {/* Multi-Item Line items */}
-            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
               {order.items.map((it, idx) => (
                 <div
                   key={it.id || idx}
@@ -163,8 +184,8 @@ export const OrderCard = React.memo(function OrderCard({
                     <strong className="text-slate-800 dark:text-slate-200 line-clamp-1 font-semibold">
                       {it.itemName}
                     </strong>
-                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0">
-                      {it.quantity} {it.unit}
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-[10px]">
+                      {formatOrderItemQuantityAndUnit(it, tBilingual)}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono flex-wrap">
@@ -175,24 +196,24 @@ export const OrderCard = React.memo(function OrderCard({
                   {/* Workflow routing & item classification tag */}
                   <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
                     {it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product' ? (
-                      <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
-                        📦 রেডি প্রোডাক্ট (ইন-স্টক)
+                      <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
+                        {tBilingual('Ready Product (In Stock)', 'রেডি প্রোডাক্ট (ইন-স্টক)')}
                       </span>
                     ) : it.itemKind === 'outsource' || it.workflowRouting === 'outsource' ? (
-                      <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-300 dark:border-purple-800">
-                        🤝 আউটসোর্স পণ্য
+                      <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                        {tBilingual('Outsourced Product', 'আউটসোর্স পণ্য')}
                       </span>
                     ) : it.workflowRouting === 'design_required' ? (
-                      <span className="text-[9px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
-                        🎨 কাস্টম প্রিন্ট (ডিজাইন দরকার)
+                      <span className="text-[9px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800">
+                        {tBilingual('Custom Print (Design Needed)', 'কাস্টম প্রিন্ট (ডিজাইন দরকার)')}
                       </span>
                     ) : it.workflowRouting === 'design_ok' ? (
-                      <span className="text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-200 dark:border-cyan-800">
-                        ✓ রেডি ফাইল চেক
+                      <span className="text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-200 dark:border-cyan-800">
+                        {tBilingual('Ready File Verified', 'রেডি ফাইল চেক')}
                       </span>
                     ) : (
-                      <span className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800">
-                        🖨️ প্রেসে প্রোডাকশন
+                      <span className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
+                        {tBilingual('Machine Floor Production', 'প্রেসে প্রোডাকশন')}
                       </span>
                     )}
                   </div>
@@ -202,32 +223,51 @@ export const OrderCard = React.memo(function OrderCard({
           </div>
         </div>
 
-        {/* Right Column: Financial Health Strip & Contextual Actions (3.5 Cols) */}
-        <div className="lg:col-span-3 flex flex-col justify-between space-y-3">
+        {/* Right Column: Financial Health Strip, Live Status & Actions (3 Cols) */}
+        <div className="lg:col-span-3 flex flex-col justify-between space-y-2.5">
+          {/* Live Status Selector */}
+          <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1">
+            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase">
+              <span>{tBilingual('Live Current Status:', 'বর্তমান অবস্থা:')}</span>
+              <span className={`inline-block w-2 h-2 rounded-full ${currentStatusConfig.dotColor} animate-pulse`} />
+            </div>
+            <select
+              value={order.currentStatus || currentStatusConfig.id}
+              onChange={(e) => onUpdateLiveStatus?.(order.id, e.target.value as OrderLiveStatus)}
+              className="w-full text-xs font-bold rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1 text-slate-800 dark:text-slate-100 cursor-pointer focus:ring-1 focus:ring-indigo-500"
+            >
+              {ORDER_LIVE_STATUSES.map((st) => (
+                <option key={st.id} value={st.id}>
+                  {tBilingual(st.labelEn, st.labelBn)}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Financial Breakdown */}
           <div className="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 space-y-1 text-xs">
             <div className="flex items-center justify-between text-slate-500 text-[11px]">
-              <span>মোট মূল্য (Total):</span>
+              <span>{tBilingual('Total Amount:', 'মোট মূল্য:')}</span>
               <strong className="font-mono text-slate-900 dark:text-white font-bold">
                 ৳{order.totalAmount.toLocaleString()}
               </strong>
             </div>
             <div className="flex items-center justify-between text-slate-500 text-[11px]">
-              <span>জমা / অগ্রিম (Paid):</span>
+              <span>{tBilingual('Paid / Advance:', 'জমা / অগ্রিম:')}</span>
               <span className="font-mono text-emerald-600 font-semibold">
                 ৳{order.advanceAmount.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between border-t border-slate-200 dark:border-slate-700 pt-1 font-bold">
               <span className={order.dueAmount > 0 ? 'text-rose-600' : 'text-slate-600'}>
-                বকেয়া বাকি (Due):
+                {tBilingual('Balance Due:', 'বকেয়া বাকি:')}
               </span>
               <span className={`font-mono ${order.dueAmount > 0 ? 'text-rose-600 font-black' : 'text-slate-600'}`}>
                 ৳{order.dueAmount.toLocaleString()}
               </span>
             </div>
             <div className="pt-1 flex items-center justify-between text-[10px]">
-              <span className="text-slate-400">পেমেন্ট:</span>
+              <span className="text-slate-400">{tBilingual('Payment:', 'পেমেন্ট:')}</span>
               <span
                 className={`font-bold uppercase px-1.5 py-0.2 rounded text-[9px] ${
                   isPaid
@@ -237,7 +277,11 @@ export const OrderCard = React.memo(function OrderCard({
                     : 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300'
                 }`}
               >
-                {order.paymentStatus}
+                {isPaid
+                  ? tBilingual('PAID', 'পরিশোধিত')
+                  : isPartial
+                  ? tBilingual('PARTIAL', 'আংশিক')
+                  : tBilingual('UNPAID', 'বকেয়া')}
               </span>
             </div>
           </div>
@@ -253,7 +297,7 @@ export const OrderCard = React.memo(function OrderCard({
                 className="w-full text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-8 shadow-sm"
               >
                 <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                <span>ডিজাইনে পাঠান (To Design Studio)</span>
+                <span>{tBilingual('Send to Design Studio', 'ডিজাইনে পাঠান')}</span>
               </Button>
             )}
 
@@ -265,7 +309,7 @@ export const OrderCard = React.memo(function OrderCard({
                 className="w-full text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold h-8 shadow-sm"
               >
                 <Printer className="h-3.5 w-3.5 mr-1.5" />
-                <span>প্রেসে পাঠান (To Machine Floor)</span>
+                <span>{tBilingual('Send to Machine Floor', 'প্রেসে পাঠান')}</span>
               </Button>
             )}
 
@@ -277,7 +321,7 @@ export const OrderCard = React.memo(function OrderCard({
                 className="w-full text-xs bg-purple-600 hover:bg-purple-700 text-white font-bold h-8 shadow-sm"
               >
                 <Truck className="h-3.5 w-3.5 mr-1.5" />
-                <span>ডেলিভারি রেডি (Ready for Pickup)</span>
+                <span>{tBilingual('Mark Delivery Ready', 'ডেলিভারি রেডি')}</span>
               </Button>
             )}
 
@@ -289,28 +333,28 @@ export const OrderCard = React.memo(function OrderCard({
                 className="w-full text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 shadow-sm"
               >
                 <PackageCheck className="h-3.5 w-3.5 mr-1.5" />
-                <span>ডেলিভারি সম্পন্ন (Mark Delivered)</span>
+                <span>{tBilingual('Mark Delivered', 'ডেলিভারি সম্পন্ন')}</span>
               </Button>
             )}
 
             {order.stage === 'delivered' && (
-              <div className="text-center text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 p-1.5 rounded border border-emerald-200">
-                ✓ ডেলিভারি ও অর্ডার সম্পন্ন
+              <div className="text-center text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 p-1.5 rounded border border-emerald-200 dark:border-emerald-800">
+                {tBilingual('✓ Order Delivered & Completed', '✓ ডেলিভারি ও অর্ডার সম্পন্ন')}
               </div>
             )}
 
-            {/* Secondary Actions: Job Ticket, WhatsApp & Quick Status */}
+            {/* Direct Print Job Sheet & Secondary Actions */}
             <div className="grid grid-cols-3 gap-1">
               <Button
                 type="button"
                 size="sm"
                 variant="outline"
-                onClick={() => onOpenJobTicket(order)}
-                className="text-[11px] h-7 px-1 border-slate-300 text-slate-700 dark:text-slate-300"
-                title="প্রিন্ট জব টিকেট (Print Job Slip)"
+                onClick={() => onPrintJobTicket(order)}
+                className="text-[11px] h-7 px-1 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
+                title={tBilingual('Print Production Job Ticket', 'প্রোডাকশন জব স্লিপ প্রিন্ট')}
               >
-                <Printer className="h-3 w-3 mr-1" />
-                <span>টিকেট</span>
+                <Printer className="h-3 w-3 mr-1 text-indigo-600 dark:text-indigo-400" />
+                <span>{tBilingual('Job Sheet', 'জব স্লিপ')}</span>
               </Button>
 
               <Button
@@ -318,8 +362,8 @@ export const OrderCard = React.memo(function OrderCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onOpenWhatsApp(order)}
-                className="text-[11px] h-7 px-1 border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50"
-                title="হোয়াটসঅ্যাপ আপডেট (WhatsApp Update)"
+                className="text-[11px] h-7 px-1 border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                title={tBilingual('Send WhatsApp Update', 'হোয়াটসঅ্যাপ বার্তা পাঠান')}
               >
                 <MessageSquare className="h-3 w-3 mr-1" />
                 <span>WhatsApp</span>
@@ -330,11 +374,11 @@ export const OrderCard = React.memo(function OrderCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onOpenQuickStatus(order)}
-                className="text-[11px] h-7 px-1 border-indigo-300 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50"
-                title="স্ট্যাটাস পরিবর্তন (Change Stage)"
+                className="text-[11px] h-7 px-1 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                title={tBilingual('Change Workflow Stage', 'কাজের পর্যায় পরিবর্তন')}
               >
                 <ArrowRight className="h-3 w-3 mr-1" />
-                <span>স্ট্যাটাস</span>
+                <span>{tBilingual('Stage', 'পর্যায়')}</span>
               </Button>
             </div>
           </div>

@@ -28,6 +28,158 @@ export interface OrderItemSpec {
   notes?: string
 }
 
+export type OrderLiveStatus =
+  | 'design_queue'
+  | 'design_running'
+  | 'waiting_approval'
+  | 'print_queue'
+  | 'printing'
+  | 'finishing_pending'
+  | 'ready_delivery'
+  | 'delivered'
+
+export interface OrderLiveStatusConfig {
+  id: OrderLiveStatus
+  labelEn: string
+  labelBn: string
+  stage: OrderStage
+  color: string
+  dotColor: string
+}
+
+export const ORDER_LIVE_STATUSES: OrderLiveStatusConfig[] = [
+  {
+    id: 'design_queue',
+    labelEn: 'Design Queue',
+    labelBn: 'ডিজাইন কিউ',
+    stage: 'in_design',
+    color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800',
+    dotColor: 'bg-amber-500',
+  },
+  {
+    id: 'design_running',
+    labelEn: 'Design Running',
+    labelBn: 'ডিজাইন চলমান',
+    stage: 'in_design',
+    color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800',
+    dotColor: 'bg-blue-500',
+  },
+  {
+    id: 'waiting_approval',
+    labelEn: 'Waiting for Design Approval',
+    labelBn: 'ডিজাইন অনুমোদনের অপেক্ষায়',
+    stage: 'in_design',
+    color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800',
+    dotColor: 'bg-indigo-500',
+  },
+  {
+    id: 'print_queue',
+    labelEn: 'Print Queue',
+    labelBn: 'প্রিন্ট কিউ',
+    stage: 'in_production',
+    color: 'bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800',
+    dotColor: 'bg-cyan-500',
+  },
+  {
+    id: 'printing',
+    labelEn: 'Printing',
+    labelBn: 'প্রিন্টিং চলমান',
+    stage: 'in_production',
+    color: 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800',
+    dotColor: 'bg-violet-500',
+  },
+  {
+    id: 'finishing_pending',
+    labelEn: 'Finishing Pending',
+    labelBn: 'ফিনিশিং পেন্ডিং',
+    stage: 'in_production',
+    color: 'bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800',
+    dotColor: 'bg-orange-500',
+  },
+  {
+    id: 'ready_delivery',
+    labelEn: 'Ready for Delivery',
+    labelBn: 'ডেলিভারির জন্য প্রস্তুত',
+    stage: 'ready_delivery',
+    color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800',
+    dotColor: 'bg-emerald-500',
+  },
+  {
+    id: 'delivered',
+    labelEn: 'Delivered',
+    labelBn: 'ডেলিভারি সম্পন্ন',
+    stage: 'delivered',
+    color: 'bg-slate-200 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700',
+    dotColor: 'bg-slate-500',
+  },
+]
+
+function toEnglishDigits(str: string): string {
+  const bnToEn: Record<string, string> = {
+    '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',
+    '৫': '5', '৬': '6', '৭': '7', '৮': '8', '৯': '9',
+  }
+  return str.replace(/[০-৯]/g, (d) => bnToEn[d] || d)
+}
+
+export function formatOrderItemQuantityAndUnit(
+  item: OrderItemSpec,
+  tBilingual: (en: string, bn: string) => string
+): string {
+  let width = Number(item.width) || 0
+  let height = Number(item.height) || 0
+  let dimUnit = (item.dimensionUnit || 'ft').toLowerCase()
+  const qty = Number(item.quantity) || 1
+
+  // Parse if width/height missing but dimensions string is like "30 × 5 sft" or "30x5"
+  if ((!width || !height) && item.dimensions) {
+    const normalized = toEnglishDigits(item.dimensions)
+    const match = normalized.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)(?:\s*([a-zA-Z]+))?/i)
+    if (match) {
+      width = parseFloat(match[1]) || 0
+      height = parseFloat(match[2]) || 0
+      if (match[3]) dimUnit = match[3].toLowerCase()
+    } else {
+      const singleAreaMatch = normalized.match(/^([\d.]+)\s*(?:sft|sqft|বর্গফুট)/i)
+      if (singleAreaMatch) {
+        const areaVal = parseFloat(singleAreaMatch[1]) || 0
+        if (areaVal > 0) {
+          const areaFormatted = Number.isInteger(areaVal) ? areaVal.toString() : areaVal.toFixed(1)
+          const areaUnitStr = tBilingual('sft', 'বর্গফুট')
+          const pcsStr = tBilingual('pcs', 'টি')
+          return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
+        }
+      }
+    }
+  }
+
+  if (width > 0 && height > 0) {
+    // Dimensional area item (wide format banner, vinyl, sticker, pvc, etc.)
+    let totalArea = 0
+    if (dimUnit === 'inch' || dimUnit === 'in') {
+      totalArea = (width * height * qty) / 144
+    } else {
+      totalArea = width * height * qty
+    }
+
+    const areaFormatted = Number.isInteger(totalArea) ? totalArea.toString() : totalArea.toFixed(1)
+    const areaUnitStr = tBilingual('sft', 'বর্গফুট')
+    const pcsStr = tBilingual('pcs', 'টি')
+
+    return `${areaFormatted} ${areaUnitStr} (${qty} ${pcsStr})`
+  }
+
+  // Non-dimensional items (ready product, cards, books, etc.)
+  let unitDisplay = item.unit || 'pcs'
+  if (unitDisplay.toLowerCase() === 'pcs') unitDisplay = tBilingual('pcs', 'পিস')
+  else if (unitDisplay.toLowerCase() === 'sft') unitDisplay = tBilingual('sft', 'বর্গফুট')
+  else if (unitDisplay.toLowerCase() === 'set') unitDisplay = tBilingual('set', 'সেট')
+  else if (unitDisplay.toLowerCase() === 'pack') unitDisplay = tBilingual('pack', 'প্যাক')
+  else if (unitDisplay.toLowerCase() === 'box') unitDisplay = tBilingual('box', 'বক্স')
+
+  return `${qty} ${unitDisplay}`
+}
+
 export interface UnifiedOrderRecord {
   id: string
   orderNumber: string
@@ -50,6 +202,7 @@ export interface UnifiedOrderRecord {
   deliveryDate: string
   createdAt: string
   stage: OrderStage
+  currentStatus?: OrderLiveStatus
   paymentStatus: 'paid' | 'partial' | 'unpaid'
   totalAmount: number
   advanceAmount: number
@@ -71,13 +224,49 @@ export interface OrderWhatsAppTemplate {
   key: OrderWhatsAppTemplateKey
   title: string
   badge: string
+  titleEn: string
+  titleBn: string
+  badgeEn: string
+  badgeBn: string
 }
 
 export const ORDER_WHATSAPP_TEMPLATES: OrderWhatsAppTemplate[] = [
-  { key: 'order_confirmed', title: '১. অর্ডার নিশ্চিতকরণ ও রসিদ', badge: 'অগ্রিম গ্রহণ' },
-  { key: 'design_proof', title: '২. ডিজাইন প্রুফ প্রস্তুত', badge: 'অনুমোদন' },
-  { key: 'ready_pickup', title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি', badge: 'ডেলিভারি চালান' },
-  { key: 'payment_reminder', title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ', badge: 'বাকি আদায়' },
+  {
+    key: 'order_confirmed',
+    title: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
+    badge: 'অগ্রিম গ্রহণ',
+    titleEn: '1. Order Intake & Confirmation',
+    titleBn: '১. অর্ডার নিশ্চিতকরণ ও রসিদ',
+    badgeEn: 'Advance Received',
+    badgeBn: 'অগ্রিম গ্রহণ',
+  },
+  {
+    key: 'design_proof',
+    title: '২. ডিজাইন প্রুফ প্রস্তুত',
+    badge: 'অনুমোদন',
+    titleEn: '2. Design Proof Ready',
+    titleBn: '২. ডিজাইন প্রুফ প্রস্তুত',
+    badgeEn: 'Proof Approval',
+    badgeBn: 'অনুমোদন',
+  },
+  {
+    key: 'ready_pickup',
+    title: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
+    badge: 'ডেলিভারি চালান',
+    titleEn: '3. Print Complete & Delivery Ready',
+    titleBn: '৩. প্রিন্ট সম্পন্ন ও ডেলিভারি রেডি',
+    badgeEn: 'Ready for Dispatch',
+    badgeBn: 'ডেলিভারি চালান',
+  },
+  {
+    key: 'payment_reminder',
+    title: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
+    badge: 'বাকি আদায়',
+    titleEn: '4. Due Balance & Delivery Notice',
+    titleBn: '৪. বাকি টাকা ও ডেলিভারি নোটিশ',
+    badgeEn: 'Due Recovery',
+    badgeBn: 'বাকি আদায়',
+  },
 ]
 
 export function sanitizeBangladeshiPhone(rawPhone?: string | null): string {

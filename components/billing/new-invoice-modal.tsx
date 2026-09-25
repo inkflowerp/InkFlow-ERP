@@ -98,7 +98,7 @@ interface ItemRowState {
   finishing_rate?: number
   add_on?: string
   add_on_rate?: number
-  rateSource?: 'custom' | 'last_invoice' | 'default' | 'manual'
+  rateSource?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual'
   tier_applied?: string
   moq?: number
   pcs_per_carton?: number
@@ -1149,7 +1149,7 @@ export function NewInvoiceModal({
 
       const defaultPrice = Number(prd.selling_price) || Number((prd as any).base_price) || 20
       let effectiveRate = defaultPrice
-      let rateSrc: 'custom' | 'last_invoice' | 'default' = 'default'
+      let rateSrc: 'custom' | 'last_invoice' | 'last_quotation' | 'default' = 'default'
       let tierApplied: string | undefined = undefined
 
       if (customerId && customerRates.length > 0) {
@@ -1647,12 +1647,15 @@ export function NewInvoiceModal({
     }
   }
 
-  const getRateBadge = (source?: 'custom' | 'last_invoice' | 'default' | 'manual') => {
+  const getRateBadge = (source?: 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'manual') => {
     if (source === 'custom') {
       return <Badge className="bg-purple-100 text-purple-800 border-purple-200 text-[10px] py-0">Custom Rate</Badge>
     }
     if (source === 'last_invoice') {
       return <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-[10px] py-0">Last Inv Rate</Badge>
+    }
+    if (source === 'last_quotation') {
+      return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] py-0">Last Quote Rate</Badge>
     }
     if (source === 'manual') {
       return <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px] py-0">Manual</Badge>
@@ -2875,14 +2878,18 @@ export function NewInvoiceModal({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Subtotal', 'মোট বিল')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Subtotal', 'মোট বিল')}</Label>
+              </div>
               <div className="h-9 px-3 flex items-center bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
                 {formatBDT(subtotal)}
               </div>
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Discount (৳)', 'ছাড় (৳)')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Discount (৳)', 'ছাড় (৳)')}</Label>
+              </div>
               <Input
                 type="number"
                 value={discountAmount || ''}
@@ -2894,16 +2901,16 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs font-semibold block">{tBilingual('NBR VAT (%)', 'এনবিআর ভ্যাট (%)')}</Label>
-                <div className="flex items-center gap-1">
+              <div className="h-6 flex items-center justify-between gap-1 mb-1">
+                <Label className="text-xs font-semibold whitespace-nowrap shrink-0">{tBilingual('NBR VAT (%)', 'এনবিআর ভ্যাট (%)')}</Label>
+                <div className="flex items-center gap-0.5 shrink-0">
                   {[0, 5, 7.5, 15].map((rate) => (
                     <button
                       key={rate}
                       type="button"
                       onClick={() => setVatPercentage(rate)}
                       className={cn(
-                        'px-1.5 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-all',
+                        'px-1 py-0.5 rounded text-[9px] font-bold cursor-pointer transition-all whitespace-nowrap',
                         vatPercentage === rate
                           ? 'bg-blue-600 text-white'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
@@ -2926,23 +2933,25 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Grand Total', 'সর্বমোট বিল')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Grand Total', 'সর্বমোট বিল')}</Label>
+              </div>
               <div className="h-9 px-3 flex items-center bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300 text-sm">
                 {formatBDT(grandTotal)}
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <Label className="text-xs font-semibold block">{tBilingual('Advance Paid (৳)', 'অগ্রিম পরিশোধ (৳)')}</Label>
-                <div className="flex items-center gap-1">
+              <div className="h-6 flex items-center justify-between gap-1 mb-1">
+                <Label className="text-xs font-semibold whitespace-nowrap shrink-0">{tBilingual('Advance Paid (৳)', 'অগ্রিম পরিশোধ (৳)')}</Label>
+                <div className="flex items-center gap-1 shrink-0">
                   <button
                     type="button"
                     onClick={() => {
                       setAdvancePercentage(50)
                       setAdvanceAmount(Math.round(grandTotal * 0.5))
                     }}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer"
+                    className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer whitespace-nowrap"
                   >
                     {isBn ? '৫০%' : '50%'}
                   </button>
@@ -2952,7 +2961,7 @@ export function NewInvoiceModal({
                       setAdvancePercentage(100)
                       setAdvanceAmount(grandTotal)
                     }}
-                    className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer"
+                    className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer whitespace-nowrap"
                   >
                     {isBn ? '১০০%' : '100%'}
                   </button>
@@ -2976,7 +2985,9 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Balance Due', 'ডেলিভারিতে বাকি')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Balance Due', 'ডেলিভারিতে বাকি')}</Label>
+              </div>
               <div className={cn(
                 'h-9 px-3 flex items-center rounded-md font-mono font-black text-sm border',
                 dueAmount > 0
@@ -2988,7 +2999,9 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}</Label>
+              </div>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value as any)}
@@ -3004,7 +3017,9 @@ export function NewInvoiceModal({
             </div>
 
             <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</Label>
+              <div className="h-6 flex items-center mb-1">
+                <Label className="text-xs font-semibold">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</Label>
+              </div>
               <Input
                 type="date"
                 value={dueDate}

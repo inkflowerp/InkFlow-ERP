@@ -148,12 +148,13 @@ export function CustomerRatesTable({
           </div>
           <div>
             <div className="font-semibold text-slate-900 dark:text-white">
-              Automated 3-Tier Rate Priority Engine
+              Automated Dynamic Rate Priority Engine
             </div>
             <div className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed mt-0.5">
               Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
-              <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Valid Invoice Rate</span> &rarr;{' '}
-              <span className="font-semibold text-slate-600 dark:text-slate-300">Catalog Default Rate</span>.
+              <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Invoice Rate</span> &rarr;{' '}
+              <span className="font-semibold text-amber-600 dark:text-amber-400">Last Quotation Rate</span> &rarr;{' '}
+              <span className="font-semibold text-slate-600 dark:text-slate-300">Catalog Default</span>.
             </div>
           </div>
         </div>
@@ -206,6 +207,7 @@ export function CustomerRatesTable({
                 <th className="py-3 px-3">Unit</th>
                 <th className="py-3 px-3 text-right">Default Rate</th>
                 <th className="py-3 px-3 text-right">Last Invoice Rate</th>
+                <th className="py-3 px-3 text-right">Last Quoted Rate</th>
                 <th className="py-3 px-3 text-right">Customer Rate</th>
                 <th className="py-3 px-3 text-center">Active Source</th>
                 <th className="py-3 px-3 text-right">Effective Rate</th>
@@ -215,7 +217,7 @@ export function CustomerRatesTable({
             <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
               {filteredRates.length === 0 ? (
                 <tr>
-                  <td colSpan={canEdit ? 8 : 7} className="py-8 text-center text-slate-400">
+                  <td colSpan={canEdit ? 9 : 8} className="py-8 text-center text-slate-400">
                     No products matched your search filter.
                   </td>
                 </tr>
@@ -274,17 +276,59 @@ export function CustomerRatesTable({
                         )}
                       </td>
 
+                      {/* Last Quoted Rate */}
+                      <td className="py-3 px-3 text-right">
+                        {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? (
+                          <div>
+                            <span className="font-semibold text-amber-600 dark:text-amber-400">
+                              {formatBDT(r.lastQuotationRate)}
+                            </span>
+                            {r.lastQuotationNumber && (
+                              <div className="text-[10px] text-slate-400 truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
+                                {r.lastQuotationNumber}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 italic">No quote</span>
+                        )}
+                      </td>
+
                       {/* Customer Rate */}
                       <td className="py-3 px-3 text-right">
                         {isEditing ? (
-                          <Input
-                            type="number"
-                            step="0.01"
-                            value={editRateValue}
-                            onChange={(e) => setEditRateValue(e.target.value)}
-                            className="h-8 w-24 text-right text-xs font-bold"
-                            autoFocus
-                          />
+                          <div className="space-y-1">
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editRateValue}
+                              onChange={(e) => setEditRateValue(e.target.value)}
+                              className="h-8 w-24 text-right text-xs font-bold"
+                              autoFocus
+                            />
+                            <div className="flex items-center gap-1 justify-end">
+                              {r.lastInvoiceRate !== null && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditRateValue(String(r.lastInvoiceRate))}
+                                  className="text-[9px] text-emerald-600 hover:underline font-bold"
+                                  title="Auto-fill last invoice rate"
+                                >
+                                  Invoiced
+                                </button>
+                              )}
+                              {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined && (
+                                <button
+                                  type="button"
+                                  onClick={() => setEditRateValue(String(r.lastQuotationRate))}
+                                  className="text-[9px] text-amber-600 hover:underline font-bold"
+                                  title="Auto-fill last quotation rate"
+                                >
+                                  Quoted
+                                </button>
+                              )}
+                            </div>
+                          </div>
                         ) : r.customerRate !== null ? (
                           <span className="font-bold text-blue-600 dark:text-blue-400">
                             {formatBDT(r.customerRate)}
@@ -303,6 +347,10 @@ export function CustomerRatesTable({
                         ) : r.source === 'last_invoice' ? (
                           <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-semibold">
                             Last Invoice
+                          </Badge>
+                        ) : r.source === 'last_quotation' ? (
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-[10px] font-semibold">
+                            Last Quote
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-slate-500 text-[10px]">
@@ -417,6 +465,10 @@ export function CustomerRatesTable({
                       <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 text-[10px]">
                         Last Invoice
                       </Badge>
+                    ) : r.source === 'last_quotation' ? (
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 text-[10px]">
+                        Last Quote
+                      </Badge>
                     ) : (
                       <Badge variant="outline" className="text-slate-500 text-[10px]">
                         Default
@@ -425,7 +477,7 @@ export function CustomerRatesTable({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
                   <div>
                     <div className="text-[10px] text-slate-400">Default</div>
                     <div className="font-medium text-slate-600 dark:text-slate-400">
@@ -436,6 +488,12 @@ export function CustomerRatesTable({
                     <div className="text-[10px] text-slate-400">Last Invoice</div>
                     <div className="font-medium text-emerald-600 dark:text-emerald-400 truncate">
                       {r.lastInvoiceRate !== null ? formatBDT(r.lastInvoiceRate) : 'None'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-slate-400">Last Quoted</div>
+                    <div className="font-medium text-amber-600 dark:text-amber-400 truncate">
+                      {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? formatBDT(r.lastQuotationRate) : 'None'}
                     </div>
                   </div>
                   <div>

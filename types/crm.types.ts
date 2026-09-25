@@ -58,6 +58,8 @@ export type SupplierPaymentTerms =
 export interface CustomerRecord {
   id: string
   company_id: string
+  customer_id_no?: string | null
+  customer_code?: string | null
   customer_kind?: CustomerKind
   customer_type?: CustomerType
   customer_category?: CustomerCategory
@@ -122,7 +124,7 @@ export interface CustomerRateRecord {
   updated_at: string
 }
 
-export type RateSource = 'custom' | 'last_invoice' | 'default'
+export type RateSource = 'custom' | 'last_invoice' | 'last_quotation' | 'default'
 
 export interface ResolvedProductRate {
   productId: string
@@ -135,6 +137,9 @@ export interface ResolvedProductRate {
   lastInvoiceRate: number | null
   lastInvoiceNumber?: string | null
   lastInvoiceDate?: string | null
+  lastQuotationRate?: number | null
+  lastQuotationNumber?: string | null
+  lastQuotationDate?: string | null
   defaultRate: number
   effectiveRate: number
   source: RateSource

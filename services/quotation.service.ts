@@ -82,11 +82,8 @@ export class QuotationService {
     return QuotationRepository.updateQuotation(id, data, companyId)
   }
 
-  static async deleteQuotation(id: string, companyId: string = 'c-01'): Promise<boolean> {
-    const quote = await this.getQuotationById(id, companyId)
-    if (!quote) return false
-    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
-    return true
+  static async deleteQuotation(id: string, companyId: string = 'c-01', quotationNumber?: string): Promise<boolean> {
+    return QuotationRepository.deleteQuotation(id, companyId, quotationNumber)
   }
 
   static async convertToOrder(quoteId: string, companyId: string = 'c-01', options?: { createdByName?: string; advanceAmount?: number }): Promise<any> {

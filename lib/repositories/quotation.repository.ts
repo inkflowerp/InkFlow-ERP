@@ -1202,4 +1202,59 @@ export class QuotationRepository {
     const activities = PrintERPDataStore.get<QuotationActivityRecord[]>(STORAGE_KEYS.QUOTATION_ACTIVITIES) || []
     return activities.filter((a) => a.quotation_id === quotationId)
   }
+
+  /**
+   * Deletes a quotation and its items/activities from DataStore and Supabase
+   */
+  static async deleteQuotation(id: string, companyId: string = 'c-01', quotationNumber?: string): Promise<boolean> {
+    // 1. Remove from DataStore
+    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+    if (companyId) {
+      PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
+    }
+
+    const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
+    PrintERPDataStore.set(
+      STORAGE_KEYS.QUOTATIONS,
+      list.filter((q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber))
+    )
+
+    if (companyId) {
+      const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+      PrintERPDataStore.set(
+        STORAGE_KEYS.QUOTATIONS,
+        compList.filter((q) => q.id !== id && (!quotationNumber || q.quotation_number !== quotationNumber)),
+        true,
+        companyId
+      )
+    }
+
+    // 2. Remove from Supabase
+    try {
+      const { createAdminClient } = await import('../supabase/admin.ts')
+      const admin = createAdminClient()
+      if (id && !String(id).startsWith('temp-')) {
+        await (admin as any).from('quotation_items').delete().eq('quotation_id', id)
+        await (admin as any).from('quotation_activities').delete().eq('quotation_id', id)
+        await (admin as any).from('quotations').delete().eq('id', id)
+      }
+      if (quotationNumber) {
+        await (admin as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+      }
+    } catch (dbErr) {
+      console.warn('[QuotationRepository.deleteQuotation] Supabase deletion error:', dbErr)
+    }
+
+    try {
+      const supabase = await createClient()
+      if (id && !String(id).startsWith('temp-')) {
+        await (supabase as any).from('quotations').delete().eq('id', id)
+      }
+      if (quotationNumber) {
+        await (supabase as any).from('quotations').delete().eq('quotation_number', quotationNumber)
+      }
+    } catch {}
+
+    return true
+  }
 }

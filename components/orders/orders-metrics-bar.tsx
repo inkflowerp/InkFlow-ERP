@@ -11,6 +11,7 @@ import {
   BadgePercent,
   Wallet,
 } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 import type { OrderStage } from './types'
 
 export interface OrderMetrics {
@@ -39,12 +40,14 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
   onSelectStage,
   onSelectQuickFilter,
 }: OrdersMetricsBarProps) {
+  const { tBilingual } = useI18n()
+
   const cards = [
     {
       id: 'all',
       type: 'stage' as const,
-      title: 'মোট অর্ডার',
-      subtitle: 'Total Orders',
+      title: tBilingual('Total Orders', 'মোট অর্ডার'),
+      subtitle: tBilingual('All Active', 'সকল অর্ডার'),
       count: metrics.total,
       icon: Layers,
       color: 'text-slate-700 dark:text-slate-200',
@@ -54,8 +57,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'new_orders',
       type: 'stage' as const,
-      title: 'নতুন অর্ডার / ইনটেক',
-      subtitle: 'New Intake',
+      title: tBilingual('New Orders', 'নতুন অর্ডার'),
+      subtitle: tBilingual('New Intake', 'ইনটেক কিউ'),
       count: metrics.newOrders,
       icon: Sparkles,
       color: 'text-amber-600 dark:text-amber-400',
@@ -65,8 +68,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'in_design',
       type: 'stage' as const,
-      title: 'ডিজাইন ও চেক',
-      subtitle: 'In Design',
+      title: tBilingual('In Design', 'ডিজাইন ও চেক'),
+      subtitle: tBilingual('Studio Proof', 'প্রি-প্রেস'),
       count: metrics.inDesign,
       icon: Sparkles,
       color: 'text-blue-600 dark:text-blue-400',
@@ -76,8 +79,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'in_production',
       type: 'stage' as const,
-      title: 'প্রেসে প্রোডাকশন',
-      subtitle: 'Machine Floor',
+      title: tBilingual('In Production', 'প্রেসে প্রোডাকশন'),
+      subtitle: tBilingual('Machine Floor', 'মেশিন ফ্লোর'),
       count: metrics.inProduction,
       icon: Printer,
       color: 'text-indigo-600 dark:text-indigo-400',
@@ -87,8 +90,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'ready_delivery',
       type: 'stage' as const,
-      title: 'ডেলিভারি রেডি',
-      subtitle: 'Ready for Pickup',
+      title: tBilingual('Ready Delivery', 'ডেলিভারি রেডি'),
+      subtitle: tBilingual('Ready for Pickup', 'কাউন্টার প্রস্তুত'),
       count: metrics.readyDelivery,
       icon: Truck,
       color: 'text-purple-600 dark:text-purple-400',
@@ -98,8 +101,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'due_today',
       type: 'filter' as const,
-      title: 'আজকের ডেলিভারি',
-      subtitle: 'Due Today',
+      title: tBilingual('Due Today', 'আজকের ডেলিভারি'),
+      subtitle: tBilingual('Delivery Target', 'টার্গেট ডেলিভারি'),
       count: metrics.dueToday,
       icon: CheckCircle2,
       color: 'text-rose-600 dark:text-rose-400',
@@ -109,8 +112,8 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
     {
       id: 'unpaid_due',
       type: 'filter' as const,
-      title: 'মোট বকেয়া বাকি',
-      subtitle: 'Due Receivable',
+      title: tBilingual('Due Receivable', 'মোট বকেয়া বাকি'),
+      subtitle: tBilingual('Pending Balance', 'বকেয়া ব্যালেন্স'),
       count: `৳${metrics.totalDueAmount.toLocaleString()}`,
       isCurrency: true,
       icon: Wallet,

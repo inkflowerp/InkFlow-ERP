@@ -103,6 +103,29 @@ export class TrashRepository {
         STORAGE_KEYS.QUOTATIONS,
         list.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number)
       )
+      if (companyId) {
+        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+        PrintERPDataStore.set(
+          STORAGE_KEYS.QUOTATIONS,
+          compList.filter((q) => q.id !== originalId && q.quotation_number !== item.quotation_number),
+          true,
+          companyId
+        )
+      }
+      try {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        const admin = createAdminClient()
+        if (originalId && !String(originalId).startsWith('temp-')) {
+          await (admin as any).from('quotation_items').delete().eq('quotation_id', originalId)
+          await (admin as any).from('quotation_activities').delete().eq('quotation_id', originalId)
+          await (admin as any).from('quotations').delete().eq('id', originalId)
+        }
+        if (refNum) {
+          await (admin as any).from('quotations').delete().eq('quotation_number', refNum)
+        }
+      } catch (dbErr) {
+        console.warn('[TrashRepository] Failed to delete quotation from Supabase:', dbErr)
+      }
     } else if (category === 'invoices') {
       title = item.customer_name ? `Invoice: ${item.customer_name}` : `Invoice #${item.invoice_number || originalId}`
       refNum = item.invoice_number || ''
@@ -202,6 +225,23 @@ export class TrashRepository {
     if (trashItem.category === 'quotations') {
       const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || []
       PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...list])
+      if (companyId) {
+        const compList = PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS, companyId) || []
+        PrintERPDataStore.set(STORAGE_KEYS.QUOTATIONS, [restoredPayload, ...compList], true, companyId)
+      }
+      try {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        const admin = createAdminClient()
+        if (restoredPayload && restoredPayload.id) {
+          const { items, ...quoteRow } = restoredPayload
+          await (admin as any).from('quotations').upsert(quoteRow)
+          if (Array.isArray(items) && items.length > 0) {
+            await (admin as any).from('quotation_items').upsert(items)
+          }
+        }
+      } catch (dbErr) {
+        console.warn('[TrashRepository] Re-insert quotation error:', dbErr)
+      }
     } else if (trashItem.category === 'invoices') {
       const list = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
       PrintERPDataStore.set(STORAGE_KEYS.INVOICES, [restoredPayload, ...list])

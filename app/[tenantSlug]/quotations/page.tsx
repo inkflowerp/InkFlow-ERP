@@ -55,6 +55,7 @@ import {
 import * as QuotationService from '@/lib/quotations/quotation-utils'
 import {
   getQuotationsAction,
+  deleteQuotationAction,
   convertQuotationToJobOrderAction,
   convertQuotationToInvoiceAction,
 } from '@/actions/quotation.actions'
@@ -189,6 +190,68 @@ function getLocalQuotations(slug?: string, companySlug?: string, companyId?: str
   rawList.push(...storeItems)
 
   return deduplicateQuotations(rawList, companyId, slug)
+}
+
+/**
+ * Removes a quotation from all localStorage keys and local DataStore caches
+ */
+function removeLocalQuotation(id: string, quotationNumber?: string, slug?: string, companySlug?: string, companyId?: string) {
+  if (typeof window === 'undefined') return
+  try {
+    const candidateKeys = [
+      STORAGE_KEYS.QUOTATIONS,
+      slug ? `${STORAGE_KEYS.QUOTATIONS}__${slug}` : null,
+      companySlug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
+      companyId ? `${STORAGE_KEYS.QUOTATIONS}__${companyId}` : null,
+      `${STORAGE_KEYS.QUOTATIONS}__rangao`,
+      `${STORAGE_KEYS.QUOTATIONS}__quotations`,
+      `${STORAGE_KEYS.QUOTATIONS}__default`,
+    ].filter(Boolean) as string[]
+
+    candidateKeys.forEach((key) => {
+      try {
+        const raw = localStorage.getItem(key)
+        if (raw) {
+          const parsed = JSON.parse(raw)
+          if (Array.isArray(parsed)) {
+            const filtered = parsed.filter(
+              (q: any) => q?.id !== id && (!quotationNumber || q?.quotation_number !== quotationNumber)
+            )
+            localStorage.setItem(key, JSON.stringify(filtered))
+          }
+        }
+      } catch {}
+    })
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i)
+      if (
+        k &&
+        (k.startsWith('printerp_tenant_quotations') ||
+          k.startsWith('printerp_quotations') ||
+          k.includes('quotation') ||
+          k.includes('quotes'))
+      ) {
+        try {
+          const raw = localStorage.getItem(k)
+          if (raw && (raw.includes(id) || (quotationNumber && raw.includes(quotationNumber)))) {
+            const parsed = JSON.parse(raw)
+            if (Array.isArray(parsed)) {
+              const filtered = parsed.filter(
+                (q: any) => q?.id !== id && (!quotationNumber || q?.quotation_number !== quotationNumber)
+              )
+              localStorage.setItem(k, JSON.stringify(filtered))
+            }
+          }
+        } catch {}
+      }
+    }
+
+    PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id)
+    if (slug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, slug)
+    if (companySlug) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companySlug)
+    if (companyId) PrintERPDataStore.removeItem(STORAGE_KEYS.QUOTATIONS, id, companyId)
+  } catch {}
 }
 
 /**
@@ -768,19 +831,30 @@ export default function QuotationsPage() {
   const confirmTrashQuotation = async () => {
     if (!quoteToTrash) return
     setIsTrashing(true)
+    const targetQuote = quoteToTrash
+    const targetId = targetQuote.id
+    const targetNum = targetQuote.quotation_number
+
     try {
-      const res = await moveToTrashAction('quotations', quoteToTrash, company?.id)
-      if (res.success) {
-        showNotification(`Quotation #${quoteToTrash.quotation_number} moved to Trash.`, 'success')
-        setQuotations((prev) =>
-          prev.filter((q) => q.id !== quoteToTrash.id && q.quotation_number !== quoteToTrash.quotation_number)
-        )
-        setIsTrashConfirmOpen(false)
-        setQuoteToTrash(null)
-        loadQuotationsData(true)
-      } else {
-        showNotification(res.error || 'Failed to move quotation to trash.', 'error')
-      }
+      // 1. Move to Trash / Recycle Bin on server
+      const res = await moveToTrashAction('quotations', targetQuote, company?.id)
+
+      // 2. Explicitly invoke deleteQuotationAction to ensure deletion from active DB
+      await deleteQuotationAction(targetId, targetNum, company?.id, slug).catch(() => {})
+
+      // 3. Purge from browser localStorage and client DataStore across all keys
+      removeLocalQuotation(targetId, targetNum, slug, company?.slug, company?.id)
+
+      // 4. Update local state immediately
+      setQuotations((prev) =>
+        prev.filter((q) => q.id !== targetId && (!targetNum || q.quotation_number !== targetNum))
+      )
+      setIsTrashConfirmOpen(false)
+      setQuoteToTrash(null)
+      showNotification(`Quotation #${targetNum} moved to Trash.`, 'success')
+
+      // 5. Silently reload to ensure sync
+      loadQuotationsData(true)
     } catch (err: any) {
       showNotification(err.message || 'Error moving quotation to trash.', 'error')
     } finally {
@@ -967,11 +1041,11 @@ export default function QuotationsPage() {
           <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold">
-                {(['this_month', 'this_week', 'today', 'all_time', 'custom'] as QuotationPeriod[]).map((p) => {
+                {(['today', 'this_week', 'this_month', 'all_time', 'custom'] as QuotationPeriod[]).map((p) => {
                   const labels: Record<QuotationPeriod, string> = {
-                    this_month: 'This Month',
-                    this_week: 'This Week',
                     today: 'Today',
+                    this_week: 'This Week',
+                    this_month: 'This Month',
                     all_time: 'All Time',
                     custom: 'Custom Date',
                   }

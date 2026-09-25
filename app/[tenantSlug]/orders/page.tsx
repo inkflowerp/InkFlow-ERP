@@ -29,9 +29,45 @@ import {
   type UnifiedOrderRecord,
   type OrderItemSpec,
   type OrderWhatsAppTemplateKey,
+  type OrderLiveStatus,
+  ORDER_LIVE_STATUSES,
 } from '@/components/orders/types'
 import { isReadyProduct, isOutsourceProduct } from '@/lib/units'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+
+function deriveOrderLiveStatus(o: any, stage: OrderStage, linkedJob?: any): OrderLiveStatus {
+  if (o?.live_status && ORDER_LIVE_STATUSES.some((s) => s.id === o.live_status)) {
+    return o.live_status as OrderLiveStatus
+  }
+  if (stage === 'delivered' || o?.status === 'delivered' || o?.status === 'completed') {
+    return 'delivered'
+  }
+  if (stage === 'ready_delivery' || o?.status === 'ready' || o?.status === 'ready_for_delivery') {
+    return 'ready_delivery'
+  }
+  if (stage === 'in_production') {
+    if (o?.status === 'finishing' || linkedJob?.assigned_department === 'finishing') {
+      return 'finishing_pending'
+    }
+    if (linkedJob?.status === 'in_progress' || o?.status === 'in_production' || o?.status === 'printing') {
+      return 'printing'
+    }
+    return 'print_queue'
+  }
+  if (stage === 'in_design') {
+    if (linkedJob?.artwork_status === 'pending') {
+      return 'waiting_approval'
+    }
+    if (linkedJob?.status === 'in_progress') {
+      return 'design_running'
+    }
+    return 'design_queue'
+  }
+  if (o?.items?.some((it: any) => it.design_required || it.workflow_routing === 'design_required')) {
+    return 'design_queue'
+  }
+  return 'print_queue'
+}
 
 import { OrdersMetricsBar, type OrderMetrics } from '@/components/orders/orders-metrics-bar'
 import { OrdersFilterToolbar, type OrderFilterState } from '@/components/orders/orders-filter-toolbar'
@@ -234,7 +270,7 @@ export default function OrdersPage() {
             height: it.height,
             dimensionUnit: it.dimension_unit || it.unit,
             quantity: Number(it.quantity) || 1,
-            unit: it.dimension_unit || it.unit || 'pcs',
+            unit: it.unit || it.dimension_unit || 'pcs',
             unitPrice: it.unit_price,
             totalPrice: it.total_price,
             materialSpec: it.material_spec || it.material || it.media_type,
@@ -307,6 +343,7 @@ export default function OrdersPage() {
           deliveryDate: o.delivery_date || '',
           createdAt: o.created_at || new Date().toISOString(),
           stage: calculatedStage,
+          currentStatus: deriveOrderLiveStatus(o, calculatedStage, linkedJob),
           paymentStatus: payStatus,
           totalAmount: total,
           advanceAmount: advance,
@@ -365,6 +402,7 @@ export default function OrdersPage() {
             deliveryDate: j.deadline ? j.deadline.split('T')[0] : '',
             createdAt: j.created_at || new Date().toISOString(),
             stage: jobStage,
+            currentStatus: deriveOrderLiveStatus(j, jobStage, j),
             paymentStatus: 'unpaid',
             totalAmount: 0,
             advanceAmount: 0,
@@ -463,6 +501,7 @@ export default function OrdersPage() {
             deliveryDate: inv.due_date || '',
             createdAt: inv.created_at || new Date().toISOString(),
             stage: calculatedStage,
+            currentStatus: deriveOrderLiveStatus(inv, calculatedStage),
             paymentStatus: payStatus,
             totalAmount: total,
             advanceAmount: advance,
@@ -641,10 +680,95 @@ export default function OrdersPage() {
         setOrders((prev) =>
           prev.map((o) => (o.id === orderId ? { ...o, stage: nextStage } : o))
         )
-        showNotification(`অর্ডারের স্ট্যাটাস পরিবর্তিত হয়েছে! (${nextStage.replace('_', ' ')})`, 'success')
+        const stageLabel =
+          nextStage === 'delivered'
+            ? tBilingual('Delivered', 'ডেলিভারি সম্পন্ন')
+            : nextStage === 'ready_delivery'
+            ? tBilingual('Ready for Delivery', 'ডেলিভারি রেডি')
+            : nextStage === 'in_production'
+            ? tBilingual('In Production', 'প্রোডাকশনে')
+            : nextStage === 'in_design'
+            ? tBilingual('In Design', 'ডিজাইনে')
+            : tBilingual('New Order', 'নতুন অর্ডার')
+
+        showNotification(
+          tBilingual(`Order stage updated to: ${stageLabel}`, `অর্ডারের স্টেজ পরিবর্তিত হয়েছে: ${stageLabel}`),
+          'success'
+        )
       })
     },
-    [showNotification]
+    [showNotification, tBilingual]
+  )
+
+  const handleUpdateLiveStatus = useCallback(
+    async (orderId: string, nextLiveStatus: OrderLiveStatus, note?: string) => {
+      startTransition(() => {
+        const statusMeta = ORDER_LIVE_STATUSES.find((s) => s.id === nextLiveStatus)
+        const nextStage = statusMeta ? statusMeta.stage : 'in_production'
+
+        // 1. Update local orders
+        const allLocalOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+        const updatedLocal = allLocalOrders.map((o) => {
+          if (o.id === orderId || o.order_number === orderId) {
+            let dbStatus: any = 'in_production'
+            if (nextLiveStatus === 'delivered') dbStatus = 'completed'
+            else if (nextLiveStatus === 'ready_delivery') dbStatus = 'ready'
+            else if (nextLiveStatus.startsWith('design') || nextLiveStatus === 'waiting_approval') dbStatus = 'in_design'
+
+            return {
+              ...o,
+              live_status: nextLiveStatus,
+              status: dbStatus,
+              notes: note ? (o.notes ? `${o.notes} | ${note}` : note) : o.notes,
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return o
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.ORDERS, updatedLocal)
+
+        // 2. Also update production tasks
+        const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const updatedTasks = allTasks.map((t) => {
+          if (t.order_id === orderId || t.order_number === orderId) {
+            let taskStatus = 'pending'
+            if (nextLiveStatus === 'printing') taskStatus = 'in_progress'
+            else if (nextLiveStatus === 'finishing_pending') taskStatus = 'finishing'
+            else if (nextLiveStatus === 'ready_delivery' || nextLiveStatus === 'delivered') taskStatus = 'completed'
+            return {
+              ...t,
+              status: taskStatus,
+              live_status: nextLiveStatus,
+              notes: note ? (t.notes ? `${t.notes} | ${note}` : note) : t.notes,
+              updated_at: new Date().toISOString(),
+            }
+          }
+          return t
+        })
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, updatedTasks)
+
+        // 3. Update React state
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === orderId
+              ? {
+                  ...o,
+                  currentStatus: nextLiveStatus,
+                  stage: nextStage,
+                  notes: note ? (o.notes ? `${o.notes} | ${note}` : note) : o.notes,
+                }
+              : o
+          )
+        )
+
+        const statusLabel = statusMeta ? tBilingual(statusMeta.labelEn, statusMeta.labelBn) : nextLiveStatus
+        showNotification(
+          tBilingual(`Live status updated: ${statusLabel}`, `লাইভ স্ট্যাটাস আপডেট হয়েছে: ${statusLabel}`),
+          'success'
+        )
+      })
+    },
+    [showNotification, tBilingual]
   )
 
   const handleUpdateStageFromModal = useCallback(
@@ -662,17 +786,24 @@ export default function OrdersPage() {
     setJobTicketModalState({ isOpen: true, order })
   }, [])
 
+  const handlePrintJobTicket = useCallback((order: UnifiedOrderRecord) => {
+    setJobTicketModalState({ isOpen: true, order })
+    setTimeout(() => {
+      window.print()
+    }, 150)
+  }, [])
+
   const handleOpenQuickStatus = useCallback((order: UnifiedOrderRecord) => {
     setQuickStatusModalState({ isOpen: true, order })
   }, [])
 
-  const stagesConfig: Array<{ id: OrderStage; label: string; sub: string; count: number; icon: any }> = [
-    { id: 'all', label: 'সব অর্ডার', sub: 'All Orders', count: metrics.total, icon: Layers },
-    { id: 'new_orders', label: '১. নতুন অর্ডার', sub: 'New Intake', count: metrics.newOrders, icon: Sparkles },
-    { id: 'in_design', label: '২. ডিজাইন ও চেক', sub: 'In Design', count: metrics.inDesign, icon: Sparkles },
-    { id: 'in_production', label: '৩. মেশিন প্রোডাকশন', sub: 'In Machine Floor', count: metrics.inProduction, icon: Printer },
-    { id: 'ready_delivery', label: '৪. ডেলিভারি রেডি', sub: 'Ready for Pickup', count: metrics.readyDelivery, icon: Truck },
-    { id: 'delivered', label: '৫. ডেলিভারি সম্পন্ন', sub: 'Completed', count: metrics.delivered, icon: PackageCheck },
+  const stagesConfig: Array<{ id: OrderStage; label: string; count: number; icon: any }> = [
+    { id: 'all', label: tBilingual('All Orders', 'সব অর্ডার'), count: metrics.total, icon: Layers },
+    { id: 'new_orders', label: tBilingual('1. New Orders', '১. নতুন অর্ডার'), count: metrics.newOrders, icon: Sparkles },
+    { id: 'in_design', label: tBilingual('2. Design & Proof', '২. ডিজাইন ও চেক'), count: metrics.inDesign, icon: Sparkles },
+    { id: 'in_production', label: tBilingual('3. Machine Floor', '৩. মেশিন প্রোডাকশন'), count: metrics.inProduction, icon: Printer },
+    { id: 'ready_delivery', label: tBilingual('4. Ready for Delivery', '৪. ডেলিভারি রেডি'), count: metrics.readyDelivery, icon: Truck },
+    { id: 'delivered', label: tBilingual('5. Delivery Completed', '৫. ডেলিভারি সম্পন্ন'), count: metrics.delivered, icon: PackageCheck },
   ]
 
   return (
@@ -714,7 +845,7 @@ export default function OrdersPage() {
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 shadow-md"
           >
             <Plus className="h-4 w-4 mr-1.5" />
-            <span>{tBilingual('+ New Order Booking', '+ নতুন অর্ডার বুকিং')}</span>
+            <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
           </Button>
         }
       />
@@ -786,7 +917,7 @@ export default function OrdersPage() {
       {isLoading ? (
         <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
-          <span>অর্ডার লোড হচ্ছে...</span>
+          <span>{tBilingual('Loading orders...', 'অর্ডার লোড হচ্ছে...')}</span>
         </div>
       ) : filters.viewMode === 'table' ? (
         <OrdersTableView
@@ -794,8 +925,10 @@ export default function OrdersPage() {
           tenantSlug={tenantSlug}
           onOpenWhatsApp={handleOpenWhatsApp}
           onOpenJobTicket={handleOpenJobTicket}
+          onPrintJobTicket={handlePrintJobTicket}
           onOpenQuickStatus={handleOpenQuickStatus}
           onAdvanceStage={handleAdvanceStage}
+          onUpdateLiveStatus={handleUpdateLiveStatus}
         />
       ) : (
         <div className="space-y-3">
@@ -806,18 +939,23 @@ export default function OrdersPage() {
               tenantSlug={tenantSlug}
               onOpenWhatsApp={handleOpenWhatsApp}
               onOpenJobTicket={handleOpenJobTicket}
+              onPrintJobTicket={handlePrintJobTicket}
               onOpenQuickStatus={handleOpenQuickStatus}
               onAdvanceStage={handleAdvanceStage}
+              onUpdateLiveStatus={handleUpdateLiveStatus}
             />
           ))}
 
           {filteredOrders.length === 0 && (
             <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
               <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                কোনো অর্ডার পাওয়া যায়নি
+                {tBilingual('No orders found', 'কোনো অর্ডার পাওয়া যায়নি')}
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                ফিল্টার বা সার্চ পরিবর্তন করুন অথবা নতুন অর্ডার বুকিং করুন।
+                {tBilingual(
+                  'Change your search or filter criteria, or book a new order.',
+                  'ফিল্টার বা সার্চ পরিবর্তন করুন অথবা নতুন অর্ডার বুকিং করুন।'
+                )}
               </p>
             </div>
           )}
@@ -853,6 +991,7 @@ export default function OrdersPage() {
           onClose={() => setQuickStatusModalState({ isOpen: false, order: null })}
           order={quickStatusModalState.order}
           onUpdateStage={handleUpdateStageFromModal}
+          onUpdateLiveStatus={handleUpdateLiveStatus}
           onShowNotification={showNotification}
         />
       )}

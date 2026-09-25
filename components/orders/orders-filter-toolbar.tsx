@@ -12,10 +12,10 @@ import {
   UserCheck,
   Calendar,
   Layers,
-  Filter,
   RefreshCw,
   Wallet,
 } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 
 export interface OrderFilterState {
   searchQuery: string
@@ -37,13 +37,15 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
   onRefresh,
   isRefreshing,
 }: OrdersFilterToolbarProps) {
+  const { tBilingual } = useI18n()
+
   const filterChips = [
-    { id: 'all', label: 'সব অর্ডার (All)', icon: Layers },
-    { id: 'urgent', label: '🚨 অতি জরুরী (Urgent)', icon: Zap },
-    { id: 'walk_in', label: '🏃 দোকানে বসা (Walk-in)', icon: UserCheck },
-    { id: 'due_today', label: '📅 আজকের ডেলিভারি (Today)', icon: Calendar },
-    { id: 'unpaid_due', label: '💰 বকেয়া বাকি আছে (Due)', icon: Wallet },
-    { id: 'has_design', label: '🎨 ডিজাইন আবশ্যক', icon: Sparkles },
+    { id: 'all', label: tBilingual('All Orders', 'সব অর্ডার'), icon: Layers },
+    { id: 'urgent', label: tBilingual('Urgent', 'অতি জরুরী'), icon: Zap },
+    { id: 'walk_in', label: tBilingual('Walk-in', 'দোকানে বসা'), icon: UserCheck },
+    { id: 'due_today', label: tBilingual('Today Delivery', 'আজকের ডেলিভারি'), icon: Calendar },
+    { id: 'unpaid_due', label: tBilingual('Due Orders', 'বকেয়া বাকি'), icon: Wallet },
+    { id: 'has_design', label: tBilingual('Design Required', 'ডিজাইন আবশ্যক'), icon: Sparkles },
   ] as const
 
   return (
@@ -55,7 +57,10 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
           <Input
             value={filters.searchQuery}
             onChange={(e) => onFilterChange({ searchQuery: e.target.value })}
-            placeholder="কাস্টমার, মোবাইল, অর্ডার #, ইনভয়েস # বা কাজের নাম..."
+            placeholder={tBilingual(
+              'Search customer, mobile, order #, invoice # or job...',
+              'কাস্টমার, মোবাইল, অর্ডার #, ইনভয়েস # বা কাজের নাম...'
+            )}
             className="pl-9 text-xs bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 h-9"
           />
         </div>
@@ -68,10 +73,10 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
             onChange={(e) => onFilterChange({ selectedPriority: e.target.value })}
             className="text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-2.5 h-9 text-slate-700 dark:text-slate-300"
           >
-            <option value="all">সকল প্রায়োরিটি (All Priority)</option>
-            <option value="normal">সাধারণ (Normal)</option>
-            <option value="urgent">জরুরী (Urgent)</option>
-            <option value="very_urgent">খুবই জরুরী (Very Urgent)</option>
+            <option value="all">{tBilingual('All Priority', 'সকল প্রায়োরিটি')}</option>
+            <option value="normal">{tBilingual('Normal', 'সাধারণ')}</option>
+            <option value="urgent">{tBilingual('Urgent', 'জরুরী')}</option>
+            <option value="very_urgent">{tBilingual('Very Urgent', 'খুবই জরুরী')}</option>
           </select>
 
           {/* Refresh Button */}
@@ -81,6 +86,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
             size="sm"
             onClick={onRefresh}
             disabled={isRefreshing}
+            title={tBilingual('Refresh Orders', 'অর্ডার রিফ্রেশ করুন')}
             className="h-9 px-2.5 text-xs text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
@@ -98,7 +104,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
               }`}
             >
               <LayoutGrid className="h-3.5 w-3.5" />
-              <span>কার্ড ভিউ</span>
+              <span>{tBilingual('Card View', 'কার্ড ভিউ')}</span>
             </button>
             <button
               type="button"
@@ -110,7 +116,7 @@ export const OrdersFilterToolbar = React.memo(function OrdersFilterToolbar({
               }`}
             >
               <List className="h-3.5 w-3.5" />
-              <span>টেবিল ভিউ</span>
+              <span>{tBilingual('Table View', 'টেবিল ভিউ')}</span>
             </button>
           </div>
         </div>

@@ -2774,10 +2774,12 @@ export function NewQuotationModal({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div>
-                <Label htmlFor="custNotes" className="text-xs font-semibold mb-1 block">
-                  Payment Instructions & Accounts
-                </Label>
+              <div className="flex flex-col">
+                <div className="h-6 flex items-center justify-between gap-1 mb-1">
+                  <Label htmlFor="custNotes" className="text-xs font-semibold whitespace-nowrap">
+                    Payment Instructions & Accounts
+                  </Label>
+                </div>
                 <textarea
                   id="custNotes"
                   rows={3}
@@ -2788,10 +2790,12 @@ export function NewQuotationModal({
                 />
               </div>
 
-              <div>
-                <Label htmlFor="termsCond" className="text-xs font-semibold mb-1 block">
-                  Terms & Conditions (Printed)
-                </Label>
+              <div className="flex flex-col">
+                <div className="h-6 flex items-center justify-between gap-1 mb-1">
+                  <Label htmlFor="termsCond" className="text-xs font-semibold whitespace-nowrap">
+                    Terms & Conditions (Printed)
+                  </Label>
+                </div>
                 <textarea
                   id="termsCond"
                   rows={3}
@@ -2801,12 +2805,12 @@ export function NewQuotationModal({
                 />
               </div>
 
-              <div>
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Label htmlFor="intNotes" className="text-xs text-amber-800 dark:text-amber-300 font-bold block">
+              <div className="flex flex-col">
+                <div className="h-6 flex items-center justify-between gap-1.5 mb-1">
+                  <Label htmlFor="intNotes" className="text-xs text-amber-800 dark:text-amber-300 font-bold truncate">
                     Internal Notes & Floor Margin
                   </Label>
-                  <span className="text-[10px] bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.2 rounded font-bold">
+                  <span className="text-[10px] bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.5 rounded font-bold shrink-0 whitespace-nowrap">
                     Private / Staff Only
                   </span>
                 </div>

@@ -1291,11 +1291,11 @@ function BillingContent() {
         <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold">
-              {(['this_month', 'this_week', 'today', 'all_time', 'custom'] as BillingPeriod[]).map((p) => {
+              {(['today', 'this_week', 'this_month', 'all_time', 'custom'] as BillingPeriod[]).map((p) => {
                 const labels: Record<BillingPeriod, string> = {
-                  this_month: 'This Month',
-                  this_week: 'This Week',
                   today: 'Today',
+                  this_week: 'This Week',
+                  this_month: 'This Month',
                   all_time: 'All Time',
                   custom: 'Custom Date',
                 }

@@ -501,6 +501,35 @@ export async function getQuotationsAction(
 }
 
 /**
+ * Server Action: Deletes a quotation and removes it from active pipeline
+ */
+export async function deleteQuotationAction(
+  id: string,
+  quotationNumber?: string,
+  requestedCompanyId?: string,
+  tenantSlug?: string
+): Promise<ServerActionResult<boolean>> {
+  try {
+    const tenant = await getCurrentTenant(requestedCompanyId || tenantSlug)
+    if (!tenant || !tenant.companyId) {
+      return { success: false, error: 'Unauthorized: Valid authenticated tenant session required.' }
+    }
+    const companyId = tenant.companyId
+
+    const success = await QuotationService.deleteQuotation(id, companyId, quotationNumber)
+    if (tenantSlug) {
+      try {
+        revalidatePath(`/${tenantSlug}/quotations`)
+        revalidatePath(`/${tenantSlug}/trash`)
+      } catch {}
+    }
+    return { success: true, data: success }
+  } catch (error: any) {
+    return { success: false, error: error.message || 'Failed to delete quotation.' }
+  }
+}
+
+/**
  * Server Action: Fetches single quotation with activity history
  */
 export async function getQuotationDetailAction(

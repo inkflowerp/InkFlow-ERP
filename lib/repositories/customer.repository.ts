@@ -438,23 +438,30 @@ export class CustomerRepository {
           return data as unknown as CustomerRecord
         }
       }
-      return null
     }
 
-    if (isTestMode()) {
-      const cust = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).find((c: CustomerRecord) => c.id === id && c.company_id === companyId) || null
-      if (cust) {
-        const allInvs = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []).filter((i: any) => i.customer_id === id && i.status !== 'cancelled')
-        const due = allInvs.reduce((sum, i) => sum + (Number(i.due_amount) || 0), 0)
+    const allCusts = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+    const localCust = allCusts.find((c: CustomerRecord) => (c.id === id || (c as any)._id === id) && (!companyId || c.company_id === companyId)) || null
+    if (localCust) {
+      try {
+        const fin = await this.getCustomerFinancialSummary(companyId, id)
         return {
-          ...cust,
-          total_due_balance: due || Number(cust.total_due_balance) || 0,
+          ...localCust,
+          total_invoices_count: fin.totalInvoices,
+          total_invoiced_amount: fin.totalInvoiceAmount,
+          total_paid_amount: fin.totalPaid,
+          total_due_balance: fin.totalDue,
+          last_payment_date: fin.lastPayment?.date || null,
+          last_payment_amount: fin.lastPayment?.amount || null,
+          last_order_date: fin.lastOrder?.date || null,
+          last_order_number: fin.lastOrder?.orderNumber || null,
         }
+      } catch {
+        return localCust
       }
-      return null
     }
 
-    throw new Error('Authoritative database connection is required to fetch customer profile.')
+    return null
   }
 
   /**
@@ -808,10 +815,15 @@ export class CustomerRepository {
         customRateMap.set(cr.product_id, cr)
       }
 
-      // 3. Query most recent valid invoice items for this customer + products
+      // 3. Query most recent valid invoice items & quotation items for this customer + products
       const lastInvoiceRateMap = new Map<
         string,
         { rate: number; invoiceNumber: string; invoiceDate: string }
+      >()
+
+      const lastQuotationRateMap = new Map<
+        string,
+        { rate: number; quotationNumber: string; quotationDate: string }
       >()
 
       if (isSupabaseConfigured()) {
@@ -860,9 +872,116 @@ export class CustomerRepository {
             }
           }
         }
+
+        const { data: validQuotations } = await (supabase as any)
+          .from('quotations')
+          .select(`
+            id,
+            quotation_number,
+            quotation_date,
+            status,
+            created_at,
+            items:quotation_items (
+              product_id,
+              description,
+              unit_price
+            )
+          `)
+          .eq('company_id', companyId)
+          .eq('customer_id', customerId)
+          .neq('status', 'rejected')
+          .neq('status', 'expired')
+          .order('quotation_date', { ascending: false })
+          .order('created_at', { ascending: false })
+
+        for (const q of validQuotations || []) {
+          for (const it of q.items || []) {
+            const unitPrice = Number(it.unit_price) || 0
+            if (unitPrice > 0) {
+              if (it.product_id && !lastQuotationRateMap.has(it.product_id)) {
+                lastQuotationRateMap.set(it.product_id, {
+                  rate: unitPrice,
+                  quotationNumber: q.quotation_number,
+                  quotationDate: q.quotation_date,
+                })
+              }
+              if (it.description) {
+                const descKey = it.description.trim().toLowerCase()
+                if (!lastQuotationRateMap.has(descKey)) {
+                  lastQuotationRateMap.set(descKey, {
+                    rate: unitPrice,
+                    quotationNumber: q.quotation_number,
+                    quotationDate: q.quotation_date,
+                  })
+                }
+              }
+            }
+          }
+        }
       }
 
-      // 4. Resolve rates according to 3-tier hierarchy
+      // Also ingest local / demo data store invoices and quotations
+      const localInvoices = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || [])
+        .filter((i) => i.customer_id === customerId && i.status !== 'cancelled')
+        .sort((a, b) => (b.invoice_date || b.created_at || '').localeCompare(a.invoice_date || a.created_at || ''))
+
+      for (const inv of localInvoices) {
+        for (const it of inv.items || []) {
+          const unitPrice = Number(it.unit_price || it.rate) || 0
+          if (unitPrice > 0) {
+            if (it.product_id && !lastInvoiceRateMap.has(it.product_id)) {
+              lastInvoiceRateMap.set(it.product_id, {
+                rate: unitPrice,
+                invoiceNumber: inv.invoice_number,
+                invoiceDate: inv.invoice_date,
+              })
+            }
+            const desc = it.item_description || it.description || it.product_name
+            if (desc) {
+              const descKey = desc.trim().toLowerCase()
+              if (!lastInvoiceRateMap.has(descKey)) {
+                lastInvoiceRateMap.set(descKey, {
+                  rate: unitPrice,
+                  invoiceNumber: inv.invoice_number,
+                  invoiceDate: inv.invoice_date,
+                })
+              }
+            }
+          }
+        }
+      }
+
+      const localQuotations = (PrintERPDataStore.get<any[]>(STORAGE_KEYS.QUOTATIONS) || [])
+        .filter((q) => q.customer_id === customerId && q.status !== 'rejected' && q.status !== 'expired')
+        .sort((a, b) => (b.quotation_date || b.created_at || '').localeCompare(a.quotation_date || a.created_at || ''))
+
+      for (const q of localQuotations) {
+        for (const it of q.items || []) {
+          const unitPrice = Number(it.unit_price || it.rate) || 0
+          if (unitPrice > 0) {
+            if (it.product_id && !lastQuotationRateMap.has(it.product_id)) {
+              lastQuotationRateMap.set(it.product_id, {
+                rate: unitPrice,
+                quotationNumber: q.quotation_number,
+                quotationDate: q.quotation_date,
+              })
+            }
+            const desc = it.description || it.product_name
+            if (desc) {
+              const descKey = desc.trim().toLowerCase()
+              if (!lastQuotationRateMap.has(descKey)) {
+                lastQuotationRateMap.set(descKey, {
+                  rate: unitPrice,
+                  quotationNumber: q.quotation_number,
+                  quotationDate: q.quotation_date,
+                })
+              }
+            }
+          }
+        }
+      }
+
+      // 4. Resolve rates according to hierarchical priority engine
       const resolvedList: ResolvedProductRate[] = products.map((prod) => {
         const customEntry = customRateMap.get(prod.id)
         const customRate = customEntry !== undefined ? Number(customEntry.rate) : null
@@ -873,13 +992,20 @@ export class CustomerRepository {
           null
 
         const lastInvoiceRate = lastInvEntry ? lastInvEntry.rate : null
+
+        const lastQuoteEntry =
+          lastQuotationRateMap.get(prod.id) ||
+          lastQuotationRateMap.get(prod.name.trim().toLowerCase()) ||
+          null
+
+        const lastQuotationRate = lastQuoteEntry ? lastQuoteEntry.rate : null
         const defaultRate = Number(prod.selling_price) || 0
 
         const typeRule = pricingRules.find((r) => r.product_id === prod.id || (!r.product_id && r.category === prod.category))
         const typeRulePrice = typeRule && typeRule.calculated_price !== undefined ? Number(typeRule.calculated_price) : null
 
         let effectiveRate = defaultRate
-        let source: 'custom' | 'last_invoice' | 'default' = 'default'
+        let source: 'custom' | 'last_invoice' | 'last_quotation' | 'default' = 'default'
 
         if (customRate !== null && customRate !== undefined) {
           effectiveRate = customRate
@@ -890,6 +1016,9 @@ export class CustomerRepository {
         } else if (lastInvoiceRate !== null && lastInvoiceRate !== undefined) {
           effectiveRate = lastInvoiceRate
           source = 'last_invoice'
+        } else if (lastQuotationRate !== null && lastQuotationRate !== undefined) {
+          effectiveRate = lastQuotationRate
+          source = 'last_quotation'
         } else {
           effectiveRate = defaultRate
           source = 'default'
@@ -906,6 +1035,9 @@ export class CustomerRepository {
           lastInvoiceRate,
           lastInvoiceNumber: lastInvEntry?.invoiceNumber || null,
           lastInvoiceDate: lastInvEntry?.invoiceDate || null,
+          lastQuotationRate,
+          lastQuotationNumber: lastQuoteEntry?.quotationNumber || null,
+          lastQuotationDate: lastQuoteEntry?.quotationDate || null,
           defaultRate,
           effectiveRate,
           source,
@@ -959,6 +1091,42 @@ export class CustomerRepository {
         const creditLimit = Number(customer?.credit_limit) || 0
         const availableCredit = Math.max(0, creditLimit - totalDue)
 
+        const allPays = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PAYMENTS) || []
+        const custPays = allPays
+          .filter((p) => p.customer_id === customerId)
+          .sort((a, b) => (b.payment_date || b.created_at || '').localeCompare(a.payment_date || a.created_at || ''))
+        let lastPayment: CustomerFinancialSummary['lastPayment'] = null
+        if (custPays.length > 0) {
+          lastPayment = {
+            amount: Number(custPays[0].amount) || 0,
+            date: custPays[0].payment_date || custPays[0].created_at,
+            receiptNumber: custPays[0].receipt_number,
+            paymentMethod: custPays[0].payment_method,
+          }
+        }
+
+        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const custOrders = allOrders
+          .filter((o) => o.customer_id === customerId && o.status !== 'cancelled')
+          .sort((a, b) => (b.order_date || b.created_at || '').localeCompare(a.order_date || a.created_at || ''))
+        let lastOrder: CustomerFinancialSummary['lastOrder'] = null
+        if (custOrders.length > 0) {
+          lastOrder = {
+            orderNumber: custOrders[0].order_number,
+            date: custOrders[0].order_date || custOrders[0].created_at,
+            amount: Number(custOrders[0].final_price) || 0,
+            status: custOrders[0].status,
+          }
+        } else if (custInvs.length > 0) {
+          const sortedInvs = [...custInvs].sort((a, b) => (b.invoice_date || b.created_at || '').localeCompare(a.invoice_date || a.created_at || ''))
+          lastOrder = {
+            orderNumber: sortedInvs[0].invoice_number,
+            date: sortedInvs[0].invoice_date || sortedInvs[0].created_at,
+            amount: Number(sortedInvs[0].grand_total) || 0,
+            status: sortedInvs[0].status,
+          }
+        }
+
         return {
           totalInvoices,
           totalInvoiceAmount: Math.round(totalInvoiceAmount * 100) / 100,
@@ -968,8 +1136,8 @@ export class CustomerRepository {
           creditLimit,
           availableCredit: Math.round(availableCredit * 100) / 100,
           paymentTerms: customer?.payment_terms || 'cash_on_delivery',
-          lastPayment: null,
-          lastOrder: null,
+          lastPayment,
+          lastOrder,
         }
       }
 

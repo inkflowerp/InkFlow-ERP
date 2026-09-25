@@ -12,7 +12,7 @@ export type LanguageMode = 'en' | 'bn' | 'bilingual'
 
 export type QuotationDeliveryMethod = 'customer_pickup' | 'company_delivery' | 'courier'
 
-export type RateSource = 'custom' | 'last_invoice' | 'default' | 'override'
+export type RateSource = 'custom' | 'last_invoice' | 'last_quotation' | 'default' | 'override'
 
 export interface QuotationItemRecord {
   id: string

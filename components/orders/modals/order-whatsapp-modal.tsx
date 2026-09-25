@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { MessageSquare, Phone, Copy, Check, ExternalLink, Sparkles, Send } from 'lucide-react'
+import { MessageSquare, Phone, Copy, Check, ExternalLink, Sparkles } from 'lucide-react'
+import { useI18n } from '@/i18n/context'
 import {
   ORDER_WHATSAPP_TEMPLATES,
   type OrderWhatsAppTemplateKey,
@@ -38,6 +39,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
   initialTemplate = 'order_confirmed',
   onShowNotification,
 }: OrderWhatsAppModalProps) {
+  const { tBilingual } = useI18n()
   const [selectedTemplate, setSelectedTemplate] = useState<OrderWhatsAppTemplateKey>(initialTemplate)
   const [phoneNumber, setPhoneNumber] = useState('')
   const [messageText, setMessageText] = useState('')
@@ -97,7 +99,10 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
     navigator.clipboard.writeText(messageText)
     setIsCopied(true)
     setTimeout(() => setIsCopied(false), 2500)
-    onShowNotification?.('WhatsApp বার্তা সফলভাবে কপি হয়েছে!', 'success')
+    onShowNotification?.(
+      tBilingual('WhatsApp message copied to clipboard!', 'হোয়াটসঅ্যাপ বার্তা সফলভাবে কপি হয়েছে!'),
+      'success'
+    )
   }
 
   const handleOpenWhatsAppWeb = () => {
@@ -115,10 +120,13 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
         <DialogHeader className="border-b border-slate-100 dark:border-slate-800 pb-3">
           <DialogTitle className="text-lg font-bold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
             <MessageSquare className="h-5 w-5" />
-            <span>Order WhatsApp Communication Hub (অর্ডার নোটিফিকেশন ও আপডেট)</span>
+            <span>{tBilingual('Order WhatsApp Communication Hub', 'অর্ডার হোয়াটসঅ্যাপ যোগাযোগ হাব')}</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-500">
-            অর্ডার নং: <span className="font-mono font-bold text-indigo-600">#{order.orderNumber}</span> | কাস্টমার: <span className="font-semibold text-slate-800 dark:text-slate-200">{order.customerName}</span>
+            {tBilingual('Order #:', 'অর্ডার নং:')}{' '}
+            <span className="font-mono font-bold text-indigo-600">#{order.orderNumber}</span> |{' '}
+            {tBilingual('Customer:', 'কাস্টমার:')}{' '}
+            <span className="font-semibold text-slate-800 dark:text-slate-200">{order.customerName}</span>
           </DialogDescription>
         </DialogHeader>
 
@@ -126,7 +134,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
           {/* Template Selector Pills */}
           <div>
             <Label className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1.5 block">
-              মেসেজ টেমপ্লেট নির্বাচন করুন (Select Message Purpose):
+              {tBilingual('Select Message Purpose / Template:', 'মেসেজ টেমপ্লেট নির্বাচন করুন:')}
             </Label>
             <div className="grid grid-cols-2 gap-2">
               {ORDER_WHATSAPP_TEMPLATES.map((t) => (
@@ -140,8 +148,8 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                       : 'bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-emerald-300'
                   }`}
                 >
-                  <span className="truncate">{t.title}</span>
-                  <span className="text-[10px] font-normal opacity-70 mt-1">{t.badge}</span>
+                  <span className="truncate">{tBilingual(t.titleEn, t.titleBn)}</span>
+                  <span className="text-[10px] font-normal opacity-70 mt-1">{tBilingual(t.badgeEn, t.badgeBn)}</span>
                 </button>
               ))}
             </div>
@@ -152,17 +160,20 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
             <div className="space-y-1">
               <Label className="text-xs font-bold flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
                 <Phone className="h-3.5 w-3.5 text-emerald-600" />
-                <span>গ্রাহকের হোয়াটসঅ্যাপ নম্বর (WhatsApp Phone):</span>
+                <span>{tBilingual('Customer WhatsApp Phone:', 'গ্রাহকের হোয়াটসঅ্যাপ নম্বর:')}</span>
               </Label>
               <Input
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="01711-XXXXXX বা +8801..."
+                placeholder="01711-XXXXXX"
                 className="font-mono text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
               />
             </div>
             <div className="text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">
-              <span className="font-semibold text-slate-700 dark:text-slate-300">অটো ৮৮ ফরম্যাট:</span> +{sanitizeBangladeshiPhone(phoneNumber)}
+              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                {tBilingual('Auto 88 Format:', 'অটো ৮৮ ফরম্যাট:')}{' '}
+              </span>
+              +{sanitizeBangladeshiPhone(phoneNumber)}
             </div>
           </div>
 
@@ -171,7 +182,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
             <div className="flex items-center justify-between">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-indigo-600" />
-                <span>মেসেজ প্রিভিউ ও এডিটর (Message Preview):</span>
+                <span>{tBilingual('Message Preview & Editor:', 'মেসেজ প্রিভিউ ও এডিটর:')}</span>
               </Label>
               <button
                 type="button"
@@ -179,7 +190,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                 className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
               >
                 {isCopied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
-                <span>{isCopied ? 'কপি হয়েছে' : 'কপি করুন'}</span>
+                <span>{isCopied ? tBilingual('Copied!', 'কপি হয়েছে') : tBilingual('Copy Text', 'কপি করুন')}</span>
               </button>
             </div>
             <Textarea
@@ -199,7 +210,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
               onClick={onClose}
               className="text-xs text-slate-600 dark:text-slate-400"
             >
-              বন্ধ করুন (Close)
+              {tBilingual('Close', 'বন্ধ করুন')}
             </Button>
             <div className="flex items-center gap-2">
               <Button
@@ -210,7 +221,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                 className="text-xs border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
               >
                 {isCopied ? <Check className="h-3.5 w-3.5 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
-                <span>{isCopied ? 'কপি সম্পন্ন' : 'টেক্সট কপি করুন'}</span>
+                <span>{isCopied ? tBilingual('Copied', 'কপি সম্পন্ন') : tBilingual('Copy Text', 'টেক্সট কপি করুন')}</span>
               </Button>
               <Button
                 type="button"
@@ -219,7 +230,7 @@ export const OrderWhatsAppModal = React.memo(function OrderWhatsAppModal({
                 className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md"
               >
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                <span>হোয়াটসঅ্যাপে পাঠান (Open WhatsApp)</span>
+                <span>{tBilingual('Open WhatsApp', 'হোয়াটসঅ্যাপে পাঠান')}</span>
               </Button>
             </div>
           </div>

@@ -63,12 +63,318 @@ import {
   CustomerFinancialSummary,
   CustomerTimelineEvent,
   CustomerCategory,
+  RateSource,
 } from '@/types/crm.types'
 import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
 import { QuotationRecord } from '@/types/quotation.types'
 import { SalesOrderRecord } from '@/types/order.types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+
+function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): InvoiceRecord[] {
+  if (typeof window === 'undefined') return []
+  const invoiceMap = new Map<string, InvoiceRecord>()
+  const keys = [
+    STORAGE_KEYS.INVOICES,
+    slug ? `${STORAGE_KEYS.INVOICES}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.INVOICES}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.INVOICES}__${companyId}` : null,
+  ].filter(Boolean) as string[]
+
+  keys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((inv) => {
+            if (inv && inv.id) invoiceMap.set(inv.id, inv)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, slug) || []),
+    ...(PrintERPDataStore.getAll<InvoiceRecord>(STORAGE_KEYS.INVOICES, companySlug) || []),
+    ...(PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []),
+  ]
+  storeItems.forEach((inv) => {
+    if (inv && inv.id) invoiceMap.set(inv.id, inv)
+  })
+
+  return Array.from(invoiceMap.values())
+}
+
+function getLocalPayments(slug?: string, companySlug?: string, companyId?: string): PaymentRecord[] {
+  if (typeof window === 'undefined') return []
+  const paymentMap = new Map<string, PaymentRecord>()
+  const keys = [
+    STORAGE_KEYS.PAYMENTS,
+    slug ? `${STORAGE_KEYS.PAYMENTS}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.PAYMENTS}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.PAYMENTS}__${companyId}` : null,
+  ].filter(Boolean) as string[]
+
+  keys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((p) => {
+            if (p && p.id) paymentMap.set(p.id, p)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, slug) || []),
+    ...(PrintERPDataStore.getAll<PaymentRecord>(STORAGE_KEYS.PAYMENTS, companySlug) || []),
+    ...(PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []),
+  ]
+  storeItems.forEach((p) => {
+    if (p && p.id) paymentMap.set(p.id, p)
+  })
+
+  return Array.from(paymentMap.values())
+}
+
+function getLocalQuotations(slug?: string, companySlug?: string, companyId?: string): QuotationRecord[] {
+  if (typeof window === 'undefined') return []
+  const quoteMap = new Map<string, QuotationRecord>()
+  const keys = [
+    STORAGE_KEYS.QUOTATIONS,
+    slug ? `${STORAGE_KEYS.QUOTATIONS}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.QUOTATIONS}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.QUOTATIONS}__${companyId}` : null,
+  ].filter(Boolean) as string[]
+
+  keys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((q) => {
+            if (q && q.id) quoteMap.set(q.id, q)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, slug) || []),
+    ...(PrintERPDataStore.getAll<QuotationRecord>(STORAGE_KEYS.QUOTATIONS, companySlug) || []),
+    ...(PrintERPDataStore.get<QuotationRecord[]>(STORAGE_KEYS.QUOTATIONS) || []),
+  ]
+  storeItems.forEach((q) => {
+    if (q && q.id) quoteMap.set(q.id, q)
+  })
+
+  return Array.from(quoteMap.values())
+}
+
+function getLocalOrders(slug?: string, companySlug?: string, companyId?: string): SalesOrderRecord[] {
+  if (typeof window === 'undefined') return []
+  const ordMap = new Map<string, SalesOrderRecord>()
+  const keys = [
+    STORAGE_KEYS.ORDERS,
+    slug ? `${STORAGE_KEYS.ORDERS}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.ORDERS}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.ORDERS}__${companyId}` : null,
+  ].filter(Boolean) as string[]
+
+  keys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((ord) => {
+            if (ord && ord.id) ordMap.set(ord.id, ord)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, slug) || []),
+    ...(PrintERPDataStore.getAll<SalesOrderRecord>(STORAGE_KEYS.ORDERS, companySlug) || []),
+    ...(PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []),
+  ]
+  storeItems.forEach((ord) => {
+    if (ord && ord.id) ordMap.set(ord.id, ord)
+  })
+
+  return Array.from(ordMap.values())
+}
+
+function getLocalCustomers(slug?: string, companySlug?: string, companyId?: string): CustomerRecord[] {
+  if (typeof window === 'undefined') return []
+  const custMap = new Map<string, CustomerRecord>()
+  const keys = [
+    STORAGE_KEYS.CUSTOMERS,
+    slug ? `${STORAGE_KEYS.CUSTOMERS}__${slug}` : null,
+    companySlug ? `${STORAGE_KEYS.CUSTOMERS}__${companySlug}` : null,
+    companyId ? `${STORAGE_KEYS.CUSTOMERS}__${companyId}` : null,
+  ].filter(Boolean) as string[]
+
+  keys.forEach((key) => {
+    try {
+      const raw = localStorage.getItem(key)
+      if (raw) {
+        const parsed = JSON.parse(raw)
+        if (Array.isArray(parsed)) {
+          parsed.forEach((c) => {
+            if (c && c.id) custMap.set(c.id, c)
+          })
+        }
+      }
+    } catch {}
+  })
+
+  const storeItems = [
+    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, slug) || []),
+    ...(PrintERPDataStore.getAll<CustomerRecord>(STORAGE_KEYS.CUSTOMERS, companySlug) || []),
+    ...(PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []),
+  ]
+  storeItems.forEach((c) => {
+    if (c && c.id) custMap.set(c.id, c)
+  })
+
+  return Array.from(custMap.values())
+}
+
+function deriveCustomerRates(
+  customerId: string,
+  customerName: string,
+  invoices: InvoiceRecord[],
+  quotations: QuotationRecord[]
+): ResolvedProductRate[] {
+  const products = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTS) || []
+  const customOverrides = PrintERPDataStore.get<any[]>(STORAGE_KEYS.CUSTOMER_RATES) || []
+
+  const productMap = new Map<string, any>()
+  products.forEach((p: any) => {
+    if (p && p.id) productMap.set(p.id, p)
+  })
+
+  invoices.forEach((inv) => {
+    const items = inv.items || (inv as any).line_items || []
+    items.forEach((it: any) => {
+      const pId = it.product_id || it.id || it.name
+      if (pId && !productMap.has(pId)) {
+        productMap.set(pId, {
+          id: pId,
+          name: it.name || it.item_name || 'Product',
+          unit: it.unit || 'pcs',
+          base_price: Number(it.unit_price) || 0,
+        })
+      }
+    })
+  })
+
+  quotations.forEach((q) => {
+    const items = q.items || (q as any).line_items || []
+    items.forEach((it: any) => {
+      const pId = it.product_id || it.id || it.name
+      if (pId && !productMap.has(pId)) {
+        productMap.set(pId, {
+          id: pId,
+          name: it.name || (it as any).item_name || 'Product',
+          unit: it.unit || 'pcs',
+          base_price: Number(it.unit_rate ?? (it as any).unit_price ?? (it as any).rate ?? 0),
+        })
+      }
+    })
+  })
+
+  const allProds = Array.from(productMap.values())
+
+  return allProds.map((prod) => {
+    let lastInvRate: number | null = null
+    let lastInvNum: string | null = null
+    let lastInvDate: string | null = null
+
+    for (const inv of invoices) {
+      if (inv.status === 'cancelled') continue
+      const items = inv.items || (inv as any).line_items || []
+      const match = items.find(
+        (it: any) => (it.product_id && it.product_id === prod.id) || (it.name && prod.name && it.name.trim().toLowerCase() === prod.name.trim().toLowerCase())
+      )
+      if (match && typeof match.unit_price === 'number') {
+        lastInvRate = match.unit_price
+        lastInvNum = inv.invoice_number
+        lastInvDate = inv.invoice_date || inv.created_at?.split('T')[0] || null
+        break
+      }
+    }
+
+    let lastQuoteRate: number | null = null
+    let lastQuoteNum: string | null = null
+    let lastQuoteDate: string | null = null
+
+    for (const q of quotations) {
+      if (q.status === 'rejected' || q.status === 'expired') continue
+      const items = q.items || (q as any).line_items || []
+      const match = items.find(
+        (it: any) => (it.product_id && it.product_id === prod.id) || ((it.description || (it as any).name) && prod.name && (it.description || (it as any).name).trim().toLowerCase() === prod.name.trim().toLowerCase())
+      )
+      if (match && (typeof match.unit_rate === 'number' || typeof (match as any).unit_price === 'number' || typeof (match as any).rate === 'number')) {
+        lastQuoteRate = Number(match.unit_rate ?? (match as any).unit_price ?? (match as any).rate)
+        lastQuoteNum = q.quotation_number
+        lastQuoteDate = q.quotation_date || q.created_at?.split('T')[0] || null
+        break
+      }
+    }
+
+    const customOverride = customOverrides.find(
+      (cr: any) => cr.product_id === prod.id && cr.customer_id === customerId
+    )
+    const customRate = customOverride ? Number(customOverride.rate) : null
+    const baseRate = Number(prod.base_price || prod.unit_price || prod.selling_price || (prod as any).rate || 0)
+
+    let effectiveRate = baseRate
+    let source: RateSource = 'default'
+    if (customRate !== null && !isNaN(customRate)) {
+      effectiveRate = customRate
+      source = 'custom'
+    } else if (lastInvRate !== null) {
+      effectiveRate = lastInvRate
+      source = 'last_invoice'
+    } else if (lastQuoteRate !== null) {
+      effectiveRate = lastQuoteRate
+      source = 'last_quotation'
+    }
+
+    return {
+      productId: prod.id,
+      productName: prod.name,
+      productNameBn: prod.name_bn || null,
+      sku: prod.sku || prod.code || 'PRD',
+      unit: prod.unit || 'pcs',
+      category: prod.category || prod.product_category || 'general',
+      customerRate: customRate,
+      defaultRate: baseRate,
+      effectiveRate,
+      source,
+      hasCustomRate: customRate !== null,
+      lastInvoiceRate: lastInvRate,
+      lastInvoiceNumber: lastInvNum,
+      lastInvoiceDate: lastInvDate,
+      lastQuotationRate: lastQuoteRate,
+      lastQuotationNumber: lastQuoteNum,
+      lastQuotationDate: lastQuoteDate,
+    }
+  })
+}
 
 export default function CustomerProfilePage() {
   const params = useParams()
@@ -171,33 +477,224 @@ export default function CustomerProfilePage() {
     setIsError(false)
 
     try {
-      const res = await getCustomerFullDetailsAction(customerId, companyId)
-      if (!res.success || !res.data?.customer) {
+      const localCusts = getLocalCustomers(slug, company?.slug, companyId)
+      const foundLocalCust = localCusts.find((c) => c.id === customerId || (c as any)._id === customerId) || null
+
+      const res = await getCustomerFullDetailsAction(customerId, companyId).catch(() => null)
+      let cust = res?.success && res.data?.customer ? res.data.customer : foundLocalCust
+
+      if (!cust) {
         setIsError(true)
-        setErrorText(res.error || 'Customer profile not found or removed.')
+        setErrorText(res?.error || 'Customer profile not found or removed.')
         setIsLoading(false)
         return
       }
 
-      const {
-        customer: cust,
-        financialSummary: fin,
-        rates: rts,
-        timelineEvents: tml,
-        invoices: invs,
-        payments: pays,
-        quotations: qts,
-        orders: ords,
-      } = res.data
+      // Format customer ID no
+      if (!cust.customer_id_no) {
+        cust = {
+          ...cust,
+          customer_id_no: cust.customer_code || `CUST-${cust.id.slice(0, 6).toUpperCase()}`,
+        }
+      }
+
+      // Local collections
+      const localInvs = getLocalInvoices(slug, company?.slug, companyId).filter(
+        (i) => (i.customer_id === customerId || (i.customer_name && cust && i.customer_name.trim().toLowerCase() === cust.name.trim().toLowerCase())) && i.status !== 'cancelled'
+      )
+      const localPays = getLocalPayments(slug, company?.slug, companyId).filter(
+        (p) => p.customer_id === customerId || (p.customer_name && cust && p.customer_name.trim().toLowerCase() === cust.name.trim().toLowerCase())
+      )
+      const localQuotes = getLocalQuotations(slug, company?.slug, companyId).filter(
+        (q) => q.customer_id === customerId || (q.customer_name && cust && q.customer_name.trim().toLowerCase() === cust.name.trim().toLowerCase())
+      )
+      const localOrds = getLocalOrders(slug, company?.slug, companyId).filter(
+        (o) => o.customer_id === customerId || (o.customer_name && cust && o.customer_name.trim().toLowerCase() === cust.name.trim().toLowerCase())
+      )
+
+      // Merge server and local arrays
+      const invMap = new Map<string, InvoiceRecord>()
+      if (res?.data?.invoices) {
+        res.data.invoices.forEach((i) => { if (i && i.id) invMap.set(i.id, i) })
+      }
+      localInvs.forEach((i) => { if (i && i.id) invMap.set(i.id, i) })
+      const mergedInvs = Array.from(invMap.values()).sort(
+        (a, b) => (b.invoice_date || b.created_at || '').localeCompare(a.invoice_date || a.created_at || '')
+      )
+
+      const payMap = new Map<string, PaymentRecord>()
+      if (res?.data?.payments) {
+        res.data.payments.forEach((p) => { if (p && p.id) payMap.set(p.id, p) })
+      }
+      localPays.forEach((p) => { if (p && p.id) payMap.set(p.id, p) })
+      const mergedPays = Array.from(payMap.values()).sort(
+        (a, b) => (b.payment_date || b.created_at || '').localeCompare(a.payment_date || a.created_at || '')
+      )
+
+      const quoteMap = new Map<string, QuotationRecord>()
+      if (res?.data?.quotations) {
+        res.data.quotations.forEach((q) => { if (q && q.id) quoteMap.set(q.id, q) })
+      }
+      localQuotes.forEach((q) => { if (q && q.id) quoteMap.set(q.id, q) })
+      const mergedQuotes = Array.from(quoteMap.values()).sort(
+        (a, b) => (b.quotation_date || b.created_at || '').localeCompare(a.quotation_date || a.created_at || '')
+      )
+
+      const ordMap = new Map<string, SalesOrderRecord>()
+      if (res?.data?.orders) {
+        res.data.orders.forEach((o) => { if (o && o.id) ordMap.set(o.id, o) })
+      }
+      localOrds.forEach((o) => { if (o && o.id) ordMap.set(o.id, o) })
+      const mergedOrds = Array.from(ordMap.values()).sort(
+        (a, b) => (b.order_date || b.created_at || '').localeCompare(a.order_date || a.created_at || '')
+      )
+
+      // Recompute financial metrics accurately
+      const totalInvoicesCount = mergedInvs.length
+      const totalInvoiceAmount = mergedInvs.reduce((sum, i) => sum + (Number(i.grand_total) || 0), 0)
+      let totalPaidAmount = mergedInvs.reduce((sum, i) => sum + (Number(i.paid_amount) || 0), 0)
+      const totalDirectPayments = mergedPays.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+      if (totalDirectPayments > totalPaidAmount) {
+        totalPaidAmount = totalDirectPayments
+      }
+      const totalDueAmount = Math.max(0, totalInvoiceAmount - totalPaidAmount)
+      const todayStr = new Date().toISOString().split('T')[0]
+      const totalOverdueAmount = mergedInvs
+        .filter((i) => (Number(i.due_amount) > 0 || (i.status !== 'paid' && Number(i.grand_total) > Number(i.paid_amount))) && i.due_date && i.due_date.split('T')[0] < todayStr)
+        .reduce((sum, i) => sum + (Number(i.due_amount) || Math.max(0, Number(i.grand_total) - Number(i.paid_amount))), 0)
+
+      const creditLimit = Number(cust.credit_limit) || 0
+      const availableCredit = Math.max(0, creditLimit - totalDueAmount)
+
+      let lastPayment: CustomerFinancialSummary['lastPayment'] = res?.data?.financialSummary?.lastPayment || null
+      if (mergedPays.length > 0) {
+        lastPayment = {
+          amount: Number(mergedPays[0].amount) || 0,
+          date: mergedPays[0].payment_date || mergedPays[0].created_at,
+          receiptNumber: mergedPays[0].receipt_number,
+          paymentMethod: mergedPays[0].payment_method,
+        }
+      }
+
+      let lastOrder: CustomerFinancialSummary['lastOrder'] = res?.data?.financialSummary?.lastOrder || null
+      if (mergedOrds.length > 0) {
+        lastOrder = {
+          orderNumber: mergedOrds[0].order_number,
+          date: mergedOrds[0].order_date || mergedOrds[0].created_at,
+          amount: Number(mergedOrds[0].final_price) || 0,
+          status: mergedOrds[0].status,
+        }
+      } else if (mergedInvs.length > 0) {
+        lastOrder = {
+          orderNumber: mergedInvs[0].invoice_number,
+          date: mergedInvs[0].invoice_date || mergedInvs[0].created_at,
+          amount: Number(mergedInvs[0].grand_total) || 0,
+          status: mergedInvs[0].status,
+        }
+      }
+
+      const calculatedFin: CustomerFinancialSummary = {
+        totalInvoices: totalInvoicesCount,
+        totalInvoiceAmount: Math.round(totalInvoiceAmount * 100) / 100,
+        totalPaid: Math.round(totalPaidAmount * 100) / 100,
+        totalDue: Math.round(totalDueAmount * 100) / 100,
+        totalOverdue: Math.round(totalOverdueAmount * 100) / 100,
+        creditLimit,
+        availableCredit: Math.round(availableCredit * 100) / 100,
+        paymentTerms: cust.payment_terms || 'cash_on_delivery',
+        lastPayment,
+        lastOrder,
+      }
+
+      // Rates resolution
+      let resolvedRates: ResolvedProductRate[] = res?.data?.rates || []
+      if (resolvedRates.length === 0) {
+        resolvedRates = deriveCustomerRates(customerId, cust.name, mergedInvs, mergedQuotes)
+      } else {
+        resolvedRates = resolvedRates.map((r) => {
+          if (!r.lastQuotationRate) {
+            for (const q of mergedQuotes) {
+              const items = q.items || (q as any).line_items || []
+              const match = items.find((it: any) => it.product_id === r.productId || ((it.description || it.name) && (it.description || it.name).trim().toLowerCase() === r.productName.trim().toLowerCase()))
+              if (match && (typeof match.unit_rate === 'number' || typeof (match as any).unit_price === 'number' || typeof (match as any).rate === 'number')) {
+                return {
+                  ...r,
+                  lastQuotationRate: Number(match.unit_rate ?? (match as any).unit_price ?? (match as any).rate),
+                  lastQuotationNumber: q.quotation_number,
+                  lastQuotationDate: q.quotation_date || q.created_at?.split('T')[0] || null,
+                }
+              }
+            }
+          }
+          return r
+        })
+      }
+
+      // Timeline events
+      let events: CustomerTimelineEvent[] = res?.data?.timelineEvents || []
+      if (events.length === 0) {
+        mergedInvs.forEach((inv) => {
+          events.push({
+            id: `inv-event-${inv.id}`,
+            type: 'invoice_created',
+            title: `Invoice #${inv.invoice_number}`,
+            description: `Sales invoice #${inv.invoice_number} created for ৳${Number(inv.grand_total).toLocaleString('en-IN')}`,
+            timestamp: inv.created_at || inv.invoice_date || new Date().toISOString(),
+            amount: Number(inv.grand_total) || 0,
+            referenceType: 'invoice',
+            referenceId: inv.id,
+            referenceNumber: inv.invoice_number,
+          })
+        })
+        mergedPays.forEach((pay) => {
+          events.push({
+            id: `pay-event-${pay.id}`,
+            type: 'payment_received',
+            title: `Payment Receipt MR #${pay.receipt_number}`,
+            description: `Payment of ৳${Number(pay.amount).toLocaleString('en-IN')} received via ${(pay.payment_method || 'cash').toUpperCase()}`,
+            timestamp: pay.created_at || pay.payment_date || new Date().toISOString(),
+            amount: Number(pay.amount) || 0,
+            referenceType: 'payment',
+            referenceId: pay.id,
+            referenceNumber: pay.receipt_number,
+          })
+        })
+        mergedQuotes.forEach((quote) => {
+          events.push({
+            id: `quote-event-${quote.id}`,
+            type: 'quotation_created',
+            title: `Quotation #${quote.quotation_number}`,
+            description: `Price quotation #${quote.quotation_number} generated for ৳${Number(quote.grand_total).toLocaleString('en-IN')}`,
+            timestamp: quote.created_at || quote.quotation_date || new Date().toISOString(),
+            amount: Number(quote.grand_total) || 0,
+            referenceType: 'quotation',
+            referenceId: quote.id,
+            referenceNumber: quote.quotation_number,
+          })
+        })
+        mergedOrds.forEach((ord) => {
+          events.push({
+            id: `order-event-${ord.id}`,
+            type: 'order_created',
+            title: `Production Order #${ord.order_number}`,
+            description: `Commercial job #${ord.order_number} confirmed with status ${ord.status.replace('_', ' ')}`,
+            timestamp: ord.created_at || ord.order_date || new Date().toISOString(),
+            referenceType: 'order',
+            referenceId: ord.id,
+            referenceNumber: ord.order_number,
+          })
+        })
+        events.sort((a, b) => (b.timestamp || '').localeCompare(a.timestamp || ''))
+      }
 
       setCustomer(cust)
-      if (fin) setFinancialSummary(fin)
-      setRates(rts)
-      setTimelineEvents(tml)
-      setInvoices(invs)
-      setPayments(pays)
-      setQuotations(qts)
-      setOrders(ords)
+      setFinancialSummary(calculatedFin)
+      setRates(resolvedRates)
+      setTimelineEvents(events)
+      setInvoices(mergedInvs)
+      setPayments(mergedPays)
+      setQuotations(mergedQuotes)
+      setOrders(mergedOrds)
 
       // Pre-fill edit form
       setEditName(cust.name)
@@ -218,10 +715,32 @@ export default function CustomerProfilePage() {
     } finally {
       setIsLoading(false)
     }
-  }, [companyId, customerId])
+  }, [company?.slug, companyId, customerId, slug])
 
   useEffect(() => {
     loadCustomerData()
+
+    const handleSync = () => {
+      loadCustomerData()
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('storage', handleSync)
+      window.addEventListener('printerp_table_synced:customers', handleSync)
+      window.addEventListener('printerp_table_synced:invoices', handleSync)
+      window.addEventListener('printerp_table_synced:payments', handleSync)
+      window.addEventListener('printerp_table_synced:quotations', handleSync)
+      window.addEventListener('printerp_table_synced:orders', handleSync)
+      window.addEventListener('printerp_data_sync', handleSync)
+      return () => {
+        window.removeEventListener('storage', handleSync)
+        window.removeEventListener('printerp_table_synced:customers', handleSync)
+        window.removeEventListener('printerp_table_synced:invoices', handleSync)
+        window.removeEventListener('printerp_table_synced:payments', handleSync)
+        window.removeEventListener('printerp_table_synced:quotations', handleSync)
+        window.removeEventListener('printerp_table_synced:orders', handleSync)
+        window.removeEventListener('printerp_data_sync', handleSync)
+      }
+    }
   }, [loadCustomerData])
 
   // Handle Edit Customer
@@ -471,6 +990,9 @@ export default function CustomerProfilePage() {
                     ({customer.name_bn})
                   </span>
                 )}
+                <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                  {customer.customer_id_no || customer.customer_code || `CUST-${customer.id.slice(0, 6).toUpperCase()}`}
+                </span>
                 <Badge
                   variant="outline"
                   className={cn(
@@ -482,11 +1004,19 @@ export default function CustomerProfilePage() {
                     custType === 'retail' && 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300'
                   )}
                 >
-                  {custType}
+                  {custType === 'corporate'
+                    ? tBilingual('Corporate', 'কর্পোরেট')
+                    : custType === 'agency'
+                    ? tBilingual('Agency', 'এজেন্সি')
+                    : custType === 'reseller'
+                    ? tBilingual('Reseller', 'রিসেলার')
+                    : custType === 'government'
+                    ? tBilingual('Government', 'সরকারি')
+                    : tBilingual('Retail', 'খুচরা')}
                 </Badge>
                 {customer.is_active === false && (
                   <Badge variant="destructive" className="text-xs font-bold uppercase tracking-wider bg-rose-100 text-rose-800 border-rose-200">
-                    Inactive
+                    {tBilingual('Inactive', 'নিষ্ক্রিয়')}
                   </Badge>
                 )}
               </div>
@@ -501,7 +1031,7 @@ export default function CustomerProfilePage() {
                 )}
                 {customer.contact_person && (
                   <div>
-                    Contact: <strong className="text-slate-700 dark:text-slate-300">{customer.contact_person}</strong>
+                    {tBilingual('Contact:', 'যোগাযোগ:')} <strong className="text-slate-700 dark:text-slate-300">{customer.contact_person}</strong>
                   </div>
                 )}
                 {customer.area && (
@@ -555,7 +1085,7 @@ export default function CustomerProfilePage() {
                   className="h-9 text-xs font-semibold"
                 >
                   <Edit2 className="h-3.5 w-3.5 mr-1.5" />
-                  Edit
+                  <span>{tBilingual('Edit', 'সম্পাদনা')}</span>
                 </Button>
               )}
 
@@ -573,7 +1103,9 @@ export default function CustomerProfilePage() {
                       : 'text-slate-600 border-slate-200 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 dark:text-slate-400 dark:border-slate-800 dark:hover:bg-rose-950/30'
                   )}
                 >
-                  {customer.is_active === false ? 'Reactivate' : 'Deactivate'}
+                  {customer.is_active === false
+                    ? tBilingual('Reactivate', 'পুনরায় সক্রিয় করুন')
+                    : tBilingual('Deactivate', 'নিষ্ক্রিয় করুন')}
                 </Button>
               )}
             </div>
@@ -587,13 +1119,13 @@ export default function CustomerProfilePage() {
               className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8"
             >
               <Receipt className="h-3.5 w-3.5 mr-1.5" />
-              + Create Invoice
+              <span>{tBilingual('Create Invoice', 'ইনভয়েস তৈরি')}</span>
             </Button>
 
             <Link href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}>
               <Button size="sm" variant="outline" className="text-xs font-semibold h-8">
                 <Send className="h-3.5 w-3.5 mr-1.5" />
-                + New Quotation
+                <span>{tBilingual('New Quotation', 'নতুন কোটেশন')}</span>
               </Button>
             </Link>
 
@@ -605,7 +1137,7 @@ export default function CustomerProfilePage() {
                 className="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900 bg-emerald-50/50 dark:bg-emerald-950/30 h-8"
               >
                 <CreditCard className="h-3.5 w-3.5 mr-1.5" />
-                Record Payment
+                <span>{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
               </Button>
             )}
 
@@ -616,7 +1148,7 @@ export default function CustomerProfilePage() {
               className="text-xs font-medium text-slate-600 dark:text-slate-300 h-8 ml-auto"
             >
               <Phone className="h-3 w-3 mr-1" />
-              Log Comm
+              <span>{tBilingual('Log Comm', 'যোগাযোগ রেকর্ড')}</span>
             </Button>
           </div>
         </div>
@@ -695,7 +1227,7 @@ export default function CustomerProfilePage() {
                           onClick={() => setIsRecordPayOpen(true)}
                           className="text-[10px] font-bold text-emerald-600 hover:underline"
                         >
-                          + Pay
+                          {tBilingual('Pay', 'পরিশোধ')}
                         </button>
                       )}
                     </div>
@@ -746,7 +1278,7 @@ export default function CustomerProfilePage() {
                         href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}
                         className="text-[10px] font-bold text-blue-600 hover:underline"
                       >
-                        + New
+                        {tBilingual('New Quote', 'নতুন কোটেশন')}
                       </Link>
                     </div>
                     {openQuotations.length === 0 ? (
@@ -998,7 +1530,8 @@ export default function CustomerProfilePage() {
               onClick={() => setIsNewInvoiceOpen(true)}
               className="bg-blue-600 hover:bg-blue-700 text-xs font-bold h-8"
             >
-              + Create Invoice
+              <Receipt className="h-3.5 w-3.5 mr-1.5" />
+              <span>{tBilingual('Create Invoice', 'ইনভয়েস তৈরি')}</span>
             </Button>
           </div>
 
@@ -1081,7 +1614,8 @@ export default function CustomerProfilePage() {
               onClick={() => setIsRecordPayOpen(true)}
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold h-8"
             >
-              + Record Payment
+              <CreditCard className="h-3.5 w-3.5 mr-1.5" />
+              <span>{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
             </Button>
           </div>
 
@@ -1148,7 +1682,8 @@ export default function CustomerProfilePage() {
             </div>
             <Link href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}>
               <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-8">
-                + New Quotation
+                <Send className="h-3.5 w-3.5 mr-1.5" />
+                <span>{tBilingual('New Quotation', 'নতুন কোটেশন')}</span>
               </Button>
             </Link>
           </div>

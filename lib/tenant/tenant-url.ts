@@ -133,11 +133,9 @@ export function getTenantNavHref(
   const cleanHref = href.startsWith('/') ? href : `/${href}`
   let cleanSlug = (tenantSlug || '').toLowerCase().trim()
   const activePath = pathname || (typeof window !== 'undefined' ? window.location?.pathname || '' : '')
-  if (!cleanSlug && activePath) {
-    const firstSegment = activePath.split('/')[1]?.toLowerCase().trim()
-    if (firstSegment && !isReservedSlug(firstSegment)) {
-      cleanSlug = firstSegment
-    }
+  const firstPathSegment = activePath ? activePath.split('/')[1]?.toLowerCase().trim() : ''
+  if ((!cleanSlug || cleanSlug === 'my-company' || cleanSlug === 'default') && firstPathSegment && !isReservedSlug(firstPathSegment)) {
+    cleanSlug = firstPathSegment
   }
 
   // 1. Client-Side Resolution (Browser context with window.location)
