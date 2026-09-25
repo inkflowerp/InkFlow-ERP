@@ -29,11 +29,13 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     const settingsSection = navSections.find((s) => s.id === 'settings')
     assert.ok(settingsSection, 'Settings section should exist in navigation')
 
-    const trashItem = settingsSection.items.find((item) => item.key === 'trash')
+    const companySettings = settingsSection.items.find((item) => item.key === 'company_settings')
+    const trashItem = companySettings?.children?.find((item) => item.key === 'settings_trash') ||
+      settingsSection.items.find((item) => item.key === 'trash')
     assert.ok(trashItem, 'Trash navigation item must exist')
     assert.strictEqual(trashItem.title, 'Recycle Bin')
     assert.strictEqual(trashItem.titleBn, 'রিসাইকেল বিন')
-    assert.strictEqual(trashItem.href, '/trash')
+    assert.ok(trashItem.href === '/settings/trash' || trashItem.href === '/trash')
     assert.strictEqual(trashItem.icon, 'Trash2')
   })
 

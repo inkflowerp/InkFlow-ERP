@@ -264,7 +264,7 @@ export function Sidebar() {
 
     if (pathname === itemHref || cleanPath === itemHref) return true
 
-    if (itemHref === '/settings/users' && (cleanPath === '/settings/roles' || cleanPath.startsWith('/settings/roles/'))) {
+    if (itemHref === '/settings/trash' && (cleanPath === '/trash' || cleanPath.startsWith('/trash/'))) {
       return true
     }
 

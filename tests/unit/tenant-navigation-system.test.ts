@@ -49,7 +49,7 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     assert.equal(settingsSection.title, 'System & Settings')
     assert.equal(settingsSection.titleBn, 'সেটিংস ও প্রশাসন')
     const settingsItems = settingsSection.items.map((i) => i.key)
-    assert.deepEqual(settingsItems, ['company_settings', 'users', 'branches', 'tax', 'trash'])
+    assert.deepEqual(settingsItems, ['company_settings'])
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
