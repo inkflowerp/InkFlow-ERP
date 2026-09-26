@@ -228,6 +228,7 @@ export interface ProductionTaskRecord {
   invoice_id?: string | null
   invoice_number?: string | null
   service_name?: string | null
+  dimensions_spec?: string | null
   finishing?: string | null
   selected_finishing?: any[] | null
   add_ons?: string | null

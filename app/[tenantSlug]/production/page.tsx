@@ -970,8 +970,8 @@ export default function AdvancedProductionPage() {
         if (nextTask && (nextTask.department === 'finishing' || nextTask.task_type === 'finishing')) {
           showNotification(
             isBn
-              ? `প্রিন্ট সম্পন্ন! কাজটি সফলভাবে ফিনিশিং বিভাগে প্রেরিত হয়েছে (Sent to Finishing)।`
-              : `Printing completed! Job sent to Finishing Department.`,
+              ? `প্রিন্ট সম্পন্ন! কাজটি সফলভাবে ফিনিশিং ও ফেব্রিকেশন ফ্লোরে প্রেরিত হয়েছে (Sent to Finishing & Fabrication Floor)।`
+              : `Printing completed! Sent to Finishing & Fabrication Floor.`,
             'success'
           )
         } else {

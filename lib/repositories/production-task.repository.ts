@@ -685,23 +685,45 @@ export class ProductionTaskRepository {
     return this.updateTask(id, companyId, payload)
   }
 
+  static isSameTaskSeries(a?: string | null, b?: string | null): boolean {
+    if (!a || !b) return false
+    const cleanA = a.trim().replace(/^TSK-/, '')
+    const cleanB = b.trim().replace(/^TSK-/, '')
+    const baseA = cleanA.replace(/-\d+$/, '')
+    const baseB = cleanB.replace(/-\d+$/, '')
+    if (baseA === baseB) return true
+    const numA = parseInt(baseA, 10)
+    const numB = parseInt(baseB, 10)
+    if (!isNaN(numA) && !isNaN(numB) && numA === numB) {
+      return true
+    }
+    return false
+  }
+
   static async advanceSequentialTask(
     jobOrderId: string,
     completedSequence: number,
-    companyId: string
+    companyId: string,
+    completedTask?: ProductionTaskRecord
   ): Promise<ProductionTaskRecord | null> {
     try {
       const supabase = await createClient()
 
       // Find the next task in order for this job order
-      const { data: nextTasks, error } = await (supabase as any)
+      let query = (supabase as any)
         .from('production_tasks')
         .select('*')
         .eq('company_id', companyId)
-        .eq('job_order_id', jobOrderId)
         .gt('sequence_order', completedSequence)
         .order('sequence_order', { ascending: true })
-        .limit(1)
+
+      if (jobOrderId) {
+        query = query.eq('job_order_id', jobOrderId)
+      } else if (completedTask?.job_number) {
+        query = query.eq('job_number', completedTask.job_number)
+      }
+
+      const { data: nextTasks, error } = await query.limit(1)
 
       if (!error && nextTasks && nextTasks.length > 0) {
         const nextTask = nextTasks[0]
@@ -710,6 +732,7 @@ export class ProductionTaskRepository {
             .from('production_tasks')
             .update({
               status: 'ready',
+              is_blocked_by_dependency: false,
               updated_at: new Date().toISOString(),
             })
             .eq('id', nextTask.id)
@@ -727,30 +750,128 @@ export class ProductionTaskRepository {
 
     // Local datastore fallback
     const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-    const matchingTasks = all
-      .filter(
-        (t: ProductionTaskRecord) =>
-          (t.job_order_id === jobOrderId || (jobOrderId && t.job_number && jobOrderId.includes(t.job_number))) &&
-          (!companyId || this.isMatchingCompany(t.company_id, companyId)) &&
-          (t.sequence_order ?? 0) > completedSequence
-      )
+
+    const isSameJob = (t: ProductionTaskRecord) => {
+      if (t.id === completedTask?.id) return false
+      if (!companyId || !this.isMatchingCompany(t.company_id, companyId)) return false
+
+      if (jobOrderId && t.job_order_id === jobOrderId) return true
+      if (completedTask?.job_order_id && t.job_order_id === completedTask.job_order_id) return true
+      if (completedTask?.job_number && t.job_number === completedTask.job_number) return true
+      if (
+        completedTask?.invoice_number &&
+        (t.invoice_number === completedTask.invoice_number || t.job_number === completedTask.invoice_number)
+      ) {
+        return true
+      }
+      if (completedTask?.task_number && t.task_number && this.isSameTaskSeries(completedTask.task_number, t.task_number)) {
+        return true
+      }
+      if (
+        completedTask?.customer_name &&
+        completedTask?.product_name &&
+        t.customer_name === completedTask.customer_name &&
+        t.product_name === completedTask.product_name
+      ) {
+        return true
+      }
+      return false
+    }
+
+    let matchingTasks = all
+      .filter((t: ProductionTaskRecord) => isSameJob(t) && (t.sequence_order ?? 0) > completedSequence)
       .sort((a: ProductionTaskRecord, b: ProductionTaskRecord) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0))
 
     if (matchingTasks.length === 0) {
-      return null
+      // Check if there is any pending finishing task in the series
+      matchingTasks = all.filter(
+        (t: ProductionTaskRecord) =>
+          isSameJob(t) &&
+          (t.department === 'finishing' || t.task_type === 'finishing') &&
+          t.status !== 'completed'
+      )
     }
 
-    const nextTask = matchingTasks[0]
-    if (nextTask.status === 'queued' || nextTask.status === 'scheduled') {
-      nextTask.status = 'ready'
-      nextTask.updated_at = new Date().toISOString()
-      const idx = all.findIndex((t: ProductionTaskRecord) => t.id === nextTask.id)
-      if (idx >= 0) {
-        all[idx] = nextTask
+    if (matchingTasks.length > 0) {
+      const nextTask = matchingTasks[0]
+      if (nextTask.status === 'queued' || nextTask.status === 'scheduled') {
+        nextTask.status = 'ready'
+        nextTask.is_blocked_by_dependency = false
+        nextTask.is_blocked_by_commercial_gate = false
+        nextTask.is_blocked_by_design_gate = false
+        nextTask.updated_at = new Date().toISOString()
+        const idx = all.findIndex((t: ProductionTaskRecord) => t.id === nextTask.id)
+        if (idx >= 0) {
+          all[idx] = nextTask
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+        }
+      }
+      return nextTask
+    }
+
+    // If completedTask was printing and no downstream finishing task exists, auto-route to Finishing Floor if finishing is required
+    if (completedTask && (completedTask.department === 'printing' || completedTask.task_type === 'printing')) {
+      const hasFinishingReq =
+        Boolean(completedTask.finishing && completedTask.finishing !== 'None' && completedTask.finishing !== 'none') ||
+        Boolean((completedTask as any).selected_finishing?.length) ||
+        Boolean((completedTask as any).add_ons) ||
+        Boolean((completedTask as any).selected_add_ons?.length)
+
+      if (hasFinishingReq) {
+        const baseNum = completedTask.task_number ? completedTask.task_number.replace(/-\d+$/, '') : `TSK-${Date.now().toString().slice(-6)}`
+        const finishingTitle =
+          completedTask.finishing ||
+          ((completedTask as any).selected_finishing?.length ? (completedTask as any).selected_finishing.map((f: any) => f.name).join(', ') : null) ||
+          'Finishing & Fabrication'
+
+        const newFinishingTask: ProductionTaskRecord = {
+          id: crypto.randomUUID(),
+          company_id: companyId || completedTask.company_id || 'my-company',
+          job_order_id: completedTask.job_order_id || crypto.randomUUID(),
+          production_job_id: completedTask.production_job_id,
+          task_number: `${baseNum}-2`,
+          task_name: `Finishing & Fabrication: ${completedTask.product_name || completedTask.task_name.replace(/^(Print|Printing):\s*/, '')}`,
+          task_type: 'finishing',
+          department: 'finishing',
+          sequence_order: (completedTask.sequence_order || 1) + 1,
+          quantity: completedTask.good_quantity ?? completedTask.quantity ?? 1,
+          unit: completedTask.unit || 'pcs',
+          priority: completedTask.priority || 'normal',
+          status: 'ready', // Immediately active and ready on the Finishing Floor!
+          customer_name: completedTask.customer_name,
+          customer_phone: completedTask.customer_phone,
+          product_name: completedTask.product_name,
+          job_number: completedTask.job_number,
+          job_deadline: completedTask.job_deadline,
+          dimensions_spec: completedTask.dimensions_spec,
+          width: completedTask.width,
+          height: completedTask.height,
+          dimension_unit: completedTask.dimension_unit,
+          is_blocked_by_commercial_gate: false,
+          is_blocked_by_design_gate: false,
+          is_blocked_by_dependency: false,
+          finishing: finishingTitle,
+          selected_finishing: (completedTask as any).selected_finishing || null,
+          add_ons: (completedTask as any).add_ons || null,
+          selected_add_ons: (completedTask as any).selected_add_ons || null,
+          notes: `Sent to Finishing & Fabrication Floor after printing completed.`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }
+
+        all.unshift(newFinishingTask)
         PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, all)
+
+        try {
+          const supabase = await createClient()
+          await (supabase as any).from('production_tasks').insert(newFinishingTask)
+        } catch {}
+
+        return newFinishingTask
       }
     }
-    return nextTask
+
+    return null
   }
 
   static async deleteTask(id: string, companyId: string): Promise<boolean> {

@@ -58,7 +58,8 @@ import { CompleteTaskModal } from '@/components/production/complete-task-modal'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 
 function MobileOperatorPanelContent() {
-  const { tBilingual } = useI18n()
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
   const { company } = useTenant()
   const params = useParams()
   const pathname = usePathname()
@@ -342,7 +343,20 @@ function MobileOperatorPanelContent() {
       )
 
       if (res.success) {
-        showNotification(`Production signed off! Good: ${goodQty}, Scrap: ${rejectedQty}`)
+        const nextTask = res.data?.nextReadyTask
+        if (nextTask && (nextTask.department === 'finishing' || nextTask.task_type === 'finishing')) {
+          showNotification(
+            isBn
+              ? `প্রিন্ট সম্পন্ন! কাজটি সফলভাবে ফিনিশিং ও ফেব্রিকেশন ফ্লোরে প্রেরিত হয়েছে (Sent to Finishing & Fabrication Floor)।`
+              : `Printing completed! Sent to Finishing & Fabrication Floor.`
+          )
+        } else {
+          showNotification(
+            isBn
+              ? `প্রিন্ট সম্পন্ন! ফিনিশিং প্রয়োজন না থাকায় সরাসরি ডেলিভারি ও ডিসপ্যাচে প্রেরিত হয়েছে (Sent to Delivery & Dispatch)।`
+              : `Printing completed! Sent directly to Delivery and Dispatch.`
+          )
+        }
         setSelectedTaskForComplete(null)
         loadData()
       } else {

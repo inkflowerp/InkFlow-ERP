@@ -16,6 +16,7 @@ import {
   HelpCircle,
   TrendingDown,
   Info,
+  Truck,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -92,6 +93,29 @@ export function CompleteTaskModal({
   const [isRequestingRoll, setIsRequestingRoll] = useState(false)
   const [requestRollError, setRequestRollError] = useState<string | null>(null)
   const [requestRollSuccess, setRequestRollSuccess] = useState<string | null>(null)
+
+  const hasNextFinishing = useMemo(() => {
+    if (!task) return false
+    const isPrintTask = task.department === 'printing' || task.task_type === 'printing'
+    if (!isPrintTask) return false
+
+    const hasFinishingSpec = Boolean(
+      (task.finishing && task.finishing !== 'None' && task.finishing !== 'none') ||
+      (task as any).selected_finishing?.length ||
+      (task as any).add_ons ||
+      (task as any).selected_add_ons?.length
+    )
+    if (hasFinishingSpec) return true
+
+    const allTasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+    return allTasks.some(
+      (t) =>
+        t.id !== task.id &&
+        (t.department === 'finishing' || t.task_type === 'finishing') &&
+        (t.job_order_id === task.job_order_id || (task.job_number && t.job_number === task.job_number)) &&
+        t.status !== 'completed'
+    )
+  }, [task])
 
   // Load available mounted rolls
   const [availableRolls, setAvailableRolls] = useState<InventoryRollRecord[]>([])
@@ -376,6 +400,42 @@ export function CompleteTaskModal({
             </div>
           )}
         </div>
+
+        {/* Next Workflow Destination Indicator */}
+        {task && (task.department === 'printing' || task.task_type === 'printing') && (
+          <div className={`p-2.5 rounded-xl border text-2xs flex items-center justify-between gap-2 flex-wrap ${
+            hasNextFinishing
+              ? 'bg-indigo-50/70 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800 text-indigo-950 dark:text-indigo-200'
+              : 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200'
+          }`}>
+            <div className="flex items-center gap-2">
+              {hasNextFinishing ? (
+                <>
+                  <Scissors className="h-4 w-4 text-indigo-600 shrink-0" />
+                  <span>
+                    <strong>{isBn ? 'পরবর্তী গন্তব্য:' : 'Next Step:'}</strong>{' '}
+                    {isBn
+                      ? 'প্রিন্ট সম্পন্নের সাথে সাথে কাজটি স্বয়ংক্রিয়ভাবে ফিনিশিং ও ফেব্রিকেশন ফ্লোরে প্রেরিত হবে।'
+                      : 'On print complete, this job will automatically route to the Finishing & Fabrication Floor.'}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <Truck className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span>
+                    <strong>{isBn ? 'পরবর্তী গন্তব্য:' : 'Next Step:'}</strong>{' '}
+                    {isBn
+                      ? 'ফিনিশিং প্রয়োজন না থাকায় কাজটি সরাসরি ডেলিভারি ও ডিসপ্যাচে প্রেরিত হবে।'
+                      : 'No finishing required. Job will be sent directly to Delivery and Dispatch.'}
+                  </span>
+                </>
+              )}
+            </div>
+            <Badge className={hasNextFinishing ? 'bg-indigo-600 hover:bg-indigo-700 text-white text-2xs' : 'bg-emerald-600 hover:bg-emerald-700 text-white text-2xs'}>
+              {hasNextFinishing ? (isBn ? 'ফিনিশিং ও ফেব্রিকেশন ফ্লোর' : 'Finishing & Fabrication Floor') : (isBn ? 'ডেলিভারি ও ডিসপ্যাচ' : 'Delivery & Dispatch')}
+            </Badge>
+          </div>
+        )}
 
         {/* Quantities Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

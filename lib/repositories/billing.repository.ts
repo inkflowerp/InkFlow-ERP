@@ -1510,15 +1510,29 @@ export class BillingRepository {
                 (t.task_number === task1Num || (t.task_name?.includes(item.item_description || '') && t.job_number === invoice.invoice_number))
             )
             if (!hasTasks) {
+              const sharedJobOrderId = crypto.randomUUID()
+              const finishingStr = item.finishing || (item.selected_finishing?.length ? item.selected_finishing.map((f: any) => f.name).join(', ') : null)
+              const addOnsStr = (item as any).add_ons || (item.selected_add_ons?.length ? item.selected_add_ons.map((a: any) => a.name).join(', ') : null)
+              const dimensionsStr = item.dimensions_spec || (item.width && item.height ? `${item.width} × ${item.height} ${item.unit || 'in'}` : null)
+              const materialStr = (item as any).material || (item as any).material_spec || 'Star Flex (320 GSM)'
+
               const task1 = {
                 id: crypto.randomUUID(),
                 company_id: companyId,
+                job_order_id: sharedJobOrderId,
                 task_number: task1Num,
                 task_name: `Print: ${item.item_description || (item as any).description || 'Print Item'}`,
                 customer_name: invoice.customer_name,
+                customer_phone: invoice.customer_phone,
                 product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
                 job_number: invoice.invoice_number,
                 job_deadline: invoice.due_date,
+                dimensions_spec: dimensionsStr,
+                required_material: materialStr,
+                finishing: finishingStr,
+                selected_finishing: item.selected_finishing || null,
+                add_ons: addOnsStr,
+                selected_add_ons: item.selected_add_ons || null,
                 task_type: 'printing',
                 department: 'printing',
                 sequence_order: 1,
@@ -1534,12 +1548,20 @@ export class BillingRepository {
               const task2 = {
                 id: crypto.randomUUID(),
                 company_id: companyId,
+                job_order_id: sharedJobOrderId,
                 task_number: task2Num,
                 task_name: `Finishing & QC: ${item.item_description || (item as any).description || 'Print Item'}`,
                 customer_name: invoice.customer_name,
+                customer_phone: invoice.customer_phone,
                 product_name: item.item_description || (item as any).description || (item as any).item_name || 'Print Item',
                 job_number: invoice.invoice_number,
                 job_deadline: invoice.due_date,
+                dimensions_spec: dimensionsStr,
+                required_material: materialStr,
+                finishing: finishingStr,
+                selected_finishing: item.selected_finishing || null,
+                add_ons: addOnsStr,
+                selected_add_ons: item.selected_add_ons || null,
                 task_type: 'finishing',
                 department: 'finishing',
                 sequence_order: 2,

@@ -707,8 +707,45 @@ export class ProductionPlanningService {
     const nextReadyTask = await ProductionTaskRepository.advanceSequentialTask(
       task.job_order_id,
       task.sequence_order,
-      companyId
+      companyId,
+      task
     )
+
+    if (nextReadyTask) {
+      // If the next ready task is finishing or fabrication, route Production Job and Order to finishing stage
+      if (nextReadyTask.department === 'finishing' || nextReadyTask.task_type === 'finishing') {
+        try {
+          const { ProductionRepository } = await import('../lib/repositories/production.repository.ts')
+          const allProdJobs = await ProductionRepository.getProductionJobs(companyId)
+          const matchedProd = allProdJobs.find(
+            (pj) =>
+              pj.id === task.production_job_id ||
+              pj.production_job_number === task.job_number ||
+              (task.job_number && pj.production_job_number && task.job_number.includes(pj.production_job_number))
+          )
+          if (matchedProd) {
+            await ProductionRepository.updateProductionJob(matchedProd.id, {
+              stage: 'finishing',
+              status: 'in_progress',
+            }, companyId)
+          }
+
+          const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+          const matchedOrder = allOrders.find(
+            (o) =>
+              o.id === task.job_order_id ||
+              o.order_number === task.job_number ||
+              (task.job_number && o.order_number && task.job_number.includes(o.order_number))
+          )
+          if (matchedOrder && matchedOrder.status !== 'delivered' && matchedOrder.status !== 'cancelled') {
+            PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
+              status: 'in_progress',
+              stage: 'finishing',
+            })
+          }
+        } catch (_) {}
+      }
+    }
 
     // 4. If all tasks for this Job Order / Production Job are completed, advance downstream stage
     if (!nextReadyTask) {

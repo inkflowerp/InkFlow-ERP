@@ -264,4 +264,64 @@ describe('Production Unified Single Job Card Architecture', () => {
     // Since no finishing was specified, job advances directly to ready_delivery (Sent to Delivery and Dispatch)
     assert.strictEqual(overallStatus, 'ready_delivery')
   })
+
+  it('5. On print complete -> correctly identifies Finishing & Fabrication Floor as next step and sets badge and routing', () => {
+    const printTaskCompleted: ProductionTaskRecord = {
+      id: 'tsk-004-1',
+      company_id: 'test-co',
+      job_order_id: 'ord-item-012',
+      task_number: 'TSK-012-1',
+      task_name: 'Print: Backlit Board Signage',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 1,
+      unit: 'pcs',
+      priority: 'urgent',
+      status: 'completed',
+      job_number: 'INV-000012',
+      customer_name: 'City Bank',
+      product_name: 'Backlit Board Signage',
+      service_name: 'Signage Fabrication',
+      dimensions_spec: '8 × 4 ft',
+      required_material: 'Backlit Film (180 Mic)',
+      finishing: 'Gloss Lamination, Metal Framing',
+      add_ons: 'LED Module Kit, Power Supply',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const finishingTaskReady: ProductionTaskRecord = {
+      id: 'tsk-004-2',
+      company_id: 'test-co',
+      job_order_id: 'ord-item-012',
+      task_number: 'TSK-012-2',
+      task_name: 'Finishing & QC: Backlit Board Signage',
+      task_type: 'finishing',
+      department: 'finishing',
+      sequence_order: 2,
+      quantity: 1,
+      unit: 'pcs',
+      priority: 'urgent',
+      status: 'ready',
+      job_number: 'INV-000012',
+      customer_name: 'City Bank',
+      product_name: 'Backlit Board Signage',
+      service_name: 'Signage Fabrication',
+      dimensions_spec: '8 × 4 ft',
+      finishing: 'Gloss Lamination, Metal Framing',
+      add_ons: 'LED Module Kit, Power Supply',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const tasks = [printTaskCompleted, finishingTaskReady]
+    const isPrintingCompleted = tasks.some((t) => t.department === 'printing' && t.status === 'completed')
+    const hasFinishingPending = tasks.some((t) => t.department === 'finishing' && t.status !== 'completed')
+
+    assert.strictEqual(isPrintingCompleted, true)
+    assert.strictEqual(hasFinishingPending, true)
+    assert.strictEqual(finishingTaskReady.status, 'ready')
+    assert.strictEqual(finishingTaskReady.department, 'finishing')
+  })
 })

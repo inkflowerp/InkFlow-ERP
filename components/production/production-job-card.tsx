@@ -88,6 +88,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     ? getTenantNavHref(`/orders`, pathname, tenantSlug)
     : null
   const deliveryHref = getTenantNavHref(`/delivery`, pathname, tenantSlug)
+  const finishingHref = getTenantNavHref(`/finishing`, pathname, tenantSlug)
 
   // Active task is the task currently running, or the first non-completed task
   const activeTask =
@@ -161,7 +162,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
       return (
         <span className="text-2xs font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-indigo-300 dark:border-indigo-800">
           <Scissors className="h-3 w-3 text-indigo-600" />
-          <span>{isBn ? 'ফিনিশিংয়ে প্রেরিত (Sent to Finishing)' : 'Sent to Finishing'}</span>
+          <span>{isBn ? 'ফিনিশিং ও ফেব্রিকেশন ফ্লোরে প্রেরিত (Sent to Finishing & Fabrication Floor)' : 'Sent to Finishing & Fabrication Floor'}</span>
         </span>
       )
     }
@@ -772,40 +773,51 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   )}
                 </div>
               ) : (
-                activeTask && onStartTask && (
-                  <Button
-                    size="sm"
-                    onClick={() =>
-                      onStartTask({
-                        ...activeTask,
-                        required_material: selectedMaterial || activeTask.required_material,
-                      })
-                    }
-                    disabled={
-                      activeTask.is_blocked_by_dependency ||
-                      activeTask.is_blocked_by_commercial_gate ||
-                      activeTask.is_blocked_by_design_gate
-                    }
-                    className="h-8 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isPrintTask ? (
-                      <>
-                        <Printer className="h-3.5 w-3.5" />
-                        <span>{isBn ? 'প্রিন্ট শুরু করুন' : 'Start Printing'}</span>
-                      </>
-                    ) : isFinishingTask ? (
-                      <>
-                        <Scissors className="h-3.5 w-3.5" />
-                        <span>{isBn ? 'ফিনিশিং শুরু করুন' : 'Start Finishing'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-3 w-3 fill-white" />
-                        <span>{isBn ? 'কাজ শুরু করুন' : 'Start Task'}</span>
-                      </>
-                    )}
-                  </Button>
-                )
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(isFinishingTask || activeTask?.department === 'finishing' || (isPrintingCompleted && hasFinishingPending)) && (
+                    <Link
+                      href={finishingHref}
+                      className="h-8 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
+                    >
+                      <Scissors className="h-3.5 w-3.5 text-white shrink-0" />
+                      <span>{isBn ? 'ফিনিশিং ও ফেব্রিকেশন ফ্লোর ➔' : 'Finishing & Fabrication Floor ➔'}</span>
+                    </Link>
+                  )}
+                  {activeTask && onStartTask && (
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        onStartTask({
+                          ...activeTask,
+                          required_material: selectedMaterial || activeTask.required_material,
+                        })
+                      }
+                      disabled={
+                        activeTask.is_blocked_by_dependency ||
+                        activeTask.is_blocked_by_commercial_gate ||
+                        activeTask.is_blocked_by_design_gate
+                      }
+                      className="h-8 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isPrintTask ? (
+                        <>
+                          <Printer className="h-3.5 w-3.5" />
+                          <span>{isBn ? 'প্রিন্ট শুরু করুন' : 'Start Printing'}</span>
+                        </>
+                      ) : isFinishingTask ? (
+                        <>
+                          <Scissors className="h-3.5 w-3.5" />
+                          <span>{isBn ? 'ফিনিশিং শুরু করুন' : 'Start Finishing'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3 fill-white" />
+                          <span>{isBn ? 'কাজ শুরু করুন' : 'Start Task'}</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </div>
