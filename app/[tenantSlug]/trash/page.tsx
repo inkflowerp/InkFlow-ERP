@@ -164,42 +164,42 @@ function TrashContent() {
     switch (category) {
       case 'quotations':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
             <FileSpreadsheet className="h-3 w-3" />
             {tBilingual('Quotation', 'কোটেশন')}
           </span>
         )
       case 'invoices':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
             <Receipt className="h-3 w-3" />
             {tBilingual('Invoice', 'ইনভয়েস')}
           </span>
         )
       case 'customers':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300">
             <Users className="h-3 w-3" />
             {tBilingual('Customer', 'গ্রাহক')}
           </span>
         )
       case 'products':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300">
             <Package className="h-3 w-3" />
             {tBilingual('Product', 'পণ্য')}
           </span>
         )
       case 'materials':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-amber-50 text-amber-800 border border-amber-300 dark:bg-amber-950/40 dark:text-amber-300">
             <Boxes className="h-3 w-3" />
             {tBilingual('Material / Stock', 'কাঁচামাল ও স্টক')}
           </span>
         )
       case 'suppliers':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/40 dark:text-indigo-300">
             <Truck className="h-3 w-3" />
             {tBilingual('Supplier', 'সরবরাহকারী')}
           </span>
@@ -263,7 +263,7 @@ function TrashContent() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-          <Badge variant="outline" className="bg-white/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-[11px] px-2.5 py-0.5">
+          <Badge variant="outline" className="bg-white/80 dark:bg-amber-900/40 border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-semibold text-2xs px-2.5 py-0.5">
             <ShieldAlert className="h-3 w-3 mr-1 text-amber-600 dark:text-amber-400" />
             {TRASH_RETENTION_DAYS} Days Retention
           </Badge>
@@ -280,7 +280,7 @@ function TrashContent() {
             selectedCategory === 'all' && 'border-rose-500 ring-2 ring-rose-500/20 bg-rose-50/20 dark:bg-rose-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-slate-500 block">{tBilingual('All Items', 'সব আইটেম')}</span>
+          <span className="text-2xs font-bold text-slate-500 block">{tBilingual('All Items', 'সব আইটেম')}</span>
           <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">{counts.total}</div>
         </Card>
 
@@ -292,7 +292,7 @@ function TrashContent() {
             selectedCategory === 'quotations' && 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20 dark:bg-blue-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-blue-700 dark:text-blue-300 block">{tBilingual('Quotations', 'কোটেশন')}</span>
+          <span className="text-2xs font-bold text-blue-700 dark:text-blue-300 block">{tBilingual('Quotations', 'কোটেশন')}</span>
           <div className="text-xl font-black text-blue-700 dark:text-blue-300 mt-0.5">{counts.quotations}</div>
         </Card>
 
@@ -304,7 +304,7 @@ function TrashContent() {
             selectedCategory === 'invoices' && 'border-emerald-500 ring-2 ring-emerald-500/20 bg-emerald-50/20 dark:bg-emerald-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-300 block">{tBilingual('Invoices', 'ইনভয়েস')}</span>
+          <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-300 block">{tBilingual('Invoices', 'ইনভয়েস')}</span>
           <div className="text-xl font-black text-emerald-700 dark:text-emerald-300 mt-0.5">{counts.invoices}</div>
         </Card>
 
@@ -316,7 +316,7 @@ function TrashContent() {
             selectedCategory === 'customers' && 'border-purple-500 ring-2 ring-purple-500/20 bg-purple-50/20 dark:bg-purple-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-purple-700 dark:text-purple-300 block">{tBilingual('Customers', 'গ্রাহক')}</span>
+          <span className="text-2xs font-bold text-purple-700 dark:text-purple-300 block">{tBilingual('Customers', 'গ্রাহক')}</span>
           <div className="text-xl font-black text-purple-700 dark:text-purple-300 mt-0.5">{counts.customers}</div>
         </Card>
 
@@ -328,7 +328,7 @@ function TrashContent() {
             selectedCategory === 'products' && 'border-cyan-500 ring-2 ring-cyan-500/20 bg-cyan-50/20 dark:bg-cyan-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-cyan-700 dark:text-cyan-300 block">{tBilingual('Products', 'পণ্য')}</span>
+          <span className="text-2xs font-bold text-cyan-700 dark:text-cyan-300 block">{tBilingual('Products', 'পণ্য')}</span>
           <div className="text-xl font-black text-cyan-700 dark:text-cyan-300 mt-0.5">{counts.products}</div>
         </Card>
 
@@ -340,7 +340,7 @@ function TrashContent() {
             selectedCategory === 'materials' && 'border-amber-500 ring-2 ring-amber-500/20 bg-amber-50/20 dark:bg-amber-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300 block">{tBilingual('Materials', 'কাঁচামাল')}</span>
+          <span className="text-2xs font-bold text-amber-700 dark:text-amber-300 block">{tBilingual('Materials', 'কাঁচামাল')}</span>
           <div className="text-xl font-black text-amber-700 dark:text-amber-300 mt-0.5">{counts.materials}</div>
         </Card>
 
@@ -352,7 +352,7 @@ function TrashContent() {
             selectedCategory === 'suppliers' && 'border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/20 dark:bg-indigo-950/20'
           )}
         >
-          <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 block">{tBilingual('Suppliers', 'সরবরাহকারী')}</span>
+          <span className="text-2xs font-bold text-indigo-700 dark:text-indigo-300 block">{tBilingual('Suppliers', 'সরবরাহকারী')}</span>
           <div className="text-xl font-black text-indigo-700 dark:text-indigo-300 mt-0.5">{counts.suppliers}</div>
         </Card>
       </div>
@@ -382,7 +382,7 @@ function TrashContent() {
               <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
               <span
                 className={cn(
-                  'px-1.5 py-0.2 rounded-full text-[10px]',
+                  'px-1.5 py-0.2 rounded-full text-2xs',
                   selectedCategory === tab.id
                     ? 'bg-rose-800 text-rose-100'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
@@ -487,7 +487,7 @@ function TrashContent() {
                         <td className="py-3.5 px-4 text-xs">
                           <span
                             className={cn(
-                              'inline-flex items-center gap-1 font-semibold text-[11px] px-2 py-0.5 rounded-full border',
+                              'inline-flex items-center gap-1 font-semibold text-2xs px-2 py-0.5 rounded-full border',
                               isUrgent
                                 ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900'
                                 : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900'
@@ -578,7 +578,7 @@ function TrashContent() {
                         {getCategoryBadge(item.category)}
                         <span
                           className={cn(
-                            'inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.2 rounded-full border',
+                            'inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.2 rounded-full border',
                             isUrgent
                               ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300'
                               : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300'
@@ -588,7 +588,7 @@ function TrashContent() {
                           {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-slate-400">
+                      <span className="text-2xs font-mono text-slate-400">
                         {new Date(item.deleted_at).toLocaleDateString()}
                       </span>
                     </div>
@@ -604,7 +604,7 @@ function TrashContent() {
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-2xs text-slate-400">
                         By: {item.deleted_by_name || 'System User'}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -712,7 +712,7 @@ function TrashContent() {
         hideFooter
       >
         <div className="space-y-4 pt-1 max-h-[60vh] overflow-y-auto">
-          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-[11px] font-mono overflow-x-auto">
+          <pre className="p-3 bg-slate-900 text-slate-100 rounded-lg text-2xs font-mono overflow-x-auto">
             {JSON.stringify(inspectedItem?.payload || {}, null, 2)}
           </pre>
           <div className="flex justify-end">

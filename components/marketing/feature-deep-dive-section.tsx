@@ -227,17 +227,17 @@ export function FeatureDeepDiveSection() {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Live SFT Quotation Engine</h4>
-                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">Formula: W × H × Qty × Rate</span>
+                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">Formula: W × H × Qty × Rate</span>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-[9px] sm:text-[10px] text-cyan-300 border-cyan-500/30 shrink-0">
+                <Badge variant="outline" className="text-2xs sm:text-2xs text-cyan-300 border-cyan-500/30 shrink-0">
                   Interactive Demo
                 </Badge>
               </div>
 
               {/* Quick Size Presets */}
               <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-mono uppercase">Quick Size Presets:</span>
+                <span className="text-2xs text-slate-400 font-mono uppercase">Quick Size Presets:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {SIZE_PRESETS.map((sz, idx) => (
                     <button
@@ -248,7 +248,7 @@ export function FeatureDeepDiveSection() {
                         setCalcHeight(sz.h)
                         setCalcQty(sz.q)
                       }}
-                      className="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-md bg-slate-950 hover:bg-slate-800 border border-slate-800 text-2xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
                     >
                       {sz.label}
                     </button>
@@ -258,14 +258,14 @@ export function FeatureDeepDiveSection() {
 
               {/* Media Rate Presets */}
               <div className="space-y-1.5">
-                <span className="text-[10px] text-slate-400 font-mono uppercase">Media & Roll Rate:</span>
+                <span className="text-2xs text-slate-400 font-mono uppercase">Media & Roll Rate:</span>
                 <div className="flex flex-wrap gap-1.5">
                   {MEDIA_PRESETS.map((m, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => setCalcRate(m.rate)}
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors cursor-pointer ${
                         calcRate === m.rate
                           ? 'bg-cyan-500 text-slate-950 font-bold shadow-xs'
                           : 'bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -280,7 +280,7 @@ export function FeatureDeepDiveSection() {
               {/* Input Adjusters */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-[10px] font-mono">Width (ft)</label>
+                  <label className="text-slate-400 block text-2xs font-mono">Width (ft)</label>
                   <input
                     type="number"
                     value={calcWidth}
@@ -289,7 +289,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-[10px] font-mono">Height (ft)</label>
+                  <label className="text-slate-400 block text-2xs font-mono">Height (ft)</label>
                   <input
                     type="number"
                     value={calcHeight}
@@ -298,7 +298,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-[10px] font-mono">Rate (৳/sft)</label>
+                  <label className="text-slate-400 block text-2xs font-mono">Rate (৳/sft)</label>
                   <input
                     type="number"
                     value={calcRate}
@@ -307,7 +307,7 @@ export function FeatureDeepDiveSection() {
                   />
                 </div>
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                  <label className="text-slate-400 block text-[10px] font-mono">Quantity</label>
+                  <label className="text-slate-400 block text-2xs font-mono">Quantity</label>
                   <input
                     type="number"
                     value={calcQty}
@@ -382,18 +382,18 @@ export function FeatureDeepDiveSection() {
                   <Printer className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                   <span className="font-bold text-xs sm:text-sm text-white">Floor Kanban Station</span>
                 </div>
-                <span className="text-[10px] sm:text-[11px] font-mono text-slate-400">Live Press Queue</span>
+                <span className="text-2xs sm:text-2xs font-mono text-slate-400">Live Press Queue</span>
               </div>
 
               {/* 5 Department Status Stages */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-[11px]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 text-2xs">
                 {/* 1. Design */}
                 <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5 sm:space-y-2">
                   <div className="flex justify-between font-bold text-slate-300">
                     <span>Design</span>
                     <span className="text-blue-400">3</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-[10px] border border-slate-800">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-slate-800">
                     <div className="font-semibold text-white truncate">ORD-289 Walton</div>
                     <span className="text-amber-400 font-medium">Waiting Proof</span>
                   </div>
@@ -405,7 +405,7 @@ export function FeatureDeepDiveSection() {
                     <span>Printing</span>
                     <span className="text-cyan-400">6</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-cyan-950/40 text-[10px] border border-cyan-500/30">
+                  <div className="p-1.5 sm:p-2 rounded bg-cyan-950/40 text-2xs border border-cyan-500/30">
                     <div className="font-semibold text-white truncate">ORD-284 Akij</div>
                     <span className="text-cyan-400 font-medium">Flora 10ft Run</span>
                   </div>
@@ -417,7 +417,7 @@ export function FeatureDeepDiveSection() {
                     <span>Finishing</span>
                     <span className="text-fuchsia-400">4</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-[10px] border border-slate-800">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-slate-800">
                     <div className="font-semibold text-white truncate">ORD-285 Beximco</div>
                     <span className="text-fuchsia-400 font-medium">Lamination</span>
                   </div>
@@ -429,7 +429,7 @@ export function FeatureDeepDiveSection() {
                     <span>Fab</span>
                     <span className="text-amber-400">2</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-[10px] border border-slate-800">
+                  <div className="p-1.5 sm:p-2 rounded bg-slate-900 text-2xs border border-slate-800">
                     <div className="font-semibold text-white truncate">ORD-286 Acrylic</div>
                     <span className="text-amber-400 font-medium">LED Wiring</span>
                   </div>
@@ -441,7 +441,7 @@ export function FeatureDeepDiveSection() {
                     <span>Delivery</span>
                     <span className="text-emerald-400">5</span>
                   </div>
-                  <div className="p-1.5 sm:p-2 rounded bg-emerald-950/30 text-[10px] border border-emerald-500/30">
+                  <div className="p-1.5 sm:p-2 rounded bg-emerald-950/30 text-2xs border border-emerald-500/30">
                     <div className="font-semibold text-white truncate">ORD-287 Shwapno</div>
                     <span className="text-emerald-400 font-medium">Challan Ready</span>
                   </div>
@@ -449,7 +449,7 @@ export function FeatureDeepDiveSection() {
               </div>
 
               {/* Job Status Badges Row */}
-              <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center gap-1.5 sm:gap-2 text-[10px]">
+              <div className="pt-2 border-t border-slate-800 flex flex-wrap items-center gap-1.5 sm:gap-2 text-2xs">
                 <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-semibold">Queued</span>
                 <span className="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/40">In Progress</span>
                 <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-semibold border border-emerald-500/40">Completed</span>
@@ -540,10 +540,10 @@ export function FeatureDeepDiveSection() {
                   </div>
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Job Costing Audit & Margins</h4>
-                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">BOM Cost Breakdown</span>
+                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">BOM Cost Breakdown</span>
                   </div>
                 </div>
-                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px] sm:text-xs shrink-0">
+                <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-2xs sm:text-xs shrink-0">
                   {profitMargin}% Net Margin
                 </Badge>
               </div>
@@ -555,7 +555,7 @@ export function FeatureDeepDiveSection() {
                     key={p.id}
                     type="button"
                     onClick={() => setSelectedCostPreset(p.id)}
-                    className={`px-2.5 py-1 rounded-md text-[10px] sm:text-xs font-semibold transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md text-2xs sm:text-xs font-semibold transition-colors cursor-pointer ${
                       selectedCostPreset === p.id
                         ? 'bg-emerald-500 text-slate-950 font-bold shadow-xs'
                         : 'bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -576,7 +576,7 @@ export function FeatureDeepDiveSection() {
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-950/80 border border-slate-800/80 space-y-2">
-                  <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <div className="text-2xs sm:text-2xs font-bold uppercase tracking-wider text-slate-400">
                     Cost of Goods & Operational Expenses:
                   </div>
 
@@ -608,14 +608,14 @@ export function FeatureDeepDiveSection() {
                 {/* Final Net Profit Banner */}
                 <div className="p-3 sm:p-3.5 rounded-xl bg-gradient-to-r from-emerald-950/60 to-slate-900 border border-emerald-500/40 flex flex-col xs:flex-row xs:items-center justify-between gap-2">
                   <div>
-                    <div className="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-emerald-400">
+                    <div className="text-2xs sm:text-2xs uppercase tracking-wider font-bold text-emerald-400">
                       Guaranteed Net Profit
                     </div>
                     <div className="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">
                       + ৳ {netProfit.toLocaleString()} BDT
                     </div>
                   </div>
-                  <span className="px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] sm:text-xs font-bold border border-emerald-500/40 shrink-0 self-start xs:self-auto">
+                  <span className="px-2.5 sm:px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-2xs sm:text-xs font-bold border border-emerald-500/40 shrink-0 self-start xs:self-auto">
                     {profitMargin}% Verified
                   </span>
                 </div>
@@ -636,12 +636,12 @@ export function FeatureDeepDiveSection() {
                   <CreditCard className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400 shrink-0" />
                   <div>
                     <h4 className="text-xs sm:text-sm font-bold text-white">Receivable Ledger & Recovery</h4>
-                    <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">
+                    <span className="text-2xs sm:text-2xs text-slate-400 font-mono">
                       Invoice: {invoiceData.id} • {tBilingual(invoiceData.client, invoiceData.clientBn)}
                     </span>
                   </div>
                 </div>
-                <Badge variant="outline" className="text-amber-400 border-amber-500/40 text-[9px] sm:text-[10px] shrink-0">
+                <Badge variant="outline" className="text-amber-400 border-amber-500/40 text-2xs sm:text-2xs shrink-0">
                   {invoiceData.daysOverdue} Days Past Due
                 </Badge>
               </div>
@@ -656,7 +656,7 @@ export function FeatureDeepDiveSection() {
                       setSelectedInvoice(inv.id)
                       setReminderSent(false)
                     }}
-                    className={`px-2.5 py-1 rounded-md text-[10px] font-semibold transition-colors cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-md text-2xs font-semibold transition-colors cursor-pointer ${
                       selectedInvoice === inv.id
                         ? 'bg-amber-500 text-slate-950 font-bold shadow-xs'
                         : 'bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white'
@@ -670,19 +670,19 @@ export function FeatureDeepDiveSection() {
               {/* Outstanding Amounts Breakdown */}
               <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 text-center">
                 <div className="p-2 sm:p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-mono truncate block">Total Invoice</span>
+                  <span className="text-2xs sm:text-2xs text-slate-400 uppercase font-mono truncate block">Total Invoice</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-white tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.total.toLocaleString()}
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg bg-slate-950 border border-slate-800">
-                  <span className="text-[9px] sm:text-[10px] text-emerald-400 uppercase font-mono truncate block">Advance Paid</span>
+                  <span className="text-2xs sm:text-2xs text-emerald-400 uppercase font-mono truncate block">Advance Paid</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-emerald-400 tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.advance.toLocaleString()}
                   </div>
                 </div>
                 <div className="p-2 sm:p-3 rounded-lg bg-amber-950/30 border border-amber-500/40">
-                  <span className="text-[9px] sm:text-[10px] text-amber-400 uppercase font-mono truncate block">Remaining Due</span>
+                  <span className="text-2xs sm:text-2xs text-amber-400 uppercase font-mono truncate block">Remaining Due</span>
                   <div className="text-xs xs:text-sm sm:text-base font-black text-amber-300 tabular-nums mt-0.5 sm:mt-1">
                     ৳ {invoiceData.due.toLocaleString()}
                   </div>
@@ -692,13 +692,13 @@ export function FeatureDeepDiveSection() {
               {/* WhatsApp Reminder Dispatch Simulation */}
               <div className="p-3.5 sm:p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-300 font-semibold flex items-center gap-1.5 text-[11px] sm:text-xs">
+                  <span className="text-slate-300 font-semibold flex items-center gap-1.5 text-2xs sm:text-xs">
                     <MessageSquare className="h-3.5 w-3.5 text-emerald-400 shrink-0" /> WhatsApp Payment Reminder
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">{invoiceData.phone}</span>
+                  <span className="text-2xs text-slate-400 font-mono">{invoiceData.phone}</span>
                 </div>
 
-                <div className="p-2.5 sm:p-3 rounded-lg bg-slate-900 border border-slate-800 text-[11px] sm:text-xs text-slate-300 italic leading-relaxed">
+                <div className="p-2.5 sm:p-3 rounded-lg bg-slate-900 border border-slate-800 text-2xs sm:text-xs text-slate-300 italic leading-relaxed">
                   &ldquo;{locale === 'bn' ? invoiceData.msgBn : invoiceData.msgEn}&rdquo;
                 </div>
 
@@ -713,7 +713,7 @@ export function FeatureDeepDiveSection() {
                   </Button>
 
                   {reminderSent && (
-                    <span className="text-[11px] sm:text-xs text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in-0">
+                    <span className="text-2xs sm:text-xs text-emerald-400 font-semibold flex items-center gap-1 animate-in fade-in-0">
                       <CheckCircle2 className="h-3.5 w-3.5" /> Delivered to Client
                     </span>
                   )}

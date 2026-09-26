@@ -118,10 +118,10 @@ export function PricingProductsTariffs({
                       </div>
                     )}
                     {p.sku && (
-                      <div className="text-[10px] text-slate-400 font-mono mt-0.5">SKU: {p.sku}</div>
+                      <div className="text-2xs text-slate-400 font-mono mt-0.5">SKU: {p.sku}</div>
                     )}
                   </div>
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 shrink-0">
+                  <Badge variant="outline" className="text-2xs uppercase font-mono font-bold bg-purple-50 text-purple-800 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 shrink-0">
                     {p.unit || 'piece'}
                   </Badge>
                 </div>
@@ -130,14 +130,14 @@ export function PricingProductsTariffs({
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold">Retail Price</span>
+                      <span className="text-2xs text-slate-400 uppercase font-semibold">Retail Price</span>
                       <div className="text-base font-black text-slate-900 dark:text-white font-mono">
                         {formatBDT(baseSell)}
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold">Wholesale Tier</span>
+                      <span className="text-2xs text-slate-400 uppercase font-semibold">Wholesale Tier</span>
                       <div className="text-base font-bold text-blue-700 dark:text-blue-400 font-mono">
                         {formatBDT(resellerPrice)}
                       </div>
@@ -146,7 +146,7 @@ export function PricingProductsTariffs({
 
                   {/* Cost & Margin */}
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-[11px] text-slate-500">
+                    <div className="flex justify-between text-2xs text-slate-500">
                       <span>Acquisition Cost:</span>
                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
@@ -154,7 +154,7 @@ export function PricingProductsTariffs({
                     </div>
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between text-2xs pt-1 border-t border-slate-100 dark:border-slate-800">
                         <span className="text-slate-500">Gross Margin:</span>
                         <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                           {marginPct}%
@@ -167,7 +167,7 @@ export function PricingProductsTariffs({
 
               {/* Card Footer */}
               <div className="p-3 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 capitalize">{p.category || 'Hardware'}</span>
+                <span className="text-2xs text-slate-400 capitalize">{p.category || 'Hardware'}</span>
                 <Button
                   size="sm"
                   variant="outline"

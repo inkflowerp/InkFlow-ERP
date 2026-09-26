@@ -155,7 +155,7 @@ export default function PlatformEmergencyPage() {
           <div className="flex-1">
             <div className="font-bold text-base text-rose-300 flex items-center gap-2">
               <span>{activeControlsCount} EMERGENCY KILL SWITCHES ARE CURRENTLY ACTIVE</span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-900 text-rose-100 border border-rose-700">
+              <span className="px-2 py-0.5 rounded-full text-2xs font-mono bg-rose-900 text-rose-100 border border-rose-700">
                 HIGH ALERT
               </span>
             </div>
@@ -216,7 +216,7 @@ export default function PlatformEmergencyPage() {
                       <h3 className="font-bold text-sm text-white flex items-center gap-2">
                         {control.name}
                         {control.is_active && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-600 text-white uppercase tracking-wider">
+                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-rose-600 text-white uppercase tracking-wider">
                             Active
                           </span>
                         )}
@@ -230,11 +230,11 @@ export default function PlatformEmergencyPage() {
 
                 {control.is_active && (
                   <div className="p-3 rounded-xl bg-slate-950/60 border border-rose-900/40 text-xs text-slate-300 space-y-1">
-                    <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <div className="flex items-center justify-between text-slate-400 text-2xs">
                       <span>Activated by:</span>
                       <span className="font-mono text-slate-200">{control.activated_by_email || 'Platform Owner'}</span>
                     </div>
-                    <div className="flex items-center justify-between text-slate-400 text-[11px]">
+                    <div className="flex items-center justify-between text-slate-400 text-2xs">
                       <span>Reason:</span>
                       <span className="text-rose-300 italic truncate max-w-[220px]">{control.reason || 'Incident mitigation'}</span>
                     </div>
@@ -304,7 +304,7 @@ export default function PlatformEmergencyPage() {
                     <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
                     High Blast Radius Action
                   </div>
-                  <p className="text-[11px] text-rose-200/90 leading-relaxed">
+                  <p className="text-2xs text-rose-200/90 leading-relaxed">
                     This action immediately takes effect cluster-wide across all active tenant companies. It will be recorded permanently in the platform immutable audit trail.
                   </p>
                 </div>

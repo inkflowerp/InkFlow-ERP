@@ -300,54 +300,54 @@ export default function InvoiceCockpitPage() {
       {/* Operational Traceability Flow (Quotation -> Sales Order -> Job Order -> Production -> Delivery -> Invoice -> Payment) */}
       <div className="print:hidden">
         <Card className="p-4 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+          <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider mb-2">
             Commercial & Operational Lifecycle Traceability
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
             <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
-              <span className="text-[10px] text-slate-400 block font-semibold">1. Quotation</span>
+              <span className="text-2xs text-slate-400 block font-semibold">1. Quotation</span>
               <strong className="font-mono font-bold text-slate-700 dark:text-slate-300">
                 {invoice.notes?.includes('QUO-') ? 'Linked' : 'Direct'}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
-              <span className="text-[10px] text-slate-400 block font-semibold">2. Sales Order</span>
+              <span className="text-2xs text-slate-400 block font-semibold">2. Sales Order</span>
               <strong className="font-mono font-bold text-blue-600">
                 {invoice.order_number || 'SO-Direct'}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
-              <span className="text-[10px] text-slate-400 block font-semibold">3. Job Order</span>
+              <span className="text-2xs text-slate-400 block font-semibold">3. Job Order</span>
               <strong className="font-mono font-bold text-slate-700 dark:text-slate-300">
                 Job-{invoice.invoice_number.replace('INV-', '')}
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
-              <span className="text-[10px] text-slate-400 block font-semibold">4. Production</span>
+              <span className="text-2xs text-slate-400 block font-semibold">4. Production</span>
               <strong className="font-bold text-emerald-600 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" /> Ready / Done
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/40">
-              <span className="text-[10px] text-slate-400 block font-semibold">5. Delivery</span>
+              <span className="text-2xs text-slate-400 block font-semibold">5. Delivery</span>
               <strong className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
                 <Truck className="h-3 w-3" /> Dispatched
               </strong>
             </div>
 
             <div className="p-2.5 rounded-lg border-2 border-blue-500 bg-blue-50 dark:bg-blue-950/30">
-              <span className="text-[10px] text-blue-600 dark:text-blue-400 block font-bold">6. Invoice</span>
+              <span className="text-2xs text-blue-600 dark:text-blue-400 block font-bold">6. Invoice</span>
               <strong className="font-mono font-black text-blue-700 dark:text-blue-300">
                 {invoice.invoice_number}
               </strong>
             </div>
 
             <div className={`p-2.5 rounded-lg border ${invoice.due_amount === 0 ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-amber-400 bg-amber-50 dark:bg-amber-950/30'}`}>
-              <span className="text-[10px] text-slate-500 block font-semibold">7. Payment</span>
+              <span className="text-2xs text-slate-500 block font-semibold">7. Payment</span>
               <strong className={`font-bold ${invoice.due_amount === 0 ? 'text-emerald-700 dark:text-emerald-300' : 'text-amber-700 dark:text-amber-300'}`}>
                 {invoice.due_amount === 0 ? 'Fully Settled' : `Due ${formatBDT(invoice.due_amount)}`}
               </strong>
@@ -367,7 +367,7 @@ export default function InvoiceCockpitPage() {
             <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100">
               <div className="font-bold text-sm">গণপ্রজাতন্ত্রী বাংলাদেশ সরকার, জাতীয় রাজস্ব বোর্ড</div>
               <div className="text-lg font-black tracking-wide">কর চালানপত্র</div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-2xs text-slate-500">
                 [বিধি ৪০ এর উপ-বিধি (১) এর দফা (গ) ও দফা (চ) দ্রষ্টব্য]
               </div>
               <div className="text-sm font-bold mt-1 text-purple-700 dark:text-purple-400">
@@ -399,7 +399,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Mushak Table */}
             <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700">
-              <thead className="bg-slate-100 dark:bg-slate-900 font-bold text-[11px]">
+              <thead className="bg-slate-100 dark:bg-slate-900 font-bold text-2xs">
                 <tr>
                   <th className="p-2 border border-slate-300 dark:border-slate-700 text-center">ক্রমিক</th>
                   <th className="p-2 border border-slate-300 dark:border-slate-700">পণ্য বা সেবার বর্ণনা</th>
@@ -419,8 +419,8 @@ export default function InvoiceCockpitPage() {
                       <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{idx + 1}</td>
                       <td className="p-2 border border-slate-300 dark:border-slate-700">
                         <div className="font-bold">{item.item_name || item.item_description}</div>
-                        {item.description_bn && <div className="text-[10px] text-slate-500">{item.description_bn}</div>}
-                        {item.material_spec && <div className="text-[10px] text-slate-400">ম্যাটেরিয়াল: {item.material_spec}</div>}
+                        {item.description_bn && <div className="text-2xs text-slate-500">{item.description_bn}</div>}
+                        {item.material_spec && <div className="text-2xs text-slate-400">ম্যাটেরিয়াল: {item.material_spec}</div>}
                       </td>
                       <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono">{item.dimensions_spec || '—'}</td>
                       <td className="p-2 border border-slate-300 dark:border-slate-700 text-center font-mono font-bold">{item.quantity} {item.unit}</td>
@@ -483,7 +483,7 @@ export default function InvoiceCockpitPage() {
                 </div>
                 <p className="text-slate-500">{company?.address || 'Dhaka, Bangladesh'}{company?.phone ? ` • Phone: ${company.phone}` : ''}</p>
                 {company?.email && <p className="text-slate-400">Email: {company.email}</p>}
-                {company?.bin_no && <p className="text-slate-500 font-mono text-[11px]">BIN: <strong>{company.bin_no}</strong></p>}
+                {company?.bin_no && <p className="text-slate-500 font-mono text-2xs">BIN: <strong>{company.bin_no}</strong></p>}
               </div>
               <div className="text-right space-y-1">
                 <div className="text-2xl font-black font-mono text-blue-600 dark:text-blue-400">
@@ -499,7 +499,7 @@ export default function InvoiceCockpitPage() {
                   Due Date: <span className="font-mono">{invoice.due_date}</span>
                 </div>
                 {invoice.reference_no && (
-                  <div className="text-slate-500 text-[11px]">
+                  <div className="text-slate-500 text-2xs">
                     Ref / PO No: <strong className="font-mono text-slate-800 dark:text-slate-200">{invoice.reference_no}</strong>
                   </div>
                 )}
@@ -509,7 +509,7 @@ export default function InvoiceCockpitPage() {
             {/* Bill To & Dispatch Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                <span className="text-2xs uppercase font-bold text-slate-400 tracking-wider block mb-1">
                   Billed To / গ্রাহকের বিবরণ:
                 </span>
                 <div className="font-bold text-sm text-slate-900 dark:text-white">{invoice.customer_name}</div>
@@ -530,11 +530,11 @@ export default function InvoiceCockpitPage() {
                   )}
                 </div>
                 {invoice.customer_address && <div className="text-slate-500 mt-0.5">📍 {invoice.customer_address}</div>}
-                {invoice.customer_bin && <div className="text-slate-500 font-mono text-[11px] mt-0.5">BIN: {invoice.customer_bin}</div>}
+                {invoice.customer_bin && <div className="text-slate-500 font-mono text-2xs mt-0.5">BIN: {invoice.customer_bin}</div>}
               </div>
 
               <div className="text-left sm:text-right space-y-1">
-                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block mb-1">
+                <span className="text-2xs uppercase font-bold text-slate-400 tracking-wider block mb-1">
                   Fulfillment & Delivery:
                 </span>
                 <div className="font-mono font-bold text-blue-600">
@@ -546,7 +546,7 @@ export default function InvoiceCockpitPage() {
                   </div>
                 )}
                 {invoice.delivery_method && (
-                  <div className="text-slate-500 text-[11px]">
+                  <div className="text-slate-500 text-2xs">
                     Method: <strong className="capitalize">{invoice.delivery_method.replace('_', ' ')}</strong>
                   </div>
                 )}
@@ -560,7 +560,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Items Table with Domain Specifications */}
             <table className="w-full text-left">
-              <thead className="bg-slate-100 dark:bg-slate-900 font-bold text-[11px] text-slate-600 dark:text-slate-400 border-b">
+              <thead className="bg-slate-100 dark:bg-slate-900 font-bold text-2xs text-slate-600 dark:text-slate-400 border-b">
                 <tr>
                   <th className="py-2.5 px-3">SL</th>
                   <th className="py-2.5 px-3">Item Description & Specifications</th>
@@ -579,17 +579,17 @@ export default function InvoiceCockpitPage() {
                         {item.item_name || item.item_description}
                       </div>
                       {item.description_bn && (
-                        <div className="text-[11px] text-slate-500">{item.description_bn}</div>
+                        <div className="text-2xs text-slate-500">{item.description_bn}</div>
                       )}
                       {item.material_spec && (
-                        <div className="text-[10px] text-slate-400 font-medium">
+                        <div className="text-2xs text-slate-400 font-medium">
                           • Substrate: {item.material_spec}
                         </div>
                       )}
 
                       {/* Offset Specs */}
                       {item.offset_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                        <div className="flex flex-wrap items-center gap-1.5 text-2xs font-mono text-slate-600 dark:text-slate-400">
                           {item.offset_specs.paper_gsm && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">GSM: {item.offset_specs.paper_gsm}</span>}
                           {item.offset_specs.color_mode && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Color: {item.offset_specs.color_mode}</span>}
                           {item.offset_specs.binding_type && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Binding: {item.offset_specs.binding_type}</span>}
@@ -599,7 +599,7 @@ export default function InvoiceCockpitPage() {
 
                       {/* 3D Signage Specs */}
                       {item.signage_specs && (
-                        <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                        <div className="flex flex-wrap items-center gap-1.5 text-2xs font-mono text-slate-600 dark:text-slate-400">
                           {item.signage_specs.letter_height_inch && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Height: {item.signage_specs.letter_height_inch}&quot;</span>}
                           {item.signage_specs.led_module_type && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">LED: {item.signage_specs.led_module_type}</span>}
                           {item.signage_specs.frame_structure && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">Frame: {item.signage_specs.frame_structure}</span>}
@@ -607,7 +607,7 @@ export default function InvoiceCockpitPage() {
                       )}
 
                       {item.finishing && item.finishing !== 'None' && (
-                        <div className="text-[10px] text-indigo-600 dark:text-indigo-400 font-semibold">
+                        <div className="text-2xs text-indigo-600 dark:text-indigo-400 font-semibold">
                           ✨ Finishing: {item.finishing}
                         </div>
                       )}
@@ -630,7 +630,7 @@ export default function InvoiceCockpitPage() {
               {/* Left Column: In Words & Remittance Accounts */}
               <div className="sm:col-span-7 space-y-3">
                 <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 text-xs">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">টাকায় ও কথায় (In Words):</span>
+                  <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">টাকায় ও কথায় (In Words):</span>
                   <div className="font-bold text-slate-900 dark:text-white italic">
                     {numberToWordsBDT(invoice.grand_total)}
                   </div>
@@ -642,7 +642,7 @@ export default function InvoiceCockpitPage() {
                     <CreditCard className="h-3.5 w-3.5 text-blue-600" />
                     <span>{tBilingual('Official Payment Remittance:', 'মূল্য পরিশোধের তথ্য:')}</span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-300 font-mono">
+                  <div className="grid grid-cols-2 gap-2 text-2xs text-slate-600 dark:text-slate-300 font-mono">
                     <div>
                       <span>bKash Merchant:</span> <strong>{company?.phone || '01700-000000'}</strong> (Make Payment)
                     </div>
@@ -654,7 +654,7 @@ export default function InvoiceCockpitPage() {
                     </div>
                   </div>
                   {invoice.payment_method_note && (
-                    <div className="text-[11px] text-blue-700 dark:text-blue-300 pt-1 border-t border-blue-200/60 font-medium">
+                    <div className="text-2xs text-blue-700 dark:text-blue-300 pt-1 border-t border-blue-200/60 font-medium">
                       Note: {invoice.payment_method_note}
                     </div>
                   )}
@@ -705,7 +705,7 @@ export default function InvoiceCockpitPage() {
 
             {/* Terms & Signatures */}
             {invoice.terms_and_conditions && (
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-[11px] text-slate-500">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg text-2xs text-slate-500">
                 <strong>{tBilingual('Terms & Conditions: ', 'শর্তাবলী ও নির্দেশিকা: ')}</strong> {invoice.terms_and_conditions}
               </div>
             )}
@@ -770,7 +770,7 @@ export default function InvoiceCockpitPage() {
             {/* Cash Box */}
             <div className="flex justify-between items-center pt-4">
               <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 font-mono">
-                <span className="text-[10px] text-slate-500 block">Total Amount Collected</span>
+                <span className="text-2xs text-slate-500 block">Total Amount Collected</span>
                 <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">
                   {formatBDT(invoice.paid_amount || invoice.grand_total)}
                 </div>
@@ -800,7 +800,7 @@ export default function InvoiceCockpitPage() {
                 <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-between items-center">
                   <div>
                     <span className="font-mono font-bold text-emerald-600">{p.payment_id || p.id}</span>
-                    <div className="text-[10px] text-slate-400">{p.created_at || p.payment_date}</div>
+                    <div className="text-2xs text-slate-400">{p.created_at || p.payment_date}</div>
                   </div>
                   <div className="text-right font-mono font-bold text-sm">
                     {formatBDT(p.allocated_amount || p.amount)}
@@ -827,12 +827,12 @@ export default function InvoiceCockpitPage() {
                 <div key={wo.id} className="p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50/30 dark:bg-red-950/20 space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="text-red-600 font-mono">Waiver: {formatBDT(wo.amount)}</span>
-                    <span className="text-slate-400 text-[10px]">{wo.created_at}</span>
+                    <span className="text-slate-400 text-2xs">{wo.created_at}</span>
                   </div>
                   <div className="text-slate-700 dark:text-slate-300 font-medium">
                     Reason: {wo.reason}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-mono">
+                  <div className="text-2xs text-slate-500 font-mono">
                     Authorized By: {wo.authorized_by_name}
                   </div>
                 </div>

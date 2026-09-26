@@ -309,9 +309,9 @@ export default function PlatformUsagePage() {
                 style={{ width: `${Math.min(summary.users_utilization_pct, 100)}%` }}
               />
             </div>
-            <div className="text-[11px] text-indigo-300 mt-1.5 flex items-center justify-between">
+            <div className="text-2xs text-indigo-300 mt-1.5 flex items-center justify-between">
               <span>{summary.users_utilization_pct}% capacity assigned</span>
-              <span className="text-slate-400 font-mono text-[10px]">{summary.total_branches} Branches</span>
+              <span className="text-slate-400 font-mono text-2xs">{summary.total_branches} Branches</span>
             </div>
           </Card>
 
@@ -338,9 +338,9 @@ export default function PlatformUsagePage() {
                 style={{ width: `${Math.min(summary.storage_utilization_pct, 100)}%` }}
               />
             </div>
-            <div className="text-[11px] text-pink-300 mt-1.5 flex items-center justify-between">
+            <div className="text-2xs text-pink-300 mt-1.5 flex items-center justify-between">
               <span>{summary.storage_utilization_pct}% disk used</span>
-              <span className="text-slate-400 font-mono text-[10px]">PDF Proofs &amp; Artwork</span>
+              <span className="text-slate-400 font-mono text-2xs">PDF Proofs &amp; Artwork</span>
             </div>
           </Card>
 
@@ -367,9 +367,9 @@ export default function PlatformUsagePage() {
                 style={{ width: `${Math.min(summary.orders_utilization_pct, 100)}%` }}
               />
             </div>
-            <div className="text-[11px] text-purple-300 mt-1.5 flex items-center justify-between">
+            <div className="text-2xs text-purple-300 mt-1.5 flex items-center justify-between">
               <span>{summary.orders_utilization_pct}% monthly volume</span>
-              <span className="text-slate-400 font-mono text-[10px]">{summary.total_customers} Customers</span>
+              <span className="text-slate-400 font-mono text-2xs">{summary.total_customers} Customers</span>
             </div>
           </Card>
 
@@ -385,7 +385,7 @@ export default function PlatformUsagePage() {
               </span>
               <span className="text-xs font-normal text-slate-400">tenants need attention</span>
             </div>
-            <div className="text-[11px] text-slate-300 mt-3 flex items-center gap-2">
+            <div className="text-2xs text-slate-300 mt-3 flex items-center gap-2">
               <span className="text-red-400 font-bold">{summary.critical_tenants_count} Critical (&ge;90%)</span>
               <span>•</span>
               <span className="text-amber-400 font-bold">{summary.high_utilization_tenants_count} Warning (&ge;80%)</span>
@@ -449,7 +449,7 @@ export default function PlatformUsagePage() {
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs">
           {/* Health Status Chips */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-400 text-[11px] mr-1">Quota Health:</span>
+            <span className="text-slate-400 text-2xs mr-1">Quota Health:</span>
             {[
               { id: 'all', label: 'All Tenants' },
               { id: 'critical', label: 'Critical / Exceeded (≥90%)', count: summary?.critical_tenants_count },
@@ -470,7 +470,7 @@ export default function PlatformUsagePage() {
                 <span>{chip.label}</span>
                 {chip.count !== undefined && (
                   <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                    className={`text-2xs px-1.5 py-0.2 rounded-full font-mono ${
                       healthFilter === chip.id ? 'bg-white/20 text-white' : 'bg-slate-800 text-slate-300'
                     }`}
                   >
@@ -514,7 +514,7 @@ export default function PlatformUsagePage() {
         <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">Tenant Company</th>
                   <th className="py-3 px-4">Plan &amp; Quota Tier</th>
@@ -554,10 +554,10 @@ export default function PlatformUsagePage() {
                             <span>{r.company_name}</span>
                             <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
                           </Link>
-                          <div className="text-[11px] font-mono text-cyan-400">
+                          <div className="text-2xs font-mono text-cyan-400">
                             {r.company_slug}.printerp.com.bd
                           </div>
-                          <div className="text-[10px] text-slate-400 mt-0.5">
+                          <div className="text-2xs text-slate-400 mt-0.5">
                             {r.owner_phone} • {r.branches_count} of {r.branches_limit} branches
                           </div>
                         </td>
@@ -566,7 +566,7 @@ export default function PlatformUsagePage() {
                         <td className="py-3 px-4">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span
-                              className={`capitalize px-2 py-0.5 rounded text-[10px] font-bold border ${
+                              className={`capitalize px-2 py-0.5 rounded text-2xs font-bold border ${
                                 r.plan_code === 'enterprise'
                                   ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                                   : r.plan_code === 'business'
@@ -579,12 +579,12 @@ export default function PlatformUsagePage() {
                               {r.plan_name}
                             </span>
                             {r.has_custom_limits && (
-                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                              <span className="text-2xs font-bold px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30">
                                 Overrides
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] text-slate-500 mt-1">
+                          <div className="text-2xs text-slate-500 mt-1">
                             {r.customers_count} registered customers
                           </div>
                         </td>
@@ -592,9 +592,9 @@ export default function PlatformUsagePage() {
                         {/* Users Gauge */}
                         <td className="py-3 px-4">
                           <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.users_count}</strong>/{r.users_limit}</span>
-                              <span className={`text-[10px] font-mono ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs font-mono ${r.user_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.user_utilization_pct}%
                               </span>
                             </div>
@@ -616,9 +616,9 @@ export default function PlatformUsagePage() {
                         {/* Storage Gauge */}
                         <td className="py-3 px-4">
                           <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.storage_used_gb}</strong>/{r.storage_limit_gb} GB</span>
-                              <span className={`text-[10px] font-mono ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs font-mono ${r.storage_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.storage_utilization_pct}%
                               </span>
                             </div>
@@ -640,9 +640,9 @@ export default function PlatformUsagePage() {
                         {/* Monthly Orders Gauge */}
                         <td className="py-3 px-4">
                           <div className="space-y-1">
-                            <div className="flex items-center justify-between text-[11px]">
+                            <div className="flex items-center justify-between text-2xs">
                               <span><strong className="text-white">{r.orders_this_month}</strong>/{r.orders_limit}</span>
-                              <span className={`text-[10px] font-mono ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
+                              <span className={`text-2xs font-mono ${r.order_utilization_pct >= 90 ? 'text-red-400 font-bold' : 'text-slate-400'}`}>
                                 {r.order_utilization_pct}%
                               </span>
                             </div>
@@ -664,22 +664,22 @@ export default function PlatformUsagePage() {
                         {/* Quota Health Status */}
                         <td className="py-3 px-4">
                           {r.quota_status === 'exceeded' ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-black px-2.5 py-1 rounded-lg bg-red-950/90 text-red-200 border border-red-700 shadow-sm">
+                            <span className="inline-flex items-center gap-1 text-2xs font-black px-2.5 py-1 rounded-lg bg-red-950/90 text-red-200 border border-red-700 shadow-sm">
                               <AlertTriangle className="h-3 w-3 text-red-400" />
                               <span>{r.max_utilization_pct}% EXCEEDED</span>
                             </span>
                           ) : r.quota_status === 'critical' ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-red-950/80 text-red-300 border border-red-800/80 shadow-sm">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold px-2.5 py-1 rounded-lg bg-red-950/80 text-red-300 border border-red-800/80 shadow-sm">
                               <AlertTriangle className="h-3 w-3 text-red-400" />
                               <span>{r.max_utilization_pct}% CRITICAL</span>
                             </span>
                           ) : r.quota_status === 'warning' ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow-sm">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold px-2.5 py-1 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-800/80 shadow-sm">
                               <AlertTriangle className="h-3 w-3 text-amber-400" />
                               <span>{r.max_utilization_pct}% WARNING</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-lg bg-slate-800 text-emerald-300 border border-slate-700">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold px-2 py-0.5 rounded-lg bg-slate-800 text-emerald-300 border border-slate-700">
                               <CheckCircle2 className="h-3 w-3 text-emerald-400" />
                               <span>{r.max_utilization_pct}% NORMAL</span>
                             </span>
@@ -721,14 +721,14 @@ export default function PlatformUsagePage() {
                 Audited daily/weekly snapshot logs from PostgreSQL cluster database.
               </CardDescription>
             </div>
-            <span className="text-[10px] font-mono uppercase px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
+            <span className="text-2xs font-mono uppercase px-2.5 py-1 rounded bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-bold">
               AUDITED SNAPSHOTS
             </span>
           </CardHeader>
 
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">Snapshot Date</th>
                   <th className="py-3 px-4">Active Staff Seats</th>

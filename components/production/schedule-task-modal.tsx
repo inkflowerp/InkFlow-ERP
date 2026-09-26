@@ -183,11 +183,11 @@ export function ScheduleTaskModal({
             <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
               {task.task_name}
             </span>
-            <Badge variant="outline" className="text-[10px] uppercase font-mono">
+            <Badge variant="outline" className="text-2xs uppercase font-mono">
               {task.task_number}
             </Badge>
           </div>
-          <div className="text-[11px] text-slate-500 flex items-center gap-3 flex-wrap">
+          <div className="text-2xs text-slate-500 flex items-center gap-3 flex-wrap">
             <span>Job #{task.job_number || 'N/A'}</span>
             <span>•</span>
             <span>Qty: {task.quantity} {task.unit}</span>
@@ -221,7 +221,7 @@ export function ScheduleTaskModal({
               <button
                 type="button"
                 onClick={handleAutoEstimateDuration}
-                className="text-[11px] text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium flex items-center gap-1"
+                className="text-2xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium flex items-center gap-1"
               >
                 <Sparkles className="h-3 w-3" />
                 {tBilingual('Auto-calc Duration from Speed', 'গতি থেকে সময় হিসাব')}
@@ -248,7 +248,7 @@ export function ScheduleTaskModal({
 
           {/* Machine Compatibility Banner */}
           {machineCompatibility && (
-            <div className={`p-2.5 rounded text-[11px] flex items-start gap-2 border ${
+            <div className={`p-2.5 rounded text-2xs flex items-start gap-2 border ${
               machineCompatibility.isCompatible
                 ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                 : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'

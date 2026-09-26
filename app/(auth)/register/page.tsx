@@ -169,7 +169,7 @@ function RegisterForm() {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
+            <div className="relative flex justify-center text-2xs uppercase font-bold tracking-wider">
               <span className="bg-white px-2.5 text-slate-400 dark:bg-slate-900">
                 {locale === 'bn' ? 'অথবা' : 'Or'}
               </span>

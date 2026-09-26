@@ -164,7 +164,7 @@ export function InventoryTabsNavigation({
             {tab.count !== undefined && (
               <span
                 className={cn(
-                  'px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold',
+                  'px-1.5 py-0.5 rounded-full text-2xs font-mono font-bold',
                   tab.alert
                     ? 'bg-amber-500 text-white animate-pulse'
                     : isActive

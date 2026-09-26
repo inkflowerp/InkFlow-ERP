@@ -341,7 +341,7 @@ export function CategoryModal({
           <div className="flex items-center justify-between rounded-xl border border-slate-800 bg-slate-800/50 px-4 py-2.5">
             <div>
               <span className="text-xs font-semibold text-slate-200">Active</span>
-              <p className="text-[11px] text-slate-400">Available in product and quotation selectors</p>
+              <p className="text-2xs text-slate-400">Available in product and quotation selectors</p>
             </div>
             <label className="relative inline-flex cursor-pointer items-center">
               <input
@@ -368,7 +368,7 @@ export function CategoryModal({
             {showAdvanced && (
               <div className="mt-3 p-3 rounded-xl border border-slate-800 bg-slate-800/40 space-y-3 animate-in fade-in">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-2xs font-semibold text-slate-300 mb-1">
                     Display Order
                   </label>
                   <input
@@ -381,7 +381,7 @@ export function CategoryModal({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                  <label className="block text-2xs font-semibold text-slate-300 mb-1">
                     Granular Product Type Applicability
                   </label>
                   <select

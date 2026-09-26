@@ -378,8 +378,8 @@ export default function NotificationSettingsPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <CardTitle className="text-base">Realtime Audio Chimes &amp; Browser Push</CardTitle>
-                  <Badge className="bg-indigo-600 text-white text-[10px] font-bold">Web Audio 2.0</Badge>
-                  <Badge className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold">
+                  <Badge className="bg-indigo-600 text-white text-2xs font-bold">Web Audio 2.0</Badge>
+                  <Badge className="bg-emerald-600/20 text-emerald-400 border border-emerald-500/30 text-2xs font-bold">
                     Limiter Protected
                   </Badge>
                 </div>
@@ -446,7 +446,7 @@ export default function NotificationSettingsPage() {
 
               {/* Quick Volume Preset Buttons */}
               <div className="flex items-center gap-1.5 pt-1">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">Presets:</span>
+                <span className="text-2xs text-slate-400 uppercase font-semibold">Presets:</span>
                 {[
                   { label: '25% Subtle', val: 25 },
                   { label: '50% Normal', val: 50 },
@@ -457,7 +457,7 @@ export default function NotificationSettingsPage() {
                     key={preset.val}
                     type="button"
                     onClick={() => handleVolumePreset(preset.val)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                    className={`px-2 py-0.5 rounded text-2xs font-bold border transition-colors cursor-pointer ${
                       volume === preset.val && !soundMuted
                         ? 'bg-indigo-600 text-white border-indigo-500'
                         : 'bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-indigo-400'
@@ -468,7 +468,7 @@ export default function NotificationSettingsPage() {
                 ))}
               </div>
 
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 Crafted with dynamic limiter compression to cut through loud printing presses, noisy cutter machines, and busy retail counters without digital distortion.
               </p>
             </div>
@@ -486,10 +486,10 @@ export default function NotificationSettingsPage() {
                 <Badge
                   className={
                     browserPerm === 'granted'
-                      ? 'bg-emerald-600 text-white text-[10px]'
+                      ? 'bg-emerald-600 text-white text-2xs'
                       : browserPerm === 'denied'
-                      ? 'bg-rose-600 text-white text-[10px]'
-                      : 'bg-amber-600 text-white text-[10px]'
+                      ? 'bg-rose-600 text-white text-2xs'
+                      : 'bg-amber-600 text-white text-2xs'
                   }
                 >
                   {browserPerm === 'granted'
@@ -501,7 +501,7 @@ export default function NotificationSettingsPage() {
               </div>
 
               <div className="flex items-center justify-between gap-3 pt-1">
-                <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <span className="text-2xs text-slate-500 dark:text-slate-400">
                   {browserPerm === 'granted'
                     ? 'System alerts will pop up even when the browser tab is minimized or in background.'
                     : 'Enable browser permission to receive desktop alerts when away from the tab.'}
@@ -539,7 +539,7 @@ export default function NotificationSettingsPage() {
                   <Sparkles className="h-4 w-4 text-amber-500" />
                   Sound Synthesizer &amp; Alert Studio (13 Archetypes)
                 </span>
-                <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-[10px]">
+                <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/30 text-2xs">
                   {filteredCatalog.length} Sounds
                 </Badge>
               </div>
@@ -557,7 +557,7 @@ export default function NotificationSettingsPage() {
                     key={tab.key}
                     type="button"
                     onClick={() => setSelectedCategory(tab.key)}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer ${
+                    className={`px-2.5 py-1 rounded-lg text-2xs font-semibold transition-all cursor-pointer ${
                       selectedCategory === tab.key
                         ? 'bg-indigo-600 text-white'
                         : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-white'
@@ -609,25 +609,25 @@ export default function NotificationSettingsPage() {
                             <div className="text-xs font-bold text-slate-800 dark:text-slate-100">
                               {tBilingual(item.nameEn, item.nameBn)}
                             </div>
-                            <span className="text-[10px] text-slate-400 uppercase font-mono tracking-wider">
+                            <span className="text-2xs text-slate-400 uppercase font-mono tracking-wider">
                               {item.category} • {item.waveform}
                             </span>
                           </div>
                         </div>
 
                         {isPlayingThis && (
-                          <span className="flex items-center gap-1 text-[10px] text-indigo-400 font-bold animate-pulse">
+                          <span className="flex items-center gap-1 text-2xs text-indigo-400 font-bold animate-pulse">
                             <Volume2 className="h-3 w-3" />
                             Playing
                           </span>
                         )}
                       </div>
 
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 leading-relaxed">
                         {tBilingual(item.descEn, item.descBn)}
                       </p>
 
-                      <div className="text-[9px] font-mono text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 truncate">
+                      <div className="text-2xs font-mono text-slate-400 bg-slate-50 dark:bg-slate-950/60 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800 truncate">
                         {item.frequencies}
                       </div>
                     </div>
@@ -636,7 +636,7 @@ export default function NotificationSettingsPage() {
                       <button
                         type="button"
                         onClick={() => handleTestSound(item.type)}
-                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
+                        className="px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/80 text-2xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5"
                         title="Play audio chime only"
                       >
                         <Volume2 className="h-3.5 w-3.5" />
@@ -645,7 +645,7 @@ export default function NotificationSettingsPage() {
                       <button
                         type="button"
                         onClick={() => handleTestLivePopup(item.type)}
-                        className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-[11px] font-bold text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"
+                        className="px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-2xs font-bold text-white transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 shadow-sm"
                         title="Trigger live popup card & chime"
                       >
                         <Bell className="h-3.5 w-3.5" />

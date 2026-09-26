@@ -298,7 +298,7 @@ export default function TaxSettingsPage() {
                   <Receipt className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   <span>{tBilingual('NBR Monthly VAT Return Summary (Mushak-9.1)', 'এনবিআর মাসিক মূসক রিটার্ন সারাংশ (মূসক-৯.১)')}</span>
                 </h3>
-                <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-[11px] font-mono font-bold">
+                <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-2xs font-mono font-bold">
                   {vatReturnSummary.period}
                 </Badge>
               </div>
@@ -337,7 +337,7 @@ export default function TaxSettingsPage() {
               </div>
 
               <div className="text-right pl-3 border-l border-emerald-200/80 dark:border-emerald-800/80">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">
+                <span className="text-2xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">
                   {tBilingual('Net Treasury Payable', 'সরকারি কোষাগারে প্রদেয়')}
                 </span>
                 <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300">
@@ -350,9 +350,9 @@ export default function TaxSettingsPage() {
 
         <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[11px] font-semibold">
+            <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-2xs font-semibold">
               <span>{tBilingual('1. Gross Taxable Turnover', '১. মোট করযোগ্য বিক্রয়')}</span>
-              <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+              <span className="font-mono text-2xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                 {vatReturnSummary.invoiceCount} {tBilingual('invoices', 'চালান')}
               </span>
             </div>
@@ -362,9 +362,9 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-[11px] font-semibold">
+            <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-2xs font-semibold">
               <span>{tBilingual('2. Output VAT', '২. প্রদেয় বিক্রয় মূসক')}</span>
-              <Badge variant="outline" className="text-[9px] font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
+              <Badge variant="outline" className="text-2xs font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
                 Mushak 6.3
               </Badge>
             </div>
@@ -374,9 +374,9 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 text-[11px] font-semibold">
+            <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 text-2xs font-semibold">
               <span>{tBilingual('3. Input VAT Rebate', '৩. অনুমোদিত রেয়াত')}</span>
-              <span className="font-mono text-[10px] bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
+              <span className="font-mono text-2xs bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
                 {vatReturnSummary.purchaseCount} {tBilingual('bills', 'বিল')}
               </span>
             </div>
@@ -460,7 +460,7 @@ export default function TaxSettingsPage() {
                       <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+                  <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
                     {tBilingual('VAT is added on top of item rate. Standard for commercial B2B printing.', 'পণ্যের মূল্যের সাথে অতিরিক্ত ভ্যাট যুক্ত হবে।')}
                   </div>
                 </button>
@@ -483,7 +483,7 @@ export default function TaxSettingsPage() {
                       <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-snug">
+                  <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 leading-snug">
                     {tBilingual('Item price already contains VAT. Standard for retail digital POS counters.', 'পণ্যের নির্ধারিত মূল্যের ভেতর ভ্যাট অন্তর্ভুক্ত থাকবে।')}
                   </div>
                 </button>
@@ -537,7 +537,7 @@ export default function TaxSettingsPage() {
                   <span className="text-xs font-bold text-slate-400">%</span>
                 </div>
               </div>
-              <span className="text-[11px] text-slate-400 dark:text-slate-500 block leading-snug">
+              <span className="text-2xs text-slate-400 dark:text-slate-500 block leading-snug">
                 {tBilingual(
                   'Standard NBR rate for manufacturing, offset printing, and signage is 15%. Truncated rates apply for agency or retail services.',
                   'ম্যানুফ্যাকচারিং, অফসেট প্রিন্টিং ও সাইনেজের জন্য এনবিআরের আদর্শ হার ১৫%।'
@@ -570,7 +570,7 @@ export default function TaxSettingsPage() {
                   <Label className="font-bold text-xs text-slate-900 dark:text-slate-100">
                     {tBilingual('VDS (VAT Deducted at Source)', 'উৎসে মূসক কর্তন')}
                   </Label>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-2xs text-slate-500 mt-0.5">
                     {tBilingual('Withheld by corporate & institutional clients', 'কর্পোরেট গ্রাহক কর্তৃক কর্তিত মূসক')}
                   </p>
                 </div>
@@ -623,7 +623,7 @@ export default function TaxSettingsPage() {
                   <Label className="font-bold text-xs text-slate-900 dark:text-slate-100">
                     {tBilingual('TDS (Income Tax Deducted at Source)', 'উৎসে আয়কর কর্তন')}
                   </Label>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-2xs text-slate-500 mt-0.5">
                     {tBilingual('Income tax deducted on supply of print goods', 'প্রিন্টিং পণ্য সরবরাহের বিপরীতে কর্তিত আয়কর')}
                   </p>
                 </div>
@@ -695,7 +695,7 @@ export default function TaxSettingsPage() {
                 {taxSettings.bin_number && (
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${
+                    className={`text-2xs font-mono ${
                       binIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
@@ -723,7 +723,7 @@ export default function TaxSettingsPage() {
                 {taxSettings.tin_number && (
                   <Badge
                     variant="outline"
-                    className={`text-[10px] font-mono ${
+                    className={`text-2xs font-mono ${
                       tinIsValid
                         ? 'border-emerald-500 text-emerald-700 dark:text-emerald-300'
                         : 'border-amber-500 text-amber-700 dark:text-amber-300'
@@ -867,7 +867,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+            <div className="text-2xs text-slate-500 dark:text-slate-400">
               {tBilingual(
                 'Changes take effect immediately on all new invoices, quotations, and challans.',
                 'পরিবর্তনসমূহ তাৎক্ষণিকভাবে সকল নতুন ইনভয়েস ও কোটেশনে কার্যকর হবে।'
@@ -894,14 +894,14 @@ export default function TaxSettingsPage() {
               {tBilingual('Live Pricing, VAT & Withholding Simulator', 'লাইভ প্রাইসিং, ভ্যাট ও উৎসে কর সিমুলেটর')}
             </h3>
           </div>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-2xs text-slate-500 font-mono">
             {testMode === 'inclusive' ? 'Base = Total / (1 + Rate)' : 'VAT = Base * Rate'}
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-3">
           <div className="space-y-1">
-            <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
               {tBilingual('Order Amount', 'অর্ডার মূল্য')}
             </Label>
             <Input
@@ -913,7 +913,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
               {tBilingual('VAT Rate (%)', 'ভ্যাট হার (%)')}
             </Label>
             <Input
@@ -925,7 +925,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
               {tBilingual('Pricing Mode', 'মূল্য মোড')}
             </Label>
             <select
@@ -939,7 +939,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
               {tBilingual('VDS Deduction (%)', 'উৎসে মূসক কর্তন (%)')}
             </Label>
             <Input
@@ -953,7 +953,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300">
+            <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
               {tBilingual('TDS Deduction (%)', 'উৎসে আয়কর কর্তন (%)')}
             </Label>
             <Input
@@ -969,14 +969,14 @@ export default function TaxSettingsPage() {
 
         <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 text-xs font-mono grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div className="space-y-0.5">
-            <span className="text-slate-500 text-[10px] uppercase">{tBilingual('Base Price', 'মূল পণ্যের দাম')}:</span>
+            <span className="text-slate-500 text-2xs uppercase">{tBilingual('Base Price', 'মূল পণ্যের দাম')}:</span>
             <div className="font-bold text-slate-900 dark:text-slate-100 text-sm">
               {formatBDT(testCalcResult.baseAmount)}
             </div>
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-blue-600 dark:text-blue-400 text-[10px] uppercase">
+            <span className="text-blue-600 dark:text-blue-400 text-2xs uppercase">
               {tBilingual('VAT Amount', 'ভ্যাট পরিমাণ')} ({testCalcResult.vatRate}%):
             </span>
             <div className="font-bold text-blue-600 dark:text-blue-400 text-sm">
@@ -985,7 +985,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-0.5">
-            <span className="text-purple-600 dark:text-purple-400 text-[10px] uppercase">
+            <span className="text-purple-600 dark:text-purple-400 text-2xs uppercase">
               {tBilingual('Withheld (VDS+TDS)', 'মোট উৎসে কর্তন')}:
             </span>
             <div className="font-bold text-purple-600 dark:text-purple-400 text-sm">
@@ -994,7 +994,7 @@ export default function TaxSettingsPage() {
           </div>
 
           <div className="space-y-0.5 bg-emerald-50 dark:bg-emerald-950/40 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800">
-            <span className="text-emerald-700 dark:text-emerald-300 text-[10px] uppercase font-bold">
+            <span className="text-emerald-700 dark:text-emerald-300 text-2xs uppercase font-bold">
               {tBilingual('Net Cash/Bank Due', 'নেট প্রাপ্তব্য টাকা')}:
             </span>
             <div className="font-black text-emerald-700 dark:text-emerald-300 text-base">

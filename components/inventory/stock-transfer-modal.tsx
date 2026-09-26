@@ -328,7 +328,7 @@ export function StockTransferModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-2 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
+                className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700"
               >
                 Movement
               </Badge>
@@ -485,14 +485,14 @@ export function StockTransferModal({
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 font-mono font-bold flex items-center justify-center text-[10px]">
+                      <span className="h-5 w-5 rounded-md bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 font-mono font-bold flex items-center justify-center text-2xs">
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
                         {liveMat?.name || item.material_name}
                       </span>
                       {liveMat?.sku && (
-                        <Badge variant="outline" className="text-[9px] font-mono py-0 px-1.5">
+                        <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
                           {liveMat.sku}
                         </Badge>
                       )}
@@ -513,7 +513,7 @@ export function StockTransferModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                     {/* Material Selector */}
                     <div className="sm:col-span-5">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">
                         Material Item <span className="text-rose-500">*</span>
                       </Label>
                       <select
@@ -533,7 +533,7 @@ export function StockTransferModal({
 
                     {/* Quantity */}
                     <div className="sm:col-span-2">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">
                         Transfer Qty ({item.unit}) <span className="text-rose-500">*</span>
                       </Label>
                       <Input
@@ -552,7 +552,7 @@ export function StockTransferModal({
 
                     {/* Unit Valuation */}
                     <div className="sm:col-span-2">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">Unit Rate (৳)</Label>
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">Unit Rate (৳)</Label>
                       <div className="h-8.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center font-mono text-slate-700 dark:text-slate-300">
                         {formatBDT(item.unit_cost)}
                       </div>
@@ -560,11 +560,11 @@ export function StockTransferModal({
 
                     {/* Roll Tag / Physical Batch */}
                     <div className="sm:col-span-3">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">Physical Roll (Optional)</Label>
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">Physical Roll (Optional)</Label>
                       <select
                         value={item.roll_id || ''}
                         onChange={(e) => handleItemChange(idx, 'roll_id', e.target.value || null)}
-                        className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-[11px] font-mono"
+                        className="w-full h-8.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 text-2xs font-mono"
                       >
                         <option value="">-- Bulk Units --</option>
                         {matchingRolls.map((r) => (
@@ -577,7 +577,7 @@ export function StockTransferModal({
                   </div>
 
                   {/* Stock Availability & Insufficient Warning */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       <span>
                         Available Stock: <strong className="text-slate-800 dark:text-slate-200">{availableStock} {item.unit}</strong>
@@ -611,7 +611,7 @@ export function StockTransferModal({
               </div>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Moving Valuation</span>
+              <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Total Moving Valuation</span>
               <div className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
                 {formatBDT(totalValuation)}
               </div>
@@ -676,7 +676,7 @@ export function StockTransferModal({
                   key={idx}
                   type="button"
                   onClick={() => setReason(p.reasonEn)}
-                  className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-blue-950/60 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                  className="text-2xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-blue-100 dark:hover:bg-blue-950/60 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                 >
                   🏷️ {p.tag}
                 </button>

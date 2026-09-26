@@ -59,7 +59,7 @@ export function BangladeshSpecificSection() {
                   <span className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs border border-emerald-500/20 group-hover:scale-105 transition-transform shrink-0">
                     {idx + 1}
                   </span>
-                  <span className="text-[10px] font-mono text-slate-500 uppercase">
+                  <span className="text-2xs font-mono text-slate-500 uppercase">
                     Local Feature
                   </span>
                 </div>
@@ -73,7 +73,7 @@ export function BangladeshSpecificSection() {
                 </p>
               </div>
 
-              <div className="pt-3.5 sm:pt-4 mt-4 sm:mt-5 border-t border-slate-800/80 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400">
+              <div className="pt-3.5 sm:pt-4 mt-4 sm:mt-5 border-t border-slate-800/80 flex items-center gap-1.5 text-2xs font-semibold text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                 <span>NBR & Industry Verified</span>
               </div>

@@ -76,7 +76,7 @@ export function FinalCTASection({ onOpenDemo }: FinalCTASectionProps) {
           </div>
 
           {/* Guarantees */}
-          <div className="pt-4 sm:pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-[11px] sm:text-xs text-slate-400">
+          <div className="pt-4 sm:pt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-2xs sm:text-xs text-slate-400">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-cyan-400 shrink-0" />
               No credit card required

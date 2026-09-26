@@ -204,25 +204,25 @@ export default function CommunicationsHubPage() {
             )}
           </div>
           <div className="text-2xl font-black text-blue-600 mt-1">{unreadCount} Alerts</div>
-          <span className="text-[11px] text-slate-400">Requires team attention</span>
+          <span className="text-2xs text-slate-400">Requires team attention</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-600">
           <span className="text-xs font-semibold text-slate-500">Messages Sent Today</span>
           <div className="text-2xl font-black text-emerald-600 mt-1">{commLogs.length + 8} Dispatches</div>
-          <span className="text-[11px] text-emerald-600 font-medium">WhatsApp &amp; SMS combined</span>
+          <span className="text-2xs text-emerald-600 font-medium">WhatsApp &amp; SMS combined</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-purple-600">
           <span className="text-xs font-semibold text-slate-500">Delivery Success Rate</span>
           <div className="text-2xl font-black text-purple-600 mt-1">99.4%</div>
-          <span className="text-[11px] text-slate-400">Carrier delivered</span>
+          <span className="text-2xs text-slate-400">Carrier delivered</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-amber-500">
           <span className="text-xs font-semibold text-slate-500">SMS Gateway Balance</span>
           <div className="text-2xl font-black text-amber-600 mt-1">৳ 1,450.50</div>
-          <span className="text-[11px] text-amber-700 font-medium">BulkSMSBD Masking Active</span>
+          <span className="text-2xs text-amber-700 font-medium">BulkSMSBD Masking Active</span>
         </Card>
       </div>
 
@@ -240,7 +240,7 @@ export default function CommunicationsHubPage() {
             <Bell className="h-3.5 w-3.5 mr-1.5" />
             In-App Feed (ইনবক্স)
             {unreadCount > 0 && (
-              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-[10px] bg-white text-blue-700 font-bold">
+              <span className="ml-1.5 px-1.5 py-0.2 rounded-full text-2xs bg-white text-blue-700 font-bold">
                 {unreadCount}
               </span>
             )}
@@ -336,7 +336,7 @@ export default function CommunicationsHubPage() {
                   <p className="text-xs text-slate-600 dark:text-slate-300 bangla-text">
                     {tBilingual(notif.message, notif.message_bn || notif.message)}
                   </p>
-                  <span className="text-[10px] text-slate-400 font-mono block pt-0.5">
+                  <span className="text-2xs text-slate-400 font-mono block pt-0.5">
                     {notif.created_at}
                   </span>
                 </div>
@@ -405,7 +405,7 @@ export default function CommunicationsHubPage() {
                             <span className="text-purple-600 font-mono">Email</span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{log.created_at}</div>
+                        <div className="text-2xs text-slate-400 font-mono mt-0.5">{log.created_at}</div>
                       </td>
 
                       <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
@@ -420,12 +420,12 @@ export default function CommunicationsHubPage() {
                         {log.message_content}
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono text-slate-500 text-[11px]">
+                      <td className="py-3.5 px-4 font-mono text-slate-500 text-2xs">
                         {log.provider_used}
                       </td>
 
                       <td className="py-3.5 px-4 text-center">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
                           <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
                         </span>
                       </td>
@@ -447,7 +447,7 @@ export default function CommunicationsHubPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2">
                         <span
-                          className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                          className={`font-mono text-2xs font-bold px-2 py-0.5 rounded uppercase ${
                             log.channel === 'whatsapp'
                               ? 'bg-emerald-100 text-emerald-700'
                               : log.channel === 'sms'
@@ -461,7 +461,7 @@ export default function CommunicationsHubPage() {
                           {log.recipient_name}
                         </span>
                       </div>
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
                         <CheckCircle2 className="h-3 w-3 text-emerald-600" /> Delivered
                       </span>
                     </div>
@@ -470,7 +470,7 @@ export default function CommunicationsHubPage() {
                       {log.message_content}
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[11px] text-slate-400 font-mono">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-2xs text-slate-400 font-mono">
                       <span>Dest: {log.recipient_destination}</span>
                       <span>{log.created_at} • {log.provider_used}</span>
                     </div>
@@ -510,7 +510,7 @@ export default function CommunicationsHubPage() {
               </div>
             </div>
 
-            <span className="text-[11px] sm:text-xs text-slate-400 font-mono break-all sm:break-normal">
+            <span className="text-2xs sm:text-xs text-slate-400 font-mono break-all sm:break-normal">
               Supported Variables: {'{{customer_name}}, {{order_number}}, {{invoice_number}}, {{amount}}, {{due_amount}}, {{delivery_date}}'}
             </span>
           </div>
@@ -521,9 +521,9 @@ export default function CommunicationsHubPage() {
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-sm text-slate-900 dark:text-white">{tpl.name}</h4>
-                    <span className="font-mono text-[10px] text-blue-600">{tpl.template_key}</span>
+                    <span className="font-mono text-2xs text-blue-600">{tpl.template_key}</span>
                   </div>
-                  <Badge variant="outline" className="uppercase text-[10px]">
+                  <Badge variant="outline" className="uppercase text-2xs">
                     {tpl.channel}
                   </Badge>
                 </div>
@@ -532,7 +532,7 @@ export default function CommunicationsHubPage() {
                   {templateLang === 'bn' ? tpl.body_bn : tpl.body_en}
                 </div>
 
-                <div className="flex justify-between items-center text-[11px] text-slate-400 pt-1">
+                <div className="flex justify-between items-center text-2xs text-slate-400 pt-1">
                   <span>Interpolation Engine: Active</span>
                   <Button
                     size="sm"
@@ -564,7 +564,7 @@ export default function CommunicationsHubPage() {
                 <Smartphone className="h-4 w-4 text-emerald-600" />
                 WhatsApp Business API
               </h4>
-              <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">Connected</Badge>
+              <Badge className="bg-emerald-100 text-emerald-800 text-2xs">Connected</Badge>
             </div>
             <p className="text-xs text-slate-500">
               Meta Cloud API for instant PDF quotation, invoice, and delivery tracking dispatch.
@@ -588,7 +588,7 @@ export default function CommunicationsHubPage() {
                 <MessageSquare className="h-4 w-4 text-blue-600" />
                 Bangladesh SMS Gateway
               </h4>
-              <Badge className="bg-blue-100 text-blue-800 text-[10px]">Active Provider</Badge>
+              <Badge className="bg-blue-100 text-blue-800 text-2xs">Active Provider</Badge>
             </div>
             <p className="text-xs text-slate-500">
               Multi-provider abstraction for verified Bangladeshi telco aggregators.
@@ -621,7 +621,7 @@ export default function CommunicationsHubPage() {
                 <Mail className="h-4 w-4 text-purple-600" />
                 Custom SMTP Server
               </h4>
-              <Badge className="bg-purple-100 text-purple-800 text-[10px]">Configured</Badge>
+              <Badge className="bg-purple-100 text-purple-800 text-2xs">Configured</Badge>
             </div>
             <p className="text-xs text-slate-500">
               Corporate email transport for sending formal PDF estimates and payment receipts.
@@ -717,7 +717,7 @@ export default function CommunicationsHubPage() {
 
           {/* Interpolated Preview Box */}
           <div className="p-3 bg-slate-50 dark:bg-slate-900 border rounded-xl space-y-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Live Interpolated Preview:</span>
+            <span className="text-2xs uppercase font-bold text-slate-400">Live Interpolated Preview:</span>
             <p className="text-xs font-mono text-slate-800 dark:text-slate-200">
               {renderTemplate(
                 templateLang === 'bn'

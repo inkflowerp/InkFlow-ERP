@@ -148,7 +148,7 @@ export function NotificationsDropdown() {
       >
         <Bell className="h-4 w-4" />
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-xs">
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-600 text-2xs font-bold text-white shadow-xs">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -162,7 +162,7 @@ export function NotificationsDropdown() {
                   {tBilingual('Notifications', 'নোটিফিকেশন')}
                 </span>
                 {unreadCount > 0 && (
-                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300 bangla-text">
+                  <span className="rounded-full bg-blue-100 px-2 py-0.5 text-2xs font-bold text-blue-800 dark:bg-blue-950 dark:text-blue-300 bangla-text">
                     {unreadCount} {tBilingual('new', 'নতুন')}
                   </span>
                 )}
@@ -217,7 +217,7 @@ export function NotificationsDropdown() {
                         <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                           {desc}
                         </p>
-                        <span className="text-[10px] text-slate-400 mt-1 block">
+                        <span className="text-2xs text-slate-400 mt-1 block">
                           {time}
                         </span>
                       </div>

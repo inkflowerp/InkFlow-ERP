@@ -1141,7 +1141,7 @@ function EmployeeListContent() {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-slate-900 dark:text-white">{employees.length}</div>
-          <p className="text-[11px] text-slate-400 mt-1 truncate">
+          <p className="text-2xs text-slate-400 mt-1 truncate">
             {tBilingual('Registered workforce profiles', 'নিবন্ধিত জনবল প্রোফাইল')}
           </p>
         </Card>
@@ -1156,7 +1156,7 @@ function EmployeeListContent() {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-emerald-600 dark:text-emerald-400">{permanentCount}</div>
-          <p className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 truncate">
+          <p className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 mt-1 truncate">
             {tBilingual('Full-time payroll members', 'স্থায়ী চুক্তিবদ্ধ কর্মী')}
           </p>
         </Card>
@@ -1171,7 +1171,7 @@ function EmployeeListContent() {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-amber-600 dark:text-amber-400">{dailyCount + hourlyCount}</div>
-          <p className="text-[11px] text-amber-600/80 dark:text-amber-400/80 mt-1 truncate">
+          <p className="text-2xs text-amber-600/80 dark:text-amber-400/80 mt-1 truncate">
             {tBilingual('Flexible floor & shift labor', 'চুক্তিভিত্তিক শিফট শ্রমিক')}
           </p>
         </Card>
@@ -1186,7 +1186,7 @@ function EmployeeListContent() {
             </div>
           </div>
           <div className="mt-2 text-2xl font-black text-purple-600 dark:text-purple-400">{onLeaveCount}</div>
-          <p className="text-[11px] text-purple-600/80 dark:text-purple-400/80 mt-1 truncate">
+          <p className="text-2xs text-purple-600/80 dark:text-purple-400/80 mt-1 truncate">
             {tBilingual('Approved leave leaves', 'অনুমোদিত ছুটিতে রয়েছেন')}
           </p>
         </Card>
@@ -1230,7 +1230,7 @@ function EmployeeListContent() {
                     <span>{tab.label}</span>
                     {tab.count > 0 && (
                       <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                        className={`text-2xs px-1.5 py-0.2 rounded-full ${
                           isSelected
                             ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
                             : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
@@ -1332,7 +1332,7 @@ function EmployeeListContent() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-2xs uppercase tracking-wider">
                   <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                   <th className="p-3.5">{tBilingual('ID / Code', 'আইডি কোড')}</th>
                   <th className="p-3.5">{tBilingual('Department & Role', 'বিভাগ ও পদবি')}</th>
@@ -1355,26 +1355,26 @@ function EmployeeListContent() {
                           <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                             <span>{emp.name}</span>
                             {emp.name_bn && (
-                              <span className="text-[11px] text-slate-400 font-normal">({emp.name_bn})</span>
+                              <span className="text-2xs text-slate-400 font-normal">({emp.name_bn})</span>
                             )}
                           </div>
-                          <div className="text-[11px] text-slate-500 capitalize">
+                          <div className="text-2xs text-slate-500 capitalize">
                             {emp.employee_type.replace('_', ' ')}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td className="p-3.5 font-mono text-[11px] text-slate-500">
+                    <td className="p-3.5 font-mono text-2xs text-slate-500">
                       {emp.employee_id_number}
                     </td>
 
                     <td className="p-3.5">
                       <div className="font-semibold text-slate-900 dark:text-white">{emp.role}</div>
-                      <div className="text-[11px] text-slate-500 capitalize">{emp.department}</div>
+                      <div className="text-2xs text-slate-500 capitalize">{emp.department}</div>
                     </td>
 
-                    <td className="p-3.5 text-[11px]">
+                    <td className="p-3.5 text-2xs">
                       <div className="flex items-center gap-1 text-slate-800 dark:text-slate-200">
                         <Phone className="w-3 h-3 text-slate-400" />
                         <span>{emp.mobile || 'N/A'}</span>
@@ -1391,35 +1391,35 @@ function EmployeeListContent() {
                       {emp.salary_basis === 'daily_rate' || emp.is_daily_worker ? (
                         <div>
                           <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.daily_rate || 0)}</span>
-                          <span className="text-[10px] text-slate-400"> /day</span>
+                          <span className="text-2xs text-slate-400"> /day</span>
                         </div>
                       ) : emp.salary_basis === 'hourly_rate' ? (
                         <div>
                           <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.hourly_rate || 0)}</span>
-                          <span className="text-[10px] text-slate-400"> /hr</span>
+                          <span className="text-2xs text-slate-400"> /hr</span>
                         </div>
                       ) : (
                         <div>
                           <span className="font-bold text-slate-900 dark:text-white">{formatBDT(emp.base_salary || 0)}</span>
-                          <span className="text-[10px] text-slate-400"> /mo</span>
+                          <span className="text-2xs text-slate-400"> /mo</span>
                         </div>
                       )}
                     </td>
 
                     <td className="p-3.5">
                       {Number(emp.current_advance_balance || 0) > 0 ? (
-                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[11px] font-mono font-bold">
+                        <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-mono font-bold">
                           {formatBDT(emp.current_advance_balance || 0)}
                         </Badge>
                       ) : (
-                        <span className="text-slate-400 text-[11px]">৳ 0</span>
+                        <span className="text-slate-400 text-2xs">৳ 0</span>
                       )}
                     </td>
 
                     <td className="p-3.5">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] px-2 py-0.5 capitalize font-semibold ${
+                        className={`text-2xs px-2 py-0.5 capitalize font-semibold ${
                           emp.status === 'active'
                             ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
                             : emp.status === 'on_leave'
@@ -1489,7 +1489,7 @@ function EmployeeListContent() {
                   </div>
                   <Badge
                     variant="outline"
-                    className={`text-[10px] px-2 py-0.5 capitalize font-semibold ${
+                    className={`text-2xs px-2 py-0.5 capitalize font-semibold ${
                       emp.status === 'active'
                         ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
                         : emp.status === 'on_leave'
@@ -1523,7 +1523,7 @@ function EmployeeListContent() {
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <span className="text-2xs text-muted-foreground flex items-center gap-1">
                     <Phone className="w-3 h-3" />
                     {emp.mobile}
                   </span>
@@ -1601,7 +1601,7 @@ function EmployeeListContent() {
                     }`}
                   >
                     <span
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-extrabold shrink-0 ${
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-2xs font-extrabold shrink-0 ${
                         isActive
                           ? 'bg-blue-600 text-white shadow-xs'
                           : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -1627,7 +1627,7 @@ function EmployeeListContent() {
                 {modalTab === 'banking' && tBilingual('Step 5 of 6: Bank Account & MFS Mobile Wallets', 'ধাপ ৫/৬: ব্যাংক অ্যাকাউন্ট ও মোবাইল ওয়ালেট')}
                 {modalTab === 'access_docs' && tBilingual('Step 6 of 6: Portal Login & Media Document Uploads', 'ধাপ ৬/৬: পোর্টাল অ্যাকাউন্ট ও ডকুমেন্ট ফাইল আপলোড')}
               </span>
-              <span className="text-[11px] font-mono text-slate-400 font-medium">
+              <span className="text-2xs font-mono text-slate-400 font-medium">
                 {modalTab === 'personal' && '1 / 6'}
                 {modalTab === 'role' && '2 / 6'}
                 {modalTab === 'duty' && '3 / 6'}
@@ -1681,7 +1681,7 @@ function EmployeeListContent() {
                       <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                         {empForm.name || tBilingual('New Employee', 'নতুন কর্মী')}
                         {empForm.profile_picture_url && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-300">
+                          <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-emerald-50 text-emerald-700 border-emerald-300">
                             Photo Attached
                           </Badge>
                         )}
@@ -1690,7 +1690,7 @@ function EmployeeListContent() {
                         {empForm.name_bn ? `${empForm.name_bn} • ` : ''}
                         {empForm.mobile || tBilingual('No mobile specified', 'মোবাইল নম্বর দেওয়া হয়নি')}
                       </p>
-                      <p className="text-[11px] text-blue-600 dark:text-blue-400 mt-0.5 font-medium">
+                      <p className="text-2xs text-blue-600 dark:text-blue-400 mt-0.5 font-medium">
                         {empForm.profile_picture_url ? '✓ Ready to save with employee profile' : 'PNG, JPG, WEBP (Max 5MB)'}
                       </p>
                     </div>
@@ -1872,7 +1872,7 @@ function EmployeeListContent() {
                         <button
                           type="button"
                           onClick={() => setEmpForm({ ...empForm, permanent_address: empForm.address })}
-                          className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
+                          className="text-2xs text-blue-600 hover:underline flex items-center gap-1"
                         >
                           <Copy className="w-2.5 h-2.5" />
                           {tBilingual('Same as Present', 'বর্তমান ঠিকানার মতো')}
@@ -1903,7 +1903,7 @@ function EmployeeListContent() {
                       <Sparkles className="w-3.5 h-3.5" />
                       {tBilingual('1-Click Print & Signage Role Presets', '১-ক্লিক প্রিন্ট ও সাইনেজ পদবি প্রিসেট')}
                     </Label>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-2xs text-slate-400">
                       {tBilingual('Click to auto-fill designation, department & salary', 'ক্লিক করলেই বেতন ও পদবি স্বয়ংক্রিয় পূরণ হবে')}
                     </span>
                   </div>
@@ -1920,13 +1920,13 @@ function EmployeeListContent() {
                       >
                         <div className="flex items-center justify-between w-full">
                           <span className="text-base">{preset.icon}</span>
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-white/80 dark:bg-slate-900/80">
+                          <span className="text-2xs font-bold px-1.5 py-0.5 rounded-md bg-white/80 dark:bg-slate-900/80">
                             {formatBDT(preset.base_salary || preset.daily_rate)}
                           </span>
                         </div>
                         <div className="mt-1.5">
                           <div className="text-xs font-bold line-clamp-1">{preset.title}</div>
-                          <div className="text-[10px] opacity-75 capitalize">{preset.department}</div>
+                          <div className="text-2xs opacity-75 capitalize">{preset.department}</div>
                         </div>
                       </button>
                     ))}
@@ -2155,7 +2155,7 @@ function EmployeeListContent() {
                               },
                             })
                           }}
-                          className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
+                          className="text-2xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 font-medium"
                           title="Auto calculate from start/end time"
                         >
                           <Sparkles className="w-2.5 h-2.5 text-blue-500" />
@@ -2408,7 +2408,7 @@ function EmployeeListContent() {
                         }`}
                       >
                         <div className="text-xs font-bold">{tBilingual(mode.label, mode.label_bn)}</div>
-                        <div className="text-[10px] opacity-75">{tBilingual(mode.desc, mode.desc_bn)}</div>
+                        <div className="text-2xs opacity-75">{tBilingual(mode.desc, mode.desc_bn)}</div>
                       </button>
                     ))}
                   </div>
@@ -2419,7 +2419,7 @@ function EmployeeListContent() {
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                       <span>{tBilingual('Base Salary (Monthly)', 'মূল মাসিক বেতন')}</span>
-                      <span className="text-[10px] text-blue-600 font-mono">৳ BDT</span>
+                      <span className="text-2xs text-blue-600 font-mono">৳ BDT</span>
                     </Label>
                     <Input
                       type="number"
@@ -2427,7 +2427,7 @@ function EmployeeListContent() {
                       onChange={(e) => handleBaseSalaryChange(Number(e.target.value || 0))}
                       className="text-sm h-9 font-bold font-mono"
                     />
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-2xs text-slate-400">
                       {tBilingual('Auto-calculates hourly & overtime rates', 'ঘণ্টা ও ওভারটাইম রেট স্বয়ংক্রিয় হিসাব হবে')}
                     </p>
                   </div>
@@ -2435,7 +2435,7 @@ function EmployeeListContent() {
                   <div className="space-y-1.5 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30">
                     <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                       <span>{tBilingual('Daily Rate', 'দৈনিক রেট')}</span>
-                      <span className="text-[10px] text-blue-600 font-mono">৳/day</span>
+                      <span className="text-2xs text-blue-600 font-mono">৳/day</span>
                     </Label>
                     <Input
                       type="number"
@@ -2443,7 +2443,7 @@ function EmployeeListContent() {
                       onChange={(e) => setEmpForm({ ...empForm, daily_rate: Number(e.target.value || 0) })}
                       className="text-sm h-9 font-bold font-mono"
                     />
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-2xs text-slate-400">
                       {tBilingual('Used for daily floor wage calculation', 'দৈনিক শ্রমিকের হাজিরা মজুরি')}
                     </p>
                   </div>
@@ -2451,7 +2451,7 @@ function EmployeeListContent() {
                   <div className="space-y-1.5 p-3 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20">
                     <Label className="text-xs font-semibold text-amber-700 dark:text-amber-300 flex items-center justify-between">
                       <span>{tBilingual('OT Hourly Rate', 'ওভারটাইম রেট')}</span>
-                      <span className="text-[10px] text-amber-600 font-mono">৳/hour</span>
+                      <span className="text-2xs text-amber-600 font-mono">৳/hour</span>
                     </Label>
                     <Input
                       type="number"
@@ -2466,7 +2466,7 @@ function EmployeeListContent() {
                           const hr = empForm.hourly_rate || Math.round((empForm.base_salary || 0) / 208)
                           setEmpForm({ ...empForm, overtime_hourly_rate: Math.round(hr * 1.5) })
                         }}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
+                        className="text-2xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
                       >
                         1.5x Standard
                       </button>
@@ -2476,7 +2476,7 @@ function EmployeeListContent() {
                           const hr = empForm.hourly_rate || Math.round((empForm.base_salary || 0) / 208)
                           setEmpForm({ ...empForm, overtime_hourly_rate: Math.round(hr * 2.0) })
                         }}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
+                        className="text-2xs px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 hover:bg-amber-500/20 font-bold"
                       >
                         2.0x Holiday
                       </button>
@@ -2494,7 +2494,7 @@ function EmployeeListContent() {
                     <button
                       type="button"
                       onClick={() => setShowAdvancedAllowances(!showAdvancedAllowances)}
-                      className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline font-medium"
+                      className="text-2xs text-blue-600 dark:text-blue-400 hover:underline font-medium"
                     >
                       {showAdvancedAllowances ? tBilingual('Hide Custom Details', 'কাস্টম আড়াল করুন') : tBilingual('Customize Allowances', 'ভাতা কাস্টমাইজ করুন')}
                     </button>
@@ -2502,28 +2502,28 @@ function EmployeeListContent() {
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
                       <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.basic || Math.round(empForm.base_salary * 0.6))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
                       <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.house_allowance || Math.round(empForm.base_salary * 0.2))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Medical (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Medical (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
                       <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.medical_allowance || Math.round(empForm.base_salary * 0.1))}
                       </span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Conveyance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Conveyance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
                       <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(empForm.salary_structure?.transport_allowance || Math.round(empForm.base_salary * 0.1))}
                       </span>
@@ -2534,7 +2534,7 @@ function EmployeeListContent() {
                   {showAdvancedAllowances && (
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Custom Basic', 'মূল বেতন')}</Label>
+                        <Label className="text-2xs">{tBilingual('Custom Basic', 'মূল বেতন')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.basic}
@@ -2548,7 +2548,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('House Rent', 'বাড়ি ভাড়া')}</Label>
+                        <Label className="text-2xs">{tBilingual('House Rent', 'বাড়ি ভাড়া')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.house_allowance}
@@ -2562,7 +2562,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Food Allowance', 'খাবার ভাতা')}</Label>
+                        <Label className="text-2xs">{tBilingual('Food Allowance', 'খাবার ভাতা')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.food_allowance || 0}
@@ -2576,7 +2576,7 @@ function EmployeeListContent() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px]">{tBilingual('Other Allowance', 'অন্যান্য ভাতা')}</Label>
+                        <Label className="text-2xs">{tBilingual('Other Allowance', 'অন্যান্য ভাতা')}</Label>
                         <Input
                           type="number"
                           value={empForm.salary_structure?.other_allowances || 0}
@@ -2703,19 +2703,19 @@ function EmployeeListContent() {
                       <Landmark className="w-3.5 h-3.5 text-blue-600" />
                       {tBilingual('Bank Account Details (BEFTN / NPSB / RTGS)', 'ব্যাংক অ্যাকাউন্ট বিবরণ')}
                     </h5>
-                    <span className="text-[11px] text-slate-400">Optional for direct bank disbursement</span>
+                    <span className="text-2xs text-slate-400">Optional for direct bank disbursement</span>
                   </div>
 
                   {/* Popular Bank Selector Chips */}
                   <div className="space-y-1.5">
-                    <span className="text-[11px] text-slate-500 font-medium">Quick Bank Presets:</span>
+                    <span className="text-2xs text-slate-500 font-medium">Quick Bank Presets:</span>
                     <div className="flex flex-wrap gap-1.5">
                       {POPULAR_BANKS.map((bName) => (
                         <button
                           key={bName}
                           type="button"
                           onClick={() => setEmpForm({ ...empForm, bank_name: bName })}
-                          className={`text-[10px] px-2 py-1 rounded-md border transition-all ${
+                          className={`text-2xs px-2 py-1 rounded-md border transition-all ${
                             empForm.bank_name === bName
                               ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 border-blue-400 font-bold'
                               : 'bg-slate-50 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-100'
@@ -2748,7 +2748,7 @@ function EmployeeListContent() {
                               setEmpForm({ ...empForm, account_name: empForm.name })
                               triggerCopy('acc_name')
                             }}
-                            className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
+                            className="text-2xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             {copiedField === 'acc_name' ? <Check className="w-2.5 h-2.5 text-emerald-500" /> : <Copy className="w-2.5 h-2.5" />}
                             Copy Name
@@ -2802,7 +2802,7 @@ function EmployeeListContent() {
                       <Smartphone className="w-3.5 h-3.5 text-pink-600" />
                       {tBilingual('Mobile Financial Services (bKash / Nagad / Rocket / Upay)', 'মোবাইল ফিনান্সিয়াল সার্ভিস (বিকাশ / নগদ / রকেট)')}
                     </h5>
-                    <span className="text-[11px] text-slate-400">1-click wage payout</span>
+                    <span className="text-2xs text-slate-400">1-click wage payout</span>
                   </div>
 
                   {/* MFS Provider Selection */}
@@ -2837,7 +2837,7 @@ function EmployeeListContent() {
                               setEmpForm({ ...empForm, mfs_number: empForm.mobile })
                               triggerCopy('mfs_mobile')
                             }}
-                            className="text-[10px] text-blue-600 hover:underline flex items-center gap-1"
+                            className="text-2xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             {copiedField === 'mfs_mobile' ? <Check className="w-2.5 h-2.5 text-emerald-500" /> : <Copy className="w-2.5 h-2.5" />}
                             Same as Mobile
@@ -2959,7 +2959,7 @@ function EmployeeListContent() {
                                 portal_credentials: { ...empForm.portal_credentials, password: pass },
                               })
                             }}
-                            className="text-[10px] text-blue-600 hover:underline"
+                            className="text-2xs text-blue-600 hover:underline"
                           >
                             Generate
                           </button>
@@ -3020,7 +3020,7 @@ function EmployeeListContent() {
                             {tBilingual('Send invitation link to employee email upon enrollment', 'নিবন্ধনের সাথে কর্মীর ইমেইলে আমন্ত্রণ লিংক পাঠান')}
                           </span>
                         </label>
-                        <span className="text-[11px] text-blue-700/80 dark:text-blue-300">
+                        <span className="text-2xs text-blue-700/80 dark:text-blue-300">
                           {tBilingual('Employee can log in using email, username or mobile', 'কর্মী ইমেইল, ইউজারনেম বা মোবাইল দিয়ে লগইন করতে পারবেন')}
                         </span>
                       </div>
@@ -3036,7 +3036,7 @@ function EmployeeListContent() {
                         <Paperclip className="w-3.5 h-3.5 text-blue-600" />
                         {tBilingual('Media & Identity Documents (Multiple Scans)', 'জাতীয় পরিচয়পত্র ও ডকুমেন্ট স্ক্যান')}
                       </h5>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-2xs text-slate-500 mt-0.5">
                         {tBilingual(
                           'Attach NID card scans, passport, joining contract, educational certificates or CV',
                           'ভোটার আইডি, পাসপোর্ট, নিয়োগ চুক্তি ও শিক্ষাগত সনদপত্র যুক্ত করুন'
@@ -3124,7 +3124,7 @@ function EmployeeListContent() {
                           {tBilingual('click to browse', 'ক্লিক করুন')}
                         </label>
                       </p>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
+                      <p className="text-2xs text-slate-400 mt-0.5">
                         PDF, JPG, PNG, WEBP, DOCX (Up to 10MB per file • Multi-file upload supported)
                       </p>
                     </div>
@@ -3185,7 +3185,7 @@ function EmployeeListContent() {
                                   }}
                                   className="h-7 text-xs px-2 font-medium"
                                 />
-                                <div className="flex items-center gap-2 text-[10px] text-slate-400">
+                                <div className="flex items-center gap-2 text-2xs text-slate-400">
                                   {doc.size && (
                                     <span className="font-mono bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-300 font-semibold">
                                       {doc.size}
@@ -3260,7 +3260,7 @@ function EmployeeListContent() {
                       <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                       {tBilingual('Emergency Kin / Contact Person Details', 'জরুরি যোগাযোগ ও আত্মীয়ের বিবরণ')}
                     </h5>
-                    <span className="text-[11px] text-slate-400">Required for shop-floor safety protocol</span>
+                    <span className="text-2xs text-slate-400">Required for shop-floor safety protocol</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -3430,13 +3430,13 @@ function EmployeeListContent() {
               <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
-                  className="font-mono text-[11px] px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                  className="font-mono text-2xs px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                 >
                   {selectedEmployee.employee_id_number}
                 </Badge>
                 <Badge
                   variant="outline"
-                  className={`text-[11px] px-2.5 py-0.5 capitalize font-semibold ${
+                  className={`text-2xs px-2.5 py-0.5 capitalize font-semibold ${
                     selectedEmployee.status === 'active'
                       ? 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300'
                       : selectedEmployee.status === 'on_leave'
@@ -3553,7 +3553,7 @@ function EmployeeListContent() {
             {/* 4 KPI Metric Highlights Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
-                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                <span className="text-2xs text-slate-500 uppercase font-medium block">
                   {tBilingual('Base Pay / Rate', 'মূল বেতন')}
                 </span>
                 <div className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5 font-mono">
@@ -3563,7 +3563,7 @@ function EmployeeListContent() {
                     ? `${formatBDT(selectedEmployee.hourly_rate || 0)} / hr`
                     : `${formatBDT(selectedEmployee.base_salary || 0)} / mo`}
                 </div>
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="text-2xs text-slate-400 block mt-0.5">
                   {selectedEmployee.salary_basis === 'daily_rate'
                     ? `~${formatBDT((selectedEmployee.daily_rate || 0) * 26)} est. monthly`
                     : `Gross Annual: ${formatBDT((selectedEmployee.base_salary || 0) * 12)}`}
@@ -3571,31 +3571,31 @@ function EmployeeListContent() {
               </div>
 
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
-                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                <span className="text-2xs text-slate-500 uppercase font-medium block">
                   {tBilingual('Hourly Regular Rate', 'ঘণ্টাপ্রতি সাধারণ রেট')}
                 </span>
                 <div className="text-base sm:text-lg font-bold text-blue-600 dark:text-blue-400 mt-0.5 font-mono">
                   {formatBDT(selectedEmployee.hourly_rate || (selectedEmployee.base_salary ? Math.round(selectedEmployee.base_salary / 208) : 0))} / hr
                 </div>
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="text-2xs text-slate-400 block mt-0.5">
                   208 standard monthly work hours
                 </span>
               </div>
 
               <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 dark:bg-amber-950/20 shadow-xs">
-                <span className="text-[11px] text-amber-700 dark:text-amber-400 uppercase font-medium block">
+                <span className="text-2xs text-amber-700 dark:text-amber-400 uppercase font-medium block">
                   {tBilingual('Overtime Hourly Rate', 'ওভারটাইম ঘণ্টার রেট')}
                 </span>
                 <div className="text-base sm:text-lg font-bold text-amber-600 dark:text-amber-400 mt-0.5 font-mono">
                   {formatBDT(selectedEmployee.overtime_hourly_rate || (selectedEmployee.hourly_rate ? Math.round(selectedEmployee.hourly_rate * 1.5) : 0))} / hr
                 </div>
-                <span className="text-[10px] text-amber-600/80 block mt-0.5">
+                <span className="text-2xs text-amber-600/80 block mt-0.5">
                   {selectedEmployee.duty_settings?.ot_calc_type || '1.5x Regular Day Standard'}
                 </span>
               </div>
 
               <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xs">
-                <span className="text-[11px] text-slate-500 uppercase font-medium block">
+                <span className="text-2xs text-slate-500 uppercase font-medium block">
                   {tBilingual('Advance Balance', 'বকেয়া অগ্রিম')}
                 </span>
                 <div
@@ -3607,7 +3607,7 @@ function EmployeeListContent() {
                 >
                   {formatBDT(selectedEmployee.current_advance_balance || 0)}
                 </div>
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="text-2xs text-slate-400 block mt-0.5">
                   {Number(selectedEmployee.current_advance_balance || 0) > 0
                     ? 'Pending payroll deduction'
                     : 'All advances cleared'}
@@ -3701,14 +3701,14 @@ function EmployeeListContent() {
 
                     <div className="pt-1 border-t border-slate-100 dark:border-slate-800 space-y-1">
                       <div>
-                        <span className="text-slate-500 block text-[11px]">{tBilingual('Present Address:', 'বর্তমান ঠিকানা:')}</span>
+                        <span className="text-slate-500 block text-2xs">{tBilingual('Present Address:', 'বর্তমান ঠিকানা:')}</span>
                         <span className="text-slate-800 dark:text-slate-200">
                           {selectedEmployee.address || tBilingual('Arambagh / Motijheel Production Zone, Dhaka', 'আরামবাগ / মতিঝিল কারখানা এলাকা, ঢাকা')}
                         </span>
                       </div>
 
                       <div>
-                        <span className="text-slate-500 block text-[11px]">{tBilingual('Permanent Address:', 'স্থায়ী ঠিকানা:')}</span>
+                        <span className="text-slate-500 block text-2xs">{tBilingual('Permanent Address:', 'স্থায়ী ঠিকানা:')}</span>
                         <span className="text-slate-800 dark:text-slate-200">
                           {selectedEmployee.permanent_address || selectedEmployee.address || tBilingual('Same as Present Address', 'বর্তমান ঠিকানার মতো')}
                         </span>
@@ -3726,7 +3726,7 @@ function EmployeeListContent() {
                   <div className="space-y-2 text-slate-600 dark:text-slate-400">
                     <div className="flex items-center justify-between">
                       <span className="text-slate-500">{tBilingual('Employment Type:', 'চুক্তির ধরন:')}</span>
-                      <Badge variant="outline" className="bg-slate-50 dark:bg-slate-900 text-[10px] px-2 py-0.5 capitalize">
+                      <Badge variant="outline" className="bg-slate-50 dark:bg-slate-900 text-2xs px-2 py-0.5 capitalize">
                         {selectedEmployee.employee_type.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -3774,7 +3774,7 @@ function EmployeeListContent() {
                       </div>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-[11px] text-emerald-700 dark:text-emerald-400 mt-2">
+                    <div className="p-2.5 rounded-lg bg-emerald-500/5 dark:bg-emerald-950/20 border border-emerald-500/20 text-2xs text-emerald-700 dark:text-emerald-400 mt-2">
                       {tBilingual(
                         'Verified for shop-floor incident escalation & medical notification protocol.',
                         'কারখানা দুর্ঘটনা ও জরুরি সহায়তার জন্য তথ্য সংরক্ষিত আছে।'
@@ -3811,7 +3811,7 @@ function EmployeeListContent() {
                             : tBilingual('No Portal Access', 'এক্সেস নেই')}
                         </Badge>
                       </div>
-                      <span className="text-[11px] text-slate-500 block mt-0.5">
+                      <span className="text-2xs text-slate-500 block mt-0.5">
                         {selectedEmployee.portal_credentials?.create_login
                           ? `${tBilingual('Username/Email:', 'ইউজারনেম/ইমেইল:')} ${selectedEmployee.portal_credentials.email || selectedEmployee.portal_credentials.username || selectedEmployee.email || selectedEmployee.mobile}`
                           : tBilingual('Enable portal login to send invitation link for shop-floor & ERP access.', 'কারখানা ও সফটওয়্যার এক্সেসের জন্য লগইন চালু করুন ও আমন্ত্রণ পাঠান।')}
@@ -3942,35 +3942,35 @@ function EmployeeListContent() {
                       <Coins className="w-3.5 h-3.5 text-blue-600" />
                       {tBilingual('Bangladesh Labor Law Statutory Structure (60-20-10-10)', 'বাংলাদেশ শ্রম আইন অনুযায়ী বেতন বিশ্লেষণ')}
                     </h5>
-                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 text-[10px]">
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/50 dark:text-blue-300 text-2xs">
                       {selectedEmployee.salary_basis.replace('_', ' ').toUpperCase()}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Basic Salary (60%)', 'মূল বেতন (৬০%)')}</span>
                       <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.basic || Math.round((selectedEmployee.base_salary || 0) * 0.6))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('House Rent (20%)', 'বাড়ি ভাড়া (২০%)')}</span>
                       <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.house_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.2))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Medical Allowance (10%)', 'চিকিৎসা ভাতা (১০%)')}</span>
                       <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.medical_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
                       </span>
                     </div>
 
                     <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Conveyance Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
+                      <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Conveyance Allowance (10%)', 'যাতায়াত ভাতা (১০%)')}</span>
                       <span className="text-base font-bold text-slate-900 dark:text-white font-mono mt-0.5 block">
                         {formatBDT(selectedEmployee.salary_structure?.transport_allowance || Math.round((selectedEmployee.base_salary || 0) * 0.1))}
                       </span>
@@ -4000,26 +4000,26 @@ function EmployeeListContent() {
                   {selectedEmployee.commission_settings?.enabled ? (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-indigo-500/10">
-                        <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Commission Type', 'কমিশনের ধরন')}</span>
+                        <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Commission Type', 'কমিশনের ধরন')}</span>
                         <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 block capitalize">
                           {selectedEmployee.commission_settings.type === 'percentage' ? 'Percentage of Sales' : 'Fixed per Unit'}
                         </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-indigo-500/10">
-                        <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Commission Rate', 'কমিশন রেট')}</span>
+                        <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Commission Rate', 'কমিশন রেট')}</span>
                         <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 mt-0.5 block font-mono">
                           {selectedEmployee.commission_settings.rate_pct || 2}%
                         </span>
                       </div>
                       <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/80 border border-indigo-500/10">
-                        <span className="text-[10px] text-slate-500 block uppercase font-medium">{tBilingual('Monthly Sales Target', 'মাসিক টার্গেট')}</span>
+                        <span className="text-2xs text-slate-500 block uppercase font-medium">{tBilingual('Monthly Sales Target', 'মাসিক টার্গেট')}</span>
                         <span className="text-xs font-bold text-slate-900 dark:text-white mt-0.5 block font-mono">
                           {formatBDT(selectedEmployee.commission_settings.monthly_target || 100000)}
                         </span>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-[11px] text-slate-500 italic">
+                    <p className="text-2xs text-slate-500 italic">
                       {tBilingual('This employee does not have active sales commission incentives configured.', 'এই কর্মীর জন্য সেলস কমিশন সক্রিয় নয়।')}
                     </p>
                   )}
@@ -4143,7 +4143,7 @@ function EmployeeListContent() {
                       </span>
                     </div>
 
-                    <div className="p-2.5 rounded-lg bg-blue-500/5 dark:bg-blue-950/20 border border-blue-500/20 text-[11px] text-blue-700 dark:text-blue-400 mt-2">
+                    <div className="p-2.5 rounded-lg bg-blue-500/5 dark:bg-blue-950/20 border border-blue-500/20 text-2xs text-blue-700 dark:text-blue-400 mt-2">
                       {tBilingual(
                         '1-click wage and advance disbursement enabled for this MFS number.',
                         'এই মোবাইল ওয়ালেটে সরাসরি বেতন ও অগ্রিম পাঠানো সম্ভব।'
@@ -4162,7 +4162,7 @@ function EmployeeListContent() {
                   {/* Card Security Header Stripe */}
                   <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-600 -mx-5 -mt-5 p-3 text-white flex items-center justify-between px-4">
                     <div className="text-left">
-                      <span className="text-[10px] uppercase font-bold tracking-wider opacity-90 block">InkFlow ERP Security Pass</span>
+                      <span className="text-2xs uppercase font-bold tracking-wider opacity-90 block">InkFlow ERP Security Pass</span>
                       <span className="text-xs font-black tracking-wide">PRODUCTION FLOOR PASS</span>
                     </div>
                     <ShieldCheck className="w-5 h-5 text-white/90" />
@@ -4195,21 +4195,21 @@ function EmployeeListContent() {
                     </Badge>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-[11px] text-left border-y border-slate-100 dark:border-slate-800 py-3">
+                  <div className="grid grid-cols-2 gap-2 text-2xs text-left border-y border-slate-100 dark:border-slate-800 py-3">
                     <div>
-                      <span className="text-slate-400 block text-[10px]">EMPLOYEE ID</span>
+                      <span className="text-slate-400 block text-2xs">EMPLOYEE ID</span>
                       <span className="font-mono font-bold text-slate-900 dark:text-white">{selectedEmployee.employee_id_number}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">DEPARTMENT</span>
+                      <span className="text-slate-400 block text-2xs">DEPARTMENT</span>
                       <span className="font-semibold text-slate-900 dark:text-white capitalize">{selectedEmployee.department}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">JOINED DATE</span>
+                      <span className="text-slate-400 block text-2xs">JOINED DATE</span>
                       <span className="font-mono text-slate-900 dark:text-white">{formatDate(selectedEmployee.joining_date)}</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 block text-[10px]">EMERGENCY HELPLINE</span>
+                      <span className="text-slate-400 block text-2xs">EMERGENCY HELPLINE</span>
                       <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                         {selectedEmployee.emergency_contact_phone || selectedEmployee.mobile}
                       </span>
@@ -4226,7 +4226,7 @@ function EmployeeListContent() {
                         />
                       ))}
                     </div>
-                    <span className="text-[9px] font-mono text-slate-400 tracking-widest uppercase">
+                    <span className="text-2xs font-mono text-slate-400 tracking-widest uppercase">
                       *{selectedEmployee.employee_id_number}*
                     </span>
                   </div>
@@ -4292,10 +4292,10 @@ function EmployeeListContent() {
                               <div className="min-w-0">
                                 <p className="font-semibold text-slate-900 dark:text-white truncate text-xs">{doc.name}</p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                                  <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
                                     {doc.type}
                                   </Badge>
-                                  {doc.size && <span className="text-[10px] text-slate-400 font-mono">{doc.size}</span>}
+                                  {doc.size && <span className="text-2xs text-slate-400 font-mono">{doc.size}</span>}
                                 </div>
                               </div>
                             </div>
@@ -4345,7 +4345,7 @@ function EmployeeListContent() {
                         <Key className="w-4 h-4 text-blue-600" />
                         {tBilingual('Login Account Credentials', 'সফটওয়্যার পোর্টাল লগইন ও নিরাপত্তা')}
                       </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
+                      <p className="text-2xs text-slate-500 mt-0.5">
                         {tBilingual(
                           'Configure employee authentication credentials and dispatch secure invite links',
                           'কর্মীর সফটওয়্যার লগইন অ্যাকাউন্ট ও ইমেইল আমন্ত্রণ লিংক নিয়ন্ত্রণ করুন'
@@ -4409,7 +4409,7 @@ function EmployeeListContent() {
                     <div className="space-y-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                          <span className="text-2xs text-slate-500 uppercase font-semibold block">
                             {tBilingual('Login Email', 'লগইন ইমেইল')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
@@ -4434,7 +4434,7 @@ function EmployeeListContent() {
                         </div>
 
                         <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                          <span className="text-2xs text-slate-500 uppercase font-semibold block">
                             {tBilingual('Login Username', 'লগইন ইউজারনেম')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
@@ -4458,7 +4458,7 @@ function EmployeeListContent() {
                         </div>
 
                         <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                          <span className="text-2xs text-slate-500 uppercase font-semibold block">
                             {tBilingual('Login Mobile', 'লগইন মোবাইল')}
                           </span>
                           <div className="flex items-center justify-between gap-1.5 mt-1">
@@ -4482,7 +4482,7 @@ function EmployeeListContent() {
                         </div>
 
                         <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                          <span className="text-2xs text-slate-500 uppercase font-semibold block">
                             {tBilingual('Assigned Portal Role', 'পোর্টাল রোল')}
                           </span>
                           <div className="mt-1">
@@ -4493,7 +4493,7 @@ function EmployeeListContent() {
                         </div>
 
                         <div className="p-3 rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
-                          <span className="text-[10px] text-slate-500 uppercase font-semibold block">
+                          <span className="text-2xs text-slate-500 uppercase font-semibold block">
                             {tBilingual('Invitation Status', 'আমন্ত্রণ স্ট্যাটাস')}
                           </span>
                           <div className="mt-1 flex items-center justify-between">
@@ -4510,7 +4510,7 @@ function EmployeeListContent() {
                                   triggerCopy('invite_link_card')
                                   notify('Invitation link copied to clipboard!')
                                 }}
-                                className="text-blue-600 hover:underline text-[10px] font-semibold flex items-center gap-0.5"
+                                className="text-blue-600 hover:underline text-2xs font-semibold flex items-center gap-0.5"
                                 title="Copy Last Invitation Link"
                               >
                                 {copiedField === 'invite_link_card' ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
@@ -4622,7 +4622,7 @@ function EmployeeListContent() {
                                 const pass = `Pass@${Math.floor(100000 + Math.random() * 900000)}`
                                 setCredsForm({ ...credsForm, password: pass })
                               }}
-                              className="text-[10px] text-blue-600 hover:underline"
+                              className="text-2xs text-blue-600 hover:underline"
                             >
                               Generate
                             </button>
@@ -4715,7 +4715,7 @@ function EmployeeListContent() {
                         <h5 className="font-semibold text-xs text-slate-900 dark:text-white">
                           {tBilingual('No Portal Login Credentials Configured', 'কোনো পোর্টাল লগইন নেই')}
                         </h5>
-                        <p className="text-[11px] text-slate-500 max-w-sm mx-auto mt-0.5">
+                        <p className="text-2xs text-slate-500 max-w-sm mx-auto mt-0.5">
                           {tBilingual(
                             'Grant this employee access to the InkFlow shop-floor kiosk, designer portal, or sales workspace by creating credentials.',
                             'এই কর্মীকে কারখানা কিয়স্ক, ডিজাইন বা সেলস পোর্টালে যুক্ত করার জন্য লগইন তৈরি করুন।'
@@ -4785,7 +4785,7 @@ function EmployeeListContent() {
 
             {/* Actions Bar */}
             <div className="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-800">
-              <div className="text-[11px] text-slate-400">
+              <div className="text-2xs text-slate-400">
                 Created: {formatDate(selectedEmployee.created_at)} • Updated: {formatDate(selectedEmployee.updated_at)}
               </div>
 
@@ -4832,7 +4832,7 @@ function EmployeeListContent() {
                 <span className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-md">
                   {previewDoc.name}
                 </span>
-                <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-2xs px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200">
                   {previewDoc.type}
                 </Badge>
               </div>
@@ -4911,7 +4911,7 @@ function EmployeeListContent() {
           <div className="space-y-4 pt-2">
             <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-600 dark:text-rose-400 text-xs">
               <p className="font-semibold">{selectedEmployee.name} ({selectedEmployee.employee_id_number})</p>
-              <p className="mt-1 text-[11px] opacity-90">
+              <p className="mt-1 text-2xs opacity-90">
                 Department: {selectedEmployee.department} • Role: {selectedEmployee.role}
               </p>
             </div>
@@ -4978,7 +4978,7 @@ function EmployeeListContent() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">{tBilingual('Assigned Role:', 'রোল:')}</span>
-                <Badge variant="outline" className="text-[10px] capitalize bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-2xs capitalize bg-blue-50 text-blue-700 border-blue-200">
                   {inviteModalData.roleName}
                 </Badge>
               </div>

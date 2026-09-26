@@ -1445,14 +1445,14 @@ export function MaterialConfigModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Raw Material: ${initialData.name}` : 'New Raw Material Master'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
                 Inventory Stock
               </Badge>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                 {materialType.toUpperCase()}
               </Badge>
               {calculatedEconomics.unitCost > 0 && (
-                <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                 </Badge>
               )}
@@ -1565,7 +1565,7 @@ export function MaterialConfigModal({
                 <span>{tab.label}</span>
                 {tab.count !== null && (
                   <span className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold leading-tight',
+                    'text-2xs px-1.5 py-0.2 rounded-full font-mono font-bold leading-tight',
                     isSelected ? 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                   )}>
                     {tab.count}
@@ -1592,7 +1592,7 @@ export function MaterialConfigModal({
                     Material Identity & Bilingual Naming
                   </h3>
                 </div>
-                <span className="text-[11px] text-slate-400 font-medium">Bilingual stock naming & SKU</span>
+                <span className="text-2xs text-slate-400 font-medium">Bilingual stock naming & SKU</span>
               </div>
 
               <div>
@@ -1614,7 +1614,7 @@ export function MaterialConfigModal({
                   autoFocus
                 />
                 {fieldErrors.name && (
-                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                     <span>{fieldErrors.name}</span>
                   </p>
@@ -1654,7 +1654,7 @@ export function MaterialConfigModal({
                 <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                   Physical Form / Classification <span className="text-rose-500">*</span>
                 </Label>
-                <span className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold">
+                <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
                   Determines geometry, tracking & costing formulas
                 </span>
               </div>
@@ -1685,10 +1685,10 @@ export function MaterialConfigModal({
                               {card.title}
                             </span>
                           </div>
-                          <span className="text-[10px] text-slate-400 font-bengali block">
+                          <span className="text-2xs text-slate-400 font-bengali block">
                             {card.titleBn}
                           </span>
-                          <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                             {card.subtitle}
                           </p>
                         </div>
@@ -1705,7 +1705,7 @@ export function MaterialConfigModal({
                     <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                       Catalog Category (ক্যাটালগ ক্যাটাগরি) <span className="text-rose-500">*</span>
                     </Label>
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                    <span className="text-2xs text-amber-600 dark:text-amber-400 font-semibold">
                       {filteredCatalogCategories.length} {materialType} Categories
                     </span>
                   </div>
@@ -1790,7 +1790,7 @@ export function MaterialConfigModal({
                       onChange={(e) => setWeightGsm(e.target.value === '' ? '' : parseFloat(e.target.value))}
                       className="h-9 text-xs font-mono pr-12"
                     />
-                    <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-slate-400">GSM</span>
+                    <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">GSM</span>
                   </div>
                 </div>
 
@@ -1843,7 +1843,7 @@ export function MaterialConfigModal({
                   {tBilingual('Measurement Units & Physical Dimensions Matrix', 'পরিমাপ একক ও সাইজ মেট্রিক্স')}
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">
+              <span className="text-2xs text-slate-400 font-medium">
                 {tBilingual('Purchase units, roll widths & dimensions', 'ক্রয় একক, রোল প্রস্থ ও সাইজ')}
               </span>
             </div>
@@ -1928,7 +1928,7 @@ export function MaterialConfigModal({
                               onChange={(e) => handleWidthInputChange(e.target.value)}
                               className="h-9 text-xs font-mono font-bold pr-7"
                             />
-                            <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                            <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                           </div>
                           <span className="text-sm font-bold text-slate-400">+</span>
                           <div className="relative w-24">
@@ -1941,7 +1941,7 @@ export function MaterialConfigModal({
                               onChange={(e) => handleAllowanceChange(e.target.value)}
                               className="h-9 text-xs font-mono font-bold pr-7"
                             />
-                            <span className="absolute right-2 top-2 text-[10px] font-bold text-slate-400">ft</span>
+                            <span className="absolute right-2 top-2 text-2xs font-bold text-slate-400">ft</span>
                           </div>
                         </div>
                       </div>
@@ -1960,7 +1960,7 @@ export function MaterialConfigModal({
                             onChange={(e) => handleRollLengthChange(e.target.value)}
                             className="h-9 text-xs font-mono font-bold pr-7"
                           />
-                          <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                          <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                         </div>
                       </div>
 
@@ -1980,10 +1980,10 @@ export function MaterialConfigModal({
                   {configuredRolls.length > 0 && (
                     <div className="pt-2.5 border-t border-blue-200/40 dark:border-blue-900/40 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                        <span className="text-2xs font-bold text-slate-700 dark:text-slate-300">
                           Active Configured Roll Sizes (Width × Length) & Discrete Economics:
                         </span>
-                        <span className="text-[10px] text-slate-500 font-medium">
+                        <span className="text-2xs text-slate-500 font-medium">
                           {configuredRolls.length} configured variant{configuredRolls.length > 1 ? 's' : ''}
                         </span>
                       </div>
@@ -2015,7 +2015,7 @@ export function MaterialConfigModal({
                                 {roll.width}ft {rollAllowance > 0 ? `(+${rollAllowance}ft)` : ''} × {rollLen}ft
                               </span>
                               {rollPrice !== null && (
-                                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 px-1.5 py-0.2 rounded font-sans">
+                                <span className="text-2xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/70 dark:bg-emerald-900/60 px-1.5 py-0.2 rounded font-sans">
                                   ৳{rollPrice.toLocaleString()}
                                 </span>
                               )}
@@ -2044,7 +2044,7 @@ export function MaterialConfigModal({
                 <div className="pt-3 border-t border-blue-200/60 dark:border-blue-800/60 space-y-3">
                   {/* Preset Sheet Sizes */}
                   <div>
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
+                    <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
                       Quick Add Popular Sheet Sizes:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -2053,7 +2053,7 @@ export function MaterialConfigModal({
                           key={p.label}
                           type="button"
                           onClick={() => handleQuickAddSheetSize(p.width, p.length, p.label)}
-                          className="px-2 py-1 rounded-md text-[11px] font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer"
+                          className="px-2 py-1 rounded-md text-2xs font-mono font-bold bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-500 cursor-pointer"
                         >
                           +{p.label}
                         </button>
@@ -2076,7 +2076,7 @@ export function MaterialConfigModal({
                           onChange={(e) => setNewSheetWidthInput(e.target.value)}
                           className="h-9 text-xs font-mono font-bold pr-7"
                         />
-                        <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                       </div>
                     </div>
 
@@ -2094,7 +2094,7 @@ export function MaterialConfigModal({
                           onChange={(e) => setNewSheetLengthInput(e.target.value)}
                           className="h-9 text-xs font-mono font-bold pr-7"
                         />
-                        <span className="absolute right-2.5 top-2 text-[11px] font-bold text-slate-400">ft</span>
+                        <span className="absolute right-2.5 top-2 text-2xs font-bold text-slate-400">ft</span>
                       </div>
                     </div>
 
@@ -2127,7 +2127,7 @@ export function MaterialConfigModal({
                   {/* Configured Sheet Sizes List */}
                   {availableSheetSizes.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mr-1">
+                      <span className="text-2xs font-bold text-slate-600 dark:text-slate-400 mr-1">
                         Configured Sheet Sizes:
                       </span>
                       {availableSheetSizes.map((s, index) => (
@@ -2174,7 +2174,7 @@ export function MaterialConfigModal({
                         onChange={(e) => setLiquidVolumeMl(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs font-mono pr-8"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-slate-400">ml</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ml</span>
                     </div>
                   </div>
 
@@ -2210,7 +2210,7 @@ export function MaterialConfigModal({
                         onChange={(e) => setCoverageYieldSqft(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs font-mono pr-12"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-slate-400">sft/L</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">sft/L</span>
                     </div>
                   </div>
                 </div>
@@ -2233,7 +2233,7 @@ export function MaterialConfigModal({
                         onChange={(e) => setProfileLengthFt(e.target.value === '' ? '' : parseFloat(e.target.value))}
                         className="h-9 text-xs font-mono pr-7"
                       />
-                      <span className="absolute right-2.5 top-2.5 text-[10px] font-bold text-slate-400">ft</span>
+                      <span className="absolute right-2.5 top-2.5 text-2xs font-bold text-slate-400">ft</span>
                     </div>
                   </div>
 
@@ -2270,7 +2270,7 @@ export function MaterialConfigModal({
                       }}
                       className="h-9 text-xs font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-500">Auto-converts purchase pack price to unit cost per piece</span>
+                    <span className="text-2xs text-slate-500">Auto-converts purchase pack price to unit cost per piece</span>
                   </div>
                 </div>
               )}
@@ -2292,7 +2292,7 @@ export function MaterialConfigModal({
                   Purchasing Rate, Direct Costing & Resale Pricing
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Purchase rate, wastage & multi-tier resale</span>
+              <span className="text-2xs text-slate-400 font-medium">Purchase rate, wastage & multi-tier resale</span>
             </div>
 
             {/* Section A: Purchase Pricing */}
@@ -2304,7 +2304,7 @@ export function MaterialConfigModal({
                     <Label className="text-xs font-semibold text-slate-900 dark:text-white truncate">
                       Purchase Price (৳/{usageUnit.toUpperCase()}) <span className="text-rose-500">*</span>
                     </Label>
-                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-2xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-1.5 py-0.5 rounded shrink-0">
                       {usageUnit.toUpperCase()} Rate
                     </span>
                   </div>
@@ -2320,7 +2320,7 @@ export function MaterialConfigModal({
                       className="pl-7 h-9 text-xs font-mono font-bold bg-blue-50/20 border-blue-200 dark:border-blue-800 focus:border-blue-500"
                     />
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block truncate">Direct material cost per {usageUnit}</span>
+                  <span className="text-2xs text-slate-500 mt-1 block truncate">Direct material cost per {usageUnit}</span>
                 </div>
 
                 {/* Package Purchase Price */}
@@ -2329,7 +2329,7 @@ export function MaterialConfigModal({
                     <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">
                       Purchase Price (৳/{purchaseUnit})
                     </Label>
-                    <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded shrink-0">
+                    <span className="text-2xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded shrink-0">
                       {materialType === 'roll' || purchaseUnit === 'roll'
                         ? `${parseFloat(newWidthInput) || 10}ft roll`
                         : `Total ${purchaseUnit}`}
@@ -2347,7 +2347,7 @@ export function MaterialConfigModal({
                       className="pl-7 h-9 text-xs font-mono font-bold"
                     />
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block truncate">
+                  <span className="text-2xs text-slate-500 mt-1 block truncate">
                     {materialType === 'roll' || purchaseUnit === 'roll'
                       ? `Package price for ${parseFloat(newWidthInput) || 10}ft roll`
                       : 'Supplier invoice package price'}
@@ -2373,7 +2373,7 @@ export function MaterialConfigModal({
                     />
                     <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block truncate">Production scrap margin</span>
+                  <span className="text-2xs text-slate-500 mt-1 block truncate">Production scrap margin</span>
                 </div>
 
                 {/* Landed Cost Markup Factor */}
@@ -2395,7 +2395,7 @@ export function MaterialConfigModal({
                     />
                     <span className="absolute right-3 top-2.5 text-slate-400 font-bold text-xs">%</span>
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block truncate">Freight & import duty surcharge</span>
+                  <span className="text-2xs text-slate-500 mt-1 block truncate">Freight & import duty surcharge</span>
                 </div>
               </div>
 
@@ -2408,35 +2408,35 @@ export function MaterialConfigModal({
                       Calculated Production Direct Cost & Yield
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
+                  <Badge variant="outline" className="text-2xs font-mono bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900 dark:text-emerald-200">
                     Total Yield: {calculatedEconomics.yieldLabel}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-[11px] font-medium text-slate-500 block">Direct Base Cost (৳ / {usageUnit})</span>
+                    <span className="text-2xs font-medium text-slate-500 block">Direct Base Cost (৳ / {usageUnit})</span>
                     <span className="text-sm font-bold font-mono text-emerald-700 dark:text-emerald-300">
                       ৳{calculatedEconomics.unitCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-[11px] font-medium text-slate-500 block">Effective Cost ({wastePercent}% Waste)</span>
+                    <span className="text-2xs font-medium text-slate-500 block">Effective Cost ({wastePercent}% Waste)</span>
                     <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
                       ৳{calculatedEconomics.effectiveCost.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
 
                   <div className="p-2.5 rounded-lg bg-white/80 dark:bg-slate-900/60 border border-emerald-100 dark:border-emerald-900/60">
-                    <span className="text-[11px] font-medium text-slate-500 block">Suggested Selling Rate ({targetMargin}% Margin)</span>
+                    <span className="text-2xs font-medium text-slate-500 block">Suggested Selling Rate ({targetMargin}% Margin)</span>
                     <span className="text-sm font-bold font-mono text-blue-700 dark:text-blue-300">
                       ৳{suggestedSellingPrice.toFixed(2)} / {usageUnit}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-[11px] font-mono text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-900/40 px-2.5 py-1 rounded-md">
+                <div className="text-2xs font-mono text-emerald-800 dark:text-emerald-300 bg-emerald-100/60 dark:bg-emerald-900/40 px-2.5 py-1 rounded-md">
                   {calculatedEconomics.formulaText}
                 </div>
               </div>
@@ -2450,7 +2450,7 @@ export function MaterialConfigModal({
                       Direct Resale & Multi-Tier Customer Pricing (ঐচ্ছিক বিক্রয় মূল্য)
                     </h4>
                   </div>
-                  <span className="text-[11px] text-slate-400">When selling raw rolls/sheets directly</span>
+                  <span className="text-2xs text-slate-400">When selling raw rolls/sheets directly</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -2511,12 +2511,12 @@ export function MaterialConfigModal({
 
                 {/* Multi-tier Rate Grid */}
                 <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl space-y-2 border border-slate-200 dark:border-slate-700">
-                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block">
+                  <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 block">
                     Customer Tier Price List (৳ / {usageUnit}):
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
                         Retail (খুচরা)
                       </Label>
                       <Input
@@ -2530,7 +2530,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
                         Corporate (কর্পোরেট)
                       </Label>
                       <Input
@@ -2544,7 +2544,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
                         Dealer (ডিলার)
                       </Label>
                       <Input
@@ -2558,7 +2558,7 @@ export function MaterialConfigModal({
                     </div>
 
                     <div>
-                      <Label className="text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1 block">
+                      <Label className="text-2xs font-medium text-slate-600 dark:text-slate-400 mb-1 block">
                         Wholesale (পাইকারি)
                       </Label>
                       <Input
@@ -2627,7 +2627,7 @@ export function MaterialConfigModal({
                   Inventory Storage, Reorder Thresholds & Suppliers
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">Reorder intelligence & store bins</span>
+              <span className="text-2xs text-slate-400 font-medium">Reorder intelligence & store bins</span>
             </div>
 
             <div className="space-y-3">
@@ -2657,7 +2657,7 @@ export function MaterialConfigModal({
                     onChange={(e) => setReorderLevel(parseInt(e.target.value, 10) || 0)}
                     className="h-9 text-xs font-mono"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Low stock warning threshold</span>
+                  <span className="text-2xs text-slate-500 mt-1 block">Low stock warning threshold</span>
                 </div>
 
                 <div>
@@ -2672,7 +2672,7 @@ export function MaterialConfigModal({
                     onChange={(e) => setReorderQuantity(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
                     className="h-9 text-xs font-mono"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">Suggested purchase batch</span>
+                  <span className="text-2xs text-slate-500 mt-1 block">Suggested purchase batch</span>
                 </div>
               </div>
 
@@ -2821,7 +2821,7 @@ export function MaterialConfigModal({
                   Production Role & Machine Compatibility
                 </h3>
               </div>
-              <span className="text-[11px] text-slate-400 font-medium">BOM role & printer compatibility</span>
+              <span className="text-2xs text-slate-400 font-medium">BOM role & printer compatibility</span>
             </div>
 
             <div className="space-y-3.5">
@@ -2849,7 +2849,7 @@ export function MaterialConfigModal({
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                     {tBilingual('Compatible Printing Methods & Machinery', 'সামঞ্জস্যপূর্ণ প্রিন্টিং পদ্ধতি ও মেশিন')}
                   </Label>
-                  <span className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-2xs text-slate-400 font-medium">
                     {compatiblePrintingMethods.length} Selected
                   </span>
                 </div>
@@ -2886,7 +2886,7 @@ export function MaterialConfigModal({
                   <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                     Compatible Inks & Chemistry (কালির ধরন)
                   </Label>
-                  <span className="text-[10px] text-slate-400 font-medium">
+                  <span className="text-2xs text-slate-400 font-medium">
                     {compatibleInkTypes.length} Selected
                   </span>
                 </div>

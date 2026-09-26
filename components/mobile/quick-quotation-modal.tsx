@@ -136,11 +136,11 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Mobile Quick Quotation', 'দ্রুত কোটেশন ক্যালকুলেটর')}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                 Counter POS
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-slate-500 dark:text-slate-400">
               {tBilingual('Instant square-foot pricing calculator for shop counters', 'কাউন্টার বুকিংয়ের জন্য তাৎক্ষণিক স্কয়ার-ফুট রেট ক্যালকুলেটর')}
             </p>
           </div>
@@ -183,7 +183,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
                 >
                   <div className="min-w-0 pr-2">
                     <div className="text-xs font-bold truncate">{mat.name}</div>
-                    <div className="text-[11px] font-mono text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
+                    <div className="text-2xs font-mono text-blue-600 dark:text-blue-400 font-semibold mt-0.5">
                       ৳{mat.rate}/sft
                     </div>
                   </div>
@@ -324,7 +324,7 @@ export function QuickQuotationModal({ open, onClose, tenantSlug = 'app' }: Quick
               <div className="text-2xl font-black text-emerald-400 font-mono">
                 ৳{grandTotal.toLocaleString()}
               </div>
-              <div className="text-[10px] text-slate-400">
+              <div className="text-2xs text-slate-400">
                 {tBilingual('incl. 7.5% Mushak VAT', '৭.৫% মূসক ভ্যাট অন্তর্ভুক্ত')}
               </div>
             </div>

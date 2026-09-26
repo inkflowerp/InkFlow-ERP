@@ -82,7 +82,7 @@ export function PlatformMobileBottomNav() {
                 <div className="p-1 rounded-lg group-hover:bg-slate-800/80 transition-colors">
                   <Icon className="h-5 w-5" />
                 </div>
-                <span className="text-[10px] font-semibold tracking-tight mt-0.5">
+                <span className="text-2xs font-semibold tracking-tight mt-0.5">
                   {tab.label}
                 </span>
               </button>
@@ -110,7 +110,7 @@ export function PlatformMobileBottomNav() {
               >
                 <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5]')} />
               </div>
-              <span className="text-[10px] font-semibold tracking-tight mt-0.5">
+              <span className="text-2xs font-semibold tracking-tight mt-0.5">
                 {tab.label}
               </span>
             </Link>

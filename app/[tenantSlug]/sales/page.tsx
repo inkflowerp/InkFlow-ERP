@@ -238,7 +238,7 @@ export default function SalesManagerPage() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             <CurrencyDisplay amount={totalBookedSales} />
           </div>
-          <div className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
+          <div className="text-2xs text-emerald-600 mt-1 flex items-center gap-1">
             <ArrowUpRight className="h-3 w-3" /> Live active revenue
           </div>
         </Card>
@@ -251,7 +251,7 @@ export default function SalesManagerPage() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {pendingQuotes.length} Quotes
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-2xs text-slate-400 mt-1">
             Value: <CurrencyDisplay amount={pendingQuotesValue} />
           </div>
         </Card>
@@ -264,7 +264,7 @@ export default function SalesManagerPage() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {orders.length} Booked
           </div>
-          <div className="text-[11px] text-blue-600 mt-1">
+          <div className="text-2xs text-blue-600 mt-1">
             Direct production pipeline
           </div>
         </Card>
@@ -277,7 +277,7 @@ export default function SalesManagerPage() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {orders.filter((o) => o.status === 'ready_for_delivery').length} Orders
           </div>
-          <div className="text-[11px] text-purple-600 mt-1">
+          <div className="text-2xs text-purple-600 mt-1">
             <Link href={getTenantNavHref('/delivery', pathname, slug)} className="hover:underline">
               Generate Challans &rarr;
             </Link>
@@ -397,7 +397,7 @@ export default function SalesManagerPage() {
                         {q.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] capitalize">
+                    <Badge variant="outline" className="text-2xs capitalize">
                       {q.status.replace('_', ' ')}
                     </Badge>
                   </div>
@@ -515,26 +515,26 @@ export default function SalesManagerPage() {
                         {o.customer_name}
                       </div>
                     </div>
-                    <Badge variant="outline" className="text-[10px] capitalize">
+                    <Badge variant="outline" className="text-2xs capitalize">
                       {o.status.replace('_', ' ')}
                     </Badge>
                   </div>
 
                   <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800/60 text-center">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase block">Total</span>
+                      <span className="text-2xs text-slate-400 uppercase block">Total</span>
                       <div className="font-mono font-bold text-xs text-slate-900 dark:text-white">
                         {formatBDT(o.final_price || 0)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-emerald-600 uppercase block">Paid</span>
+                      <span className="text-2xs text-emerald-600 uppercase block">Paid</span>
                       <div className="font-mono font-bold text-xs text-emerald-600">
                         {formatBDT(o.advance_amount || 0)}
                       </div>
                     </div>
                     <div>
-                      <span className="text-[10px] text-red-500 uppercase block">Due</span>
+                      <span className="text-2xs text-red-500 uppercase block">Due</span>
                       <div className="font-mono font-bold text-xs text-red-600">
                         {formatBDT(o.due_amount || 0)}
                       </div>

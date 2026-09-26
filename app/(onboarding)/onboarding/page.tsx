@@ -438,7 +438,7 @@ function OnboardingWizard() {
                 >
                   <div
                     className={cn(
-                      'h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold border',
+                      'h-6 w-6 rounded-full flex items-center justify-center text-2xs font-bold border',
                       currentStep === st.step
                         ? 'border-blue-600 bg-blue-50 text-blue-600 dark:bg-blue-950'
                         : currentStep > st.step
@@ -518,21 +518,21 @@ function OnboardingWizard() {
                           Workspace Subdomain / URL (কাস্টম সাবডোমেইন)
                         </Label>
                         {slugStatus.checking ? (
-                          <span className="text-[11px] text-slate-500 animate-pulse">Checking availability...</span>
+                          <span className="text-2xs text-slate-500 animate-pulse">Checking availability...</span>
                         ) : slugStatus.status === 'available' ? (
-                          <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                          <span className="text-2xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
                             <CheckCircle2 className="h-3 w-3" /> Subdomain Available
                           </span>
                         ) : slugStatus.status === 'unavailable' ? (
-                          <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                          <span className="text-2xs font-semibold text-rose-600 dark:text-rose-400 flex items-center gap-1">
                             ✗ Subdomain Taken
                           </span>
                         ) : slugStatus.status === 'reserved' ? (
-                          <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <span className="text-2xs font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1">
                             ⚠ Reserved Subdomain
                           </span>
                         ) : slugStatus.status === 'invalid' ? (
-                          <span className="text-[11px] font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1">
+                          <span className="text-2xs font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1">
                             ✗ Invalid Subdomain
                           </span>
                         ) : null}
@@ -552,7 +552,7 @@ function OnboardingWizard() {
                           .{rootDomain}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 dark:text-slate-400 break-all">
+                      <p className="text-2xs text-slate-500 dark:text-slate-400 break-all">
                         Your team will access this workspace at: <strong className="text-blue-600 dark:text-blue-400 font-mono">https://{watchedSlug || 'your-company'}.{rootDomain}</strong>
                       </p>
                     </div>
@@ -591,7 +591,7 @@ function OnboardingWizard() {
                                 {tBilingual(bt.nameEn, bt.nameBn)}
                                 {isSelected && <CheckCircle2 className="h-4 w-4 text-blue-600 shrink-0" />}
                               </div>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 bangla-text">
+                              <p className="text-2xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5 bangla-text">
                                 {tBilingual(bt.descriptionEn, bt.descriptionBn)}
                               </p>
                             </div>
@@ -627,7 +627,7 @@ function OnboardingWizard() {
                         {...register('whatsapp')}
                         error={errors.whatsapp?.message}
                       />
-                      <span className="text-[11px] text-slate-500">
+                      <span className="text-2xs text-slate-500">
                         Used for sending automated job order proofs and delivery challan PDFs.
                       </span>
                     </div>
@@ -748,7 +748,7 @@ function OnboardingWizard() {
                           <div>
                             <div className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
                               {lang.title}
-                              <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold dark:bg-blue-900/50 dark:text-blue-300">
+                              <span className="text-2xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-semibold dark:bg-blue-900/50 dark:text-blue-300">
                                 {lang.badge}
                               </span>
                             </div>
@@ -823,18 +823,18 @@ function OnboardingWizard() {
                           error={errors.owner_password?.message}
                         />
                       </div>
-                      <span className="text-[11px] text-slate-500">Minimum 6 characters.</span>
+                      <span className="text-2xs text-slate-500">Minimum 6 characters.</span>
                     </div>
 
                     {/* Setup Review Card */}
                     <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-950/60 dark:border-slate-800 text-xs space-y-2">
                       <div className="font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                         <span>Organization Summary</span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold">
+                        <span className="text-2xs font-mono px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-semibold">
                           {isPaidPlan ? `${selectedPlan.toUpperCase()} Plan (Step 8: Payment)` : `${trialDays}-Day Free Trial`}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-600 dark:text-slate-400">
+                      <div className="grid grid-cols-2 gap-2 text-2xs text-slate-600 dark:text-slate-400">
                         <div>
                           <span className="text-slate-400 dark:text-slate-500 block">Company:</span>
                           <span className="font-semibold text-slate-800 dark:text-slate-200 truncate block">
@@ -893,7 +893,7 @@ function OnboardingWizard() {
                           )}
                         >
                           <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                          <span className="bg-emerald-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full uppercase">
+                          <span className="bg-emerald-500 text-white text-2xs font-black px-1.5 py-0.2 rounded-full uppercase">
                             {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                           </span>
                         </button>
@@ -919,7 +919,7 @@ function OnboardingWizard() {
                             )}
                           >
                             {isRecommended && (
-                              <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
+                              <div className="absolute -top-2.5 right-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-2xs font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-xs">
                                 {tBilingual('Popular', 'জনপ্রিয়')}
                               </div>
                             )}
@@ -941,14 +941,14 @@ function OnboardingWizard() {
                                   <span className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
                                     ৳{locale === 'bn' ? toBengaliDigits(price) : price.toLocaleString()}
                                   </span>
-                                  <span className="text-[10px] text-slate-500">
+                                  <span className="text-2xs text-slate-500">
                                     {billingInterval === 'yearly' ? tBilingual('/yr', '/বছর') : tBilingual('/mo', '/মাস')}
                                   </span>
                                 </div>
                               </div>
 
                               {/* Key Limits */}
-                              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1 text-[11px] text-slate-600 dark:text-slate-400">
+                              <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1 text-2xs text-slate-600 dark:text-slate-400">
                                 <div className="flex items-center gap-1.5">
                                   <Users className="h-3 w-3 text-blue-500 shrink-0" />
                                   <span>{locale === 'bn' ? toBengaliDigits(plan.max_users) : plan.max_users} {tBilingual('Users', 'ইউজার')}</span>
@@ -1017,7 +1017,7 @@ function OnboardingWizard() {
                                     {tBilingual(g.name, g.nameBn)}
                                   </span>
                                 </div>
-                                <span className="text-[10px] text-slate-400 truncate max-w-full">
+                                <span className="text-2xs text-slate-400 truncate max-w-full">
                                   {g.id === 'bkash' && 'Instant MFS'}
                                   {g.id === 'sslcommerz' && 'Cards / Net Banking'}
                                   {g.id === 'nagad' && 'Nagad Direct'}
@@ -1032,7 +1032,7 @@ function OnboardingWizard() {
 
                       {/* Selected Gateway Instruction Callout */}
                       {activeGatewayMeta?.instructions && activeGatewayMeta.instructions.length > 0 && (
-                        <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-lg border border-blue-100 dark:border-blue-900/60 text-[11px] text-blue-900 dark:text-blue-200 space-y-1">
+                        <div className="p-2.5 bg-blue-50/70 dark:bg-blue-950/40 rounded-lg border border-blue-100 dark:border-blue-900/60 text-2xs text-blue-900 dark:text-blue-200 space-y-1">
                           {activeGatewayMeta.instructions.map((ins, i) => (
                             <div key={i} className="flex items-start gap-1.5">
                               <CheckCircle2 className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />
@@ -1063,7 +1063,7 @@ function OnboardingWizard() {
                           ৳{locale === 'bn' ? toBengaliDigits(payableAmount) : payableAmount.toLocaleString()} BDT
                         </span>
                       </div>
-                      <div className="pt-1 flex items-center justify-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+                      <div className="pt-1 flex items-center justify-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400">
                         <Lock className="h-3 w-3 text-emerald-600" />
                         <span>256-bit SSL Encrypted & Automated Invoice Activation</span>
                       </div>

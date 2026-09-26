@@ -166,10 +166,10 @@ export function TenantChatView({
               <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200/60 dark:border-indigo-900/50">
                 {conversation.ticket_number}
               </span>
-              <span className={cn('px-2 py-0.5 rounded-md text-[11px] font-medium border', statusConfig.badgeClass)}>
+              <span className={cn('px-2 py-0.5 rounded-md text-2xs font-medium border', statusConfig.badgeClass)}>
                 {statusConfig.labelEn}
               </span>
-              <span className={cn('hidden sm:inline-flex px-2 py-0.5 rounded-md text-[11px] font-medium border', priorityConfig.badgeClass)}>
+              <span className={cn('hidden sm:inline-flex px-2 py-0.5 rounded-md text-2xs font-medium border', priorityConfig.badgeClass)}>
                 {priorityConfig.labelEn}
               </span>
             </div>
@@ -184,7 +184,7 @@ export function TenantChatView({
           {/* Connection Pill */}
           <div
             className={cn(
-              'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium border',
+              'hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-2xs font-medium border',
               connectionState === 'connected'
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/80'
                 : connectionState === 'connecting' || connectionState === 'reconnecting'
@@ -238,10 +238,10 @@ export function TenantChatView({
             if (msg.message_type === 'system_event') {
               return (
                 <div key={msg.id} className="flex justify-center my-3">
-                  <div className="px-3 py-1 rounded-full bg-slate-200/70 dark:bg-slate-800/70 text-[11px] text-slate-600 dark:text-slate-400 border border-slate-300/40 dark:border-slate-700/40 flex items-center gap-1.5 shadow-xs">
+                  <div className="px-3 py-1 rounded-full bg-slate-200/70 dark:bg-slate-800/70 text-2xs text-slate-600 dark:text-slate-400 border border-slate-300/40 dark:border-slate-700/40 flex items-center gap-1.5 shadow-xs">
                     <Clock className="w-3 h-3" />
                     <span>{msg.body}</span>
-                    <span className="text-[10px] text-slate-400">· {formatTime(msg.created_at)}</span>
+                    <span className="text-2xs text-slate-400">· {formatTime(msg.created_at)}</span>
                   </div>
                 </div>
               )
@@ -255,7 +255,7 @@ export function TenantChatView({
                 className={cn('flex flex-col', isMe ? 'items-end' : 'items-start')}
               >
                 {/* Sender Tag */}
-                <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] text-slate-400">
+                <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-slate-400">
                   {isMe ? (
                     <span>{tBilingual('You', 'আপনি')}</span>
                   ) : (
@@ -298,7 +298,7 @@ export function TenantChatView({
                               <FileText className="w-4 h-4 shrink-0 text-amber-300" />
                             )}
                             <span className="truncate">{att.name}</span>
-                            <span className="text-[10px] opacity-75">
+                            <span className="text-2xs opacity-75">
                               ({Math.round(att.size / 1024)} KB)
                             </span>
                           </div>

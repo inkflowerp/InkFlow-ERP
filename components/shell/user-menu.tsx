@@ -63,7 +63,7 @@ export function UserMenu() {
           className="h-8 w-8 text-xs font-bold shrink-0 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
         />
         <div className="hidden 2xl:flex flex-col text-left shrink-0 whitespace-nowrap max-w-[140px]">
-          <span className="text-xs sm:text-[13px] font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap truncate bangla-text">
+          <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-slate-100 leading-tight whitespace-nowrap truncate bangla-text">
             {userName}
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400 capitalize whitespace-nowrap truncate bangla-text">

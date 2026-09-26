@@ -337,28 +337,28 @@ export default function PlatformSupportPage() {
     switch (level) {
       case 'read_only':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-950/80 text-cyan-200 border border-cyan-800/80">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-cyan-950/80 text-cyan-200 border border-cyan-800/80">
             <Eye className="h-3 w-3 text-cyan-400" />
             READ ONLY
           </span>
         )
       case 'config_only':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 text-amber-200 border border-amber-800/80">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-amber-950/80 text-amber-200 border border-amber-800/80">
             <Sliders className="h-3 w-3 text-amber-400" />
             CONFIG ONLY
           </span>
         )
       case 'full_support':
         return (
-          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-950/80 text-indigo-200 border border-indigo-800/80">
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-indigo-950/80 text-indigo-200 border border-indigo-800/80">
             <Wrench className="h-3 w-3 text-indigo-400" />
             FULL SUPPORT
           </span>
         )
       default:
         return (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300">
+          <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-slate-800 text-slate-300">
             {level}
           </span>
         )
@@ -408,7 +408,7 @@ export default function PlatformSupportPage() {
       {/* Top Navigation Subtabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-2.5 shrink-0">
         <div>
-          <div className="flex items-center gap-2 text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">
+          <div className="flex items-center gap-2 text-2xs font-bold text-indigo-400 uppercase tracking-wider mb-0.5">
             <ShieldCheck className="h-3.5 w-3.5 text-indigo-400" />
             Support Operations &amp; Live Triage
           </div>
@@ -446,7 +446,7 @@ export default function PlatformSupportPage() {
             <Key className="w-3.5 h-3.5" />
             <span>Impersonation Sessions</span>
             {activeSessions.length > 0 && (
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-950 text-amber-300 border border-amber-800">
+              <span className="px-1.5 py-0.2 rounded-full text-2xs font-bold bg-amber-950 text-amber-300 border border-amber-800">
                 {activeSessions.length}
               </span>
             )}
@@ -545,15 +545,15 @@ export default function PlatformSupportPage() {
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-white">{activeSessions.length}</span>
             {activeSessions.length > 0 ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800">
+              <span className="inline-flex items-center gap-1 text-2xs font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded-md border border-amber-800">
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
                 Active Now
               </span>
             ) : (
-              <span className="text-[11px] font-medium text-slate-500">Zero-Trust Idle</span>
+              <span className="text-2xs font-medium text-slate-500">Zero-Trust Idle</span>
             )}
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Currently open client impersonations</p>
+          <p className="text-2xs text-slate-400 mt-1">Currently open client impersonations</p>
         </Card>
 
         {/* Total Sessions Conducted */}
@@ -568,9 +568,9 @@ export default function PlatformSupportPage() {
             <span className="text-2xl font-black text-white">
               {stats?.total_sessions ?? supportSessions.length}
             </span>
-            <span className="text-[11px] font-semibold text-indigo-300">Lifetime</span>
+            <span className="text-2xs font-semibold text-indigo-300">Lifetime</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">All historical support authorizations</p>
+          <p className="text-2xs text-slate-400 mt-1">All historical support authorizations</p>
         </Card>
 
         {/* Access Level Distribution */}
@@ -588,7 +588,7 @@ export default function PlatformSupportPage() {
             <span className="text-slate-600">&bull;</span>
             <span className="text-indigo-300">{stats?.full_support_count ?? 0} Full</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Least-privilege permission policy</p>
+          <p className="text-2xs text-slate-400 mt-1">Least-privilege permission policy</p>
         </Card>
 
         {/* Audit Compliance Status */}
@@ -601,11 +601,11 @@ export default function PlatformSupportPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-black text-emerald-300">100%</span>
-            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800">
+            <span className="text-2xs font-bold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-800">
               Audited
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">SHA-256 signed session tokens</p>
+          <p className="text-2xs text-slate-400 mt-1">SHA-256 signed session tokens</p>
         </Card>
       </div>
 
@@ -631,7 +631,7 @@ export default function PlatformSupportPage() {
               </div>
             </div>
 
-            <span className="text-[11px] font-mono text-amber-300/80 self-start sm:self-auto bg-amber-950/60 border border-amber-800/60 px-2.5 py-1 rounded-lg">
+            <span className="text-2xs font-mono text-amber-300/80 self-start sm:self-auto bg-amber-950/60 border border-amber-800/60 px-2.5 py-1 rounded-lg">
               Auto-Audit Active
             </span>
           </div>
@@ -649,11 +649,11 @@ export default function PlatformSupportPage() {
                       <span className="font-black text-white text-sm">
                         {sess.company_name || 'Tenant Organization'}
                       </span>
-                      <span className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      <span className="text-2xs font-mono px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         /{sess.company_slug}
                       </span>
                       {getAccessLevelBadge(sess.access_level)}
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-300 bg-amber-950 px-2.5 py-0.5 rounded-full border border-amber-800">
+                      <span className="inline-flex items-center gap-1 text-2xs font-bold text-amber-300 bg-amber-950 px-2.5 py-0.5 rounded-full border border-amber-800">
                         <Timer className="h-3 w-3 text-amber-400" />
                         {timeLeft}
                       </span>
@@ -664,7 +664,7 @@ export default function PlatformSupportPage() {
                       <span className="italic text-slate-100 font-medium">&quot;{sess.reason}&quot;</span>
                     </p>
 
-                    <div className="flex items-center gap-4 text-[11px] text-slate-400 flex-wrap">
+                    <div className="flex items-center gap-4 text-2xs text-slate-400 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3 text-amber-400" />
                         Expires: {formatTime(sess.expires_at)} ({formatDate(sess.expires_at)})
@@ -731,7 +731,7 @@ export default function PlatformSupportPage() {
             </div>
             <div>
               <h4 className="text-xs font-bold text-white">No Live Support Sessions Active</h4>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-2xs text-slate-400">
                 All tenant accounts are in strict isolation mode. Initiate a session below to assist a client.
               </p>
             </div>
@@ -780,7 +780,7 @@ export default function PlatformSupportPage() {
                 <button
                   key={tab.id}
                   onClick={() => setTenantPlanFilter(tab.id as any)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                  className={`px-2.5 py-1 rounded-lg text-2xs font-bold transition-all ${
                     tenantPlanFilter === tab.id
                       ? 'bg-amber-600 text-slate-950 shadow-sm'
                       : 'text-slate-400 hover:text-slate-200'
@@ -821,20 +821,20 @@ export default function PlatformSupportPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-bold text-white text-xs truncate">{comp.name}</p>
-                      <p className="text-[10px] text-slate-400 font-mono">/{comp.slug}</p>
+                      <p className="text-2xs text-slate-400 font-mono">/{comp.slug}</p>
                     </div>
-                    <span className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-md bg-slate-900 text-amber-300 border border-slate-800 uppercase">
+                    <span className="shrink-0 text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-900 text-amber-300 border border-slate-800 uppercase">
                       {comp.plan || 'starter'}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-slate-400 truncate">
+                  <p className="text-2xs text-slate-400 truncate">
                     {comp.owner_email || comp.owner_phone || 'Standard Tenant'}
                   </p>
                 </div>
 
                 <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-900">
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-2xs text-slate-500">
                     Status: <strong className="text-emerald-400 capitalize">{comp.status || 'active'}</strong>
                   </span>
 
@@ -848,7 +848,7 @@ export default function PlatformSupportPage() {
                       setActionError(null)
                       setShowInitiateModal(true)
                     }}
-                    className={`h-7 text-[11px] font-bold px-2.5 rounded-lg shrink-0 ${
+                    className={`h-7 text-2xs font-bold px-2.5 rounded-lg shrink-0 ${
                       hasActiveSession
                         ? 'bg-amber-500 text-slate-950 hover:bg-amber-400'
                         : 'bg-slate-900 hover:bg-amber-950/80 text-amber-300 border border-slate-800 hover:border-amber-700'
@@ -950,12 +950,12 @@ export default function PlatformSupportPage() {
                     <tr key={sess.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-3.5">
                         <span className="font-bold text-white block">{sess.company_name || 'Unknown Tenant'}</span>
-                        <span className="text-[10px] text-slate-400 font-mono">/{sess.company_slug}</span>
+                        <span className="text-2xs text-slate-400 font-mono">/{sess.company_slug}</span>
                       </td>
 
                       <td className="py-3 px-3.5">
                         <span className="font-semibold text-slate-200 block">{sess.admin_name || 'Platform Admin'}</span>
-                        <span className="text-[10px] text-slate-400">{sess.admin_email}</span>
+                        <span className="text-2xs text-slate-400">{sess.admin_email}</span>
                       </td>
 
                       <td className="py-3 px-3.5">
@@ -968,16 +968,16 @@ export default function PlatformSupportPage() {
 
                       <td className="py-3 px-3.5">
                         {isActive ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-800">
+                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-amber-300 bg-amber-950 px-2 py-0.5 rounded-full border border-amber-800">
                             <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
                             Active ({formatTimeRemaining(sess.expires_at)})
                           </span>
                         ) : isRevoked ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-rose-300 bg-rose-950 px-2 py-0.5 rounded-full border border-rose-800">
+                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-rose-300 bg-rose-950 px-2 py-0.5 rounded-full border border-rose-800">
                             Revoked
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
+                          <span className="inline-flex items-center gap-1 text-2xs font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full border border-slate-700">
                             Expired
                           </span>
                         )}
@@ -985,7 +985,7 @@ export default function PlatformSupportPage() {
 
                       <td className="py-3 px-3.5 text-slate-400">
                         <div>{formatDate(sess.created_at)}</div>
-                        <div className="text-[10px] text-slate-500">
+                        <div className="text-2xs text-slate-500">
                           {formatTime(sess.created_at)}
                         </div>
                       </td>
@@ -996,7 +996,7 @@ export default function PlatformSupportPage() {
                             <Link href={sess.company_slug ? getTenantLink(sess.company_slug, '/dashboard') : '#'}>
                               <Button
                                 size="sm"
-                                className="h-7 text-[11px] font-bold px-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg"
+                                className="h-7 text-2xs font-bold px-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg"
                               >
                                 Enter
                               </Button>
@@ -1004,7 +1004,7 @@ export default function PlatformSupportPage() {
                             <Button
                               size="sm"
                               onClick={() => handleRevokeSession(sess.id, sess.company_name)}
-                              className="h-7 text-[11px] font-bold px-2 bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-800 rounded-lg"
+                              className="h-7 text-2xs font-bold px-2 bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-800 rounded-lg"
                             >
                               Revoke
                             </Button>
@@ -1023,7 +1023,7 @@ export default function PlatformSupportPage() {
                                 setShowInitiateModal(true)
                               }
                             }}
-                            className="h-7 text-[11px] font-semibold px-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-lg"
+                            className="h-7 text-2xs font-semibold px-2 bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-800 rounded-lg"
                           >
                             Re-Authorize
                           </Button>
@@ -1127,7 +1127,7 @@ export default function PlatformSupportPage() {
                       >
                         <Icon className="h-4 w-4 mb-1 text-amber-400" />
                         <div className="font-bold text-xs">{item.label}</div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">{item.desc}</div>
+                        <div className="text-2xs text-slate-400 mt-0.5">{item.desc}</div>
                       </button>
                     )
                   })}
@@ -1148,7 +1148,7 @@ export default function PlatformSupportPage() {
                       key={dur.minutes}
                       type="button"
                       onClick={() => setDurationMinutes(dur.minutes)}
-                      className={`p-2 rounded-xl border text-center font-bold text-[11px] transition-all ${
+                      className={`p-2 rounded-xl border text-center font-bold text-2xs transition-all ${
                         durationMinutes === dur.minutes
                           ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
                           : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-slate-200'
@@ -1171,13 +1171,13 @@ export default function PlatformSupportPage() {
                   placeholder="e.g. Investigating Mushak 6.3 challan sequence issue per Ticket #4829"
                   className="bg-slate-950 border-slate-800 text-white placeholder:text-slate-500 rounded-xl text-xs"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-2xs text-slate-400 mt-1">
                   This reason is permanently logged to the root compliance audit trail and visible to the tenant owner.
                 </p>
               </div>
 
               {/* Compliance Warning */}
-              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-[11px] text-slate-300 space-y-1">
+              <div className="p-3 bg-slate-950 border border-slate-800 rounded-xl text-2xs text-slate-300 space-y-1">
                 <div className="flex items-center gap-1.5 font-bold text-amber-300">
                   <ShieldCheck className="h-3.5 w-3.5 text-amber-400" />
                   Zero-Trust Compliance Notice

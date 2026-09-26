@@ -386,7 +386,7 @@ export default function SuppliersPage() {
         {/* Total Vendors */}
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Total Vendors', 'মোট সরবরাহকারী')}
             </span>
             <Truck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -394,7 +394,7 @@ export default function SuppliersPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             {stats.totalVendors}
           </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
             {stats.activeVendors} Active partners
           </div>
         </Card>
@@ -402,7 +402,7 @@ export default function SuppliersPage() {
         {/* Total Outstanding Due */}
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 border-l-4 border-l-amber-500">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Total Payable Due', 'মোট মহাজনের পাওনা')}
             </span>
             <CreditCard className="h-4 w-4 text-amber-600" />
@@ -410,7 +410,7 @@ export default function SuppliersPage() {
           <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
             {formatBDT(stats.totalPayableDue)}
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
             {stats.vendorsWithDue} vendors pending payment
           </div>
         </Card>
@@ -418,7 +418,7 @@ export default function SuppliersPage() {
         {/* Contract Rates */}
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Agreed Rates', 'নির্ধারিত চুক্তি দর')}
             </span>
             <Tag className="h-4 w-4 text-sky-600" />
@@ -426,7 +426,7 @@ export default function SuppliersPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             {stats.activeContracts}
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
             Catalog buying specs
           </div>
         </Card>
@@ -434,7 +434,7 @@ export default function SuppliersPage() {
         {/* Market Hubs */}
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Market Hubs', 'মার্কেট হাব')}
             </span>
             <MapPin className="h-4 w-4 text-purple-600" />
@@ -442,7 +442,7 @@ export default function SuppliersPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             {stats.uniqueHubs || 5}
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
             Nayabazar, Chawkbazar, etc.
           </div>
         </Card>
@@ -450,7 +450,7 @@ export default function SuppliersPage() {
         {/* Avg Credit Term */}
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Standard Credit', 'সাধারণ বাকি মেয়াদ')}
             </span>
             <Clock className="h-4 w-4 text-indigo-600" />
@@ -458,7 +458,7 @@ export default function SuppliersPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             15-30 Days
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
             Post-dated Cheque cycle
           </div>
         </Card>
@@ -569,7 +569,7 @@ export default function SuppliersPage() {
                 }`}
               >
                 <span>{cat.labelEn.split(' ')[0]}</span>
-                <span className="text-[10px] opacity-75 font-mono">({count})</span>
+                <span className="text-2xs opacity-75 font-mono">({count})</span>
               </button>
             )
           })}
@@ -615,7 +615,7 @@ export default function SuppliersPage() {
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white">
                   {tBilingual('Registered Suppliers & Vendor Partners', 'নিবন্ধিত মহাজন ও ভেন্ডর পার্টনার')}
                 </CardTitle>
-                <Badge variant="outline" className="text-[10px] font-mono">
+                <Badge variant="outline" className="text-2xs font-mono">
                   {filtered.length} shown
                 </Badge>
               </div>
@@ -666,11 +666,11 @@ export default function SuppliersPage() {
                                 <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 text-teal-600 transition-opacity" />
                               </Link>
                               {supplier.name_bn && (
-                                <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium bangla-text">
+                                <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                                   {supplier.name_bn}
                                 </div>
                               )}
-                              <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+                              <div className="flex items-center gap-2 text-2xs text-slate-400 font-mono mt-0.5">
                                 <span>{supplier.supplier_code || 'SUP-001'}</span>
                                 {supplier.company && <span>• {supplier.company}</span>}
                               </div>
@@ -681,7 +681,7 @@ export default function SuppliersPage() {
                         {/* Category */}
                         <td className="py-3.5 px-4">
                           <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border ${catMeta.badgeClass}`}
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border ${catMeta.badgeClass}`}
                           >
                             <CatIcon className="h-3 w-3" />
                             <span>{catMeta.labelEn.split(' ')[0]}</span>
@@ -694,9 +694,9 @@ export default function SuppliersPage() {
                             {supplier.contact_person || '—'}
                           </div>
                           {supplier.designation && (
-                            <div className="text-[10px] text-slate-400">{supplier.designation}</div>
+                            <div className="text-2xs text-slate-400">{supplier.designation}</div>
                           )}
-                          <div className="flex items-center gap-3 font-mono text-[11px] pt-1">
+                          <div className="flex items-center gap-3 font-mono text-2xs pt-1">
                             <a
                               href={`tel:${supplier.mobile}`}
                               className="flex items-center gap-1 text-slate-700 dark:text-slate-300 hover:text-teal-600"
@@ -726,7 +726,7 @@ export default function SuppliersPage() {
                             <span className="capitalize">{supplier.market_hub || 'Nayabazar'}</span>
                           </div>
                           {supplier.address && (
-                            <div className="text-[10px] text-slate-400 truncate max-w-[180px] mt-0.5">
+                            <div className="text-2xs text-slate-400 truncate max-w-[180px] mt-0.5">
                               {supplier.address}
                             </div>
                           )}
@@ -738,7 +738,7 @@ export default function SuppliersPage() {
                             {supplier.payment_terms.replace('_', ' ')}
                           </div>
                           {(supplier.credit_limit || 0) > 0 && (
-                            <div className="text-[10px] text-slate-400 font-mono">
+                            <div className="text-2xs text-slate-400 font-mono">
                               Limit: {formatBDT(supplier.credit_limit || 0)}
                             </div>
                           )}
@@ -752,11 +752,11 @@ export default function SuppliersPage() {
                                 {formatBDT(supplier.outstanding_balance || 0)}
                               </div>
                               {isOverLimit ? (
-                                <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-[9px] py-0 px-1 border-0">
+                                <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 text-2xs py-0 px-1 border-0">
                                   Limit Exceeded
                                 </Badge>
                               ) : (
-                                <span className="text-[10px] text-amber-600 font-semibold">Payable Due</span>
+                                <span className="text-2xs text-amber-600 font-semibold">Payable Due</span>
                               )}
                             </div>
                           ) : (
@@ -778,7 +778,7 @@ export default function SuppliersPage() {
                                   setPayTargetSupplier(supplier)
                                   setIsPayModalOpen(true)
                                 }}
-                                className="h-8 px-2 text-[11px] font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100/70"
+                                className="h-8 px-2 text-2xs font-bold text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800 bg-teal-50/50 hover:bg-teal-100/70"
                                 title="Pay Supplier"
                               >
                                 <Receipt className="h-3.5 w-3.5 mr-1 text-teal-600" />
@@ -793,7 +793,7 @@ export default function SuppliersPage() {
                                 setRateTargetSupplier(supplier)
                                 setIsRateModalOpen(true)
                               }}
-                              className="h-8 px-2 text-[11px] font-semibold"
+                              className="h-8 px-2 text-2xs font-semibold"
                               title="Add Material Contract Rate"
                             >
                               <Tag className="h-3.5 w-3.5 text-slate-500" />
@@ -806,14 +806,14 @@ export default function SuppliersPage() {
                                 setSupplierToEdit(supplier)
                                 setIsSupplierModalOpen(true)
                               }}
-                              className="h-8 px-2 text-[11px] font-semibold"
+                              className="h-8 px-2 text-2xs font-semibold"
                               title="Edit Supplier"
                             >
                               <Edit2 className="h-3.5 w-3.5 text-slate-500" />
                             </Button>
 
                             <Link href={getTenantNavHref(`/suppliers/${supplier.id}`, pathname, slug)}>
-                              <Button size="sm" className="h-8 px-2.5 text-[11px] bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold">
+                              <Button size="sm" className="h-8 px-2.5 text-2xs bg-slate-900 hover:bg-slate-800 text-white dark:bg-slate-800 dark:hover:bg-slate-700 font-bold">
                                 {tBilingual('Profile & Rates', 'রেটশিট ও লেজার')}
                               </Button>
                             </Link>
@@ -879,14 +879,14 @@ export default function SuppliersPage() {
                               {supplier.name_bn}
                             </div>
                           )}
-                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          <div className="text-2xs text-slate-400 font-mono mt-0.5">
                             {supplier.supplier_code || 'SUP-001'} {supplier.company && `• ${supplier.company}`}
                           </div>
                         </div>
                       </div>
 
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border shrink-0 ${catMeta.badgeClass}`}
+                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-2xs font-bold border shrink-0 ${catMeta.badgeClass}`}
                       >
                         <CatIcon className="h-3 w-3" />
                         <span>{catMeta.labelEn.split(' ')[0]}</span>
@@ -901,12 +901,12 @@ export default function SuppliersPage() {
                         <div className="text-slate-700 dark:text-slate-300 font-medium flex items-center justify-between">
                           <span>{supplier.contact_person}</span>
                           {supplier.designation && (
-                            <span className="text-[10px] text-slate-400">{supplier.designation}</span>
+                            <span className="text-2xs text-slate-400">{supplier.designation}</span>
                           )}
                         </div>
                       )}
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[11px] pt-0.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-2xs pt-0.5">
                         <a
                           href={`tel:${supplier.mobile}`}
                           className="flex items-center gap-1 text-teal-700 dark:text-teal-400 font-bold hover:underline"
@@ -928,7 +928,7 @@ export default function SuppliersPage() {
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1 text-[11px] text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                      <div className="flex items-center gap-1 text-2xs text-slate-500 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
                         <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
                         <span className="truncate">{supplier.address || supplier.market_hub || 'Dhaka'}</span>
                       </div>
@@ -936,7 +936,7 @@ export default function SuppliersPage() {
 
                     {/* Credit Bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                      <div className="flex justify-between text-2xs text-slate-400 font-semibold">
                         <span>Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
                         <span>Credit Limit: {formatBDT(creditLimit)}</span>
                       </div>
@@ -955,7 +955,7 @@ export default function SuppliersPage() {
                 {/* Card Footer Balance & Actions */}
                 <div className="p-4 pt-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-900/40 flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                    <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">
                       {tBilingual('Payable Balance', 'বকেয়া পাওনা')}
                     </span>
                     <div className="text-base font-black font-mono">

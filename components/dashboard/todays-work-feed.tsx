@@ -217,7 +217,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                           #{task.job_number || task.task_number}
                         </Badge>
                         {isUrgent && (
-                          <Badge className="bg-rose-600 text-white text-[10px] font-bold animate-pulse">
+                          <Badge className="bg-rose-600 text-white text-2xs font-bold animate-pulse">
                             {tBilingual('URGENT', 'জরুরি')}
                           </Badge>
                         )}
@@ -237,7 +237,7 @@ export function TodaysWorkFeed({ tasks = [], onRefresh, onOpenNewWork }: TodaysW
                         {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
                       </div>
                       {task.assigned_machine_name && (
-                        <div className="text-[11px] text-slate-500 flex items-center justify-end gap-1">
+                        <div className="text-2xs text-slate-500 flex items-center justify-end gap-1">
                           <Printer className="h-3 w-3" />
                           <span className="truncate max-w-[120px]">{task.assigned_machine_name}</span>
                         </div>

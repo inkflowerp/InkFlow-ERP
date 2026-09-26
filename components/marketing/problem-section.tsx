@@ -63,7 +63,7 @@ export function ProblemSection() {
                 <XCircle className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-red-400">
+                <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-red-400">
                   BEFORE PRINT ERP
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-slate-200 mt-0.5 leading-snug">
@@ -80,7 +80,7 @@ export function ProblemSection() {
                 <CheckCircle2 className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-400">
+                <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-emerald-400">
                   AFTER PRINT ERP
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-slate-200 mt-0.5 leading-snug">
@@ -104,10 +104,10 @@ export function ProblemSection() {
                   <h3 className="text-base sm:text-lg font-bold text-white bangla-text">
                     {tBilingual('The Paper & WhatsApp Trap', 'কাগজ ও হোয়াটসঅ্যাপের ফাঁদ')}
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-red-300/80">Disconnected, error-prone and stressful</p>
+                  <p className="text-2xs sm:text-xs text-red-300/80">Disconnected, error-prone and stressful</p>
                 </div>
               </div>
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-red-400 bg-red-950/60 px-2 sm:px-2.5 py-1 rounded border border-red-800/40 shrink-0">
+              <span className="text-2xs sm:text-xs font-mono font-bold text-red-400 bg-red-950/60 px-2 sm:px-2.5 py-1 rounded border border-red-800/40 shrink-0">
                 OLD WAY
               </span>
             </div>
@@ -125,7 +125,7 @@ export function ProblemSection() {
                     <h4 className="text-xs sm:text-sm font-bold text-slate-200 bangla-text">
                       {tBilingual(item.titleEn, item.titleBn)}
                     </h4>
-                    <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed bangla-text">
+                    <p className="text-2xs sm:text-xs text-slate-400 leading-relaxed bangla-text">
                       {tBilingual(item.descEn, item.descBn)}
                     </p>
                   </div>
@@ -145,10 +145,10 @@ export function ProblemSection() {
                   <h3 className="text-base sm:text-lg font-bold text-white bangla-text">
                     {tBilingual('The PrintERP Single-Screen Way', 'প্রিন্টইআরপির এক স্ক্রিন সমাধান')}
                   </h3>
-                  <p className="text-[11px] sm:text-xs text-cyan-300/80">Synchronized, automated and profitable</p>
+                  <p className="text-2xs sm:text-xs text-cyan-300/80">Synchronized, automated and profitable</p>
                 </div>
               </div>
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-cyan-400 bg-cyan-950/60 px-2 sm:px-2.5 py-1 rounded border border-cyan-800/40 shrink-0">
+              <span className="text-2xs sm:text-xs font-mono font-bold text-cyan-400 bg-cyan-950/60 px-2 sm:px-2.5 py-1 rounded border border-cyan-800/40 shrink-0">
                 PRINTERP OS
               </span>
             </div>
@@ -166,7 +166,7 @@ export function ProblemSection() {
                     <h4 className="text-xs sm:text-sm font-bold text-white bangla-text">
                       {tBilingual(item.titleEn, item.titleBn)}
                     </h4>
-                    <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed bangla-text">
+                    <p className="text-2xs sm:text-xs text-slate-300 leading-relaxed bangla-text">
                       {tBilingual(item.descEn, item.descBn)}
                     </p>
                   </div>

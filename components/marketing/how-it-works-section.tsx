@@ -65,7 +65,7 @@ export function HowItWorksSection() {
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-                    <span className="font-mono text-[11px] sm:text-xs font-black text-cyan-400">
+                    <span className="font-mono text-2xs sm:text-xs font-black text-cyan-400">
                       {s.step}
                     </span>
                     <span
@@ -79,7 +79,7 @@ export function HowItWorksSection() {
                     <h4 className="font-bold text-xs sm:text-sm text-white leading-tight bangla-text">
                       {tBilingual(s.titleEn, s.titleBn)}
                     </h4>
-                    <p className="text-[10px] sm:text-[11px] text-slate-400 line-clamp-2 leading-tight bangla-text">
+                    <p className="text-2xs sm:text-2xs text-slate-400 line-clamp-2 leading-tight bangla-text">
                       {tBilingual(s.descEn, s.descBn)}
                     </p>
                   </div>
@@ -96,7 +96,7 @@ export function HowItWorksSection() {
               {WORKFLOW_STEPS[activeStep].step}
             </div>
             <div>
-              <div className="text-[10px] sm:text-xs font-bold text-cyan-400 uppercase tracking-wider">
+              <div className="text-2xs sm:text-xs font-bold text-cyan-400 uppercase tracking-wider">
                 ACTIVE STEP IN WORKFLOW
               </div>
               <div className="text-base sm:text-lg font-bold text-white bangla-text">
@@ -108,7 +108,7 @@ export function HowItWorksSection() {
             </div>
           </div>
 
-          <div className="text-[11px] sm:text-xs font-semibold text-slate-400 shrink-0 flex items-center gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80 w-full sm:w-auto">
+          <div className="text-2xs sm:text-xs font-semibold text-slate-400 shrink-0 flex items-center gap-1.5 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800/80 w-full sm:w-auto">
             <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-emerald-400 shrink-0" />
             <span>Auto-Logged in Audit Trail</span>
           </div>

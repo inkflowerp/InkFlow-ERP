@@ -92,7 +92,7 @@ export function MarketingFooter() {
               </li>
               <li>
                 <span className="text-slate-500 flex items-center gap-1">
-                  Product Updates <span className="text-[9px] bg-cyan-500/20 text-cyan-400 px-1 rounded">v2.4</span>
+                  Product Updates <span className="text-2xs bg-cyan-500/20 text-cyan-400 px-1 rounded">v2.4</span>
                 </span>
               </li>
             </ul>
@@ -165,7 +165,7 @@ export function MarketingFooter() {
             <LanguageSwitcher size="sm" />
           </div>
 
-          <div className="text-slate-500 text-center sm:text-right text-[11px] sm:text-xs">
+          <div className="text-slate-500 text-center sm:text-right text-2xs sm:text-xs">
             © {new Date().getFullYear()} {appName} Ltd. All rights reserved.
           </div>
         </div>

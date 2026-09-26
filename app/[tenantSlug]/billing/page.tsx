@@ -942,26 +942,26 @@ function BillingContent() {
     switch (sec) {
       case 'offset_print':
         return (
-          <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-[10px] py-0 px-1.5 font-medium">
+          <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-2xs py-0 px-1.5 font-medium">
             📑 Offset
           </Badge>
         )
       case 'signage_fabrication':
         return (
-          <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 text-[10px] py-0 px-1.5 font-medium">
+          <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20 text-2xs py-0 px-1.5 font-medium">
             💡 Signage
           </Badge>
         )
       case 'ready_merchandise':
         return (
-          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[10px] py-0 px-1.5 font-medium">
+          <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-2xs py-0 px-1.5 font-medium">
             🎁 Merch
           </Badge>
         )
       case 'digital_print':
       default:
         return (
-          <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 text-[10px] py-0 px-1.5 font-medium">
+          <Badge className="bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/20 text-2xs py-0 px-1.5 font-medium">
             🎨 Digital
           </Badge>
         )
@@ -1146,7 +1146,7 @@ function BillingContent() {
 
     if (status === 'paid' || dueAmt <= 0.01) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
           <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Paid
         </span>
       )
@@ -1154,7 +1154,7 @@ function BillingContent() {
 
     if (status === 'cancelled') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-400 border border-slate-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-slate-500/10 text-slate-700 dark:text-slate-400 border border-slate-500/20">
           <Ban className="h-3 w-3 text-slate-500" /> Cancelled
         </span>
       )
@@ -1162,7 +1162,7 @@ function BillingContent() {
 
     if (status === 'written_off') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-purple-500/10 text-purple-700 dark:text-purple-400 border border-purple-500/20">
           Written Off
         </span>
       )
@@ -1170,7 +1170,7 @@ function BillingContent() {
 
     if (dueAmt > 0 && daysOverdue > 0) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold bg-rose-500/15 text-rose-700 dark:text-rose-400 border border-rose-500/30 animate-pulse">
           <AlertOctagon className="h-3 w-3 text-rose-600 dark:text-rose-400" /> {daysOverdue}d Overdue
         </span>
       )
@@ -1178,14 +1178,14 @@ function BillingContent() {
 
     if (status === 'partially_paid') {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20">
           <Clock className="h-3 w-3 text-blue-600 dark:text-blue-400" /> Partially Paid
         </span>
       )
     }
 
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20">
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-500/20">
         Unpaid
       </span>
     )
@@ -1233,7 +1233,7 @@ function BillingContent() {
               <div>
                 <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                   <span>{locale === 'bn' ? 'বিলিং ও কালেকশন' : 'Billing & Collections'}</span>
-                  <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold py-0.5">
+                  <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
                     Live BDT ৳
                   </Badge>
                 </h1>
@@ -1368,14 +1368,14 @@ function BillingContent() {
           {/* 1. Total Invoiced */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <span>Total Invoiced</span>
               <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
               {formatBDT(effectiveMetrics?.salesAmount || 0)}
             </div>
-            <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
+            <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
               <span className="font-semibold text-slate-700 dark:text-slate-300">{effectiveMetrics?.salesCount || 0}</span>
               <span>Bills Generated</span>
             </div>
@@ -1384,14 +1384,14 @@ function BillingContent() {
           {/* 2. Collected */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-            <div className="flex items-center justify-between text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
               <span>Collected</span>
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
               {formatBDT(effectiveMetrics?.collectionAmount || 0)}
             </div>
-            <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
+            <div className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
               <span className="font-semibold">{effectiveMetrics?.collectionCount || 0}</span>
               <span>Payments Received</span>
             </div>
@@ -1400,14 +1400,14 @@ function BillingContent() {
           {/* 3. Outstanding Due */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-            <div className="flex items-center justify-between text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
               <span>Outstanding Due</span>
               <Clock className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
               {formatBDT(effectiveMetrics?.outstandingDue ?? effectiveMetrics?.totalReceivables ?? 0)}
             </div>
-            <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
+            <div className="text-2xs text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
               <span className="font-semibold">{effectiveMetrics?.outstandingDueCount ?? effectiveMetrics?.dueTodayCount ?? 0}</span>
               <span>Bills Pending</span>
             </div>
@@ -1416,7 +1416,7 @@ function BillingContent() {
           {/* 4. Overdue */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-            <div className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
+            <div className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
               <span>Overdue</span>
               {(effectiveMetrics?.overdueAmount || 0) > 0 ? (
                 <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
@@ -1427,7 +1427,7 @@ function BillingContent() {
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5">
               {formatBDT(effectiveMetrics?.overdueAmount || 0)}
             </div>
-            <div className="text-[11px] text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
+            <div className="text-2xs text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
               <span className="font-semibold">{effectiveMetrics?.overdueCount || 0}</span>
               <span>Overdue Bills</span>
             </div>
@@ -1436,26 +1436,26 @@ function BillingContent() {
           {/* 5. Total Receivable */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-500" />
-            <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               <span>Total Receivable</span>
               <Building className="h-3.5 w-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
               {formatBDT(effectiveMetrics?.totalReceivables || 0)}
             </div>
-            <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1">All Open Accounts</div>
+            <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1">All Open Accounts</div>
           </Card>
 
           {/* 6. Collection Efficiency Rate */}
           <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-blue-200/80 dark:border-blue-900/40 shadow-xs hover:border-blue-300 dark:hover:border-blue-800 transition-all rounded-2xl relative overflow-hidden group">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
-            <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
               <span>Collection Rate</span>
               <Activity className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
             </div>
             <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1.5 flex items-baseline gap-1">
               <span>{effectiveMetrics?.collectionRate || 0}%</span>
-              <span className={cn('text-[10px] font-bold', healthTier.color)}>({healthTier.label})</span>
+              <span className={cn('text-2xs font-bold', healthTier.color)}>({healthTier.label})</span>
             </div>
             <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
               <div
@@ -1497,7 +1497,7 @@ function BillingContent() {
           >
             <Receipt className="h-4 w-4" />
             <span>Invoices</span>
-            <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
               {invoices.length}
             </Badge>
           </button>
@@ -1514,11 +1514,11 @@ function BillingContent() {
             <FileSpreadsheet className="h-4 w-4" />
             <span>Invoice Requests</span>
             {pendingRequestsCount > 0 ? (
-              <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
+              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
                 {pendingRequestsCount} Hold
               </Badge>
             ) : (
-              <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
                 {invoiceRequests.length}
               </Badge>
             )}
@@ -1535,7 +1535,7 @@ function BillingContent() {
           >
             <DollarSign className="h-4 w-4" />
             <span>Payments</span>
-            <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
               {payments.length}
             </Badge>
           </button>
@@ -1551,7 +1551,7 @@ function BillingContent() {
           >
             <Percent className="h-4 w-4" />
             <span>Receivables</span>
-            <Badge className={cn('text-[10px] py-0 px-1.5 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
               {customerReceivables.length}
             </Badge>
           </button>
@@ -1572,11 +1572,11 @@ function BillingContent() {
                   <div>
                     <div className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
                       <span>Commercial Hold Alert</span>
-                      <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-[10px] py-0 font-bold">
+                      <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-2xs py-0 font-bold">
                         {pendingRequestsCount} Pending Billing
                       </Badge>
                     </div>
-                    <div className="text-[11px] text-amber-800/90 dark:text-amber-300/80">
+                    <div className="text-2xs text-amber-800/90 dark:text-amber-300/80">
                       Artwork is marked Design Ready by Prepress, but production floor is locked until official invoices are generated.
                     </div>
                   </div>
@@ -1657,14 +1657,14 @@ function BillingContent() {
                               {item.customerName}
                             </span>
                             {item.customerCompany && (
-                              <span className="text-slate-500 text-[11px] font-medium">({item.customerCompany})</span>
+                              <span className="text-slate-500 text-2xs font-medium">({item.customerCompany})</span>
                             )}
                             <span className="font-mono text-blue-600 dark:text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-md">
                               #{item.invoiceNumber}
                             </span>
                           </div>
 
-                          <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
+                          <div className="text-2xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
                             <span>Phone: {item.customerPhone ? (
                               <a
                                 href={`tel:${item.customerPhone}`}
@@ -1689,11 +1689,11 @@ function BillingContent() {
                               {formatBDT(item.dueAmount)} DUE
                             </div>
                             {item.daysOverdue > 0 ? (
-                              <span className="text-[10px] font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
+                              <span className="text-2xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider block">
                                 {item.daysOverdue} DAYS OVERDUE
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
+                              <span className="text-2xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider block">
                                 DUE TODAY
                               </span>
                             )}
@@ -1765,7 +1765,7 @@ function BillingContent() {
                           <div className="flex items-center justify-between text-xs py-0.5">
                             <span className="font-bold text-slate-800 dark:text-slate-200 uppercase">{pm.label || pm.method}</span>
                             <div className="flex items-center gap-2 font-mono">
-                              <span className="text-slate-500 text-[11px]">{pm.transactionCount || 0} txns</span>
+                              <span className="text-slate-500 text-2xs">{pm.transactionCount || 0} txns</span>
                               <strong className="text-emerald-600 font-bold">{formatBDT(pm.totalAmount)}</strong>
                             </div>
                           </div>
@@ -1795,11 +1795,11 @@ function BillingContent() {
                       <div key={sp.salespersonId || sp.salespersonName} className="flex items-center justify-between text-xs py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
                         <div>
                           <span className="font-bold text-slate-800 dark:text-slate-200">{sp.salespersonName}</span>
-                          <span className="text-[10px] text-slate-400 block font-mono">{sp.customerCount || 0} Accounts Managed</span>
+                          <span className="text-2xs text-slate-400 block font-mono">{sp.customerCount || 0} Accounts Managed</span>
                         </div>
                         <div className="text-right font-mono">
                           <div className="text-emerald-600 font-bold">{formatBDT(sp.totalCollected)}</div>
-                          <div className="text-[10px] text-rose-500">Due: {formatBDT(sp.outstandingDue)}</div>
+                          <div className="text-2xs text-rose-500">Due: {formatBDT(sp.outstandingDue)}</div>
                         </div>
                       </div>
                     ))
@@ -1840,7 +1840,7 @@ function BillingContent() {
                     <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
                     <Badge
                       className={cn(
-                        'text-[10px] px-1.5 py-0 font-mono font-bold',
+                        'text-2xs px-1.5 py-0 font-mono font-bold',
                         isSelected
                           ? 'bg-blue-800 text-white'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -1908,7 +1908,7 @@ function BillingContent() {
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                     <tr>
                       <th className="p-3.5">Invoice # & Sector</th>
                       <th className="p-3.5">Customer & Phone</th>
@@ -1942,13 +1942,13 @@ function BillingContent() {
                               </Link>
                               {getSectorBadge(getSectorForInvoice(inv))}
                               {inv.invoice_type === 'vat_invoice' && (
-                                <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-[9px] py-0 px-1">
+                                <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-2xs py-0 px-1">
                                   VAT 6.3
                                 </Badge>
                               )}
                             </div>
                             {inv.order_number && (
-                              <span className="text-[10px] text-slate-400 font-mono block mt-0.5">
+                              <span className="text-2xs text-slate-400 font-mono block mt-0.5">
                                 Order: {inv.order_number}
                               </span>
                             )}
@@ -1958,7 +1958,7 @@ function BillingContent() {
                             {inv.customer_phone ? (
                               <a
                                 href={`tel:${inv.customer_phone}`}
-                                className="text-[11px] text-slate-500 font-mono hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5"
+                                className="text-2xs text-slate-500 font-mono hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5"
                                 title="Call Customer"
                                 onClick={(e) => e.stopPropagation()}
                               >
@@ -1966,7 +1966,7 @@ function BillingContent() {
                                 <span>{inv.customer_phone}</span>
                               </a>
                             ) : (
-                              <span className="text-[11px] text-slate-400 font-mono">—</span>
+                              <span className="text-2xs text-slate-400 font-mono">—</span>
                             )}
                           </td>
                           <td className="p-3.5 font-numeric tabular-nums text-slate-500">{inv.invoice_date}</td>
@@ -2030,7 +2030,7 @@ function BillingContent() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => setSelectedInvoiceForDelete(inv)}
-                                  className="h-7 text-[11px] px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                                  className="h-7 text-2xs px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
                                   title="Delete Invoice"
                                 >
                                   Delete
@@ -2042,7 +2042,7 @@ function BillingContent() {
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => setSelectedInvoiceForCancel(inv)}
-                                  className="h-7 text-[11px] px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
+                                  className="h-7 text-2xs px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
                                   title="Cancel / Void Invoice"
                                 >
                                   Void
@@ -2096,21 +2096,21 @@ function BillingContent() {
 
                       <div className="grid grid-cols-3 gap-2 text-center font-mono text-xs bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                         <div>
-                          <span className="text-[10px] text-slate-400 block">Total</span>
+                          <span className="text-2xs text-slate-400 block">Total</span>
                           <span className="font-bold text-slate-800 dark:text-slate-200">{formatBDT(inv.grand_total)}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-emerald-600 block">Paid</span>
+                          <span className="text-2xs text-emerald-600 block">Paid</span>
                           <span className="font-bold text-emerald-600">{formatBDT(inv.paid_amount || 0)}</span>
                         </div>
                         <div>
-                          <span className="text-[10px] text-rose-600 block">Due</span>
+                          <span className="text-2xs text-rose-600 block">Due</span>
                           <span className="font-black text-rose-600">{formatBDT(inv.due_amount || 0)}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between pt-1">
-                        <span className="text-[11px] text-slate-400 font-mono">Date: {inv.invoice_date}</span>
+                        <span className="text-2xs text-slate-400 font-mono">Date: {inv.invoice_date}</span>
                         <div className="flex items-center gap-2">
                           {inv.due_amount > 0 && inv.status !== 'cancelled' && (
                             <>
@@ -2287,7 +2287,7 @@ function BillingContent() {
             <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                  <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                     <tr>
                       <th className="p-3.5">Receipt #</th>
                       <th className="p-3.5">Date</th>
@@ -2317,11 +2317,11 @@ function BillingContent() {
                             {pay.customer_name || 'Walk-in Customer'}
                           </td>
                           <td className="p-3.5">
-                            <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-[10px] rounded-md font-semibold">
+                            <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md font-semibold">
                               {pay.payment_method}
                             </Badge>
                           </td>
-                          <td className="p-3.5 font-mono text-slate-500 text-[11px]">
+                          <td className="p-3.5 font-mono text-slate-500 text-2xs">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
                           <td className="p-3.5 text-right font-numeric tabular-nums font-black text-emerald-600 text-sm">
@@ -2364,7 +2364,7 @@ function BillingContent() {
                         <span className="font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
                           {pay.receipt_number}
                         </span>
-                        <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-[10px] rounded-md">
+                        <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md">
                           {pay.payment_method}
                         </Badge>
                       </div>
@@ -2374,7 +2374,7 @@ function BillingContent() {
                           <div className="font-bold text-sm text-slate-900 dark:text-white">
                             {pay.customer_name || 'Walk-in Customer'}
                           </div>
-                          <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                          <div className="text-2xs text-slate-400 font-mono mt-0.5">
                             {pay.payment_date} • By: {pay.received_by_name || 'Cashier'}
                           </div>
                         </div>
@@ -2383,7 +2383,7 @@ function BillingContent() {
                             {formatBDT(pay.amount)}
                           </div>
                           {(pay.mfs_transaction_id || pay.cheque_number || pay.bank_name) && (
-                            <span className="text-[10px] text-slate-400 font-mono block">
+                            <span className="text-2xs text-slate-400 font-mono block">
                               Ref: {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name}
                             </span>
                           )}
@@ -2442,7 +2442,7 @@ function BillingContent() {
                     <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
                     <Badge
                       className={cn(
-                        'text-[10px] px-1.5 py-0 font-mono font-bold',
+                        'text-2xs px-1.5 py-0 font-mono font-bold',
                         isSelected
                           ? 'bg-blue-800 text-white'
                           : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -2460,7 +2460,7 @@ function BillingContent() {
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {receivablesAging.buckets.map((b) => (
                   <Card key={b.bucket} className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs rounded-2xl">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                    <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider block">
                       {b.label}
                     </span>
                     <div className="text-base font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
@@ -2473,7 +2473,7 @@ function BillingContent() {
                 ))}
 
                 <Card className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs bg-rose-50/20 rounded-2xl">
-                  <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
+                  <span className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider block">
                     Total Overdue
                   </span>
                   <div className="text-base font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1">
@@ -2483,13 +2483,13 @@ function BillingContent() {
                 </Card>
 
                 <Card className="p-3.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-300/80 dark:border-slate-700/80 shadow-xs rounded-2xl">
-                  <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                  <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
                     Total Receivables
                   </span>
                   <div className="text-base font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
                     {formatBDT(receivablesAging.totalReceivables || 0)}
                   </div>
-                  <span className="text-[10px] text-slate-500 font-mono">All Open Accounts</span>
+                  <span className="text-2xs text-slate-500 font-mono">All Open Accounts</span>
                 </Card>
               </div>
             )}
@@ -2520,7 +2520,7 @@ function BillingContent() {
               <CardContent className="p-0">
                 <div className="hidden md:block overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-[10px] font-bold">
+                    <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                       <tr>
                         <th className="p-3.5">Customer</th>
                         <th className="p-3.5">Phone</th>
@@ -2564,11 +2564,11 @@ function BillingContent() {
                             <td className="p-3.5 font-mono text-slate-500">{c.oldestDueDate}</td>
                             <td className="p-3.5 text-center">
                               {c.maxDaysOverdue > 0 ? (
-                                <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-[10px] rounded-md">
+                                <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md">
                                   {c.maxDaysOverdue}d Overdue
                                 </Badge>
                               ) : (
-                                <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-[10px] rounded-md">
+                                <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md">
                                   Due Soon
                                 </Badge>
                               )}
@@ -2624,11 +2624,11 @@ function BillingContent() {
                             {c.customerName}
                           </span>
                           {c.maxDaysOverdue > 0 ? (
-                            <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-[10px] rounded-md">
+                            <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md">
                               {c.maxDaysOverdue}d Overdue
                             </Badge>
                           ) : (
-                            <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-[10px] rounded-md">
+                            <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md">
                               Due Soon
                             </Badge>
                           )}
@@ -2651,11 +2651,11 @@ function BillingContent() {
 
                         <div className="flex items-center justify-between bg-slate-50/70 dark:bg-slate-900/70 p-2.5 rounded-xl border border-slate-200/50 dark:border-slate-800/50">
                           <div>
-                            <span className="text-[10px] text-slate-400 block font-mono">Oldest Due Date</span>
+                            <span className="text-2xs text-slate-400 block font-mono">Oldest Due Date</span>
                             <span className="text-xs font-mono text-slate-700 dark:text-slate-300">{c.oldestDueDate}</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-[10px] text-slate-400 block font-mono">Total Outstanding</span>
+                            <span className="text-2xs text-slate-400 block font-mono">Total Outstanding</span>
                             <span className="font-mono font-black text-rose-600 text-sm">{formatBDT(c.totalDue)}</span>
                           </div>
                         </div>

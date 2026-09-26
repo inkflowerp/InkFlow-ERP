@@ -277,7 +277,7 @@ export function PlatformSidebar() {
           filteredSections.map((sec) => (
             <div key={sec.title} className="space-y-1">
               {!isCollapsed && (
-                <div className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <div className="px-2.5 text-2xs font-bold uppercase tracking-wider text-slate-500 mb-1">
                   {sec.title}
                 </div>
               )}
@@ -332,7 +332,7 @@ export function PlatformSidebar() {
                       {!isCollapsed && item.badge && (
                         <span
                           className={cn(
-                            'text-[9px] font-bold px-1.5 py-0.5 rounded-md shrink-0 ml-1.5',
+                            'text-2xs font-bold px-1.5 py-0.5 rounded-md shrink-0 ml-1.5',
                             item.badgeColor || 'bg-indigo-500/20 text-indigo-300'
                           )}
                         >
@@ -362,12 +362,12 @@ export function PlatformSidebar() {
       <div className="p-2.5 border-t border-slate-800 bg-slate-950/80 space-y-2 shrink-0 select-none">
         {!isCollapsed ? (
           <>
-            <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-400 flex items-center justify-between">
+            <div className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-2xs text-slate-400 flex items-center justify-between">
               <span className="flex items-center gap-1.5 font-medium">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 BD-Central Cluster
               </span>
-              <span className="font-mono text-slate-500 text-[9px] font-bold">{appName} SaaS</span>
+              <span className="font-mono text-slate-500 text-2xs font-bold">{appName} SaaS</span>
             </div>
 
             <Link
@@ -410,7 +410,7 @@ export function PlatformSidebar() {
         <div className="flex h-11 items-center justify-between border-b border-slate-800/80 px-3 shrink-0">
           {!collapsed ? (
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400 truncate">
+              <span className="text-2xs font-mono font-bold uppercase tracking-widest text-indigo-400 truncate">
                 {appName} Control Plane
               </span>
             </div>
@@ -447,7 +447,7 @@ export function PlatformSidebar() {
             </div>
             <div className="text-left">
               <span className="font-bold text-sm text-white block">{appName} Platform</span>
-              <span className="text-[10px] text-indigo-400 font-mono">Control Center</span>
+              <span className="text-2xs text-indigo-400 font-mono">Control Center</span>
             </div>
           </div>
         </SheetHeader>

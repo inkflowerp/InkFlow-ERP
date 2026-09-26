@@ -329,7 +329,7 @@ export function NewCustomerModal({
             <h2 className="text-base font-black text-slate-900 dark:text-white">
               {locale === 'bn' ? 'নতুন কাস্টমার নিবন্ধন' : 'New Customer Registration'}
             </h2>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-slate-500 dark:text-slate-400">
               Fast walk-in customer creation, credit limits, delivery addresses, and customer-specific rates
             </p>
           </div>
@@ -443,7 +443,7 @@ export function NewCustomerModal({
               <button
                 type="button"
                 onClick={() => setDismissDuplicate(true)}
-                className="text-[11px] font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
+                className="text-2xs font-bold text-amber-800 dark:text-amber-300 hover:underline cursor-pointer"
               >
                 Continue Anyway &rarr;
               </button>
@@ -460,7 +460,7 @@ export function NewCustomerModal({
                       <span className="font-bold text-slate-900 dark:text-white">
                         {m.customer.name}
                       </span>
-                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
+                      <Badge variant="outline" className="font-mono text-2xs px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
                         {formatCustomerIdNo(m.customer)}
                       </Badge>
                       {m.customer.company_name && (
@@ -469,10 +469,10 @@ export function NewCustomerModal({
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-500 font-mono">
+                    <div className="text-2xs text-slate-500 font-mono">
                       {m.customer.mobile} {m.customer.whatsapp ? `• WA: ${m.customer.whatsapp}` : ''}
                     </div>
-                    <div className="text-[11px] text-amber-700 dark:text-amber-300 font-medium mt-0.5">
+                    <div className="text-2xs text-amber-700 dark:text-amber-300 font-medium mt-0.5">
                       {m.matchReason}
                     </div>
                   </div>
@@ -530,7 +530,7 @@ export function NewCustomerModal({
                     )}
                   />
                   {fieldErrors.name && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -577,7 +577,7 @@ export function NewCustomerModal({
                     onChange={(e) => setCustomerIdNo(e.target.value)}
                     className="text-xs h-9 font-mono"
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">Leave empty to auto-generate</p>
+                  <p className="text-2xs text-slate-400 mt-1">Leave empty to auto-generate</p>
                 </div>
 
                 <div>
@@ -649,7 +649,7 @@ export function NewCustomerModal({
                     )}
                   />
                   {fieldErrors.mobile && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.mobile}</span>
                     </p>
@@ -659,7 +659,7 @@ export function NewCustomerModal({
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <Label className="text-xs font-semibold">WhatsApp Number</Label>
-                    <label className="flex items-center gap-1 text-[10px] text-slate-500 cursor-pointer">
+                    <label className="flex items-center gap-1 text-2xs text-slate-500 cursor-pointer">
                       <input
                         type="checkbox"
                         checked={sameAsMobile}

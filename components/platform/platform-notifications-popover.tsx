@@ -103,11 +103,11 @@ export function PlatformNotificationsPopover() {
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white text-sm">Platform Notifications</span>
                 {unreadCount > 0 ? (
-                  <span className="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-bold border border-rose-500/30">
+                  <span className="px-1.5 py-0.2 rounded-full bg-rose-500/20 text-rose-300 text-2xs font-bold border border-rose-500/30">
                     {unreadCount} new
                   </span>
                 ) : (
-                  <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 text-[10px] font-medium">
+                  <span className="px-1.5 py-0.2 rounded-full bg-slate-800 text-slate-400 text-2xs font-medium">
                     {totalCount} total
                   </span>
                 )}
@@ -125,7 +125,7 @@ export function PlatformNotificationsPopover() {
                   <button
                     type="button"
                     onClick={() => markAllAsRead()}
-                    className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
+                    className="text-2xs font-semibold text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer"
                   >
                     Mark all read
                   </button>
@@ -134,7 +134,7 @@ export function PlatformNotificationsPopover() {
             </div>
 
             {/* Category Filter Sub-Tabs */}
-            <div className="flex items-center gap-1 p-1.5 bg-slate-950/60 border-b border-slate-800/80 overflow-x-auto scrollbar-none text-[11px]">
+            <div className="flex items-center gap-1 p-1.5 bg-slate-950/60 border-b border-slate-800/80 overflow-x-auto scrollbar-none text-2xs">
               {[
                 { id: 'all', label: 'All' },
                 { id: 'support', label: 'Support' },
@@ -168,11 +168,11 @@ export function PlatformNotificationsPopover() {
                 <div className="p-6 text-center text-slate-400 space-y-2">
                   <AlertTriangle className="h-6 w-6 text-amber-400 mx-auto opacity-80" />
                   <div className="font-semibold text-rose-300 text-xs">Unable to load notifications</div>
-                  <p className="text-[11px] text-slate-500">{error}</p>
+                  <p className="text-2xs text-slate-500">{error}</p>
                   <button
                     type="button"
                     onClick={() => refetch()}
-                    className="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] rounded-lg cursor-pointer"
+                    className="mt-2 px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-2xs rounded-lg cursor-pointer"
                   >
                     Retry
                   </button>
@@ -181,7 +181,7 @@ export function PlatformNotificationsPopover() {
                 <div className="p-8 text-center text-slate-400 space-y-2">
                   <CheckCircle2 className="h-8 w-8 text-emerald-400 mx-auto opacity-80" />
                   <div className="font-semibold text-white text-xs">No notifications yet.</div>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-2xs text-slate-500">
                     No active notifications in this category. Platform operations are nominal.
                   </p>
                 </div>
@@ -218,8 +218,8 @@ export function PlatformNotificationsPopover() {
                             <span className="truncate">{notif.title}</span>
                             <ArrowRight className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-400" />
                           </Link>
-                          <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-2">{notif.message}</p>
-                          <div className="flex items-center gap-2 text-[10px] text-slate-400 pt-0.5 flex-wrap">
+                          <p className="text-2xs text-slate-300 leading-relaxed line-clamp-2">{notif.message}</p>
+                          <div className="flex items-center gap-2 text-2xs text-slate-400 pt-0.5 flex-wrap">
                             <span className="flex items-center gap-1 font-mono">
                               <Clock className="w-3 h-3 text-slate-500" />
                               {formatTime(notif.created_at)}
@@ -229,7 +229,7 @@ export function PlatformNotificationsPopover() {
                                 {notif.company_name}
                               </span>
                             )}
-                            <span className="uppercase text-[9px] font-bold text-slate-400 px-1 py-0.2 rounded bg-slate-800 border border-slate-700">
+                            <span className="uppercase text-2xs font-bold text-slate-400 px-1 py-0.2 rounded bg-slate-800 border border-slate-700">
                               {notif.type}
                             </span>
                           </div>
@@ -257,7 +257,7 @@ export function PlatformNotificationsPopover() {
               <Link
                 href="/platform/notifications"
                 onClick={() => setOpen(false)}
-                className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
+                className="text-2xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors flex items-center gap-1"
               >
                 <span>Notification Center</span>
                 <ArrowRight className="w-3 h-3" />
@@ -265,7 +265,7 @@ export function PlatformNotificationsPopover() {
               <Link
                 href="/platform/audit"
                 onClick={() => setOpen(false)}
-                className="text-[10px] text-slate-400 hover:text-slate-200 transition-colors"
+                className="text-2xs text-slate-400 hover:text-slate-200 transition-colors"
               >
                 Audit Trail →
               </Link>

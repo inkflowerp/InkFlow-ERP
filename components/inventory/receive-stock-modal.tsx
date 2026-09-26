@@ -1776,7 +1776,7 @@ export function ReceiveStockModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
+                className="text-2xs uppercase font-mono py-0.5 px-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
               >
                 Inward Gate & Master Sync
               </Badge>
@@ -2008,7 +2008,7 @@ export function ReceiveStockModal({
                     size="sm"
                     variant="outline"
                     onClick={handleReceiveAllRemaining}
-                    className="h-7 text-[11px] font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:border-emerald-700 cursor-pointer"
+                    className="h-7 text-2xs font-semibold text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:text-emerald-300 dark:border-emerald-700 cursor-pointer"
                   >
                     <CheckCheck className="h-3.5 w-3.5 mr-1" />
                     {tBilingual('Receive All Remaining', 'সব গ্রহণ')}
@@ -2018,7 +2018,7 @@ export function ReceiveStockModal({
                     size="sm"
                     variant="ghost"
                     onClick={handleClearAllPo}
-                    className="h-7 text-[11px] font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
+                    className="h-7 text-2xs font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                   >
                     <RotateCcw className="h-3.5 w-3.5 mr-1" />
                     {tBilingual('Clear All', 'মুছুন')}
@@ -2050,25 +2050,25 @@ export function ReceiveStockModal({
             {currentPo && (
               <div className="p-3 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800 grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">Vendor:</span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold">Vendor:</span>
                   <span className="font-bold text-slate-800 dark:text-slate-200 mt-0.5 block truncate">
                     {currentPo.supplier_name}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">PO Number:</span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold">PO Number:</span>
                   <span className="font-mono font-bold text-emerald-700 dark:text-emerald-400 mt-0.5 block">
                     {currentPo.po_number}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">Expected Date:</span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold">Expected Date:</span>
                   <span className="font-mono text-slate-700 dark:text-slate-300 mt-0.5 block">
                     {currentPo.expected_delivery_date || currentPo.po_date}
                   </span>
                 </div>
                 <div>
-                  <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold">PO Total Value:</span>
+                  <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold">PO Total Value:</span>
                   <span className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 block">
                     {formatBDT(currentPo.grand_total)}
                   </span>
@@ -2096,7 +2096,7 @@ export function ReceiveStockModal({
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                           <div>
                             <div className="font-bold text-slate-900 dark:text-white text-sm">{row.material_name}</div>
-                            <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                            <div className="text-2xs text-slate-500 font-mono mt-0.5">
                               PO Order: {row.quantity_ordered} {row.unit} | Received: {row.quantity_received} | Remaining:{' '}
                               <span className="font-bold text-emerald-600">{row.quantity_remaining} {row.unit}</span>
                             </div>
@@ -2104,11 +2104,11 @@ export function ReceiveStockModal({
 
                           <div className="flex items-center gap-2">
                             {row.roll_width_ft ? (
-                              <Badge variant="outline" className="text-[10px] font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800">
+                              <Badge variant="outline" className="text-2xs font-mono text-cyan-700 dark:text-cyan-400 bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-800">
                                 Roll: {row.roll_width_ft}ft × {row.roll_length_ft || 164}ft
                               </Badge>
                             ) : null}
-                            <Badge variant="outline" className="text-[10px] font-mono">
+                            <Badge variant="outline" className="text-2xs font-mono">
                               Rate: {formatBDT(row.unit_cost)} / {row.unit}
                             </Badge>
                           </div>
@@ -2117,7 +2117,7 @@ export function ReceiveStockModal({
                         {/* Inspection inputs */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                           <div>
-                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Accepted Qty ({row.unit})</Label>
+                            <Label className="text-2xs text-slate-500 mb-0.5 block">Accepted Qty ({row.unit})</Label>
                             <Input
                               type="number"
                               step="any"
@@ -2129,7 +2129,7 @@ export function ReceiveStockModal({
                             />
                           </div>
                           <div>
-                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Rejected Qty</Label>
+                            <Label className="text-2xs text-slate-500 mb-0.5 block">Rejected Qty</Label>
                             <Input
                               type="number"
                               step="any"
@@ -2141,7 +2141,7 @@ export function ReceiveStockModal({
                             />
                           </div>
                           <div>
-                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Roll Lot #</Label>
+                            <Label className="text-2xs text-slate-500 mb-0.5 block">Batch / Roll Lot #</Label>
                             <Input
                               placeholder="e.g. Lot-108"
                               value={row.batch_lot_number}
@@ -2150,7 +2150,7 @@ export function ReceiveStockModal({
                             />
                           </div>
                           <div>
-                            <Label className="text-[11px] text-slate-500 mb-0.5 block">Inward Value (৳)</Label>
+                            <Label className="text-2xs text-slate-500 mb-0.5 block">Inward Value (৳)</Label>
                             <div className="h-8 px-3 rounded-md bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center font-mono font-bold text-emerald-700 dark:text-emerald-300">
                               {formatBDT(lineAcceptedVal)}
                             </div>
@@ -2160,11 +2160,11 @@ export function ReceiveStockModal({
                         {/* COST & PRICING INTELLIGENCE PANEL */}
                         <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            <span className="text-2xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                               <Sparkles className="h-3.5 w-3.5 text-amber-500" />
                               Commercial Master Price Intelligence & Sync
                             </span>
-                            <label className="flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
+                            <label className="flex items-center gap-1.5 text-2xs font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer">
                               <input
                                 type="checkbox"
                                 checked={row.update_master_pricing}
@@ -2177,14 +2177,14 @@ export function ReceiveStockModal({
 
                           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 pt-1">
                             <div>
-                              <span className="text-[10px] text-slate-400 block">Previous Cost:</span>
+                              <span className="text-2xs text-slate-400 block">Previous Cost:</span>
                               <div className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">
                                 {formatBDT(row.previous_cost)} / {row.unit}
                               </div>
                             </div>
 
                             <div>
-                              <span className="text-[10px] text-slate-400 block">PO Inward Cost:</span>
+                              <span className="text-2xs text-slate-400 block">PO Inward Cost:</span>
                               <div className="flex items-center gap-1.5">
                                 <span className="font-mono text-xs font-bold text-emerald-600">
                                   {formatBDT(row.unit_cost)}
@@ -2193,7 +2193,7 @@ export function ReceiveStockModal({
                                   <Badge
                                     variant="outline"
                                     className={cn(
-                                      'text-[9px] px-1 py-0 font-mono font-bold',
+                                      'text-2xs px-1 py-0 font-mono font-bold',
                                       costVariance > 0
                                         ? 'bg-rose-50 text-rose-700 border-rose-200'
                                         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -2206,14 +2206,14 @@ export function ReceiveStockModal({
                             </div>
 
                             <div>
-                              <span className="text-[10px] text-slate-400 block">Previous Price:</span>
+                              <span className="text-2xs text-slate-400 block">Previous Price:</span>
                               <div className="font-mono text-xs text-slate-500">
                                 {formatBDT(row.previous_selling_price)}
                               </div>
                             </div>
 
                             <div>
-                              <span className="text-[10px] text-slate-400 block">New Selling Price:</span>
+                              <span className="text-2xs text-slate-400 block">New Selling Price:</span>
                               <div className="flex items-center gap-1.5">
                                 <Input
                                   type="number"
@@ -2223,7 +2223,7 @@ export function ReceiveStockModal({
                                   onChange={(e) => handlePoRowChange(idx, 'new_selling_price', Number(e.target.value))}
                                   className="h-7 text-xs font-mono font-bold w-24"
                                 />
-                                <Badge variant="secondary" className="text-[9px] px-1.5 py-0 font-mono">
+                                <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-mono">
                                   Margin: {row.target_margin_percent}%
                                 </Badge>
                               </div>
@@ -2244,7 +2244,7 @@ export function ReceiveStockModal({
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Accepted GRN Value</span>
+                    <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Accepted GRN Value</span>
                     <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
                       {formatBDT(poTotalAcceptedValuation)}
                     </div>
@@ -2341,19 +2341,19 @@ export function ReceiveStockModal({
                     {/* Item Header with Inherited Physical Form & Purchase Unit Badges */}
                     <div className="flex items-center justify-between gap-2 border-b border-slate-200/60 dark:border-slate-800/80 pb-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-mono font-bold flex items-center justify-center text-[10px]">
+                        <span className="h-5 w-5 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 font-mono font-bold flex items-center justify-center text-2xs">
                           #{idx + 1}
                         </span>
                         <span className="font-bold text-slate-900 dark:text-white">
                           {item.material_name || 'Select Item'}
                         </span>
-                        <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 bg-white dark:bg-slate-900">
+                        <Badge variant="outline" className="font-mono text-2xs px-1.5 py-0 bg-white dark:bg-slate-900">
                           {item.sku || 'SKU'}
                         </Badge>
                         <Badge
                           variant="secondary"
                           className={cn(
-                            'text-[10px] px-1.5 py-0 font-medium',
+                            'text-2xs px-1.5 py-0 font-medium',
                             item.item_type === 'product'
                               ? 'bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
                               : 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300'
@@ -2370,7 +2370,7 @@ export function ReceiveStockModal({
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-[10px] px-2 py-0 font-bold flex items-center gap-1 border',
+                                'text-2xs px-2 py-0 font-bold flex items-center gap-1 border',
                                 badgeInfo.badgeStyle
                               )}
                               title="Inherited from Material Master Physical Classification"
@@ -2384,7 +2384,7 @@ export function ReceiveStockModal({
                         {/* Inherited Purchase Unit Badge */}
                         <Badge
                           variant="outline"
-                          className="text-[10px] px-2 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700 font-mono font-bold uppercase"
+                          className="text-2xs px-2 py-0 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700 font-mono font-bold uppercase"
                           title="Inherited from Material Master Purchasing Unit"
                         >
                           Purchase Unit: {item.unit || item.master_purchase_unit || 'pcs'}
@@ -2394,7 +2394,7 @@ export function ReceiveStockModal({
                         {(item.size_spec || (item.physical_form === 'roll' && item.roll_width_ft) || (item.physical_form === 'sheet' && item.sheet_size)) && (
                           <Badge
                             variant="outline"
-                            className="text-[10px] px-2 py-0 bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-semibold"
+                            className="text-2xs px-2 py-0 bg-indigo-50/80 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800 font-semibold"
                           >
                             📏 {item.size_spec || (item.physical_form === 'roll' ? `${item.roll_width_ft || 5}ft Roll (${rollArea} sft)` : item.sheet_size)}
                           </Badge>
@@ -2417,7 +2417,7 @@ export function ReceiveStockModal({
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                       {/* 1. Registered Material Master Dropdown (No Free-Text) */}
                       <div className="sm:col-span-6">
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
+                        <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
                           Material Name (Registered Master) <span className="text-rose-500">*</span>
                         </Label>
                         <select
@@ -2451,7 +2451,7 @@ export function ReceiveStockModal({
 
                       {/* 2. Active Configured Roll/Sheet Sizes & Discrete Economics Dropdown */}
                       <div className="sm:col-span-6">
-                        <Label className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
+                        <Label className="text-2xs font-semibold text-slate-700 dark:text-slate-300 mb-0.5 block">
                           Active Configured Size & Economics <span className="text-rose-500">*</span>
                         </Label>
                         {item.configured_sizes && item.configured_sizes.length > 0 ? (
@@ -2494,7 +2494,7 @@ export function ReceiveStockModal({
                     {/* Active Configured Sizing Quick-Pills */}
                     {item.configured_sizes && item.configured_sizes.length > 1 && (
                       <div className="p-2 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/40 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1 mr-1">
+                        <span className="text-2xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider flex items-center gap-1 mr-1">
                           <Disc className="h-3 w-3 text-indigo-600" />
                           Configured Sizes:
                         </span>
@@ -2510,7 +2510,7 @@ export function ReceiveStockModal({
                               type="button"
                               onClick={() => handleSelectConfiguredSize(idx, sz.id)}
                               className={cn(
-                                'text-[11px] py-0.5 px-2.5 rounded-md font-mono transition-all cursor-pointer border',
+                                'text-2xs py-0.5 px-2.5 rounded-md font-mono transition-all cursor-pointer border',
                                 isSelected
                                   ? 'bg-indigo-600 text-white font-bold border-indigo-700 shadow-xs'
                                   : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
@@ -2527,7 +2527,7 @@ export function ReceiveStockModal({
                     <div className="grid grid-cols-1 sm:grid-cols-4 gap-2.5">
                       {/* Quantity */}
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
+                        <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
                           Quantity ({item.unit || 'Roll'}) <span className="text-rose-500">*</span>
                         </Label>
                         <Input
@@ -2544,14 +2544,14 @@ export function ReceiveStockModal({
                       {/* Unit Purchase Price (Discrete Supplier Rate) */}
                       <div>
                         <div className="flex items-center justify-between mb-0.5">
-                          <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 block">
+                          <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 block">
                             Unit Purchase Price (৳) <span className="text-rose-500">*</span>
                           </Label>
                           {item.cost_variance_percent !== 0 && (
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-[9px] px-1 py-0 font-mono font-bold',
+                                'text-2xs px-1 py-0 font-mono font-bold',
                                 isVariancePositive
                                   ? 'bg-rose-50 text-rose-700 border-rose-200'
                                   : 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -2574,7 +2574,7 @@ export function ReceiveStockModal({
 
                       {/* Inward Total Cost */}
                       <div>
-                        <Label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
+                        <Label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 mb-0.5 block">
                           Total Value (৳)
                         </Label>
                         <div className="h-9 px-3 rounded-lg bg-emerald-50/80 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 flex items-center font-mono font-bold text-emerald-700 dark:text-emerald-300 text-sm">
@@ -2584,7 +2584,7 @@ export function ReceiveStockModal({
 
                       {/* Batch / Lot / Challan Tag */}
                       <div>
-                        <Label className="text-[11px] text-slate-500 mb-0.5 block">Batch / Lot / Roll Tag</Label>
+                        <Label className="text-2xs text-slate-500 mb-0.5 block">Batch / Lot / Roll Tag</Label>
                         <Input
                           placeholder="e.g. Lot-1024"
                           value={item.batch_lot_number}
@@ -2616,7 +2616,7 @@ export function ReceiveStockModal({
                 </div>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Total Inward Valuation</span>
+                <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Total Inward Valuation</span>
                 <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
                   {formatBDT(directTotalValuation)}
                 </div>

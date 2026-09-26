@@ -80,7 +80,7 @@ export function HoldTaskModal({
             <AlertOctagon className="h-4 w-4 text-amber-600" />
             <span>{task.task_name}</span>
           </div>
-          <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">
+          <p className="text-2xs text-amber-800/80 dark:text-amber-300/80">
             Placing this task on hold will mark it as blocked on the production board and notify the assigned operator.
           </p>
         </div>

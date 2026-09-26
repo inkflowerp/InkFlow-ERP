@@ -74,23 +74,23 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
               <h2 className="text-lg font-black uppercase tracking-tight text-slate-900">
                 {companyName}
               </h2>
-              <p className="text-slate-600 text-[11px]">{companyAddress} | Ph: {companyPhone}</p>
-              <span className="inline-block mt-1 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+              <p className="text-slate-600 text-2xs">{companyAddress} | Ph: {companyPhone}</p>
+              <span className="inline-block mt-1 bg-slate-900 text-white text-2xs font-bold px-2 py-0.5 rounded uppercase tracking-wider">
                 {tBilingual('JOB ORDER TICKET', 'জব অর্ডার টিকেট')}
               </span>
             </div>
             <div className="text-right font-mono">
               <div className="text-lg font-black text-indigo-900">#{order.orderNumber}</div>
               {order.invoiceNumber && (
-                <div className="text-[11px] text-slate-600 font-semibold">Inv: #{order.invoiceNumber}</div>
+                <div className="text-2xs text-slate-600 font-semibold">Inv: #{order.invoiceNumber}</div>
               )}
               {order.jobNumber && (
-                <div className="text-[11px] text-purple-700 font-semibold">Job: #{order.jobNumber}</div>
+                <div className="text-2xs text-purple-700 font-semibold">Job: #{order.jobNumber}</div>
               )}
-              <div className="text-[10px] text-slate-500 mt-1">
+              <div className="text-2xs text-slate-500 mt-1">
                 {tBilingual('Date: ', 'তারিখ: ')}{order.orderDate}
               </div>
-              <div className="text-[10px] font-bold text-rose-700">
+              <div className="text-2xs font-bold text-rose-700">
                 {tBilingual('Delivery Target: ', 'ডেলিভারি টার্গেট: ')}{order.deliveryDate || tBilingual('Urgent', 'জরুরী')}
               </div>
             </div>
@@ -99,27 +99,27 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
           {/* Customer & Priority Information */}
           <div className="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded border border-slate-200">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
+              <span className="text-2xs uppercase font-bold text-slate-500 block">
                 {tBilingual('Customer:', 'কাস্টমার:')}
               </span>
               <strong className="text-sm text-slate-900">{order.customerName}</strong>
               {order.customerPhone && (
-                <div className="text-slate-600 font-mono text-[11px]">
+                <div className="text-slate-600 font-mono text-2xs">
                   {tBilingual('Phone: ', 'মোবাইল: ')}{order.customerPhone}
                 </div>
               )}
               {order.customerAddress && (
-                <div className="text-slate-500 text-[10px] truncate">{order.customerAddress}</div>
+                <div className="text-slate-500 text-2xs truncate">{order.customerAddress}</div>
               )}
             </div>
             <div className="text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-500 block">
+              <span className="text-2xs uppercase font-bold text-slate-500 block">
                 {tBilingual('Priority & Status:', 'জরুরিত্ব ও স্ট্যাটাস:')}
               </span>
               <span className="inline-block text-xs font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800 border border-rose-200">
                 {isUrgent ? tBilingual('Urgent Floor', 'অতি জরুরী') : tBilingual('Standard Flow', 'সাধারণ')}
               </span>
-              <div className="text-[11px] text-slate-600 mt-1">
+              <div className="text-2xs text-slate-600 mt-1">
                 {tBilingual('Payment Status: ', 'পেমেন্ট: ')}
                 <strong className="font-bold">
                   {order.paymentStatus === 'paid'
@@ -142,7 +142,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
             </h3>
             <table className="w-full text-left border-collapse border border-slate-300">
               <thead>
-                <tr className="bg-slate-100 text-[10px] font-bold text-slate-700 uppercase">
+                <tr className="bg-slate-100 text-2xs font-bold text-slate-700 uppercase">
                   <th className="border border-slate-300 p-2 w-8 text-center">#</th>
                   <th className="border border-slate-300 p-2">{tBilingual('Item Name & Material', 'কাজের নাম ও মেটেরিয়াল')}</th>
                   <th className="border border-slate-300 p-2">{tBilingual('Dimensions', 'সাইজ / মাপ')}</th>
@@ -153,12 +153,12 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
               </thead>
               <tbody>
                 {order.items.map((it, idx) => (
-                  <tr key={it.id || idx} className="border border-slate-300 text-[11px]">
+                  <tr key={it.id || idx} className="border border-slate-300 text-2xs">
                     <td className="border border-slate-300 p-2 text-center font-bold">{idx + 1}</td>
                     <td className="border border-slate-300 p-2">
                       <strong className="text-slate-900 block">{it.itemName}</strong>
                       {it.materialSpec && (
-                        <span className="text-[10px] text-slate-600 font-mono">{it.materialSpec}</span>
+                        <span className="text-2xs text-slate-600 font-mono">{it.materialSpec}</span>
                       )}
                     </td>
                     <td className="border border-slate-300 p-2 font-mono font-bold">
@@ -171,7 +171,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                       {it.finishing || tBilingual('Standard Cutting', 'সাধারণ কাটিং')}
                     </td>
                     <td className="border border-slate-300 p-2">
-                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-bold uppercase">
+                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-2xs font-bold uppercase">
                         {it.workflowRouting === 'design_required'
                           ? tBilingual('Design Needed', 'ডিজাইন দরকার')
                           : it.workflowRouting === 'design_ok'
@@ -192,46 +192,46 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
           {/* Machine Floor Checkboxes & Sign-offs */}
           <div className="grid grid-cols-4 gap-2 pt-2 border-t border-slate-200">
             <div className="border border-slate-200 p-2 rounded text-center">
-              <span className="text-[9px] font-bold uppercase text-slate-500 block">
+              <span className="text-2xs font-bold uppercase text-slate-500 block">
                 {tBilingual('1. Design / Pre-Press', '১. ডিজাইন / প্রি-প্রেস')}
               </span>
               <div className="h-6 flex items-center justify-center">
                 <CheckSquare className="h-4 w-4 text-slate-300" />
               </div>
-              <span className="text-[9px] text-slate-400 block border-t border-slate-100 pt-1">
+              <span className="text-2xs text-slate-400 block border-t border-slate-100 pt-1">
                 {tBilingual('Signature', 'স্বাক্ষর')}
               </span>
             </div>
             <div className="border border-slate-200 p-2 rounded text-center">
-              <span className="text-[9px] font-bold uppercase text-slate-500 block">
+              <span className="text-2xs font-bold uppercase text-slate-500 block">
                 {tBilingual('2. Machine Printing', '২. মেশিন প্রিন্টিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
                 <CheckSquare className="h-4 w-4 text-slate-300" />
               </div>
-              <span className="text-[9px] text-slate-400 block border-t border-slate-100 pt-1">
+              <span className="text-2xs text-slate-400 block border-t border-slate-100 pt-1">
                 {tBilingual('Operator', 'অপারেটর')}
               </span>
             </div>
             <div className="border border-slate-200 p-2 rounded text-center">
-              <span className="text-[9px] font-bold uppercase text-slate-500 block">
+              <span className="text-2xs font-bold uppercase text-slate-500 block">
                 {tBilingual('3. Finishing & Cutting', '৩. ফিনিশিং ও কাটিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
                 <CheckSquare className="h-4 w-4 text-slate-300" />
               </div>
-              <span className="text-[9px] text-slate-400 block border-t border-slate-100 pt-1">
+              <span className="text-2xs text-slate-400 block border-t border-slate-100 pt-1">
                 {tBilingual('In-Charge', 'ইনচার্জ')}
               </span>
             </div>
             <div className="border border-slate-200 p-2 rounded text-center">
-              <span className="text-[9px] font-bold uppercase text-slate-500 block">
+              <span className="text-2xs font-bold uppercase text-slate-500 block">
                 {tBilingual('4. QC & Packaging', '৪. কিউসি ও প্যাকিং')}
               </span>
               <div className="h-6 flex items-center justify-center">
                 <CheckSquare className="h-4 w-4 text-slate-300" />
               </div>
-              <span className="text-[9px] text-slate-400 block border-t border-slate-100 pt-1">
+              <span className="text-2xs text-slate-400 block border-t border-slate-100 pt-1">
                 {tBilingual('Counter', 'কাউন্টার')}
               </span>
             </div>
@@ -239,7 +239,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
 
           {/* Notes & Special Instructions */}
           {order.notes && (
-            <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-[11px]">
+            <div className="p-2 rounded bg-amber-50 border border-amber-200 text-amber-900 text-2xs">
               <strong>{tBilingual('Special Instructions: ', 'বিশেষ নির্দেশনা: ')}</strong> {order.notes}
             </div>
           )}

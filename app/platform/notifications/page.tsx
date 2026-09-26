@@ -407,7 +407,7 @@ export default function PlatformNotificationsPage() {
             <AlertTriangle className="h-5 w-5 text-rose-400 shrink-0" />
             <div>
               <div className="font-bold">Unable to load notifications</div>
-              <div className="text-[11px] text-rose-300/80">{error}</div>
+              <div className="text-2xs text-rose-300/80">{error}</div>
             </div>
           </div>
           <Button
@@ -430,7 +430,7 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-white mt-2">{totalCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Authoritative database records</div>
+          <div className="text-2xs text-slate-500 mt-1">Authoritative database records</div>
         </Card>
 
         <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
@@ -441,7 +441,7 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-rose-300 mt-2">{unreadCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Require operator acknowledgment</div>
+          <div className="text-2xs text-slate-500 mt-1">Require operator acknowledgment</div>
         </Card>
 
         <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
@@ -452,7 +452,7 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-amber-300 mt-2">{warningCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">Storage, job retry &amp; billing notices</div>
+          <div className="text-2xs text-slate-500 mt-1">Storage, job retry &amp; billing notices</div>
         </Card>
 
         <Card className="border-slate-800/80 bg-slate-900/60 p-4 rounded-2xl relative overflow-hidden">
@@ -463,7 +463,7 @@ export default function PlatformNotificationsPage() {
             </div>
           </div>
           <div className="text-2xl font-black text-indigo-300 mt-2">{broadcastCount}</div>
-          <div className="text-[11px] text-slate-500 mt-1">System announcements &amp; advisories</div>
+          <div className="text-2xs text-slate-500 mt-1">System announcements &amp; advisories</div>
         </Card>
       </div>
 
@@ -648,7 +648,7 @@ export default function PlatformNotificationsPage() {
 
                           {/* Severity Pill */}
                           <span
-                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase ${
+                            className={`text-2xs font-bold px-2 py-0.5 rounded-full border uppercase ${
                               isCritical
                                 ? 'bg-rose-950/60 text-rose-300 border-rose-800'
                                 : isWarning
@@ -660,13 +660,13 @@ export default function PlatformNotificationsPage() {
                           </span>
 
                           {/* Category Tag */}
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700">
+                          <span className="text-2xs font-semibold px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700">
                             {item.type}
                           </span>
 
                           {/* Target Audience Tag */}
                           {item.target_audience && (
-                            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
+                            <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded-full bg-indigo-950/40 text-indigo-300 border border-indigo-800/40 flex items-center gap-1">
                               <Users className="h-2.5 w-2.5" />
                               {item.target_audience === 'all_tenants'
                                 ? 'All Tenants'
@@ -682,7 +682,7 @@ export default function PlatformNotificationsPage() {
                         </p>
 
                         {/* Meta Footer */}
-                        <div className="flex items-center gap-3 sm:gap-4 text-[11px] text-slate-500 pt-1 flex-wrap">
+                        <div className="flex items-center gap-3 sm:gap-4 text-2xs text-slate-500 pt-1 flex-wrap">
                           <span className="flex items-center gap-1 text-slate-400">
                             <Clock className="h-3 w-3 text-slate-500" />
                             <span>{getRelativeTime(item.created_at)}</span>
@@ -726,7 +726,7 @@ export default function PlatformNotificationsPage() {
                           Mark Read
                         </Button>
                       ) : (
-                        <span className="text-[11px] text-slate-500 italic px-2">Acknowledged</span>
+                        <span className="text-2xs text-slate-500 italic px-2">Acknowledged</span>
                       )}
 
                       <button

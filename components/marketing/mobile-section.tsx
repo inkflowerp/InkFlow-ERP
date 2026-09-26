@@ -108,12 +108,12 @@ export function MobileSection() {
                         {tBilingual(f.titleEn, f.titleBn)}
                       </h4>
                       {isSelected && (
-                        <span className="text-[9px] sm:text-[10px] font-bold text-cyan-400 uppercase tracking-wider shrink-0 ml-2">
+                        <span className="text-2xs sm:text-2xs font-bold text-cyan-400 uppercase tracking-wider shrink-0 ml-2">
                           Viewing
                         </span>
                       )}
                     </div>
-                    <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 leading-relaxed bangla-text">
+                    <p className="text-2xs sm:text-xs text-slate-400 mt-0.5 sm:mt-1 leading-relaxed bangla-text">
                       {tBilingual(f.descEn, f.descBn)}
                     </p>
                   </div>
@@ -141,7 +141,7 @@ export function MobileSection() {
                     </div>
                     <span className="font-bold text-white text-xs">Apex Digital</span>
                   </div>
-                  <Badge variant="outline" className="text-[9px] text-emerald-400 border-emerald-500/40 py-0 h-4">
+                  <Badge variant="outline" className="text-2xs text-emerald-400 border-emerald-500/40 py-0 h-4">
                     Online
                   </Badge>
                 </div>
@@ -150,29 +150,29 @@ export function MobileSection() {
                 {mobileScreen === 'sales' && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in-0 duration-200">
                     <div className="p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800">
-                      <span className="text-[9px] sm:text-[10px] text-slate-400 uppercase font-mono">Today&apos;s Revenue</span>
+                      <span className="text-2xs sm:text-2xs text-slate-400 uppercase font-mono">Today&apos;s Revenue</span>
                       <div className="text-lg sm:text-xl font-black text-white tabular-nums mt-0.5">৳ 48,500</div>
-                      <span className="text-[9px] sm:text-[10px] text-emerald-400 font-semibold">+18% vs Yesterday</span>
+                      <span className="text-2xs sm:text-2xs text-emerald-400 font-semibold">+18% vs Yesterday</span>
                     </div>
 
                     <div className="grid grid-cols-2 gap-2 text-center">
                       <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                        <span className="text-[9px] sm:text-[10px] text-slate-400">Cash in Drawer</span>
+                        <span className="text-2xs sm:text-2xs text-slate-400">Cash in Drawer</span>
                         <div className="font-bold text-white tabular-nums mt-0.5 text-xs sm:text-sm">৳ 24,000</div>
                       </div>
                       <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800">
-                        <span className="text-[9px] sm:text-[10px] text-slate-400">bKash Merchant</span>
+                        <span className="text-2xs sm:text-2xs text-slate-400">bKash Merchant</span>
                         <div className="font-bold text-white tabular-nums mt-0.5 text-xs sm:text-sm">৳ 24,500</div>
                       </div>
                     </div>
 
                     <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
-                      <span className="text-[9px] sm:text-[10px] font-bold text-slate-300 uppercase">Recent Mobile Invoices</span>
-                      <div className="text-[10px] sm:text-[11px] text-slate-300 flex justify-between">
+                      <span className="text-2xs sm:text-2xs font-bold text-slate-300 uppercase">Recent Mobile Invoices</span>
+                      <div className="text-2xs sm:text-2xs text-slate-300 flex justify-between">
                         <span className="truncate pr-1">Beximco Expo Standee</span>
                         <span className="font-bold text-white shrink-0">৳ 6,800</span>
                       </div>
-                      <div className="text-[10px] sm:text-[11px] text-slate-300 flex justify-between">
+                      <div className="text-2xs sm:text-2xs text-slate-300 flex justify-between">
                         <span className="truncate pr-1">Akij Star Flex Banner</span>
                         <span className="font-bold text-white shrink-0">৳ 18,500</span>
                       </div>
@@ -182,29 +182,29 @@ export function MobileSection() {
 
                 {mobileScreen === 'jobs' && (
                   <div className="space-y-2 sm:space-y-2.5 animate-in fade-in-0 duration-200">
-                    <div className="text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase">Live Machine Queue</div>
+                    <div className="text-2xs sm:text-2xs font-bold text-slate-300 uppercase">Live Machine Queue</div>
                     <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-cyan-500/30 space-y-1">
-                      <div className="flex justify-between font-semibold text-white text-[11px]">
+                      <div className="flex justify-between font-semibold text-white text-2xs">
                         <span className="truncate pr-1">ORD-284 Akij Billboard</span>
                         <span className="text-cyan-400 font-bold shrink-0">Printing</span>
                       </div>
-                      <div className="text-[9px] sm:text-[10px] text-slate-400">Flora 10ft Solvent • 80% Done</div>
+                      <div className="text-2xs sm:text-2xs text-slate-400">Flora 10ft Solvent • 80% Done</div>
                     </div>
 
                     <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                      <div className="flex justify-between font-semibold text-white text-[11px]">
+                      <div className="flex justify-between font-semibold text-white text-2xs">
                         <span className="truncate pr-1">ORD-285 Rollup Stand</span>
                         <span className="text-amber-400 font-bold shrink-0">Lamination</span>
                       </div>
-                      <div className="text-[9px] sm:text-[10px] text-slate-400">Finishing Station • 3 pcs</div>
+                      <div className="text-2xs sm:text-2xs text-slate-400">Finishing Station • 3 pcs</div>
                     </div>
 
                     <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
-                      <div className="flex justify-between font-semibold text-white text-[11px]">
+                      <div className="flex justify-between font-semibold text-white text-2xs">
                         <span className="truncate pr-1">ORD-286 Acrylic Letters</span>
                         <span className="text-fuchsia-400 font-bold shrink-0">Laser Cut</span>
                       </div>
-                      <div className="text-[9px] sm:text-[10px] text-slate-400">Fabrication Hub • Red Cast</div>
+                      <div className="text-2xs sm:text-2xs text-slate-400">Fabrication Hub • Red Cast</div>
                     </div>
                   </div>
                 )}
@@ -212,17 +212,17 @@ export function MobileSection() {
                 {mobileScreen === 'due' && (
                   <div className="space-y-2.5 sm:space-y-3 animate-in fade-in-0 duration-200">
                     <div className="p-2.5 sm:p-3 rounded-xl bg-amber-950/30 border border-amber-500/40">
-                      <span className="text-[9px] sm:text-[10px] text-amber-400 uppercase font-mono">Total Pending Due</span>
+                      <span className="text-2xs sm:text-2xs text-amber-400 uppercase font-mono">Total Pending Due</span>
                       <div className="text-lg sm:text-xl font-black text-amber-300 tabular-nums mt-0.5">৳ 1,24,000</div>
-                      <span className="text-[9px] sm:text-[10px] text-slate-400">8 client accounts overdue</span>
+                      <span className="text-2xs sm:text-2xs text-slate-400">8 client accounts overdue</span>
                     </div>
 
                     <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5 sm:space-y-2">
-                      <div className="flex justify-between font-bold text-white text-[10px] sm:text-[11px]">
+                      <div className="flex justify-between font-bold text-white text-2xs sm:text-2xs">
                         <span className="truncate pr-1">Rahim Advertising</span>
                         <span className="text-amber-400 shrink-0">৳ 20,000 Due</span>
                       </div>
-                      <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] h-7">
+                      <Button size="sm" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-2xs h-7">
                         <Send className="h-3 w-3 mr-1" /> WhatsApp Due Reminder
                       </Button>
                     </div>
@@ -231,8 +231,8 @@ export function MobileSection() {
 
                 {mobileScreen === 'quote' && (
                   <div className="space-y-2 sm:space-y-2.5 animate-in fade-in-0 duration-200">
-                    <div className="text-[10px] sm:text-[11px] font-bold text-slate-300 uppercase">Quick SFT Estimator</div>
-                    <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1 sm:space-y-1.5 text-[10px] sm:text-[11px]">
+                    <div className="text-2xs sm:text-2xs font-bold text-slate-300 uppercase">Quick SFT Estimator</div>
+                    <div className="p-2 sm:p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1 sm:space-y-1.5 text-2xs sm:text-2xs">
                       <div className="flex justify-between text-slate-300">
                         <span>Size: 5ft × 10ft</span>
                         <span className="font-bold text-white">50 SFT</span>
@@ -245,7 +245,7 @@ export function MobileSection() {
                         <span>Total Estimate:</span>
                         <span className="text-cyan-300">৳ 4,000</span>
                       </div>
-                      <Button size="sm" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-[10px] h-7 mt-1">
+                      <Button size="sm" className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-2xs h-7 mt-1">
                         Generate Quote PDF
                       </Button>
                     </div>
@@ -253,7 +253,7 @@ export function MobileSection() {
                 )}
 
                 {/* Mobile Bottom Navigation Bar */}
-                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-around text-[10px] text-slate-400">
+                <div className="pt-2 border-t border-slate-800/80 flex items-center justify-around text-2xs text-slate-400">
                   <span className="text-cyan-400 font-bold">Home</span>
                   <span>Orders</span>
                   <span>Queue</span>

@@ -253,7 +253,7 @@ export function CompleteTaskModal({
               {task.department}
             </Badge>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-slate-500 font-mono text-[11px] pt-1">
+          <div className="flex flex-wrap items-center gap-3 text-slate-500 font-mono text-2xs pt-1">
             <span>Job: <strong>{task.job_number || 'N/A'}</strong></span>
             <span>•</span>
             <span>Customer: <strong>{task.customer_name || 'Direct'}</strong></span>
@@ -296,7 +296,7 @@ export function CompleteTaskModal({
               </span>
             </div>
             {taskAreaSft > 0 && (
-              <p className="text-[11px] text-emerald-600 font-semibold font-mono">
+              <p className="text-2xs text-emerald-600 font-semibold font-mono">
                 ✓ Total Net Print Area: {taskAreaSft} Sq.Ft.
               </p>
             )}
@@ -313,7 +313,7 @@ export function CompleteTaskModal({
                 type="button"
                 onClick={handleRequestNewRoll}
                 disabled={isRequestingRoll}
-                className="text-[11px] text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold flex items-center gap-1 cursor-pointer"
+                className="text-2xs text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 font-bold flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="h-3 w-3" />
                 <span>Request New Roll</span>
@@ -358,7 +358,7 @@ export function CompleteTaskModal({
                 <Scissors className="h-3.5 w-3.5 text-blue-600" />
                 <span>Dimensional Roll Feed Engine ({selectedRoll.width_ft}ft Roll)</span>
               </span>
-              <span className="text-[11px] font-mono font-bold text-blue-700 dark:text-blue-300">
+              <span className="text-2xs font-mono font-bold text-blue-700 dark:text-blue-300">
                 Available: {selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)} ft
               </span>
             </div>
@@ -370,7 +370,7 @@ export function CompleteTaskModal({
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>Print Orientation</span>
                   {rollCalc && (
-                    <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-[10px] py-0">
+                    <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-2xs py-0">
                       {rollCalc.is_fit_across_width ? '✓ Fits Roll Width' : '✗ Exceeds Roll Width'}
                     </Badge>
                   )}
@@ -402,7 +402,7 @@ export function CompleteTaskModal({
               <div className="space-y-1">
                 <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between">
                   <span>Bleed / Lead-in Allowance</span>
-                  <span className="text-[10px] font-mono text-slate-500">
+                  <span className="text-2xs font-mono text-slate-500">
                     = {(bleedInches / 12).toFixed(2)} ft
                   </span>
                 </Label>
@@ -424,18 +424,18 @@ export function CompleteTaskModal({
             {/* LIVE TELEMETRY CALCULATION HUD */}
             {rollCalc && (
               <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-blue-100 dark:border-blue-900/40 text-xs space-y-1.5">
-                <div className="flex items-center justify-between font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                <div className="flex items-center justify-between font-mono text-2xs text-slate-600 dark:text-slate-400">
                   <span>Good Linear Feed:</span>
                   <strong className="text-slate-900 dark:text-white">{rollCalc.linear_feed_ft} ft</strong>
                 </div>
                 {rollCalc.bleed_allowance_ft > 0 && (
-                  <div className="flex items-center justify-between font-mono text-[11px] text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between font-mono text-2xs text-slate-600 dark:text-slate-400">
                     <span>+ Bleed Allowance ({bleedInches}&quot;):</span>
                     <strong className="text-blue-600">+{rollCalc.bleed_allowance_ft} ft</strong>
                   </div>
                 )}
                 {rollCalc.wastage_length_ft > 0 && (
-                  <div className="flex items-center justify-between font-mono text-[11px] text-rose-600">
+                  <div className="flex items-center justify-between font-mono text-2xs text-rose-600">
                     <span>+ Scrap Wastage Run:</span>
                     <strong>+{rollCalc.wastage_length_ft} ft</strong>
                   </div>
@@ -501,7 +501,7 @@ export function CompleteTaskModal({
               </Label>
             </div>
             {hasScrap && (
-              <span className="text-[11px] font-bold text-rose-600 animate-pulse">
+              <span className="text-2xs font-bold text-rose-600 animate-pulse">
                 Wastage will be logged to inventory ledger
               </span>
             )}
@@ -530,7 +530,7 @@ export function CompleteTaskModal({
                     required={hasScrap}
                   />
                   {scrapAreaSft > 0 && (
-                    <span className="text-[10px] text-rose-700 font-mono block">
+                    <span className="text-2xs text-rose-700 font-mono block">
                       = {scrapAreaSft} SFT Scrap Material
                     </span>
                   )}

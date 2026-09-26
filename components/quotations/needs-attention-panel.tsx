@@ -115,13 +115,13 @@ export function NeedsAttentionPanel({
           <div>
             <CardTitle className="text-xs font-black uppercase tracking-wider text-amber-950 dark:text-amber-200 flex items-center gap-1.5">
               <span>{isBn ? 'জরুরি দৃষ্টি প্রয়োজন' : 'Needs Attention'}</span>
-              <Badge variant="secondary" className="px-1.5 py-0 text-[10px] bg-amber-200/80 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 font-bold">
+              <Badge variant="secondary" className="px-1.5 py-0 text-2xs bg-amber-200/80 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 font-bold">
                 {urgentQuotes.length}
               </Badge>
             </CardTitle>
           </div>
         </div>
-        <span className="text-[11px] font-medium text-amber-800/90 dark:text-amber-400/90 hidden sm:inline">
+        <span className="text-2xs font-medium text-amber-800/90 dark:text-amber-400/90 hidden sm:inline">
           {isBn ? 'উচ্চ অগ্রাধিকার বাণিজ্যিক ফলো-আপ ও অনুমোদন' : 'High-priority commercial follow-ups & approvals'}
         </span>
       </CardHeader>
@@ -157,7 +157,7 @@ export function NeedsAttentionPanel({
                         <span>{q.quotation_number}</span>
                       </Link>
                       <span className={cn(
-                        'text-[8px] font-bold uppercase px-1 py-0.2 rounded border',
+                        'text-2xs font-bold uppercase px-1 py-0.2 rounded border',
                         sector === 'offset_print'
                           ? 'bg-purple-50 text-purple-700 border-purple-200'
                           : sector === 'signage_fabrication'
@@ -176,13 +176,13 @@ export function NeedsAttentionPanel({
                   <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">
                     {q.customer_name}
                     {q.customer_company && (
-                      <span className="text-slate-500 font-normal text-[11px] ml-1 truncate">
+                      <span className="text-slate-500 font-normal text-2xs ml-1 truncate">
                         ({q.customer_company})
                       </span>
                     )}
                   </div>
 
-                  <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                  <div className="text-2xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                     {q.items?.[0]?.description || 'Custom Print Job'}
                   </div>
                 </div>
@@ -190,7 +190,7 @@ export function NeedsAttentionPanel({
                 {/* Attention Tag */}
                 <div
                   className={cn(
-                    'px-2 py-1 rounded-md text-[10px] font-bold flex items-center gap-1.5',
+                    'px-2 py-1 rounded-md text-2xs font-bold flex items-center gap-1.5',
                     reason.urgency === 'critical'
                       ? 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-900'
                       : reason.urgency === 'success'
@@ -209,14 +209,14 @@ export function NeedsAttentionPanel({
                       href={waUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-1 h-7 rounded-md text-[11px] font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80"
+                      className="inline-flex items-center justify-center gap-1 h-7 rounded-md text-2xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80"
                       title="Send WhatsApp Follow-up"
                     >
                       <MessageSquare className="h-3 w-3 text-emerald-600" />
                       <span>WA</span>
                     </a>
                   ) : (
-                    <Button size="sm" variant="outline" disabled className="h-7 text-[11px] opacity-40">
+                    <Button size="sm" variant="outline" disabled className="h-7 text-2xs opacity-40">
                       WA
                     </Button>
                   )}
@@ -224,14 +224,14 @@ export function NeedsAttentionPanel({
                   {q.customer_phone ? (
                     <a
                       href={`tel:${q.customer_phone}`}
-                      className="inline-flex items-center justify-center gap-1 h-7 rounded-md text-[11px] font-semibold bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
+                      className="inline-flex items-center justify-center gap-1 h-7 rounded-md text-2xs font-semibold bg-slate-50 text-slate-700 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700"
                       title="Call Customer"
                     >
                       <PhoneCall className="h-3 w-3 text-slate-600 dark:text-slate-400" />
                       <span>Call</span>
                     </a>
                   ) : (
-                    <Button size="sm" variant="outline" disabled className="h-7 text-[11px] opacity-40">
+                    <Button size="sm" variant="outline" disabled className="h-7 text-2xs opacity-40">
                       Call
                     </Button>
                   )}
@@ -240,7 +240,7 @@ export function NeedsAttentionPanel({
                     size="sm"
                     variant="outline"
                     onClick={() => onOpenFollowUp(q)}
-                    className="h-7 text-[11px] font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800/80 cursor-pointer"
+                    className="h-7 text-2xs font-semibold bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-950/40 dark:text-blue-300 border-blue-200 dark:border-blue-800/80 cursor-pointer"
                     title="Log Follow-up Note"
                   >
                     Follow

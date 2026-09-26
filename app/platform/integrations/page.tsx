@@ -849,24 +849,24 @@ export default function PlatformIntegrationsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
         <Card className="bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Configured Gateways</p>
+            <p className="text-2xs font-semibold text-slate-500 uppercase tracking-wider">Configured Gateways</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {telemetry?.totalConfigured ?? 0}
               </span>
-              <span className="text-[10px] text-slate-400">of {Object.keys(PROVIDERS_METADATA).length}</span>
+              <span className="text-2xs text-slate-400">of {Object.keys(PROVIDERS_METADATA).length}</span>
             </div>
           </CardContent>
         </Card>
 
         <Card className="bg-emerald-50/30 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/50">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Live & Connected</p>
+            <p className="text-2xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Live & Connected</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-emerald-600 dark:text-emerald-300">
                 {telemetry?.totalConnected ?? 0}
               </span>
-              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-[10px]">
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/30 text-2xs">
                 Healthy
               </Badge>
             </div>
@@ -875,7 +875,7 @@ export default function PlatformIntegrationsPage() {
 
         <Card className="bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Avg Latency</p>
+            <p className="text-2xs font-semibold text-slate-500 uppercase tracking-wider">Avg Latency</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {telemetry?.avgLatencyMs ? `${telemetry.avgLatencyMs} ms` : '—'}
@@ -887,7 +887,7 @@ export default function PlatformIntegrationsPage() {
 
         <Card className="bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Dispatched Messages</p>
+            <p className="text-2xs font-semibold text-slate-500 uppercase tracking-wider">Dispatched Messages</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {telemetry?.recentLogsCount ?? 0}
@@ -899,7 +899,7 @@ export default function PlatformIntegrationsPage() {
 
         <Card className="bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Payments Handled</p>
+            <p className="text-2xs font-semibold text-slate-500 uppercase tracking-wider">Payments Handled</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 ৳ {(telemetry?.recentTransactionsVolume || 0).toLocaleString()}
@@ -911,7 +911,7 @@ export default function PlatformIntegrationsPage() {
 
         <Card className="bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/80 dark:border-slate-800">
           <CardContent className="p-3.5">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Webhooks Processed</p>
+            <p className="text-2xs font-semibold text-slate-500 uppercase tracking-wider">Webhooks Processed</p>
             <div className="flex items-baseline justify-between mt-1">
               <span className="text-xl font-bold text-slate-900 dark:text-slate-100">
                 {telemetry?.recentWebhooksCount ?? 0}
@@ -1041,19 +1041,19 @@ export default function PlatformIntegrationsPage() {
                                 {gateway?.name || meta.name}
                               </CardTitle>
                               {meta.popular && (
-                                <Badge variant="secondary" className="text-[9px] px-1.5 py-0 h-4 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
+                                <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-4 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20">
                                   Popular
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">{meta.nameBn}</p>
+                            <p className="text-2xs text-slate-500 line-clamp-1 mt-0.5">{meta.nameBn}</p>
                           </div>
                         </div>
 
                         {/* Environment Badge */}
                         <Badge
                           variant="outline"
-                          className={`text-[9px] px-1.5 py-0.5 uppercase tracking-wider font-semibold ${
+                          className={`text-2xs px-1.5 py-0.5 uppercase tracking-wider font-semibold ${
                             environment === 'live'
                               ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                               : 'bg-amber-500/10 text-amber-600 border-amber-500/30'
@@ -1072,7 +1072,7 @@ export default function PlatformIntegrationsPage() {
                     <CardContent className="p-4 pt-1 space-y-3">
                       <div className="p-2.5 rounded-lg bg-slate-100/70 dark:bg-slate-950/60 border border-slate-200/60 dark:border-slate-800/80 text-xs space-y-1.5">
                         <div className="flex items-center justify-between">
-                          <span className="text-[11px] text-slate-500 font-medium">Status:</span>
+                          <span className="text-2xs text-slate-500 font-medium">Status:</span>
                           <span className="font-semibold flex items-center gap-1.5">
                             {isConnected ? (
                               <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400">
@@ -1101,7 +1101,7 @@ export default function PlatformIntegrationsPage() {
                         </div>
 
                         {gateway?.last_tested_at && (
-                          <div className="flex items-center justify-between text-[11px] text-slate-500">
+                          <div className="flex items-center justify-between text-2xs text-slate-500">
                             <span>Last Ping:</span>
                             <span className="text-slate-700 dark:text-slate-300 font-mono">
                               {gateway.last_test_latency_ms ? `${gateway.last_test_latency_ms} ms` : '0 ms'}
@@ -1110,7 +1110,7 @@ export default function PlatformIntegrationsPage() {
                         )}
 
                         {gateway?.last_test_error && isError && (
-                          <div className="text-[11px] text-rose-600 dark:text-rose-400 line-clamp-1 bg-rose-50 dark:bg-rose-950/50 p-1 rounded font-mono">
+                          <div className="text-2xs text-rose-600 dark:text-rose-400 line-clamp-1 bg-rose-50 dark:bg-rose-950/50 p-1 rounded font-mono">
                             {gateway.last_test_error}
                           </div>
                         )}
@@ -1118,11 +1118,11 @@ export default function PlatformIntegrationsPage() {
 
                       {/* Webhook Quick Path if applicable */}
                       {meta.webhookPath && (
-                        <div className="flex items-center justify-between text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-900 p-1.5 rounded border border-slate-200/60 dark:border-slate-800">
-                          <span className="font-mono text-[10px] truncate max-w-[170px]">{meta.webhookPath}</span>
+                        <div className="flex items-center justify-between text-2xs text-slate-500 bg-slate-50 dark:bg-slate-900 p-1.5 rounded border border-slate-200/60 dark:border-slate-800">
+                          <span className="font-mono text-2xs truncate max-w-[170px]">{meta.webhookPath}</span>
                           <button
                             onClick={() => handleCopyWebhookUrl(meta.webhookPath!)}
-                            className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 text-[10px] font-semibold flex items-center gap-0.5 shrink-0"
+                            className="text-slate-600 dark:text-slate-400 hover:text-indigo-600 text-2xs font-semibold flex items-center gap-0.5 shrink-0"
                           >
                             {copiedPath === meta.webhookPath ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
                             <span>{copiedPath === meta.webhookPath ? 'Copied' : 'Copy'}</span>
@@ -1220,7 +1220,7 @@ export default function PlatformIntegrationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500">
+                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500">
                       <th className="p-3">Channel</th>
                       <th className="p-3">Provider</th>
                       <th className="p-3">Recipient</th>
@@ -1240,7 +1240,7 @@ export default function PlatformIntegrationsPage() {
                         <td className="p-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${
+                            className={`text-2xs ${
                               log.status === 'sent' || log.status === 'delivered'
                                 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                                 : 'bg-rose-500/10 text-rose-600 border-rose-500/30'
@@ -1249,8 +1249,8 @@ export default function PlatformIntegrationsPage() {
                             {log.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{log.provider_message_id || '—'}</td>
-                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(log.created_at)}</td>
+                        <td className="p-3 text-2xs text-slate-500">{log.provider_message_id || '—'}</td>
+                        <td className="p-3 text-2xs text-slate-500">{formatDateTime(log.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1289,7 +1289,7 @@ export default function PlatformIntegrationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse font-mono">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500 font-sans">
+                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500 font-sans">
                       <th className="p-3">Internal TRX</th>
                       <th className="p-3">Gateway</th>
                       <th className="p-3">Amount</th>
@@ -1306,11 +1306,11 @@ export default function PlatformIntegrationsPage() {
                         <td className="p-3 font-bold text-emerald-600 dark:text-emerald-400">
                           ৳ {Number(tx.amount).toLocaleString()} {tx.currency}
                         </td>
-                        <td className="p-3 text-[11px] text-slate-600 dark:text-slate-400">{tx.provider_trx_id || 'Pending'}</td>
+                        <td className="p-3 text-2xs text-slate-600 dark:text-slate-400">{tx.provider_trx_id || 'Pending'}</td>
                         <td className="p-3">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] ${
+                            className={`text-2xs ${
                               tx.payment_status === 'paid'
                                 ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30'
                                 : tx.payment_status === 'failed'
@@ -1321,7 +1321,7 @@ export default function PlatformIntegrationsPage() {
                             {tx.payment_status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(tx.created_at)}</td>
+                        <td className="p-3 text-2xs text-slate-500">{formatDateTime(tx.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1352,7 +1352,7 @@ export default function PlatformIntegrationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse font-mono">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500 font-sans">
+                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500 font-sans">
                       <th className="p-3">Provider</th>
                       <th className="p-3">Event Type</th>
                       <th className="p-3">Verified</th>
@@ -1378,12 +1378,12 @@ export default function PlatformIntegrationsPage() {
                           )}
                         </td>
                         <td className="p-3">
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-2xs">
                             {wh.status}
                           </Badge>
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{wh.provider_event_id || '—'}</td>
-                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(wh.created_at)}</td>
+                        <td className="p-3 text-2xs text-slate-500">{wh.provider_event_id || '—'}</td>
+                        <td className="p-3 text-2xs text-slate-500">{formatDateTime(wh.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1414,7 +1414,7 @@ export default function PlatformIntegrationsPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-500">
+                    <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-500">
                       <th className="p-3">Action</th>
                       <th className="p-3">Details</th>
                       <th className="p-3">Timestamp</th>
@@ -1426,10 +1426,10 @@ export default function PlatformIntegrationsPage() {
                         <td className="p-3 font-semibold capitalize font-sans text-indigo-600 dark:text-indigo-400">
                           {log.action.replace(/_/g, ' ')}
                         </td>
-                        <td className="p-3 text-[11px] text-slate-600 dark:text-slate-400">
+                        <td className="p-3 text-2xs text-slate-600 dark:text-slate-400">
                           {JSON.stringify(log.details)}
                         </td>
-                        <td className="p-3 text-[10px] text-slate-500">{formatDateTime(log.created_at)}</td>
+                        <td className="p-3 text-2xs text-slate-500">{formatDateTime(log.created_at)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1515,7 +1515,7 @@ export default function PlatformIntegrationsPage() {
                       <Label className="text-xs font-medium">
                         {field.label} {field.required && <span className="text-rose-500">*</span>}
                       </Label>
-                      {field.description && <span className="text-[10px] text-slate-400">{field.description}</span>}
+                      {field.description && <span className="text-2xs text-slate-400">{field.description}</span>}
                     </div>
 
                     <div className="relative">

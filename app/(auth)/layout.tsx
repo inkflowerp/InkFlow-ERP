@@ -44,11 +44,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <span className="text-2xl font-black tracking-tight text-white">
                   {appName}
                 </span>
-                <span className="rounded-md bg-cyan-500/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-cyan-300 border border-cyan-500/30">
+                <span className="rounded-md bg-cyan-500/10 px-2 py-0.5 text-2xs font-bold uppercase tracking-wider text-cyan-300 border border-cyan-500/30">
                   BD SaaS
                 </span>
               </div>
-              <span className="text-[11px] font-semibold text-slate-400 tracking-wider uppercase">
+              <span className="text-2xs font-semibold text-slate-400 tracking-wider uppercase">
                 {tagline || 'Printing & Signage Operating System'}
               </span>
             </div>
@@ -82,7 +82,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <CheckCircle2 className="h-4 w-4 text-cyan-400 shrink-0" />
                 <span>১২+ প্রিন্ট ইন্ডাস্ট্রি</span>
               </div>
-              <p className="text-[11px] text-slate-400">ডিজিটাল, অফসেট, ব্যানার, এক্রিলিক, এলইডি ও ডাই-কাটিং</p>
+              <p className="text-2xs text-slate-400">ডিজিটাল, অফসেট, ব্যানার, এক্রিলিক, এলইডি ও ডাই-কাটিং</p>
             </div>
 
             <div className="p-3 rounded-xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-sm space-y-1">
@@ -90,7 +90,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
                 <span>৳ BDT ও বাংলা ইনভয়েস</span>
               </div>
-              <p className="text-[11px] text-slate-400">মুসক ৬.৩ চালান, গেটপাস, ডিসকাউন্ট ও বকেয়া খাতা</p>
+              <p className="text-2xs text-slate-400">মুসক ৬.৩ চালান, গেটপাস, ডিসকাউন্ট ও বকেয়া খাতা</p>
             </div>
           </div>
         </div>

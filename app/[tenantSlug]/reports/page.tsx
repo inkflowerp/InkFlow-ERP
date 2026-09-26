@@ -488,39 +488,39 @@ export default function ReportingAnalyticsPage() {
       {/* Top Highlight Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <Card className="p-3.5 border-l-4 border-l-blue-600">
-          <span className="text-[11px] font-semibold text-slate-500 block">Gross Sales Turnover</span>
+          <span className="text-2xs font-semibold text-slate-500 block">Gross Sales Turnover</span>
           <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
             <CurrencyDisplay amount={grossSalesTurnover} />
           </div>
-          <span className="text-[10px] text-slate-400">Total Billed</span>
+          <span className="text-2xs text-slate-400">Total Billed</span>
         </Card>
 
         <Card className="p-3.5 border-l-4 border-l-emerald-600">
-          <span className="text-[11px] font-semibold text-slate-500 block">Collections Recovery</span>
+          <span className="text-2xs font-semibold text-slate-500 block">Collections Recovery</span>
           <div className="text-xl font-black text-emerald-600 mt-0.5">{realizedMargin}%</div>
-          <span className="text-[10px] text-slate-400">Cash vs Turnover Ratio</span>
+          <span className="text-2xs text-slate-400">Cash vs Turnover Ratio</span>
         </Card>
 
         <Card className="p-3.5 border-l-4 border-l-teal-600">
-          <span className="text-[11px] font-semibold text-slate-500 block">Total Collections (আদায়)</span>
+          <span className="text-2xs font-semibold text-slate-500 block">Total Collections (আদায়)</span>
           <div className="text-xl font-black text-teal-600 mt-0.5">
             <CurrencyDisplay amount={totalCollections} />
           </div>
-          <span className="text-[10px] text-slate-400">Realized Collections</span>
+          <span className="text-2xs text-slate-400">Realized Collections</span>
         </Card>
 
         <Card className="p-3.5 border-l-4 border-l-amber-500">
-          <span className="text-[11px] font-semibold text-slate-500 block">Total Due (বাকি পাওনা)</span>
+          <span className="text-2xs font-semibold text-slate-500 block">Total Due (বাকি পাওনা)</span>
           <div className="text-xl font-black text-amber-600 mt-0.5">
             <CurrencyDisplay amount={totalDue} />
           </div>
-          <span className="text-[10px] text-amber-600 font-medium">Outstanding Balances</span>
+          <span className="text-2xs text-amber-600 font-medium">Outstanding Balances</span>
         </Card>
 
         <Card className="p-3.5 border-l-4 border-l-purple-600">
-          <span className="text-[11px] font-semibold text-slate-500 block">Warehouse Stock Value</span>
+          <span className="text-2xs font-semibold text-slate-500 block">Warehouse Stock Value</span>
           <div className="text-xl font-black text-purple-600 mt-0.5">{formatBDT(totalInventoryValuation)}</div>
-          <span className="text-[10px] text-purple-600 font-medium">{materials.length} Raw Materials</span>
+          <span className="text-2xs text-purple-600 font-medium">{materials.length} Raw Materials</span>
         </Card>
       </div>
 
@@ -645,7 +645,7 @@ export default function ReportingAnalyticsPage() {
                             <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                               {row.label}
                               {row.category && (
-                                <span className="ml-2 text-[10px] font-normal text-slate-400">({row.category})</span>
+                                <span className="ml-2 text-2xs font-normal text-slate-400">({row.category})</span>
                               )}
                             </td>
                             <td className="py-3.5 px-4 font-mono text-center">{row.ordersCount}</td>
@@ -676,21 +676,21 @@ export default function ReportingAnalyticsPage() {
                               {row.label}
                             </div>
                             {row.category && (
-                              <span className="text-[11px] text-slate-400">{row.category}</span>
+                              <span className="text-2xs text-slate-400">{row.category}</span>
                             )}
                           </div>
                           <div className="text-right shrink-0">
                             <div className="font-mono font-bold text-sm text-slate-900 dark:text-white">
                               {formatBDT(row.revenue)}
                             </div>
-                            <span className="text-[10px] text-slate-400 font-mono">
+                            <span className="text-2xs text-slate-400 font-mono">
                               {row.ordersCount} orders
                             </span>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                          <span className="text-[11px] text-slate-500">Market Share:</span>
+                          <span className="text-2xs text-slate-500">Market Share:</span>
                           <div className="flex items-center gap-2 font-mono font-bold text-xs">
                             <span>{row.sharePercent}%</span>
                             <div className="w-20 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -765,7 +765,7 @@ export default function ReportingAnalyticsPage() {
                           <td className="py-3.5 px-4 text-center">
                             <Badge
                               variant="outline"
-                              className={`capitalize text-[10px] ${
+                              className={`capitalize text-2xs ${
                                 fa.riskLevel === 'low'
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                   : fa.riskLevel === 'moderate'
@@ -791,13 +791,13 @@ export default function ReportingAnalyticsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="font-bold text-sm text-slate-900 dark:text-white">{fa.range}</div>
-                          <span className="text-[11px] text-slate-400">{fa.invoicesCount} Invoices</span>
+                          <span className="text-2xs text-slate-400">{fa.invoicesCount} Invoices</span>
                         </div>
                         <div className="text-right">
                           <div className="font-black text-base text-red-600">{formatBDT(fa.amount)}</div>
                           <Badge
                             variant="outline"
-                            className={`capitalize text-[9px] mt-1 ${
+                            className={`capitalize text-2xs mt-1 ${
                               fa.riskLevel === 'low'
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                 : fa.riskLevel === 'moderate'
@@ -870,11 +870,11 @@ export default function ReportingAnalyticsPage() {
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             {item.isLowStock ? (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">
+                              <span className="px-2 py-0.5 rounded text-2xs font-bold bg-red-100 text-red-800">
                                 Low Stock Warning
                               </span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                              <span className="px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
                                 Healthy
                               </span>
                             )}
@@ -892,11 +892,11 @@ export default function ReportingAnalyticsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="font-bold text-sm text-slate-900 dark:text-white">{item.materialName}</div>
-                          <span className="font-sans text-[11px] text-slate-400">{item.category}</span>
+                          <span className="font-sans text-2xs text-slate-400">{item.category}</span>
                         </div>
                         <div className="text-right">
                           <div className="font-black text-sm text-slate-900 dark:text-white">{formatBDT(item.totalValue)}</div>
-                          <div className="text-[10px] text-slate-400">@ {formatBDT(item.unitCost)}/{item.unit}</div>
+                          <div className="text-2xs text-slate-400">@ {formatBDT(item.unitCost)}/{item.unit}</div>
                         </div>
                       </div>
 
@@ -905,11 +905,11 @@ export default function ReportingAnalyticsPage() {
                           Stock: {item.stockQty} {item.unit}s
                         </span>
                         {item.isLowStock ? (
-                          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-red-100 text-red-800">
+                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-red-100 text-red-800">
                             Low Stock Warning
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
                             Healthy
                           </span>
                         )}
@@ -981,7 +981,7 @@ export default function ReportingAnalyticsPage() {
                           <div className="font-sans font-bold text-sm text-slate-900 dark:text-white">
                             {cust.customerName}
                           </div>
-                          <span className="font-sans text-[11px] text-slate-400 capitalize">{cust.customerType}</span>
+                          <span className="font-sans text-2xs text-slate-400 capitalize">{cust.customerType}</span>
                         </div>
                         <div className="text-right">
                           <div className="text-xs text-slate-400 font-sans">{cust.ordersCount} orders</div>

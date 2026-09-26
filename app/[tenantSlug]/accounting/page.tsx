@@ -412,7 +412,7 @@ export default function AccountingPage() {
       {/* Top Financial KPI Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
             {tBilingual('Cash in Drawer', 'ক্যাশ তহবিল')}
           </span>
           <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
@@ -421,7 +421,7 @@ export default function AccountingPage() {
         </Card>
 
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
             {tBilingual('Bank Balances', 'ব্যাংক তহবিল')}
           </span>
           <div className="text-base font-bold text-blue-600 dark:text-blue-400 mt-0.5">
@@ -430,7 +430,7 @@ export default function AccountingPage() {
         </Card>
 
         <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
             {tBilingual('bKash / MFS', 'বিকাশ / নগদ')}
           </span>
           <div className="text-base font-bold text-pink-600 dark:text-pink-400 mt-0.5">
@@ -439,7 +439,7 @@ export default function AccountingPage() {
         </Card>
 
         <Card className="rounded-2xl border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/10 shadow-xs p-3.5">
-          <span className="text-[11px] font-semibold text-amber-800 dark:text-amber-300">
+          <span className="text-2xs font-semibold text-amber-800 dark:text-amber-300">
             {tBilingual('Customer Due (AR)', 'গ্রাহকের বাকি')}
           </span>
           <div className="text-base font-bold text-amber-900 dark:text-amber-200 mt-0.5">
@@ -448,7 +448,7 @@ export default function AccountingPage() {
         </Card>
 
         <Card className="rounded-2xl border-rose-200 dark:border-rose-800/60 bg-rose-50/30 dark:bg-rose-950/10 shadow-xs p-3.5">
-          <span className="text-[11px] font-semibold text-rose-800 dark:text-rose-300">
+          <span className="text-2xs font-semibold text-rose-800 dark:text-rose-300">
             {tBilingual('Supplier Due (AP)', 'সরবরাহকারী পাওনা')}
           </span>
           <div className="text-base font-bold text-rose-900 dark:text-rose-200 mt-0.5">
@@ -457,7 +457,7 @@ export default function AccountingPage() {
         </Card>
 
         <Card className="rounded-2xl border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-emerald-950/10 shadow-xs p-3.5">
-          <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300">
+          <span className="text-2xs font-semibold text-emerald-800 dark:text-emerald-300">
             {tBilingual('Monthly Net Profit', 'মাসের নিট লাভ')}
           </span>
           <div className="text-base font-bold text-emerald-900 dark:text-emerald-200 mt-0.5">
@@ -605,7 +605,7 @@ export default function AccountingPage() {
                     <div key={acc.id} className="py-2.5 flex items-center justify-between text-xs">
                       <div>
                         <div className="font-semibold text-slate-800 dark:text-slate-200">{acc.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">{acc.code} • {acc.account_subtype}</div>
+                        <div className="text-2xs text-slate-500 font-mono">{acc.code} • {acc.account_subtype}</div>
                       </div>
                       <div className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
                         ৳{acc.current_balance.toLocaleString()}
@@ -633,7 +633,7 @@ export default function AccountingPage() {
                   <div key={item.reference_id} className="py-2.5 flex items-center justify-between text-xs">
                     <div>
                       <div className="font-semibold text-slate-800 dark:text-slate-200">{item.party_name}</div>
-                      <div className="text-[11px] text-slate-500 font-mono">Inv #{item.reference_id} • {item.days_overdue} days overdue</div>
+                      <div className="text-2xs text-slate-500 font-mono">Inv #{item.reference_id} • {item.days_overdue} days overdue</div>
                     </div>
                     <div className="text-right">
                       <div className="font-mono font-bold text-amber-700 dark:text-amber-400">
@@ -642,7 +642,7 @@ export default function AccountingPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="h-6 text-[10px] px-2 mt-1 rounded-md"
+                        className="h-6 text-2xs px-2 mt-1 rounded-md"
                         onClick={() => router.push(getTenantNavHref('/billing', pathname, slug))}
                       >
                         {tBilingual('Receive', 'পেমেন্ট')}
@@ -687,7 +687,7 @@ export default function AccountingPage() {
                       <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
                       <td className="p-3 text-right font-mono font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
                       <td className="p-3 text-center">
-                        <Badge variant="outline" className="text-[10px] font-medium">
+                        <Badge variant="outline" className="text-2xs font-medium">
                           {i.bucket === '0_30' ? '1–30 Days' : i.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
                         </Badge>
                       </td>
@@ -789,7 +789,7 @@ export default function AccountingPage() {
                       </td>
                       <td className="p-3 text-slate-600 dark:text-slate-400">{c.closed_by_name}</td>
                       <td className="p-3 text-center">
-                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 text-[10px]">
+                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300 text-2xs">
                           {c.status}
                         </Badge>
                       </td>
@@ -918,11 +918,11 @@ export default function AccountingPage() {
                         {a.name} {a.name_bn ? `(${a.name_bn})` : ''}
                       </td>
                       <td className="p-3">
-                        <Badge variant="outline" className="text-[10px]">
+                        <Badge variant="outline" className="text-2xs">
                           {a.account_type}
                         </Badge>
                       </td>
-                      <td className="p-3 font-mono text-[11px] text-slate-500">{a.account_subtype}</td>
+                      <td className="p-3 font-mono text-2xs text-slate-500">{a.account_subtype}</td>
                       <td className="p-3 text-right font-mono font-bold text-slate-900 dark:text-slate-100">
                         ৳{a.current_balance.toLocaleString()}
                       </td>

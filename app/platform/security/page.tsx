@@ -387,11 +387,11 @@ export default function PlatformSecurityPage() {
           </div>
           <div className="text-2xl font-black text-emerald-400 mt-1.5 flex items-center gap-2">
             Healthy
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               100%
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">0 cross-tenant leaks detected</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">0 cross-tenant leaks detected</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
@@ -402,11 +402,11 @@ export default function PlatformSecurityPage() {
           </div>
           <div className="text-2xl font-black text-white mt-1.5 flex items-center gap-2">
             {data?.failed_logins_24h ?? 0}
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               Active Guard
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Rate limiting (5 attempts / 15m)</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Rate limiting (5 attempts / 15m)</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
@@ -417,11 +417,11 @@ export default function PlatformSecurityPage() {
           </div>
           <div className="text-2xl font-black text-cyan-400 mt-1.5 flex items-center gap-2">
             {data?.mfa_adoption_pct ?? 100}%
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
               TOTP
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
             {isMfaActive ? 'Your account is protected' : 'Enable TOTP protection'}
           </div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
@@ -434,11 +434,11 @@ export default function PlatformSecurityPage() {
           </div>
           <div className="text-2xl font-black text-white mt-1.5 flex items-center gap-2">
             {data?.active_sessions.length ?? 1}
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
               Tokens
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Hashed cryptographic tokens</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Hashed cryptographic tokens</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
       </div>
@@ -454,7 +454,7 @@ export default function PlatformSecurityPage() {
                   <Key className="h-4 w-4 text-indigo-400" />
                   <span>Change Platform Password</span>
                 </CardTitle>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <span className="text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                   Supabase Auth
                 </span>
               </div>
@@ -500,7 +500,7 @@ export default function PlatformSecurityPage() {
                 <div className="space-y-1.5">
                   <Label htmlFor="new-pw" className="text-xs text-slate-300 font-semibold flex items-center justify-between">
                     <span>New Password</span>
-                    <span className="text-[10px] text-slate-400 font-normal">Min 8 characters</span>
+                    <span className="text-2xs text-slate-400 font-normal">Min 8 characters</span>
                   </Label>
                   <div className="relative">
                     <Input
@@ -541,7 +541,7 @@ export default function PlatformSecurityPage() {
                           />
                         ))}
                       </div>
-                      <div className="text-[10px] text-slate-400 flex justify-between">
+                      <div className="text-2xs text-slate-400 flex justify-between">
                         <span>
                           Strength:{' '}
                           {passwordStrength <= 2
@@ -560,7 +560,7 @@ export default function PlatformSecurityPage() {
                   <Label htmlFor="confirm-pw" className="text-xs text-slate-300 font-semibold flex items-center justify-between">
                     <span>Confirm New Password</span>
                     {confirmPassword && newPassword === confirmPassword && (
-                      <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
+                      <span className="text-2xs text-emerald-400 font-semibold flex items-center gap-1">
                         <Check className="h-3 w-3" /> Matches
                       </span>
                     )}
@@ -630,7 +630,7 @@ export default function PlatformSecurityPage() {
                   <Smartphone className="h-4 w-4 text-cyan-400" />
                   <span>Multi-Factor Authentication (MFA)</span>
                 </CardTitle>
-                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <span className="text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
                   TOTP RFC 6238
                 </span>
               </div>
@@ -664,7 +664,7 @@ export default function PlatformSecurityPage() {
                 <p>
                   Platform accounts require multi-factor authentication to perform root operations including tenant database export, rate limit alterations, and emergency control toggles.
                 </p>
-                <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/40 text-[11px] text-indigo-300 flex items-start gap-2">
+                <div className="p-3 rounded-xl bg-indigo-950/30 border border-indigo-900/40 text-2xs text-indigo-300 flex items-start gap-2">
                   <ShieldCheck className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5" />
                   <span>
                     SMS authentication is disabled by design to eliminate SIM-swapping attack vectors on root platform credentials.
@@ -747,7 +747,7 @@ export default function PlatformSecurityPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
               <tr>
                 <th className="py-3 px-4">Device &amp; Browser</th>
                 <th className="py-3 px-4">IP Address &amp; Location</th>
@@ -764,12 +764,12 @@ export default function PlatformSecurityPage() {
                         <Laptop className="h-4 w-4 text-slate-400 shrink-0" />
                         <span>{sess.device_name}</span>
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">{sess.user_email}</div>
+                      <div className="text-2xs text-slate-400 font-mono mt-0.5">{sess.user_email}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <div className="font-mono text-cyan-400 text-xs">{sess.ip_address}</div>
-                      <div className="text-[11px] text-slate-400">{sess.location}</div>
+                      <div className="text-2xs text-slate-400">{sess.location}</div>
                     </td>
 
                     <td className="py-3.5 px-4 font-mono text-slate-300">
@@ -783,7 +783,7 @@ export default function PlatformSecurityPage() {
                           <div className="text-slate-300">
                             {formatTime(sess.last_seen_at)}
                           </div>
-                          <div className="text-[10px] text-slate-500">
+                          <div className="text-2xs text-slate-500">
                             Created {formatDate(sess.created_at)}
                           </div>
                         </div>
@@ -802,7 +802,7 @@ export default function PlatformSecurityPage() {
                           {revokingSessionId === sess.id ? 'Revoking...' : 'Revoke'}
                         </Button>
                       ) : (
-                        <span className="text-[11px] text-emerald-400/80 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
+                        <span className="text-2xs text-emerald-400/80 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
                           Active Now
                         </span>
                       )}
@@ -838,7 +838,7 @@ export default function PlatformSecurityPage() {
             <button
               type="button"
               onClick={() => setLoginFilter('all')}
-              className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
+              className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'all'
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-white'
@@ -849,7 +849,7 @@ export default function PlatformSecurityPage() {
             <button
               type="button"
               onClick={() => setLoginFilter('successful')}
-              className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
+              className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'successful'
                   ? 'bg-emerald-600 text-white'
                   : 'text-slate-400 hover:text-white'
@@ -860,7 +860,7 @@ export default function PlatformSecurityPage() {
             <button
               type="button"
               onClick={() => setLoginFilter('failed')}
-              className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
+              className={`px-2.5 py-1 rounded text-2xs font-semibold transition-colors ${
                 loginFilter === 'failed'
                   ? 'bg-red-600 text-white'
                   : 'text-slate-400 hover:text-white'
@@ -873,7 +873,7 @@ export default function PlatformSecurityPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
               <tr>
                 <th className="py-3 px-4">Timestamp</th>
                 <th className="py-3 px-4">Device &amp; Browser</th>
@@ -889,7 +889,7 @@ export default function PlatformSecurityPage() {
                       <div>
                         {formatDate(item.timestamp)}
                       </div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="text-2xs text-slate-500">
                         {formatTime(item.timestamp, 'en', { second: '2-digit' })}
                       </div>
                     </td>
@@ -903,16 +903,16 @@ export default function PlatformSecurityPage() {
 
                     <td className="py-3 px-4">
                       <div className="font-mono text-cyan-400 text-xs">{item.ip_address}</div>
-                      <div className="text-[11px] text-slate-400">{item.location}</div>
+                      <div className="text-2xs text-slate-400">{item.location}</div>
                     </td>
 
                     <td className="py-3 px-4 text-right">
                       {item.status === 'successful' ? (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                        <span className="inline-flex items-center gap-1 text-2xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                           <Check className="h-3 w-3" /> Success
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+                        <span className="inline-flex items-center gap-1 text-2xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
                           <X className="h-3 w-3" /> Failed
                         </span>
                       )}
@@ -968,14 +968,14 @@ export default function PlatformSecurityPage() {
                       {act.details?.company_name || act.target_company_name || 'Global Platform'}
                     </span>
                   </div>
-                  {act.reason && <div className="text-[11px] text-slate-400">Reason: {act.reason}</div>}
+                  {act.reason && <div className="text-2xs text-slate-400">Reason: {act.reason}</div>}
                 </div>
 
                 <div className="sm:text-right">
                   <div className="font-mono text-slate-300 text-xs">
                     {formatTime(act.created_at, 'en', { second: '2-digit' })}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-mono">{act.actor_email}</div>
+                  <div className="text-2xs text-slate-500 font-mono">{act.actor_email}</div>
                 </div>
               </div>
             ))
@@ -994,7 +994,7 @@ export default function PlatformSecurityPage() {
             <ShieldCheck className="h-4 w-4" />
             <span>PostgreSQL RLS</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-2xs text-slate-400">
             Fail-closed multi-tenant database policies isolate tenant databases at the storage engine level.
           </p>
         </div>
@@ -1004,7 +1004,7 @@ export default function PlatformSecurityPage() {
             <Fingerprint className="h-4 w-4" />
             <span>Cryptographic Tokens</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-2xs text-slate-400">
             Session tokens are SHA-256 hashed and matched with active database session records.
           </p>
         </div>
@@ -1014,7 +1014,7 @@ export default function PlatformSecurityPage() {
             <Lock className="h-4 w-4" />
             <span>HTTPOnly Cookies</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-2xs text-slate-400">
             Protected with SameSite=Lax and HTTPOnly attributes to prevent XSS session exfiltration.
           </p>
         </div>
@@ -1024,7 +1024,7 @@ export default function PlatformSecurityPage() {
             <Zap className="h-4 w-4" />
             <span>Rate Limiting</span>
           </div>
-          <p className="text-[11px] text-slate-400">
+          <p className="text-2xs text-slate-400">
             Brute force mitigation blocks consecutive failed attempts across all authentication routes.
           </p>
         </div>
@@ -1115,14 +1115,14 @@ export default function PlatformSecurityPage() {
                     <rect x="68" y="78" width="24" height="6" fill="#0f172a" rx="1" />
                     <rect x="74" y="88" width="18" height="4" fill="#0f172a" rx="1" />
                   </svg>
-                  <span className="text-[10px] font-mono font-bold text-slate-800 mt-1">
+                  <span className="text-2xs font-mono font-bold text-slate-800 mt-1">
                     PrintERP:PlatformAdmin
                   </span>
                 </div>
 
                 {/* Manual Setup Key with Copy Button */}
                 <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-                  <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider flex items-center justify-between">
+                  <div className="text-2xs text-slate-400 font-semibold uppercase tracking-wider flex items-center justify-between">
                     <span>Manual Setup Secret Key</span>
                     {copiedSecret && (
                       <span className="text-emerald-400 font-bold lowercase">copied to clipboard!</span>
@@ -1166,7 +1166,7 @@ export default function PlatformSecurityPage() {
                     <AlertTriangle className="h-4 w-4 shrink-0" />
                     Security Warning
                   </div>
-                  <p className="text-[11px] text-red-200/90">
+                  <p className="text-2xs text-red-200/90">
                     Disabling Multi-Factor Authentication removes secondary token verification from this platform owner account, increasing vulnerability to credential stuffing.
                   </p>
                 </div>

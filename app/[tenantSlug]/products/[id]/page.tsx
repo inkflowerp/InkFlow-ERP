@@ -564,9 +564,9 @@ export default function ProductDetailPage() {
                 {commercialEconomics?.pricingMethod?.replace('_', ' ') || 'Per Area'}
               </span>
               {product.is_active !== false ? (
-                <Badge className="bg-emerald-500 text-white text-[11px]">Active</Badge>
+                <Badge className="bg-emerald-500 text-white text-2xs">Active</Badge>
               ) : (
-                <Badge variant="outline" className="text-slate-400 border-slate-300 text-[11px]">Archived</Badge>
+                <Badge variant="outline" className="text-slate-400 border-slate-300 text-2xs">Archived</Badge>
               )}
             </div>
 
@@ -665,13 +665,13 @@ export default function ProductDetailPage() {
       {/* Commercial KPI Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card className="p-4 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">
             {commercialEconomics?.costBasisType === 'direct_cost' ? 'Est. Direct Cost' : 'Effective Unit Cost'}
           </span>
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             <CurrencyDisplay amount={commercialEconomics?.activeCostBasis || product.base_cost} />
           </div>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-2xs text-slate-400">
             per {product.selling_unit || product.unit} (
             {commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Job Cost' : 'Raw Material Yield'}
             )
@@ -679,17 +679,17 @@ export default function ProductDetailPage() {
         </Card>
 
         <Card className="p-4 border-l-4 border-l-blue-600 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Catalog Selling Rate</span>
+          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Catalog Selling Rate</span>
           <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
             <CurrencyDisplay amount={product.selling_price} />
           </div>
-          <span className="text-[11px] text-blue-600 font-medium">
+          <span className="text-2xs text-blue-600 font-medium">
             Pricing: {commercialEconomics?.pricingMethod?.replace('_', ' ')}
           </span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-amber-500 shadow-xs">
-          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">3 Commercial Minimums</span>
+          <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">3 Commercial Minimums</span>
           <div className="text-xs font-bold text-amber-900 dark:text-amber-300 mt-1 space-y-0.5 font-mono">
             <div>MOQ: {product.min_order_quantity || 1} {product.selling_unit || 'unit'}</div>
             <div>Min Billable: {product.min_billable_quantity || 0} {product.selling_unit || 'unit'}</div>
@@ -698,13 +698,13 @@ export default function ProductDetailPage() {
         </Card>
 
         <Card className="p-4 bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200 shadow-xs">
-          <span className="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
+          <span className="text-2xs font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider block">
             Gross Margin % ({commercialEconomics?.costBasisType === 'direct_cost' ? 'Direct Cost' : 'Material'})
           </span>
           <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
             {commercialEconomics?.grossMarginPercent || 0}%
           </div>
-          <span className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium">
+          <span className="text-2xs text-emerald-700 dark:text-emerald-400 font-medium">
             Profit: ৳{commercialEconomics?.grossProfit || 0} / {product.selling_unit || product.unit}
           </span>
         </Card>
@@ -802,53 +802,53 @@ export default function ProductDetailPage() {
                     <Building2 className="h-4 w-4 text-purple-600" />
                     <span>Outsource Vendor & Subcontract Production</span>
                   </div>
-                  <Badge className="bg-purple-600 text-white text-[10px]">Non-Inventory Item</Badge>
+                  <Badge className="bg-purple-600 text-white text-2xs">Non-Inventory Item</Badge>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-slate-700 dark:text-slate-300">
                   <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Vendor Name</span>
+                    <span className="text-2xs text-slate-400 uppercase tracking-wider block">Vendor Name</span>
                     <strong className="text-slate-900 dark:text-white text-xs block mt-0.5">
                       {product.vendor_name || product.outsource_config?.vendor_name || 'Third-Party Vendor'}
                     </strong>
                     {(product.vendor_phone || product.outsource_config?.vendor_phone) && (
-                      <span className="text-[11px] text-slate-500 font-mono">
+                      <span className="text-2xs text-slate-500 font-mono">
                         📞 {product.vendor_phone || product.outsource_config?.vendor_phone}
                       </span>
                     )}
                   </div>
 
                   <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Turnaround Lead Time</span>
+                    <span className="text-2xs text-slate-400 uppercase tracking-wider block">Turnaround Lead Time</span>
                     <strong className="text-amber-700 dark:text-amber-400 text-xs block mt-0.5">
                       ⏱️ {product.turnaround_days ?? product.outsource_config?.turnaround_days ?? 3} Business Days
                     </strong>
-                    <span className="text-[10px] text-slate-400">Target Fulfillment Time</span>
+                    <span className="text-2xs text-slate-400">Target Fulfillment Time</span>
                   </div>
 
                   <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-purple-100 dark:border-purple-900/40">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Vendor Item Code / Ref</span>
+                    <span className="text-2xs text-slate-400 uppercase tracking-wider block">Vendor Item Code / Ref</span>
                     <strong className="text-slate-900 dark:text-white font-mono text-xs block mt-0.5">
                       {product.vendor_item_code || product.outsource_config?.vendor_item_code || '—'}
                     </strong>
-                    <span className="text-[10px] text-slate-400">Supplier Reference ID</span>
+                    <span className="text-2xs text-slate-400">Supplier Reference ID</span>
                   </div>
                 </div>
 
                 {(product.vendor_address || product.outsource_config?.vendor_address) && (
-                  <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                  <div className="text-2xs text-slate-600 dark:text-slate-400">
                     <span className="font-semibold">Vendor Address / Delivery Point:</span> {product.vendor_address || product.outsource_config?.vendor_address}
                   </div>
                 )}
 
                 {(product.outsource_notes || product.outsource_config?.vendor_notes) && (
-                  <div className="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg text-purple-900 dark:text-purple-200 text-[11px]">
+                  <div className="p-2.5 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg text-purple-900 dark:text-purple-200 text-2xs">
                     <span className="font-bold">Subcontract Instructions / Spec: </span>
                     {product.outsource_notes || product.outsource_config?.vendor_notes}
                   </div>
                 )}
 
-                <p className="text-[11px] text-purple-700 dark:text-purple-300 italic">
+                <p className="text-2xs text-purple-700 dark:text-purple-300 italic">
                   💡 Non-Inventory Rule: Subcontracted on-demand from third-party vendor upon order placement. Does not track warehouse bin stock or consume raw material media rolls.
                 </p>
               </div>
@@ -882,35 +882,35 @@ export default function ProductDetailPage() {
             {!commercialEconomics.isService ? (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Purchase Tariff</span>
+                  <span className="text-slate-400 uppercase text-2xs tracking-wider block">Purchase Tariff</span>
                   <div className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">
                     ৳{commercialEconomics.purchasePrice}
                   </div>
-                  <span className="text-[11px] text-slate-500">per 1 {commercialEconomics.purchaseUnit}</span>
+                  <span className="text-2xs text-slate-500">per 1 {commercialEconomics.purchaseUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Conversion Ratio</span>
+                  <span className="text-slate-400 uppercase text-2xs tracking-wider block">Conversion Ratio</span>
                   <div className="text-lg font-bold font-mono text-blue-600 mt-1">
                     1 : {commercialEconomics.conversionRatio}
                   </div>
-                  <span className="text-[11px] text-slate-500">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
+                  <span className="text-2xs text-slate-500">{commercialEconomics.sellingUnit} per {commercialEconomics.purchaseUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Expected Wastage</span>
+                  <span className="text-slate-400 uppercase text-2xs tracking-wider block">Expected Wastage</span>
                   <div className="text-lg font-bold font-mono text-amber-600 mt-1">
                     {commercialEconomics.wastage}%
                   </div>
-                  <span className="text-[11px] text-slate-500">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
+                  <span className="text-2xs text-slate-500">Yield: {commercialEconomics.usableUnits} usable {commercialEconomics.sellingUnit}</span>
                 </div>
 
                 <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-                  <span className="text-slate-400 uppercase text-[10px] tracking-wider block">Effective Material Cost</span>
+                  <span className="text-slate-400 uppercase text-2xs tracking-wider block">Effective Material Cost</span>
                   <div className="text-lg font-bold font-mono text-emerald-600 mt-1">
                     ৳{commercialEconomics.effectiveMaterialCost}
                   </div>
-                  <span className="text-[11px] text-slate-500">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
+                  <span className="text-2xs text-slate-500">per {commercialEconomics.sellingUnit} (yield-adjusted)</span>
                 </div>
               </div>
             ) : (
@@ -926,19 +926,19 @@ export default function ProductDetailPage() {
               </strong>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">1. Physical MOQ</span>
+                  <span className="text-slate-400 block text-2xs uppercase font-bold">1. Physical MOQ</span>
                   <div className="text-sm font-bold font-mono mt-0.5">{product.min_order_quantity || 1} {commercialEconomics.sellingUnit}</div>
-                  <p className="text-[11px] text-slate-500 mt-1">Minimum physical quantity the workshop accepts.</p>
+                  <p className="text-2xs text-slate-500 mt-1">Minimum physical quantity the workshop accepts.</p>
                 </div>
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">2. Min Billable Qty</span>
+                  <span className="text-slate-400 block text-2xs uppercase font-bold">2. Min Billable Qty</span>
                   <div className="text-sm font-bold font-mono mt-0.5 text-blue-600">{product.min_billable_quantity || 0} {commercialEconomics.sellingUnit}</div>
-                  <p className="text-[11px] text-slate-500 mt-1">Minimum quantity used for invoice billing.</p>
+                  <p className="text-2xs text-slate-500 mt-1">Minimum quantity used for invoice billing.</p>
                 </div>
                 <div className="p-2.5 bg-white dark:bg-slate-900 rounded-lg border border-amber-200">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">3. Minimum Charge</span>
+                  <span className="text-slate-400 block text-2xs uppercase font-bold">3. Minimum Charge</span>
                   <div className="text-sm font-bold font-mono mt-0.5 text-emerald-600">৳{product.minimum_charge || 0}</div>
-                  <p className="text-[11px] text-slate-500 mt-1">Minimum monetary amount charged per item.</p>
+                  <p className="text-2xs text-slate-500 mt-1">Minimum monetary amount charged per item.</p>
                 </div>
               </div>
             </div>
@@ -999,11 +999,11 @@ export default function ProductDetailPage() {
                 const tierMargin = calculateGrossMargin(commercialEconomics?.activeCostBasis || product.base_cost, tierPrice)
                 return (
                   <div key={tier.key} className={cn('p-3.5 rounded-xl border bg-slate-50/50 dark:bg-slate-900/50 border-l-4 shadow-xs', tier.color)}>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">{tier.label}</span>
+                    <span className="text-2xs font-bold uppercase tracking-wider text-slate-400 block">{tier.label}</span>
                     <div className="text-lg font-black font-mono text-slate-900 dark:text-white mt-1">
                       ৳{tierPrice}
                     </div>
-                    <div className="text-[11px] text-emerald-600 font-semibold mt-1">
+                    <div className="text-2xs text-emerald-600 font-semibold mt-1">
                       {tierMargin.grossMarginPercent}% Margin
                     </div>
                   </div>
@@ -1074,7 +1074,7 @@ export default function ProductDetailPage() {
                 </span>
               </div>
               <div className="text-right font-mono">
-                <span className="text-slate-500 block text-[10px] uppercase">Selling Tariff</span>
+                <span className="text-slate-500 block text-2xs uppercase">Selling Tariff</span>
                 <span className="text-base font-bold text-blue-600">৳{product.selling_price}</span>
               </div>
             </div>
@@ -1183,9 +1183,9 @@ export default function ProductDetailPage() {
                       <td className="py-3 px-3 font-mono">{sp.lead_time_days ? `${sp.lead_time_days} days` : '-'}</td>
                       <td className="py-3 px-4 text-right">
                         {sp.is_preferred ? (
-                          <Badge className="bg-emerald-500 text-white text-[10px]">Preferred Vendor</Badge>
+                          <Badge className="bg-emerald-500 text-white text-2xs">Preferred Vendor</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-slate-400 text-[10px]">Secondary</Badge>
+                          <Badge variant="outline" className="text-slate-400 text-2xs">Secondary</Badge>
                         )}
                       </td>
                     </tr>
@@ -1467,35 +1467,35 @@ export default function ProductDetailPage() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Card className="p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Used in Quotations</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Used in Quotations</span>
               <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
                 {usageStats?.quotationCount || 0}
               </div>
-              <span className="text-[11px] text-slate-400">Formal quotes created</span>
+              <span className="text-2xs text-slate-400">Formal quotes created</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Used in Invoices</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Used in Invoices</span>
               <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
                 {usageStats?.invoiceCount || 0}
               </div>
-              <span className="text-[11px] text-blue-600/80 font-medium">Billed commercial sales</span>
+              <span className="text-2xs text-blue-600/80 font-medium">Billed commercial sales</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Active Job Orders</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Active Job Orders</span>
               <div className="text-2xl font-black text-amber-600 mt-1 font-mono">
                 {usageStats?.jobCount || 0}
               </div>
-              <span className="text-[11px] text-slate-400">Production floor tasks</span>
+              <span className="text-2xs text-slate-400">Production floor tasks</span>
             </Card>
 
             <Card className="p-4 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">Total Billed Revenue</span>
+              <span className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block">Total Billed Revenue</span>
               <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
                 ৳{(usageStats?.totalRevenueBDT || 0).toLocaleString()}
               </div>
-              <span className="text-[11px] text-emerald-600/80 font-medium">
+              <span className="text-2xs text-emerald-600/80 font-medium">
                 Last sold: {usageStats?.lastSoldDate || 'Never'}
               </span>
             </Card>
@@ -1687,7 +1687,7 @@ export default function ProductDetailPage() {
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 space-y-1">
               <strong className="block">Protected Historical Record</strong>
               <p>{deletionSafety.reason}</p>
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 pt-1">
+              <p className="text-2xs text-amber-700 dark:text-amber-400 pt-1">
                 Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
               </p>
             </div>

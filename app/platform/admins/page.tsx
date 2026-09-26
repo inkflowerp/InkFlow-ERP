@@ -397,11 +397,11 @@ export default function PlatformAdminsPage() {
           </div>
           <div className="text-2xl font-black text-white mt-1.5 flex items-center gap-2">
             {stats.total}
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
               Assigned
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Root administrative identities</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Root administrative identities</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
@@ -412,11 +412,11 @@ export default function PlatformAdminsPage() {
           </div>
           <div className="text-2xl font-black text-emerald-400 mt-1.5 flex items-center gap-2">
             {stats.active} / {stats.total}
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
               Online
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Authorized to access platform console</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Authorized to access platform console</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
@@ -427,11 +427,11 @@ export default function PlatformAdminsPage() {
           </div>
           <div className="text-2xl font-black text-amber-400 mt-1.5 flex items-center gap-2">
             {stats.owners}
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
               Root Authority
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Protected by Last-Owner Safety Rule</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Protected by Last-Owner Safety Rule</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
 
@@ -442,11 +442,11 @@ export default function PlatformAdminsPage() {
           </div>
           <div className="text-2xl font-black text-cyan-400 mt-1.5 flex items-center gap-2">
             {stats.mfaPct}%
-            <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+            <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
               {stats.mfaEnforced}/{stats.total}
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5 font-medium">Time-based OTP token security</div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">Time-based OTP token security</div>
           <div className="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-2xl -mr-6 -mt-6 pointer-events-none" />
         </Card>
       </div>
@@ -583,27 +583,27 @@ export default function PlatformAdminsPage() {
                     </div>
 
                     <span
-                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${roleInfo.badge}`}
+                      className={`text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border shrink-0 ${roleInfo.badge}`}
                     >
                       {roleInfo.label.replace('Platform ', '')}
                     </span>
                   </div>
 
                   {/* Role description snippet */}
-                  <p className="text-[11px] text-slate-400 line-clamp-2">{roleInfo.desc}</p>
+                  <p className="text-2xs text-slate-400 line-clamp-2">{roleInfo.desc}</p>
 
                   {/* Phone if available */}
                   {adm.phone && (
-                    <div className="text-[11px] text-slate-400 flex items-center gap-1.5 font-mono">
+                    <div className="text-2xs text-slate-400 flex items-center gap-1.5 font-mono">
                       <Phone className="h-3 w-3 text-slate-500" />
                       <span>{adm.phone}</span>
                     </div>
                   )}
 
                   {/* Metrics grid */}
-                  <div className="grid grid-cols-2 gap-2 text-[11px] pt-3 border-t border-slate-800/80">
+                  <div className="grid grid-cols-2 gap-2 text-2xs pt-3 border-t border-slate-800/80">
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase font-semibold">Status</span>
+                      <span className="text-slate-500 block text-2xs uppercase font-semibold">Status</span>
                       <span
                         className={`font-semibold flex items-center gap-1.5 ${
                           adm.is_active ? 'text-emerald-400' : 'text-red-400'
@@ -619,7 +619,7 @@ export default function PlatformAdminsPage() {
                     </div>
 
                     <div>
-                      <span className="text-slate-500 block text-[10px] uppercase font-semibold">MFA Security</span>
+                      <span className="text-slate-500 block text-2xs uppercase font-semibold">MFA Security</span>
                       <span
                         className={`font-semibold flex items-center gap-1.5 ${
                           adm.mfa_enabled ? 'text-cyan-400' : 'text-slate-400'
@@ -636,7 +636,7 @@ export default function PlatformAdminsPage() {
                   </div>
 
                   {/* Last login info */}
-                  <div className="text-[10px] text-slate-500 flex items-center gap-1 font-mono pt-1">
+                  <div className="text-2xs text-slate-500 flex items-center gap-1 font-mono pt-1">
                     <Clock className="h-3 w-3" />
                     <span>
                       {adm.last_login_at
@@ -705,7 +705,7 @@ export default function PlatformAdminsPage() {
         <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">Administrator</th>
                   <th className="py-3 px-4">Platform Role</th>
@@ -725,19 +725,19 @@ export default function PlatformAdminsPage() {
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-white flex items-center gap-2">
                           <div
-                            className={`h-7 w-7 rounded-lg border flex items-center justify-center font-bold text-[10px] shrink-0 ${roleInfo.color}`}
+                            className={`h-7 w-7 rounded-lg border flex items-center justify-center font-bold text-2xs shrink-0 ${roleInfo.color}`}
                           >
                             {adm.full_name.slice(0, 2).toUpperCase()}
                           </div>
                           <span>{adm.full_name}</span>
                           {isOwner && <Crown className="h-3 w-3 text-amber-400" />}
                         </div>
-                        <div className="text-[11px] text-slate-400 font-mono mt-0.5">{adm.email}</div>
+                        <div className="text-2xs text-slate-400 font-mono mt-0.5">{adm.email}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
                         <span
-                          className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${roleInfo.badge}`}
+                          className={`text-2xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${roleInfo.badge}`}
                         >
                           {roleInfo.label}
                         </span>
@@ -774,7 +774,7 @@ export default function PlatformAdminsPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 font-mono text-slate-400 text-[11px]">
+                      <td className="py-3.5 px-4 font-mono text-slate-400 text-2xs">
                         {adm.last_login_at
                           ? formatDate(adm.last_login_at)
                           : 'Never'}
@@ -912,7 +912,7 @@ export default function PlatformAdminsPage() {
                       {showCreatePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  <span className="text-[10px] text-slate-500">Leave blank to use default master password.</span>
+                  <span className="text-2xs text-slate-500">Leave blank to use default master password.</span>
                 </div>
 
                 <div className="space-y-1">
@@ -1145,7 +1145,7 @@ export default function PlatformAdminsPage() {
 
               <div className="p-3 rounded-xl bg-red-950/40 border border-red-800/50 text-red-200 space-y-1">
                 <div className="font-bold">Irreversible Action</div>
-                <div className="text-[11px] text-red-200/90">
+                <div className="text-2xs text-red-200/90">
                   This action immediately revokes all platform privileges, destroys active sessions, and records an immutable audit trail entry.
                 </div>
               </div>

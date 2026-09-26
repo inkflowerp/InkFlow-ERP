@@ -200,7 +200,7 @@ export function AttendancePunchModal({
             <CameraQrScanner onScanSuccess={handleQrScanned} />
 
             {/* Geofence Notice */}
-            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 text-2xs text-slate-500 dark:text-slate-400 flex items-start gap-2.5">
               <ShieldCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <span>
                 {tBilingual(

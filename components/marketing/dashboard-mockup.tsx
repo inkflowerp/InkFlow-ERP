@@ -183,7 +183,7 @@ export function DashboardMockup() {
             <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-amber-500/80 inline-block" />
             <span className="h-2.5 w-2.5 sm:h-3 sm:w-3 rounded-full bg-emerald-500/80 inline-block" />
           </div>
-          <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-[11px] text-slate-400 font-mono">
+          <div className="hidden sm:flex items-center gap-2 ml-4 px-3 py-1 rounded-md bg-slate-900 border border-slate-800 text-2xs text-slate-400 font-mono">
             <span className="text-emerald-400">https://</span>
             <span className="text-slate-200">app.inkflow.com.bd</span>
             <span className="text-slate-500">/inkflow/{activeTab}</span>
@@ -191,11 +191,11 @@ export function DashboardMockup() {
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[9px] sm:text-[10px] font-bold">
+          <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-2xs sm:text-2xs font-bold">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
             LIVE FLOOR SYNC
           </span>
-          <span className="text-slate-400 text-[11px] font-mono hidden md:inline">
+          <span className="text-slate-400 text-2xs font-mono hidden md:inline">
             InkFlow ERP Cloud
           </span>
         </div>
@@ -212,18 +212,18 @@ export function DashboardMockup() {
             <div className="min-w-0">
               <div className="text-xs sm:text-sm font-bold text-white flex items-center gap-1.5 sm:gap-2 flex-wrap">
                 <span className="truncate">Apex Digital Press & Signage</span>
-                <Badge variant="outline" className="text-[9px] sm:text-[10px] border-cyan-500/40 text-cyan-300 py-0 h-4 shrink-0">
+                <Badge variant="outline" className="text-2xs sm:text-2xs border-cyan-500/40 text-cyan-300 py-0 h-4 shrink-0">
                   Business Tier
                 </Badge>
               </div>
-              <div className="text-[10px] sm:text-[11px] text-slate-400 truncate">
+              <div className="text-2xs sm:text-2xs text-slate-400 truncate">
                 Arambagh Press Cluster, Motijheel, Dhaka
               </div>
             </div>
           </div>
 
           {/* Interactive Navigation Tabs */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-[11px] sm:text-xs overflow-x-auto no-scrollbar w-full sm:w-auto">
+          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-2xs sm:text-xs overflow-x-auto no-scrollbar w-full sm:w-auto">
             <button
               type="button"
               onClick={() => setActiveTab('overview')}
@@ -267,7 +267,7 @@ export function DashboardMockup() {
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-3">
               {/* 1: Today's Sales */}
               <div className="p-2.5 sm:p-3 rounded-xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between text-slate-400 text-2xs sm:text-xs">
                   <span className="truncate">{tBilingual("Today's Sales", 'আজকের সেলস')}</span>
                   <DollarSign className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                 </div>
@@ -275,7 +275,7 @@ export function DashboardMockup() {
                   <div className="text-base sm:text-xl font-black text-white tabular-nums tracking-tight">
                     ৳ 48,500
                   </div>
-                  <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-emerald-400 font-medium mt-0.5">
+                  <div className="flex items-center gap-1 text-2xs sm:text-2xs text-emerald-400 font-medium mt-0.5">
                     <ArrowUpRight className="h-3 w-3 shrink-0" />
                     <span className="truncate">+18.4% vs yesterday</span>
                   </div>
@@ -284,7 +284,7 @@ export function DashboardMockup() {
 
               {/* 2: Pending Orders */}
               <div className="p-2.5 sm:p-3 rounded-xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between text-slate-400 text-2xs sm:text-xs">
                   <span className="truncate">{tBilingual('Pending Orders', 'চলতি অর্ডার')}</span>
                   <Clock className="h-3.5 w-3.5 text-blue-400 shrink-0" />
                 </div>
@@ -292,7 +292,7 @@ export function DashboardMockup() {
                   <div className="text-base sm:text-xl font-black text-white tabular-nums tracking-tight">
                     14 Active
                   </div>
-                  <div className="text-[9px] sm:text-[10px] text-slate-400 mt-0.5 truncate">
+                  <div className="text-2xs sm:text-2xs text-slate-400 mt-0.5 truncate">
                     4 design • 6 press • 4 finish
                   </div>
                 </div>
@@ -300,7 +300,7 @@ export function DashboardMockup() {
 
               {/* 3: Production Queue */}
               <div className="p-2.5 sm:p-3 rounded-xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between text-slate-400 text-2xs sm:text-xs">
                   <span className="truncate">{tBilingual('Production Queue', 'মেশিন লাইন')}</span>
                   <Printer className="h-3.5 w-3.5 text-fuchsia-400 shrink-0" />
                 </div>
@@ -308,7 +308,7 @@ export function DashboardMockup() {
                   <div className="text-base sm:text-xl font-black text-white tabular-nums tracking-tight">
                     8 On Press
                   </div>
-                  <div className="text-[9px] sm:text-[10px] text-fuchsia-400 mt-0.5 font-medium truncate">
+                  <div className="text-2xs sm:text-2xs text-fuchsia-400 mt-0.5 font-medium truncate">
                     Flora, Roland, Heidelberg
                   </div>
                 </div>
@@ -316,7 +316,7 @@ export function DashboardMockup() {
 
               {/* 4: Total Customer Due */}
               <div className="p-2.5 sm:p-3 rounded-xl border border-slate-800 bg-slate-950/60 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-slate-400 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between text-slate-400 text-2xs sm:text-xs">
                   <span className="truncate">{tBilingual('Customer Due', 'মোট বকেয়া')}</span>
                   <TrendingUp className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                 </div>
@@ -324,7 +324,7 @@ export function DashboardMockup() {
                   <div className="text-base sm:text-xl font-black text-amber-300 tabular-nums tracking-tight">
                     ৳ 1,24,000
                   </div>
-                  <div className="text-[9px] sm:text-[10px] text-amber-400/80 mt-0.5 truncate">
+                  <div className="text-2xs sm:text-2xs text-amber-400/80 mt-0.5 truncate">
                     8 client accounts overdue
                   </div>
                 </div>
@@ -332,7 +332,7 @@ export function DashboardMockup() {
 
               {/* 5: Low Stock Warning */}
               <div className="col-span-2 lg:col-span-1 p-2.5 sm:p-3 rounded-xl border border-red-900/40 bg-red-950/20 flex flex-col justify-between">
-                <div className="flex items-center justify-between text-red-300 text-[11px] sm:text-xs">
+                <div className="flex items-center justify-between text-red-300 text-2xs sm:text-xs">
                   <span className="truncate">{tBilingual('Low Media Stock', 'স্টক ঘাটতি')}</span>
                   <AlertTriangle className="h-3.5 w-3.5 text-red-400 animate-pulse shrink-0" />
                 </div>
@@ -340,7 +340,7 @@ export function DashboardMockup() {
                   <div className="text-xs font-bold text-red-200 truncate">
                     Star Flex 10ft (380g)
                   </div>
-                  <div className="text-[9px] sm:text-[10px] text-red-400 mt-0.5 font-medium truncate">
+                  <div className="text-2xs sm:text-2xs text-red-400 mt-0.5 font-medium truncate">
                     Only 2 rolls left (Re-order now)
                   </div>
                 </div>
@@ -353,16 +353,16 @@ export function DashboardMockup() {
               <div className="p-3.5 sm:p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-3">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-300 uppercase tracking-wider">
                   <span>Live Factory Floor</span>
-                  <span className="text-[10px] text-cyan-400">4 Depts Active</span>
+                  <span className="text-2xs text-cyan-400">4 Depts Active</span>
                 </div>
 
                 <div className="space-y-2.5">
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="flex items-center gap-1.5 text-slate-300 text-[11px] sm:text-xs">
+                      <span className="flex items-center gap-1.5 text-slate-300 text-2xs sm:text-xs">
                         <Layers className="h-3 w-3 text-blue-400 shrink-0" /> Pre-Press & Proofing
                       </span>
-                      <span className="font-mono text-cyan-400 font-bold text-[11px]">3 Files</span>
+                      <span className="font-mono text-cyan-400 font-bold text-2xs">3 Files</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full bg-blue-500 rounded-full w-3/5" />
@@ -371,10 +371,10 @@ export function DashboardMockup() {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="flex items-center gap-1.5 text-slate-300 text-[11px] sm:text-xs">
+                      <span className="flex items-center gap-1.5 text-slate-300 text-2xs sm:text-xs">
                         <Printer className="h-3 w-3 text-cyan-400 shrink-0" /> Wide & Solvent Print
                       </span>
-                      <span className="font-mono text-cyan-400 font-bold text-[11px]">6 Running</span>
+                      <span className="font-mono text-cyan-400 font-bold text-2xs">6 Running</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full bg-cyan-400 rounded-full w-4/5" />
@@ -383,10 +383,10 @@ export function DashboardMockup() {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="flex items-center gap-1.5 text-slate-300 text-[11px] sm:text-xs">
+                      <span className="flex items-center gap-1.5 text-slate-300 text-2xs sm:text-xs">
                         <Wrench className="h-3 w-3 text-fuchsia-400 shrink-0" /> Acrylic & CNC Fab
                       </span>
-                      <span className="font-mono text-cyan-400 font-bold text-[11px]">4 In Craft</span>
+                      <span className="font-mono text-cyan-400 font-bold text-2xs">4 In Craft</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full bg-fuchsia-500 rounded-full w-2/5" />
@@ -395,10 +395,10 @@ export function DashboardMockup() {
 
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="flex items-center gap-1.5 text-slate-300 text-[11px] sm:text-xs">
+                      <span className="flex items-center gap-1.5 text-slate-300 text-2xs sm:text-xs">
                         <Truck className="h-3 w-3 text-emerald-400 shrink-0" /> Challan & Install
                       </span>
-                      <span className="font-mono text-cyan-400 font-bold text-[11px]">2 Dispatched</span>
+                      <span className="font-mono text-cyan-400 font-bold text-2xs">2 Dispatched</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
                       <div className="h-full bg-emerald-400 rounded-full w-full" />
@@ -414,7 +414,7 @@ export function DashboardMockup() {
                   >
                     <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                       <Sparkles className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
-                      <span className="text-[10px] sm:text-[11px] font-semibold truncate">Open Full Kanban Board</span>
+                      <span className="text-2xs sm:text-2xs font-semibold truncate">Open Full Kanban Board</span>
                     </div>
                     <ChevronRight className="h-3.5 w-3.5 text-cyan-400 shrink-0" />
                   </button>
@@ -428,7 +428,7 @@ export function DashboardMockup() {
                     <div className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                       Recent Commercial Orders
                     </div>
-                    <span className="text-[10px] sm:text-[11px] text-cyan-400 font-mono">
+                    <span className="text-2xs sm:text-2xs text-cyan-400 font-mono">
                       Today: 18 Bookings
                     </span>
                   </div>
@@ -440,25 +440,25 @@ export function DashboardMockup() {
                         className="flex flex-col xs:flex-row xs:items-center justify-between p-2 sm:p-2.5 rounded-lg bg-slate-900/70 border border-slate-800/80 hover:border-slate-700 transition-colors text-xs gap-1.5 xs:gap-2"
                       >
                         <div className="flex items-center gap-2 min-w-0">
-                          <div className="font-mono font-bold text-cyan-400 text-[10px] sm:text-[11px] shrink-0">
+                          <div className="font-mono font-bold text-cyan-400 text-2xs sm:text-2xs shrink-0">
                             {ord.id}
                           </div>
                           <div className="min-w-0 truncate">
-                            <div className="font-semibold text-slate-100 truncate text-[11px] sm:text-xs">
+                            <div className="font-semibold text-slate-100 truncate text-2xs sm:text-xs">
                               {tBilingual(ord.client, ord.clientBn)}
                             </div>
-                            <div className="text-[9px] sm:text-[10px] text-slate-400 truncate">
+                            <div className="text-2xs sm:text-2xs text-slate-400 truncate">
                               {ord.product} • {ord.media}
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center justify-between xs:justify-end gap-2 shrink-0 pt-1 xs:pt-0 border-t xs:border-t-0 border-slate-800/50 xs:ml-2">
-                          <span className="font-black text-slate-200 tabular-nums text-[11px] sm:text-xs">
+                          <span className="font-black text-slate-200 tabular-nums text-2xs sm:text-xs">
                             {ord.amount}
                           </span>
                           <span
-                            className={`px-1.5 sm:px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold border ${ord.statusColor} bangla-text shrink-0`}
+                            className={`px-1.5 sm:px-2 py-0.5 rounded text-2xs sm:text-2xs font-bold border ${ord.statusColor} bangla-text shrink-0`}
                           >
                             {tBilingual(ord.status, ord.statusBn)}
                           </span>
@@ -468,7 +468,7 @@ export function DashboardMockup() {
                   </div>
                 </div>
 
-                <div className="pt-3 mt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px] sm:text-[11px] text-slate-400">
+                <div className="pt-3 mt-2 border-t border-slate-800/80 flex items-center justify-between text-2xs sm:text-2xs text-slate-400">
                   <span>Showing 4 of 18 jobs</span>
                   <button
                     type="button"
@@ -491,7 +491,7 @@ export function DashboardMockup() {
                 <Printer className="h-4 w-4 text-cyan-400" />
                 <span className="font-bold text-white text-xs sm:text-sm">Interactive Production Floor Kanban</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-cyan-400 font-mono">
+              <span className="text-2xs sm:text-2xs text-cyan-400 font-mono">
                 5 Departments • 20 Machine Runs
               </span>
             </div>
@@ -504,10 +504,10 @@ export function DashboardMockup() {
                   className="rounded-xl border border-slate-800 bg-slate-950/70 p-2.5 sm:p-3 space-y-2.5 flex flex-col justify-between"
                 >
                   <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
-                    <span className="font-bold text-white text-[11px] sm:text-xs bangla-text">
+                    <span className="font-bold text-white text-2xs sm:text-xs bangla-text">
                       {tBilingual(col.title, col.titleBn)}
                     </span>
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${col.color}`}>
+                    <span className={`px-1.5 py-0.5 rounded text-2xs font-bold border ${col.color}`}>
                       {col.count}
                     </span>
                   </div>
@@ -518,14 +518,14 @@ export function DashboardMockup() {
                         key={job.id}
                         className="p-2 rounded-lg bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all space-y-1"
                       >
-                        <div className="flex items-center justify-between text-[10px] font-mono">
+                        <div className="flex items-center justify-between text-2xs font-mono">
                           <span className="font-bold text-cyan-400">{job.id}</span>
-                          <span className="text-slate-400 text-[9px]">{job.tag}</span>
+                          <span className="text-slate-400 text-2xs">{job.tag}</span>
                         </div>
-                        <div className="font-semibold text-slate-200 text-[11px] truncate">
+                        <div className="font-semibold text-slate-200 text-2xs truncate">
                           {job.client}
                         </div>
-                        <div className="text-[10px] text-slate-400 truncate">
+                        <div className="text-2xs text-slate-400 truncate">
                           {job.item}
                         </div>
                       </div>
@@ -533,7 +533,7 @@ export function DashboardMockup() {
                   </div>
 
                   <div className="pt-1.5 border-t border-slate-800/60 text-center">
-                    <span className="text-[9px] text-slate-500 font-mono uppercase">
+                    <span className="text-2xs text-slate-500 font-mono uppercase">
                       Live Queue Active
                     </span>
                   </div>
@@ -551,14 +551,14 @@ export function DashboardMockup() {
                 <FileText className="h-4 w-4 text-cyan-400" />
                 <span className="font-bold text-white text-xs sm:text-sm">Commercial Orders & Billing Ledger</span>
               </div>
-              <span className="text-[10px] sm:text-[11px] text-emerald-400 font-mono">
+              <span className="text-2xs sm:text-2xs text-emerald-400 font-mono">
                 Auto SFT & WhatsApp Sync
               </span>
             </div>
 
             <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/70">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-900/80 text-[10px] text-slate-400 uppercase font-mono border-b border-slate-800">
+                <thead className="bg-slate-900/80 text-2xs text-slate-400 uppercase font-mono border-b border-slate-800">
                   <tr>
                     <th className="p-2.5">Order ID</th>
                     <th className="p-2.5">Customer</th>
@@ -569,7 +569,7 @@ export function DashboardMockup() {
                     <th className="p-2.5 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 text-[11px]">
+                <tbody className="divide-y divide-slate-800/60 text-2xs">
                   {RECENT_ORDERS.map((ord) => (
                     <tr key={ord.id} className="hover:bg-slate-900/50 transition-colors">
                       <td className="p-2.5 font-mono font-bold text-cyan-400">{ord.id}</td>
@@ -578,13 +578,13 @@ export function DashboardMockup() {
                       </td>
                       <td className="p-2.5 text-slate-300">
                         <div>{ord.product}</div>
-                        <span className="text-[10px] text-cyan-400 font-mono">{ord.sft} • {ord.media}</span>
+                        <span className="text-2xs text-cyan-400 font-mono">{ord.sft} • {ord.media}</span>
                       </td>
-                      <td className="p-2.5 text-slate-400 text-[10px] font-mono">{ord.machine}</td>
+                      <td className="p-2.5 text-slate-400 text-2xs font-mono">{ord.machine}</td>
                       <td className="p-2.5 text-right font-black text-white tabular-nums">{ord.amount}</td>
                       <td className="p-2.5 text-right font-bold text-amber-400 tabular-nums">{ord.due}</td>
                       <td className="p-2.5 text-center">
-                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold border ${ord.statusColor} bangla-text inline-block`}>
+                        <span className={`px-2 py-0.5 rounded text-2xs font-bold border ${ord.statusColor} bangla-text inline-block`}>
                           {tBilingual(ord.status, ord.statusBn)}
                         </span>
                       </td>

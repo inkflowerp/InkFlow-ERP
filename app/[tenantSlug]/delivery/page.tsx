@@ -551,21 +551,21 @@ export default function DeliveryLogisticsPage() {
     switch (status) {
       case 'ready_for_delivery':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
+          <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
             <CheckCircle2 className="h-3 w-3 text-emerald-600" />
             {locale === 'bn' ? 'ডেলিভারি প্রস্তুত' : 'Ready for Dispatch'}
           </span>
         )
       case 'design_pending':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800">
             <Clock className="h-3 w-3 text-amber-600" />
             {locale === 'bn' ? 'ডিজাইন পেন্ডিং' : 'Design Pending'}
           </span>
         )
       case 'design_check':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800">
             <Sparkles className="h-3 w-3 text-blue-600" />
             {locale === 'bn' ? 'ডিজাইন ওকে' : 'Design OK'}
           </span>
@@ -573,21 +573,21 @@ export default function DeliveryLogisticsPage() {
       case 'printing_pending':
       case 'in_production':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800">
             <Layers className="h-3 w-3 text-indigo-600" />
             {locale === 'bn' ? 'প্রিন্টিং চলছে' : 'Printing / Production'}
           </span>
         )
       case 'finishing_pending':
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800">
             <Wrench className="h-3 w-3 text-purple-600" />
             {locale === 'bn' ? 'ফিনিশিং চলছে' : 'Finishing Floor'}
           </span>
         )
       default:
         return (
-          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+          <span className="inline-flex items-center gap-1 text-2xs font-medium text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
             {status.replace(/_/g, ' ')}
           </span>
         )
@@ -717,7 +717,7 @@ export default function DeliveryLogisticsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>{tBilingual('Delivery Challans & Dispatches', 'ডেলিভারি চালান ও ট্রানজিট তালিকা')}</span>
-                  <Badge variant="secondary" className="text-[11px] font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                  <Badge variant="secondary" className="text-2xs font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                     {filteredChallans.length}
                   </Badge>
                 </CardTitle>
@@ -757,7 +757,7 @@ export default function DeliveryLogisticsPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <span>{tBilingual('On-Site Signage Installations', 'অন-সাইট সাইনেজ ইনস্টলেশন')}</span>
-                  <Badge variant="secondary" className="text-[11px] font-mono font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                  <Badge variant="secondary" className="text-2xs font-mono font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                     {filteredInstallations.length}
                   </Badge>
                 </CardTitle>
@@ -848,12 +848,12 @@ export default function DeliveryLogisticsPage() {
                           <div key={ch.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-blue-200 dark:border-blue-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
                               <span className="text-blue-600 font-mono">{ch.challan_number}</span>
-                              <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
+                              <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
                                 {ch.status.replace('_', ' ')}
                               </span>
                             </div>
                             <div className="font-semibold text-slate-800 dark:text-slate-200">{ch.customer_name}</div>
-                            <div className="text-[11px] text-slate-500 truncate">📍 {ch.delivery_address}</div>
+                            <div className="text-2xs text-slate-500 truncate">📍 {ch.delivery_address}</div>
                           </div>
                         ))}
 
@@ -862,13 +862,13 @@ export default function DeliveryLogisticsPage() {
                           <div key={ins.id} className="p-3 rounded-lg bg-white dark:bg-slate-950 border border-purple-200 dark:border-purple-900 space-y-1 text-xs">
                             <div className="flex justify-between font-bold">
                               <span className="text-purple-600 font-mono">{ins.installation_number}</span>
-                              <span className="capitalize text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
+                              <span className="capitalize text-2xs px-1.5 py-0.5 rounded bg-purple-50 text-purple-800 dark:bg-purple-950 dark:text-purple-300">
                                 {ins.status.replace('_', ' ')}
                               </span>
                             </div>
                             <div className="font-semibold text-slate-800 dark:text-slate-200">{ins.customer_name}</div>
-                            <div className="text-[11px] text-slate-500 truncate">📍 {ins.site_location}</div>
-                            <div className="text-[10px] text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
+                            <div className="text-2xs text-slate-500 truncate">📍 {ins.site_location}</div>
+                            <div className="text-2xs text-slate-400 font-mono">Lead: {ins.installer_lead_name}</div>
                           </div>
                         ))}
                       </div>
@@ -895,11 +895,11 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Delivery & Consignment Handover', 'ডেলিভারি হ্যান্ডওভার ও প্রাপ্তিস্বীকার')}
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   {selectedChallanForDelivery?.status === 'partially_delivered' ? 'Partial Fulfillment' : 'Consignment Proof'}
                 </Badge>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Review line-item fulfillment statuses, select items to dispatch, and record sign-off.', 'আইটেমভিত্তিক ডেলিভারি স্ট্যাটাস পর্যালোচনা করুন এবং প্রাপ্তিস্বীকার সম্পন্ন করুন।')}
               </p>
             </div>
@@ -923,22 +923,22 @@ export default function DeliveryLogisticsPage() {
               <div className="rounded-xl border border-blue-200 dark:border-blue-800/60 bg-gradient-to-r from-blue-50/80 to-indigo-50/60 dark:from-blue-950/40 dark:to-indigo-950/30 p-4 space-y-2 text-xs">
                 <div className="flex flex-wrap justify-between items-center gap-2 pb-2 border-b border-blue-200/60 dark:border-blue-800/50">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-500 uppercase tracking-wider text-[10px]">Invoice ID:</span>
+                    <span className="font-bold text-slate-500 uppercase tracking-wider text-2xs">Invoice ID:</span>
                     <Badge className="font-mono font-black text-xs bg-blue-600 text-white px-2.5 py-0.5 shadow-xs">
                       {selectedChallanForDelivery.invoice_number || `INV-${selectedChallanForDelivery.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                     </Badge>
                     {selectedChallanForDelivery.order_number && (
-                      <Badge variant="outline" className="font-mono text-[10px] text-slate-600 dark:text-slate-300">
+                      <Badge variant="outline" className="font-mono text-2xs text-slate-600 dark:text-slate-300">
                         Order: {selectedChallanForDelivery.order_number}
                       </Badge>
                     )}
                   </div>
-                  <Badge variant="outline" className="font-mono text-[11px] bg-white dark:bg-slate-900 font-bold">
+                  <Badge variant="outline" className="font-mono text-2xs bg-white dark:bg-slate-900 font-bold">
                     Challan #{selectedChallanForDelivery.challan_number}
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-2xs pt-1">
                   <div>
                     <span className="text-slate-500 block font-medium">Customer:</span>
                     <strong className="text-slate-900 dark:text-slate-100 text-xs">{selectedChallanForDelivery.customer_name}</strong>
@@ -947,7 +947,7 @@ export default function DeliveryLogisticsPage() {
                   <div>
                     <span className="text-slate-500 block font-medium">Destination & Dispatch:</span>
                     <div className="text-slate-700 dark:text-slate-300 line-clamp-2">📍 {selectedChallanForDelivery.delivery_address}</div>
-                    <div className="text-slate-500 text-[10px] mt-0.5">
+                    <div className="text-slate-500 text-2xs mt-0.5">
                       📅 Scheduled: <span className="font-mono font-semibold text-slate-700 dark:text-slate-300">{selectedChallanForDelivery.scheduled_date}</span>
                     </div>
                   </div>
@@ -972,7 +972,7 @@ export default function DeliveryLogisticsPage() {
                           : '✅ সম্পূর্ণ পরিশোধিত বিল (Fully Paid Invoice)'}
                       </span>
                     </div>
-                    <p className="text-[11px] opacity-85 mt-0.5">
+                    <p className="text-2xs opacity-85 mt-0.5">
                       {(selectedChallanForDelivery.due_amount || 0) > 0
                         ? `ডেলিভারি হস্তান্তরের পূর্বে অনুগ্রহ করে বকেয়া ${formatBDT(selectedChallanForDelivery.due_amount || 0)} আদায় নিশ্চিত করুন।`
                         : 'গ্রাহকের কোন বকেয়া নেই। পণ্য ডেলিভারি সম্পন্ন করতে পারেন।'}
@@ -980,7 +980,7 @@ export default function DeliveryLogisticsPage() {
                   </div>
                 </div>
                 <div className="text-right shrink-0 font-mono">
-                  <div className="text-[10px] text-slate-500">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
+                  <div className="text-2xs text-slate-500">মোট: {formatBDT(selectedChallanForDelivery.grand_total || 0)}</div>
                   {(selectedChallanForDelivery.due_amount || 0) > 0 ? (
                     <div className="font-black text-rose-600 dark:text-rose-400 text-sm">
                       বকেয়া: {formatBDT(selectedChallanForDelivery.due_amount || 0)}
@@ -1000,7 +1000,7 @@ export default function DeliveryLogisticsPage() {
                     <Package className="h-3.5 w-3.5 text-blue-600" />
                     Invoice Products & Operational Status ({items.length})
                   </Label>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-2xs text-slate-500">
                     {nonDeliveredItems.length === 0
                       ? 'All items delivered'
                       : `${selectedItemIds.length} of ${nonDeliveredItems.length} selected for delivery`}
@@ -1051,30 +1051,30 @@ export default function DeliveryLogisticsPage() {
                           <div className="min-w-0">
                             <div className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1.5 flex-wrap">
                               <span>Item {idx + 1}: {it.product_description}</span>
-                              <span className="font-mono text-slate-500 text-[11px]">
+                              <span className="font-mono text-slate-500 text-2xs">
                                 - {it.quantity} {it.unit}
                               </span>
                               {it.item_kind === 'ready_product' ? (
-                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
+                                <span className="text-2xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-300 dark:border-emerald-800">
                                   📦 রেডি প্রোডাক্ট (ইন-স্টক)
                                 </span>
                               ) : it.item_kind === 'outsource' ? (
-                                <span className="text-[9px] font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-300 dark:border-purple-800">
+                                <span className="text-2xs font-bold bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-300 dark:border-purple-800">
                                   🤝 আউটসোর্স
                                 </span>
                               ) : (
-                                <span className="text-[9px] font-bold bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
+                                <span className="text-2xs font-bold bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-1.5 py-0.5 rounded border border-blue-200 dark:border-blue-800">
                                   🎨 কাস্টম প্রিন্ট
                                 </span>
                               )}
                             </div>
                             {it.dimensions_spec && (
-                              <div className="text-[11px] text-slate-500 font-mono mt-0.5">
+                              <div className="text-2xs text-slate-500 font-mono mt-0.5">
                                 📐 Specs: {it.dimensions_spec}
                               </div>
                             )}
                             {it.remarks && (
-                              <div className="text-[10px] text-slate-400 mt-0.5">
+                              <div className="text-2xs text-slate-400 mt-0.5">
                                 Note: {it.remarks}
                               </div>
                             )}
@@ -1188,11 +1188,11 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Generate New Delivery Challan', 'নতুন ডেলিভারি চালানপত্র তৈরি করুন')}
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Logistics
                 </Badge>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Dispatch printed products or signage structures to the customer site', 'গ্রাহকের ঠিকানায় পণ্য পরিবহনের চালানপত্র প্রস্তুত করুন')}
               </p>
             </div>
@@ -1404,11 +1404,11 @@ export default function DeliveryLogisticsPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   {tBilingual('Schedule On-Site Signage Installation', 'সাইট ইনস্টলেশন শিডিউল করুন')}
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                   Rigging & Setup
                 </Badge>
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Deploy rigging technicians, cranes, and safety gear to the client installation site', 'সাইটে ফিটিংস টেকনিশিয়ান ও সরঞ্জাম প্রেরণ শিডিউল করুন')}
               </p>
             </div>

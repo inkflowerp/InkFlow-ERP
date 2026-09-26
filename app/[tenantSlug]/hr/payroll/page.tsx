@@ -462,7 +462,7 @@ function PayrollContent() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+            <span className="text-2xs text-slate-500 uppercase font-semibold">
               {tBilingual('Gross Payroll', 'মোট বেতন প্রাক্কলন')}
             </span>
             <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400">
@@ -472,14 +472,14 @@ function PayrollContent() {
           <div className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
             {formatBDT(totalGross)}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
             Period: {currentPeriod?.period_name || 'No Active Sheet'}
           </p>
         </Card>
 
         <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+            <span className="text-2xs text-slate-500 uppercase font-semibold">
               {tBilingual('Net Payable', 'প্রদেয় নিট বেতন')}
             </span>
             <div className="p-1.5 rounded-lg bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400">
@@ -489,14 +489,14 @@ function PayrollContent() {
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
             {formatBDT(totalNet)}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
             After Overtime & Advance Deductions
           </p>
         </Card>
 
         <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+            <span className="text-2xs text-slate-500 uppercase font-semibold">
               {tBilingual('Paid Disbursed', 'পরিশোধিত বেতন')}
             </span>
             <div className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">
@@ -506,14 +506,14 @@ function PayrollContent() {
           <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
             {formatBDT(totalPaid)}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
             Remaining Due: <strong className="text-rose-600 dark:text-rose-400">{formatBDT(totalDue)}</strong>
           </p>
         </Card>
 
         <Card className="p-4 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-slate-300 dark:hover:border-slate-700 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] text-slate-500 uppercase font-semibold">
+            <span className="text-2xs text-slate-500 uppercase font-semibold">
               {tBilingual('Advances Outstanding', 'বকেয়া অগ্রিম স্থিতি')}
             </span>
             <div className="p-1.5 rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400">
@@ -523,7 +523,7 @@ function PayrollContent() {
           <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">
             {formatBDT(totalAdvanceOutstanding)}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1">
             Active staff advance balances
           </p>
         </Card>
@@ -557,7 +557,7 @@ function PayrollContent() {
             <DollarSign className="w-3.5 h-3.5" />
             <span>{tBilingual('Salary Advances Ledger', 'বেতন অগ্রিম লেজার')}</span>
             {advances.filter((a) => !a.is_settled).length > 0 && (
-              <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+              <span className={`text-2xs px-1.5 py-0.2 rounded-full ${
                 activeTab === 'advances'
                   ? 'bg-amber-400 text-slate-900 font-bold'
                   : 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 font-bold'
@@ -663,7 +663,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('All Staff', 'সকল কর্মী')}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({selectedPeriod?.items?.length || 0})</span>
+                  <span className="text-2xs opacity-75 font-mono">({selectedPeriod?.items?.length || 0})</span>
                 </button>
 
                 <button
@@ -676,7 +676,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Fully Paid', 'সম্পূর্ণ পরিশোধিত')}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({paidCount})</span>
+                  <span className="text-2xs opacity-75 font-mono">({paidCount})</span>
                 </button>
 
                 <button
@@ -689,7 +689,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Partially Paid', 'আংশিক পরিশোধিত')}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({partialCount})</span>
+                  <span className="text-2xs opacity-75 font-mono">({partialCount})</span>
                 </button>
 
                 <button
@@ -702,7 +702,7 @@ function PayrollContent() {
                   }`}
                 >
                   <span>{tBilingual('Unpaid Due', 'বকেয়া')}</span>
-                  <span className="text-[10px] opacity-75 font-mono">({unpaidCount})</span>
+                  <span className="text-2xs opacity-75 font-mono">({unpaidCount})</span>
                 </button>
               </div>
 
@@ -748,7 +748,7 @@ function PayrollContent() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-2xs uppercase tracking-wider">
                       <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                       <th className="p-3.5">{tBilingual('Base / Rate', 'মূল বেতন')}</th>
                       <th className="p-3.5">{tBilingual('Attendance / Abs', 'উপস্থিতি / অনুপস্থিত')}</th>
@@ -768,7 +768,7 @@ function PayrollContent() {
                         <tr key={item.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors">
                           <td className="p-3.5 pl-4">
                             <div className="font-semibold text-slate-900 dark:text-white">{item.employee_name}</div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                            <div className="text-2xs text-slate-500 dark:text-slate-400">
                               {item.employee_id_number} • <span className="capitalize">{item.department}</span>
                             </div>
                           </td>
@@ -780,7 +780,7 @@ function PayrollContent() {
                           <td className="p-3.5 text-slate-600 dark:text-slate-400">
                             <div>{item.days_present} / {selectedPeriod.working_days_count || 26} d</div>
                             {Number(item.absence_deduction || 0) > 0 && (
-                              <div className="text-rose-600 dark:text-rose-400 text-[10px] font-medium">
+                              <div className="text-rose-600 dark:text-rose-400 text-2xs font-medium">
                                 -{formatBDT(item.absence_deduction || 0)}
                               </div>
                             )}
@@ -812,7 +812,7 @@ function PayrollContent() {
                             <div className="text-emerald-600 dark:text-emerald-400 font-semibold">
                               Paid: {formatBDT(item.paid_amount || 0)}
                             </div>
-                            <div className="text-rose-600 dark:text-rose-400 text-[11px]">
+                            <div className="text-rose-600 dark:text-rose-400 text-2xs">
                               Due: {formatBDT(item.due_amount || 0)}
                             </div>
                           </td>
@@ -820,7 +820,7 @@ function PayrollContent() {
                           <td className="p-3.5">
                             <Badge
                               variant="outline"
-                              className={`text-[10px] px-2 py-0.5 capitalize ${
+                              className={`text-2xs px-2 py-0.5 capitalize ${
                                 isFullyPaid
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                                   : isPartial
@@ -902,7 +902,7 @@ function PayrollContent() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-[11px] uppercase tracking-wider">
+                    <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-2xs uppercase tracking-wider">
                       <th className="p-3.5 pl-4">{tBilingual('Employee', 'কর্মী')}</th>
                       <th className="p-3.5">{tBilingual('Disbursement Date', 'প্রদানের তারিখ')}</th>
                       <th className="p-3.5">{tBilingual('Amount (BDT)', 'টাকার পরিমাণ')}</th>
@@ -932,7 +932,7 @@ function PayrollContent() {
                         <td className="p-3.5 pr-4 text-right">
                           <Badge
                             variant="outline"
-                            className={`text-[10px] px-2 py-0.5 capitalize ${
+                            className={`text-2xs px-2 py-0.5 capitalize ${
                               adv.is_settled
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800'
                                 : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800'

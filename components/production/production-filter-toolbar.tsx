@@ -213,7 +213,7 @@ export function ProductionFilterToolbar({
 
         {/* Sector / Department Selector */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-[11px] text-slate-400 hidden md:inline">
+          <span className="text-2xs text-slate-400 hidden md:inline">
             {isBn ? 'বিভাগ:' : 'Sector:'}
           </span>
           <select

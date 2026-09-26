@@ -146,11 +146,11 @@ export default function PayrollDetailPage() {
         {/* Header */}
         <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900">
           <h1 className="text-xl font-black tracking-tight">{company?.name || 'InkFlow Print & Signage'}</h1>
-          {company?.address && <p className="text-slate-500 text-[11px]">{company.address}</p>}
+          {company?.address && <p className="text-slate-500 text-2xs">{company.address}</p>}
           <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700">
             EMPLOYEE PAY SLIP (কর্মচারী বেতন রসিদ)
           </div>
-          <div className="text-slate-500 font-mono text-[11px] mt-1">
+          <div className="text-slate-500 font-mono text-2xs mt-1">
             Period: <strong>{period.period_name}</strong> ({period.start_date} to {period.end_date})
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function PayrollDetailPage() {
         {/* Employee Particulars */}
         <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
           <div className="space-y-1">
-            <span className="text-[10px] uppercase font-bold text-slate-400">Employee Details:</span>
+            <span className="text-2xs uppercase font-bold text-slate-400">Employee Details:</span>
             <div className="font-bold text-sm text-slate-900 dark:text-white">
               {currentItem.employee_name} {currentItem.employee_name_bn && `(${currentItem.employee_name_bn})`}
             </div>
@@ -170,7 +170,7 @@ export default function PayrollDetailPage() {
             </div>
           </div>
 
-          <div className="space-y-1 text-right font-mono text-[11px]">
+          <div className="space-y-1 text-right font-mono text-2xs">
             <div>Pay Slip No: <strong>PS-{period.id.slice(-6).toUpperCase()}</strong></div>
             <div>Days Present: <strong>{currentItem.days_present} / {period.working_days_count}</strong></div>
             <div>
@@ -186,7 +186,7 @@ export default function PayrollDetailPage() {
         <div className="grid grid-cols-2 gap-6">
           {/* Earnings Table */}
           <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-            <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-[11px] border-b border-slate-200 dark:border-slate-800">
+            <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-2xs border-b border-slate-200 dark:border-slate-800">
               EARNINGS & ALLOWANCES (আয় ও ভাতাসমূহ)
             </div>
             <table className="w-full text-left text-xs font-mono">
@@ -239,7 +239,7 @@ export default function PayrollDetailPage() {
 
           {/* Deductions Table */}
           <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-            <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-[11px] border-b border-slate-200 dark:border-slate-800">
+            <div className="bg-slate-100 dark:bg-slate-900 p-2.5 font-bold text-2xs border-b border-slate-200 dark:border-slate-800">
               DEDUCTIONS (কর্তনসমূহ)
             </div>
             <table className="w-full text-left text-xs font-mono">
@@ -302,7 +302,7 @@ export default function PayrollDetailPage() {
         {/* Net Payable Highlight Banner */}
         <div className="p-5 rounded-2xl bg-slate-900 text-white dark:bg-slate-900 flex items-center justify-between">
           <div>
-            <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+            <span className="text-2xs uppercase font-bold text-slate-400 tracking-wider">
               NET PAYABLE SALARY (প্রদেয় সর্বমোট বেতন)
             </span>
             <div className="text-xs text-slate-300 capitalize mt-0.5">
@@ -314,7 +314,7 @@ export default function PayrollDetailPage() {
             <div className="text-2xl font-black text-emerald-400 font-mono">
               {formatBDT(currentItem.net_salary)}
             </div>
-            <span className="text-[10px] text-slate-400">
+            <span className="text-2xs text-slate-400">
               {currentItem.payment_status === 'paid' ? 'Paid in Full' : 'Amount Due'}
             </span>
           </div>
@@ -322,7 +322,7 @@ export default function PayrollDetailPage() {
 
         {/* Advance Balance Notification */}
         {currentItem.advance_remaining_balance > 0 && (
-          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-300 text-[11px] border border-amber-200 dark:border-amber-800 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-300 text-2xs border border-amber-200 dark:border-amber-800 flex items-center justify-between">
             <span>Remaining Salary Advance Balance carried forward to next month:</span>
             <strong className="font-mono text-xs">{formatBDT(currentItem.advance_remaining_balance)}</strong>
           </div>
@@ -334,21 +334,21 @@ export default function PayrollDetailPage() {
             <div className="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-800 dark:text-slate-200">
               Employee Signature
             </div>
-            <span className="text-[10px] text-slate-400">গ্রহীতার স্বাক্ষর</span>
+            <span className="text-2xs text-slate-400">গ্রহীতার স্বাক্ষর</span>
           </div>
 
           <div>
             <div className="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-800 dark:text-slate-200">
               Prepared by Accounts
             </div>
-            <span className="text-[10px] text-slate-400">হিসাবরক্ষক</span>
+            <span className="text-2xs text-slate-400">হিসাবরক্ষক</span>
           </div>
 
           <div>
             <div className="border-t border-slate-400 dark:border-slate-600 pt-2 font-bold text-slate-800 dark:text-slate-200">
               Authorized Managing Director
             </div>
-            <span className="text-[10px] text-slate-400">কর্তৃপক্ষের স্বাক্ষর</span>
+            <span className="text-2xs text-slate-400">কর্তৃপক্ষের স্বাক্ষর</span>
           </div>
         </div>
       </div>

@@ -59,7 +59,7 @@ export function PriceIntelligenceCard({
           <div>
             <span className="text-xs font-black tracking-tight text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
               Price Intelligence & Market Reference
-              <Badge variant="outline" className="text-[9px] font-mono px-1.5 py-0 h-4 bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/50 dark:text-indigo-300">
+              <Badge variant="outline" className="text-2xs font-mono px-1.5 py-0 h-4 bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/50 dark:text-indigo-300">
                 {summary.size_label}
               </Badge>
             </span>
@@ -72,7 +72,7 @@ export function PriceIntelligenceCard({
             <Badge
               variant="outline"
               className={cn(
-                'text-[10px] font-bold px-2 py-0.5 gap-1',
+                'text-2xs font-bold px-2 py-0.5 gap-1',
                 isUp
                   ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300'
                   : isDown
@@ -97,51 +97,51 @@ export function PriceIntelligenceCard({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         {/* Metric 1: Inward Price */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Current Inward Price</div>
+          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Current Inward Price</div>
           <div className="text-sm font-black text-indigo-700 dark:text-indigo-300 font-mono mt-0.5">
             {formatBDT(currentUnitPrice)}
           </div>
-          <div className="text-[10px] text-slate-400 font-sans">per {purchaseUnit}</div>
+          <div className="text-2xs text-slate-400 font-sans">per {purchaseUnit}</div>
         </div>
 
         {/* Metric 2: Normalized / sqft */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Normalized Cost</div>
+          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Normalized Cost</div>
           <div className="text-sm font-black text-slate-900 dark:text-white font-mono mt-0.5">
             {summary.normalized_cost_per_sft !== undefined
               ? formatBDT(summary.normalized_cost_per_sft)
               : formatBDT(currentUnitPrice)}
           </div>
-          <div className="text-[10px] text-slate-400 font-sans">
+          <div className="text-2xs text-slate-400 font-sans">
             {summary.normalized_cost_per_sft !== undefined ? 'per sqft' : `per ${purchaseUnit}`}
           </div>
         </div>
 
         {/* Metric 3: Lowest Recorded */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-emerald-100 dark:border-emerald-900/40 shadow-2xs">
-          <div className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">Lowest Recorded</div>
+          <div className="text-2xs font-medium text-emerald-700 dark:text-emerald-400">Lowest Recorded</div>
           <div className="text-sm font-black text-emerald-700 dark:text-emerald-300 font-mono mt-0.5">
             {formatBDT(summary.lowest_cost)}
           </div>
-          <div className="text-[10px] text-emerald-600/80 dark:text-emerald-400 truncate" title={summary.lowest_supplier_name}>
+          <div className="text-2xs text-emerald-600/80 dark:text-emerald-400 truncate" title={summary.lowest_supplier_name}>
             {summary.lowest_supplier_name || 'Standard'}
           </div>
         </div>
 
         {/* Metric 4: Market Average */}
         <div className="p-2 rounded-lg bg-white dark:bg-slate-950/80 border border-indigo-100 dark:border-indigo-900/40 shadow-2xs">
-          <div className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Recorded Average</div>
+          <div className="text-2xs font-medium text-slate-500 dark:text-slate-400">Recorded Average</div>
           <div className="text-sm font-black text-slate-800 dark:text-slate-200 font-mono mt-0.5">
             {formatBDT(summary.average_cost)}
           </div>
-          <div className="text-[10px] text-slate-400 font-sans">{summary.total_records_count} past purchase(s)</div>
+          <div className="text-2xs text-slate-400 font-sans">{summary.total_records_count} past purchase(s)</div>
         </div>
       </div>
 
       {/* Supplier Comparison Quick Table */}
       {summary.supplier_comparison.length > 0 && (
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-slate-300">
+          <div className="flex items-center justify-between text-2xs font-bold text-slate-700 dark:text-slate-300">
             <span className="flex items-center gap-1">
               <Building2 className="h-3 w-3 text-indigo-600" />
               Supplier Price Comparison ({summary.supplier_comparison.length})
@@ -151,7 +151,7 @@ export function PriceIntelligenceCard({
               variant="ghost"
               size="sm"
               onClick={() => setShowHistory(!showHistory)}
-              className="h-6 px-1.5 text-[10px] text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100/60"
+              className="h-6 px-1.5 text-2xs text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100/60"
             >
               {showHistory ? (
                 <>
@@ -173,7 +173,7 @@ export function PriceIntelligenceCard({
               >
                 <div className="truncate pr-2">
                   <div className="font-bold text-slate-900 dark:text-white truncate">{sup.supplier_name}</div>
-                  <div className="text-[10px] text-slate-400 flex items-center gap-1 font-mono">
+                  <div className="text-2xs text-slate-400 flex items-center gap-1 font-mono">
                     <Calendar className="h-2.5 w-2.5" /> {sup.last_purchase_date || 'Recent'}
                   </div>
                 </div>
@@ -182,7 +182,7 @@ export function PriceIntelligenceCard({
                     {formatBDT(sup.latest_price)}
                   </div>
                   {sup.normalized_price_per_sft && (
-                    <div className="text-[10px] text-indigo-600 font-mono">
+                    <div className="text-2xs text-indigo-600 font-mono">
                       {formatBDT(sup.normalized_price_per_sft)}/sqft
                     </div>
                   )}
@@ -194,15 +194,15 @@ export function PriceIntelligenceCard({
           {/* Historical Log Drawer */}
           {showHistory && summary.history.length > 0 && (
             <div className="p-2.5 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-800 space-y-1.5 mt-2 animate-in fade-in-0">
-              <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+              <div className="text-2xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
                 <History className="h-3 w-3" /> Historical Purchase Events Log
               </div>
               <div className="max-h-36 overflow-y-auto space-y-1 divide-y divide-slate-100 dark:divide-slate-900 text-xs">
                 {summary.history.map((h, i) => (
-                  <div key={i} className="pt-1 flex items-center justify-between font-mono text-[11px]">
+                  <div key={i} className="pt-1 flex items-center justify-between font-mono text-2xs">
                     <div>
                       <span className="font-bold text-slate-800 dark:text-slate-200">{h.supplier_name}</span>
-                      <span className="text-slate-400 text-[10px] ml-1.5 font-sans">
+                      <span className="text-slate-400 text-2xs ml-1.5 font-sans">
                         {h.purchase_date} {h.challan_number ? `• Ch: ${h.challan_number}` : ''}
                       </span>
                     </div>

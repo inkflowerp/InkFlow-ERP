@@ -352,7 +352,7 @@ function LoginForm() {
                       size="sm"
                       variant="outline"
                       onClick={() => performLogin(currentEmail, currentPassword)}
-                      className="text-[10px] h-6 border-red-300 bg-red-100 hover:bg-red-200 text-red-800 dark:border-red-800 dark:bg-red-900/40 dark:text-red-200 cursor-pointer"
+                      className="text-2xs h-6 border-red-300 bg-red-100 hover:bg-red-200 text-red-800 dark:border-red-800 dark:bg-red-900/40 dark:text-red-200 cursor-pointer"
                     >
                       <RefreshCw className="h-3 w-3 mr-1" />
                       {locale === 'bn' ? 'পুনরায় চেষ্টা করুন' : 'Try Again'}
@@ -371,7 +371,7 @@ function LoginForm() {
                   <Sparkles className="h-3.5 w-3.5 text-purple-400" />
                   <span>{locale === 'bn' ? 'প্ল্যাটফর্ম অ্যাডমিন অ্যাকাউন্ট' : 'Platform Administrator Account'}</span>
                 </div>
-                <div className="text-[11px] text-purple-300">
+                <div className="text-2xs text-purple-300">
                   {locale === 'bn'
                     ? 'সুপারঅ্যাডমিনদের জন্য আলাদা প্ল্যাটফর্ম কন্ট্রোল সেন্টার পোর্টাল রয়েছে।'
                     : 'Superadmins must sign in via the dedicated Platform Control Center.'}
@@ -451,7 +451,7 @@ function LoginForm() {
 
             {/* Caps Lock Alert Notification */}
             {isCapsLock && (
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 pt-0.5">
+              <div className="flex items-center gap-1.5 text-2xs font-semibold text-amber-600 dark:text-amber-400 pt-0.5">
                 <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 <span>{t('auth.caps_lock_on') || 'Caps Lock is ON'}</span>
               </div>
@@ -495,7 +495,7 @@ function LoginForm() {
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-slate-200 dark:border-slate-800" />
             </div>
-            <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-wider">
+            <div className="relative flex justify-center text-2xs uppercase font-bold tracking-wider">
               <span className="bg-white px-2.5 text-slate-400 dark:bg-slate-900">
                 {locale === 'bn' ? 'অথবা' : 'Or continue with'}
               </span>

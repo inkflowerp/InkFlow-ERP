@@ -405,7 +405,7 @@ function VerifyEmailForm() {
           </div>
 
           {!isVerified && (
-            <p className="text-center text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-center text-2xs text-slate-500 dark:text-slate-400">
               {t('auth.use_link_instead') || 'Use the verification link sent to your email to verify automatically.'}
             </p>
           )}

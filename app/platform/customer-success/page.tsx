@@ -93,7 +93,7 @@ export default function CustomerSuccessPage() {
             <Clock className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">{data.trials_ending_soon.length}</div>
-          <div className="text-[11px] text-cyan-400 mt-1">In trial evaluation window</div>
+          <div className="text-2xs text-cyan-400 mt-1">In trial evaluation window</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-4">
@@ -102,7 +102,7 @@ export default function CustomerSuccessPage() {
             <UserX className="h-4 w-4 text-amber-400" />
           </div>
           <div className="text-2xl font-black text-amber-400 mt-1">{data.inactive_tenants.length}</div>
-          <div className="text-[11px] text-amber-400 mt-1">No orders or invoices logged</div>
+          <div className="text-2xs text-amber-400 mt-1">No orders or invoices logged</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-4">
@@ -111,7 +111,7 @@ export default function CustomerSuccessPage() {
             <AlertTriangle className="h-4 w-4 text-red-400" />
           </div>
           <div className="text-2xl font-black text-red-400 mt-1">{data.at_risk_tenants.length}</div>
-          <div className="text-[11px] text-red-400 mt-1">Billing or storage alerts</div>
+          <div className="text-2xs text-red-400 mt-1">Billing or storage alerts</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-4">
@@ -120,7 +120,7 @@ export default function CustomerSuccessPage() {
             <TrendingUp className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-black text-emerald-400 mt-1">{data.high_growth_tenants.length}</div>
-          <div className="text-[11px] text-emerald-400 mt-1">&gt;20% monthly order surge</div>
+          <div className="text-2xs text-emerald-400 mt-1">&gt;20% monthly order surge</div>
         </Card>
       </div>
 
@@ -144,12 +144,12 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-indigo-400 text-sm">
                     {company.name}
                   </Link>
-                  <span className="font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded text-[10px] font-bold">
+                  <span className="font-mono text-cyan-400 bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 rounded text-2xs font-bold">
                     Day {trial_day} / {total_days}
                   </span>
                 </div>
 
-                <div className="text-slate-400 flex items-center gap-2 flex-wrap text-[11px]">
+                <div className="text-slate-400 flex items-center gap-2 flex-wrap text-2xs">
                   <span>Owner: <strong className="text-slate-200">{company.owner_name}</strong></span>
                   <span>•</span>
                   <span>Phone: <strong className="text-emerald-400 font-mono">{company.owner_phone}</strong></span>
@@ -159,7 +159,7 @@ export default function CustomerSuccessPage() {
                   <span>Storage: <strong className="text-white font-mono">{company.storage_used_gb} GB</strong></span>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-[10px] pt-1">
+                <div className="flex items-center gap-1.5 text-2xs pt-1">
                   <span className="text-slate-500">Features Adopted:</span>
                   {features_used.map((f) => (
                     <span key={f} className="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 font-medium">
@@ -172,7 +172,7 @@ export default function CustomerSuccessPage() {
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right mr-2">
                   <div className="font-bold text-amber-300">Expires in {expires_in_days} days</div>
-                  <div className="text-[10px] text-slate-500 font-mono">Last active: {company.last_activity}</div>
+                  <div className="text-2xs text-slate-500 font-mono">Last active: {company.last_activity}</div>
                 </div>
 
                 <Link
@@ -207,14 +207,14 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white text-sm hover:text-indigo-400">
                     {company.name}
                   </Link>
-                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">
+                  <span className="capitalize px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-2xs">
                     {company.plan}
                   </span>
                 </div>
-                <div className="text-slate-400 text-[11px]">
+                <div className="text-slate-400 text-2xs">
                   Owner: {company.owner_name} ({company.owner_phone}) • {company.hub}
                 </div>
-                <div className="text-[11px] text-amber-400">
+                <div className="text-2xs text-amber-400">
                   Last meaningful operation: {last_meaningful_activity}
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function CustomerSuccessPage() {
               <div className="flex items-center gap-3">
                 <div className="text-right font-mono">
                   <div className="font-bold text-red-400 text-sm">{days_inactive} Days</div>
-                  <div className="text-[10px] text-slate-500">Inactive</div>
+                  <div className="text-2xs text-slate-500">Inactive</div>
                 </div>
 
                 <Link
@@ -254,11 +254,11 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-indigo-300">
                     {company.name}
                   </Link>
-                  <span className="text-[10px] font-mono font-bold text-red-400 bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded">
+                  <span className="text-2xs font-mono font-bold text-red-400 bg-red-500/10 border border-red-500/30 px-2 py-0.5 rounded">
                     Risk {risk_score}%
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 space-y-0.5">
+                <div className="text-2xs text-slate-400 space-y-0.5">
                   {reasons.map((r, i) => (
                     <div key={i} className="text-amber-300/90">• {r}</div>
                   ))}
@@ -283,7 +283,7 @@ export default function CustomerSuccessPage() {
                   <Link href={`/platform/companies/${company.id}`} className="font-bold text-white hover:text-emerald-300">
                     {company.name}
                   </Link>
-                  <div className="text-[11px] text-slate-400 mt-0.5">
+                  <div className="text-2xs text-slate-400 mt-0.5">
                     {order_volume.toLocaleString()} orders logged this month • {company.plan.toUpperCase()}
                   </div>
                 </div>

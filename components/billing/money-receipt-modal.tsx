@@ -156,7 +156,7 @@ export function MoneyReceiptModal({
             <h2 className="text-base font-black text-slate-900 dark:text-white">
               {locale === 'bn' ? 'অফিসিয়াল মানি রিসিট (MR)' : 'Official Money Receipt (MR)'}
             </h2>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-slate-500 dark:text-slate-400">
               Official acknowledgment of payment collection and multi-invoice settlement
             </p>
           </div>
@@ -170,29 +170,29 @@ export function MoneyReceiptModal({
           <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
             <div className="flex flex-wrap items-center gap-3 font-numeric tabular-nums">
               <div>
-                <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-[10px] uppercase">Payment Received</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold block text-2xs uppercase">Payment Received</span>
                 <strong className="text-emerald-800 dark:text-emerald-200 text-sm font-bold">{formatBDT(payment.amount)}</strong>
               </div>
               {invoices.length > 0 && invoices[0] && (
                 <>
                   <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-slate-500 block text-[10px] uppercase">Invoice</span>
+                    <span className="text-slate-500 block text-2xs uppercase">Invoice</span>
                     <strong className="text-blue-600 dark:text-blue-400 font-bold">#{invoices[0].invoice_number}</strong>
                   </div>
                   <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-slate-500 block text-[10px] uppercase">Customer</span>
+                    <span className="text-slate-500 block text-2xs uppercase">Customer</span>
                     <strong className="text-slate-800 dark:text-slate-200 font-bold">{payment.customer_name || invoices[0].customer_name}</strong>
                   </div>
                   <div className="border-l border-emerald-200 dark:border-emerald-800 pl-3">
-                    <span className="text-slate-500 block text-[10px] uppercase">Remaining Due</span>
+                    <span className="text-slate-500 block text-2xs uppercase">Remaining Due</span>
                     {Math.max(0, (invoices[0].due_amount || 0) - payment.amount) === 0 ? (
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black flex items-center gap-1">
-                        {formatBDT(0)} <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
+                        {formatBDT(0)} <span className="text-2xs px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">Paid</span>
                       </strong>
                     ) : (
                       <strong className="text-rose-600 dark:text-rose-400 font-black flex items-center gap-1">
                         {formatBDT(Math.max(0, (invoices[0].due_amount || 0) - payment.amount))}
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-bold">Partially Paid</span>
+                        <span className="text-2xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 font-bold">Partially Paid</span>
                       </strong>
                     )}
                   </div>
@@ -311,17 +311,17 @@ export function MoneyReceiptModal({
               <div className="font-bold uppercase flex items-center gap-2 flex-wrap">
                 <span>{methodInfo.en}</span>
                 {payment.mfs_transaction_id && (
-                  <Badge variant="outline" className="font-mono text-[10px] normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
                     TrxID: {payment.mfs_transaction_id}
                   </Badge>
                 )}
                 {payment.cheque_number && (
-                  <Badge variant="outline" className="font-mono text-[10px] normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
                     Cheque #{payment.cheque_number} {payment.bank_name ? `(${payment.bank_name})` : ''}
                   </Badge>
                 )}
                 {payment.bank_name && !payment.cheque_number && (
-                  <Badge variant="outline" className="font-mono text-[10px] normal-case bg-white dark:bg-slate-900">
+                  <Badge variant="outline" className="font-mono text-2xs normal-case bg-white dark:bg-slate-900">
                     Bank: {payment.bank_name}
                   </Badge>
                 )}
@@ -339,12 +339,12 @@ export function MoneyReceiptModal({
           {/* INVOICE ALLOCATION BREAKDOWN */}
           {payment.allocations && payment.allocations.length > 0 ? (
             <div className="space-y-1.5">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="text-2xs font-bold uppercase tracking-wider text-slate-500">
                 Invoice Settlement Allocation
               </div>
               <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold text-[11px]">
+                  <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold text-2xs">
                     <tr>
                       <th className="p-2">Invoice</th>
                       <th className="p-2 text-right">Invoice Total</th>
@@ -380,12 +380,12 @@ export function MoneyReceiptModal({
             </div>
           ) : (invoices.length > 0 && invoices[0]) ? (
             <div className="space-y-1.5">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              <div className="text-2xs font-bold uppercase tracking-wider text-slate-500">
                 Invoice Settlement
               </div>
               <div className="border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold text-[11px]">
+                  <thead className="bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-semibold text-2xs">
                     <tr>
                       <th className="p-2">Invoice</th>
                       <th className="p-2 text-right">Invoice Total</th>
@@ -417,7 +417,7 @@ export function MoneyReceiptModal({
           {/* TOTAL & SIGNATURES */}
           <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
             <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
-              <span className="text-[10px] uppercase font-bold text-emerald-100 block">Total Amount Received</span>
+              <span className="text-2xs uppercase font-bold text-emerald-100 block">Total Amount Received</span>
               <div className="text-2xl font-bold tracking-normal">
                 {formatBDT(payment.amount)}
               </div>
@@ -427,7 +427,7 @@ export function MoneyReceiptModal({
               <div className="border-t border-slate-400 dark:border-slate-600 w-48 pt-1.5 font-bold text-xs">
                 {payment.received_by_name || 'Cashier / Accountant'}
               </div>
-              <div className="text-[10px] text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs text-slate-400 uppercase tracking-wider">
                 Authorized Signatory & Seal
               </div>
             </div>

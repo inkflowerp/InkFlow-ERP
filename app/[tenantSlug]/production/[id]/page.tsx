@@ -180,7 +180,7 @@ export default function ProductionJobDetailPage() {
             <p className="text-xs text-red-800 dark:text-red-300">
               Reason: <strong>{job.reworks?.[0]?.reason}</strong>
             </p>
-            <div className="text-[11px] text-red-700 dark:text-red-400 font-mono">
+            <div className="text-2xs text-red-700 dark:text-red-400 font-mono">
               Wastage: {job.reworks?.[0]?.material_wastage} • Extra Labor: {job.reworks?.[0]?.extra_labor_hours} hrs • Delay: +{job.reworks?.[0]?.additional_time_hours} hrs
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function ProductionJobDetailPage() {
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task}</div>
-                      <div className="text-[10px]">{isApplicable ? 'Required' : 'Optional'}</div>
+                      <div className="text-2xs">{isApplicable ? 'Required' : 'Optional'}</div>
                     </div>
                   </button>
                 )
@@ -291,7 +291,7 @@ export default function ProductionJobDetailPage() {
                     )}
                     <div className="text-xs">
                       <div className="font-bold capitalize">{task.replace('_', ' ')}</div>
-                      <div className="text-[10px]">{isApplicable ? 'Required' : 'Optional'}</div>
+                      <div className="text-2xs">{isApplicable ? 'Required' : 'Optional'}</div>
                     </div>
                   </button>
                 )

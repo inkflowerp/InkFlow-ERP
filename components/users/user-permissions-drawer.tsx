@@ -381,11 +381,11 @@ export function UserPermissionsDrawer({
                       {user.profile?.full_name || user.invited_email}
                     </h2>
                     {user.status === 'active' ? (
-                      <Badge className="bg-emerald-500 text-white text-[10px] px-1.5 py-0 h-4">
+                      <Badge className="bg-emerald-500 text-white text-2xs px-1.5 py-0 h-4">
                         Active
                       </Badge>
                     ) : (
-                      <Badge variant="destructive" className="text-[10px] px-1.5 py-0 h-4">
+                      <Badge variant="destructive" className="text-2xs px-1.5 py-0 h-4">
                         {user.status}
                       </Badge>
                     )}
@@ -420,7 +420,7 @@ export function UserPermissionsDrawer({
             {/* Department & Branch Meta */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3.5 pt-3 border-t border-slate-200/60 dark:border-slate-800 text-xs">
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 block mb-1">
+                <label className="text-2xs font-semibold text-slate-500 block mb-1">
                   Department / Floor
                 </label>
                 <Input
@@ -432,7 +432,7 @@ export function UserPermissionsDrawer({
               </div>
 
               <div>
-                <label className="text-[11px] font-semibold text-slate-500 block mb-1">
+                <label className="text-2xs font-semibold text-slate-500 block mb-1">
                   Assigned Primary Branch
                 </label>
                 <select
@@ -488,7 +488,7 @@ export function UserPermissionsDrawer({
                 )}
               >
                 <span>Responsibilities</span>
-                <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
+                <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-2xs">
                   {selectedResponsibilities.length}
                 </span>
               </button>
@@ -505,7 +505,7 @@ export function UserPermissionsDrawer({
                 <Building className="h-3.5 w-3.5" />
                 <span>Branch Scopes</span>
                 {authorizedBranchIds.length > 0 && (
-                  <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-[10px]">
+                  <span className="px-1.5 py-0.2 bg-white/20 rounded-full text-2xs">
                     {authorizedBranchIds.length}
                   </span>
                 )}
@@ -616,7 +616,7 @@ export function UserPermissionsDrawer({
                           className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800"
                         >
                           <span className="text-slate-700 dark:text-slate-300 font-medium">{label}</span>
-                          <span className={cn('text-[11px] font-bold px-2 py-0.5 rounded capitalize', scopeColor)}>
+                          <span className={cn('text-2xs font-bold px-2 py-0.5 rounded capitalize', scopeColor)}>
                             {scope}
                           </span>
                         </div>
@@ -671,7 +671,7 @@ export function UserPermissionsDrawer({
                           </div>
                           <span
                             className={cn(
-                              'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                              'text-2xs font-bold px-1.5 py-0.5 rounded',
                               isGranted
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
                                 : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
@@ -692,7 +692,7 @@ export function UserPermissionsDrawer({
                   <Info className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">Multi-Responsibility Role System</p>
-                    <p className="text-[11px] text-sky-800/80 dark:text-sky-300/80 mt-0.5">
+                    <p className="text-2xs text-sky-800/80 dark:text-sky-300/80 mt-0.5">
                       Users receive the merged permissions of all selected roles. You can also define specific permission overrides per module.
                     </p>
                   </div>
@@ -729,18 +729,18 @@ export function UserPermissionsDrawer({
                               <span className="font-semibold text-xs text-slate-900 dark:text-white">
                                 {r.name}
                               </span>
-                              <span className="text-[11px] text-slate-400">
+                              <span className="text-2xs text-slate-400">
                                 ({r.nameBn})
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                            <p className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
                               {r.desc}
                             </p>
                           </div>
                         </div>
 
                         {isSelected && (
-                          <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 text-[10px]">
+                          <Badge className="bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300 text-2xs">
                             Assigned
                           </Badge>
                         )}
@@ -756,7 +756,7 @@ export function UserPermissionsDrawer({
                   <Building className="h-4 w-4 text-sky-600 shrink-0 mt-0.5" />
                   <div>
                     <p className="font-semibold">Multi-Branch Scoping</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-2xs text-slate-500 mt-0.5">
                       Select which operational branches this team member is authorized to access when branch-scoped data rules apply.
                     </p>
                   </div>
@@ -790,16 +790,16 @@ export function UserPermissionsDrawer({
                               <span className="font-semibold text-xs text-slate-900 dark:text-white">
                                 {b.name}
                               </span>
-                              <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
+                              <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
                                 {b.code}
                               </Badge>
                               {isPrimary && (
-                                <Badge className="bg-primary text-white text-[9px] px-1 py-0">
+                                <Badge className="bg-primary text-white text-2xs px-1 py-0">
                                   Primary
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-[11px] text-slate-400">{b.address || 'No address specified'}</span>
+                            <span className="text-2xs text-slate-400">{b.address || 'No address specified'}</span>
                           </div>
                         </div>
                       </div>
@@ -846,7 +846,7 @@ export function UserPermissionsDrawer({
                 </div>
 
                 {/* Precedence Legend */}
-                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800">
+                <div className="flex flex-wrap items-center gap-2.5 p-2.5 bg-slate-50 dark:bg-slate-800/60 rounded-lg text-2xs text-slate-600 dark:text-slate-400 border border-slate-200/60 dark:border-slate-800">
                   <span className="font-bold text-slate-700 dark:text-slate-300">Legend:</span>
                   <span className="inline-flex items-center gap-1">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -897,11 +897,11 @@ export function UserPermissionsDrawer({
                                 <span className="font-bold text-xs text-slate-900 dark:text-white">
                                   {spec.label}
                                 </span>
-                                <span className="text-[11px] text-slate-400">
+                                <span className="text-2xs text-slate-400">
                                   ({spec.labelBn})
                                 </span>
                               </div>
-                              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                              <p className="text-2xs text-slate-500 dark:text-slate-400">
                                 {spec.description}
                               </p>
                             </div>
@@ -911,7 +911,7 @@ export function UserPermissionsDrawer({
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-[10px] px-2 py-0 h-5 font-semibold',
+                                'text-2xs px-2 py-0 h-5 font-semibold',
                                 grantedCount > 0
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-slate-100 text-slate-500'
@@ -937,7 +937,7 @@ export function UserPermissionsDrawer({
                                 <span className="font-semibold text-slate-800 dark:text-slate-200">
                                   Data Scope for {spec.label}:
                                 </span>
-                                <p className="text-[11px] text-slate-500">
+                                <p className="text-2xs text-slate-500">
                                   Controls record visibility within this module.
                                 </p>
                               </div>
@@ -971,7 +971,7 @@ export function UserPermissionsDrawer({
                                 <button
                                   type="button"
                                   onClick={() => grantAllModuleActions(modName)}
-                                  className="text-[11px] text-primary hover:underline font-semibold"
+                                  className="text-2xs text-primary hover:underline font-semibold"
                                 >
                                   Allow All
                                 </button>
@@ -979,7 +979,7 @@ export function UserPermissionsDrawer({
                                 <button
                                   type="button"
                                   onClick={() => denyAllModuleActions(modName)}
-                                  className="text-[11px] text-red-600 hover:underline font-semibold"
+                                  className="text-2xs text-red-600 hover:underline font-semibold"
                                 >
                                   Deny All
                                 </button>
@@ -987,7 +987,7 @@ export function UserPermissionsDrawer({
                                 <button
                                   type="button"
                                   onClick={() => resetModuleOverrides(modName)}
-                                  className="text-[11px] text-slate-500 hover:underline font-semibold"
+                                  className="text-2xs text-slate-500 hover:underline font-semibold"
                                 >
                                   Reset
                                 </button>
@@ -1003,25 +1003,25 @@ export function UserPermissionsDrawer({
                                 let sourceBadge: React.ReactNode = null
                                 if (detail.source === 'override_allow') {
                                   sourceBadge = (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
+                                    <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
                                       Override (Allow)
                                     </span>
                                   )
                                 } else if (detail.source === 'override_deny') {
                                   sourceBadge = (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+                                    <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
                                       Override (Deny)
                                     </span>
                                   )
                                 } else if (detail.source === 'inherited') {
                                   sourceBadge = (
-                                    <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                    <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300">
                                       Inherited
                                     </span>
                                   )
                                 } else {
                                   sourceBadge = (
-                                    <span className="text-[9px] text-slate-400">
+                                    <span className="text-2xs text-slate-400">
                                       Denied
                                     </span>
                                   )
@@ -1049,7 +1049,7 @@ export function UserPermissionsDrawer({
                                         <div className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                                           {ACTION_LABELS[act]?.label || act}
                                         </div>
-                                        <div className="text-[10px] text-slate-400">
+                                        <div className="text-2xs text-slate-400">
                                           {ACTION_LABELS[act]?.labelBn || ''}
                                         </div>
                                       </div>
@@ -1146,7 +1146,7 @@ export function UserPermissionsDrawer({
                 key={log.id}
                 className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 text-xs space-y-1"
               >
-                <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                <div className="flex items-center justify-between text-slate-500 text-2xs">
                   <span>Actor: <strong className="text-slate-700 dark:text-slate-300">{log.user_email || 'System'}</strong></span>
                   <span>{formatDateTime(log.timestamp || log.created_at)}</span>
                 </div>
@@ -1154,10 +1154,10 @@ export function UserPermissionsDrawer({
                   {log.action}
                 </div>
                 {log.description && (
-                  <p className="text-slate-600 dark:text-slate-300 text-[11px]">{log.description}</p>
+                  <p className="text-slate-600 dark:text-slate-300 text-2xs">{log.description}</p>
                 )}
                 {(log.previous_value || log.new_value) && (
-                  <pre className="text-[10px] bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 font-mono">
+                  <pre className="text-2xs bg-slate-950 p-2 rounded border border-slate-800 overflow-x-auto text-slate-300 font-mono">
                     {JSON.stringify({ previous: log.previous_value, next: log.new_value }, null, 2)}
                   </pre>
                 )}

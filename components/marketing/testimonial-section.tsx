@@ -53,7 +53,7 @@ export function TestimonialSection() {
                   {[...Array(item.rating)].map((_, i) => (
                     <Star key={i} className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-amber-400 text-amber-400" />
                   ))}
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-400 ml-1.5">5.0 / 5</span>
+                  <span className="text-2xs sm:text-xs font-bold text-slate-400 ml-1.5">5.0 / 5</span>
                 </div>
 
                 {/* Quote Text */}
@@ -62,7 +62,7 @@ export function TestimonialSection() {
                 </p>
 
                 {/* Highlight Badge */}
-                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[10px] sm:text-[11px] font-semibold text-cyan-400 flex items-center gap-1.5 bangla-text">
+                <div className="p-2 sm:p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-2xs sm:text-2xs font-semibold text-cyan-400 flex items-center gap-1.5 bangla-text">
                   <Sparkles className="h-3.5 w-3.5 shrink-0" />
                   <span>{tBilingual(item.highlightEn, item.highlightBn)}</span>
                 </div>
@@ -77,10 +77,10 @@ export function TestimonialSection() {
                   <div className="font-bold text-white text-xs sm:text-sm truncate bangla-text">
                     {tBilingual(item.nameEn, item.nameBn)}
                   </div>
-                  <div className="text-[11px] sm:text-xs text-slate-400 truncate bangla-text">
+                  <div className="text-2xs sm:text-xs text-slate-400 truncate bangla-text">
                     {tBilingual(item.roleEn, item.roleBn)} • {tBilingual(item.companyEn, item.companyBn)}
                   </div>
-                  <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-slate-500 mt-0.5 bangla-text">
+                  <div className="flex items-center gap-1 text-2xs sm:text-2xs text-slate-500 mt-0.5 bangla-text">
                     <MapPin className="h-3 w-3 text-slate-400 shrink-0" />
                     <span className="truncate">{tBilingual(item.locationEn, item.locationBn)}</span>
                   </div>
@@ -91,7 +91,7 @@ export function TestimonialSection() {
         </div>
 
         {/* Development Placeholder Notice */}
-        <div className="mt-6 sm:mt-8 text-center text-[10px] sm:text-xs text-slate-500 font-mono">
+        <div className="mt-6 sm:mt-8 text-center text-2xs sm:text-xs text-slate-500 font-mono">
           * Representative customer testimonials based on real Bangladesh commercial printing workflows.
         </div>
       </div>

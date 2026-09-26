@@ -78,7 +78,7 @@ export function RoleBasedSection() {
                 <h3 className="text-xl sm:text-2xl font-black text-white bangla-text">
                   {tBilingual(current.titleEn, current.titleBn)}
                 </h3>
-                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-[10px] sm:text-xs">
+                <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/40 text-2xs sm:text-xs">
                   {tBilingual(current.badgeEn, current.badgeBn)}
                 </Badge>
               </div>
@@ -87,20 +87,20 @@ export function RoleBasedSection() {
               </p>
             </div>
 
-            <span className="text-[10px] sm:text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
+            <span className="text-2xs sm:text-xs font-mono font-bold text-slate-400 bg-slate-900 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg border border-slate-800 shrink-0 self-start sm:self-auto">
               Role ID: {current.id.toUpperCase()}
             </span>
           </div>
 
           {/* 4 Role Specific KPIs */}
           <div>
-            <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 sm:mb-3">
+            <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 sm:mb-3">
               Role Focused KPI Dashboard
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
               {current.metrics.map((m, idx) => (
                 <div key={idx} className="p-2.5 sm:p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 truncate block bangla-text">
+                  <span className="text-2xs sm:text-2xs text-slate-400 truncate block bangla-text">
                     {tBilingual(m.labelEn, m.labelBn)}
                   </span>
                   <div className="text-sm sm:text-lg font-black text-white tabular-nums tracking-tight">
@@ -113,7 +113,7 @@ export function RoleBasedSection() {
 
           {/* Key Permissions & Daily Duties */}
           <div className="pt-2">
-            <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 sm:mb-3">
+            <div className="text-2xs sm:text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5 sm:mb-3">
               Primary Responsibilities & Permission Guardrails
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">

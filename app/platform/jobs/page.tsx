@@ -107,7 +107,7 @@ export default function PlatformJobsPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
               <tr>
                 <th className="py-3 px-4">Job ID &amp; Type</th>
                 <th className="py-3 px-4">Tenant Scope</th>
@@ -128,7 +128,7 @@ export default function PlatformJobsPage() {
                   <tr key={j.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="py-3.5 px-4 font-mono">
                       <div className="font-bold text-white text-xs">{j.job_type}</div>
-                      <div className="text-[10px] text-slate-500">{j.id}</div>
+                      <div className="text-2xs text-slate-500">{j.id}</div>
                     </td>
 
                     <td className="py-3.5 px-4 text-slate-300">
@@ -137,7 +137,7 @@ export default function PlatformJobsPage() {
 
                     <td className="py-3.5 px-4">
                       <span
-                        className={`capitalize px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`capitalize px-2 py-0.5 rounded-full text-2xs font-bold border ${
                           isCompleted
                             ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                             : isRetryingStatus
@@ -159,7 +159,7 @@ export default function PlatformJobsPage() {
                       {j.duration_ms ? `${j.duration_ms} ms` : '—'}
                     </td>
 
-                    <td className="py-3.5 px-4 font-mono text-slate-400 text-[11px]">
+                    <td className="py-3.5 px-4 font-mono text-slate-400 text-2xs">
                       {formatTime(j.scheduled_for)}
                     </td>
 
@@ -217,7 +217,7 @@ export default function PlatformJobsPage() {
               {inspectJob.error_log && (
                 <div className="space-y-1">
                   <div className="font-bold text-red-400">Error Log Output:</div>
-                  <pre className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-red-300 overflow-x-auto whitespace-pre-wrap">
+                  <pre className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-red-300 overflow-x-auto whitespace-pre-wrap">
                     {inspectJob.error_log}
                   </pre>
                 </div>

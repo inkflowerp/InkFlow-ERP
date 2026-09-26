@@ -130,7 +130,7 @@ export function JobProfitabilityView({ metrics, isLoading }: JobProfitabilityVie
                       </td>
                       <td className="p-3">
                         <div className="font-semibold text-slate-800 dark:text-slate-200">{j.item_title}</div>
-                        <div className="text-[11px] text-slate-500">{j.customer_name}</div>
+                        <div className="text-2xs text-slate-500">{j.customer_name}</div>
                       </td>
                       <td className="p-3 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
                         ৳{j.selling_price.toLocaleString()}
@@ -152,7 +152,7 @@ export function JobProfitabilityView({ metrics, isLoading }: JobProfitabilityVie
                       </td>
                       <td className="p-3 text-right">
                         <Badge
-                          className={`text-[10px] font-bold ${
+                          className={`text-2xs font-bold ${
                             j.margin_percentage >= 30
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300'
                               : j.margin_percentage >= 15

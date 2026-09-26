@@ -166,11 +166,11 @@ export default function Company360Page() {
             <div className="flex items-center gap-2.5 flex-wrap">
               <h1 className="text-2xl font-black text-white">{company.name}</h1>
               <span className="text-xs text-slate-400 font-medium">({company.name_bn})</span>
-              <span className="text-[10px] font-mono uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+              <span className="text-2xs font-mono uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                 {company.plan}
               </span>
               <span
-                className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                className={`text-2xs font-bold uppercase px-2 py-0.5 rounded-full border ${
                   company.status === 'active'
                     ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                     : company.status === 'trial'
@@ -223,50 +223,50 @@ export default function Company360Page() {
       {/* KPI Overview Summary Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Users</div>
+          <div className="text-2xs font-semibold text-slate-400">Users</div>
           <div className="text-lg font-black text-white mt-0.5">
             {company.users_count} <span className="text-xs font-normal text-slate-500">/ {company.users_limit}</span>
           </div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Branches</div>
+          <div className="text-2xs font-semibold text-slate-400">Branches</div>
           <div className="text-lg font-black text-white mt-0.5">
             {company.branches_count} <span className="text-xs font-normal text-slate-500">/ {company.branches_limit}</span>
           </div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Customers</div>
+          <div className="text-2xs font-semibold text-slate-400">Customers</div>
           <div className="text-lg font-black text-white mt-0.5">{usage.customers_count}</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Monthly Orders</div>
+          <div className="text-2xs font-semibold text-slate-400">Monthly Orders</div>
           <div className="text-lg font-black text-white mt-0.5">{usage.orders_this_month}</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Storage Used</div>
+          <div className="text-2xs font-semibold text-slate-400">Storage Used</div>
           <div className="text-lg font-black text-white mt-0.5">
             {company.storage_used_gb.toFixed(1)} <span className="text-xs font-normal text-slate-500">GB</span>
           </div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Monthly Fee</div>
+          <div className="text-2xs font-semibold text-slate-400">Monthly Fee</div>
           <div className="text-lg font-black text-emerald-400 mt-0.5">
             <CurrencyDisplay amount={company.monthly_fee} />
           </div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400">Onboarding</div>
+          <div className="text-2xs font-semibold text-slate-400">Onboarding</div>
           <div className="text-lg font-black text-indigo-400 mt-0.5">{onboarding.overall_progress_pct}%</div>
         </Card>
 
         <Card className="bg-slate-900 border-slate-800 p-3 text-center">
-          <div className="text-[10px] font-semibold text-slate-400 flex items-center justify-center gap-1">
+          <div className="text-2xs font-semibold text-slate-400 flex items-center justify-center gap-1">
             <span>Health</span>
             <button onClick={() => setShowHealthWhy(true)} className="text-slate-500 hover:text-indigo-400" title="Why?">
               <HelpCircle className="h-3 w-3" />
@@ -320,7 +320,7 @@ export default function Company360Page() {
                   <div className={`font-semibold ${step.is_completed ? 'text-white' : 'text-slate-400'}`}>
                     {step.title}
                   </div>
-                  <div className="text-[11px] text-slate-400 line-clamp-1">{step.description}</div>
+                  <div className="text-2xs text-slate-400 line-clamp-1">{step.description}</div>
                 </div>
               </div>
             ))}
@@ -359,7 +359,7 @@ export default function Company360Page() {
               <Icon className="h-3.5 w-3.5" />
               <span>{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-black/30 font-mono">
+                <span className="text-2xs px-1.5 py-0.2 rounded-full bg-black/30 font-mono">
                   {tab.count}
                 </span>
               )}
@@ -443,7 +443,7 @@ export default function Company360Page() {
           </CardHeader>
           <CardContent className="p-0">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+              <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
                 <tr>
                   <th className="py-3 px-4">User Name</th>
                   <th className="py-3 px-4">Email</th>
@@ -486,7 +486,7 @@ export default function Company360Page() {
               <div className="flex items-center justify-between">
                 <div className="font-bold text-white text-sm">{br.name}</div>
                 {br.is_main && (
-                  <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  <span className="text-2xs uppercase font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                     Main Press Hub
                   </span>
                 )}
@@ -584,10 +584,10 @@ export default function Company360Page() {
               <div key={f.flag_id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{f.name}</div>
-                  <div className="text-[11px] text-slate-400 font-mono">{f.key}</div>
-                  {f.notes && <div className="text-[10px] text-indigo-400 mt-0.5">Note: {f.notes}</div>}
+                  <div className="text-2xs text-slate-400 font-mono">{f.key}</div>
+                  {f.notes && <div className="text-2xs text-indigo-400 mt-0.5">Note: {f.notes}</div>}
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
+                <span className={`text-2xs font-bold px-2 py-0.5 rounded-full ${f.is_enabled ? 'bg-emerald-500/20 text-emerald-300' : 'bg-slate-800 text-slate-400'}`}>
                   {f.is_enabled ? 'ACTIVE' : 'DISABLED'}
                 </span>
               </div>
@@ -607,7 +607,7 @@ export default function Company360Page() {
               <div key={a.id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{a.description}</div>
-                  <div className="text-[11px] text-slate-400">By {a.actor_email}</div>
+                  <div className="text-2xs text-slate-400">By {a.actor_email}</div>
                 </div>
                 <span className="font-mono text-slate-400">{a.created_at}</span>
               </div>
@@ -640,11 +640,11 @@ export default function Company360Page() {
           {data.integrations.map((it) => (
             <Card key={it.service} className="bg-slate-900 border-slate-800 p-4 space-y-1.5 text-xs">
               <div className="font-bold text-white">{it.name}</div>
-              <div className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <div className="text-2xs text-emerald-400 font-semibold flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 <span className="uppercase">{it.status}</span>
               </div>
-              <div className="text-[10px] text-slate-500">Last event: {it.last_event_at || 'Recently'}</div>
+              <div className="text-2xs text-slate-500">Last event: {it.last_event_at || 'Recently'}</div>
             </Card>
           ))}
         </div>
@@ -661,11 +661,11 @@ export default function Company360Page() {
               <div key={s.id} className="p-3.5 flex items-center justify-between">
                 <div>
                   <div className="font-bold text-white">{s.reason}</div>
-                  <div className="text-[11px] text-slate-400">Officer: {s.platform_user_email}</div>
+                  <div className="text-2xs text-slate-400">Officer: {s.platform_user_email}</div>
                 </div>
                 <div className="text-right">
                   <div className="font-mono text-slate-300">{formatDate(s.started_at)}</div>
-                  <div className="text-[10px] text-slate-500">{s.duration_minutes} mins duration</div>
+                  <div className="text-2xs text-slate-500">{s.duration_minutes} mins duration</div>
                 </div>
               </div>
             ))}
@@ -694,7 +694,7 @@ export default function Company360Page() {
               </div>
 
               <div className="space-y-1.5 pt-2">
-                <div className="text-[11px] font-bold text-slate-300 uppercase">Evaluated Factors:</div>
+                <div className="text-2xs font-bold text-slate-300 uppercase">Evaluated Factors:</div>
                 {health.factors.map((f, i) => (
                   <div
                     key={i}
@@ -709,7 +709,7 @@ export default function Company360Page() {
                     <span className="mt-0.5 font-bold">•</span>
                     <div>
                       <div className="font-bold">{f.label}</div>
-                      <div className="text-[11px] opacity-90">{f.description}</div>
+                      <div className="text-2xs opacity-90">{f.description}</div>
                     </div>
                   </div>
                 ))}

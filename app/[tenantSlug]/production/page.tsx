@@ -1169,7 +1169,7 @@ export default function AdvancedProductionPage() {
                         ? 'প্রোডাকশন প্ল্যানিং ও শপ ফ্লোর টার্মিনাল'
                         : 'Production Planning & Shop Floor Terminal'}
                     </span>
-                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold py-0.5">
+                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
                       Shop Floor Hub
                     </Badge>
                   </h1>
@@ -1289,7 +1289,7 @@ export default function AdvancedProductionPage() {
                   <span className="text-xs truncate font-semibold">{t.label}</span>
                 </div>
                 <span
-                  className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                  className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
                     isActive
                       ? 'bg-blue-600 text-white'
                       : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1426,7 +1426,7 @@ export default function AdvancedProductionPage() {
                   <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
                     {isBn ? 'এই মুহূর্তে মেশিনে কোন কাজ চলমান নেই।' : 'No active running jobs on floor right now.'}
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
+                  <p className="text-2xs text-slate-500 mt-0.5">
                     {isBn
                       ? 'নিচের কিউ থেকে কাজ শুরু করুন।'
                       : 'Start a job from the scheduled queue below to allocate machine.'}
@@ -1440,10 +1440,10 @@ export default function AdvancedProductionPage() {
                       className="p-4 bg-white dark:bg-slate-900 border-2 border-blue-500 dark:border-blue-600 rounded-2xl shadow-md space-y-3"
                     >
                       <div className="flex items-center justify-between">
-                        <Badge className="bg-blue-600 text-white font-mono text-[10px]">
+                        <Badge className="bg-blue-600 text-white font-mono text-2xs">
                           {task.task_number}
                         </Badge>
-                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-[10px] font-bold">
+                        <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 text-2xs font-bold">
                           ● {isBn ? 'চলমান' : 'RUNNING'}
                         </Badge>
                       </div>
@@ -1527,7 +1527,7 @@ export default function AdvancedProductionPage() {
                       <span className="font-mono text-xs font-bold text-slate-500">
                         {task.task_number}
                       </span>
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge variant="outline" className="text-2xs capitalize">
                         {task.department}
                       </Badge>
                     </div>
@@ -1536,13 +1536,13 @@ export default function AdvancedProductionPage() {
                       <h4 className="font-bold text-xs text-slate-900 dark:text-white">
                         {task.task_name}
                       </h4>
-                      <p className="text-[11px] text-slate-500 font-mono">
+                      <p className="text-2xs text-slate-500 font-mono">
                         {task.customer_name} • Qty: {task.quantity} {task.unit}
                       </p>
                     </div>
 
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-[11px] text-slate-500 font-mono">
+                      <span className="text-2xs text-slate-500 font-mono">
                         {task.assigned_machine_name || 'Unassigned Machine'}
                       </span>
                       <Button
@@ -1583,7 +1583,7 @@ export default function AdvancedProductionPage() {
                   <span>{isBn ? 'প্রোডাকশন টাস্ক তালিকা' : 'Production Work Order Tasks'}</span>
                   <Badge
                     variant="secondary"
-                    className="text-[11px] font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
+                    className="text-2xs font-mono font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300"
                   >
                     {filteredTasks.length}
                   </Badge>
@@ -1638,7 +1638,7 @@ export default function AdvancedProductionPage() {
               <p className="font-bold">
                 {isBn ? 'মাল্টি-স্টেজ প্রোডাকশন রাউটিং' : 'Automated Multi-Stage Production Routing'}
               </p>
-              <p className="text-[11px] opacity-90">
+              <p className="text-2xs opacity-90">
                 {isBn
                   ? 'অর্ডার নির্বাচন করলে সিস্টেম স্বয়ংক্রিয়ভাবে প্রি-প্রেস, প্রিন্টিং, লেমিনেশন/ফিনিশিং এবং কিউসি টাস্ক তৈরি করবে।'
                   : 'Select an active order or job. The engine will inspect item specifications and auto-create sequential tasks.'}

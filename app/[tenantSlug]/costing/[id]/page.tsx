@@ -164,7 +164,7 @@ export default function JobCostingDetailPage() {
           {/* Letterhead */}
           <div className="text-center space-y-1 pb-4 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900">
             <h1 className="text-xl sm:text-2xl font-black tracking-tight">{company?.name || 'Industrial Printing & Signage Solutions'}</h1>
-            <p className="text-slate-500 text-[11px]">Commercial Printing • Large-Format Signage • 4-Color Offset • Dhaka, Bangladesh</p>
+            <p className="text-slate-500 text-2xs">Commercial Printing • Large-Format Signage • 4-Color Offset • Dhaka, Bangladesh</p>
             <div className="inline-block mt-2 px-5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 font-black text-xs sm:text-sm tracking-wider uppercase border border-slate-300 dark:border-slate-700">
               JOB COST TRAVELER & MARGIN AUDIT (কস্টিং ও লাভ নিরীক্ষা)
             </div>
@@ -173,11 +173,11 @@ export default function JobCostingDetailPage() {
           {/* Job Meta Box */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs">
             <div className="space-y-1">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Job Particulars:</span>
+              <span className="text-2xs uppercase font-bold text-slate-400">Job Particulars:</span>
               <div className="font-black text-base text-slate-900 dark:text-white font-mono">{costing.job_number}</div>
               <div className="font-bold text-blue-600 dark:text-blue-400">{costing.customer_name}</div>
               <div className="text-slate-700 dark:text-slate-300 font-semibold">{costing.item_title}</div>
-              <div className="text-slate-500 font-mono text-[11px]">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
+              <div className="text-slate-500 font-mono text-2xs">Specs: {costing.dimensions_spec || 'Custom dimensions'}</div>
             </div>
 
             <div className="space-y-1 text-left sm:text-right font-mono">
@@ -194,7 +194,7 @@ export default function JobCostingDetailPage() {
                   {costing.status}
                 </strong>
               </div>
-              <div className="text-slate-400 text-[11px]">Audited on: {costing.updated_at.split('T')[0]}</div>
+              <div className="text-slate-400 text-2xs">Audited on: {costing.updated_at.split('T')[0]}</div>
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export default function JobCostingDetailPage() {
                     <tr key={idx} className="hover:bg-slate-50/50">
                       <td className="p-3 font-semibold text-slate-800 dark:text-slate-200 font-sans">
                         <div>{h.labelEn}</div>
-                        <div className="text-[10px] text-slate-500 font-normal">{h.labelBn}</div>
+                        <div className="text-2xs text-slate-500 font-normal">{h.labelBn}</div>
                       </td>
 
                       {/* Pre-Production Estimate */}
@@ -257,7 +257,7 @@ export default function JobCostingDetailPage() {
                       {/* Badge */}
                       <td className="p-3 text-center">
                         {isSalesRoleShielded ? (
-                          <span className="text-slate-400 text-[10px]">Shielded</span>
+                          <span className="text-slate-400 text-2xs">Shielded</span>
                         ) : costing.status === 'actualized' ? (
                           <Badge
                             className={
@@ -318,7 +318,7 @@ export default function JobCostingDetailPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Estimated Margins */}
             <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border space-y-1 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Pre-Production Estimate:</span>
+              <span className="text-2xs uppercase font-bold text-slate-400">Pre-Production Estimate:</span>
               <div className="flex justify-between">
                 <span>Estimated Profit:</span>
                 <strong className="text-blue-600 font-bold">
@@ -335,7 +335,7 @@ export default function JobCostingDetailPage() {
 
             {/* Actual Margins */}
             <div className="p-4 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-300 dark:border-emerald-800 space-y-1 font-mono text-xs">
-              <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300">
+              <span className="text-2xs uppercase font-bold text-emerald-700 dark:text-emerald-300">
                 Realized Post-Production Margin:
               </span>
               <div className="flex justify-between">

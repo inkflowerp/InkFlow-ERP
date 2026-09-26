@@ -53,30 +53,30 @@ export function DeliveryChallanTable({
     switch (method) {
       case 'company_vehicle':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
             {isBn ? 'কোম্পানির গাড়ি/পিকআপ' : 'Company Vehicle'}
           </span>
         )
       case 'courier':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
             {isBn ? 'কুরিয়ার সার্ভিস' : 'Courier Service'}
           </span>
         )
       case 'local_transport':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800">
             {isBn ? 'লোকাল ভ্যান/সিএনজি' : 'Local Transport'}
           </span>
         )
       case 'customer_pickup':
         return (
-          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {isBn ? 'দোকান/কাউন্টার গ্রহণ' : 'Customer Pickup'}
           </span>
         )
       default:
-        return <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100">{method}</span>
+        return <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100">{method}</span>
     }
   }
 
@@ -181,18 +181,18 @@ export function DeliveryChallanTable({
                     </div>
 
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap font-mono">
-                      <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                      <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                         {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                       </Badge>
                       {ch.order_number && (
-                        <span className="text-[10px] text-slate-400">({ch.order_number})</span>
+                        <span className="text-2xs text-slate-400">({ch.order_number})</span>
                       )}
                       {dueAmt > 0 ? (
-                        <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold animate-pulse">
+                        <Badge className="text-2xs py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold animate-pulse">
                           {isBn ? `বকেয়া: ${formatBDT(dueAmt)}` : `Due: ${formatBDT(dueAmt)}`}
                         </Badge>
                       ) : ch.grand_total ? (
-                        <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
+                        <Badge className="text-2xs py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
                           {isBn ? 'পরিশোধিত' : 'Paid'}
                         </Badge>
                       ) : null}
@@ -204,7 +204,7 @@ export function DeliveryChallanTable({
                     <div className="font-semibold text-slate-900 dark:text-white text-xs truncate">
                       {ch.customer_name}
                     </div>
-                    <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate">
+                    <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
                       <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
                       <span className="truncate">{ch.delivery_address || 'Factory Pickup'}</span>
                     </div>
@@ -212,19 +212,19 @@ export function DeliveryChallanTable({
                     {/* Products summary badge chips */}
                     {items.length > 0 && (
                       <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                        <span className="text-[10px] text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
+                        <span className="text-2xs text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
                         {readyCount > 0 && (
-                          <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
+                          <Badge className="text-2xs py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                             {readyCount} {isBn ? 'প্রস্তুত' : 'Ready'}
                           </Badge>
                         )}
                         {pendingCount > 0 && (
-                          <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
+                          <Badge className="text-2xs py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
                             {pendingCount} {isBn ? 'অপেক্ষমাণ' : 'Pending'}
                           </Badge>
                         )}
                         {deliveredCount > 0 && (
-                          <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                          <Badge className="text-2xs py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
                             {deliveredCount} {isBn ? 'ডেলিভার্ড' : 'Delivered'}
                           </Badge>
                         )}
@@ -243,7 +243,7 @@ export function DeliveryChallanTable({
                       {ch.vehicle_info || 'Company Transit'}
                     </div>
                     {ch.delivery_person_name && (
-                      <div className="text-[10px] text-slate-400 truncate">
+                      <div className="text-2xs text-slate-400 truncate">
                         {ch.delivery_person_name}
                       </div>
                     )}
@@ -297,7 +297,7 @@ export function DeliveryChallanTable({
                         size="sm"
                         onClick={() => onOpenDeliveryModal(ch)}
                         className={cn(
-                          'h-7 text-[11px] px-2.5 font-bold shadow-xs cursor-pointer',
+                          'h-7 text-2xs px-2.5 font-bold shadow-xs cursor-pointer',
                           ch.status === 'delivered'
                             ? 'bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-200'
                             : ch.status === 'partially_delivered'
@@ -362,18 +362,18 @@ export function DeliveryChallanTable({
 
               {/* Invoice & Due Alert Bar */}
               <div className="flex items-center gap-2 font-mono flex-wrap">
-                <Badge variant="outline" className="text-[10px] py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
+                <Badge variant="outline" className="text-2xs py-0 px-1 font-semibold text-blue-700 dark:text-blue-300 bg-blue-50/50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800">
                   {ch.invoice_number || `INV-${ch.challan_number.replace('CHL-', '').replace('CH-', '')}`}
                 </Badge>
                 {ch.order_number && (
-                  <span className="text-[10px] text-slate-400">({ch.order_number})</span>
+                  <span className="text-2xs text-slate-400">({ch.order_number})</span>
                 )}
                 {dueAmt > 0 ? (
-                  <Badge className="text-[9px] py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
+                  <Badge className="text-2xs py-0 px-1.5 bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 font-bold">
                     {isBn ? `বকেয়া: ${formatBDT(dueAmt)}` : `Due: ${formatBDT(dueAmt)}`}
                   </Badge>
                 ) : ch.grand_total ? (
-                  <Badge className="text-[9px] py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
+                  <Badge className="text-2xs py-0 px-1.5 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 font-bold">
                     {isBn ? 'পরিশোধিত' : 'Paid'}
                   </Badge>
                 ) : null}
@@ -395,19 +395,19 @@ export function DeliveryChallanTable({
                 </div>
                 {items.length > 0 && (
                   <div className="flex items-center gap-1 mt-1.5 flex-wrap">
-                    <span className="text-[10px] text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
+                    <span className="text-2xs text-slate-400 font-medium">{items.length} {isBn ? 'আইটেম:' : 'Items:'}</span>
                     {readyCount > 0 && (
-                      <Badge className="text-[9px] py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
+                      <Badge className="text-2xs py-0 px-1 bg-emerald-50 text-emerald-700 border-emerald-200">
                         {readyCount} Ready
                       </Badge>
                     )}
                     {pendingCount > 0 && (
-                      <Badge className="text-[9px] py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
+                      <Badge className="text-2xs py-0 px-1 bg-amber-50 text-amber-700 border-amber-200">
                         {pendingCount} Pending
                       </Badge>
                     )}
                     {deliveredCount > 0 && (
-                      <Badge className="text-[9px] py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
+                      <Badge className="text-2xs py-0 px-1 bg-slate-100 text-slate-600 border-slate-200">
                         {deliveredCount} Delivered
                       </Badge>
                     )}
@@ -418,15 +418,15 @@ export function DeliveryChallanTable({
               {/* Meta Grid */}
               <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
                 <div>
-                  <span className="text-[10px] uppercase font-semibold text-slate-400 block">{isBn ? 'মাধ্যম' : 'Method'}</span>
+                  <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'মাধ্যম' : 'Method'}</span>
                   <div className="mt-0.5">{getMethodBadge(ch.delivery_method)}</div>
                 </div>
                 <div>
-                  <span className="text-[10px] uppercase font-semibold text-slate-400 block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
+                  <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'ডেলিভারি তারিখ' : 'Scheduled Date'}</span>
                   <span className="font-mono text-slate-700 dark:text-slate-300">{ch.scheduled_date}</span>
                 </div>
                 {ch.vehicle_info && (
-                  <div className="col-span-2 text-[11px] text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                  <div className="col-span-2 text-2xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
                     {isBn ? 'গাড়ি:' : 'Vehicle:'} <strong className="font-mono text-slate-800 dark:text-slate-200">{ch.vehicle_info}</strong>
                     {ch.delivery_person_name && <span> ({ch.delivery_person_name})</span>}
                   </div>

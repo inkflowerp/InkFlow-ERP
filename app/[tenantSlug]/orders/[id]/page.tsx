@@ -529,7 +529,7 @@ function OrderDetailContent() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             <CurrencyDisplay amount={order.final_price} />
           </div>
-          <span className="text-[11px] text-slate-400">Terms: {order.payment_terms}</span>
+          <span className="text-2xs text-slate-400">Terms: {order.payment_terms}</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-500">
@@ -537,7 +537,7 @@ function OrderDetailContent() {
           <div className="text-2xl font-black text-emerald-600 mt-1">
             <CurrencyDisplay amount={order.advance_amount} />
           </div>
-          <span className="text-[11px] text-emerald-600 font-medium">
+          <span className="text-2xs text-emerald-600 font-medium">
             {order.final_price > 0 ? Math.round((order.advance_amount / order.final_price) * 100) : 0}% Paid
           </span>
         </Card>
@@ -547,7 +547,7 @@ function OrderDetailContent() {
           <div className="text-2xl font-black text-red-600 mt-1">
             <CurrencyDisplay amount={order.due_amount} />
           </div>
-          <span className="text-[11px] text-slate-400">Collect prior to dispatch</span>
+          <span className="text-2xs text-slate-400">Collect prior to dispatch</span>
         </Card>
       </div>
 
@@ -592,7 +592,7 @@ function OrderDetailContent() {
                     {isDone && !isCurrent ? '✓' : idx + 1}
                   </div>
                   <span
-                    className={`text-[11px] mt-1.5 font-medium whitespace-nowrap ${
+                    className={`text-2xs mt-1.5 font-medium whitespace-nowrap ${
                       isCurrent
                         ? 'font-bold text-indigo-600 dark:text-indigo-400'
                         : isDone
@@ -645,7 +645,7 @@ function OrderDetailContent() {
                   </span>
                   <div className="flex items-center gap-1.5">
                     {job.workflow_routing && (
-                      <Badge variant="outline" className="text-[9px] font-semibold">
+                      <Badge variant="outline" className="text-2xs font-semibold">
                         {job.workflow_routing === 'design_required'
                           ? '🎨 Design'
                           : job.workflow_routing === 'design_ok'
@@ -654,13 +654,13 @@ function OrderDetailContent() {
                       </Badge>
                     )}
                     {job.production_gate_status && job.production_gate_status !== 'ready_for_production' && (
-                      <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-[9px] font-bold">
+                      <Badge className="bg-rose-100 text-rose-800 border-rose-300 text-2xs font-bold">
                         {job.production_gate_status === 'blocked_commercial' ? 'Locked (No Invoice)' : 'Design Hold'}
                       </Badge>
                     )}
                     <Badge
                       variant="outline"
-                      className={`text-[10px] font-bold capitalize ${
+                      className={`text-2xs font-bold capitalize ${
                         job.status === 'completed'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
                           : job.status === 'in_progress'
@@ -675,7 +675,7 @@ function OrderDetailContent() {
                 <CardTitle className="text-sm font-bold mt-1 text-slate-900 dark:text-white">
                   {job.product_name}
                 </CardTitle>
-                <div className="text-[11px] text-slate-500">
+                <div className="text-2xs text-slate-500">
                   Qty: <strong>{job.quantity}</strong> • Size: <strong>{job.size_spec}</strong>
                 </div>
               </CardHeader>
@@ -697,19 +697,19 @@ function OrderDetailContent() {
 
                 <div>
                   <span className="text-slate-400">Material Substrate:</span>
-                  <div className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                  <div className="text-2xs text-slate-600 dark:text-slate-300 mt-0.5">
                     {job.material_spec}
                   </div>
                 </div>
 
                 {job.production_instructions && (
-                  <div className="p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
+                  <div className="p-2 rounded bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300">
                     <strong>Instructions:</strong> {job.production_instructions}
                   </div>
                 )}
 
                 <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <div className="text-[11px] text-red-600 font-medium flex items-center gap-1">
+                  <div className="text-2xs text-red-600 font-medium flex items-center gap-1">
                     <Clock className="h-3 w-3" />
                     {job.deadline}
                   </div>
@@ -719,7 +719,7 @@ function OrderDetailContent() {
                       size="sm"
                       variant="outline"
                       onClick={() => setSelectedJobForPrint(job)}
-                      className="h-7 text-[11px] px-2"
+                      className="h-7 text-2xs px-2"
                     >
                       <Printer className="h-3 w-3 mr-1" />
                       Job Bag
@@ -728,7 +728,7 @@ function OrderDetailContent() {
                     <select
                       value={job.status}
                       onChange={(e) => handleUpdateJobStatus(job.id, e.target.value as JobStatus)}
-                      className="h-7 px-1.5 rounded text-[11px] font-semibold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
+                      className="h-7 px-1.5 rounded text-2xs font-semibold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900"
                     >
                       <option value="queued">Queued</option>
                       <option value="in_progress">In Progress</option>
@@ -932,7 +932,7 @@ function OrderDetailContent() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-center text-[10px] text-slate-600 dark:text-slate-400 print:text-slate-600">
+            <div className="grid grid-cols-2 gap-6 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-center text-2xs text-slate-600 dark:text-slate-400 print:text-slate-600">
               <div>Operator Initial & Machine #</div>
               <div>QC Inspector Passed</div>
             </div>
@@ -957,7 +957,7 @@ function OrderDetailContent() {
         <form onSubmit={handleSendInvoiceRequest} className="space-y-4 pt-1">
           <div className="p-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-xl text-xs text-blue-900 dark:text-blue-200 space-y-1">
             <p className="font-semibold">Commercial Workflow Gating</p>
-            <p className="text-[11px] opacity-90">
+            <p className="text-2xs opacity-90">
               Submitting this request alerts sales and billing management. Once the invoice is generated, this order will automatically unlock for shop floor printing and production.
             </p>
           </div>

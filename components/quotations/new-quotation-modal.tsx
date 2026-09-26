@@ -254,7 +254,7 @@ function CatalogItemCombobox({
           >
             <span>✨ -- Custom Item (Manual Specification) --</span>
             <div className="flex items-center gap-1.5">
-              {highlightedIndex === 0 && <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
+              {highlightedIndex === 0 && <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">↵ Enter</span>}
               {!selectedProductId && <CheckCircle2 className="h-3.5 w-3.5 text-blue-600" />}
             </div>
           </div>
@@ -262,7 +262,7 @@ function CatalogItemCombobox({
           {/* Digital Printing Services */}
           {digitalServices.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-2xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30 uppercase tracking-wider flex items-center gap-1">
                 <span>🎨 Digital & Large Format Print ({digitalServices.length})</span>
               </div>
               {digitalServices.map((p) => {
@@ -280,7 +280,7 @@ function CatalogItemCombobox({
                   >
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                         {p.printable_material_name && <span className="text-indigo-600">• {p.printable_material_name}</span>}
@@ -300,7 +300,7 @@ function CatalogItemCombobox({
           {/* 3D Signage & Fabrication Services */}
           {signageServices.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-2xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/30 uppercase tracking-wider flex items-center gap-1">
                 <span>💡 3D Signage & Fabrication ({signageServices.length})</span>
               </div>
               {signageServices.map((p) => {
@@ -318,7 +318,7 @@ function CatalogItemCombobox({
                   >
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'sft'}</span>
                       </div>
@@ -337,7 +337,7 @@ function CatalogItemCombobox({
           {/* Ready Products */}
           {readyProducts.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-2xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/30 uppercase tracking-wider flex items-center gap-1">
                 <span>📦 Ready Products & Merchandise ({readyProducts.length})</span>
               </div>
               {readyProducts.map((p) => {
@@ -355,7 +355,7 @@ function CatalogItemCombobox({
                   >
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'pcs'}</span>
                       </div>
@@ -374,7 +374,7 @@ function CatalogItemCombobox({
           {/* Raw Materials */}
           {materials.length > 0 && (
             <div>
-              <div className="px-2.5 py-1 text-[10px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider flex items-center gap-1">
+              <div className="px-2.5 py-1 text-2xs font-bold text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-950/30 uppercase tracking-wider flex items-center gap-1">
                 <span>🧵 Raw Materials ({materials.length})</span>
               </div>
               {materials.map((p) => {
@@ -392,7 +392,7 @@ function CatalogItemCombobox({
                   >
                     <div>
                       <div className="font-semibold text-slate-900 dark:text-white">{p.name}</div>
-                      <div className="text-[11px] text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-2xs text-slate-500 flex items-center gap-1.5 mt-0.5">
                         {p.sku && <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">{p.sku}</span>}
                         <span>Unit: {p.unit || 'roll'}</span>
                       </div>
@@ -464,28 +464,28 @@ function CustomerSuggestionsDropdown({
               <div className="font-bold flex items-center gap-1.5 truncate">
                 <span>{cust.name}</span>
                 {cust.name_bn && (
-                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400">
+                  <span className="text-2xs font-normal text-slate-500 dark:text-slate-400">
                     ({cust.name_bn})
                   </span>
                 )}
                 {cust.company_name && (
-                  <span className="text-[11px] font-normal text-slate-500 dark:text-slate-400 truncate">
+                  <span className="text-2xs font-normal text-slate-500 dark:text-slate-400 truncate">
                     • {cust.company_name}
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 font-mono flex flex-wrap items-center gap-2 mt-0.5">
                 <span>📞 {cust.mobile}</span>
                 {cust.email && <span className="truncate">✉️ {cust.email}</span>}
               </div>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+              <span className="text-2xs uppercase font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                 {cust.customer_type || cust.customer_category || 'Retail'}
               </span>
               {isHighlighted && (
-                <span className="text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                <span className="text-2xs font-semibold text-blue-600 dark:text-blue-400">
                   ↵ Enter
                 </span>
               )}
@@ -1722,13 +1722,13 @@ export function NewQuotationModal({
                     variant="ghost"
                     size="sm"
                     onClick={handleClearCustomer}
-                    className="h-6 text-[11px] text-slate-400 hover:text-slate-700"
+                    className="h-6 text-2xs text-slate-400 hover:text-slate-700"
                   >
                     Change
                   </Button>
                 </div>
               ) : (
-                <span className="text-[11px] text-slate-400">
+                <span className="text-2xs text-slate-400">
                   Search directory or type new customer
                 </span>
               )}
@@ -1914,7 +1914,7 @@ export function NewQuotationModal({
                   <AlertTriangle className="h-4 w-4 text-amber-600" />
                   <span>Existing Customer Found</span>
                 </div>
-                <p className="text-[11px] text-amber-800 dark:text-amber-300">
+                <p className="text-2xs text-amber-800 dark:text-amber-300">
                   Profile matches <strong>{duplicateWarning.matches[0].customer.name}</strong> (
                   {duplicateWarning.matches[0].customer.mobile}
                   {duplicateWarning.matches[0].customer.company_name ? ` • ${duplicateWarning.matches[0].customer.company_name}` : ''}).
@@ -2013,7 +2013,7 @@ export function NewQuotationModal({
                   <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                     Quotation Line Items ({items.length})
                   </h3>
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-2xs text-slate-400">
                     Connected to Products & Services Catalog with accurate area, GSM, and finishing formulas.
                   </p>
                 </div>
@@ -2078,40 +2078,40 @@ export function NewQuotationModal({
 
                         {/* Item Kind & Category Badge */}
                         {item.category_preset === 'digital_print' && (
-                          <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-indigo-50 text-indigo-700 border-indigo-300 text-2xs font-bold">
                             🎨 Digital Print
                           </Badge>
                         )}
                         {item.category_preset === 'offset_print' && (
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 text-2xs font-bold">
                             📑 Offset & Packaging
                           </Badge>
                         )}
                         {item.category_preset === 'signage_fabrication' && (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-300 text-2xs font-bold">
                             💡 3D Signage
                           </Badge>
                         )}
                         {item.category_preset === 'ready_merchandise' && (
-                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-300 text-2xs font-bold">
                             🎁 Merchandise
                           </Badge>
                         )}
 
                         {isCustom && (
-                          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-300 text-2xs font-bold">
                             ✨ Custom Item
                           </Badge>
                         )}
 
                         {item.tier_applied && (
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-300 text-2xs font-bold">
                             💎 {item.tier_applied}
                           </Badge>
                         )}
 
                         {item.moq && item.quantity < item.moq && (
-                          <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <span className="text-2xs text-amber-700 dark:text-amber-300 font-bold bg-amber-50 dark:bg-amber-950/50 border border-amber-300 px-1.5 py-0.5 rounded flex items-center gap-1">
                             <AlertTriangle className="h-3 w-3 text-amber-600" />
                             Below MOQ ({item.moq} {item.unit})
                           </span>
@@ -2152,7 +2152,7 @@ export function NewQuotationModal({
                           <button
                             type="button"
                             onClick={() => handleOpenQuickAdd(index)}
-                            className="text-[11px] text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-0.5 cursor-pointer"
+                            className="text-2xs text-blue-600 dark:text-blue-400 font-bold hover:underline inline-flex items-center gap-0.5 cursor-pointer"
                           >
                             <Plus className="h-3 w-3" /> Quick Add
                           </button>
@@ -2172,12 +2172,12 @@ export function NewQuotationModal({
                           </Label>
                           {isCustom && (
                             <div className="flex items-center gap-1">
-                              <span className="text-[10px] text-slate-400 mr-1">Pricing Mode:</span>
+                              <span className="text-2xs text-slate-400 mr-1">Pricing Mode:</span>
                               <button
                                 type="button"
                                 onClick={() => handleToggleItemKind(index, 'service')}
                                 className={cn(
-                                  'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                  'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
                                   isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                                 )}
                               >
@@ -2187,7 +2187,7 @@ export function NewQuotationModal({
                                 type="button"
                                 onClick={() => handleToggleItemKind(index, 'ready_product')}
                                 className={cn(
-                                  'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                  'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
                                   isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                                 )}
                               >
@@ -2208,14 +2208,14 @@ export function NewQuotationModal({
                     {/* Standard Dimension Presets */}
                     {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                        <span className="text-[11px] font-bold text-slate-400 mr-1">Standard Sizes:</span>
+                        <span className="text-2xs font-bold text-slate-400 mr-1">Standard Sizes:</span>
                         {item.available_dimension_presets.map((preset, pIdx) => (
                           <button
                             key={pIdx}
                             type="button"
                             onClick={() => handleApplyPresetDimension(index, preset)}
                             className={cn(
-                              'px-2 py-0.5 rounded-md text-[11px] font-semibold border transition-all cursor-pointer',
+                              'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
                               item.width === preset.width && item.height === preset.length
                                 ? 'bg-blue-600 text-white border-blue-600'
                                 : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
@@ -2231,7 +2231,7 @@ export function NewQuotationModal({
                     {isService && (
                       <div className="grid grid-cols-2 sm:grid-cols-12 gap-2.5 items-start">
                         <div className="sm:col-span-1">
-                          <Label className="text-[11px] font-semibold block mb-1">Width</Label>
+                          <Label className="text-2xs font-semibold block mb-1">Width</Label>
                           <Input
                             type="number"
                             step="0.1"
@@ -2243,7 +2243,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-[11px] font-semibold block mb-1">Height</Label>
+                          <Label className="text-2xs font-semibold block mb-1">Height</Label>
                           <Input
                             type="number"
                             step="0.1"
@@ -2255,7 +2255,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-[11px] font-semibold block mb-1">Unit</Label>
+                          <Label className="text-2xs font-semibold block mb-1">Unit</Label>
                           <select
                             value={item.dimension_unit || 'ft'}
                             onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
@@ -2268,7 +2268,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-1">
-                          <Label className="text-[11px] font-semibold block mb-1">Qty</Label>
+                          <Label className="text-2xs font-semibold block mb-1">Qty</Label>
                           <Input
                             type="number"
                             min="1"
@@ -2280,9 +2280,9 @@ export function NewQuotationModal({
 
                         <div className="sm:col-span-3">
                           <div className="flex items-center justify-between mb-1">
-                            <Label className="text-[11px] font-semibold">Finishing</Label>
+                            <Label className="text-2xs font-semibold">Finishing</Label>
                             {(item.finishing_rate ?? 0) > 0 && (
-                              <span className="text-[10px] text-indigo-600 font-mono font-bold">
+                              <span className="text-2xs text-indigo-600 font-mono font-bold">
                                 +৳{item.finishing_rate}
                               </span>
                             )}
@@ -2315,9 +2315,9 @@ export function NewQuotationModal({
 
                         <div className="sm:col-span-3">
                           <div className="flex items-center justify-between mb-1">
-                            <Label className="text-[11px] font-semibold">Add on</Label>
+                            <Label className="text-2xs font-semibold">Add on</Label>
                             {(item.add_on_rate ?? 0) > 0 && (
-                              <span className="text-[10px] text-purple-600 font-mono font-bold">
+                              <span className="text-2xs text-purple-600 font-mono font-bold">
                                 +৳{item.add_on_rate}
                               </span>
                             )}
@@ -2336,7 +2336,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-[11px] font-semibold block mb-1">
+                          <Label className="text-2xs font-semibold block mb-1">
                             Rate / {item.dimension_unit || 'sft'} (৳)
                           </Label>
                           <Input
@@ -2354,17 +2354,17 @@ export function NewQuotationModal({
                     {isReadyProduct && (
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                         <div className="sm:col-span-5 flex flex-col justify-center">
-                          <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
+                          <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">Physical Specs & Packaging</span>
                           <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                             {item.dimensions_spec ? (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[11px]">
+                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-2xs">
                                 📐 {item.dimensions_spec}
                               </span>
                             ) : (
-                              <span className="text-slate-400 italic text-[11px]">Standard Factory Unit</span>
+                              <span className="text-slate-400 italic text-2xs">Standard Factory Unit</span>
                             )}
                             {item.pcs_per_carton ? (
-                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-[11px]">
+                              <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-2xs">
                                 📦 {item.pcs_per_carton} pcs/box
                               </span>
                             ) : null}
@@ -2372,7 +2372,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-3">
-                          <Label className="text-[11px] font-semibold mb-1 block">Quantity</Label>
+                          <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
                           <Input
                             type="number"
                             min="1"
@@ -2383,7 +2383,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-[11px] font-semibold mb-1 block">Unit</Label>
+                          <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
                           <select
                             value={item.unit}
                             onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -2399,7 +2399,7 @@ export function NewQuotationModal({
                         </div>
 
                         <div className="sm:col-span-2">
-                          <Label className="text-[11px] font-semibold mb-1 block">Unit Price (৳)</Label>
+                          <Label className="text-2xs font-semibold mb-1 block">Unit Price (৳)</Label>
                           <Input
                             type="number"
                             step="1"
@@ -2413,7 +2413,7 @@ export function NewQuotationModal({
 
                     {/* Substrate Pill */}
                     {isService && item.printable_material_name && (
-                      <div className="flex items-center gap-2 text-[11px] text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                      <div className="flex items-center gap-2 text-2xs text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
                         <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                         <span>Linked Catalog Substrate: <strong>{item.printable_material_name}</strong></span>
                       </div>
@@ -2423,7 +2423,7 @@ export function NewQuotationModal({
                     {item.showAdvanced && (
                       <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs animate-in fade-in-0">
                         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
-                          <span className="text-[11px] uppercase font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                          <span className="text-2xs uppercase font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
                             <Wrench className="h-3.5 w-3.5 text-blue-600" />
                             Technical Fabrication & Print Specifications
                           </span>
@@ -2431,7 +2431,7 @@ export function NewQuotationModal({
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
-                            <Label className="text-[11px] font-semibold mb-1 block">Substrate / Material Spec</Label>
+                            <Label className="text-2xs font-semibold mb-1 block">Substrate / Material Spec</Label>
                             <Input
                               placeholder="e.g. 300 GSM Art Card, 3mm Acrylic"
                               value={item.material_spec || ''}
@@ -2441,7 +2441,7 @@ export function NewQuotationModal({
                           </div>
 
                           <div>
-                            <Label className="text-[11px] font-semibold mb-1 block">Color Spec / Ink Mode</Label>
+                            <Label className="text-2xs font-semibold mb-1 block">Color Spec / Ink Mode</Label>
                             <Input
                               placeholder="e.g. 4/4 Color CMYK, Spot Gold"
                               value={item.color_spec || ''}
@@ -2489,14 +2489,14 @@ export function NewQuotationModal({
                         )}
 
                         {estimatedDirectCost > 0 && (
-                          <span className="text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">
+                          <span className="text-2xs text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono">
                             Est. Direct Cost: ৳{estimatedDirectCost} • Margin: {estMarginPercent}%
                           </span>
                         )}
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[11px] text-slate-400 mr-2">Line Total:</span>
+                        <span className="text-2xs text-slate-400 mr-2">Line Total:</span>
                         <span className="font-mono font-bold text-slate-900 dark:text-white text-sm">
                           {formatBDT(Number(item.item_total))}
                         </span>
@@ -2558,7 +2558,7 @@ export function NewQuotationModal({
               <div className="sm:col-span-4">
                 <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold">Negotiated Discount</Label>
-                  <div className="flex gap-1 text-[10px]">
+                  <div className="flex gap-1 text-2xs">
                     <button
                       type="button"
                       onClick={() => setDiscountType('fixed')}
@@ -2623,7 +2623,7 @@ export function NewQuotationModal({
               <div className="sm:col-span-5">
                 <div className="flex items-center justify-between mb-1">
                   <Label className="text-xs font-semibold">Advance Payment Terms</Label>
-                  <span className="text-[10px] text-blue-600 font-bold">Standard: 50%</span>
+                  <span className="text-2xs text-blue-600 font-bold">Standard: 50%</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1">
                   {[
@@ -2657,22 +2657,22 @@ export function NewQuotationModal({
             <div className="p-4 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white rounded-xl space-y-3 shadow-lg">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs border-b border-white/10 pb-3">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Subtotal</span>
+                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Subtotal</span>
                   <span className="font-mono font-bold text-slate-200">{formatBDT(calculatedSubtotal)}</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Discount</span>
+                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Discount</span>
                   <span className="font-mono font-bold text-rose-300">-{formatBDT(effectiveDiscountAmount)}</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">VAT ({vatRate}%)</span>
+                  <span className="text-2xs text-slate-400 uppercase font-semibold block">VAT ({vatRate}%)</span>
                   <span className="font-mono font-bold text-slate-200">+{formatBDT(calculatedVat)}</span>
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] text-cyan-300 uppercase font-bold block">Grand Total</span>
+                  <span className="text-2xs text-cyan-300 uppercase font-bold block">Grand Total</span>
                   <span className="font-mono font-black text-cyan-300 text-base">{formatBDT(calculatedGrandTotal)}</span>
                 </div>
               </div>
@@ -2681,7 +2681,7 @@ export function NewQuotationModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                 <div className="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-emerald-300 uppercase font-bold block">অগ্রিম প্রদেয় (Advance Required)</span>
+                    <span className="text-2xs text-emerald-300 uppercase font-bold block">অগ্রিম প্রদেয় (Advance Required)</span>
                     <span className="text-xs text-emerald-200 font-medium">Work order confirmation</span>
                   </div>
                   <span className="font-mono font-black text-emerald-300 text-lg">
@@ -2691,7 +2691,7 @@ export function NewQuotationModal({
 
                 <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-amber-300 uppercase font-bold block">{tBilingual('Due on Delivery', 'ডেলিভারির সময় প্রদেয়')}</span>
+                    <span className="text-2xs text-amber-300 uppercase font-bold block">{tBilingual('Due on Delivery', 'ডেলিভারির সময় প্রদেয়')}</span>
                     <span className="text-xs text-amber-200 font-medium">Upon Challan delivery</span>
                   </div>
                   <span className="font-mono font-black text-amber-300 text-lg">
@@ -2810,7 +2810,7 @@ export function NewQuotationModal({
                   <Label htmlFor="intNotes" className="text-xs text-amber-800 dark:text-amber-300 font-bold truncate">
                     Internal Notes & Floor Margin
                   </Label>
-                  <span className="text-[10px] bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.5 rounded font-bold shrink-0 whitespace-nowrap">
+                  <span className="text-2xs bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.5 rounded font-bold shrink-0 whitespace-nowrap">
                     Private / Staff Only
                   </span>
                 </div>
@@ -2872,7 +2872,7 @@ export function NewQuotationModal({
 
                 {sendDropdownOpen && (
                   <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl z-50 p-1 divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                    <div className="p-1.5 font-bold text-slate-400 uppercase text-[10px]">
+                    <div className="p-1.5 font-bold text-slate-400 uppercase text-2xs">
                       WhatsApp Direct (Bangla / English)
                     </div>
                     <div className="py-1">
@@ -2884,12 +2884,12 @@ export function NewQuotationModal({
                         <MessageSquare className="h-4 w-4 text-emerald-600 shrink-0" />
                         <div>
                           <div className="font-semibold text-slate-800 dark:text-slate-200">Send WhatsApp</div>
-                          <div className="text-[10px] text-slate-400">Includes items, advance payable & terms</div>
+                          <div className="text-2xs text-slate-400">Includes items, advance payable & terms</div>
                         </div>
                       </button>
                     </div>
 
-                    <div className="p-1.5 font-bold text-slate-400 uppercase text-[10px]">
+                    <div className="p-1.5 font-bold text-slate-400 uppercase text-2xs">
                       Email Proposal
                     </div>
                     <div className="py-1">
@@ -2901,7 +2901,7 @@ export function NewQuotationModal({
                         <Mail className="h-4 w-4 text-blue-600 shrink-0" />
                         <div>
                           <div className="font-semibold text-slate-800 dark:text-slate-200">Send Email with PDF</div>
-                          <div className="text-[10px] text-slate-400">Formal A4 PDF document</div>
+                          <div className="text-2xs text-slate-400">Formal A4 PDF document</div>
                         </div>
                       </button>
                     </div>

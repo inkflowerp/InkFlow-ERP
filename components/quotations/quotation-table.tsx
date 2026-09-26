@@ -84,7 +84,7 @@ export function QuotationTable({
     }
 
     return (
-      <span className={cn('inline-flex items-center px-2 py-0.5 rounded text-[10px] truncate max-w-[200px]', colorClasses)}>
+      <span className={cn('inline-flex items-center px-2 py-0.5 rounded text-2xs truncate max-w-[200px]', colorClasses)}>
         {nextAction}
       </span>
     )
@@ -93,15 +93,15 @@ export function QuotationTable({
   const getExpiryBadge = (validUntil: string) => {
     const exp = QuotationService.calculateExpiryUrgency(validUntil)
     if (exp.urgency === 'expired') {
-      return <span className="text-[11px] text-slate-400 font-medium">{exp.label}</span>
+      return <span className="text-2xs text-slate-400 font-medium">{exp.label}</span>
     }
     if (exp.urgency === 'critical') {
-      return <span className="text-[11px] text-rose-600 dark:text-rose-400 font-bold">{exp.label}</span>
+      return <span className="text-2xs text-rose-600 dark:text-rose-400 font-bold">{exp.label}</span>
     }
     if (exp.urgency === 'warning') {
-      return <span className="text-[11px] text-amber-700 dark:text-amber-400 font-semibold">{exp.label}</span>
+      return <span className="text-2xs text-amber-700 dark:text-amber-400 font-semibold">{exp.label}</span>
     }
-    return <span className="text-[11px] text-slate-500 dark:text-slate-400">{exp.label}</span>
+    return <span className="text-2xs text-slate-500 dark:text-slate-400">{exp.label}</span>
   }
 
   return (
@@ -164,7 +164,7 @@ export function QuotationTable({
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-500">
+                    <div className="flex items-center gap-1.5 text-2xs font-mono text-slate-500">
                       {q.customer_phone && (
                         <a href={`tel:${q.customer_phone}`} className="hover:text-blue-600 hover:underline">
                           {q.customer_phone}
@@ -177,7 +177,7 @@ export function QuotationTable({
                   <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300 max-w-[220px]">
                     <div className="flex items-center gap-1.5 truncate font-medium">
                       <span className={cn(
-                        'text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border shrink-0',
+                        'text-2xs font-bold uppercase px-1.5 py-0.2 rounded border shrink-0',
                         sector === 'offset_print'
                           ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300'
                           : sector === 'signage_fabrication'
@@ -196,7 +196,7 @@ export function QuotationTable({
                       </span>
                       <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
-                    <div className="text-[11px] text-slate-400">
+                    <div className="text-2xs text-slate-400">
                       {primaryItem && primaryItem.width > 0 && primaryItem.height > 0 ? (
                         <span>
                           {primaryItem.width}×{primaryItem.height} {primaryItem.dimension_unit} ({primaryItem.area_sft} sft)
@@ -217,7 +217,7 @@ export function QuotationTable({
                     <div className="font-mono font-bold text-slate-900 dark:text-white">
                       <CurrencyDisplay amount={q.grand_total} />
                     </div>
-                    <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                    <div className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
                       Adv: ৳{Number(advAmt).toLocaleString()} ({advPct}%)
                     </div>
                   </td>
@@ -334,7 +334,7 @@ export function QuotationTable({
                     <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                   </Link>
                   <span className={cn(
-                    'text-[9px] font-bold uppercase px-1.5 py-0.2 rounded border',
+                    'text-2xs font-bold uppercase px-1.5 py-0.2 rounded border',
                     sector === 'offset_print'
                       ? 'bg-purple-50 text-purple-700 border-purple-200'
                       : sector === 'signage_fabrication'
@@ -362,11 +362,11 @@ export function QuotationTable({
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="text-[10px] uppercase font-semibold text-slate-400 block">Grand Total</span>
+                  <span className="text-2xs uppercase font-semibold text-slate-400 block">Grand Total</span>
                   <span className="text-base font-black text-slate-900 dark:text-white font-mono">
                     {formatBDT(q.grand_total)}
                   </span>
-                  <span className="text-[10px] text-amber-600 block">
+                  <span className="text-2xs text-amber-600 block">
                     Adv ({advPct}%): ৳{Number(advAmt).toLocaleString()}
                   </span>
                 </div>
@@ -377,7 +377,7 @@ export function QuotationTable({
                 <div className="text-slate-800 dark:text-slate-200 font-medium line-clamp-2">
                   {primaryItem?.description || 'Custom Print Job'}
                 </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                <div className="flex items-center justify-between text-2xs text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
                   <span>
                     {primaryItem && primaryItem.width > 0 && primaryItem.height > 0
                       ? `${primaryItem.width}×{primaryItem.height} ${primaryItem.dimension_unit} (${primaryItem.area_sft} sft)`
@@ -389,7 +389,7 @@ export function QuotationTable({
 
               {/* Next Action Prompt */}
               <div className="flex items-center justify-between text-xs pt-0.5">
-                <span className="text-[11px] text-slate-500 font-medium">Next Action:</span>
+                <span className="text-2xs text-slate-500 font-medium">Next Action:</span>
                 {getNextActionBadge(nextAction, q.status)}
               </div>
 

@@ -139,11 +139,11 @@ export function NewConversationModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Start Support Conversation', 'সহায়তা বার্তা শুরু করুন')}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800">
                 Helpdesk
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-slate-500 dark:text-slate-400">
               {tBilingual('Our support team is online and ready to assist', 'আমাদের সাপোর্ট টিম আপনাকে সহায়তা করতে প্রস্তুত')}
             </p>
           </div>
@@ -258,7 +258,7 @@ export function NewConversationModal({
                 {tBilingual('Attachments (Optional)', 'ফাইল বা স্ক্রিনশট')}
               </h3>
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Max 10MB</span>
+            <span className="text-2xs text-slate-400 font-mono">Max 10MB</span>
           </div>
 
           <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50/50 dark:bg-slate-950/50 cursor-pointer transition-colors text-xs text-slate-600 dark:text-slate-400">
@@ -287,7 +287,7 @@ export function NewConversationModal({
                       <FileText className="w-3.5 h-3.5 text-amber-500" />
                     )}
                     <span className="truncate max-w-[240px]">{att.name}</span>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-2xs text-slate-400">
                       ({Math.round(att.size / 1024)} KB)
                     </span>
                   </div>

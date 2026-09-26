@@ -137,12 +137,12 @@ export default function MaterialDetailPage() {
               <h1 className="text-xl font-black text-slate-900 dark:text-white">{material.name}</h1>
               {material.name_bn && <p className="text-xs text-slate-500 font-normal">{material.name_bn}</p>}
               <div className="flex items-center gap-2 mt-1">
-                <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
-                <Badge variant="outline" className="capitalize text-[10px]">
+                <span className="font-mono text-2xs text-slate-500 dark:text-slate-400 font-medium">SKU: {material.sku}</span>
+                <Badge variant="outline" className="capitalize text-2xs">
                   {material.category.replace('_', ' ')}
                 </Badge>
                 {isLowStock && (
-                  <Badge className="bg-red-600 text-white text-[10px] animate-pulse">Low Stock Alert</Badge>
+                  <Badge className="bg-red-600 text-white text-2xs animate-pulse">Low Stock Alert</Badge>
                 )}
               </div>
             </div>
@@ -177,11 +177,11 @@ export default function MaterialDetailPage() {
               {breakdown.purchase_unit_display || `${material.current_stock} ${material.unit}`}
             </div>
             {breakdown.consumption_unit_display && breakdown.purchase_unit_display !== breakdown.consumption_unit_display && (
-              <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">
+              <span className="text-2xs text-emerald-600 font-semibold block mt-0.5">
                 {breakdown.consumption_unit_display}
               </span>
             )}
-            <span className="text-[11px] text-slate-400 block mt-0.5">
+            <span className="text-2xs text-slate-400 block mt-0.5">
               Reorder threshold: {material.reorder_level || material.min_stock_level || 0} {material.unit}
             </span>
           </Card>
@@ -191,11 +191,11 @@ export default function MaterialDetailPage() {
             <div className="text-2xl font-black text-emerald-600 mt-1">
               <CurrencyDisplay amount={breakdown.total_valuation} />
             </div>
-            <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
+            <span className="text-2xs text-slate-400 font-mono block mt-0.5">
               {breakdown.cost_display_primary || `Avg Cost: ৳ ${material.average_cost} / ${material.unit}`}
             </span>
             {breakdown.cost_display_secondary && (
-              <span className="text-[10px] text-slate-400 font-sans block">
+              <span className="text-2xs text-slate-400 font-sans block">
                 {breakdown.cost_display_secondary}
               </span>
             )}
@@ -204,7 +204,7 @@ export default function MaterialDetailPage() {
           <Card className="p-4 border-l-4 border-l-purple-600">
             <span className="text-xs text-slate-500 font-semibold">Active Remnants</span>
             <div className="text-2xl font-black text-purple-600 mt-1">{remnants.length}</div>
-            <span className="text-[11px] text-slate-400">Reusable offcut rolls/sheets</span>
+            <span className="text-2xs text-slate-400">Reusable offcut rolls/sheets</span>
           </Card>
 
           <Card className="p-4 border-l-4 border-l-amber-600">
@@ -212,7 +212,7 @@ export default function MaterialDetailPage() {
             <div className="text-sm font-bold text-slate-900 dark:text-white mt-1">
               {material.thickness || 'Standard'} {material.color ? `(${material.color})` : ''}
             </div>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-2xs text-slate-400">
               {material.brand ? `Brand: ${material.brand}` : 'Generic Spec'}
             </span>
           </Card>
@@ -238,7 +238,7 @@ export default function MaterialDetailPage() {
                       <strong className="text-slate-900 dark:text-white">
                         {bal.location?.location_name || 'Warehouse Location'}
                       </strong>
-                      <div className="text-[11px] text-slate-400 font-mono">{bal.location?.location_code}</div>
+                      <div className="text-2xs text-slate-400 font-mono">{bal.location?.location_code}</div>
                     </div>
                     <div className="font-mono font-bold text-sm text-emerald-600">
                       {bal.available_quantity} {bal.unit}
@@ -271,10 +271,10 @@ export default function MaterialDetailPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize text-[10px]">
+                      <Badge variant="outline" className="capitalize text-2xs">
                         {rem.condition}
                       </Badge>
-                      <Badge className="bg-emerald-600 text-white text-[10px] uppercase">{rem.status}</Badge>
+                      <Badge className="bg-emerald-600 text-white text-2xs uppercase">{rem.status}</Badge>
                     </div>
                   </div>
                 ))}
@@ -320,7 +320,7 @@ export default function MaterialDetailPage() {
                         </td>
                         <td className="py-2.5 px-4 text-slate-500">
                           <div>{l.performed_by_name}</div>
-                          {l.notes && <div className="text-[10px] text-slate-400 italic">{l.notes}</div>}
+                          {l.notes && <div className="text-2xs text-slate-400 italic">{l.notes}</div>}
                         </td>
                       </tr>
                     ))}

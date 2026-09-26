@@ -142,19 +142,19 @@ export function TrialDashboardCard() {
           {/* 4 Mini Limit Pills */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-1.5 w-full text-left">
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-[11px] uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Users', 'ইউজার')}</span>
               <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.users_count, usage.users_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-[11px] uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Orders / Mo', 'অর্ডার / মাস')}</span>
               <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.orders_this_month, usage.orders_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-[11px] uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Customers', 'কাস্টমার')}</span>
               <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.customers_count, usage.customers_limit)}</span>
             </div>
             <div className="bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-lg border border-slate-200/80 dark:border-slate-800 text-xs">
-              <span className="text-slate-500 dark:text-slate-400 block text-[11px] uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
+              <span className="text-slate-500 dark:text-slate-400 block text-2xs uppercase font-semibold bangla-text">{tBilingual('Branches', 'শাখা')}</span>
               <span className="font-bold text-slate-800 dark:text-slate-200 text-xs sm:text-sm">{formatLimit(usage.branches_count, usage.branches_limit)}</span>
             </div>
           </div>

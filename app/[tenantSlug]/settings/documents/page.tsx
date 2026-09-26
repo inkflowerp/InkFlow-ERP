@@ -326,7 +326,7 @@ export default function DocumentDesignerPage() {
           <div className="flex items-center justify-between sm:justify-start gap-1 bg-white dark:bg-slate-950 p-1 rounded-lg border shrink-0">
             <div className="flex items-center">
               <Languages className="h-3.5 w-3.5 text-slate-400 ml-1.5 mr-1" />
-              <span className="text-[11px] text-slate-500 mr-2 sm:hidden">Language:</span>
+              <span className="text-2xs text-slate-500 mr-2 sm:hidden">Language:</span>
             </div>
             <div className="flex items-center gap-1">
               {[
@@ -453,7 +453,7 @@ export default function DocumentDesignerPage() {
                       <Mail className="h-3.5 w-3.5 text-blue-600" />
                       Email Subject Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
-                    <Badge variant="outline" className="text-[9px] bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300">
+                    <Badge variant="outline" className="text-2xs bg-red-50 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-300">
                       PDF Attached
                     </Badge>
                   </div>
@@ -475,7 +475,7 @@ export default function DocumentDesignerPage() {
                   />
                   {/* Quick-insert tags for Subject */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
                     {[
                       selectedDoc === 'quotation' ? '{{quotation_number}}' : '{{invoice_number}}',
                       '{{company_name}}',
@@ -487,7 +487,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_subject', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -503,7 +503,7 @@ export default function DocumentDesignerPage() {
                       <Code2 className="h-3.5 w-3.5 text-blue-600" />
                       Email Body Template (HTML Supported)
                     </Label>
-                    <span className="text-[10px] text-slate-400">PDF attached automatically</span>
+                    <span className="text-2xs text-slate-400">PDF attached automatically</span>
                   </div>
                   <textarea
                     rows={6}
@@ -524,7 +524,7 @@ export default function DocumentDesignerPage() {
                   />
                   {/* Quick-insert tags for Email Body */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -537,7 +537,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('email_body', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-blue-400 hover:text-blue-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -553,7 +553,7 @@ export default function DocumentDesignerPage() {
                       <MessageSquare className="h-3.5 w-3.5" />
                       WhatsApp Message Template ({langMode === 'bengali' ? 'বাংলা' : 'English'})
                     </Label>
-                    <span className="text-[10px] text-slate-400">*bold* _italic_</span>
+                    <span className="text-2xs text-slate-400">*bold* _italic_</span>
                   </div>
                   <textarea
                     rows={6}
@@ -574,7 +574,7 @@ export default function DocumentDesignerPage() {
                   />
                   {/* Quick-insert tags for WhatsApp */}
                   <div className="flex flex-wrap items-center gap-1 pt-1">
-                    <span className="text-[10px] text-slate-400 font-medium mr-1">Quick Add:</span>
+                    <span className="text-2xs text-slate-400 font-medium mr-1">Quick Add:</span>
                     {[
                       '{{customer_name}}',
                       '{{company_name}}',
@@ -586,7 +586,7 @@ export default function DocumentDesignerPage() {
                         key={tag}
                         type="button"
                         onClick={() => handleInsertTag('whatsapp', tag)}
-                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] font-mono text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
+                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-2xs font-mono text-slate-700 dark:text-slate-300 hover:border-emerald-400 hover:text-emerald-600 transition-colors"
                         title={`Insert ${tag}`}
                       >
                         + {tag}
@@ -605,11 +605,11 @@ export default function DocumentDesignerPage() {
                       <span className="font-bold text-xs text-slate-900 dark:text-white">Available Variables Helper</span>
                     </div>
                     {copiedVar ? (
-                      <Badge variant="outline" className="text-[9px] bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300">
+                      <Badge variant="outline" className="text-2xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300">
                         Copied {copiedVar}!
                       </Badge>
                     ) : (
-                      <span className="text-[10px] text-slate-400">{filteredVariables.length} supported tags</span>
+                      <span className="text-2xs text-slate-400">{filteredVariables.length} supported tags</span>
                     )}
                   </div>
 
@@ -621,12 +621,12 @@ export default function DocumentDesignerPage() {
                       value={variableSearch}
                       onChange={(e) => setVariableSearch(e.target.value)}
                       placeholder="Search variables (e.g. phone, vat, due)..."
-                      className="w-full pl-7 pr-3 py-1 text-[11px] rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200"
+                      className="w-full pl-7 pr-3 py-1 text-2xs rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200"
                     />
                   </div>
 
                   {/* Category Filter Tabs */}
-                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-[10px]">
+                  <div className="flex items-center gap-1 overflow-x-auto pb-1 text-2xs">
                     {[
                       { id: 'all', label: 'All' },
                       { id: 'company', label: '🏢 Company' },
@@ -654,18 +654,18 @@ export default function DocumentDesignerPage() {
                     {filteredVariables.map((v) => (
                       <div
                         key={v.tag}
-                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-[11px]"
+                        className="p-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors flex items-center justify-between gap-2 text-2xs"
                       >
                         <div className="min-w-0 space-y-0.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-mono font-bold text-blue-700 dark:text-blue-400 text-[10px]">
+                            <span className="font-mono font-bold text-blue-700 dark:text-blue-400 text-2xs">
                               {v.tag}
                             </span>
-                            <span className="text-[10px] font-semibold text-slate-700 dark:text-slate-300">
+                            <span className="text-2xs font-semibold text-slate-700 dark:text-slate-300">
                               {v.name}
                             </span>
                           </div>
-                          <p className="text-[10px] text-slate-500 truncate" title={v.description}>
+                          <p className="text-2xs text-slate-500 truncate" title={v.description}>
                             {v.description}
                           </p>
                         </div>
@@ -682,7 +682,7 @@ export default function DocumentDesignerPage() {
                       </div>
                     ))}
                     {filteredVariables.length === 0 && (
-                      <div className="p-4 text-center text-slate-400 text-[11px]">
+                      <div className="p-4 text-center text-slate-400 text-2xs">
                         No supported variables found matching &ldquo;{variableSearch}&rdquo;.
                       </div>
                     )}
@@ -754,12 +754,12 @@ export default function DocumentDesignerPage() {
                     : company?.name || 'Company Name'}
                 </h1>
 
-                <p className="text-slate-500 print:text-slate-600 text-[11px]">
+                <p className="text-slate-500 print:text-slate-600 text-2xs">
                   {company?.address || 'Company Address'} • Phone: {company?.phone || 'Phone Number'} • Email: {company?.email || 'billing@company.com'}
                 </p>
 
                 {/* NBR Tax Credentials */}
-                <div className="pt-1 text-[10px] font-mono text-slate-500 print:text-slate-600 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+                <div className="pt-1 text-2xs font-mono text-slate-500 print:text-slate-600 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
                   <span>BIN: <strong className="print:text-slate-900">{taxSettings.bin_number || '18291004821'}</strong></span>
                   <span>•</span>
                   <span>TIN: <strong className="print:text-slate-900">{taxSettings.tin_number || 'N/A'}</strong></span>
@@ -768,7 +768,7 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 {/* Document Banner */}
-                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-black text-[11px] sm:text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700 print:border-slate-400 print:text-slate-900">
+                <div className="inline-block mt-3 px-4 sm:px-6 py-1 rounded-full bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-black text-2xs sm:text-xs tracking-wider uppercase border border-slate-300 dark:border-slate-700 print:border-slate-400 print:text-slate-900">
                   {selectedDoc === 'quotation' && (langMode === 'bengali' ? 'আনুষ্ঠানিক বাণিজ্যিক দরপত্র' : 'COMMERCIAL QUOTATION')}
                   {selectedDoc === 'invoice' && (langMode === 'bengali' ? 'বাণিজ্যিক বিক্রয় চালান বিল' : 'COMMERCIAL SALES INVOICE')}
                   {selectedDoc === 'vat_mushak' && 'গণপ্রজাতন্ত্রী বাংলাদেশ সরকার — কর চালানপত্র [মূসক-৬.৩]'}
@@ -781,12 +781,12 @@ export default function DocumentDesignerPage() {
               {/* Recipient & Document Meta */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 print:bg-slate-50 border border-slate-200 dark:border-slate-800 print:border-slate-300 text-xs print:text-slate-900">
                 <div className="space-y-1">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 print:text-slate-600">
+                  <span className="text-2xs uppercase font-bold text-slate-400 print:text-slate-600">
                     {langMode === 'bengali' ? 'প্রাপকের বিবরণ:' : 'Customer / Consignee:'}
                   </span>
                   <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">Metro Advertising Ltd.</div>
                   <div className="text-slate-600 dark:text-slate-300 print:text-slate-700">12 Motijheel C/A, Dhaka-1000</div>
-                  <div className="text-slate-400 print:text-slate-600 font-mono text-[11px]">BIN: 0029104821 • Contact: +880 1711-223344</div>
+                  <div className="text-slate-400 print:text-slate-600 font-mono text-2xs">BIN: 0029104821 • Contact: +880 1711-223344</div>
                 </div>
 
                 <div className="space-y-1 sm:text-right font-mono print:text-slate-900">
@@ -841,7 +841,7 @@ export default function DocumentDesignerPage() {
               </div>
 
               {/* Terms and Conditions */}
-              <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 print:text-slate-800 space-y-1 border border-slate-200 dark:border-slate-800 print:border-slate-300 page-break-inside-avoid print-avoid-break">
+              <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg text-2xs text-slate-600 dark:text-slate-400 print:text-slate-800 space-y-1 border border-slate-200 dark:border-slate-800 print:border-slate-300 page-break-inside-avoid print-avoid-break">
                 <strong className="block text-slate-800 dark:text-slate-200 print:text-slate-900">
                   {langMode === 'bengali' ? 'শর্তাবলী:' : 'Terms & Conditions:'}
                 </strong>
@@ -861,7 +861,7 @@ export default function DocumentDesignerPage() {
                 </div>
 
                 <div className="text-center space-y-2 w-full sm:w-auto">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-[11px]">{activeTpl.authorized_signatory_title}</div>
+                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">{activeTpl.authorized_signatory_title}</div>
                   <div className="border-t border-slate-400 w-full sm:w-60 pt-1 font-bold print:text-slate-900">
                     {langMode === 'bengali' ? 'অনুমোদিত স্বাক্ষর ও সিল' : 'Authorized Signature & Seal'}
                   </div>
@@ -880,7 +880,7 @@ export default function DocumentDesignerPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-slate-400 w-16">Attachment:</span>
-                  <Badge variant="outline" className="text-[10px] bg-red-50 text-red-700 border-red-200 font-mono">
+                  <Badge variant="outline" className="text-2xs bg-red-50 text-red-700 border-red-200 font-mono">
                     <FileText className="h-3 w-3 mr-1" />
                     {selectedDoc === 'quotation' ? 'Quotation-Q-2026-0842.pdf' : 'Invoice-INV-2026-1055.pdf'} (A4 PDF)
                   </Badge>
@@ -906,7 +906,7 @@ export default function DocumentDesignerPage() {
                 <div className="text-xs whitespace-pre-wrap font-sans text-slate-800 dark:text-slate-200 leading-relaxed">
                   {liveWhatsapp}
                 </div>
-                <div className="text-[10px] text-right text-slate-400 pt-1">
+                <div className="text-2xs text-right text-slate-400 pt-1">
                   10:45 AM • Delivered
                 </div>
               </div>
@@ -934,7 +934,7 @@ export default function DocumentDesignerPage() {
               <div className="p-4 overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px]">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 font-bold uppercase text-2xs">
                       <th className="pb-2 font-mono">Variable Tag</th>
                       <th className="pb-2">Name</th>
                       <th className="pb-2">Category</th>
@@ -953,7 +953,7 @@ export default function DocumentDesignerPage() {
                           {v.name}
                         </td>
                         <td className="py-2.5">
-                          <span className="capitalize px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                          <span className="capitalize px-2 py-0.5 rounded-full text-2xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                             {v.category}
                           </span>
                         </td>
@@ -968,7 +968,7 @@ export default function DocumentDesignerPage() {
                             size="sm"
                             variant="outline"
                             onClick={() => copyToClipboard(v.tag)}
-                            className="h-6 text-[10px] px-2"
+                            className="h-6 text-2xs px-2"
                           >
                             <Copy className="h-2.5 w-2.5 mr-1" />
                             Copy

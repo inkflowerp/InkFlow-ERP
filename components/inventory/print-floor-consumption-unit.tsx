@@ -265,7 +265,7 @@ export function PrintFloorConsumptionUnit({
         {/* KPI 1: Dispatched to Floor */}
         <Card className="p-3.5 bg-linear-to-br from-indigo-50/70 to-indigo-100/40 dark:from-indigo-950/40 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-900/60 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">
+            <span className="text-2xs font-bold uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">
               {tBilingual('Dispatched to Floor', 'ফ্লোরে বরাদ্দকৃত মাল')}
             </span>
             <div className="h-7 w-7 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
@@ -276,7 +276,7 @@ export function PrintFloorConsumptionUnit({
             <span className="text-xl font-black text-slate-900 dark:text-white font-mono">
               {kpis.totalDispatchedQty.toLocaleString()}
             </span>
-            <span className="text-[11px] text-slate-500 font-semibold font-mono">
+            <span className="text-2xs text-slate-500 font-semibold font-mono">
               {floorConsumptions.length} {tBilingual('lines', 'লাইন')}
             </span>
           </div>
@@ -285,7 +285,7 @@ export function PrintFloorConsumptionUnit({
         {/* KPI 2: Actually Consumed */}
         <Card className="p-3.5 bg-linear-to-br from-emerald-50/70 to-emerald-100/40 dark:from-emerald-950/40 dark:to-emerald-900/20 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">
+            <span className="text-2xs font-bold uppercase text-emerald-700 dark:text-emerald-400 tracking-wider">
               {tBilingual('Actual Consumed', 'প্রকৃত ব্যবহৃত')}
             </span>
             <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -296,7 +296,7 @@ export function PrintFloorConsumptionUnit({
             <span className="text-xl font-black text-emerald-700 dark:text-emerald-400 font-mono">
               {kpis.totalConsumedQty.toLocaleString()}
             </span>
-            <span className="text-[11px] text-slate-500 font-semibold font-mono">
+            <span className="text-2xs text-slate-500 font-semibold font-mono">
               {kpis.totalDispatchedQty > 0 ? Math.round((kpis.totalConsumedQty / kpis.totalDispatchedQty) * 100) : 0}% {tBilingual('consumed', 'ব্যবহৃত')}
             </span>
           </div>
@@ -305,7 +305,7 @@ export function PrintFloorConsumptionUnit({
         {/* KPI 3: Floor Balance (Remaining at Machines) */}
         <Card className="p-3.5 bg-linear-to-br from-blue-50/70 to-blue-100/40 dark:from-blue-950/40 dark:to-blue-900/20 border-blue-200 dark:border-blue-900/60 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase text-blue-700 dark:text-blue-400 tracking-wider">
+            <span className="text-2xs font-bold uppercase text-blue-700 dark:text-blue-400 tracking-wider">
               {tBilingual('Floor Stock Balance', 'মেশিনে অবশিষ্ট মাল')}
             </span>
             <div className="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -316,7 +316,7 @@ export function PrintFloorConsumptionUnit({
             <span className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
               {kpis.totalRemainingQty.toLocaleString()}
             </span>
-            <Badge variant="outline" className="text-[10px] font-mono bg-blue-50 dark:bg-blue-950 text-blue-700">
+            <Badge variant="outline" className="text-2xs font-mono bg-blue-50 dark:bg-blue-950 text-blue-700">
               {kpis.activeFloorItemsCount} active lines
             </Badge>
           </div>
@@ -325,7 +325,7 @@ export function PrintFloorConsumptionUnit({
         {/* KPI 4: Scrap & Wastage */}
         <Card className="p-3.5 bg-linear-to-br from-rose-50/70 to-rose-100/40 dark:from-rose-950/40 dark:to-rose-900/20 border-rose-200 dark:border-rose-900/60 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase text-rose-700 dark:text-rose-400 tracking-wider">
+            <span className="text-2xs font-bold uppercase text-rose-700 dark:text-rose-400 tracking-wider">
               {tBilingual('Scrap & Wastage', 'অপচয় / স্ক্র্যাপ')}
             </span>
             <div className="h-7 w-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -336,7 +336,7 @@ export function PrintFloorConsumptionUnit({
             <span className="text-xl font-black text-rose-700 dark:text-rose-400 font-mono">
               {kpis.totalWastageQty.toLocaleString()}
             </span>
-            <span className="text-[11px] font-bold text-rose-600 font-mono">
+            <span className="text-2xs font-bold text-rose-600 font-mono">
               {kpis.scrapRatePercent}% rate
             </span>
           </div>
@@ -345,7 +345,7 @@ export function PrintFloorConsumptionUnit({
         {/* KPI 5: Action Button / Reconcile */}
         <Card className="p-3.5 bg-linear-to-br from-purple-50/70 to-purple-100/40 dark:from-purple-950/40 dark:to-purple-900/20 border-purple-200 dark:border-purple-900/60 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase text-purple-700 dark:text-purple-400 tracking-wider">
+            <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-400 tracking-wider">
               {tBilingual('Quick Floor Run', 'দ্রুত কনজাম্পশন')}
             </span>
             <Scissors className="h-4 w-4 text-purple-600 dark:text-purple-400" />
@@ -400,14 +400,14 @@ export function PrintFloorConsumptionUnit({
           <div className="p-2.5 bg-amber-50 dark:bg-amber-950/30 rounded-lg border border-amber-200 dark:border-amber-900/60 flex items-center justify-between gap-2 text-xs text-amber-900 dark:text-amber-200">
             <div className="flex items-center gap-2">
               <Clock className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 animate-pulse" />
-              <span className="font-semibold text-[11px]">
+              <span className="font-semibold text-2xs">
                 {tBilingual(
                   `${pendingRequests.length} Material Request(s) submitted — Awaiting Inventory & Warehouse Operations acceptance before floor delivery.`,
                   `${pendingRequests.length}টি মেটেরিয়াল রিকুইজিশন পেন্ডিং — স্টোর থেকে অনুমোদন ও ইস্যু সম্পন্ন হলে স্বয়ংক্রিয়ভাবে ফ্লোরে যুক্ত হবে।`
                 )}
               </span>
             </div>
-            <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900/50 border-amber-300 text-amber-800 dark:text-amber-200 text-[10px] font-bold">
+            <Badge variant="outline" className="bg-amber-100 dark:bg-amber-900/50 border-amber-300 text-amber-800 dark:text-amber-200 text-2xs font-bold">
               {pendingRequests.length} Pending
             </Badge>
           </div>
@@ -415,8 +415,8 @@ export function PrintFloorConsumptionUnit({
 
         {/* Piece-Level Fleet Overview Ribbon */}
         {activeFloorRolls.length > 0 && (
-          <div className="p-2.5 bg-blue-100/60 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900/60 flex items-center gap-2 overflow-x-auto text-[11px] font-mono text-blue-900 dark:text-blue-200 scrollbar-thin">
-            <span className="font-bold shrink-0 uppercase text-[10px] tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
+          <div className="p-2.5 bg-blue-100/60 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900/60 flex items-center gap-2 overflow-x-auto text-2xs font-mono text-blue-900 dark:text-blue-200 scrollbar-thin">
+            <span className="font-bold shrink-0 uppercase text-2xs tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
               <Layers className="h-3 w-3" />
               Floor Pieces:
             </span>
@@ -424,7 +424,7 @@ export function PrintFloorConsumptionUnit({
               <Badge
                 key={r.id}
                 variant="outline"
-                className="bg-white/90 dark:bg-slate-900/90 shrink-0 font-bold border-blue-300 text-blue-900 dark:text-blue-200 text-[10px] py-0.5"
+                className="bg-white/90 dark:bg-slate-900/90 shrink-0 font-bold border-blue-300 text-blue-900 dark:text-blue-200 text-2xs py-0.5"
               >
                 {formatFloorPieceDisplay(r)}
               </Badge>
@@ -455,21 +455,21 @@ export function PrintFloorConsumptionUnit({
                         <span className="font-black text-xs text-slate-900 dark:text-white font-mono">
                           {roll.roll_code || roll.roll_tag}
                         </span>
-                        <Badge className="text-[9px] bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
+                        <Badge className="text-2xs bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold py-0">
                           {roll.width_ft} ft Wide
                         </Badge>
-                        <Badge variant="outline" className="text-[9px] font-mono font-bold py-0 text-slate-600 dark:text-slate-400">
+                        <Badge variant="outline" className="text-2xs font-mono font-bold py-0 text-slate-600 dark:text-slate-400">
                           1 Pcs
                         </Badge>
                       </div>
-                      <span className="text-[11px] text-slate-600 dark:text-slate-400 block mt-0.5 font-medium">
+                      <span className="text-2xs text-slate-600 dark:text-slate-400 block mt-0.5 font-medium">
                         {roll.material?.name || 'Raw Material Roll'}
                       </span>
                     </div>
 
                     <Badge
                       variant="outline"
-                      className={`text-[9px] uppercase font-bold py-0 shrink-0 ${
+                      className={`text-2xs uppercase font-bold py-0 shrink-0 ${
                         roll.status === 'mounted'
                           ? 'border-emerald-500 text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40'
                           : 'border-blue-400 text-blue-700 bg-blue-50 dark:bg-blue-950/40'
@@ -480,7 +480,7 @@ export function PrintFloorConsumptionUnit({
                   </div>
 
                   {/* Machine Mount / Staging */}
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center gap-1.5 text-2xs text-slate-600 dark:text-slate-400">
                     <Cpu className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                     <span className="truncate font-medium">
                       {roll.mounted_machine_name || roll.location_name || 'General Press Workstation'}
@@ -490,7 +490,7 @@ export function PrintFloorConsumptionUnit({
                   {/* Length Ticker & Progress Bar */}
                   <div className="space-y-1 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <div className="flex items-center justify-between text-xs font-mono">
-                      <span className="text-slate-500 text-[11px]">Available Length:</span>
+                      <span className="text-slate-500 text-2xs">Available Length:</span>
                       <strong className="text-emerald-600 dark:text-emerald-400 font-black">
                         {currentLen.toFixed(2)} ft — 1 Pcs
                       </strong>
@@ -501,7 +501,7 @@ export function PrintFloorConsumptionUnit({
                         style={{ width: `${percentLeft}%` }}
                       />
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 pt-0.5">
+                    <div className="flex items-center justify-between text-2xs font-mono text-slate-400 pt-0.5">
                       <span>Area: <strong>{remainingArea.toFixed(2)} SFT</strong></span>
                       <span>{percentLeft}% remaining ({initialLen}ft initial)</span>
                     </div>
@@ -591,7 +591,7 @@ export function PrintFloorConsumptionUnit({
                 variant={selectedStatus === st.id ? 'secondary' : 'ghost'}
                 onClick={() => setSelectedStatus(st.id)}
                 className={cn(
-                  'text-[11px] h-7 px-2 font-medium cursor-pointer',
+                  'text-2xs h-7 px-2 font-medium cursor-pointer',
                   selectedStatus === st.id ? 'font-bold bg-slate-200 dark:bg-slate-800' : ''
                 )}
               >
@@ -667,7 +667,7 @@ export function PrintFloorConsumptionUnit({
                           <FileText className="h-3.5 w-3.5 text-indigo-500" />
                           <span>{rec.issue_number || 'DIR-FLOOR'}</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 block mt-0.5">
+                        <span className="text-2xs text-slate-400 block mt-0.5">
                           {new Date(rec.created_at).toLocaleDateString('en-GB', {
                             day: 'numeric',
                             month: 'short',
@@ -683,12 +683,12 @@ export function PrintFloorConsumptionUnit({
                         </div>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           {rec.sku && (
-                            <Badge variant="outline" className="text-[9px] font-mono py-0 px-1">
+                            <Badge variant="outline" className="text-2xs font-mono py-0 px-1">
                               {rec.sku}
                             </Badge>
                           )}
                           {rec.roll_code && (
-                            <Badge variant="outline" className="text-[9px] font-mono py-0 px-1 bg-amber-50 text-amber-700 border-amber-300">
+                            <Badge variant="outline" className="text-2xs font-mono py-0 px-1 bg-amber-50 text-amber-700 border-amber-300">
                               Roll: {rec.roll_code}
                             </Badge>
                           )}
@@ -701,11 +701,11 @@ export function PrintFloorConsumptionUnit({
                           <Printer className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                           <span className="truncate">{rec.machine_name || 'General Floor'}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-0.5">
+                        <div className="flex items-center gap-1 text-2xs text-slate-500 mt-0.5">
                           <User className="h-3 w-3 text-slate-400 shrink-0" />
                           <span className="truncate">{rec.operator_name || 'Press Operator'}</span>
                           {rec.job_reference && (
-                            <span className="text-[10px] font-mono text-indigo-600 ml-1 truncate">
+                            <span className="text-2xs font-mono text-indigo-600 ml-1 truncate">
                               [{rec.job_reference}]
                             </span>
                           )}
@@ -734,7 +734,7 @@ export function PrintFloorConsumptionUnit({
                               {wastage.toLocaleString()} {rec.unit}
                             </span>
                             {rec.wastage_reason && (
-                              <div className="text-[10px] text-rose-500 font-semibold truncate max-w-[140px]" title={rec.wastage_reason}>
+                              <div className="text-2xs text-rose-500 font-semibold truncate max-w-[140px]" title={rec.wastage_reason}>
                                 {rec.wastage_reason}
                               </div>
                             )}
@@ -770,7 +770,7 @@ export function PrintFloorConsumptionUnit({
                             title={`On Floor: ${balancePercent}%`}
                           />
                         </div>
-                        <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-1">
+                        <div className="flex justify-between text-2xs font-mono text-slate-400 mt-1">
                           <span>{consumedPercent}%</span>
                           <span>{balance > 0 ? `${balancePercent}% rem` : 'Done'}</span>
                         </div>
@@ -779,15 +779,15 @@ export function PrintFloorConsumptionUnit({
                       {/* Status */}
                       <td className="p-3">
                         {balance > 0 ? (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 text-[10px] font-bold">
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 text-2xs font-bold">
                             On Floor ({balance})
                           </Badge>
                         ) : returned > 0 ? (
-                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 text-[10px] font-bold">
+                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 text-2xs font-bold">
                             Returned ({returned})
                           </Badge>
                         ) : (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 text-[10px] font-bold">
+                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 text-2xs font-bold">
                             Reconciled
                           </Badge>
                         )}
@@ -812,7 +812,7 @@ export function PrintFloorConsumptionUnit({
                               size="sm"
                               variant="ghost"
                               onClick={() => handleOpenReturnModal(rec)}
-                              className="h-7 text-[11px] font-semibold text-slate-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer px-1.5"
+                              className="h-7 text-2xs font-semibold text-slate-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/40 cursor-pointer px-1.5"
                               title="Return leftover stock to store"
                             >
                               <RotateCcw className="h-3 w-3" />
@@ -849,7 +849,7 @@ export function PrintFloorConsumptionUnit({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-800 dark:text-slate-200 truncate">{reason}</span>
-                  <Badge variant="outline" className="text-[9px] font-mono bg-rose-100 text-rose-800 border-rose-300">
+                  <Badge variant="outline" className="text-2xs font-mono bg-rose-100 text-rose-800 border-rose-300">
                     {stats.count} events
                   </Badge>
                 </div>
@@ -857,7 +857,7 @@ export function PrintFloorConsumptionUnit({
                   <span className="text-sm font-black text-rose-700 dark:text-rose-400 font-mono">
                     {stats.qty.toLocaleString()} units
                   </span>
-                  <span className="text-[11px] font-mono text-slate-500 font-semibold">
+                  <span className="text-2xs font-mono text-slate-500 font-semibold">
                     {stats.count} {tBilingual('records', 'লগ')}
                   </span>
                 </div>

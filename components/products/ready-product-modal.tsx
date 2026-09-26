@@ -747,11 +747,11 @@ export function ReadyProductModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Ready Product: ${initialData.name}` : 'New Ready Product Master'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800">
                 Ready to Sell
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -887,7 +887,7 @@ export function ReadyProductModal({
                     autoFocus
                   />
                   {fieldErrors.name && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -1277,7 +1277,7 @@ export function ReadyProductModal({
                     />
                   </div>
                   {fieldErrors.sellingPrice && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
@@ -1353,7 +1353,7 @@ export function ReadyProductModal({
                   <Badge
                     variant="outline"
                     className={cn(
-                      'text-[10px] font-bold px-2 py-0.5 rounded-md',
+                      'text-2xs font-bold px-2 py-0.5 rounded-md',
                       marginMetrics.grossMarginPercent >= targetMargin
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
                         : marginMetrics.grossMarginPercent >= minAllowedMargin
@@ -1375,14 +1375,14 @@ export function ReadyProductModal({
 
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Profit / Unit</span>
+                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Profit / Unit</span>
                     <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
                       {formatBDT(marginMetrics.grossProfit)}
                     </span>
                   </div>
 
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Gross Margin</span>
+                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Gross Margin</span>
                     <span
                       className={cn(
                         'text-sm font-black font-mono',
@@ -1396,7 +1396,7 @@ export function ReadyProductModal({
                   </div>
 
                   <div className="p-2 rounded-lg bg-white dark:bg-slate-800/80 border border-slate-100 dark:border-slate-700/60 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Markup</span>
+                    <span className="text-2xs text-slate-500 uppercase tracking-wider block">Markup</span>
                     <span className="text-sm font-black font-mono text-blue-600 dark:text-blue-400">
                       {marginMetrics.markupPercent}%
                     </span>
@@ -1405,7 +1405,7 @@ export function ReadyProductModal({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200/80 dark:border-slate-800">
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                    <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
                       Target Gross Margin (%)
                     </Label>
                     <Input
@@ -1416,7 +1416,7 @@ export function ReadyProductModal({
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block text-slate-600 dark:text-slate-400">
+                    <Label className="text-2xs font-semibold mb-1 block text-slate-600 dark:text-slate-400">
                       Minimum Allowed Margin (%) (Floor)
                     </Label>
                     <Input
@@ -1441,7 +1441,7 @@ export function ReadyProductModal({
                     <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Customer Tier Segment Rates
                     </h3>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-2xs text-slate-500">
                       Auto-applied when preparing quotations & sales for specific customer types.
                     </p>
                   </div>
@@ -1452,7 +1452,7 @@ export function ReadyProductModal({
                   size="sm"
                   variant="outline"
                   onClick={handleAutoFillTiers}
-                  className="h-7 text-[11px] font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 cursor-pointer"
+                  className="h-7 text-2xs font-semibold text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/30 hover:bg-purple-100 cursor-pointer"
                 >
                   <Sparkles className="w-3 h-3 mr-1" /> Auto-calculate Tiers
                 </Button>
@@ -1462,11 +1462,11 @@ export function ReadyProductModal({
                 {/* Retail Tier */}
                 <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-slate-700 dark:text-slate-300">Retail</span>
-                    <span className="text-[9px] text-slate-400">100%</span>
+                    <span className="text-2xs font-bold uppercase text-slate-700 dark:text-slate-300">Retail</span>
+                    <span className="text-2xs text-slate-400">100%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-[10px]">৳</span>
+                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1486,11 +1486,11 @@ export function ReadyProductModal({
                 {/* Corporate Tier */}
                 <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-400">Corporate</span>
-                    <span className="text-[9px] text-purple-500 font-medium">-5%</span>
+                    <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-400">Corporate</span>
+                    <span className="text-2xs text-purple-500 font-medium">-5%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-[10px]">৳</span>
+                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1510,11 +1510,11 @@ export function ReadyProductModal({
                 {/* Dealer Tier */}
                 <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-blue-700 dark:text-blue-400">Dealer</span>
-                    <span className="text-[9px] text-blue-500 font-medium">-10%</span>
+                    <span className="text-2xs font-bold uppercase text-blue-700 dark:text-blue-400">Dealer</span>
+                    <span className="text-2xs text-blue-500 font-medium">-10%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-[10px]">৳</span>
+                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1534,11 +1534,11 @@ export function ReadyProductModal({
                 {/* Wholesale Tier */}
                 <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-emerald-700 dark:text-emerald-400">Wholesale</span>
-                    <span className="text-[9px] text-emerald-500 font-medium">-15%</span>
+                    <span className="text-2xs font-bold uppercase text-emerald-700 dark:text-emerald-400">Wholesale</span>
+                    <span className="text-2xs text-emerald-500 font-medium">-15%</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-[10px]">৳</span>
+                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1558,11 +1558,11 @@ export function ReadyProductModal({
                 {/* Custom VIP Tier */}
                 <div className="p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-900/40 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold uppercase text-amber-700 dark:text-amber-400">Custom</span>
-                    <span className="text-[9px] text-amber-500 font-medium">VIP</span>
+                    <span className="text-2xs font-bold uppercase text-amber-700 dark:text-amber-400">Custom</span>
+                    <span className="text-2xs text-amber-500 font-medium">VIP</span>
                   </div>
                   <div className="relative">
-                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-[10px]">৳</span>
+                    <span className="absolute left-2 top-2 text-slate-400 font-bold text-2xs">৳</span>
                     <Input
                       type="number"
                       step="any"
@@ -1736,7 +1736,7 @@ export function ReadyProductModal({
 
                   {vatApplicable && (
                     <div className="pl-6 pt-1">
-                      <Label className="text-[11px] font-semibold mb-1 block">
+                      <Label className="text-2xs font-semibold mb-1 block">
                         Tax Rate (%)
                       </Label>
                       <Input

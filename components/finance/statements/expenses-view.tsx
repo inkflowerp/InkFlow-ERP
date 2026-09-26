@@ -163,7 +163,7 @@ export function ExpensesView({
           <div className="text-xl font-black text-rose-950 dark:text-rose-100 mt-1">
             ৳{(report?.total_expenses || 0).toLocaleString()}
           </div>
-          <div className="text-[11px] text-rose-700/80 dark:text-rose-300/80 mt-0.5">
+          <div className="text-2xs text-rose-700/80 dark:text-rose-300/80 mt-0.5">
             {items.length} {tBilingual('Vouchers recorded', 'টি ভাউচার')}
           </div>
         </Card>
@@ -178,7 +178,7 @@ export function ExpensesView({
           <div className="text-xl font-black text-indigo-950 dark:text-indigo-100 mt-1">
             ৳{(report?.total_staff_salary || 0).toLocaleString()}
           </div>
-          <div className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80 mt-0.5">
+          <div className="text-2xs text-indigo-700/80 dark:text-indigo-300/80 mt-0.5">
             {tBilingual('OPEX Staff Payroll', 'নিয়মিত কর্মচারীদের বেতন')}
           </div>
         </Card>
@@ -193,7 +193,7 @@ export function ExpensesView({
           <div className="text-xl font-black text-amber-950 dark:text-amber-100 mt-1">
             ৳{(report?.total_salary_advance || 0).toLocaleString()}
           </div>
-          <div className="text-[11px] text-amber-700/80 dark:text-amber-300/80 mt-0.5">
+          <div className="text-2xs text-amber-700/80 dark:text-amber-300/80 mt-0.5">
             {tBilingual('Deductible from payroll', 'ভবিষ্যতে কর্তনযোগ্য')}
           </div>
         </Card>
@@ -208,7 +208,7 @@ export function ExpensesView({
           <div className="text-xl font-black text-blue-950 dark:text-blue-100 mt-1">
             ৳{(report?.total_daily_labor || 0).toLocaleString()}
           </div>
-          <div className="text-[11px] text-blue-700/80 dark:text-blue-300/80 mt-0.5">
+          <div className="text-2xs text-blue-700/80 dark:text-blue-300/80 mt-0.5">
             {tBilingual('COGS Direct Labor', 'উৎপাদন শ্রম খরচ')}
           </div>
         </Card>
@@ -223,7 +223,7 @@ export function ExpensesView({
           <div className="text-xl font-black text-slate-800 dark:text-slate-200 mt-1">
             ৳{(report?.total_operational_overhead || 0).toLocaleString()}
           </div>
-          <div className="text-[11px] text-slate-500 mt-0.5">
+          <div className="text-2xs text-slate-500 mt-0.5">
             {tBilingual('Rent, Utilities, Parts, Fuel', 'ভাড়া, বিদ্যুৎ, মেরামত ও তেল')}
           </div>
         </Card>
@@ -259,17 +259,17 @@ export function ExpensesView({
                     <div className="font-semibold text-xs text-slate-900 dark:text-slate-100 truncate">
                       {emp.employee_name}
                     </div>
-                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0">
+                    <Badge variant="secondary" className="text-2xs px-1.5 py-0">
                       {emp.transaction_count} {tBilingual('payouts', 'বার')}
                     </Badge>
                   </div>
                   <div className="flex items-baseline justify-between pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <span className="text-[11px] text-slate-500">{tBilingual('Total Paid:', 'মোট পরিশোধ:')}</span>
+                    <span className="text-2xs text-slate-500">{tBilingual('Total Paid:', 'মোট পরিশোধ:')}</span>
                     <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
                       ৳{emp.total_paid.toLocaleString()}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-500 pt-0.5">
+                  <div className="grid grid-cols-2 gap-1 text-2xs text-slate-500 pt-0.5">
                     <div>
                       বেতন: <span className="font-semibold text-slate-700 dark:text-slate-300">৳{emp.salary_total.toLocaleString()}</span>
                     </div>
@@ -388,7 +388,7 @@ export function ExpensesView({
                       <td className="py-3 px-3">
                         <Badge
                           variant="outline"
-                          className={`text-[11px] font-medium px-2 py-0.5 rounded-md ${
+                          className={`text-2xs font-medium px-2 py-0.5 rounded-md ${
                             isSalary
                               ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800'
                               : isAdvance
@@ -473,7 +473,7 @@ export function ExpensesView({
             {/* Voucher Details Grid */}
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">
+                <span className="text-2xs text-slate-500 uppercase font-semibold">
                   {tBilingual('Expense Category', 'খরচের খাত')}
                 </span>
                 <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
@@ -482,7 +482,7 @@ export function ExpensesView({
               </div>
 
               <div className="p-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-xl space-y-1">
-                <span className="text-[10px] text-slate-500 uppercase font-semibold">
+                <span className="text-2xs text-slate-500 uppercase font-semibold">
                   {tBilingual('Payee / Beneficiary', 'প্রাপক / সুবিধাভোগী')}
                 </span>
                 <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">
@@ -509,7 +509,7 @@ export function ExpensesView({
 
             {/* Memo & Narration */}
             <div className="p-3 bg-slate-50 dark:bg-slate-800/30 rounded-xl text-xs space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase font-semibold">
+              <span className="text-2xs text-slate-500 uppercase font-semibold">
                 {tBilingual('Narration & Notes', 'বিবরণ ও মন্তব্য')}
               </span>
               <p className="text-slate-700 dark:text-slate-300 font-medium">
@@ -518,7 +518,7 @@ export function ExpensesView({
             </div>
 
             {/* Signature Blocks for Print */}
-            <div className="grid grid-cols-3 gap-3 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 text-center text-[10px] text-slate-500">
+            <div className="grid grid-cols-3 gap-3 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 text-center text-2xs text-slate-500">
               <div>
                 <div className="h-8"></div>
                 <div className="border-t border-slate-400 pt-1 font-semibold">{tBilingual('Prepared By', 'প্রস্তুতকারক')}</div>

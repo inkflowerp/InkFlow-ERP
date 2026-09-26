@@ -145,7 +145,7 @@ export function AdditionalOptionModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {additional ? 'Edit Additional Work' : 'Add Additional Work'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800">
                 Substrate & Addon Master
               </Badge>
             </div>
@@ -169,11 +169,11 @@ export function AdditionalOptionModal({
         {!additional && (
           <div className="p-3 bg-cyan-50/60 dark:bg-cyan-950/20 border border-cyan-200/60 dark:border-cyan-900/40 rounded-xl space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-cyan-900 dark:text-cyan-200 flex items-center gap-1.5">
+              <span className="text-2xs font-bold text-cyan-900 dark:text-cyan-200 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-cyan-600" />
                 Popular Substrate & Addon Templates:
               </span>
-              <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium">Click to fill rates</span>
+              <span className="text-2xs text-cyan-600 dark:text-cyan-400 font-medium">Click to fill rates</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {COMMON_ADDITIONAL_PRESETS.map((p) => (
@@ -181,7 +181,7 @@ export function AdditionalOptionModal({
                   key={p.name}
                   type="button"
                   onClick={() => handleApplyPreset(p)}
-                  className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium text-[11px] hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1"
+                  className="px-2.5 py-1 rounded-lg border border-cyan-200 dark:border-cyan-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 font-medium text-2xs hover:border-cyan-500 hover:text-cyan-600 transition-all cursor-pointer flex items-center gap-1"
                 >
                   <Zap className="w-3 h-3 text-amber-500 shrink-0" />
                   <span>{p.name}</span>
@@ -311,7 +311,7 @@ export function AdditionalOptionModal({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] text-slate-500">Margin:</span>
+              <span className="text-2xs text-slate-500">Margin:</span>
               <Badge
                 variant="outline"
                 className={cn(

@@ -1791,7 +1791,7 @@ export default function ProductsCatalogPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* 1. Total Active Catalog Items */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Active Catalog Items
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
@@ -1804,7 +1804,7 @@ export default function ProductsCatalogPage() {
 
         {/* 2. Average Gross Margin */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+          <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
             Average Gross Margin
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1">
@@ -1817,7 +1817,7 @@ export default function ProductsCatalogPage() {
 
         {/* 3. Low Margin Alert */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-amber-200 dark:border-amber-900/60 shadow-xs">
-          <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+          <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
             Low Margin Alert (&lt;20%)
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1">
@@ -1830,7 +1830,7 @@ export default function ProductsCatalogPage() {
 
         {/* 4. Configuration Masters */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             Configuration Masters
           </div>
           <div className="text-lg sm:text-xl font-bold font-numeric tabular-nums text-slate-900 dark:text-white mt-1">
@@ -1873,7 +1873,7 @@ export default function ProductsCatalogPage() {
               <span>{tab.label}</span>
               <span
                 className={cn(
-                  'px-1.5 py-0.5 text-[10px] rounded-full font-mono font-bold',
+                  'px-1.5 py-0.5 text-2xs rounded-full font-mono font-bold',
                   isActive
                     ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
@@ -2074,7 +2074,7 @@ export default function ProductsCatalogPage() {
                         <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                           <div>{pm.name}</div>
                           {pm.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{pm.name_bn}</div>}
-                          {pm.description && <div className="text-[11px] text-slate-400 font-normal">{pm.description}</div>}
+                          {pm.description && <div className="text-2xs text-slate-400 font-normal">{pm.description}</div>}
                         </td>
                         <td className="py-3.5 px-3 font-mono text-xs text-slate-600 dark:text-slate-300">
                           {pm.code ? <Badge variant="secondary" className="font-mono text-xs">{pm.code}</Badge> : '—'}
@@ -2082,7 +2082,7 @@ export default function ProductsCatalogPage() {
                         <td className="py-3.5 px-3">
                           <div className="flex flex-wrap gap-1">
                             {(pm.compatible_material_types || []).map((t) => (
-                              <Badge key={t} variant="secondary" className="text-[10px] uppercase font-mono">
+                              <Badge key={t} variant="secondary" className="text-2xs uppercase font-mono">
                                 {t}
                               </Badge>
                             ))}
@@ -2096,11 +2096,11 @@ export default function ProductsCatalogPage() {
                         </td>
                         <td className="py-3.5 px-3">
                           {pm.is_active !== false ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                            <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                               <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                             </span>
                           )}
@@ -2218,12 +2218,12 @@ export default function ProductsCatalogPage() {
                             {f.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{f.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                               {f.category?.replace('_', ' ') || 'General'}
                             </span>
                           </td>
                           <td className="py-3.5 px-3 font-mono text-xs text-slate-700 dark:text-slate-300">
-                            <Badge variant="outline" className="text-[11px] uppercase">
+                            <Badge variant="outline" className="text-2xs uppercase">
                               {f.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2236,7 +2236,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
                                 margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -2254,11 +2254,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3">
                             {f.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2383,7 +2383,7 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 font-mono text-xs">
-                            <Badge variant="outline" className="text-[11px] uppercase">
+                            <Badge variant="outline" className="text-2xs uppercase">
                               {a.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2396,7 +2396,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
                                 margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -2407,11 +2407,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3">
                             {a.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2529,13 +2529,13 @@ export default function ProductsCatalogPage() {
                             {i.name_bn && <div className="text-xs text-slate-500 font-medium font-bengali">{i.name_bn}</div>}
                           </td>
                           <td className="py-3.5 px-3">
-                            <span className="capitalize px-2 py-0.5 rounded text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
+                            <span className="capitalize px-2 py-0.5 rounded text-2xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/40 dark:text-blue-300">
                               {i.fulfillment_type || 'Installation'}
                             </span>
                           </td>
                           <td className="py-3.5 px-3">
                             {i.creates_task ? (
-                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px]">
+                              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 text-2xs">
                                 🛠️ Auto-Task
                               </Badge>
                             ) : (
@@ -2543,7 +2543,7 @@ export default function ProductsCatalogPage() {
                             )}
                           </td>
                           <td className="py-3.5 px-3 font-mono text-xs">
-                            <Badge variant="outline" className="text-[11px] uppercase">
+                            <Badge variant="outline" className="text-2xs uppercase">
                               {i.pricing_method?.replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2556,7 +2556,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 font-mono text-xs">
                             <span
                               className={cn(
-                                'inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-bold border',
+                                'inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-bold border',
                                 margin >= 35
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300'
                                   : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300'
@@ -2567,11 +2567,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3">
                             {i.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Inactive
                               </span>
                             )}
@@ -2695,7 +2695,7 @@ export default function ProductsCatalogPage() {
                             {item.name_bn && (
                               <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-2xs font-mono text-slate-400 mt-0.5">
                               {item.sku} • {item.category || 'printing'}
                             </div>
                           </td>
@@ -2705,7 +2705,7 @@ export default function ProductsCatalogPage() {
                             </Badge>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-700 dark:text-slate-300">
-                            <Badge variant="secondary" className="text-[11px] uppercase whitespace-nowrap">
+                            <Badge variant="secondary" className="text-2xs uppercase whitespace-nowrap">
                               {(item.pricing_method || item.service_config?.pricing_method || 'per_area').replace('_', ' ')}
                             </Badge>
                           </td>
@@ -2713,12 +2713,12 @@ export default function ProductsCatalogPage() {
                             {presets.length > 0 ? (
                               <div className="flex flex-wrap gap-1 max-w-[160px]">
                                 {presets.slice(0, 2).map((p, idx) => (
-                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-[10px] font-mono rounded whitespace-nowrap">
+                                  <span key={idx} className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 text-2xs font-mono rounded whitespace-nowrap">
                                     {p.width}&apos;×{p.length}&apos;
                                   </span>
                                 ))}
                                 {presets.length > 2 && (
-                                  <span className="text-[10px] text-slate-400 font-mono whitespace-nowrap">+{presets.length - 2} more</span>
+                                  <span className="text-2xs text-slate-400 font-mono whitespace-nowrap">+{presets.length - 2} more</span>
                                 )}
                               </div>
                             ) : (
@@ -2727,7 +2727,7 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {finishings.length > 0 ? (
-                              <Badge variant="secondary" className="text-[10px] whitespace-nowrap">
+                              <Badge variant="secondary" className="text-2xs whitespace-nowrap">
                                 {finishings.length} options
                               </Badge>
                             ) : (
@@ -2737,13 +2737,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
@@ -2765,11 +2765,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -2911,7 +2911,7 @@ export default function ProductsCatalogPage() {
                             {item.name_bn && (
                               <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-2xs font-mono text-slate-400 mt-0.5">
                               {item.sku} • {item.category || 'hardware'}
                             </div>
                           </td>
@@ -2924,7 +2924,7 @@ export default function ProductsCatalogPage() {
                             <span className="whitespace-nowrap">📦 MOQ: {item.min_order_quantity || 1} {item.unit || 'pcs'}</span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                            <div className="flex flex-wrap gap-1 text-2xs font-mono">
                               {tiers.corporate ? (
                                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
                                   Corp: ৳{tiers.corporate}
@@ -2948,13 +2948,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
@@ -2973,11 +2973,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3114,21 +3114,21 @@ export default function ProductsCatalogPage() {
                             {item.name_bn && (
                               <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-2xs font-mono text-slate-400 mt-0.5">
                               {item.sku} • {item.material_spec || 'Standard Grade'}
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {item.roll_width_ft && item.roll_length_ft ? (
-                              <Badge variant="outline" className="text-[11px] font-mono bg-blue-50/50 whitespace-nowrap">
+                              <Badge variant="outline" className="text-2xs font-mono bg-blue-50/50 whitespace-nowrap">
                                 Roll: {item.roll_width_ft}&apos; × {item.roll_length_ft}&apos;
                               </Badge>
                             ) : item.sheet_width_ft && item.sheet_length_ft ? (
-                              <Badge variant="outline" className="text-[11px] font-mono bg-emerald-50/50 whitespace-nowrap">
+                              <Badge variant="outline" className="text-2xs font-mono bg-emerald-50/50 whitespace-nowrap">
                                 Sheet: {item.sheet_width_ft}&apos; × {item.sheet_length_ft}&apos;
                               </Badge>
                             ) : (
-                              <Badge variant="outline" className="text-[11px] font-mono whitespace-nowrap">
+                              <Badge variant="outline" className="text-2xs font-mono whitespace-nowrap">
                                 Unit ({item.unit})
                               </Badge>
                             )}
@@ -3147,14 +3147,14 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-400">
                             <div className="whitespace-nowrap">1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}</div>
                             {item.default_wastage_percentage ? (
-                              <div className="text-[10px] text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
+                              <div className="text-2xs text-amber-600 whitespace-nowrap">({item.default_wastage_percentage}% waste allowance)</div>
                             ) : null}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             {printingList.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {printingList.map((m, idx) => (
-                                  <Badge key={idx} variant="secondary" className="text-[10px] uppercase font-mono whitespace-nowrap">
+                                  <Badge key={idx} variant="secondary" className="text-2xs uppercase font-mono whitespace-nowrap">
                                     {m}
                                   </Badge>
                                 ))}
@@ -3166,16 +3166,16 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <span>৳{item.base_cost}</span>
-                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3312,7 +3312,7 @@ export default function ProductsCatalogPage() {
                             {item.name_bn && (
                               <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-2xs font-mono text-slate-400 mt-0.5">
                               {item.sku} • {item.category || 'outsource'}
                             </div>
                           </td>
@@ -3322,10 +3322,10 @@ export default function ProductsCatalogPage() {
                               <span>{vendorName}</span>
                             </div>
                             {vendorPhone && (
-                              <div className="text-[11px] text-slate-400 font-mono whitespace-nowrap">{vendorPhone}</div>
+                              <div className="text-2xs text-slate-400 font-mono whitespace-nowrap">{vendorPhone}</div>
                             )}
                             {item.vendor_item_code && (
-                              <div className="text-[10px] text-slate-400 font-mono whitespace-nowrap">Ref: {item.vendor_item_code}</div>
+                              <div className="text-2xs text-slate-400 font-mono whitespace-nowrap">Ref: {item.vendor_item_code}</div>
                             )}
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
@@ -3334,13 +3334,13 @@ export default function ProductsCatalogPage() {
                                 <Clock className="h-3 w-3 text-amber-500" />
                                 {turnaround} {turnaround === 1 ? 'day' : 'days'}
                               </span>
-                              <Badge variant="outline" className="text-[10px] bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
+                              <Badge variant="outline" className="text-2xs bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 w-fit whitespace-nowrap">
                                 Non-Inventory
                               </Badge>
                             </div>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap">
-                            <div className="flex flex-wrap gap-1 text-[10px] font-mono">
+                            <div className="flex flex-wrap gap-1 text-2xs font-mono">
                               {tiers.corporate ? (
                                 <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded border border-blue-200 whitespace-nowrap">
                                   Corp: ৳{tiers.corporate}
@@ -3364,13 +3364,13 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono text-xs text-slate-600 dark:text-slate-300">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-[10px] text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap font-mono font-bold text-xs text-slate-900 dark:text-white">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.selling_price} />
-                              <span className="text-[10px] font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs font-normal text-slate-400">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center font-mono text-xs">
@@ -3389,11 +3389,11 @@ export default function ProductsCatalogPage() {
                           </td>
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3535,7 +3535,7 @@ export default function ProductsCatalogPage() {
                             {item.name_bn && (
                               <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                             )}
-                            <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                            <div className="text-2xs font-mono text-slate-400 mt-0.5">
                               {item.sku} {item.material_spec ? `• ${item.material_spec}` : ''}
                             </div>
                           </td>
@@ -3544,7 +3544,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap">
                             <span
                               className={cn(
-                                'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-[11px] font-semibold border',
+                                'inline-flex items-center whitespace-nowrap capitalize px-2 py-0.5 rounded text-2xs font-semibold border',
                                 isOutsourceProduct(item)
                                   ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                                   : isServiceProduct(item)
@@ -3565,7 +3565,7 @@ export default function ProductsCatalogPage() {
                                 <div className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 whitespace-nowrap">
                                   ৳{item.purchase_price} / {item.purchase_unit || 'roll'}
                                 </div>
-                                <div className="text-[10px] text-slate-400 font-mono whitespace-nowrap">
+                                <div className="text-2xs text-slate-400 font-mono whitespace-nowrap">
                                   1 {item.purchase_unit || 'roll'} = {getProductConversionRatio(item)} {item.selling_unit || item.unit}
                                   {item.default_wastage_percentage ? ` (${item.default_wastage_percentage}% waste)` : ''}
                                 </div>
@@ -3579,7 +3579,7 @@ export default function ProductsCatalogPage() {
                           <td className="py-3.5 px-3 whitespace-nowrap text-xs font-semibold text-slate-600 dark:text-slate-300 font-mono">
                             <span className="inline-flex items-baseline gap-0.5 whitespace-nowrap">
                               <CurrencyDisplay amount={item.base_cost} />
-                              <span className="text-[10px] text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
+                              <span className="text-2xs text-slate-400 font-normal">/{item.selling_unit || item.unit}</span>
                             </span>
                           </td>
 
@@ -3619,11 +3619,11 @@ export default function ProductsCatalogPage() {
                           {/* Status */}
                           <td className="py-3.5 px-3 whitespace-nowrap text-center">
                             {item.is_active !== false ? (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-emerald-600 dark:text-emerald-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-slate-400">
+                              <span className="inline-flex items-center gap-1 text-2xs font-semibold text-slate-400">
                                 <span className="h-1.5 w-1.5 rounded-full bg-slate-400" /> Archived
                               </span>
                             )}
@@ -3735,13 +3735,13 @@ export default function ProductsCatalogPage() {
                           {item.name_bn && (
                             <div className="text-xs text-slate-500 font-medium font-bengali">{item.name_bn}</div>
                           )}
-                          <div className="text-[11px] font-mono text-slate-400 mt-0.5">
+                          <div className="text-2xs font-mono text-slate-400 mt-0.5">
                             {item.sku} • {item.material_spec || 'Standard Spec'}
                           </div>
                         </div>
                         <span
                           className={cn(
-                            'capitalize px-2 py-0.5 rounded text-[10px] font-semibold border shrink-0',
+                            'capitalize px-2 py-0.5 rounded text-2xs font-semibold border shrink-0',
                             isOutsourceProduct(item)
                               ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300'
                               : isServiceProduct(item)
@@ -3765,19 +3765,19 @@ export default function ProductsCatalogPage() {
                       {/* Metrics Grid */}
                       <div className="grid grid-cols-3 gap-2 p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-center border border-slate-100 dark:border-slate-800">
                         <div>
-                          <span className="text-[10px] text-slate-400 uppercase block">Selling Rate</span>
+                          <span className="text-2xs text-slate-400 uppercase block">Selling Rate</span>
                           <div className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
                             ৳{item.selling_price}/{item.selling_unit || item.unit}
                           </div>
                         </div>
                         <div>
-                          <span className="text-[10px] text-slate-400 uppercase block">Eff. Cost</span>
+                          <span className="text-2xs text-slate-400 uppercase block">Eff. Cost</span>
                           <div className="font-mono text-xs text-slate-600 dark:text-slate-300">
                             ৳{item.base_cost}
                           </div>
                         </div>
                         <div>
-                          <span className="text-[10px] text-emerald-600 uppercase block">Margin</span>
+                          <span className="text-2xs text-emerald-600 uppercase block">Margin</span>
                           <div className="font-mono font-bold text-xs text-emerald-600">
                             {marginPercent}%
                           </div>
@@ -3859,11 +3859,11 @@ export default function ProductsCatalogPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   Fast Estimate & Quotation
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
                   Instant Quote
                 </Badge>
               </div>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 {fastQuoteProduct?.name} ({fastQuoteProduct?.sku})
               </p>
             </div>
@@ -4053,7 +4053,7 @@ export default function ProductsCatalogPage() {
                       <span className="text-slate-600 dark:text-slate-400">
                         Print Subtotal ({fastQuoteCalculation.totalAreaSft} {fastQuoteProduct.selling_unit || 'SFT'} @ ৳{fastQuoteCalculation.effectiveRate}):
                       </span>
-                      <Badge variant="outline" className="text-[10px] capitalize font-mono">
+                      <Badge variant="outline" className="text-2xs capitalize font-mono">
                         {fastQuoteCalculation.pricingMethod?.replace('_', ' ')}
                       </Badge>
                     </div>
@@ -4091,10 +4091,10 @@ export default function ProductsCatalogPage() {
                   <div className="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
                       <span className="text-xs font-bold text-slate-900 dark:text-white block">Quotation Total:</span>
-                      <span className="text-[11px] text-emerald-600 font-semibold">
+                      <span className="text-2xs text-emerald-600 font-semibold">
                         Est. Cost: ৳{fastQuoteCalculation.estTotalCost} • Gross Profit: ৳{fastQuoteCalculation.estGrossProfit} ({fastQuoteCalculation.estMargin}%)
                       </span>
-                      <span className="text-[10px] text-slate-500 block">
+                      <span className="text-2xs text-slate-500 block">
                         Margin Based On: {fastQuoteCalculation.costBasisType === 'direct_cost' ? 'Estimated Direct Job Cost' : 'Material Cost'}
                       </span>
                     </div>
@@ -4104,8 +4104,8 @@ export default function ProductsCatalogPage() {
                   </div>
 
                   {/* Internal-Only Commercial Production Readout */}
-                  <div className="mt-2 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-[11px] text-slate-600 dark:text-slate-300 space-y-1">
-                    <span className="font-bold block uppercase tracking-wider text-[10px] text-slate-500">Internal Commercial Analysis:</span>
+                  <div className="mt-2 p-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-2xs text-slate-600 dark:text-slate-300 space-y-1">
+                    <span className="font-bold block uppercase tracking-wider text-2xs text-slate-500">Internal Commercial Analysis:</span>
                     <div className="flex justify-between">
                       <span>Expected Material Consumption (incl. {fastQuoteProduct.default_wastage_percentage || 0}% waste):</span>
                       <span className="font-mono font-bold">{fastQuoteCalculation.expectedConsumption} {fastQuoteProduct.selling_unit || 'SFT'}</span>
@@ -4202,7 +4202,7 @@ export default function ProductsCatalogPage() {
                       )}
                     </div>
                     <span className="text-xs font-bold block">{card.label}</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight line-clamp-1 mt-0.5">
+                    <span className="text-2xs text-slate-500 dark:text-slate-400 leading-tight line-clamp-1 mt-0.5">
                       {card.description}
                     </span>
                   </button>
@@ -4243,7 +4243,7 @@ export default function ProductsCatalogPage() {
                       setEditingCategory(null)
                       setIsCategoryModalOpen(true)
                     }}
-                    className="text-[11px] text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline"
+                    className="text-2xs text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 font-semibold flex items-center gap-1 hover:underline"
                   >
                     <Plus className="h-3 w-3" /> New Category
                   </button>
@@ -4390,7 +4390,7 @@ export default function ProductsCatalogPage() {
                 <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">
                   Advanced Settings (Optional)
                 </h4>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-2xs text-slate-500">
                   Optional settings for purchasing, production allowances, minimums, costing and components.
                 </p>
               </div>
@@ -4479,7 +4479,7 @@ export default function ProductsCatalogPage() {
                   <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                     Purchasing & Material Conversion
                   </span>
-                  <span className="text-[11px] text-slate-500">How you buy raw materials</span>
+                  <span className="text-2xs text-slate-500">How you buy raw materials</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -4507,7 +4507,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, purchase_price: Number(e.target.value) })}
                       className="text-xs h-9 font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-400">per 1 {formData.purchase_unit}</span>
+                    <span className="text-2xs text-slate-400">per 1 {formData.purchase_unit}</span>
                   </div>
 
                   <div>
@@ -4521,7 +4521,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, conversion_ratio: Number(e.target.value) })}
                       className="text-xs h-9 font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-2xs text-slate-400">
                       1 {formData.purchase_unit} = {formData.conversion_ratio} {formData.selling_unit}
                     </span>
                   </div>
@@ -4534,13 +4534,13 @@ export default function ProductsCatalogPage() {
                       <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
                         Roll Dimension Helper (1 Roll Area)
                       </span>
-                      <Badge variant="outline" className="text-[10px] font-mono bg-white">
+                      <Badge variant="outline" className="text-2xs font-mono bg-white">
                         {formData.roll_width_ft}ft × {formData.roll_length_ft}ft = {Math.round((formData.roll_width_ft || 0) * (formData.roll_length_ft || 0))} sqft
                       </Badge>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Roll Width (Feet)</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Roll Width (Feet)</Label>
                         <Input
                           type="number"
                           step="0.5"
@@ -4555,7 +4555,7 @@ export default function ProductsCatalogPage() {
                         />
                       </div>
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Roll Length (Feet)</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Roll Length (Feet)</Label>
                         <Input
                           type="number"
                           step="1"
@@ -4570,7 +4570,7 @@ export default function ProductsCatalogPage() {
                         />
                       </div>
                       <div className="col-span-2 sm:col-span-1">
-                        <Label className="text-[11px] font-semibold mb-1 block">Derived Ratio</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Derived Ratio</Label>
                         <div className="h-8 px-3 rounded-md bg-white dark:bg-slate-900 border border-blue-200 dark:border-blue-800 flex items-center font-mono font-bold text-xs text-blue-700 dark:text-blue-300">
                           {formData.conversion_ratio} sqft / roll
                         </div>
@@ -4605,7 +4605,7 @@ export default function ProductsCatalogPage() {
                       }}
                       className="text-xs h-9 font-mono"
                     />
-                    <span className="text-[10px] text-slate-400">Bleed / grip allowance (feet)</span>
+                    <span className="text-2xs text-slate-400">Bleed / grip allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4624,7 +4624,7 @@ export default function ProductsCatalogPage() {
                       }}
                       className="text-xs h-9 font-mono"
                     />
-                    <span className="text-[10px] text-slate-400">Lead / tail allowance (feet)</span>
+                    <span className="text-2xs text-slate-400">Lead / tail allowance (feet)</span>
                   </div>
 
                   <div>
@@ -4638,7 +4638,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, default_wastage_percentage: Number(e.target.value) })}
                       className="text-xs h-9 font-mono font-bold"
                     />
-                    <span className="text-[10px] text-slate-400">Statistical scrap (e.g. 5%)</span>
+                    <span className="text-2xs text-slate-400">Statistical scrap (e.g. 5%)</span>
                   </div>
                 </div>
 
@@ -4722,7 +4722,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_order_quantity: Number(e.target.value) })}
                       className="text-xs h-9 font-mono"
                     />
-                    <span className="text-[10px] text-slate-400">Order cutoff (e.g. 1 pc)</span>
+                    <span className="text-2xs text-slate-400">Order cutoff (e.g. 1 pc)</span>
                   </div>
 
                   <div>
@@ -4734,7 +4734,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, min_billable_quantity: Number(e.target.value) })}
                       className="text-xs h-9 font-mono text-amber-600 font-bold"
                     />
-                    <span className="text-[10px] text-slate-400">Billing floor (e.g. 20 sqft min)</span>
+                    <span className="text-2xs text-slate-400">Billing floor (e.g. 20 sqft min)</span>
                   </div>
 
                   <div>
@@ -4746,7 +4746,7 @@ export default function ProductsCatalogPage() {
                       onChange={(e) => setFormData({ ...formData, minimum_charge: Number(e.target.value) })}
                       className="text-xs h-9 font-mono font-bold text-blue-600"
                     />
-                    <span className="text-[10px] text-slate-400">Money floor (e.g. ৳500 min)</span>
+                    <span className="text-2xs text-slate-400">Money floor (e.g. ৳500 min)</span>
                   </div>
                 </div>
               </div>
@@ -4759,14 +4759,14 @@ export default function ProductsCatalogPage() {
                   <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider block">
                     Direct Cost Breakdown & Target Margins
                   </span>
-                  <Badge variant="outline" className="text-[10px] font-mono">
+                  <Badge variant="outline" className="text-2xs font-mono">
                     Total Cost: ৳{liveCommercialMath.totalDirectCost} / {formData.selling_unit}
                   </Badge>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Ink Cost</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Ink Cost</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4781,7 +4781,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Labor Cost</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Labor Cost</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4796,7 +4796,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Machine Depr.</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Machine Depr.</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4811,7 +4811,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Finishing</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4826,7 +4826,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Fabrication</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Fabrication</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4841,7 +4841,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Installation</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Installation</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4856,7 +4856,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Delivery</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Delivery</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -4871,7 +4871,7 @@ export default function ProductsCatalogPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-[11px] font-semibold mb-1 block">Target Margin %</Label>
+                    <Label className="text-2xs font-semibold mb-1 block">Target Margin %</Label>
                     <Input
                       type="number"
                       step="1"
@@ -4889,7 +4889,7 @@ export default function ProductsCatalogPage() {
                       <Sparkles className="h-4 w-4 text-emerald-600" />
                       <span>Suggested Selling Price: ৳{liveCommercialMath.suggestedSellingPrice} / {formData.selling_unit}</span>
                     </div>
-                    <p className="text-[11px] text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
+                    <p className="text-2xs text-emerald-700/80 dark:text-emerald-300/80 mt-0.5">
                       Based on cost ৳{liveCommercialMath.costBasis} @ {formData.target_margin_percentage}% margin.
                     </p>
                   </div>
@@ -4968,12 +4968,12 @@ export default function ProductsCatalogPage() {
 
                 {/* Add Component Subform */}
                 <div className="p-3 bg-slate-50 dark:bg-slate-900/80 rounded-xl border border-slate-200 dark:border-slate-800 space-y-2">
-                  <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 block uppercase">
+                  <span className="text-2xs font-bold text-slate-800 dark:text-slate-200 block uppercase">
                     Add Component Item
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <div className="col-span-2 sm:col-span-2">
-                      <Label className="text-[10px] mb-0.5 block">Item Name</Label>
+                      <Label className="text-2xs mb-0.5 block">Item Name</Label>
                       <Input
                         placeholder="e.g. X-Stand Hardware"
                         value={newComponent.name}
@@ -4982,7 +4982,7 @@ export default function ProductsCatalogPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] mb-0.5 block">Qty</Label>
+                      <Label className="text-2xs mb-0.5 block">Qty</Label>
                       <Input
                         type="number"
                         step="0.1"
@@ -4992,7 +4992,7 @@ export default function ProductsCatalogPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] mb-0.5 block">Unit</Label>
+                      <Label className="text-2xs mb-0.5 block">Unit</Label>
                       <Input
                         placeholder="pcs"
                         value={newComponent.unit}
@@ -5001,7 +5001,7 @@ export default function ProductsCatalogPage() {
                       />
                     </div>
                     <div>
-                      <Label className="text-[10px] mb-0.5 block">Cost (৳)</Label>
+                      <Label className="text-2xs mb-0.5 block">Cost (৳)</Label>
                       <Input
                         type="number"
                         step="1"
@@ -5081,11 +5081,11 @@ export default function ProductsCatalogPage() {
                 <span className="text-base font-black text-slate-900 dark:text-white">
                   Adjust Commercial Price & Tariffs
                 </span>
-                <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
+                <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 text-blue-700 border-blue-200">
                   Audit Logged
                 </Badge>
               </div>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 {pricingProduct?.name} ({pricingProduct?.sku})
               </p>
             </div>
@@ -5199,7 +5199,7 @@ export default function ProductsCatalogPage() {
             <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg text-amber-800 dark:text-amber-300 space-y-1">
               <strong className="block">Protected Historical Record</strong>
               <p>{deletionSafety.reason}</p>
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 pt-1">
+              <p className="text-2xs text-amber-700 dark:text-amber-400 pt-1">
                 Clicking confirm will safely <strong>Archive / Deactivate</strong> this item instead of deleting it.
               </p>
             </div>

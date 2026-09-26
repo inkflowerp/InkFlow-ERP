@@ -52,13 +52,13 @@ export function CustomerFinancialSummaryCards({
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
         <CardContent className="p-0 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">{tBilingual('Total Billed', 'মোট বিল')}</span>
+            <span className="text-2xs font-bold uppercase tracking-wider">{tBilingual('Total Billed', 'মোট বিল')}</span>
             <TrendingUp className="h-3.5 w-3.5 text-indigo-500" />
           </div>
           <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white truncate">
             ৳{summary.totalInvoiceAmount.toLocaleString('en-IN')}
           </div>
-          <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 truncate">
             {tBilingual(
               `Across ${summary.totalInvoices} invoice${summary.totalInvoices === 1 ? '' : 's'}`,
               `${summary.totalInvoices}টি চালানের মোট`
@@ -72,13 +72,13 @@ export function CustomerFinancialSummaryCards({
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
         <CardContent className="p-0 space-y-1">
           <div className="flex items-center justify-between text-emerald-700 dark:text-emerald-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">{tBilingual('Total Paid', 'মোট পরিশোধ')}</span>
+            <span className="text-2xs font-bold uppercase tracking-wider">{tBilingual('Total Paid', 'মোট পরিশোধ')}</span>
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
           </div>
           <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 truncate">
             ৳{summary.totalPaid.toLocaleString('en-IN')}
           </div>
-          <p className="text-[10px] text-emerald-700/80 dark:text-emerald-400/80 truncate">
+          <p className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 truncate">
             {tBilingual('Verified collections', 'যাচাইকৃত আদায়')}
           </p>
         </CardContent>
@@ -98,7 +98,7 @@ export function CustomerFinancialSummaryCards({
           <div className="flex items-center justify-between">
             <span
               className={cn(
-                'text-[11px] font-bold uppercase tracking-wider',
+                'text-2xs font-bold uppercase tracking-wider',
                 hasDue ? 'text-amber-700 dark:text-amber-400' : 'text-slate-500 dark:text-slate-400'
               )}
             >
@@ -118,7 +118,7 @@ export function CustomerFinancialSummaryCards({
           </div>
           <p
             className={cn(
-              'text-[10px] truncate',
+              'text-2xs truncate',
               hasDue ? 'text-amber-700/80 dark:text-amber-400/80 font-medium' : 'text-slate-500 dark:text-slate-400'
             )}
           >
@@ -141,7 +141,7 @@ export function CustomerFinancialSummaryCards({
           <div className="flex items-center justify-between">
             <span
               className={cn(
-                'text-[11px] font-bold uppercase tracking-wider',
+                'text-2xs font-bold uppercase tracking-wider',
                 hasOverdue ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'
               )}
             >
@@ -161,7 +161,7 @@ export function CustomerFinancialSummaryCards({
           </div>
           <p
             className={cn(
-              'text-[10px] truncate',
+              'text-2xs truncate',
               hasOverdue ? 'text-rose-600/80 dark:text-rose-400/80 font-medium' : 'text-slate-500 dark:text-slate-400'
             )}
           >
@@ -182,7 +182,7 @@ export function CustomerFinancialSummaryCards({
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-500" />
         <CardContent className="p-0 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">{tBilingual('Available Credit', 'উপলব্ধ ক্রেডিট')}</span>
+            <span className="text-2xs font-bold uppercase tracking-wider">{tBilingual('Available Credit', 'উপলব্ধ ক্রেডিট')}</span>
             <CreditCard
               className={cn(
                 'h-3.5 w-3.5',
@@ -200,7 +200,7 @@ export function CustomerFinancialSummaryCards({
           >
             {creditLimit > 0 ? `৳${availableCredit.toLocaleString('en-IN')}` : tBilingual('No Limit', 'লিমিটহীন')}
           </div>
-          <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 truncate">
+          <div className="flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 truncate">
             <span>{creditLimit > 0 ? `Limit: ৳${creditLimit.toLocaleString('en-IN')}` : tBilingual('Pay per order', 'অর্ডারভিত্তিক বিল')}</span>
             {creditLimit > 0 && (
               <span
@@ -225,7 +225,7 @@ export function CustomerFinancialSummaryCards({
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
         <CardContent className="p-0 space-y-1">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider">{tBilingual('Last Payment', 'সর্বশেষ পরিশোধ')}</span>
+            <span className="text-2xs font-bold uppercase tracking-wider">{tBilingual('Last Payment', 'সর্বশেষ পরিশোধ')}</span>
             <ShoppingBag className="h-3.5 w-3.5 text-purple-500" />
           </div>
           {summary.lastPayment ? (
@@ -233,7 +233,7 @@ export function CustomerFinancialSummaryCards({
               <div className="text-base sm:text-lg font-bold font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 truncate">
                 ৳{summary.lastPayment.amount.toLocaleString('en-IN')}
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-2xs text-slate-500 dark:text-slate-400 truncate">
                 {summary.lastPayment.date}
               </p>
             </>
@@ -242,14 +242,14 @@ export function CustomerFinancialSummaryCards({
               <div className="text-sm font-bold text-slate-900 dark:text-white truncate">
                 {summary.lastOrder.orderNumber}
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
+              <p className="text-2xs text-slate-500 dark:text-slate-400 truncate">
                 {summary.lastOrder.date}
               </p>
             </>
           ) : (
             <>
               <div className="text-sm font-semibold text-slate-400 dark:text-slate-600">{tBilingual('None', 'নেই')}</div>
-              <p className="text-[10px] text-slate-400">{tBilingual('No activity yet', 'কোন লেনদেন নেই')}</p>
+              <p className="text-2xs text-slate-400">{tBilingual('No activity yet', 'কোন লেনদেন নেই')}</p>
             </>
           )}
         </CardContent>

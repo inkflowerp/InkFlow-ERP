@@ -95,25 +95,25 @@ export const DesignJobCard = React.memo(function DesignJobCard({
     >
       {/* Top Banner for Urgent / Walk-in / Due Today */}
       {(isUrgent || isWalkIn || isDueToday) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-2xs font-bold">
           <div className="flex items-center gap-2">
             {isWalkIn && (
-              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
+              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
                 🏃 দোকানে বসা কাস্টমার (Walk-in)
               </span>
             )}
             {isDueToday && (
-              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
+              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
                 ⏰ আজকের ডেলিভারি (Due Today)
               </span>
             )}
             {isUrgent && !isDueToday && (
-              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
+              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide">
                 🚨 জরুরী কাজ (Urgent)
               </span>
             )}
           </div>
-          <span className="text-slate-500 text-[10px] font-mono">
+          <span className="text-slate-500 text-2xs font-mono">
             {job.deadline ? `টার্গেট: ${job.deadline.split('T')[0]}` : ''}
           </span>
         </div>
@@ -151,12 +151,12 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                   </Link>
                 )}
                 {job.workflow_routing === 'design_ok' ? (
-                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                  <span className="text-2xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
                     <FileCheck className="h-3 w-3" />
                     <span>রেডি ফাইল চেক (Design OK)</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                  <span className="text-2xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
                     <Sparkles className="h-3 w-3" />
                     <span>নতুন ডিজাইন দরকার</span>
                   </span>
@@ -165,11 +165,11 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <div className="flex items-center gap-1.5">
                 <Link
                   href={workbenchHref}
-                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
+                  className="text-2xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline inline-flex items-center gap-0.5"
                 >
                   <span>Workbench ➔</span>
                 </Link>
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-2xs font-mono text-slate-400">
                   v{job.current_version || versions.length || 1}
                 </span>
               </div>
@@ -189,7 +189,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                 <button
                   type="button"
                   onClick={() => onOpenWhatsApp(job, 'proof')}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
+                  className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 dark:text-emerald-400 hover:underline"
                 >
                   <Phone className="h-3 w-3 text-emerald-600" />
                   <span>{job.customer_phone || (job as any).mobile}</span>
@@ -198,22 +198,22 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
 
             {/* Job Specifications Strip */}
-            <div className="mt-2.5 grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px]">
+            <div className="mt-2.5 grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs">
               <div>
-                <span className="text-slate-400 block text-[10px]">সাইজ / পরিমাপ:</span>
+                <span className="text-slate-400 block text-2xs">সাইজ / পরিমাপ:</span>
                 <strong className="font-mono text-slate-700 dark:text-slate-200">
                   {job.dimensions_spec || 'Standard Spec'}
                 </strong>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">পরিমাণ (Qty):</span>
+                <span className="text-slate-400 block text-2xs">পরিমাণ (Qty):</span>
                 <strong className="font-mono text-slate-700 dark:text-slate-200">
                   {job.quantity || 1} {job.unit || 'pcs'}
                 </strong>
               </div>
               {job.material && (
                 <div className="col-span-2">
-                  <span className="text-slate-400 block text-[10px]">মেটেরিয়াল ও পেপার:</span>
+                  <span className="text-slate-400 block text-2xs">মেটেরিয়াল ও পেপার:</span>
                   <strong className="text-slate-700 dark:text-slate-200 truncate block">
                     {job.material}
                   </strong>
@@ -221,8 +221,8 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               )}
               {job.instructions && (
                 <div className="col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-1.5 text-slate-600 dark:text-slate-400">
-                  <span className="text-[10px] font-bold text-slate-500 block">কাস্টমার নির্দেশনা:</span>
-                  <p className="line-clamp-2 text-[10px] italic">{job.instructions}</p>
+                  <span className="text-2xs font-bold text-slate-500 block">কাস্টমার নির্দেশনা:</span>
+                  <p className="line-clamp-2 text-2xs italic">{job.instructions}</p>
                 </div>
               )}
             </div>
@@ -231,13 +231,13 @@ export const DesignJobCard = React.memo(function DesignJobCard({
           {/* Pre-Press Quality Health Strip (Interactive Checklist Badges) */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
                 প্রি-প্রেস কোয়ালিটি হেলথ (Pre-Press Verification):
               </span>
               <button
                 type="button"
                 onClick={() => onOpenPreflightModal(job)}
-                className="text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                className="text-2xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
               >
                 {allPreflightPassed ? '✓ ভেরিফাইড (মেশিন সেট করুন)' : 'চেক করুন ও মেশিন রুট'}
               </button>
@@ -247,7 +247,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <button
                 type="button"
                 onClick={() => onTogglePreflight(job.id, 'cmyk', job.design_number)}
-                className={`py-1 px-1.5 rounded text-[10px] font-bold border text-center transition-all ${
+                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.cmyk
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
@@ -259,7 +259,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <button
                 type="button"
                 onClick={() => onTogglePreflight(job.id, 'dpi300', job.design_number)}
-                className={`py-1 px-1.5 rounded text-[10px] font-bold border text-center transition-all ${
+                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.dpi300
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
@@ -271,7 +271,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <button
                 type="button"
                 onClick={() => onTogglePreflight(job.id, 'bleed', job.design_number)}
-                className={`py-1 px-1.5 rounded text-[10px] font-bold border text-center transition-all ${
+                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.bleed
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
@@ -283,7 +283,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <button
                 type="button"
                 onClick={() => onTogglePreflight(job.id, 'curves', job.design_number)}
-                className={`py-1 px-1.5 rounded text-[10px] font-bold border text-center transition-all ${
+                className={`py-1 px-1.5 rounded text-2xs font-bold border text-center transition-all ${
                   preflight.curves
                     ? 'bg-emerald-50 border-emerald-400 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
                     : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-400 hover:border-slate-300'
@@ -307,10 +307,10 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             />
             {/* Format & Version Overlay */}
             <div className="absolute top-2 left-2 flex items-center gap-1">
-              <span className="bg-slate-900/80 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded">
+              <span className="bg-slate-900/80 backdrop-blur-sm text-white text-2xs font-bold uppercase px-1.5 py-0.5 rounded">
                 {currentVer?.file_format || 'PNG'}
               </span>
-              <span className="bg-indigo-600/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded font-mono">
+              <span className="bg-indigo-600/90 text-white text-2xs font-bold px-1.5 py-0.5 rounded font-mono">
                 v{currentVer?.version_number || job.current_version || 1}
               </span>
             </div>
@@ -410,7 +410,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                     size="sm"
                     variant="outline"
                     onClick={() => onOpenWhatsApp(job, 'reminder')}
-                    className="flex-1 text-[11px] h-7 border-purple-300 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
+                    className="flex-1 text-2xs h-7 border-purple-300 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
                   >
                     <MessageSquare className="h-3 w-3 mr-1" />
                     <span>WhatsApp Reminder</span>
@@ -420,7 +420,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
                     size="sm"
                     variant="outline"
                     onClick={() => onRequestRevision(job)}
-                    className="flex-1 text-[11px] h-7 border-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
+                    className="flex-1 text-2xs h-7 border-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
                   >
                     <RotateCcw className="h-3 w-3 mr-1" />
                     <span>Revision Needed</span>

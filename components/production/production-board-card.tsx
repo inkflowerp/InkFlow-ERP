@@ -69,19 +69,19 @@ export function ProductionBoardCard({
       case 'urgent':
       case 'very_urgent':
         return (
-          <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 text-[10px] font-bold">
+          <Badge className="bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border-rose-300 text-2xs font-bold">
             URGENT
           </Badge>
         )
       case 'low':
         return (
-          <Badge variant="outline" className="text-slate-500 text-[10px]">
+          <Badge variant="outline" className="text-slate-500 text-2xs">
             Low
           </Badge>
         )
       default:
         return (
-          <Badge variant="outline" className="text-blue-600 border-blue-200 text-[10px]">
+          <Badge variant="outline" className="text-blue-600 border-blue-200 text-2xs">
             Normal
           </Badge>
         )
@@ -91,19 +91,19 @@ export function ProductionBoardCard({
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'in_progress':
-        return <Badge className="bg-blue-600 text-white text-[10px] animate-pulse">Running</Badge>
+        return <Badge className="bg-blue-600 text-white text-2xs animate-pulse">Running</Badge>
       case 'ready':
-        return <Badge className="bg-emerald-600 text-white text-[10px]">Ready</Badge>
+        return <Badge className="bg-emerald-600 text-white text-2xs">Ready</Badge>
       case 'scheduled':
-        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border-purple-300 text-[10px]">Scheduled</Badge>
+        return <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 border-purple-300 text-2xs">Scheduled</Badge>
       case 'on_hold':
-        return <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 text-[10px]">On Hold</Badge>
+        return <Badge className="bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-300 border-amber-300 text-2xs">On Hold</Badge>
       case 'rework':
-        return <Badge className="bg-rose-600 text-white text-[10px]">Rework</Badge>
+        return <Badge className="bg-rose-600 text-white text-2xs">Rework</Badge>
       case 'completed':
-        return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-[10px]">Completed</Badge>
+        return <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-2xs">Completed</Badge>
       default:
-        return <Badge variant="outline" className="text-[10px] capitalize">{status}</Badge>
+        return <Badge variant="outline" className="text-2xs capitalize">{status}</Badge>
     }
   }
 
@@ -116,7 +116,7 @@ export function ProductionBoardCard({
             {getPriorityBadge(task.priority)}
             <Link
               href={jobHref}
-              className="text-[11px] font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
+              className="text-2xs font-bold text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-0.5"
             >
               <span>Job #{task.job_number || 'N/A'}</span>
               <ExternalLink className="h-2.5 w-2.5 opacity-60" />
@@ -132,14 +132,14 @@ export function ProductionBoardCard({
               {task.task_name}
             </Link>
           </h4>
-          <p className="text-[11px] text-slate-500 truncate">
+          <p className="text-2xs text-slate-500 truncate">
             {task.customer_name} • {task.product_name || 'Standard Print'}
           </p>
         </div>
 
         {/* Blocking Warning Banners */}
         {task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
-          <div className="p-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded text-[11px] text-rose-900 dark:text-rose-200 flex items-start gap-1.5">
+          <div className="p-2 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 rounded text-2xs text-rose-900 dark:text-rose-200 flex items-start gap-1.5">
             <Lock className="h-3.5 w-3.5 text-rose-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">COMMERCIAL HOLD:</span>{' '}
@@ -149,7 +149,7 @@ export function ProductionBoardCard({
         )}
 
         {task.is_blocked_by_design_gate && !task.is_blocked_by_commercial_gate && task.status !== 'completed' && (
-          <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
+          <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
             <Lock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">DESIGN HOLD:</span>{' '}
@@ -159,7 +159,7 @@ export function ProductionBoardCard({
         )}
 
         {task.is_blocked_by_dependency && task.status !== 'completed' && (
-          <div className="p-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded text-[11px] text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+          <div className="p-2 bg-slate-100 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded text-2xs text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
             <Lock className="h-3.5 w-3.5 text-slate-500 shrink-0" />
             <span className="truncate">
               Waiting for <strong className="font-semibold">{task.blocking_dependency_task_name}</strong> to complete.
@@ -168,18 +168,18 @@ export function ProductionBoardCard({
         )}
 
         {task.status === 'on_hold' && task.hold_reason && (
-          <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-[11px] text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
+          <div className="p-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded text-2xs text-amber-900 dark:text-amber-200 flex items-start gap-1.5">
             <AlertOctagon className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">ON HOLD:</span>{' '}
               {HOLD_REASON_LABELS[task.hold_reason]?.labelEn || task.hold_reason}
-              {task.hold_notes && <p className="text-[10px] opacity-90 mt-0.5">{task.hold_notes}</p>}
+              {task.hold_notes && <p className="text-2xs opacity-90 mt-0.5">{task.hold_notes}</p>}
             </div>
           </div>
         )}
 
         {/* Machine & Operator Details */}
-        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-600 dark:text-slate-400">
+        <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-2xs text-slate-600 dark:text-slate-400">
           <div className="flex items-center gap-1 truncate max-w-[130px]">
             <Cpu className="h-3 w-3 text-slate-400 shrink-0" />
             <span className="truncate font-medium">
@@ -196,7 +196,7 @@ export function ProductionBoardCard({
         </div>
 
         {/* Schedule & Quantity Footer */}
-        <div className="flex items-center justify-between text-[11px] text-slate-500">
+        <div className="flex items-center justify-between text-2xs text-slate-500">
           <div className="flex items-center gap-1">
             <Clock className="h-3 w-3 text-slate-400" />
             <span>{task.estimated_duration_minutes || 30}m</span>
@@ -242,7 +242,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="outline"
               onClick={() => onResume(task)}
-              className="h-7 text-[11px] px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 rounded-lg shrink-0"
+              className="h-7 text-2xs px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 rounded-lg shrink-0"
             >
               Resume
             </Button>
@@ -253,7 +253,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="ghost"
               onClick={() => onHold(task)}
-              className="h-7 text-[11px] px-1.5 text-slate-500 hover:text-amber-600 rounded-lg shrink-0"
+              className="h-7 text-2xs px-1.5 text-slate-500 hover:text-amber-600 rounded-lg shrink-0"
             >
               Hold
             </Button>
@@ -264,7 +264,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="outline"
               onClick={() => onSchedule(task)}
-              className="h-7 text-[11px] px-2 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg shrink-0"
+              className="h-7 text-2xs px-2 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg shrink-0"
             >
               Schedule
             </Button>
@@ -276,7 +276,7 @@ export function ProductionBoardCard({
               variant="default"
               onClick={() => onStart(task)}
               disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
-              className="h-7 text-[11px] px-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-7 text-2xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="h-3 w-3 fill-current" />
               <span>Start</span>
@@ -290,7 +290,7 @@ export function ProductionBoardCard({
                   size="sm"
                   variant="outline"
                   onClick={() => onPause(task)}
-                  className="h-7 text-[11px] px-2 text-amber-700 border-amber-200"
+                  className="h-7 text-2xs px-2 text-amber-700 border-amber-200"
                 >
                   <Pause className="h-3 w-3" />
                   Pause
@@ -301,7 +301,7 @@ export function ProductionBoardCard({
                   size="sm"
                   variant="default"
                   onClick={() => onComplete(task)}
-                  className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 font-semibold"
+                  className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1 font-semibold"
                 >
                   <CheckCircle2 className="h-3 w-3" />
                   Complete
@@ -315,7 +315,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="outline"
               onClick={() => onRework(task)}
-              className="h-7 text-[11px] px-2 text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-1"
+              className="h-7 text-2xs px-2 text-rose-600 border-rose-200 hover:bg-rose-50 flex items-center gap-1"
             >
               <RotateCcw className="h-3 w-3" />
               Rework

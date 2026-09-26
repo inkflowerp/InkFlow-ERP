@@ -353,7 +353,7 @@ export function PricingCalculatorSimulator({
                     <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                       {meta.label}
                     </div>
-                    <div className="text-[10px] text-teal-700 dark:text-teal-400 truncate font-medium">
+                    <div className="text-2xs text-teal-700 dark:text-teal-400 truncate font-medium">
                       {meta.labelBn}
                     </div>
                   </button>
@@ -410,12 +410,12 @@ export function PricingCalculatorSimulator({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
               <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <span className="text-[11px] font-bold text-slate-500 uppercase block">Billing Unit</span>
+                  <span className="text-2xs font-bold text-slate-500 uppercase block">Billing Unit</span>
                   <span className="text-sm font-black text-slate-800 dark:text-slate-200 uppercase font-mono">
                     Per {selectedProduct?.unit || 'Piece'} (Fixed Unit)
                   </span>
                 </div>
-                <Badge variant="outline" className="text-[11px] font-medium text-slate-600 bg-white dark:bg-slate-800">
+                <Badge variant="outline" className="text-2xs font-medium text-slate-600 bg-white dark:bg-slate-800">
                   No Dimensions Needed
                 </Badge>
               </div>
@@ -480,7 +480,7 @@ export function PricingCalculatorSimulator({
                         <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                           {fin.name}
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 font-mono">
                           + ৳{fin.selling_price || (fin as any).price_per_unit || 0} / {fin.pricing_method || 'sft'}
                         </div>
                       </div>
@@ -505,7 +505,7 @@ export function PricingCalculatorSimulator({
         <Card className="rounded-xl shadow-md border-slate-200 dark:border-slate-800 bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3">
             <div>
-              <span className="text-[10px] text-teal-400 uppercase font-bold tracking-wider">
+              <span className="text-2xs text-teal-400 uppercase font-bold tracking-wider">
                 {tBilingual('Calculated Commercial Tariff', 'গণনাকৃত বাণিজ্যিক মূল্য')}
               </span>
               <div className="text-3xl font-black font-mono text-white mt-0.5">
@@ -513,7 +513,7 @@ export function PricingCalculatorSimulator({
               </div>
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-slate-400 uppercase font-bold">Gross Margin</span>
+              <span className="text-2xs text-slate-400 uppercase font-bold">Gross Margin</span>
               <div
                 className={`text-lg font-black font-mono ${
                   simulation.marginPct >= 35 ? 'text-emerald-400' : 'text-amber-400'

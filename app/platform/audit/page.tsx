@@ -395,7 +395,7 @@ export default function PlatformAuditPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
                 <span>Platform Audit Logs</span>
-                <span className="text-[11px] font-mono font-medium px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/50">
+                <span className="text-2xs font-mono font-medium px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-800/50">
                   Zero-Trust Immutable
                 </span>
               </h1>
@@ -452,7 +452,7 @@ export default function PlatformAuditPage() {
           <div className="absolute top-0 right-0 h-16 w-16 bg-indigo-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Total Audit Events
               </div>
               <div className="text-2xl font-black text-white mt-1">
@@ -462,7 +462,7 @@ export default function PlatformAuditPage() {
                   (metrics?.total_logs ?? totalCount).toLocaleString()
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
                 <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
                 <span className="font-semibold text-emerald-400">+{metrics?.logs_today ?? 0}</span> today
               </div>
@@ -478,7 +478,7 @@ export default function PlatformAuditPage() {
           <div className="absolute top-0 right-0 h-16 w-16 bg-emerald-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Auth & Security
               </div>
               <div className="text-2xl font-black text-white mt-1">
@@ -488,7 +488,7 @@ export default function PlatformAuditPage() {
                   (metrics?.security_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
                 <Lock className="h-3 w-3 text-emerald-400" />
                 <span>Logins, MFA, Passwords</span>
               </div>
@@ -504,7 +504,7 @@ export default function PlatformAuditPage() {
           <div className="absolute top-0 right-0 h-16 w-16 bg-purple-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Tenant & Plan Actions
               </div>
               <div className="text-2xl font-black text-white mt-1">
@@ -514,7 +514,7 @@ export default function PlatformAuditPage() {
                   (metrics?.tenant_events_count ?? 0).toLocaleString()
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
                 <Building2 className="h-3 w-3 text-purple-400" />
                 <span>Lifecycle & Tier Changes</span>
               </div>
@@ -530,7 +530,7 @@ export default function PlatformAuditPage() {
           <div className="absolute top-0 right-0 h-16 w-16 bg-cyan-500/5 rounded-bl-full pointer-events-none" />
           <CardContent className="p-4 flex items-center justify-between">
             <div>
-              <div className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">
+              <div className="text-2xs font-medium text-slate-400 uppercase tracking-wider">
                 Privileged Actors
               </div>
               <div className="text-2xl font-black text-white mt-1">
@@ -540,7 +540,7 @@ export default function PlatformAuditPage() {
                   (metrics?.unique_actors_count ?? 1).toLocaleString()
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1">
                 <User className="h-3 w-3 text-cyan-400" />
                 <span>Root Administrators</span>
               </div>
@@ -828,7 +828,7 @@ export default function PlatformAuditPage() {
 
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
+            <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-2xs">
               <tr>
                 <th className="py-3.5 px-4 min-w-[210px]">Timestamp & Origin</th>
                 <th className="py-3.5 px-4 min-w-[230px]">Superadmin Actor</th>
@@ -881,17 +881,17 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[210px]">
                         <div className="font-semibold text-white flex items-center gap-1.5 whitespace-nowrap">
                           <span>{formatDate(log.created_at)}</span>
-                          <span className="text-slate-400 font-mono text-[11px]">
+                          <span className="text-slate-400 font-mono text-2xs">
                             {formatTime(log.created_at)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 mt-1.5 flex-nowrap">
-                          <span className="text-[10px] font-mono text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
+                          <span className="text-2xs font-mono text-slate-300 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs">
                             <Clock className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
                             <span>{formatRelativeTime(log.created_at)}</span>
                           </span>
                           <span
-                            className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
+                            className="text-2xs font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded-md border border-slate-800 flex items-center gap-1 whitespace-nowrap shrink-0 shadow-xs"
                             title={`Origin IP: ${log.ip_address || '127.0.0.1'}`}
                           >
                             <Globe className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
@@ -903,7 +903,7 @@ export default function PlatformAuditPage() {
                       {/* 2. Superadmin Actor */}
                       <td className="py-3.5 px-4 align-top min-w-[230px]">
                         <div className="flex items-start gap-2.5">
-                          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 text-white font-black text-[11px] flex items-center justify-center shrink-0 shadow-md border border-indigo-500/30">
+                          <div className="h-8 w-8 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-700 to-purple-600 text-white font-black text-2xs flex items-center justify-center shrink-0 shadow-md border border-indigo-500/30">
                             {getInitials(log.actor_name, log.actor_email)}
                           </div>
                           <div className="min-w-0 flex-1">
@@ -914,19 +914,19 @@ export default function PlatformAuditPage() {
                               {log.actor_name || 'Platform Administrator'}
                             </div>
                             <div
-                              className="text-[11px] font-mono text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
+                              className="text-2xs font-mono text-slate-400 truncate max-w-[170px] mt-0.5 leading-tight"
                               title={log.actor_email}
                             >
                               {log.actor_email}
                             </div>
                             <div className="mt-1 flex items-center gap-1">
                               {log.actor_role === 'platform_owner' ? (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
                                   <ShieldCheck className="h-2.5 w-2.5 text-amber-400 shrink-0" />
                                   Platform Owner
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
                                   <ShieldCheck className="h-2.5 w-2.5 text-indigo-400 shrink-0" />
                                   Superadmin
                                 </span>
@@ -940,7 +940,7 @@ export default function PlatformAuditPage() {
                       <td className="py-3.5 px-4 align-top min-w-[170px]">
                         <div className="inline-flex items-center gap-1.5">
                           <span
-                            className={`font-mono text-[11px] font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${style.bg}`}
+                            className={`font-mono text-2xs font-bold px-2.5 py-1 rounded-lg border flex items-center gap-1.5 ${style.bg}`}
                           >
                             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                             {log.action}
@@ -968,7 +968,7 @@ export default function PlatformAuditPage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5 truncate max-w-[170px]">
+                        <div className="text-2xs text-slate-400 font-mono mt-0.5 truncate max-w-[170px]">
                           {log.entity_type} {log.entity_id ? `• ${log.entity_id.slice(0, 8)}...` : ''}
                         </div>
                       </td>
@@ -990,7 +990,7 @@ export default function PlatformAuditPage() {
                             &quot;{log.details.reason}&quot;
                           </div>
                         ) : (
-                          <span className="text-slate-600 font-mono text-[11px]">System Stamped</span>
+                          <span className="text-slate-600 font-mono text-2xs">System Stamped</span>
                         )}
                       </td>
 
@@ -1095,7 +1095,7 @@ export default function PlatformAuditPage() {
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-bold text-white">Audit Event Inspection</h3>
                   <span
-                    className={`font-mono text-[10px] font-bold px-2 py-0.5 rounded-md border ${
+                    className={`font-mono text-2xs font-bold px-2 py-0.5 rounded-md border ${
                       getActionBadgeStyle(selectedLog.action).bg
                     }`}
                   >
@@ -1108,7 +1108,7 @@ export default function PlatformAuditPage() {
                   </span>
                   <button
                     onClick={() => handleCopyId(selectedLog.id)}
-                    className="text-slate-500 hover:text-slate-300 flex items-center gap-0.5 text-[10px]"
+                    className="text-slate-500 hover:text-slate-300 flex items-center gap-0.5 text-2xs"
                     title="Copy Event ID"
                   >
                     {copiedId ? (
@@ -1130,16 +1130,16 @@ export default function PlatformAuditPage() {
                   <div className="font-bold text-white mt-0.5 truncate" title={selectedLog.actor_name || selectedLog.actor_email}>
                     {selectedLog.actor_name || 'Platform Administrator'}
                   </div>
-                  <div className="text-[11px] font-mono text-slate-400 truncate mt-0.5">
+                  <div className="text-2xs font-mono text-slate-400 truncate mt-0.5">
                     {selectedLog.actor_email}
                   </div>
                   <div className="mt-1">
                     {selectedLog.actor_role === 'platform_owner' ? (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-300 border border-amber-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
                         Platform Owner
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-[9px] font-bold tracking-wide uppercase font-mono">
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 text-2xs font-bold tracking-wide uppercase font-mono">
                         Superadmin
                       </span>
                     )}
@@ -1170,14 +1170,14 @@ export default function PlatformAuditPage() {
 
                 <div>
                   <span className="text-slate-500 font-medium">Timestamp (BDT):</span>
-                  <div className="font-mono text-slate-300 mt-0.5 text-[11px]">
+                  <div className="font-mono text-slate-300 mt-0.5 text-2xs">
                     {formatDateTime(selectedLog.created_at)}
                   </div>
                 </div>
 
                 <div>
                   <span className="text-slate-500 font-medium">User Agent / Client:</span>
-                  <div className="font-mono text-slate-400 mt-0.5 text-[10px] truncate" title={selectedLog.user_agent || 'System'}>
+                  <div className="font-mono text-slate-400 mt-0.5 text-2xs truncate" title={selectedLog.user_agent || 'System'}>
                     {selectedLog.user_agent || 'System Daemon'}
                   </div>
                 </div>
@@ -1186,7 +1186,7 @@ export default function PlatformAuditPage() {
               {/* Justification Box (if reason is present) */}
               {(selectedLog.reason || selectedLog.details?.reason) && (
                 <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3.5 space-y-1">
-                  <div className="text-[11px] font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
+                  <div className="text-2xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
                     <AlertCircle className="h-3.5 w-3.5" />
                     <span>Audit Justification Reason</span>
                   </div>
@@ -1206,16 +1206,16 @@ export default function PlatformAuditPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {/* Previous State */}
                     <div className="bg-rose-950/20 border border-rose-900/40 rounded-xl p-3 space-y-1">
-                      <div className="text-[11px] font-bold text-rose-400">Previous State:</div>
-                      <pre className="text-[11px] font-mono text-rose-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                      <div className="text-2xs font-bold text-rose-400">Previous State:</div>
+                      <pre className="text-2xs font-mono text-rose-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
                         {JSON.stringify(selectedLog.previous_state || {}, null, 2)}
                       </pre>
                     </div>
 
                     {/* New State */}
                     <div className="bg-emerald-950/20 border border-emerald-900/40 rounded-xl p-3 space-y-1">
-                      <div className="text-[11px] font-bold text-emerald-400">New State:</div>
-                      <pre className="text-[11px] font-mono text-emerald-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
+                      <div className="text-2xs font-bold text-emerald-400">New State:</div>
+                      <pre className="text-2xs font-mono text-emerald-300 max-h-36 overflow-y-auto whitespace-pre-wrap">
                         {JSON.stringify(selectedLog.new_state || {}, null, 2)}
                       </pre>
                     </div>
@@ -1261,7 +1261,7 @@ export default function PlatformAuditPage() {
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               ) : (
-                <span className="text-[11px] text-slate-500 font-mono">Immutable cryptographic seal</span>
+                <span className="text-2xs text-slate-500 font-mono">Immutable cryptographic seal</span>
               )}
 
               <Button

@@ -94,11 +94,11 @@ export function MarketingNavbar({ onOpenDemo }: MarketingNavbarProps) {
                 <span className="text-lg sm:text-xl font-black tracking-tight text-white nav-link-nowrap">
                   {appName}
                 </span>
-                <span className="rounded bg-cyan-500/10 px-1 sm:px-1.5 py-0.5 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-cyan-400 border border-cyan-500/20 nav-link-nowrap">
+                <span className="rounded bg-cyan-500/10 px-1 sm:px-1.5 py-0.5 text-2xs sm:text-2xs font-bold uppercase tracking-wider text-cyan-400 border border-cyan-500/20 nav-link-nowrap">
                   BD SaaS
                 </span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium hidden sm:inline leading-none nav-link-nowrap">
+              <span className="text-2xs text-slate-400 font-medium hidden sm:inline leading-none nav-link-nowrap">
                 {tagline || 'Printing & Signage OS'}
               </span>
             </div>

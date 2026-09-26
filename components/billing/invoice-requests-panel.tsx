@@ -182,7 +182,7 @@ export function InvoiceRequestsPanel({
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {/* Total Requests */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-xs">
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center justify-between">
             <span>Total Requests</span>
             <FileText className="h-3.5 w-3.5 text-slate-400" />
           </div>
@@ -194,7 +194,7 @@ export function InvoiceRequestsPanel({
 
         {/* Pending Action (Commercial Hold) */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-900/80 shadow-xs bg-amber-50/20">
-          <div className="text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center justify-between">
             <span>Pending Action</span>
             {metrics.pendingCount > 0 && (
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
@@ -208,7 +208,7 @@ export function InvoiceRequestsPanel({
 
         {/* Fulfilled / Invoiced */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-900/60 shadow-xs">
-          <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider flex items-center justify-between">
             <span>Invoices Created</span>
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
           </div>
@@ -220,7 +220,7 @@ export function InvoiceRequestsPanel({
 
         {/* Estimated Pipeline Value */}
         <Card className="p-3.5 bg-white dark:bg-slate-900 border-blue-200 dark:border-blue-900/60 shadow-xs">
-          <div className="text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center justify-between">
+          <div className="text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider flex items-center justify-between">
             <span>Estimated Value</span>
             <Sparkles className="h-3.5 w-3.5 text-blue-500" />
           </div>
@@ -272,7 +272,7 @@ export function InvoiceRequestsPanel({
                   <span>{tab.label}</span>
                   <span
                     className={cn(
-                      'text-[10px] px-1 py-0.2 rounded-full font-mono font-bold',
+                      'text-2xs px-1 py-0.2 rounded-full font-mono font-bold',
                       activeSubFilter === tab.id
                         ? 'bg-white/20 text-white'
                         : tab.alert
@@ -353,7 +353,7 @@ export function InvoiceRequestsPanel({
                         #{req.request_number}
                       </span>
                       {getStatusBadge(req.status, req.invoice_number)}
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1">
+                      <span className="text-2xs text-slate-400 flex items-center gap-1">
                         <Clock className="h-3 w-3" />
                         <span>{timeAgo(req.created_at)}</span>
                       </span>
@@ -363,18 +363,18 @@ export function InvoiceRequestsPanel({
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
                       {/* Customer Info */}
                       <div className="space-y-0.5">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Customer</div>
+                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">Customer</div>
                         <div className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                           <User className="h-3.5 w-3.5 text-slate-400 shrink-0" />
                           <span>{req.customer_name}</span>
                         </div>
                         {req.company_name && (
-                          <div className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">
+                          <div className="text-2xs text-slate-600 dark:text-slate-300 font-medium">
                             {req.company_name}
                           </div>
                         )}
                         {req.customer_phone && (
-                          <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                          <div className="text-2xs text-slate-500 font-mono flex items-center gap-1">
                             <Phone className="h-3 w-3 text-slate-400 shrink-0" />
                             <a
                               href={`tel:${req.customer_phone}`}
@@ -385,7 +385,7 @@ export function InvoiceRequestsPanel({
                           </div>
                         )}
                         {req.customer_address && (
-                          <div className="text-[10px] text-slate-400 truncate max-w-xs" title={req.customer_address}>
+                          <div className="text-2xs text-slate-400 truncate max-w-xs" title={req.customer_address}>
                             📍 {req.customer_address}
                           </div>
                         )}
@@ -393,26 +393,26 @@ export function InvoiceRequestsPanel({
 
                       {/* Linked Orders / Design */}
                       <div className="space-y-0.5">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">
                           Linked Documents
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5">
                           {req.order_number && (
                             <Link href={getTenantNavHref(`/orders/${req.sales_order_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Order #{req.order_number}
                               </Badge>
                             </Link>
                           )}
                           {req.design_number && (
                             <Link href={getTenantNavHref(`/design/${req.design_job_id || ''}`, pathname, tenantSlug)}>
-                              <Badge variant="outline" className="text-[11px] font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
+                              <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-100 dark:hover:bg-slate-800">
                                 Design #{req.design_number}
                               </Badge>
                             </Link>
                           )}
                           {req.job_number && (
-                            <Badge variant="outline" className="text-[11px] font-mono">
+                            <Badge variant="outline" className="text-2xs font-mono">
                               Job #{req.job_number}
                             </Badge>
                           )}
@@ -424,14 +424,14 @@ export function InvoiceRequestsPanel({
 
                       {/* Requested By & Value */}
                       <div className="space-y-0.5">
-                        <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                        <div className="text-2xs font-bold uppercase tracking-wider text-slate-400">
                           Requested By
                         </div>
                         <div className="font-medium text-slate-700 dark:text-slate-300">
                           {req.requested_by_name || 'Prepress Designer'}
                         </div>
                         {Number(req.estimated_amount) > 0 && (
-                          <div className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-2xs font-mono font-bold text-blue-600 dark:text-blue-400">
                             Est: {formatBDT(req.estimated_amount)}
                           </div>
                         )}
@@ -440,7 +440,7 @@ export function InvoiceRequestsPanel({
 
                     {/* Notes & Summary Callout */}
                     {(req.items_summary || req.notes) && (
-                      <div className="p-2.5 bg-slate-50 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300 space-y-0.5 font-mono">
+                      <div className="p-2.5 bg-slate-50 dark:bg-slate-900/90 rounded-xl border border-slate-200 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-300 space-y-0.5 font-mono">
                         {req.items_summary && (
                           <div>
                             <strong className="text-slate-900 dark:text-white">Items:</strong> {req.items_summary}

@@ -126,7 +126,7 @@ export function ProductionKpiBar({
               {kpi.badge && (
                 <div className="absolute right-2.5 top-2.5">
                   <span
-                    className={`text-[9px] font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${kpi.badgeColor}`}
+                    className={`text-2xs font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${kpi.badgeColor}`}
                   >
                     {kpi.badge}
                   </span>
@@ -137,7 +137,7 @@ export function ProductionKpiBar({
                 <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 ${kpi.iconBg}`}>
                   <Icon className="h-4 w-4" />
                 </div>
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
                   {isBn ? kpi.titleBn : kpi.titleEn}
                 </span>
               </div>
@@ -147,7 +147,7 @@ export function ProductionKpiBar({
                   {kpi.count}
                 </div>
                 {kpi.id === 'running' && (
-                  <span className="text-[10px] font-mono font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                  <span className="text-2xs font-mono font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
                     <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-ping" />
                     Fleet
                   </span>

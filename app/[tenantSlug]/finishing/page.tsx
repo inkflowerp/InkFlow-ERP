@@ -510,7 +510,7 @@ export default function FinishingAndFabricationPage() {
                 <Scissors className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] font-bold text-indigo-900/70 dark:text-indigo-300/70 uppercase truncate">
+                <div className="text-2xs font-bold text-indigo-900/70 dark:text-indigo-300/70 uppercase truncate">
                   {tBilingual('Digital Finishing', 'ডিজিটাল ফিনিশিং')}
                 </div>
                 <div className="text-xl font-extrabold text-indigo-900 dark:text-indigo-100">
@@ -526,7 +526,7 @@ export default function FinishingAndFabricationPage() {
                 <Layers className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] font-bold text-blue-900/70 dark:text-blue-300/70 uppercase truncate">
+                <div className="text-2xs font-bold text-blue-900/70 dark:text-blue-300/70 uppercase truncate">
                   {tBilingual('Offset Binding', 'অফসেট ও বাইন্ডিং')}
                 </div>
                 <div className="text-xl font-extrabold text-blue-900 dark:text-blue-100">
@@ -542,7 +542,7 @@ export default function FinishingAndFabricationPage() {
                 <Wrench className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] font-bold text-amber-900/70 dark:text-amber-300/70 uppercase truncate">
+                <div className="text-2xs font-bold text-amber-900/70 dark:text-amber-300/70 uppercase truncate">
                   {tBilingual('Signage & Acrylic', 'সাইনেজ ও এক্রিলিক')}
                 </div>
                 <div className="text-xl font-extrabold text-amber-900 dark:text-amber-100">
@@ -558,7 +558,7 @@ export default function FinishingAndFabricationPage() {
                 <ShieldCheck className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <div className="text-[11px] font-bold text-emerald-900/70 dark:text-emerald-300/70 uppercase truncate">
+                <div className="text-2xs font-bold text-emerald-900/70 dark:text-emerald-300/70 uppercase truncate">
                   {tBilingual('Active On Bench', 'বেঞ্চে চলমান')}
                 </div>
                 <div className="text-xl font-extrabold text-emerald-900 dark:text-emerald-100">
@@ -649,12 +649,12 @@ export default function FinishingAndFabricationPage() {
                         <Link
                           href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                         >
-                          <Badge variant="outline" className="font-mono text-[11px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                          <Badge variant="outline" className="font-mono text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
                             #{task.job_number || task.task_number}
                           </Badge>
                         </Link>
                         <Badge
-                          className={`text-[10px] font-bold uppercase ${
+                          className={`text-2xs font-bold uppercase ${
                             category === 'digital_finishing'
                               ? 'bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300'
                               : category === 'signage_fabrication'
@@ -668,7 +668,7 @@ export default function FinishingAndFabricationPage() {
                           {task.task_name}
                         </span>
                         {task.priority === 'urgent' && (
-                          <Badge className="bg-rose-600 text-white text-[10px] font-bold">
+                          <Badge className="bg-rose-600 text-white text-2xs font-bold">
                             <Flame className="h-3 w-3 mr-1" /> URGENT
                           </Badge>
                         )}
@@ -713,7 +713,7 @@ export default function FinishingAndFabricationPage() {
 
                   {/* Bangladeshi Press Domain Specifications Bar */}
                   <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800/80 text-xs flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center gap-3 flex-wrap text-[11px] text-slate-600 dark:text-slate-400">
+                    <div className="flex items-center gap-3 flex-wrap text-2xs text-slate-600 dark:text-slate-400">
                       {task.required_material && (
                         <span>Substrate: <strong className="text-slate-800 dark:text-slate-200">{task.required_material}</strong></span>
                       )}
@@ -726,7 +726,7 @@ export default function FinishingAndFabricationPage() {
                     </div>
 
                     {/* Hardware & Consumables Counter for Bangladeshi Craftsmen */}
-                    <div className="flex items-center gap-2 text-[11px]">
+                    <div className="flex items-center gap-2 text-2xs">
                       {category === 'digital_finishing' && (
                         <div className="flex items-center gap-1 bg-white dark:bg-slate-900 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">
                           <span className="text-slate-500">আইলেট (Eyelets):</span>
@@ -764,7 +764,7 @@ export default function FinishingAndFabricationPage() {
                               +
                             </button>
                           </div>
-                          <Badge variant="outline" className="text-[10px] bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300">
+                          <Badge variant="outline" className="text-2xs bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-300">
                             ⚡ 12V DC Verified
                           </Badge>
                         </>
@@ -774,7 +774,7 @@ export default function FinishingAndFabricationPage() {
 
                   {/* Action Controls */}
                   <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                    <div className="text-[11px] text-slate-500">
+                    <div className="text-2xs text-slate-500">
                       {task.actual_start ? (
                         <span>Started: {new Date(task.actual_start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       ) : (
@@ -872,14 +872,14 @@ export default function FinishingAndFabricationPage() {
               <p className="font-bold">
                 {selectedTaskForQC?.task_name} — #{selectedTaskForQC?.job_number}
               </p>
-              <p className="text-[11px] opacity-90">
+              <p className="text-2xs opacity-90">
                 Verify all 5 quality checkpoints before releasing to the delivery dock. Passing QC automatically advances the job to <strong>Ready for Delivery</strong>.
               </p>
             </div>
 
             {/* 5-Point QC Inspection Checklist */}
             <div className="space-y-2 p-3 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
-              <Label className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide text-[10px]">
+              <Label className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide text-2xs">
                 Bangladeshi Press Quality Checkpoints (৫-দফা মান যাচাই)
               </Label>
               <div className="space-y-1.5 pt-1">

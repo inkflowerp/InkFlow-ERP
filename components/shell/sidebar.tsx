@@ -750,7 +750,7 @@ export function Sidebar() {
                 {tBilingual('Reset All Data', 'সব ডাটা রিসেট')}
               </span>
             </div>
-            <Badge className="text-[9px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 font-mono px-1 py-0 shrink-0">
+            <Badge className="text-2xs bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-300 dark:border-rose-800 font-mono px-1 py-0 shrink-0">
               Zero State
             </Badge>
           </button>

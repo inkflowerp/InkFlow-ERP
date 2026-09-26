@@ -36,7 +36,7 @@ export default function TenantError({ error, reset }: ErrorProps) {
       </p>
 
       {error.digest && (
-        <p className="text-[11px] font-mono text-rose-500/80 dark:text-rose-400/80 mb-5">
+        <p className="text-2xs font-mono text-rose-500/80 dark:text-rose-400/80 mb-5">
           Error Digest: {error.digest}
         </p>
       )}

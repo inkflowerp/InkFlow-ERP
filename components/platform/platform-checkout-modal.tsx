@@ -157,7 +157,7 @@ export function PlatformCheckoutModal({
         {/* Header Banner */}
         <div className="bg-gradient-to-r from-indigo-950 via-purple-950 to-slate-900 border-b border-slate-800 p-6">
           <div className="flex items-center justify-between mb-2">
-            <Badge className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase text-[10px] tracking-wider px-2 py-0.5">
+            <Badge className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase text-2xs tracking-wider px-2 py-0.5">
               Platform SaaS Subscription
             </Badge>
             <span className="text-xs font-semibold text-slate-400">Cluster Infrastructure</span>
@@ -197,7 +197,7 @@ export function PlatformCheckoutModal({
               }`}
             >
               Annual Billing
-              <span className="bg-emerald-500/20 text-emerald-300 text-[10px] px-1.5 py-0.2 rounded border border-emerald-500/30">
+              <span className="bg-emerald-500/20 text-emerald-300 text-2xs px-1.5 py-0.2 rounded border border-emerald-500/30">
                 2 Mo Free
               </span>
             </button>
@@ -220,7 +220,7 @@ export function PlatformCheckoutModal({
               </Badge>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-2xs">
               <div className="bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
                 <span className="text-slate-400">Max Tenants</span>
                 <p className="font-bold text-slate-200 mt-0.5">{selectedPlan.limits.max_tenants || 'Unlimited'}</p>
@@ -271,11 +271,11 @@ export function PlatformCheckoutModal({
                           <CreditCard className="h-4 w-4 text-indigo-400" />
                           <div>
                             <p className="text-xs font-bold text-white uppercase">{gw.provider}</p>
-                            <span className="text-[10px] text-slate-400">{gw.name}</span>
+                            <span className="text-2xs text-slate-400">{gw.name}</span>
                           </div>
                         </div>
                         {gw.is_default && (
-                          <Badge className="bg-emerald-500/20 text-emerald-300 text-[9px] px-1 py-0">Default</Badge>
+                          <Badge className="bg-emerald-500/20 text-emerald-300 text-2xs px-1 py-0">Default</Badge>
                         )}
                       </button>
                     ))
@@ -289,7 +289,7 @@ export function PlatformCheckoutModal({
             <Card className="bg-slate-900 border-slate-800 p-4 space-y-4">
               <div className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center justify-between">
                 <span>Transaction & Verification Status</span>
-                <span className="text-indigo-400 font-mono text-[11px]">{activeTrxId}</span>
+                <span className="text-indigo-400 font-mono text-2xs">{activeTrxId}</span>
               </div>
 
               <div className="space-y-3">
@@ -300,7 +300,7 @@ export function PlatformCheckoutModal({
                   </div>
                   <div>
                     <p className="font-bold text-white">Payment Transaction Created</p>
-                    <span className="text-[11px] text-slate-400">Server verified plan pricing and initialized gateway.</span>
+                    <span className="text-2xs text-slate-400">Server verified plan pricing and initialized gateway.</span>
                   </div>
                 </div>
 
@@ -322,7 +322,7 @@ export function PlatformCheckoutModal({
                         href={checkoutUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] text-indigo-400 hover:text-indigo-300 underline mt-0.5"
+                        className="inline-flex items-center gap-1 text-2xs text-indigo-400 hover:text-indigo-300 underline mt-0.5"
                       >
                         Re-open Gateway Payment Page <ExternalLink className="h-3 w-3" />
                       </a>
@@ -343,7 +343,7 @@ export function PlatformCheckoutModal({
                   </div>
                   <div>
                     <p className="font-bold text-white">Authoritative Server-Side Verification</p>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-2xs text-slate-400">
                       Cryptographic confirmation &amp; anti-tampering amount validation.
                     </span>
                   </div>

@@ -320,7 +320,7 @@ export function MobileNav() {
                 <span className="font-black text-base text-slate-900 dark:text-white leading-tight">
                   {appName}
                 </span>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider leading-none">
+                <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider leading-none">
                   {tagline || 'Print ERP'}
                 </span>
               </div>

@@ -557,7 +557,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
           </div>
           <div className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{securityPosture.activeCount}</div>
-          <div className="text-[11px] text-slate-500">{securityPosture.invitedCount} pending invites</div>
+          <div className="text-2xs text-slate-500">{securityPosture.invitedCount} pending invites</div>
         </div>
 
         {/* Privileged Accounts */}
@@ -567,7 +567,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
             <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           </div>
           <div className="text-lg font-bold text-amber-600 dark:text-amber-400">{securityPosture.privilegedUsersCount}</div>
-          <div className="text-[11px] text-slate-500">Protected root clearance</div>
+          <div className="text-2xs text-slate-500">Protected root clearance</div>
         </div>
 
         {/* Custom Roles */}
@@ -577,7 +577,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
             <Sliders className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="text-lg font-bold text-slate-900 dark:text-white">{roles.length}</div>
-          <div className="text-[11px] text-purple-600 dark:text-purple-400">{securityPosture.customRolesCount} custom created</div>
+          <div className="text-2xs text-purple-600 dark:text-purple-400">{securityPosture.customRolesCount} custom created</div>
         </div>
 
         {/* Branches */}
@@ -587,7 +587,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
             <Building className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div className="text-lg font-bold text-slate-900 dark:text-white">{branches.length}</div>
-          <div className="text-[11px] text-slate-500">Authorized locations</div>
+          <div className="text-2xs text-slate-500">Authorized locations</div>
         </div>
       </div>
 
@@ -608,7 +608,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           <Badge
             variant="outline"
             className={cn(
-              'text-[10px] ml-1 border-0 font-bold',
+              'text-2xs ml-1 border-0 font-bold',
               activeTab === 'users' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
             )}
           >
@@ -631,7 +631,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           <Badge
             variant="outline"
             className={cn(
-              'text-[10px] ml-1 border-0 font-bold',
+              'text-2xs ml-1 border-0 font-bold',
               activeTab === 'roles' ? 'bg-white/20 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
             )}
           >
@@ -767,7 +767,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                 )}
               </div>
 
-              <span className="text-[11px] text-slate-400">
+              <span className="text-2xs text-slate-400">
                 Showing {filteredUsers.length} of {users.length} members
               </span>
             </div>
@@ -854,7 +854,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                     {profile?.phone && <span>• {profile.phone}</span>}
                                   </div>
                                   {linkedEmp && (
-                                    <div className="mt-1 flex items-center gap-1.5 text-[10px]">
+                                    <div className="mt-1 flex items-center gap-1.5 text-2xs">
                                       <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-900 text-sky-700 dark:text-sky-300 font-medium">
                                         <Briefcase className="h-2.5 w-2.5 mr-1 text-sky-600 dark:text-sky-400" />
                                         Workforce: {linkedEmp.employee_id_number} • {linkedEmp.department}
@@ -886,7 +886,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                     {primaryRole?.name_bn && ` (${primaryRole.name_bn})`}
                                   </Badge>
                                   {user.responsibilities && user.responsibilities.length > 1 && (
-                                    <Badge variant="secondary" className="text-[10px] px-1.5 py-0 h-5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                                    <Badge variant="secondary" className="text-2xs px-1.5 py-0 h-5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                                       +{user.responsibilities.length - 1} responsibilities
                                     </Badge>
                                   )}
@@ -909,17 +909,17 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                             {/* Status Badge */}
                             <td className="py-3.5 px-4">
                               {isUserActive && (
-                                <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-[10px]">
+                                <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 text-2xs">
                                   Active
                                 </Badge>
                               )}
                               {isUserDisabled && (
-                                <Badge className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30 text-[10px]">
+                                <Badge className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30 text-2xs">
                                   Disabled
                                 </Badge>
                               )}
                               {isUserInvited && (
-                                <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-[10px]">
+                                <Badge className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 text-2xs">
                                   Pending Invite
                                 </Badge>
                               )}
@@ -1053,7 +1053,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                                 {profile?.email || user.invited_email}
                               </div>
                               {profile?.phone && (
-                                <div className="text-[11px] text-slate-400 truncate">
+                                <div className="text-2xs text-slate-400 truncate">
                                   {profile.phone}
                                 </div>
                               )}
@@ -1062,7 +1062,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
 
                           <Badge
                             className={cn(
-                              'text-[10px]',
+                              'text-2xs',
                               isUserActive && 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
                               isUserDisabled && 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30',
                               isUserInvited && 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
@@ -1075,12 +1075,12 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
                         {/* Mobile Role & Branch info */}
                         <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
                           {isOwner ? (
-                            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-[11px]">
+                            <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300 text-2xs">
                               <Crown className="mr-1 h-3 w-3 text-amber-500" />
                               Owner
                             </Badge>
                           ) : (
-                            <Badge variant="outline" className="border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300 text-[11px]">
+                            <Badge variant="outline" className="border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300 text-2xs">
                               <Shield className="mr-1 h-3 w-3" />
                               {primaryRole?.name || (user as any).role || 'Team Member'}
                             </Badge>
@@ -1348,7 +1348,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               <button
                 type="button"
                 onClick={generateNewPassword}
-                className="text-[11px] text-primary hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-2xs text-primary hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Sparkles className="w-3 h-3" />
                 Regenerate

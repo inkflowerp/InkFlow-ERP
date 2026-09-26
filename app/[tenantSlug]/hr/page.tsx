@@ -295,7 +295,7 @@ export default function HrmDashboardPage() {
         {/* KPI 1: Total Employees */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-blue-300 dark:hover:border-blue-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {tBilingual('Total Staff', 'মোট কর্মী')}
             </span>
             <div className="p-1 bg-blue-50 dark:bg-blue-950/40 text-blue-600 rounded-md">
@@ -305,7 +305,7 @@ export default function HrmDashboardPage() {
           <div className="mt-2">
             <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white font-mono">{totalEmployeesCount}</span>
           </div>
-          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span className="truncate">{employees.filter((e) => e.employee_type === 'permanent').length} {tBilingual('Perm', 'স্থায়ী')}</span>
             <Link href={getTenantNavHref('/hr/employees', pathname, slug)} className="text-blue-600 hover:underline font-semibold shrink-0">
               {tBilingual('List', 'তালিকা')}
@@ -316,7 +316,7 @@ export default function HrmDashboardPage() {
         {/* KPI 2: Present Today */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-emerald-300 dark:hover:border-emerald-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
               {tBilingual('Present Today', 'আজ উপস্থিত')}
             </span>
             <div className="p-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 rounded-md">
@@ -325,9 +325,9 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-xl font-black tracking-tight text-emerald-600 dark:text-emerald-400 font-mono">{presentTodayCount}</span>
-            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 font-mono">({presentRate}%)</span>
+            <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 font-mono">({presentRate}%)</span>
           </div>
-          <div className="mt-2 text-[10px] text-emerald-600/90 dark:text-emerald-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-emerald-600/90 dark:text-emerald-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('On Floor', 'ফ্লোরে আছেন')}</span>
             <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-emerald-600 hover:underline font-semibold shrink-0">
               {tBilingual('Live', 'লাইভ')}
@@ -338,7 +338,7 @@ export default function HrmDashboardPage() {
         {/* KPI 3: Absent Today */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300">
               {tBilingual('Absent Today', 'আজ অনুপস্থিত')}
             </span>
             <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
@@ -347,9 +347,9 @@ export default function HrmDashboardPage() {
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
             <span className="text-xl font-black tracking-tight text-rose-600 dark:text-rose-400 font-mono">{absentTodayCount}</span>
-            <span className="text-[11px] font-bold text-rose-600 dark:text-rose-400 font-mono">({absentRate}%)</span>
+            <span className="text-2xs font-bold text-rose-600 dark:text-rose-400 font-mono">({absentRate}%)</span>
           </div>
-          <div className="mt-2 text-[10px] text-rose-600/90 dark:text-rose-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-rose-600/90 dark:text-rose-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{approvedLeavesCount} {tBilingual('Leave', 'ছুটি')}</span>
             <span className="text-slate-400">•</span>
             <span className="truncate">{absentTodayCount} {tBilingual('Unauth', 'অনুপস্থিত')}</span>
@@ -359,7 +359,7 @@ export default function HrmDashboardPage() {
         {/* KPI 4: Late Arrivals */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-amber-300 dark:hover:border-amber-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300">
               {tBilingual('Late Arrivals', 'দেরিতে আগমন')}
             </span>
             <div className="p-1 bg-amber-50 dark:bg-amber-950/40 text-amber-600 rounded-md">
@@ -369,7 +369,7 @@ export default function HrmDashboardPage() {
           <div className="mt-2">
             <span className="text-xl font-black tracking-tight text-amber-600 dark:text-amber-400 font-mono">{lateTodayCount}</span>
           </div>
-          <div className="mt-2 text-[10px] text-amber-600/90 dark:text-amber-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-amber-600/90 dark:text-amber-400/90 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Check Grace', 'গ্রেস টাইম')}</span>
             <Link href={getTenantNavHref('/hr/attendance', pathname, slug)} className="text-amber-600 hover:underline font-semibold shrink-0">
               {tBilingual('Logs', 'লগ')}
@@ -380,7 +380,7 @@ export default function HrmDashboardPage() {
         {/* KPI 5: Arrears Due */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-rose-300 dark:hover:border-rose-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {tBilingual('Arrears Due', 'বকেয়া পাওনা')}
             </span>
             <div className="p-1 bg-rose-50 dark:bg-rose-950/40 text-rose-600 rounded-md">
@@ -392,7 +392,7 @@ export default function HrmDashboardPage() {
               {formatBDT(arrearsDue)}
             </span>
           </div>
-          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Unpaid Due', 'বকেয়া বেতন')}</span>
             <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-rose-600 hover:underline font-semibold shrink-0">
               {tBilingual('Clear', 'পরিশোধ')}
@@ -403,7 +403,7 @@ export default function HrmDashboardPage() {
         {/* KPI 6: Month Payroll */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-purple-300 dark:hover:border-purple-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {tBilingual('Month Payroll', 'চলতি মাসের বেতন')}
             </span>
             <div className="p-1 bg-purple-50 dark:bg-purple-950/40 text-purple-600 rounded-md">
@@ -415,7 +415,7 @@ export default function HrmDashboardPage() {
               {formatBDT(monthPayroll)}
             </span>
           </div>
-          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Gross Est.', 'মোট হিসাব')}</span>
             <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-purple-600 hover:underline font-semibold shrink-0">
               {tBilingual('Sheet', 'শিট')}
@@ -426,7 +426,7 @@ export default function HrmDashboardPage() {
         {/* KPI 7: Total Commission */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {tBilingual('Commission', 'মোট কমিশন')}
             </span>
             <div className="p-1 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 rounded-md">
@@ -438,7 +438,7 @@ export default function HrmDashboardPage() {
               {formatBDT(totalCommission)}
             </span>
           </div>
-          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{tBilingual('Incentives', 'ইনসেন্টিভ')}</span>
             <Link href={getTenantNavHref('/hr/salary-report', pathname, slug)} className="text-indigo-600 hover:underline font-semibold shrink-0">
               {tBilingual('Audit', 'অডিট')}
@@ -449,7 +449,7 @@ export default function HrmDashboardPage() {
         {/* KPI 8: Advance Given */}
         <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 hover:border-teal-300 dark:hover:border-teal-700 transition-all flex flex-col justify-between rounded-2xl">
           <div className="flex items-center justify-between text-slate-500 dark:text-slate-400">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               {tBilingual('Advance Given', 'প্রদত্ত অগ্রিম')}
             </span>
             <div className="p-1 bg-teal-50 dark:bg-teal-950/40 text-teal-600 rounded-md">
@@ -461,7 +461,7 @@ export default function HrmDashboardPage() {
               {formatBDT(advanceGiven)}
             </span>
           </div>
-          <div className="mt-2 text-[10px] text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
+          <div className="mt-2 text-2xs text-slate-500 border-t border-slate-100 dark:border-slate-800/80 pt-1.5 flex items-center justify-between">
             <span>{recentAdvances.length} {tBilingual('Pending', 'অনিষ্পন্ন')}</span>
             <Link href={getTenantNavHref('/hr/payroll', pathname, slug)} className="text-teal-600 hover:underline font-semibold shrink-0">
               {tBilingual('Deduct', 'কাটতি')}
@@ -499,7 +499,7 @@ export default function HrmDashboardPage() {
             {/* Status Statistics */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
-                <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                <div className="text-2xs font-bold text-emerald-800 dark:text-emerald-300">
                   {tBilingual('Salary Disbursed', 'বেতন পরিশোধিত')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
@@ -513,7 +513,7 @@ export default function HrmDashboardPage() {
               </div>
 
               <div className="p-3 rounded-xl border border-rose-100 dark:border-rose-950 bg-rose-50/40 dark:bg-rose-950/20">
-                <div className="text-[11px] font-bold text-rose-800 dark:text-rose-300">
+                <div className="text-2xs font-bold text-rose-800 dark:text-rose-300">
                   {tBilingual('Salary Pending', 'বেতন বকেয়া')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
@@ -578,7 +578,7 @@ export default function HrmDashboardPage() {
             {/* Status Statistics */}
             <div className="grid grid-cols-2 gap-3">
               <div className="p-3 rounded-xl border border-emerald-100 dark:border-emerald-950 bg-emerald-50/40 dark:bg-emerald-950/20">
-                <div className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300">
+                <div className="text-2xs font-bold text-emerald-800 dark:text-emerald-300">
                   {tBilingual('Present Rate', 'উপস্থিতির হার')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
@@ -592,7 +592,7 @@ export default function HrmDashboardPage() {
               </div>
 
               <div className="p-3 rounded-xl border border-blue-100 dark:border-blue-950 bg-blue-50/40 dark:bg-blue-950/20">
-                <div className="text-[11px] font-bold text-blue-800 dark:text-blue-300">
+                <div className="text-2xs font-bold text-blue-800 dark:text-blue-300">
                   {tBilingual('Approved Leaves', 'অনুমোদিত ছুটি')}
                 </div>
                 <div className="mt-1.5 flex items-baseline gap-2 font-mono">
@@ -703,7 +703,7 @@ export default function HrmDashboardPage() {
                               <span>{record.employee_name || emp?.name}</span>
                               <Badge
                                 variant="outline"
-                                className={`text-[10px] px-1.5 py-0 capitalize ${
+                                className={`text-2xs px-1.5 py-0 capitalize ${
                                   record.status === 'present'
                                     ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                                     : record.status === 'late'
@@ -714,7 +714,7 @@ export default function HrmDashboardPage() {
                                 {record.status}
                               </Badge>
                             </div>
-                            <div className="text-[11px] text-muted-foreground mt-0.5">
+                            <div className="text-2xs text-muted-foreground mt-0.5">
                               {emp?.department || record.shift_name || 'General Shift'}
                             </div>
                           </div>
@@ -727,7 +727,7 @@ export default function HrmDashboardPage() {
                             <span>{record.check_out_time || 'Working'}</span>
                           </div>
                           {isLate && (
-                            <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                            <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
                               +{record.late_minutes || 0}m {tBilingual('late', 'দেরি')}
                             </span>
                           )}
@@ -764,12 +764,12 @@ export default function HrmDashboardPage() {
                       <div key={dept} className="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 flex flex-col justify-between">
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-bold capitalize text-slate-900 dark:text-white">{dept}</span>
-                          <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-mono font-bold">
+                          <Badge variant="secondary" className="text-2xs px-1.5 py-0 font-mono font-bold">
                             {count}
                           </Badge>
                         </div>
                         <div className="mt-3">
-                          <div className="flex justify-between text-[10px] text-slate-500 mb-1 font-mono">
+                          <div className="flex justify-between text-2xs text-slate-500 mb-1 font-mono">
                             <span>{pct}% of team</span>
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
@@ -816,7 +816,7 @@ export default function HrmDashboardPage() {
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="text-xs font-bold text-slate-900 dark:text-white">{ot.employee_name}</div>
-                          <div className="text-[11px] text-slate-500 font-mono">
+                          <div className="text-2xs text-slate-500 font-mono">
                             {formatDate(ot.ot_date)} • {Math.round(ot.duration_minutes / 60 * 10) / 10}h ({ot.duration_minutes}m)
                           </div>
                         </div>
@@ -824,12 +824,12 @@ export default function HrmDashboardPage() {
                           <div className="text-xs font-bold text-amber-600 dark:text-amber-400 font-mono">
                             {formatBDT(ot.calculated_amount || 0)}
                           </div>
-                          <span className="text-[10px] text-slate-400 capitalize">{ot.ot_type.replace('_', ' ')}</span>
+                          <span className="text-2xs text-slate-400 capitalize">{ot.ot_type.replace('_', ' ')}</span>
                         </div>
                       </div>
 
                       {ot.reason && (
-                        <p className="text-[11px] text-slate-500 italic bg-slate-50 dark:bg-slate-900 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
+                        <p className="text-2xs text-slate-500 italic bg-slate-50 dark:bg-slate-900 p-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
                           &ldquo;{ot.reason}&rdquo;
                         </p>
                       )}
@@ -881,7 +881,7 @@ export default function HrmDashboardPage() {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white">{tBilingual('Employee Directory', 'কর্মীদের তালিকা')}</div>
-                    <div className="text-[11px] text-slate-500">{tBilingual('Profiles, salaries & contracts', 'প্রোফাইল ও বেতন বিবরণ')}</div>
+                    <div className="text-2xs text-slate-500">{tBilingual('Profiles, salaries & contracts', 'প্রোফাইল ও বেতন বিবরণ')}</div>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-blue-600 transition-colors" />
@@ -897,7 +897,7 @@ export default function HrmDashboardPage() {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white">{tBilingual('Floor Attendance & Punch', 'হাজিরা ও পাঞ্চিং')}</div>
-                    <div className="text-[11px] text-slate-500">{tBilingual('Daily logs, QR scan & shifts', 'দৈনিক হাজিরা ও শিফট')}</div>
+                    <div className="text-2xs text-slate-500">{tBilingual('Daily logs, QR scan & shifts', 'দৈনিক হাজিরা ও শিফট')}</div>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 transition-colors" />
@@ -913,7 +913,7 @@ export default function HrmDashboardPage() {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white">{tBilingual('Payroll & Salary Sheets', 'পেরোল ও বেতন শিট')}</div>
-                    <div className="text-[11px] text-slate-500">{tBilingual('Generate drafts & disburse pay', 'বেতন শিট তৈরি ও প্রদান')}</div>
+                    <div className="text-2xs text-slate-500">{tBilingual('Generate drafts & disburse pay', 'বেতন শিট তৈরি ও প্রদান')}</div>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-purple-600 transition-colors" />
@@ -929,7 +929,7 @@ export default function HrmDashboardPage() {
                   </div>
                   <div>
                     <div className="text-xs font-bold text-slate-900 dark:text-white">{tBilingual('Salary & Payout Reports', 'বেতন ও ব্যাংক রিপোর্ট')}</div>
-                    <div className="text-[11px] text-slate-500">{tBilingual('Bank advice sheets & CSV export', 'ব্যাংক অ্যাডভাইস শিট ও এক্সপোর্ট')}</div>
+                    <div className="text-2xs text-slate-500">{tBilingual('Bank advice sheets & CSV export', 'ব্যাংক অ্যাডভাইস শিট ও এক্সপোর্ট')}</div>
                   </div>
                 </div>
                 <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-amber-600 transition-colors" />

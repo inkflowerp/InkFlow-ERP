@@ -150,7 +150,7 @@ export function CustomerRatesTable({
             <div className="font-semibold text-slate-900 dark:text-white">
               Automated Dynamic Rate Priority Engine
             </div>
-            <div className="text-slate-600 dark:text-slate-400 text-[11px] leading-relaxed mt-0.5">
+            <div className="text-slate-600 dark:text-slate-400 text-2xs leading-relaxed mt-0.5">
               Priority: <span className="font-semibold text-blue-600 dark:text-blue-400">Custom Rate</span> &rarr;{' '}
               <span className="font-semibold text-emerald-600 dark:text-emerald-400">Last Invoice Rate</span> &rarr;{' '}
               <span className="font-semibold text-amber-600 dark:text-amber-400">Last Quotation Rate</span> &rarr;{' '}
@@ -159,7 +159,7 @@ export function CustomerRatesTable({
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 shrink-0 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center gap-1.5 text-2xs text-slate-500 dark:text-slate-400 shrink-0 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-200/60 dark:border-slate-800">
           <ShieldAlert className="h-3.5 w-3.5 text-amber-500 shrink-0" />
           <span>Historical invoices remain immutable</span>
         </div>
@@ -239,11 +239,11 @@ export function CustomerRatesTable({
                           {r.productName}
                         </div>
                         {r.productNameBn && (
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                          <div className="text-2xs text-slate-500 dark:text-slate-400">
                             {r.productNameBn}
                           </div>
                         )}
-                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                        <div className="text-2xs text-slate-400 font-mono mt-0.5">
                           {r.sku}
                         </div>
                       </td>
@@ -266,7 +266,7 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastInvoiceRate)}
                             </span>
                             {r.lastInvoiceNumber && (
-                              <div className="text-[10px] text-slate-400 truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
+                              <div className="text-2xs text-slate-400 truncate" title={`${r.lastInvoiceNumber} (${r.lastInvoiceDate})`}>
                                 {r.lastInvoiceNumber}
                               </div>
                             )}
@@ -284,7 +284,7 @@ export function CustomerRatesTable({
                               {formatBDT(r.lastQuotationRate)}
                             </span>
                             {r.lastQuotationNumber && (
-                              <div className="text-[10px] text-slate-400 truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
+                              <div className="text-2xs text-slate-400 truncate" title={`${r.lastQuotationNumber} (${r.lastQuotationDate})`}>
                                 {r.lastQuotationNumber}
                               </div>
                             )}
@@ -311,7 +311,7 @@ export function CustomerRatesTable({
                                 <button
                                   type="button"
                                   onClick={() => setEditRateValue(String(r.lastInvoiceRate))}
-                                  className="text-[9px] text-emerald-600 hover:underline font-bold"
+                                  className="text-2xs text-emerald-600 hover:underline font-bold"
                                   title="Auto-fill last invoice rate"
                                 >
                                   Invoiced
@@ -321,7 +321,7 @@ export function CustomerRatesTable({
                                 <button
                                   type="button"
                                   onClick={() => setEditRateValue(String(r.lastQuotationRate))}
-                                  className="text-[9px] text-amber-600 hover:underline font-bold"
+                                  className="text-2xs text-amber-600 hover:underline font-bold"
                                   title="Auto-fill last quotation rate"
                                 >
                                   Quoted
@@ -341,19 +341,19 @@ export function CustomerRatesTable({
                       {/* Active Source Badge */}
                       <td className="py-3 px-3 text-center">
                         {r.source === 'custom' ? (
-                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 text-[10px] font-semibold">
+                          <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800 text-2xs font-semibold">
                             Custom Rate
                           </Badge>
                         ) : r.source === 'last_invoice' ? (
-                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-semibold">
+                          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-semibold">
                             Last Invoice
                           </Badge>
                         ) : r.source === 'last_quotation' ? (
-                          <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-[10px] font-semibold">
+                          <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800 text-2xs font-semibold">
                             Last Quote
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-slate-500 text-[10px]">
+                          <Badge variant="outline" className="text-slate-500 text-2xs">
                             Catalog Default
                           </Badge>
                         )}
@@ -374,7 +374,7 @@ export function CustomerRatesTable({
                                 variant="default"
                                 onClick={() => handleSaveRate(r.productId)}
                                 disabled={isSaving}
-                                className="h-7 px-2 text-[11px] bg-blue-600 hover:bg-blue-700"
+                                className="h-7 px-2 text-2xs bg-blue-600 hover:bg-blue-700"
                               >
                                 <Save className="h-3 w-3 mr-1" />
                                 Save
@@ -384,7 +384,7 @@ export function CustomerRatesTable({
                                 variant="outline"
                                 onClick={handleCancelEdit}
                                 disabled={isSaving}
-                                className="h-7 px-2 text-[11px]"
+                                className="h-7 px-2 text-2xs"
                               >
                                 Cancel
                               </Button>
@@ -395,7 +395,7 @@ export function CustomerRatesTable({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleStartEdit(r)}
-                                className="h-7 px-2 text-[11px]"
+                                className="h-7 px-2 text-2xs"
                               >
                                 <Edit2 className="h-3 w-3 mr-1" />
                                 {r.hasCustomRate ? 'Edit' : 'Set Custom'}
@@ -451,26 +451,26 @@ export function CustomerRatesTable({
                     {r.productNameBn && (
                       <div className="text-xs text-slate-500">{r.productNameBn}</div>
                     )}
-                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                    <div className="text-2xs text-slate-400 font-mono mt-0.5">
                       {r.sku} • {r.unit.toUpperCase()}
                     </div>
                   </div>
 
                   <div>
                     {r.source === 'custom' ? (
-                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 text-[10px]">
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 text-2xs">
                         Custom
                       </Badge>
                     ) : r.source === 'last_invoice' ? (
-                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 text-[10px]">
+                      <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 text-2xs">
                         Last Invoice
                       </Badge>
                     ) : r.source === 'last_quotation' ? (
-                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 text-[10px]">
+                      <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950 dark:text-amber-300 text-2xs">
                         Last Quote
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-slate-500 text-[10px]">
+                      <Badge variant="outline" className="text-slate-500 text-2xs">
                         Default
                       </Badge>
                     )}
@@ -479,25 +479,25 @@ export function CustomerRatesTable({
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
                   <div>
-                    <div className="text-[10px] text-slate-400">Default</div>
+                    <div className="text-2xs text-slate-400">Default</div>
                     <div className="font-medium text-slate-600 dark:text-slate-400">
                       {formatBDT(r.defaultRate)}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-slate-400">Last Invoice</div>
+                    <div className="text-2xs text-slate-400">Last Invoice</div>
                     <div className="font-medium text-emerald-600 dark:text-emerald-400 truncate">
                       {r.lastInvoiceRate !== null ? formatBDT(r.lastInvoiceRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-slate-400">Last Quoted</div>
+                    <div className="text-2xs text-slate-400">Last Quoted</div>
                     <div className="font-medium text-amber-600 dark:text-amber-400 truncate">
                       {r.lastQuotationRate !== null && r.lastQuotationRate !== undefined ? formatBDT(r.lastQuotationRate) : 'None'}
                     </div>
                   </div>
                   <div>
-                    <div className="text-[10px] text-slate-400 font-bold">Effective</div>
+                    <div className="text-2xs text-slate-400 font-bold">Effective</div>
                     <div className="font-black text-slate-900 dark:text-white">
                       {formatBDT(r.effectiveRate)}
                     </div>

@@ -607,9 +607,9 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-white mt-2 flex items-baseline gap-2">
             {companies.length}
-            <span className="text-[11px] font-normal text-slate-500 font-mono">orgs</span>
+            <span className="text-2xs font-normal text-slate-500 font-mono">orgs</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+          <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
             <span className="text-indigo-400 font-bold">
               {companies.reduce((acc, c) => acc + (c.users_count || 0), 0)}
             </span>{' '}
@@ -626,13 +626,13 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-emerald-400 mt-2 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'active').length}
-            <span className="text-[11px] font-semibold text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
+            <span className="text-2xs font-semibold text-emerald-400/80 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20">
               {companies.length > 0
                 ? `${Math.round((companies.filter((c) => c.status === 'active').length / companies.length) * 100)}%`
                 : '0%'}
             </span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Operational workspaces</div>
+          <div className="text-2xs text-slate-400 mt-1">Operational workspaces</div>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg">
@@ -644,9 +644,9 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-blue-400 mt-2 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'trial').length}
-            <span className="text-[11px] font-normal text-slate-500 font-mono">evaluating</span>
+            <span className="text-2xs font-normal text-slate-500 font-mono">evaluating</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Trial evaluation accounts</div>
+          <div className="text-2xs text-slate-400 mt-1">Trial evaluation accounts</div>
         </Card>
 
         {/* Incomplete / Started-but-not-finished Registrations KPI Card */}
@@ -664,9 +664,9 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-amber-400 mt-2 flex items-baseline gap-2">
             {incompleteRegistrations.length}
-            <span className="text-[11px] font-normal text-slate-400 font-mono">pending</span>
+            <span className="text-2xs font-normal text-slate-400 font-mono">pending</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+          <div className="text-2xs text-slate-400 mt-1 flex items-center gap-1.5">
             <span className="text-amber-300 font-semibold">{incompleteMetrics.pending_verification_count} awaiting OTP</span>
           </div>
         </Card>
@@ -680,9 +680,9 @@ export default function PlatformTenantsPage() {
           </div>
           <div className="text-2xl font-black text-red-400 mt-2 flex items-baseline gap-2">
             {companies.filter((c) => c.status === 'suspended').length}
-            <span className="text-[11px] font-normal text-slate-500 font-mono">restricted</span>
+            <span className="text-2xs font-normal text-slate-500 font-mono">restricted</span>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Access restricted by policy</div>
+          <div className="text-2xs text-slate-400 mt-1">Access restricted by policy</div>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-700 transition-all shadow-lg col-span-2 sm:col-span-1">
@@ -695,7 +695,7 @@ export default function PlatformTenantsPage() {
           <div className="text-2xl font-black text-emerald-400 mt-2">
             <CurrencyDisplay amount={companies.reduce((acc, c) => acc + (c.monthly_fee || 0), 0)} />
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">Monthly SaaS revenue</div>
+          <div className="text-2xs text-slate-400 mt-1">Monthly SaaS revenue</div>
         </Card>
       </div>
 
@@ -728,7 +728,7 @@ export default function PlatformTenantsPage() {
                 {tab.isSpecial && <Hourglass className="h-3.5 w-3.5 text-amber-300 shrink-0" />}
                 <span>{tab.label}</span>
                 <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                  className={`px-1.5 py-0.2 rounded-full text-2xs font-mono ${
                     isSelected
                       ? 'bg-white/20 text-white'
                       : tab.isSpecial
@@ -815,7 +815,7 @@ export default function PlatformTenantsPage() {
           {/* Incomplete Sub-stage Filter Chips */}
           <div className="flex items-center justify-between gap-3 flex-wrap bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2">Stage:</span>
+              <span className="text-2xs font-bold text-slate-400 uppercase tracking-wider px-2">Stage:</span>
               {[
                 { key: 'all', label: 'All Incomplete', count: incompleteMetrics.total_incomplete },
                 { key: 'pending_verification', label: 'Pending Email OTP', count: incompleteMetrics.pending_verification_count },
@@ -835,14 +835,14 @@ export default function PlatformTenantsPage() {
                     }`}
                   >
                     <span>{sub.label}</span>
-                    <span className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                    <span className={`px-1.5 py-0.2 rounded-full text-2xs font-mono ${isSubActive ? 'bg-amber-500/30 text-amber-200' : 'bg-slate-800 text-slate-500'}`}>
                       {sub.count}
                     </span>
                   </button>
                 )
               })}
             </div>
-            <div className="text-[11px] text-slate-400 px-2 flex items-center gap-1.5">
+            <div className="text-2xs text-slate-400 px-2 flex items-center gap-1.5">
               <Clock className="h-3.5 w-3.5 text-amber-400" />
               <span>Registration drop-off triage &amp; workspace provisioning</span>
             </div>
@@ -865,7 +865,7 @@ export default function PlatformTenantsPage() {
             <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+                  <thead className="bg-slate-900/90 text-2xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
                     <tr>
                       <th className="py-3.5 px-4 font-bold">Prospective Owner</th>
                       <th className="py-3.5 px-3 font-bold">Contact Details</th>
@@ -892,7 +892,7 @@ export default function PlatformTenantsPage() {
                               </div>
                               <div className="min-w-0">
                                 <div className="font-bold text-white truncate">{reg.full_name || 'Anonymous Registrant'}</div>
-                                <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
+                                <div className="text-2xs text-slate-500 font-mono flex items-center gap-1">
                                   <span>ID:</span>
                                   <span className="truncate max-w-[120px]">{reg.id.slice(0, 12)}...</span>
                                 </div>
@@ -921,7 +921,7 @@ export default function PlatformTenantsPage() {
                               </button>
                             </div>
                             {reg.phone ? (
-                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 font-mono text-[11px]">
+                              <div className="flex items-center gap-1.5 mt-0.5 text-slate-400 font-mono text-2xs">
                                 <Phone className="h-3 w-3 text-slate-500 shrink-0" />
                                 <a href={`tel:${reg.phone}`} className="hover:text-indigo-400 transition-colors">
                                   {reg.phone}
@@ -936,13 +936,13 @@ export default function PlatformTenantsPage() {
                                 </button>
                               </div>
                             ) : (
-                              <div className="text-[11px] text-slate-500 italic mt-0.5">No phone provided</div>
+                              <div className="text-2xs text-slate-500 italic mt-0.5">No phone provided</div>
                             )}
                           </td>
 
                           {/* Target Plan */}
                           <td className="py-3.5 px-3">
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 capitalize">
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-2xs font-semibold bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 capitalize">
                               {reg.plan || 'trial'}
                             </span>
                           </td>
@@ -950,17 +950,17 @@ export default function PlatformTenantsPage() {
                           {/* Registration Stage */}
                           <td className="py-3.5 px-3">
                             {isVerified ? (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/15 border border-blue-500/40 text-blue-300">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-blue-500/15 border border-blue-500/40 text-blue-300">
                                 <MailCheck className="h-3 w-3 text-blue-400" />
                                 Verified • Onboarding Pending
                               </span>
                             ) : isExpired ? (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/15 border border-red-500/40 text-red-300">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-red-500/15 border border-red-500/40 text-red-300">
                                 <Clock className="h-3 w-3 text-red-400" />
                                 OTP Expired
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 border border-amber-500/40 text-amber-300">
+                              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider bg-amber-500/15 border border-amber-500/40 text-amber-300">
                                 <Hourglass className="h-3 w-3 text-amber-400 animate-pulse" />
                                 Pending Email OTP
                               </span>
@@ -969,7 +969,7 @@ export default function PlatformTenantsPage() {
 
                           {/* Verification Telemetry */}
                           <td className="py-3.5 px-3">
-                            <div className="text-[11px] text-slate-300">
+                            <div className="text-2xs text-slate-300">
                               {reg.is_email_confirmed ? (
                                 <span className="text-emerald-400 font-semibold flex items-center gap-1">
                                   <CheckCircle2 className="h-3 w-3" /> Email Confirmed
@@ -981,14 +981,14 @@ export default function PlatformTenantsPage() {
                               )}
                             </div>
                             {reg.expires_at && !reg.is_email_confirmed && (
-                              <div className="text-[10px] text-slate-500 font-mono">
+                              <div className="text-2xs text-slate-500 font-mono">
                                 Expires: {formatDate(reg.expires_at)}
                               </div>
                             )}
                           </td>
 
                           {/* Started At */}
-                          <td className="py-3.5 px-3 text-[11px] text-slate-400 whitespace-nowrap">
+                          <td className="py-3.5 px-3 text-2xs text-slate-400 whitespace-nowrap">
                             {formatDate(reg.created_at)}
                           </td>
 
@@ -1060,7 +1060,7 @@ export default function PlatformTenantsPage() {
         <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/40">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-900/90 text-[11px] uppercase tracking-wider text-slate-400 border-b border-slate-800">
+              <thead className="bg-slate-900/90 text-2xs uppercase tracking-wider text-slate-400 border-b border-slate-800">
                 <tr>
                   <th className="py-3.5 px-4 font-bold">Business</th>
                   <th className="py-3.5 px-3 font-bold">Plan &amp; Pricing</th>
@@ -1091,7 +1091,7 @@ export default function PlatformTenantsPage() {
                             >
                               {c.name}
                             </Link>
-                            <span className="text-[11px] text-slate-500 font-mono">/{c.slug}</span>
+                            <span className="text-2xs text-slate-500 font-mono">/{c.slug}</span>
                           </div>
                         </div>
                       </td>
@@ -1099,16 +1099,16 @@ export default function PlatformTenantsPage() {
                       {/* Plan & Pricing */}
                       <td className="py-3.5 px-3">
                         <div className="font-semibold text-white capitalize">{c.plan}</div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-2xs text-slate-400">
                           <CurrencyDisplay amount={c.monthly_fee || 0} />
-                          <span className="text-[10px] text-slate-500">/mo</span>
+                          <span className="text-2xs text-slate-500">/mo</span>
                         </div>
                       </td>
 
                       {/* Status */}
                       <td className="py-3.5 px-3">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-2xs font-bold uppercase tracking-wider border ${
                             c.status === 'active'
                               ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                               : isTrial
@@ -1136,21 +1136,21 @@ export default function PlatformTenantsPage() {
                       {/* Owner / Contact */}
                       <td className="py-3.5 px-3">
                         <div className="font-medium text-slate-200 truncate">{c.owner_name || 'Not set'}</div>
-                        <div className="text-[11px] text-slate-400 font-mono truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
+                        <div className="text-2xs text-slate-400 font-mono truncate">{c.owner_email || c.owner_phone || 'No contact'}</div>
                       </td>
 
                       {/* Usage */}
                       <td className="py-3.5 px-3">
-                        <div className="text-[11px] text-slate-300">
+                        <div className="text-2xs text-slate-300">
                           {c.users_count || 0}/{c.users_limit || 5} Users
                         </div>
-                        <div className="text-[10px] text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 font-mono">
                           {c.branches_count || 1} Branch
                         </div>
                       </td>
 
                       {/* Created */}
-                      <td className="py-3.5 px-3 text-[11px] text-slate-400 whitespace-nowrap">
+                      <td className="py-3.5 px-3 text-2xs text-slate-400 whitespace-nowrap">
                         {formatDate(c.created_at || Date.now())}
                       </td>
 
@@ -1294,7 +1294,7 @@ export default function PlatformTenantsPage() {
                       /{provisionSlug || generateSlug(provisionName) || 'tenant-slug'}
                     </span>
                   </div>
-                  <span className="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-md">
+                  <span className="text-2xs font-semibold bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-md">
                     Multi-Tenant Path
                   </span>
                 </div>
@@ -1332,7 +1332,7 @@ export default function PlatformTenantsPage() {
                               setSlugManuallyEdited(false)
                               setProvisionSlug(generateSlug(provisionName))
                             }}
-                            className="text-[10px] text-indigo-400 hover:underline"
+                            className="text-2xs text-indigo-400 hover:underline"
                           >
                             Reset to auto
                           </button>
@@ -1428,7 +1428,7 @@ export default function PlatformTenantsPage() {
                         <button
                           type="button"
                           onClick={handleGeneratePassword}
-                          className="text-[10px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
+                          className="text-2xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1 font-medium"
                         >
                           <Sparkles className="h-3 w-3" />
                           Generate Strong
@@ -1509,11 +1509,11 @@ export default function PlatformTenantsPage() {
                         >
                           <div className="flex items-center justify-between mb-1">
                             <span className="font-bold text-white text-xs">Free Trial Evaluation</span>
-                            <span className="text-[10px] font-semibold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
+                            <span className="text-2xs font-semibold bg-emerald-500/20 text-emerald-400 px-1.5 py-0.5 rounded">
                               ৳0 • {trialDays} Days
                             </span>
                           </div>
-                          <p className="text-[11px] text-slate-400">Full platform evaluation access for {trialDays} days without charge.</p>
+                          <p className="text-2xs text-slate-400">Full platform evaluation access for {trialDays} days without charge.</p>
                         </div>
                       )
                     })()}
@@ -1528,11 +1528,11 @@ export default function PlatformTenantsPage() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-bold text-white text-xs">Starter Plan</span>
-                        <span className="text-[10px] font-semibold bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
+                        <span className="text-2xs font-semibold bg-blue-500/20 text-blue-400 px-1.5 py-0.5 rounded">
                           ৳1,999/mo
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">Up to 3 Users • 1 Branch • Basic Quotations &amp; Billing.</p>
+                      <p className="text-2xs text-slate-400">Up to 3 Users • 1 Branch • Basic Quotations &amp; Billing.</p>
                     </div>
 
                     <div
@@ -1545,11 +1545,11 @@ export default function PlatformTenantsPage() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-bold text-white text-xs">Business Plan</span>
-                        <span className="text-[10px] font-semibold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">
+                        <span className="text-2xs font-semibold bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded">
                           ৳4,999/mo
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">Up to 10 Users • 3 Branches • Inventory &amp; Production Kanban.</p>
+                      <p className="text-2xs text-slate-400">Up to 10 Users • 3 Branches • Inventory &amp; Production Kanban.</p>
                     </div>
 
                     <div
@@ -1562,11 +1562,11 @@ export default function PlatformTenantsPage() {
                     >
                       <div className="flex items-center justify-between mb-1">
                         <span className="font-bold text-white text-xs">Enterprise Plan</span>
-                        <span className="text-[10px] font-semibold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
+                        <span className="text-2xs font-semibold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded">
                           ৳9,999/mo
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-400">50+ Users • Unlimited Branches • Dedicated SLA &amp; Support.</p>
+                      <p className="text-2xs text-slate-400">50+ Users • Unlimited Branches • Dedicated SLA &amp; Support.</p>
                     </div>
                   </div>
                 </div>
@@ -1633,7 +1633,7 @@ export default function PlatformTenantsPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-400">Subscription Tier:</span>
-                  <span className="font-semibold text-indigo-400 uppercase tracking-wider text-[11px]">
+                  <span className="font-semibold text-indigo-400 uppercase tracking-wider text-2xs">
                     {provisionedResult.credentials.plan}
                   </span>
                 </div>
@@ -1648,7 +1648,7 @@ export default function PlatformTenantsPage() {
 
                 <div className="space-y-2">
                   <div>
-                    <div className="text-[11px] text-slate-400 mb-0.5">Direct Workspace URL</div>
+                    <div className="text-2xs text-slate-400 mb-0.5">Direct Workspace URL</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
                       <span className="font-mono text-white text-xs truncate">
                         {provisionedResult.credentials.loginUrl}
@@ -1674,7 +1674,7 @@ export default function PlatformTenantsPage() {
                   </div>
 
                   <div>
-                    <div className="text-[11px] text-slate-400 mb-0.5">Owner Email</div>
+                    <div className="text-2xs text-slate-400 mb-0.5">Owner Email</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
                       <span className="font-mono text-white text-xs truncate">
                         {provisionedResult.credentials.email}
@@ -1695,7 +1695,7 @@ export default function PlatformTenantsPage() {
                   </div>
 
                   <div>
-                    <div className="text-[11px] text-slate-400 mb-0.5">Temporary Access Password</div>
+                    <div className="text-2xs text-slate-400 mb-0.5">Temporary Access Password</div>
                     <div className="flex items-center justify-between bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5">
                       <span className="font-mono text-emerald-400 font-bold text-xs">
                         {provisionedResult.credentials.password}
@@ -1853,16 +1853,16 @@ export default function PlatformTenantsPage() {
                           <span className="font-bold text-white text-xs flex items-center gap-1.5">
                             {p.title}
                             {isCurrent && (
-                              <span className="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-normal">
+                              <span className="text-2xs bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-normal">
                                 Current
                               </span>
                             )}
                           </span>
-                          <span className="text-[10px] font-semibold text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded">
+                          <span className="text-2xs font-semibold text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded">
                             {p.price}
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-400">{p.desc}</p>
+                        <p className="text-2xs text-slate-400">{p.desc}</p>
                       </div>
                     )
                   })}
@@ -2090,10 +2090,10 @@ export default function PlatformTenantsPage() {
                     <AlertTriangle className="h-4 w-4 shrink-0 text-red-400" />
                     Permanent Physical Deletion (Cannot be undone)
                   </div>
-                  <p className="text-[11px] text-red-300/90 leading-relaxed">
+                  <p className="text-2xs text-red-300/90 leading-relaxed">
                     This operation will physically wipe all records from PostgreSQL and purge all Supabase Storage files for this tenant:
                   </p>
-                  <ul className="text-[10px] text-red-200/80 space-y-0.5 list-disc pl-4">
+                  <ul className="text-2xs text-red-200/80 space-y-0.5 list-disc pl-4">
                     <li>Company details, branches, and member accounts</li>
                     <li>Customer databases, contacts, and communication logs</li>
                     <li>Invoices, payments, financial transactions, and cash book</li>
@@ -2119,14 +2119,14 @@ export default function PlatformTenantsPage() {
                     className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-[10px] text-slate-500">Quick fill:</span>
+                    <span className="text-2xs text-slate-500">Quick fill:</span>
                     <button
                       type="button"
                       onClick={() => {
                         setDeleteReason('Testing cleanup')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
                     >
                       Testing cleanup
                     </button>
@@ -2136,7 +2136,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Account closed at owner request')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
                     >
                       Owner request
                     </button>
@@ -2146,7 +2146,7 @@ export default function PlatformTenantsPage() {
                         setDeleteReason('Duplicate / abandoned registration')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                      className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors"
                     >
                       Duplicate
                     </button>
@@ -2169,14 +2169,14 @@ export default function PlatformTenantsPage() {
                     className="bg-slate-950 border-slate-800 text-white text-xs h-9 focus-visible:ring-red-500 font-medium"
                   />
                   <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                    <span className="text-[10px] text-slate-500">Quick fill:</span>
+                    <span className="text-2xs text-slate-500">Quick fill:</span>
                     <button
                       type="button"
                       onClick={() => {
                         setDeleteConfirmName('DELETE')
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-2 py-0.5 rounded text-[10px] bg-red-950/80 hover:bg-red-900 text-red-300 font-mono font-bold border border-red-700 transition-colors"
+                      className="px-2 py-0.5 rounded text-2xs bg-red-950/80 hover:bg-red-900 text-red-300 font-mono font-bold border border-red-700 transition-colors"
                     >
                       DELETE
                     </button>
@@ -2186,7 +2186,7 @@ export default function PlatformTenantsPage() {
                         setDeleteConfirmName(deleteModalCompany.name)
                         if (deleteError) setDeleteError(null)
                       }}
-                      className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors truncate max-w-[140px]"
+                      className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors truncate max-w-[140px]"
                       title={deleteModalCompany.name}
                     >
                       {deleteModalCompany.name}
@@ -2198,7 +2198,7 @@ export default function PlatformTenantsPage() {
                           setDeleteConfirmName(deleteModalCompany.slug)
                           if (deleteError) setDeleteError(null)
                         }}
-                        className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-mono transition-colors truncate max-w-[120px]"
+                        className="px-2 py-0.5 rounded text-2xs bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-mono transition-colors truncate max-w-[120px]"
                         title={deleteModalCompany.slug}
                       >
                         {deleteModalCompany.slug}
@@ -2209,7 +2209,7 @@ export default function PlatformTenantsPage() {
               </CardContent>
 
               <div className="p-4 border-t border-slate-800 flex items-center justify-between gap-2 bg-slate-950/60">
-                <div className="text-[11px]">
+                <div className="text-2xs">
                   {Boolean(
                     deleteReason.trim() &&
                     (
@@ -2223,9 +2223,9 @@ export default function PlatformTenantsPage() {
                       Ready to delete
                     </span>
                   ) : !deleteReason.trim() ? (
-                    <span className="text-amber-400 text-[10px]">Reason required</span>
+                    <span className="text-amber-400 text-2xs">Reason required</span>
                   ) : (
-                    <span className="text-slate-400 text-[10px]">Awaiting confirmation</span>
+                    <span className="text-slate-400 text-2xs">Awaiting confirmation</span>
                   )}
                 </div>
 
@@ -2366,7 +2366,7 @@ export default function PlatformTenantsPage() {
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
                   Registration Purge
                 </div>
-                <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                <p className="text-2xs text-amber-300/90 leading-relaxed">
                   This will purge the pending verification OTP tokens and un-onboarded user profile for{' '}
                   <span className="font-mono font-semibold">{deleteIncompleteTarget.email}</span>.
                   The prospective user will need to register anew at /register if they wish to create a tenant later.

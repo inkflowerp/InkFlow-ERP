@@ -89,7 +89,7 @@ export function TenantSupportInbox({
               {tBilingual('Support Inbox', 'সহায়তা ইনবক্স')}
             </h1>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-indigo-600 text-white animate-pulse">
+              <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-indigo-600 text-white animate-pulse">
                 {unreadCount} {tBilingual('New', 'নতুন')}
               </span>
             )}
@@ -160,7 +160,7 @@ export function TenantSupportInbox({
               {tab.count > 0 && (
                 <span
                   className={cn(
-                    'text-[10px] px-1.5 py-0.2 rounded-full font-bold',
+                    'text-2xs px-1.5 py-0.2 rounded-full font-bold',
                     activeTab === tab.key
                       ? 'bg-slate-700 text-white dark:bg-slate-300 dark:text-slate-900'
                       : 'bg-slate-200/80 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
@@ -221,19 +221,19 @@ export function TenantSupportInbox({
                 {/* Line 1: Ticket number + Status badge + Time */}
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-[11px]">
+                    <span className="font-mono font-bold text-slate-900 dark:text-slate-100 text-2xs">
                       {conv.ticket_number}
                     </span>
                     <span
                       className={cn(
-                        'px-2 py-0.5 rounded-md text-[10px] font-medium border',
+                        'px-2 py-0.5 rounded-md text-2xs font-medium border',
                         statusConfig.badgeClass
                       )}
                     >
                       {statusConfig.labelEn}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-1.5 text-2xs text-slate-400">
                     <Clock className="w-3 h-3" />
                     <span>{formatDate(conv.last_message_at)}</span>
                   </div>
@@ -257,7 +257,7 @@ export function TenantSupportInbox({
                 </div>
 
                 {/* Line 3: Last Message Preview */}
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate line-clamp-1">
+                <p className="text-2xs text-slate-500 dark:text-slate-400 truncate line-clamp-1">
                   {conv.last_message_by && (
                     <span className="font-medium text-slate-700 dark:text-slate-300">
                       {conv.last_message_by}:{' '}

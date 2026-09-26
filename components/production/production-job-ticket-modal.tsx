@@ -87,14 +87,14 @@ export function JobTicketPrintModal({
         <div className="bg-white text-slate-900 p-6 sm:p-8 rounded-xl border border-slate-300 dark:border-slate-700 text-xs space-y-4 shadow-xs print:border-none print:shadow-none print:p-0">
           {/* Header */}
           <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 relative">
-            <div className="absolute right-0 top-0 text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 font-bold border border-slate-400">
+            <div className="absolute right-0 top-0 text-2xs font-mono px-2 py-0.5 rounded bg-slate-100 font-bold border border-slate-400">
               TASK: {task.task_number}
             </div>
             <h1 className="text-lg font-black tracking-tight uppercase">
               {company?.name || 'InkFlow Digital Printing & Signage'}
             </h1>
             {company?.address && (
-              <p className="text-slate-600 text-[11px]">{company.address}</p>
+              <p className="text-slate-600 text-2xs">{company.address}</p>
             )}
             <div className="inline-block mt-1 px-4 py-0.5 rounded-full bg-slate-900 text-white font-black text-xs tracking-wider uppercase">
               PRODUCTION JOB TICKET • কারখানা কাজের নির্দেশিকা
@@ -119,7 +119,7 @@ export function JobTicketPrintModal({
 
           {/* Core Technical Specifications Table */}
           <table className="w-full text-left border-collapse border border-slate-300 text-xs">
-            <thead className="bg-slate-100 font-bold text-[11px]">
+            <thead className="bg-slate-100 font-bold text-2xs">
               <tr>
                 <th className="p-2 border border-slate-300">Product / Job Item</th>
                 <th className="p-2 border border-slate-300 text-center">Dimensions</th>
@@ -136,7 +136,7 @@ export function JobTicketPrintModal({
                   {task.width && task.height ? (
                     <div>
                       {task.width} × {task.height} {task.unit || 'inch'}
-                      {sftArea && <div className="text-[10px] text-slate-500">({sftArea} SFT)</div>}
+                      {sftArea && <div className="text-2xs text-slate-500">({sftArea} SFT)</div>}
                     </div>
                   ) : (
                     'Standard Size'
@@ -147,7 +147,7 @@ export function JobTicketPrintModal({
                 </td>
                 <td className="p-2.5 border border-slate-300">
                   <div className="font-bold text-slate-800">{task.required_material || 'Press Standard Material'}</div>
-                  {task.notes && <div className="text-[10px] text-slate-500 mt-0.5">Note: {task.notes}</div>}
+                  {task.notes && <div className="text-2xs text-slate-500 mt-0.5">Note: {task.notes}</div>}
                 </td>
               </tr>
             </tbody>
@@ -155,10 +155,10 @@ export function JobTicketPrintModal({
 
           {/* Quality Assurance & Finishing Checklist */}
           <div className="p-3 bg-slate-50 rounded-lg border border-slate-300 space-y-2">
-            <span className="font-bold text-[11px] uppercase tracking-wider text-slate-700 block">
+            <span className="font-bold text-2xs uppercase tracking-wider text-slate-700 block">
               Quality Assurance & Finishing Checklist (কোয়ালিটি চেক):
             </span>
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div className="grid grid-cols-2 gap-2 text-2xs">
               <div className="flex items-center gap-1.5">
                 <span className="h-3.5 w-3.5 rounded border border-slate-400 bg-white inline-block" />
                 <span>মিডিয়া ও সারফেস কোয়ালিটি চেক (No scratches/banding)</span>
@@ -181,18 +181,18 @@ export function JobTicketPrintModal({
           {/* Dual Signatures Block */}
           <div className="pt-8 flex justify-between items-end text-xs">
             <div className="text-center space-y-1">
-              <div className="font-mono text-slate-500 text-[10px]">{task.operator_name || 'Machine Operator'}</div>
+              <div className="font-mono text-slate-500 text-2xs">{task.operator_name || 'Machine Operator'}</div>
               <div className="border-t border-slate-400 w-48 pt-1 font-bold">
                 মেশিন অপারেটরের স্বাক্ষর
-                <div className="text-[10px] font-normal text-slate-500">(Operator Signature)</div>
+                <div className="text-2xs font-normal text-slate-500">(Operator Signature)</div>
               </div>
             </div>
 
             <div className="text-center space-y-1">
-              <div className="font-mono text-slate-500 text-[10px]">Production Manager</div>
+              <div className="font-mono text-slate-500 text-2xs">Production Manager</div>
               <div className="border-t border-slate-400 w-48 pt-1 font-bold">
                 ফ্লোর ইন-চার্জ / কিউসি স্বাক্ষর
-                <div className="text-[10px] font-normal text-slate-500">(QC & Floor Supervisor)</div>
+                <div className="text-2xs font-normal text-slate-500">(QC & Floor Supervisor)</div>
               </div>
             </div>
           </div>

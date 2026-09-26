@@ -75,14 +75,14 @@ export function PlatformSupportBanner() {
           <ShieldAlert className="h-4 w-4" />
         </span>
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="bg-black/30 text-amber-200 px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-wider">
+          <span className="bg-black/30 text-amber-200 px-2 py-0.5 rounded text-2xs font-black uppercase tracking-wider">
             SUPPORT MODE ACTIVE
           </span>
           <span>
             Tenant: <strong className="underline text-white font-bold">{supportData.targetCompanyName}</strong>
           </span>
           {supportData.accessLevel && (
-            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-[10px] font-mono uppercase">
+            <span className="bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs font-mono uppercase">
               {supportData.accessLevel.replace('_', ' ')}
             </span>
           )}
@@ -92,7 +92,7 @@ export function PlatformSupportBanner() {
             </span>
           )}
           {timeLeft && (
-            <span className="inline-flex items-center gap-1 bg-black/20 text-amber-100 px-2 py-0.5 rounded text-[11px] font-mono">
+            <span className="inline-flex items-center gap-1 bg-black/20 text-amber-100 px-2 py-0.5 rounded text-2xs font-mono">
               <Clock className="h-3 w-3 text-amber-300" />
               {timeLeft}
             </span>

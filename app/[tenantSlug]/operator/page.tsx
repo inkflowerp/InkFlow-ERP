@@ -525,7 +525,7 @@ function MobileOperatorPanelContent() {
               {tBilingual('Active Workstation / Machine Station', 'বর্তমান মেশিন স্টেশন')}
             </Label>
             {selectedStationMachine && (
-              <Badge className={`text-[10px] uppercase font-semibold ${
+              <Badge className={`text-2xs uppercase font-semibold ${
                 selectedStationMachine.status === 'in_use'
                   ? 'bg-blue-600 text-white'
                   : selectedStationMachine.status === 'available'
@@ -578,7 +578,7 @@ function MobileOperatorPanelContent() {
               </span>
               {tBilingual('CURRENTLY RUNNING', 'বর্তমানে চলমান কাজ')} ({activeTasks.length})
             </span>
-            <span className="text-[11px] text-blue-600 font-mono">Live Telemetry Active</span>
+            <span className="text-2xs text-blue-600 font-mono">Live Telemetry Active</span>
           </div>
 
           <div className="space-y-3">
@@ -617,7 +617,7 @@ function MobileOperatorPanelContent() {
                           {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
                         </div>
                         {task.width && task.height && (
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-2xs text-slate-500">
                             {task.width} × {task.height} in
                           </div>
                         )}
@@ -632,7 +632,7 @@ function MobileOperatorPanelContent() {
                           <span className="font-bold text-slate-800 dark:text-slate-200">
                             {task.assigned_machine_name || 'Manual Station'}
                           </span>
-                          <span className="text-slate-400 block text-[10px]">
+                          <span className="text-slate-400 block text-2xs">
                             {task.required_material ? `Media: ${task.required_material}` : 'Direct Execution'}
                           </span>
                         </div>
@@ -643,7 +643,7 @@ function MobileOperatorPanelContent() {
                           <Activity className="h-3.5 w-3.5 animate-spin text-emerald-500" />
                           <span>{elapsedTime}</span>
                         </div>
-                        <span className="text-[10px] text-slate-400">
+                        <span className="text-2xs text-slate-400">
                           Target: {estMinutes} mins
                         </span>
                       </div>
@@ -712,7 +712,7 @@ function MobileOperatorPanelContent() {
       <div className="space-y-2">
         <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center justify-between">
           <span>{tBilingual('UPCOMING IN QUEUE', 'পরবর্তী কিউ')} ({upcomingTasks.length})</span>
-          <span className="text-[11px] text-slate-500">Tap Start to begin production</span>
+          <span className="text-2xs text-slate-500">Tap Start to begin production</span>
         </div>
 
         <div className="space-y-2.5">
@@ -727,7 +727,7 @@ function MobileOperatorPanelContent() {
                     <Link
                       href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                     >
-                      <Badge variant="outline" className="text-[10px] font-mono hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                      <Badge variant="outline" className="text-2xs font-mono hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
                         #{task.job_number || task.task_number}
                       </Badge>
                     </Link>
@@ -735,7 +735,7 @@ function MobileOperatorPanelContent() {
                       {task.task_name}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-2 flex-wrap">
+                  <div className="text-2xs text-slate-500 flex items-center gap-2 flex-wrap">
                     <span>{task.customer_name}</span>
                     <span>•</span>
                     <span>{task.quantity} {task.unit}</span>
@@ -799,11 +799,11 @@ function MobileOperatorPanelContent() {
                         #{task.job_number}: {task.task_name}
                       </span>
                     </Link>
-                    <p className="text-[11px] text-amber-800 dark:text-amber-300 mt-0.5">
+                    <p className="text-2xs text-amber-800 dark:text-amber-300 mt-0.5">
                       Reason: {task.hold_reason || 'Under inspection'} {task.hold_notes ? `(${task.hold_notes})` : ''}
                     </p>
                   </div>
-                  <Badge variant="outline" className="border-amber-300 text-amber-800 dark:text-amber-300 text-[10px]">
+                  <Badge variant="outline" className="border-amber-300 text-amber-800 dark:text-amber-300 text-2xs">
                     On Hold
                   </Badge>
                 </div>
@@ -847,7 +847,7 @@ function MobileOperatorPanelContent() {
             <p className="font-bold">
               Machine: {breakdownTask?.assigned_machine_name}
             </p>
-            <p className="text-[11px] opacity-90">
+            <p className="text-2xs opacity-90">
               Logging this breakdown will transition the machine to <strong>Breakdown</strong> status and automatically hold current task #{breakdownTask?.task_number}.
             </p>
           </div>

@@ -252,7 +252,7 @@ export default function SupplierProfilePage() {
                   <CatIcon className="h-3.5 w-3.5" />
                   <span>{catMeta.labelEn.split(' ')[0]}</span>
                 </span>
-                <Badge variant="outline" className="text-[11px] font-mono py-0.5 px-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                   {supplier.supplier_code || 'SUP-001'}
                 </Badge>
               </div>
@@ -372,18 +372,18 @@ export default function SupplierProfilePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Purchases */}
         <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
             {tBilingual('Total Purchases from Vendor', 'মোট ক্রয়কৃত মালামাল')}
           </span>
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             <CurrencyDisplay amount={supplier.total_purchases_amount || 0} />
           </div>
-          <span className="text-[11px] text-slate-400">Cumulative roll/sheet acquisitions</span>
+          <span className="text-2xs text-slate-400">Cumulative roll/sheet acquisitions</span>
         </Card>
 
         {/* Payments Cleared */}
         <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+          <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
             {tBilingual('Total Payments Cleared', 'মোট পরিশোধিত বিল')}
           </span>
           <div className="text-2xl font-black text-emerald-600 mt-1 font-mono">
@@ -391,21 +391,21 @@ export default function SupplierProfilePage() {
               amount={Math.max(0, (supplier.total_purchases_amount || 0) - (supplier.outstanding_balance || 0))}
             />
           </div>
-          <span className="text-[11px] text-emerald-600 font-medium">Bank Cheques, RTGS & Cash</span>
+          <span className="text-2xs text-emerald-600 font-medium">Bank Cheques, RTGS & Cash</span>
         </Card>
 
         {/* Payable Due */}
         <Card className={`p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 border-l-4 ${outstandingDue > 0 ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
             {outstandingDue > 0 ? (
-              <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-[10px] font-bold">
+              <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200 text-2xs font-bold">
                 Pending
               </Badge>
             ) : (
-              <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-[10px] font-bold">
+              <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 text-2xs font-bold">
                 Settled
               </Badge>
             )}
@@ -413,16 +413,16 @@ export default function SupplierProfilePage() {
           <div className="text-2xl font-black text-amber-700 dark:text-amber-300 mt-1 font-mono">
             <CurrencyDisplay amount={outstandingDue} />
           </div>
-          <span className="text-[11px] text-slate-400">Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
+          <span className="text-2xs text-slate-400">Terms: {supplier.payment_terms.replace('_', ' ').toUpperCase()}</span>
         </Card>
 
         {/* Credit Limit Meter */}
         <Card className="p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Credit Limit Utilization', 'বাকি সীমা ব্যবহার')}
             </span>
-            <span className="text-[11px] font-mono font-bold text-slate-700 dark:text-slate-300">
+            <span className="text-2xs font-mono font-bold text-slate-700 dark:text-slate-300">
               {creditUsedPct}%
             </span>
           </div>
@@ -460,7 +460,7 @@ export default function SupplierProfilePage() {
           >
             <span>{tBilingual(tab.labelEn, tab.labelBn)}</span>
             {tab.count !== undefined && (
-              <Badge variant="outline" className="text-[10px] font-mono py-0 px-1.5">
+              <Badge variant="outline" className="text-2xs font-mono py-0 px-1.5">
                 {tab.count}
               </Badge>
             )}
@@ -534,7 +534,7 @@ export default function SupplierProfilePage() {
                         <td className="py-3 px-4 capitalize text-slate-500">{price.category}</td>
                         <td className="py-3 px-4 uppercase font-mono font-semibold">{price.unit}</td>
                         <td className="py-3 px-4 font-black font-mono text-teal-700 dark:text-teal-400 text-sm">
-                          {formatBDT(price.contract_price_bdt)} <span className="text-[10px] font-normal text-slate-400">/ {price.unit}</span>
+                          {formatBDT(price.contract_price_bdt)} <span className="text-2xs font-normal text-slate-400">/ {price.unit}</span>
                         </td>
                         <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">
                           MOQ: {price.moq || 1} • {price.lead_time_days || 2}d
@@ -638,12 +638,12 @@ export default function SupplierProfilePage() {
                           {formatBDT(po.grand_total || 0)}
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-[10px]">
+                          <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-200 capitalize text-2xs">
                             {po.status}
                           </Badge>
                         </td>
                         <td className="py-3 px-4">
-                          <Badge variant="outline" className="bg-sky-50 text-sky-800 border-sky-200 capitalize text-[10px]">
+                          <Badge variant="outline" className="bg-sky-50 text-sky-800 border-sky-200 capitalize text-2xs">
                             {po.due_amount <= 0 ? 'Paid' : po.paid_amount > 0 ? 'Partially Paid' : 'Unpaid'}
                           </Badge>
                         </td>
@@ -698,7 +698,7 @@ export default function SupplierProfilePage() {
                     <td className="py-3 px-4 text-slate-500 font-mono">20/08/2024</td>
                     <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300">City Bank Cheque #982104</td>
                     <td className="py-3 px-4">
-                      <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-[10px]">
+                      <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-2xs">
                         Cheque Cleared
                       </Badge>
                     </td>

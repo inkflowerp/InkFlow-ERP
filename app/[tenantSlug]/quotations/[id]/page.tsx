@@ -551,7 +551,7 @@ function QuotationDetailContent() {
               {/* Next Action & Status Dropdown */}
               <div className="flex items-center gap-2 shrink-0">
                 <div className="text-right hidden sm:block">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block">Recommended Next Action</span>
+                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Recommended Next Action</span>
                   <span className="text-xs font-bold text-amber-300">{nextAction}</span>
                 </div>
 
@@ -575,21 +575,21 @@ function QuotationDetailContent() {
             {/* Commercial Advance Terms HUD Banner */}
             <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Quoted Value</span>
+                <span className="text-2xs uppercase font-bold text-slate-400 block">Total Quoted Value</span>
                 <span className="text-sm font-black font-mono text-white">{formatBDT(quote.grand_total)}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-amber-300 block">
+                <span className="text-2xs uppercase font-bold text-amber-300 block">
                   Advance Required ({advancePct}%)
                 </span>
                 <span className="text-sm font-black font-mono text-amber-400">{formatBDT(advanceAmt)}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Balance on Delivery</span>
+                <span className="text-2xs uppercase font-bold text-slate-400 block">Balance on Delivery</span>
                 <span className="text-sm font-black font-mono text-slate-200">{formatBDT(dueOnDeliv)}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
+                <span className="text-2xs uppercase font-bold text-slate-400 block">Internal Margin Floor</span>
                 <span className={`text-sm font-black font-mono ${quote.margin_percent && quote.margin_percent >= 30 ? 'text-emerald-400' : 'text-amber-400'}`}>
                   {quote.margin_percent || 40}% ({formatBDT(quote.total_cost || Math.round(quote.subtotal * 0.55))})
                 </span>
@@ -713,7 +713,7 @@ function QuotationDetailContent() {
           <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900 text-xs border border-slate-200 dark:border-slate-800">
             <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
               <span>Document Presentation Language:</span>
-              <span className="text-[11px] text-slate-400 font-normal">
+              <span className="text-2xs text-slate-400 font-normal">
                 (Changes print/view typography between English and বাংলা)
               </span>
             </span>
@@ -803,7 +803,7 @@ function QuotationDetailContent() {
           {/* Customer & Project Meta Box */}
           <div className="grid grid-cols-2 gap-6 my-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs print:bg-slate-50 print:border-slate-200">
             <div className="space-y-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'গ্রাহকের তথ্য (বিল প্রাপক)' : 'Bill To / Client Details'}
               </span>
               <div className="text-sm font-bold text-slate-900 dark:text-white print:text-slate-900">
@@ -816,14 +816,14 @@ function QuotationDetailContent() {
               <div className="text-slate-600 dark:text-slate-400 print:text-slate-600 font-mono">Mobile: {quote.customer_phone}</div>
               {quote.customer_email && <div className="text-slate-600 dark:text-slate-400 print:text-slate-600">Email: {quote.customer_email}</div>}
               {quote.customer_type && (
-                <div className="text-slate-500 dark:text-slate-400 print:text-slate-500 uppercase text-[10px] font-bold pt-0.5">
+                <div className="text-slate-500 dark:text-slate-400 print:text-slate-500 uppercase text-2xs font-bold pt-0.5">
                   Category: {quote.customer_type}
                 </div>
               )}
             </div>
 
             <div className="space-y-1 text-right sm:text-left">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <span className="text-2xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'প্রকল্প ও ডেলিভারি বিবরণ' : 'Quotation Specifics'}
               </span>
               <div className="text-slate-700 dark:text-slate-300 print:text-slate-700">
@@ -892,7 +892,7 @@ function QuotationDetailContent() {
                             {languageMode === 'bn' && item.description_bn ? item.description_bn : item.description}
                           </span>
                           {catPreset && (
-                            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-slate-300">
+                            <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 print:border-slate-300">
                               {catPreset === 'digital'
                                 ? 'Digital Flex/Vinyl'
                                 : catPreset === 'offset'
@@ -907,14 +907,14 @@ function QuotationDetailContent() {
                         </div>
 
                         {item.material_spec && (
-                          <div className="text-[11px] text-slate-600 dark:text-slate-400 print:text-slate-600">
+                          <div className="text-2xs text-slate-600 dark:text-slate-400 print:text-slate-600">
                             <strong>Material:</strong> {item.material_spec}
                           </div>
                         )}
 
                         {/* Specialized Offset Specs */}
                         {offsetSpecs && (
-                          <div className="text-[10px] text-indigo-700 dark:text-indigo-300 print:text-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/40 p-1.5 rounded mt-1">
+                          <div className="text-2xs text-indigo-700 dark:text-indigo-300 print:text-indigo-800 bg-indigo-50/80 dark:bg-indigo-950/40 p-1.5 rounded mt-1">
                             <span>Offset Specs: </span>
                             {offsetSpecs.paper_gsm && <strong>{offsetSpecs.paper_gsm} GSM Paper • </strong>}
                             {offsetSpecs.print_mode && <span>{offsetSpecs.print_mode} • </span>}
@@ -925,7 +925,7 @@ function QuotationDetailContent() {
 
                         {/* Specialized Signage Specs */}
                         {signageSpecs && (
-                          <div className="text-[10px] text-amber-800 dark:text-amber-300 print:text-amber-900 bg-amber-50/80 dark:bg-amber-950/40 p-1.5 rounded mt-1">
+                          <div className="text-2xs text-amber-800 dark:text-amber-300 print:text-amber-900 bg-amber-50/80 dark:bg-amber-950/40 p-1.5 rounded mt-1">
                             <span>Signage Specs: </span>
                             {signageSpecs.lighting && <strong>Lighting: {signageSpecs.lighting} • </strong>}
                             {signageSpecs.structure && <span>Structure: {signageSpecs.structure} • </span>}
@@ -934,7 +934,7 @@ function QuotationDetailContent() {
                         )}
 
                         {item.finishing && item.finishing !== 'None' && (
-                          <div className="text-[10px] text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium mt-0.5">
+                          <div className="text-2xs text-blue-600 dark:text-blue-400 print:text-blue-600 font-medium mt-0.5">
                             Finishing: {item.finishing}
                           </div>
                         )}
@@ -963,20 +963,20 @@ function QuotationDetailContent() {
             {/* Terms, Notes & Bank Accounts */}
             <div className="space-y-3 text-xs">
               <div>
-                <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px] print:text-slate-900">
+                <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-2xs print:text-slate-900">
                   {languageMode === 'bn' ? 'বিল ও ডেলিভারির শর্তাবলী:' : 'Commercial Terms & Conditions:'}
                 </span>
-                <pre className="font-sans whitespace-pre-line text-slate-600 dark:text-slate-400 print:text-slate-600 text-[11px] leading-relaxed mt-1">
+                <pre className="font-sans whitespace-pre-line text-slate-600 dark:text-slate-400 print:text-slate-600 text-2xs leading-relaxed mt-1">
                   {quote.terms_and_conditions || (languageMode === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS)}
                 </pre>
               </div>
 
               {/* Payment Remittance Details */}
               <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 print:bg-slate-50 print:border-slate-200 print:text-slate-700 space-y-1">
-                <span className="font-bold block text-[11px] uppercase text-slate-900 dark:text-white print:text-slate-900">
+                <span className="font-bold block text-2xs uppercase text-slate-900 dark:text-white print:text-slate-900">
                   {languageMode === 'bn' ? 'পেমেন্ট ও ব্যাংক হিসাব (Payment Details):' : 'Official Payment Accounts:'}
                 </span>
-                <div className="text-[11px] space-y-0.5">
+                <div className="text-2xs space-y-0.5">
                   <div>• <strong>bKash / Nagad (Merchant):</strong> 01711-000000 (Counter 1)</div>
                   <div>• <strong>Bank:</strong> City Bank Ltd, Motijheel Branch, A/C: 1102938471001</div>
                   <div>• <strong>Account Name:</strong> {company?.name || 'InkFlow Solutions'}</div>
@@ -1026,7 +1026,7 @@ function QuotationDetailContent() {
                 </div>
               </div>
 
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1.5 italic border-t border-slate-200 dark:border-slate-800">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500 pt-1.5 italic border-t border-slate-200 dark:border-slate-800">
                 {languageMode === 'bn'
                   ? `কথায়: ${numberToWordsBangla(quote.grand_total)}`
                   : `In Words: ${numberToWordsBDT(quote.grand_total)}`}
@@ -1038,14 +1038,14 @@ function QuotationDetailContent() {
           <div className="grid grid-cols-2 gap-12 mt-16 pt-6 border-t border-dashed border-slate-300 dark:border-slate-700 print:border-slate-300 text-xs">
             <div className="text-center space-y-1">
               <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">{quote.salesperson_name}</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'প্রস্তুতকারক (বিক্রয় বিভাগ)' : 'Prepared By (Sales Dept)'}
               </div>
             </div>
 
             <div className="text-center space-y-1">
               <div className="font-bold text-slate-900 dark:text-white print:text-slate-900">Authorized Signatory</div>
-              <div className="text-[11px] text-slate-500 dark:text-slate-400 print:text-slate-500">
+              <div className="text-2xs text-slate-500 dark:text-slate-400 print:text-slate-500">
                 {languageMode === 'bn' ? 'অনুমোদনকারী কর্মকর্তা ও সিল' : `For ${company?.name || 'InkFlow Solutions'}`}
               </div>
             </div>
@@ -1081,7 +1081,7 @@ function QuotationDetailContent() {
                           <span className="font-bold capitalize text-slate-900 dark:text-white">
                             {act.action.replace('_', ' ')}
                           </span>
-                          <span className="text-slate-400 font-mono text-[11px]">
+                          <span className="text-slate-400 font-mono text-2xs">
                             {new Date(act.created_at).toLocaleString('en-BD')}
                           </span>
                         </div>
@@ -1090,7 +1090,7 @@ function QuotationDetailContent() {
                             {act.details}
                           </p>
                         )}
-                        <div className="text-[11px] text-slate-400 mt-0.5">By {act.actor_name}</div>
+                        <div className="text-2xs text-slate-400 mt-0.5">By {act.actor_name}</div>
                       </div>
                     </div>
                   ))}

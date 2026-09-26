@@ -67,7 +67,7 @@ export const DesignTableView = React.memo(function DesignTableView({
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+          <thead className="bg-slate-50 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-800 text-2xs font-bold text-slate-500 uppercase tracking-wider">
             <tr>
               <th className="py-3 px-4">জব আইডি / ইনভয়েস</th>
               <th className="py-3 px-4">কাস্টমার ও যোগাযোগ</th>
@@ -106,7 +106,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       <ExternalLink className="h-2.5 w-2.5 opacity-60" />
                     </Link>
                     {job.invoice_number && (
-                      <div className="font-mono text-[10px] text-slate-500">
+                      <div className="font-mono text-2xs text-slate-500">
                         {invoiceHref ? (
                           <Link href={invoiceHref} className="hover:underline hover:text-slate-800 dark:hover:text-slate-200">
                             Inv: #{job.invoice_number}
@@ -127,7 +127,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       <button
                         type="button"
                         onClick={() => onOpenWhatsApp(job, 'proof')}
-                        className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono hover:underline flex items-center gap-1 mt-0.5"
+                        className="text-2xs text-emerald-700 dark:text-emerald-400 font-mono hover:underline flex items-center gap-1 mt-0.5"
                       >
                         <Phone className="h-3 w-3" />
                         <span>{job.customer_phone || (job as any).mobile}</span>
@@ -143,7 +143,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                     >
                       {job.title}
                     </Link>
-                    <div className="text-[10px] text-slate-500 font-mono">
+                    <div className="text-2xs text-slate-500 font-mono">
                       {job.dimensions_spec || 'Standard Spec'} | {job.quantity || 1} {job.unit || 'pcs'}
                     </div>
                   </td>
@@ -153,7 +153,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                     <div className="flex items-center gap-1">
                       <span
                         onClick={() => onTogglePreflight(job.id, 'cmyk', job.design_number)}
-                        className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                        className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.cmyk
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                             : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
@@ -163,7 +163,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
                         onClick={() => onTogglePreflight(job.id, 'dpi300', job.design_number)}
-                        className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                        className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.dpi300
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                             : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
@@ -173,7 +173,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
                         onClick={() => onTogglePreflight(job.id, 'bleed', job.design_number)}
-                        className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                        className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.bleed
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                             : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'
@@ -183,7 +183,7 @@ export const DesignTableView = React.memo(function DesignTableView({
                       </span>
                       <span
                         onClick={() => onTogglePreflight(job.id, 'curves', job.design_number)}
-                        className={`cursor-pointer px-1.5 py-0.5 rounded text-[9px] font-bold border ${
+                        className={`cursor-pointer px-1.5 py-0.5 rounded text-2xs font-bold border ${
                           pf.curves
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                             : 'bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800'

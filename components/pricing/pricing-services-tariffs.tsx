@@ -125,7 +125,7 @@ export function PricingServicesTariffs({
                       </div>
                     )}
                   </div>
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono font-bold bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 shrink-0">
+                  <Badge variant="outline" className="text-2xs uppercase font-mono font-bold bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/40 dark:text-sky-300 shrink-0">
                     {p.unit || 'sft'}
                   </Badge>
                 </div>
@@ -134,14 +134,14 @@ export function PricingServicesTariffs({
                 <div className="p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold">Retail Rate</span>
+                      <span className="text-2xs text-slate-400 uppercase font-semibold">Retail Rate</span>
                       <div className="text-base font-black text-slate-900 dark:text-white font-mono">
-                        {formatBDT(baseSell)} <span className="text-[10px] text-slate-400 font-normal">/{p.unit || 'sft'}</span>
+                        {formatBDT(baseSell)} <span className="text-2xs text-slate-400 font-normal">/{p.unit || 'sft'}</span>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold">Reseller Wholesale</span>
+                      <span className="text-2xs text-slate-400 uppercase font-semibold">Reseller Wholesale</span>
                       <div className="text-base font-bold text-blue-700 dark:text-blue-400 font-mono">
                         {formatBDT(resellerPrice)}
                       </div>
@@ -150,7 +150,7 @@ export function PricingServicesTariffs({
 
                   {/* Specifications */}
                   <div className="space-y-1.5 text-xs">
-                    <div className="flex justify-between text-[11px] text-slate-500">
+                    <div className="flex justify-between text-2xs text-slate-500">
                       <span>Base Material Cost:</span>
                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
                         {baseCost > 0 ? formatBDT(baseCost) : '—'}
@@ -158,14 +158,14 @@ export function PricingServicesTariffs({
                     </div>
 
                     {minBillable > 0 && (
-                      <div className="flex justify-between text-[11px] text-slate-500">
+                      <div className="flex justify-between text-2xs text-slate-500">
                         <span>Min Billable Area:</span>
                         <span className="font-mono font-semibold">{minBillable} sft</span>
                       </div>
                     )}
 
                     {minCharge > 0 && (
-                      <div className="flex justify-between text-[11px] text-slate-500">
+                      <div className="flex justify-between text-2xs text-slate-500">
                         <span>Min Job Charge:</span>
                         <span className="font-mono font-bold text-slate-800 dark:text-slate-200">
                           {formatBDT(minCharge)}
@@ -174,7 +174,7 @@ export function PricingServicesTariffs({
                     )}
 
                     {marginPct !== null && (
-                      <div className="flex justify-between text-[11px] pt-1 border-t border-slate-100 dark:border-slate-800">
+                      <div className="flex justify-between text-2xs pt-1 border-t border-slate-100 dark:border-slate-800">
                         <span className="text-slate-500">Gross Margin:</span>
                         <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                           {marginPct}%
@@ -187,7 +187,7 @@ export function PricingServicesTariffs({
 
               {/* Card Footer */}
               <div className="p-3 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <span className="text-[10px] text-slate-400 capitalize">{p.category || 'Print Service'}</span>
+                <span className="text-2xs text-slate-400 capitalize">{p.category || 'Print Service'}</span>
                 <Button
                   size="sm"
                   variant="outline"

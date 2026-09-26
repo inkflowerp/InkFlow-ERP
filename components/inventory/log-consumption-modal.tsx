@@ -310,25 +310,25 @@ export function LogConsumptionModal({
                 <Disc className="w-4 h-4 text-blue-600" />
                 <span>Piece: {selectedActiveRoll.roll_code || selectedActiveRoll.roll_tag}</span>
               </div>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold uppercase text-[10px]">
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 font-bold uppercase text-2xs">
                 {selectedActiveRoll.status} (1 Pcs)
               </Badge>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-blue-500/10 text-slate-700 dark:text-slate-300">
               <div>
-                <span className="text-slate-400 block text-[10px]">Substrate</span>
+                <span className="text-slate-400 block text-2xs">Substrate</span>
                 <span className="font-semibold truncate block">{selectedActiveRoll.material?.name || activeMat?.name || 'Roll Substrate'}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Roll Width</span>
+                <span className="text-slate-400 block text-2xs">Roll Width</span>
                 <span className="font-bold block">{selectedActiveRoll.width_ft} ft</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Initial Spec</span>
+                <span className="text-slate-400 block text-2xs">Initial Spec</span>
                 <span className="font-semibold block">{selectedActiveRoll.initial_length_ft} ft</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Available Length</span>
+                <span className="text-slate-400 block text-2xs">Available Length</span>
                 <span className="font-black text-emerald-600 dark:text-emerald-400 block">
                   {Number(selectedActiveRoll.current_length_ft ?? 0).toFixed(2)} ft — 1 Pcs
                 </span>
@@ -345,25 +345,25 @@ export function LogConsumptionModal({
                 <Printer className="w-4 h-4 text-amber-600" />
                 <span>Issue: {selectedFloorRecord.issue_number || selectedFloorRecord.id.slice(0, 8)}</span>
               </div>
-              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider text-[10px]">
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold uppercase tracking-wider text-2xs">
                 {selectedFloorRecord.status.replace('_', ' ')}
               </span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 border-t border-amber-500/10 text-slate-700 dark:text-slate-300">
               <div>
-                <span className="text-slate-400 block text-[10px]">Material</span>
+                <span className="text-slate-400 block text-2xs">Material</span>
                 <span className="font-semibold truncate block">{selectedFloorRecord.material_name}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Workstation</span>
+                <span className="text-slate-400 block text-2xs">Workstation</span>
                 <span className="font-semibold block">{selectedFloorRecord.machine_name || 'Floor General'}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Total Issued</span>
+                <span className="text-slate-400 block text-2xs">Total Issued</span>
                 <span className="font-semibold block">{selectedFloorRecord.issued_quantity} {selectedFloorRecord.unit}</span>
               </div>
               <div>
-                <span className="text-slate-400 block text-[10px]">Floor Balance</span>
+                <span className="text-slate-400 block text-2xs">Floor Balance</span>
                 <span className="font-black text-amber-600 dark:text-amber-400 block">
                   {selectedFloorRecord.remaining_floor_balance} {selectedFloorRecord.unit}
                 </span>
@@ -527,7 +527,7 @@ export function LogConsumptionModal({
             </div>
 
             {selectedActiveRoll && (
-              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+              <div className="pt-1 border-t border-slate-200 dark:border-slate-700/60 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 font-mono">
                 <span>
                   Physical Spec: {selectedActiveRoll.width_ft}ft × {Math.max(0, floorMaxBalance - totalActionQty).toFixed(2)}ft
                 </span>
@@ -602,7 +602,7 @@ export function LogConsumptionModal({
           </div>
 
           {remnants.length === 0 ? (
-            <p className="text-[11px] text-slate-400 italic">
+            <p className="text-2xs text-slate-400 italic">
               No usable offcuts. Click &quot;Add Remnant&quot; to catalog usable roll/sheet leftovers for future small jobs.
             </p>
           ) : (

@@ -555,7 +555,7 @@ export default function PricingManagementPage() {
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Total Catalog Items', 'মোট পণ্য ও সেবা')}
             </span>
             <Package className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -563,14 +563,14 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
             {products.length}
           </div>
-          <div className="text-[11px] text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
+          <div className="text-2xs text-teal-600 dark:text-teal-400 font-semibold mt-0.5">
             Products & Print Services
           </div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Active Tier Rules', 'সক্রিয় মূল্য নিয়ম')}
             </span>
             <Tag className="h-4 w-4 text-blue-600" />
@@ -578,12 +578,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-blue-700 dark:text-blue-400 mt-1 font-mono">
             {rules.length}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Customer-type rules</div>
+          <div className="text-2xs text-slate-400 mt-0.5">Customer-type rules</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Finishing Tariffs', 'ফিনিশিং ট্যারিফ')}
             </span>
             <Wrench className="h-4 w-4 text-purple-600" />
@@ -591,12 +591,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-purple-700 dark:text-purple-400 mt-1 font-mono">
             {finishingOptions.length}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Lamination, Eyelets, etc.</div>
+          <div className="text-2xs text-slate-400 mt-0.5">Lamination, Eyelets, etc.</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Printing Methods', 'প্রিন্টিং মেথড')}
             </span>
             <Printer className="h-4 w-4 text-amber-600" />
@@ -604,12 +604,12 @@ export default function PricingManagementPage() {
           <div className="text-2xl font-black text-amber-700 dark:text-amber-400 mt-1 font-mono">
             {printingMethods.length}
           </div>
-          <div className="text-[11px] text-slate-400 mt-0.5">Solvent, Eco, UV modes</div>
+          <div className="text-2xs text-slate-400 mt-0.5">Solvent, Eco, UV modes</div>
         </Card>
 
         <Card className="p-3.5 sm:p-4 rounded-xl shadow-xs border-slate-200 dark:border-slate-800 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
               {tBilingual('Avg Retail Margin', 'গড় খুচরা মুনাফা')}
             </span>
             <TrendingUp className="h-4 w-4 text-emerald-600" />
@@ -627,7 +627,7 @@ export default function PricingManagementPage() {
               return `${avg}%`
             })()}
           </div>
-          <div className="text-[11px] text-emerald-600 font-semibold mt-0.5">Healthy gross margin</div>
+          <div className="text-2xs text-emerald-600 font-semibold mt-0.5">Healthy gross margin</div>
         </Card>
       </div>
 
@@ -932,7 +932,7 @@ export default function PricingManagementPage() {
                     setBulkProductIds(products.map((p) => p.id))
                   }
                 }}
-                className="text-[10px] text-teal-600 font-bold hover:underline"
+                className="text-2xs text-teal-600 font-bold hover:underline"
               >
                 {bulkProductIds.length === products.length ? 'Deselect All' : 'Select All Products'}
               </button>

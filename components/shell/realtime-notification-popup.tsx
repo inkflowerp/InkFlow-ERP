@@ -247,7 +247,7 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
         <div className="flex-1 min-w-0 space-y-1">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-bold border', theme.badgeBg)}>
+              <span className={cn('px-1.5 py-0.5 rounded text-2xs font-bold border', theme.badgeBg)}>
                 {tBilingual(theme.tag, theme.tagBn)}
               </span>
               <h5 className="text-xs font-bold text-slate-100 truncate bangla-text">
@@ -255,13 +255,13 @@ function PopupCard({ notification, onDismiss, onAction }: PopupItemProps) {
               </h5>
             </div>
 
-            <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+            <span className="text-2xs text-slate-400 shrink-0 font-mono">
               {tBilingual('Just now', 'এইমাত্র')}
             </span>
           </div>
 
           {notification.message && (
-            <p className="text-[11px] text-slate-300 bangla-text line-clamp-2 leading-relaxed">
+            <p className="text-2xs text-slate-300 bangla-text line-clamp-2 leading-relaxed">
               {tBilingual(notification.message, notification.messageBn)}
             </p>
           )}
@@ -404,7 +404,7 @@ export function RealtimeNotificationPopup() {
       {/* Controls Bar when multiple notifications are stacked */}
       {queue.length > 1 && (
         <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/60 backdrop-blur-md text-xs text-slate-300 pointer-events-auto shadow-2xl animate-in fade-in">
-          <span className="font-semibold text-[11px] bangla-text">
+          <span className="font-semibold text-2xs bangla-text">
             {queue.length} {tBilingual('Active Alerts', 'টি নোটিফিকেশন')}
           </span>
           <div className="flex items-center gap-2">
@@ -419,7 +419,7 @@ export function RealtimeNotificationPopup() {
             <button
               type="button"
               onClick={dismissAll}
-              className="text-[11px] font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors bangla-text"
+              className="text-2xs font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer transition-colors bangla-text"
             >
               {tBilingual('Clear All', 'সব মুছুন')}
             </button>

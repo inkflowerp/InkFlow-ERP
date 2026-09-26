@@ -48,7 +48,7 @@ export function CompanySelector() {
             <span
               suppressHydrationWarning
               className={cn(
-                'text-[10px] xs:text-[11px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border shrink-0',
+                'text-2xs xs:text-2xs px-1.5 py-0.5 rounded font-bold uppercase tracking-wider border shrink-0',
                 accountTypeMeta.badgeClass
               )}
             >
@@ -91,7 +91,7 @@ export function CompanySelector() {
                     <Building2 className="h-4 w-4 text-slate-400 shrink-0" />
                     <div className="flex flex-col truncate">
                       <span className="truncate">{name}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">
+                      <span className="text-2xs text-slate-400 font-normal">
                         {c.slug}
                       </span>
                     </div>

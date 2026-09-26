@@ -281,7 +281,7 @@ export default function CompanyProfileSettingsPage() {
                 onChange={handleChange}
                 placeholder="e.g. Rapid Print Solutions Limited"
               />
-              <p className="text-[11px] text-slate-500">
+              <p className="text-2xs text-slate-500">
                 Official entity name utilized for NBR tax Mushak vouchers and legal vendor contracts.
               </p>
             </div>
@@ -304,7 +304,7 @@ export default function CompanyProfileSettingsPage() {
                   ) : (
                     <div className="text-center p-2">
                       <ImageIcon className="h-5 w-5 mx-auto text-slate-400" />
-                      <span className="text-[9px] text-slate-400 block mt-0.5">No Logo</span>
+                      <span className="text-2xs text-slate-400 block mt-0.5">No Logo</span>
                     </div>
                   )}
                 </div>
@@ -316,7 +316,7 @@ export default function CompanyProfileSettingsPage() {
                     onChange={handleChange}
                     placeholder="https://example.com/logo.png"
                   />
-                  <span className="text-[11px] text-slate-500 block">
+                  <span className="text-2xs text-slate-500 block">
                     Printed at the top of client quotations, work challans, and money receipts.
                   </span>
                 </div>
@@ -498,7 +498,7 @@ export default function CompanyProfileSettingsPage() {
                     key={preset}
                     type="button"
                     onClick={() => setFormData({ ...formData, office_hours: preset })}
-                    className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
                   >
                     {preset}
                   </button>
@@ -524,7 +524,7 @@ export default function CompanyProfileSettingsPage() {
                     key={preset}
                     type="button"
                     onClick={() => setFormData({ ...formData, holidays: preset })}
-                    className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
+                    className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
                   >
                     {preset}
                   </button>

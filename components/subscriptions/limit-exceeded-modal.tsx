@@ -137,7 +137,7 @@ export function LimitExceededModal() {
                 {tBilingual('Recommended Upgrade', 'প্রস্তাবিত আপগ্রেড')}
               </span>
             </div>
-            <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-[11px] font-bold px-2.5 py-0.5 border border-blue-400/30 shadow-sm">
+            <Badge className="bg-blue-600 hover:bg-blue-600 text-white text-2xs font-bold px-2.5 py-0.5 border border-blue-400/30 shadow-sm">
               {tBilingual(nextPlan.name, nextPlan.name_bn)}
             </Badge>
           </div>

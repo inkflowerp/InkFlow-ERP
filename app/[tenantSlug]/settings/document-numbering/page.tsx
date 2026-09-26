@@ -265,7 +265,7 @@ export default function DocumentNumberingSettingsPage() {
                           <span className="font-mono font-bold text-xs px-2.5 py-1 rounded bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-700">
                             {formatPreview(seq)}
                           </span>
-                          <Badge variant="outline" className="text-[10px]">
+                          <Badge variant="outline" className="text-2xs">
                             Next Issued
                           </Badge>
                         </div>
@@ -296,7 +296,7 @@ export default function DocumentNumberingSettingsPage() {
 
                   <div className="grid grid-cols-2 gap-3 pt-1">
                     <div className="space-y-1">
-                      <Label className="text-[11px] text-slate-500">Prefix Code</Label>
+                      <Label className="text-2xs text-slate-500">Prefix Code</Label>
                       <Input
                         value={seq.prefix}
                         onChange={(e) => handlePrefixChange(seq.doc_type, e.target.value)}
@@ -306,7 +306,7 @@ export default function DocumentNumberingSettingsPage() {
                     </div>
 
                     <div className="space-y-1">
-                      <Label className="text-[11px] text-slate-500">Zero Padding</Label>
+                      <Label className="text-2xs text-slate-500">Zero Padding</Label>
                       <select
                         value={seq.padding}
                         onChange={(e) => handlePaddingChange(seq.doc_type, Number(e.target.value))}

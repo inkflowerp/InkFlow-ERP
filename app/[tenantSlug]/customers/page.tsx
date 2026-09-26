@@ -678,14 +678,14 @@ export default function CustomersPage() {
         {/* 1. Total Customers */}
         <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
             <span>{tBilingual('Total Customers', 'মোট গ্রাহক')}</span>
             <Users className="h-4 w-4 text-blue-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
             {summary.totalCustomers}
           </div>
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-1">
+          <p className="text-2xs text-slate-500 dark:text-slate-400 truncate mt-1">
             {tBilingual('Registered business profiles', 'নিবন্ধিত অ্যাকাউন্ট')}
           </p>
         </Card>
@@ -693,14 +693,14 @@ export default function CustomersPage() {
         {/* 2. Active Customers */}
         <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-          <div className="flex items-center justify-between text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+          <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
             <span>{tBilingual('Active Customers', 'সক্রিয় গ্রাহক')}</span>
             <CheckCircle2 className="h-4 w-4 text-emerald-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
             {summary.activeCustomers}
           </div>
-          <p className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 truncate mt-1">
+          <p className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 truncate mt-1">
             {tBilingual('Operational accounts', 'চলমান হিসাব')}
           </p>
         </Card>
@@ -708,14 +708,14 @@ export default function CustomersPage() {
         {/* 3. Customers With Due */}
         <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-          <div className="flex items-center justify-between text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+          <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
             <span>{tBilingual('Customers With Due', 'বকেয়া বিশিষ্ট গ্রাহক')}</span>
             <AlertCircle className="h-4 w-4 text-amber-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
             {summary.customersWithDue}
           </div>
-          <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 truncate mt-1">
+          <p className="text-2xs text-amber-700/80 dark:text-amber-400/80 truncate mt-1">
             {tBilingual('Outstanding receivables', 'পাওনা বাকি যুক্ত ক্লায়েন্ট')}
           </p>
         </Card>
@@ -723,14 +723,14 @@ export default function CustomersPage() {
         {/* 4. Total Outstanding Due */}
         <Card className="p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-          <div className="flex items-center justify-between text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+          <div className="flex items-center justify-between text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
             <span>{tBilingual('Total Due Balance', 'মোট বকেয়া স্থিতি')}</span>
             <TrendingUp className="h-4 w-4 text-rose-500 group-hover:scale-110 transition-transform" />
           </div>
           <div className="text-xl sm:text-2xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5 truncate">
             ৳{summary.totalOutstandingDue.toLocaleString('en-IN')}
           </div>
-          <p className="text-[11px] text-rose-700/80 dark:text-rose-400/80 truncate mt-1">
+          <p className="text-2xs text-rose-700/80 dark:text-rose-400/80 truncate mt-1">
             {tBilingual('Receivable across all accounts', 'সর্বমোট আদায়যোগ্য বকেয়া')}
           </p>
         </Card>
@@ -896,7 +896,7 @@ export default function CustomersPage() {
                       >
                         {/* Customer ID */}
                         <td className="py-3.5 px-3">
-                          <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          <span className="font-mono text-2xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                             {custIdNo}
                           </span>
                         </td>
@@ -911,10 +911,10 @@ export default function CustomersPage() {
                             <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                           </Link>
                           {c.name_bn && (
-                            <div className="text-[11px] text-slate-500">{c.name_bn}</div>
+                            <div className="text-2xs text-slate-500">{c.name_bn}</div>
                           )}
                           {c.area && (
-                            <div className="text-[10px] text-slate-400 mt-0.5">{c.area}</div>
+                            <div className="text-2xs text-slate-400 mt-0.5">{c.area}</div>
                           )}
                         </td>
 
@@ -959,7 +959,7 @@ export default function CustomersPage() {
                           <Badge
                             variant="outline"
                             className={cn(
-                              'text-[10px] font-semibold capitalize',
+                              'text-2xs font-semibold capitalize',
                               custType === 'corporate' && 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-300',
                               custType === 'agency' && 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300',
                               custType === 'reseller' && 'bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-300',
@@ -1005,7 +1005,7 @@ export default function CustomersPage() {
                               <div className="font-medium text-slate-700 dark:text-slate-300">
                                 {c.last_order_number || 'Order'}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-numeric">{c.last_order_date}</div>
+                              <div className="text-2xs text-slate-400 font-numeric">{c.last_order_date}</div>
                             </div>
                           ) : (
                             <span className="text-slate-400 italic">—</span>
@@ -1100,7 +1100,7 @@ export default function CustomersPage() {
                         >
                           {c.name}
                         </Link>
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                        <span className="font-mono text-2xs font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                           {custIdNo}
                         </span>
                       </div>
@@ -1116,11 +1116,11 @@ export default function CustomersPage() {
                     </div>
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge variant="outline" className="text-[10px] capitalize">
+                      <Badge variant="outline" className="text-2xs capitalize">
                         {custType}
                       </Badge>
                       {hasDue && (
-                        <span className="text-[11px] font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900">
+                        <span className="text-2xs font-black text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/60 px-2 py-0.5 rounded-md border border-rose-200 dark:border-rose-900">
                           Due: ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
                         </span>
                       )}
@@ -1153,13 +1153,13 @@ export default function CustomersPage() {
                   {/* Financial Stats Bar */}
                   <div className="grid grid-cols-2 gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 text-xs">
                     <div>
-                      <div className="text-[10px] text-slate-400">{tBilingual('Total Billed', 'মোট বিল')}</div>
+                      <div className="text-2xs text-slate-400">{tBilingual('Total Billed', 'মোট বিল')}</div>
                       <div className="font-bold text-slate-900 dark:text-white font-numeric">
                         ৳{(c.total_invoiced_amount || 0).toLocaleString('en-IN')}
                       </div>
                     </div>
                     <div>
-                      <div className="text-[10px] text-slate-400">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
+                      <div className="text-2xs text-slate-400">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</div>
                       <div
                         className={cn(
                           'font-bold font-numeric',
@@ -1175,20 +1175,20 @@ export default function CustomersPage() {
                   <div className="flex items-center gap-2 pt-1">
                     <Link
                       href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
-                      className="flex-1 text-center py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px] font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100"
+                      className="flex-1 text-center py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-100"
                     >
                       {tBilingual('Quote', 'কোটেশন')}
                     </Link>
                     <button
                       onClick={() => setSelectedCustomerForInvoice(c)}
-                      className="flex-1 text-center py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50"
+                      className="flex-1 text-center py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 text-2xs font-semibold text-blue-600 dark:text-blue-400 hover:bg-blue-50"
                     >
                       {tBilingual('Invoice', 'ইনভয়েস')}
                     </button>
                     {hasDue && (
                       <button
                         onClick={() => setSelectedCustomerForPayment(c)}
-                        className="flex-1 text-center py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50"
+                        className="flex-1 text-center py-1.5 rounded-lg border border-emerald-200 dark:border-emerald-800 text-2xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50"
                       >
                         {tBilingual('Pay', 'পরিশোধ')}
                       </button>

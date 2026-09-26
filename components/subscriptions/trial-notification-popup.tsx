@@ -148,7 +148,7 @@ export function TrialNotificationPopup() {
         <div className="flex items-center gap-2">
           <Badge
             className={cn(
-              'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 border-0',
+              'text-2xs font-black uppercase tracking-wider px-2 py-0.5 border-0',
               isTrialExpired
                 ? 'bg-red-600 text-white'
                 : isUrgent
@@ -170,7 +170,7 @@ export function TrialNotificationPopup() {
           </Badge>
 
           {!isTrialExpired && (
-            <span className="text-[11px] font-bold text-amber-300 bangla-text">
+            <span className="text-2xs font-bold text-amber-300 bangla-text">
               {timeRemainingInTrial && timeRemainingInTrial.days === 0
                 ? tBilingual(timeRemainingInTrial.formattedEn, timeRemainingInTrial.formattedBn)
                 : tBilingual(
@@ -241,7 +241,7 @@ export function TrialNotificationPopup() {
         {/* Progress Bar for Active Trial */}
         {!isTrialExpired && (
           <div className="space-y-1 pt-1">
-            <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+            <div className="flex justify-between text-2xs text-slate-400 font-medium">
               <span className="bangla-text">{tBilingual('Trial Period', 'ট্রায়াল অগ্রগতি')}</span>
               <span className="bangla-text">
                 {locale === 'bn' ? toBengaliDigits(trialProgressPercent) : trialProgressPercent}%
@@ -264,7 +264,7 @@ export function TrialNotificationPopup() {
       <div className="mt-3.5 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-2 relative z-10">
         <button
           onClick={() => handleDismiss(12)}
-          className="text-[11px] text-slate-400 hover:text-slate-200 bangla-text cursor-pointer transition-colors"
+          className="text-2xs text-slate-400 hover:text-slate-200 bangla-text cursor-pointer transition-colors"
         >
           {tBilingual('Remind me later', 'পরে মনে করান')}
         </button>

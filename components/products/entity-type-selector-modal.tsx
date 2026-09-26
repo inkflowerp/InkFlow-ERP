@@ -110,14 +110,14 @@ export function EntityTypeSelectorModal({ isOpen, onClose, onSelect }: EntityTyp
                       <span className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {opt.title}
                       </span>
-                      <span className={cn('px-2 py-0.5 text-[10px] font-bold rounded-md border', opt.badgeClass)}>
+                      <span className={cn('px-2 py-0.5 text-2xs font-bold rounded-md border', opt.badgeClass)}>
                         {opt.badge}
                       </span>
                     </div>
                     <p className="text-xs font-semibold text-slate-600 dark:text-slate-400 mt-0.5">
                       {opt.subtitle}
                     </p>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                    <p className="text-2xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
                       {opt.description}
                     </p>
                   </div>

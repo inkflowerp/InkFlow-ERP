@@ -85,7 +85,7 @@ export function TrialBalanceView({ statement, isLoading }: TrialBalanceViewProps
                     {tBilingual(acc.name, acc.name_bn || acc.name)}
                   </td>
                   <td className="p-3">
-                    <Badge variant="outline" className="text-[10px] font-medium border-slate-300 dark:border-slate-700">
+                    <Badge variant="outline" className="text-2xs font-medium border-slate-300 dark:border-slate-700">
                       {acc.account_type}
                     </Badge>
                   </td>

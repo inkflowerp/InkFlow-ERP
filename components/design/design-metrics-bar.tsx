@@ -122,7 +122,7 @@ export const DesignMetricsBar = React.memo(function DesignMetricsBar({
             }`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate uppercase tracking-wider">
+              <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 truncate uppercase tracking-wider">
                 {c.subtitle}
               </span>
               <div className={`h-6 w-6 rounded-lg flex items-center justify-center ${c.iconBg}`}>
@@ -133,7 +133,7 @@ export const DesignMetricsBar = React.memo(function DesignMetricsBar({
               <div className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white font-mono leading-none">
                 {c.count}
               </div>
-              <div className="text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate mt-1">
+              <div className="text-2xs font-bold text-slate-600 dark:text-slate-300 truncate mt-1">
                 {c.title}
               </div>
             </div>

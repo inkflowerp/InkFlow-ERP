@@ -115,17 +115,17 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 <span>Invoice #{invoiceNumber}</span>
                 <ExternalLink className="h-3 w-3 opacity-60" />
               </Link>
-              <span className="bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-indigo-200/80 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-2xs font-bold px-2 py-0.5 rounded-full">
                 {jobs.length} Design Work(s) (ডিজাইন কাজ)
               </span>
               {readyProductItems.length > 0 && (
-                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Package className="h-3 w-3" />
                   <span>{readyProductItems.length} Ready Product (ইন-স্টক)</span>
                 </span>
               )}
               {outsourceItems.length > 0 && (
-                <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-2xs font-bold px-2 py-0.5 rounded-full">
                   {outsourceItems.length} Outsource (আউটসোর্স)
                 </span>
               )}
@@ -133,7 +133,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               <span className="font-semibold text-slate-900 dark:text-white">{customerName}</span>
               {customerPhone && (
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
+                <span className="text-2xs font-mono text-emerald-700 dark:text-emerald-400">
                   • {customerPhone}
                 </span>
               )}
@@ -176,7 +176,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   <Package className="h-3.5 w-3.5 text-emerald-600" />
                   <span>রেডি প্রোডাক্ট আইটেম (ইন-স্টক — ডিজাইন প্রয়োজন নেই)</span>
                 </span>
-                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded font-mono">
+                <span className="text-2xs text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/60 px-2 py-0.5 rounded font-mono">
                   Bypassed Design Studio
                 </span>
               </div>
@@ -190,7 +190,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                       <div className="font-semibold text-slate-800 dark:text-slate-200">
                         {rp.item_name || rp.item_description || 'Ready Stock Product'}
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-2xs text-slate-500">
                         {rp.dimensions_spec || (rp.width && rp.height ? `${rp.width}×${rp.height} ${rp.unit || 'ft'}` : 'Standard Size')} • {rp.material || rp.material_spec || 'Stock Item'}
                       </div>
                     </div>
@@ -213,7 +213,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   <Layers className="h-3.5 w-3.5 text-purple-600" />
                   <span>আউটসোর্স পণ্য ও সেবা (থার্ড-পার্টি ভেন্ডর কাজ)</span>
                 </span>
-                <span className="text-[10px] text-purple-700 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded font-mono">
+                <span className="text-2xs text-purple-700 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/60 px-2 py-0.5 rounded font-mono">
                   External Vendor
                 </span>
               </div>
@@ -227,7 +227,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                       <div className="font-semibold text-slate-800 dark:text-slate-200">
                         {out.item_name || out.item_description || 'Outsource Product'}
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-2xs text-slate-500">
                         {out.dimensions_spec || (out.width && out.height ? `${out.width}×${out.height} ${out.unit || 'ft'}` : 'Custom Outsource')} • {out.finishing || 'Vendor Production'}
                       </div>
                     </div>

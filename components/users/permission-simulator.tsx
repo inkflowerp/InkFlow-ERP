@@ -254,7 +254,7 @@ export function PermissionSimulator({
           >
             <ShieldAlert className="w-4 h-4" />
             Reverse Permission Auditor (কে কী করতে পারে?)
-            <Badge variant="outline" className="ml-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]">
+            <Badge variant="outline" className="ml-1 bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-2xs">
               {HIGH_RISK_ACTIONS.length}
             </Badge>
           </Button>
@@ -405,7 +405,7 @@ export function PermissionSimulator({
                       <div className="text-xs opacity-90 text-slate-600 dark:text-slate-300">
                         User <span className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(selectedUser)}</span> is{' '}
                         {evaluationResult.finalGranted ? 'authorized' : 'not permitted'} to execute{' '}
-                        <Badge variant="outline" className="mx-1 px-1.5 py-0 text-[10px] uppercase font-mono">
+                        <Badge variant="outline" className="mx-1 px-1.5 py-0 text-2xs uppercase font-mono">
                           {selectedModule}.{selectedAction}
                         </Badge>
                       </div>
@@ -437,30 +437,30 @@ export function PermissionSimulator({
                       {/* Step 1: User Account & Ownership */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">01</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">01</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Account Status & Base Role</div>
-                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                            <div className="text-slate-500 dark:text-slate-400 text-2xs">
                               Status: <span className={selectedUser.status === 'active' ? 'text-emerald-600 dark:text-emerald-400 font-medium' : 'text-rose-600 dark:text-rose-400 font-medium'}>{selectedUser.status || 'active'}</span> • Primary Role: <span className="text-sky-700 dark:text-sky-300 font-medium">{getUserRoleLabel(selectedUser)}</span>
                             </div>
                           </div>
                         </div>
                         {selectedUser.status === 'disabled' ? (
-                          <Badge variant="destructive" className="text-[10px]">Account Disabled</Badge>
+                          <Badge variant="destructive" className="text-2xs">Account Disabled</Badge>
                         ) : evaluationResult.isOwner ? (
-                          <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[10px]">Owner Full Access</Badge>
+                          <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 text-2xs">Owner Full Access</Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-[10px]">Active Member</Badge>
+                          <Badge variant="outline" className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 text-2xs">Active Member</Badge>
                         )}
                       </div>
 
                       {/* Step 2: Inherited Responsibilities */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">02</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">02</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Role & Responsibilities Matrix</div>
-                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                            <div className="text-slate-500 dark:text-slate-400 text-2xs">
                               Assigned: {evaluationResult.responsibilities.join(', ')}
                             </div>
                           </div>
@@ -468,7 +468,7 @@ export function PermissionSimulator({
                         <Badge
                           variant="outline"
                           className={cn(
-                            'text-[10px]',
+                            'text-2xs',
                             evaluationResult.detail.source === 'inherited'
                               ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-medium'
                               : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
@@ -481,10 +481,10 @@ export function PermissionSimulator({
                       {/* Step 3: Explicit User Overrides */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">03</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">03</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Direct User Overrides (+Grant / -Deny)</div>
-                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                            <div className="text-slate-500 dark:text-slate-400 text-2xs">
                               {evaluationResult.detail.source === 'override_allow' && 'Explicit user grant override applied'}
                               {evaluationResult.detail.source === 'override_deny' && 'Explicit user revoke override applied'}
                               {!evaluationResult.detail.source.startsWith('override') && 'No specific override for this action'}
@@ -494,7 +494,7 @@ export function PermissionSimulator({
                         <Badge
                           variant="outline"
                           className={cn(
-                            'text-[10px]',
+                            'text-2xs',
                             evaluationResult.detail.source === 'override_allow'
                               ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30 font-bold'
                               : evaluationResult.detail.source === 'override_deny'
@@ -513,10 +513,10 @@ export function PermissionSimulator({
                       {/* Step 4: Branch Scope & Data Isolation */}
                       <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex items-start justify-between gap-3">
                         <div className="flex items-start gap-2.5">
-                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-[10px] mt-0.5">04</div>
+                          <div className="p-1 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-mono text-2xs mt-0.5">04</div>
                           <div>
                             <div className="font-medium text-slate-900 dark:text-slate-200">Branch & Data Scope Filter</div>
-                            <div className="text-slate-500 dark:text-slate-400 text-[11px]">
+                            <div className="text-slate-500 dark:text-slate-400 text-2xs">
                               Scope: <span className="text-sky-700 dark:text-sky-300 font-semibold uppercase">{evaluationResult.moduleScope}</span> • {evaluationResult.branchReason}
                             </div>
                           </div>
@@ -524,7 +524,7 @@ export function PermissionSimulator({
                         <Badge
                           variant="outline"
                           className={cn(
-                            'text-[10px]',
+                            'text-2xs',
                             evaluationResult.branchAccessGranted
                               ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
                               : 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/30'
@@ -541,7 +541,7 @@ export function PermissionSimulator({
                     <div className="text-slate-600 dark:text-slate-400">
                       Authoritative resolution: <span className="font-semibold text-slate-900 dark:text-white">{evaluationResult.detail.sourceDetail}</span>
                     </div>
-                    <div className="text-slate-500 text-[11px]">
+                    <div className="text-slate-500 text-2xs">
                       Module: <span className="text-slate-700 dark:text-slate-300 font-mono font-medium">{selectedModule}</span>
                     </div>
                   </div>
@@ -601,11 +601,11 @@ export function PermissionSimulator({
                       >
                         <div className="flex items-center justify-between gap-1">
                           <span className="font-semibold text-xs text-slate-900 dark:text-slate-200">{item.label}</span>
-                          <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+                          <Badge variant="outline" className="text-2xs font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400">
                             {item.code}
                           </Badge>
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">{item.desc}</div>
+                        <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-1">{item.desc}</div>
                       </button>
                     )
                   })}
@@ -634,7 +634,7 @@ export function PermissionSimulator({
               <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-950/60 shadow-xs">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-left">
-                    <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-[10px] border-b border-slate-200 dark:border-slate-800">
+                    <thead className="bg-slate-50 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 uppercase tracking-wider text-2xs border-b border-slate-200 dark:border-slate-800">
                       <tr>
                         <th className="px-4 py-3">Team Member</th>
                         <th className="px-4 py-3">Role / Department</th>
@@ -655,15 +655,15 @@ export function PermissionSimulator({
                           <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition-colors">
                             <td className="px-4 py-3">
                               <div className="font-semibold text-slate-900 dark:text-white">{getUserDisplayName(user)}</div>
-                              <div className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">{getUserEmail(user)}</div>
+                              <div className="text-slate-500 dark:text-slate-400 text-2xs font-mono">{getUserEmail(user)}</div>
                             </td>
 
                             <td className="px-4 py-3">
-                              <Badge variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-[10px]">
+                              <Badge variant="outline" className="bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-2xs">
                                 {getUserRoleLabel(user)}
                               </Badge>
                               {user.department && (
-                                <div className="text-[10px] text-slate-500 mt-0.5">{user.department}</div>
+                                <div className="text-2xs text-slate-500 mt-0.5">{user.department}</div>
                               )}
                             </td>
 
@@ -671,7 +671,7 @@ export function PermissionSimulator({
                               <Badge
                                 variant="outline"
                                 className={cn(
-                                  'text-[10px]',
+                                  'text-2xs',
                                   user.status === 'active'
                                     ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
                                     : 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30'
@@ -686,7 +686,7 @@ export function PermissionSimulator({
                                 <Badge
                                   variant="outline"
                                   className={cn(
-                                    'text-[10px]',
+                                    'text-2xs',
                                     sourceType === 'owner'
                                       ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
                                       : isExplicitOverride

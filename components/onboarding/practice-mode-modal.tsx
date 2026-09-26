@@ -73,9 +73,9 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 flex items-center justify-between">
                     <div>
                       <div className="font-bold text-xs text-slate-900 dark:text-slate-100">রহিম এন্টারপ্রাইজ (Rahim Enterprise)</div>
-                      <div className="text-[11px] text-slate-500 font-mono">01711-223344</div>
+                      <div className="text-2xs text-slate-500 font-mono">01711-223344</div>
                     </div>
-                    <Badge className="bg-emerald-600 text-white text-[10px]">নমুনা কাস্টমার</Badge>
+                    <Badge className="bg-emerald-600 text-white text-2xs">নমুনা কাস্টমার</Badge>
                   </div>
                   <Button
                     type="button"
@@ -136,7 +136,7 @@ export function PracticeModeModal({ isOpen, onClose }: PracticeModeModalProps) {
                   <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 flex items-center justify-between">
                     <div>
                       <div className="font-bold text-xs">Job #1024 — Rahim Banner</div>
-                      <div className="text-[11px] text-blue-600 font-semibold">প্রিন্ট চলমান...</div>
+                      <div className="text-2xs text-blue-600 font-semibold">প্রিন্ট চলমান...</div>
                     </div>
                     <span className="relative flex h-3 w-3">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>

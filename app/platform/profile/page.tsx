@@ -208,7 +208,7 @@ export default function PlatformOwnerProfilePage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[10px] font-semibold transition-opacity cursor-pointer min-h-[44px] min-w-[44px]"
+                    className="absolute inset-0 bg-black/60 rounded-2xl opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-2xs font-semibold transition-opacity cursor-pointer min-h-[44px] min-w-[44px]"
                     aria-label="Change profile photo"
                   >
                     <Camera className="h-5 w-5 mb-1" />
@@ -231,10 +231,10 @@ export default function PlatformOwnerProfilePage() {
               </CardDescription>
 
               <div className="flex items-center justify-center gap-2 mt-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="text-2xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   Platform Owner
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                <span className="text-2xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   Active
                 </span>
@@ -287,12 +287,12 @@ export default function PlatformOwnerProfilePage() {
               <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-white">MFA Authentication</div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-2xs text-slate-400">
                     {profile.mfa_enabled ? 'TOTP Authenticator active' : 'Not configured'}
                   </div>
                 </div>
                 <span
-                  className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${
+                  className={`text-2xs font-bold uppercase px-2 py-0.5 rounded-full ${
                     profile.mfa_enabled
                       ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                       : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
@@ -305,13 +305,13 @@ export default function PlatformOwnerProfilePage() {
               <div className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between">
                 <div>
                   <div className="font-semibold text-white">Password Status</div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-2xs text-slate-400">
                     {profile.password_last_changed_at
                       ? `Last changed ${formatDate(profile.password_last_changed_at)}`
                       : 'Compliant'}
                   </div>
                 </div>
-                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                <span className="text-2xs font-bold uppercase px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                   Secured
                 </span>
               </div>
@@ -364,7 +364,7 @@ export default function PlatformOwnerProfilePage() {
                     <Label htmlFor="email" className="text-xs text-slate-300 font-semibold">
                       Platform Owner Email
                     </Label>
-                    <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="text-2xs text-emerald-400 font-bold flex items-center gap-1">
                       <CheckCircle2 className="h-3 w-3" /> Verified Root Account
                     </span>
                   </div>
@@ -376,7 +376,7 @@ export default function PlatformOwnerProfilePage() {
                     icon={<Mail className="h-4 w-4 text-slate-500" />}
                     className="bg-slate-950/40 border-slate-800 text-slate-400 cursor-not-allowed"
                   />
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-2xs text-slate-500">
                     Platform email changes require cryptographic step-up verification and audit log authorization to prevent hostile takeovers.
                   </p>
                 </div>
@@ -405,11 +405,11 @@ export default function PlatformOwnerProfilePage() {
                   <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between text-xs">
                     <div>
                       <div className="font-bold text-white">Platform Owner (Super Administrator)</div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-2xs text-slate-400">
                         Unrestricted authority across all PrintERP SaaS clusters, billing, and tenants.
                       </div>
                     </div>
-                    <span className="text-[10px] font-bold font-mono text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded border border-indigo-800">
+                    <span className="text-2xs font-bold font-mono text-indigo-400 bg-indigo-950/60 px-2 py-1 rounded border border-indigo-800">
                       IMMUTABLE
                     </span>
                   </div>
@@ -429,14 +429,14 @@ export default function PlatformOwnerProfilePage() {
                     placeholder="https://..."
                     className="bg-slate-950/60 border-slate-800 text-white placeholder:text-slate-600 focus-visible:ring-indigo-500"
                   />
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-2xs text-slate-500">
                     Supports JPG, PNG, WEBP. Max file size: 2MB. Stored with encrypted signed access.
                   </p>
                 </div>
               </CardContent>
 
               <CardFooter className="border-t border-slate-800 pt-4 pb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                <span className="text-[11px] text-slate-500">
+                <span className="text-2xs text-slate-500">
                   Profile modifications are immutably logged to the Platform Audit Log.
                 </span>
                 <Button

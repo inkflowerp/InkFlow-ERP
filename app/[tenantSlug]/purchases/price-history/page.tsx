@@ -86,7 +86,7 @@ export default function SupplierPriceHistoryPage() {
 
           return (
             <Card key={matId} className="p-4 border-slate-200 dark:border-slate-800">
-              <span className="font-mono text-[10px] uppercase text-blue-600 font-bold block truncate">
+              <span className="font-mono text-2xs uppercase text-blue-600 font-bold block truncate">
                 {matId.toUpperCase()}
               </span>
               <h4 className="font-bold text-xs text-slate-900 dark:text-white mt-0.5 truncate">
@@ -95,25 +95,25 @@ export default function SupplierPriceHistoryPage() {
 
               <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs">
                 <div>
-                  <span className="text-slate-400 text-[10px]">Last Paid:</span>
+                  <span className="text-slate-400 text-2xs">Last Paid:</span>
                   <div className="font-mono font-bold text-slate-900 dark:text-white">
                     {formatBDT(lastPrice)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px]">Average:</span>
+                  <span className="text-slate-400 text-2xs">Average:</span>
                   <div className="font-mono font-bold text-blue-600">
                     {formatBDT(avg)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px]">Lowest:</span>
+                  <span className="text-slate-400 text-2xs">Lowest:</span>
                   <div className="font-mono font-bold text-emerald-600">
                     {formatBDT(lowest)}
                   </div>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px]">Highest:</span>
+                  <span className="text-slate-400 text-2xs">Highest:</span>
                   <div className="font-mono font-bold text-red-600">
                     {formatBDT(highest)}
                   </div>
@@ -249,23 +249,23 @@ export default function SupplierPriceHistoryPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="font-bold text-slate-900 dark:text-white text-sm">{item.material_name}</div>
-                        <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+                        <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5">
                           <Building className="h-3 w-3 text-slate-400" /> {item.supplier_name}
                         </div>
                       </div>
-                      <span className="font-mono text-[11px] text-slate-400 shrink-0">{item.po_date}</span>
+                      <span className="font-mono text-2xs text-slate-400 shrink-0">{item.po_date}</span>
                     </div>
 
                     <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 font-mono">
                       <div>
-                        <div className="text-[10px] text-slate-400">Qty: {item.quantity}</div>
+                        <div className="text-2xs text-slate-400">Qty: {item.quantity}</div>
                         <div className="text-sm font-black text-slate-900 dark:text-white">
                           {formatBDT(item.purchase_price)}
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="text-[10px] text-slate-400">
+                        <div className="text-2xs text-slate-400">
                           Prev: {item.previous_price ? formatBDT(item.previous_price) : 'N/A'}
                         </div>
                         {item.previous_price ? (
@@ -278,7 +278,7 @@ export default function SupplierPriceHistoryPage() {
                             {isIncreased ? `+৳ ${diff}` : `-৳ ${Math.abs(diff)}`}
                           </span>
                         ) : (
-                          <span className="text-[11px] text-slate-400">Baseline</span>
+                          <span className="text-2xs text-slate-400">Baseline</span>
                         )}
                       </div>
                     </div>

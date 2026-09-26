@@ -91,7 +91,7 @@ export function PlatformSettingsNav() {
             {tab.badge && (
               <span
                 className={cn(
-                  'text-[9px] px-1.5 py-0.2 rounded font-mono font-bold shrink-0',
+                  'text-2xs px-1.5 py-0.2 rounded font-mono font-bold shrink-0',
                   isActive
                     ? 'bg-white/20 text-white'
                     : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/30'

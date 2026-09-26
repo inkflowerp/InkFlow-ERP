@@ -330,7 +330,7 @@ export function CameraQrScanner({
 
           {/* Top Control Overlay */}
           <div className="absolute top-3 inset-x-3 flex items-center justify-between pointer-events-auto z-20">
-            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-medium text-slate-200 flex items-center gap-1.5">
+            <div className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-2xs font-medium text-slate-200 flex items-center gap-1.5">
               <span className={`h-2 w-2 rounded-full ${cameraStatus === 'active' ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
               <span>{cameraStatus === 'active' ? 'Align QR in frame' : 'Connecting camera'}</span>
             </div>

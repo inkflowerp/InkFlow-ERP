@@ -549,7 +549,7 @@ export default function AttendanceSettingsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-indigo-400/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               {tBilingual('Total Locations', 'মোট লোকেশন')}
             </span>
             <div className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -559,14 +559,14 @@ export default function AttendanceSettingsPage() {
           <p className="text-2xl font-black text-slate-900 dark:text-white font-mono mt-2">
             {isLoading ? '...' : locations.length}
           </p>
-          <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
+          <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1">
             <span>{tBilingual('Configured Sites', 'নির্ধারিত সাইট')}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-emerald-400/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+            <span className="text-2xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
               {tBilingual('Active Geofences', 'সক্রিয় জিওফেন্স')}
             </span>
             <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
@@ -576,14 +576,14 @@ export default function AttendanceSettingsPage() {
           <p className="text-2xl font-black text-emerald-600 dark:text-emerald-300 font-mono mt-2">
             {isLoading ? '...' : activeLocationsCount}
           </p>
-          <div className="text-[10px] text-emerald-600/80 dark:text-emerald-400/80 mt-1">
+          <div className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">
             <span>{tBilingual('Enforcing GPS Bounds', 'জিপিএস বলয় সক্রিয়')}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-indigo-400/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+            <span className="text-2xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
               {tBilingual('Rotatable QR Tokens', 'রোটেট কিউআর টোকেন')}
             </span>
             <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
@@ -593,14 +593,14 @@ export default function AttendanceSettingsPage() {
           <p className="text-2xl font-black text-indigo-600 dark:text-indigo-300 font-mono mt-2">
             {isLoading ? '...' : activeQrCount}
           </p>
-          <div className="text-[10px] text-indigo-600/80 dark:text-indigo-400/80 mt-1">
+          <div className="text-2xs text-indigo-600/80 dark:text-indigo-400/80 mt-1">
             <span>{tBilingual('Live Cryptographic Terminals', 'লাইভ সিকিউর টার্মিনাল')}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden group hover:border-amber-400/50 transition-all">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+            <span className="text-2xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
               {tBilingual('Corrections Inbox', 'সংশোধন আবেদন')}
             </span>
             <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
@@ -610,7 +610,7 @@ export default function AttendanceSettingsPage() {
           <p className="text-2xl font-black text-amber-600 dark:text-amber-300 font-mono mt-2">
             {isLoading ? '...' : pendingCorrectionsCount}
           </p>
-          <div className="text-[10px] text-amber-600/80 dark:text-amber-400/80 mt-1">
+          <div className="text-2xs text-amber-600/80 dark:text-amber-400/80 mt-1">
             <span>{pendingCorrectionsCount > 0 ? tBilingual('Awaiting Review', 'অনুমোদনের অপেক্ষায়') : tBilingual('All Clear', 'সব অনুমোদিত')}</span>
           </div>
         </div>
@@ -629,7 +629,7 @@ export default function AttendanceSettingsPage() {
         >
           <MapPin className="h-3.5 w-3.5" />
           <span>{tBilingual('Attendance Locations', 'কর্মস্থল লোকেশন')}</span>
-          <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0">
+          <Badge variant="outline" className="ml-1 text-2xs px-1.5 py-0">
             {locations.length}
           </Badge>
         </button>
@@ -659,7 +659,7 @@ export default function AttendanceSettingsPage() {
           <Clock className="h-3.5 w-3.5" />
           <span>{tBilingual('Correction Requests', 'সংশোধন অনুরোধ')}</span>
           {pendingCorrectionsCount > 0 && (
-            <Badge className="bg-amber-500 text-white dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 text-[10px] px-1.5 py-0 font-bold animate-pulse">
+            <Badge className="bg-amber-500 text-white dark:bg-amber-500/20 dark:text-amber-300 dark:border-amber-500/30 text-2xs px-1.5 py-0 font-bold animate-pulse">
               {pendingCorrectionsCount}
             </Badge>
           )}
@@ -676,7 +676,7 @@ export default function AttendanceSettingsPage() {
         >
           <ShieldCheck className="h-3.5 w-3.5" />
           <span>{tBilingual('Audit Ledger', 'অডিট হিস্ট্রি')}</span>
-          <Badge variant="outline" className="ml-1 text-[10px] px-1.5 py-0">
+          <Badge variant="outline" className="ml-1 text-2xs px-1.5 py-0">
             {auditLogs.length}
           </Badge>
         </button>
@@ -807,7 +807,7 @@ export default function AttendanceSettingsPage() {
                               {loc.name}
                             </CardTitle>
                             <Badge
-                              className={`text-[10px] font-bold ${
+                              className={`text-2xs font-bold ${
                                 loc.is_active
                                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                                   : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
@@ -820,7 +820,7 @@ export default function AttendanceSettingsPage() {
                             {loc.branch_name && (
                               <Badge
                                 variant="outline"
-                                className="bg-slate-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700 text-[10px] px-2 py-0.5 flex items-center gap-1 rounded-md"
+                                className="bg-slate-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700 text-2xs px-2 py-0.5 flex items-center gap-1 rounded-md"
                               >
                                 <Building className="h-2.5 w-2.5" />
                                 <span>{loc.branch_name}</span>
@@ -897,7 +897,7 @@ export default function AttendanceSettingsPage() {
 
                           <div className="flex justify-between text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200 dark:border-slate-800">
                             <span>{tBilingual('Token Prefix', 'কিউআর টোকেন')}:</span>
-                            <span className="font-mono text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">
+                            <span className="font-mono text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
                               {activeToken?.token_prefix || 'ACTIVE'}
                             </span>
                           </div>
@@ -913,7 +913,7 @@ export default function AttendanceSettingsPage() {
                             setSelectedLocation(loc)
                             setIsPrintPosterOpen(true)
                           }}
-                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-[11px] h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <Printer className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
                           <span>{tBilingual('Poster', 'পোস্টার')}</span>
@@ -923,7 +923,7 @@ export default function AttendanceSettingsPage() {
                           type="button"
                           variant="outline"
                           onClick={() => handleDownloadQrSvg(loc)}
-                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-[11px] h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <Download className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
                           <span>{tBilingual('Vector', 'ভেক্টর')}</span>
@@ -936,7 +936,7 @@ export default function AttendanceSettingsPage() {
                             setSelectedLocation(loc)
                             setIsRegenerateConfirmOpen(true)
                           }}
-                          className="border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-slate-800 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 text-[11px] h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
+                          className="border-amber-200 dark:border-amber-500/20 bg-amber-50 dark:bg-slate-800 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-slate-700 text-2xs h-9 rounded-xl font-bold flex items-center justify-center gap-1.5 shadow-none"
                         >
                           <RefreshCw className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                           <span>{tBilingual('Rotate', 'রোটেট')}</span>
@@ -996,7 +996,7 @@ export default function AttendanceSettingsPage() {
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-900 dark:text-white text-sm">{loc.name}</span>
                           <Badge
-                            className={`text-[10px] font-bold ${
+                            className={`text-2xs font-bold ${
                               activeToken?.is_active
                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                                 : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800'
@@ -1009,7 +1009,7 @@ export default function AttendanceSettingsPage() {
                           Prefix: <strong className="text-indigo-600 dark:text-indigo-300">{activeToken?.token_prefix || 'ACTIVE'}</strong> • Radius: {loc.radius_meters}m • Max Accuracy: ±{loc.max_accuracy_meters}m
                         </p>
                         {activeToken?.created_at && (
-                          <p className="text-[11px] text-slate-400 dark:text-slate-500 font-mono">
+                          <p className="text-2xs text-slate-400 dark:text-slate-500 font-mono">
                             Last Rotated: {new Date(activeToken.created_at).toLocaleString()}
                           </p>
                         )}
@@ -1119,14 +1119,14 @@ export default function AttendanceSettingsPage() {
                       <span className="font-bold text-slate-900 dark:text-white text-xs">
                         {corr.employee_name || 'Staff Member'}
                       </span>
-                      <Badge className="text-[10px] bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-slate-800 dark:text-indigo-300 dark:border-slate-700">
+                      <Badge className="text-2xs bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-slate-800 dark:text-indigo-300 dark:border-slate-700">
                         {corr.requested_type}
                       </Badge>
                       <span className="text-xs text-slate-500 dark:text-slate-400">
                         {corr.attendance_date} at {corr.requested_time}
                       </span>
                       <Badge
-                        className={`text-[10px] font-bold ${
+                        className={`text-2xs font-bold ${
                           corr.status === 'approved'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                             : corr.status === 'rejected'
@@ -1141,7 +1141,7 @@ export default function AttendanceSettingsPage() {
                       Reason: <strong className="text-slate-800 dark:text-slate-200">{corr.reason}</strong>
                     </p>
                     {corr.review_notes && (
-                      <p className="text-[11px] text-slate-400 italic">
+                      <p className="text-2xs text-slate-400 italic">
                         Manager Note: &ldquo;{corr.review_notes}&rdquo;
                       </p>
                     )}
@@ -1227,7 +1227,7 @@ export default function AttendanceSettingsPage() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
-                        className="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700"
+                        className="text-2xs font-mono bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-300 border-slate-200 dark:border-slate-700"
                       >
                         {log.action_type}
                       </Badge>
@@ -1236,11 +1236,11 @@ export default function AttendanceSettingsPage() {
                         <span className="text-slate-500 dark:text-slate-400">• Location: {log.location_name}</span>
                       )}
                     </div>
-                    <span className="text-slate-500 dark:text-slate-400 text-[11px] block font-mono truncate max-w-xl">
+                    <span className="text-slate-500 dark:text-slate-400 text-2xs block font-mono truncate max-w-xl">
                       {typeof log.details === 'object' ? JSON.stringify(log.details) : log.details}
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono shrink-0">
+                  <span className="text-2xs text-slate-400 dark:text-slate-500 font-mono shrink-0">
                     {new Date(log.created_at).toLocaleString()}
                   </span>
                 </div>
@@ -1332,7 +1332,7 @@ export default function AttendanceSettingsPage() {
             </div>
 
             {gpsAccuracyCaptured && (
-              <div className="text-[11px] text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+              <div className="text-2xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 p-2 rounded-lg border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                 <span>Device Satellite Accuracy: ±{gpsAccuracyCaptured}m (Verified)</span>
               </div>
@@ -1340,7 +1340,7 @@ export default function AttendanceSettingsPage() {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <Label htmlFor="locLat" className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                <Label htmlFor="locLat" className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">
                   {tBilingual('Latitude (°N)', 'অক্ষাংশ')}
                 </Label>
                 <Input
@@ -1356,7 +1356,7 @@ export default function AttendanceSettingsPage() {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="locLng" className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">
+                <Label htmlFor="locLng" className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">
                   {tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}
                 </Label>
                 <Input
@@ -1391,7 +1391,7 @@ export default function AttendanceSettingsPage() {
                 onChange={(e) => setLocRadius(parseInt(e.target.value))}
                 className="w-full accent-indigo-600"
               />
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Allowed punch circle diameter.', 'অনুমোদিত উপস্থিতি বলয়।')}
               </p>
             </div>
@@ -1412,7 +1412,7 @@ export default function AttendanceSettingsPage() {
                 onChange={(e) => setLocMaxAccuracy(parseInt(e.target.value))}
                 className="w-full accent-indigo-600"
               />
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">
+              <p className="text-2xs text-slate-500 dark:text-slate-400">
                 {tBilingual('Rejects inaccurate GPS satellite signals.', 'দুর্বল জিপিএস সিগন্যাল বাতিল করবে।')}
               </p>
             </div>
@@ -1496,7 +1496,7 @@ export default function AttendanceSettingsPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
+              <Label className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Latitude (°N)', 'অক্ষাংশ')}</Label>
               <Input
                 type="number"
                 step="0.000001"
@@ -1508,7 +1508,7 @@ export default function AttendanceSettingsPage() {
             </div>
 
             <div className="space-y-1">
-              <Label className="text-[11px] text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
+              <Label className="text-2xs text-slate-500 dark:text-slate-400 font-semibold">{tBilingual('Longitude (°E)', 'দ্রাঘিমাংশ')}</Label>
               <Input
                 type="number"
                 step="0.000001"
@@ -1615,7 +1615,7 @@ export default function AttendanceSettingsPage() {
               <div className="space-y-1.5 text-xs flex-1 w-full">
                 <div className="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-1">
                   <span className="text-slate-500 dark:text-slate-400">Token Status:</span>
-                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-[10px] font-bold">
+                  <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800 text-2xs font-bold">
                     {selectedLocation.active_qr_token?.is_active ? 'ACTIVE & VERIFIED' : 'REVOKED'}
                   </Badge>
                 </div>
@@ -1638,7 +1638,7 @@ export default function AttendanceSettingsPage() {
                   </span>
                 </div>
                 {selectedLocation.active_qr_token?.created_at && (
-                  <div className="flex justify-between pt-1 border-t border-slate-200 dark:border-slate-800 text-slate-400 text-[11px]">
+                  <div className="flex justify-between pt-1 border-t border-slate-200 dark:border-slate-800 text-slate-400 text-2xs">
                     <span>Generated:</span>
                     <span>{new Date(selectedLocation.active_qr_token.created_at).toLocaleString()}</span>
                   </div>

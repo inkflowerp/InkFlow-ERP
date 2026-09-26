@@ -156,7 +156,7 @@ export function PlatformSupportConsole({
           )}
         >
           <div>
-            <div className="text-[10px] sm:text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-slate-400 font-semibold uppercase tracking-wider">
               Total Tickets
             </div>
             <div className="text-lg sm:text-xl font-black text-slate-100 mt-0.5">{stats?.totalCount || 0}</div>
@@ -181,7 +181,7 @@ export function PlatformSupportConsole({
           )}
         >
           <div>
-            <div className="text-[10px] sm:text-[11px] text-emerald-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-emerald-400 font-semibold uppercase tracking-wider">
               Unassigned
             </div>
             <div className="text-lg sm:text-xl font-black text-emerald-400 mt-0.5">{stats?.unassignedCount || 0}</div>
@@ -206,7 +206,7 @@ export function PlatformSupportConsole({
           )}
         >
           <div>
-            <div className="text-[10px] sm:text-[11px] text-indigo-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-indigo-400 font-semibold uppercase tracking-wider">
               My Tickets
             </div>
             <div className="text-lg sm:text-xl font-black text-indigo-400 mt-0.5">{stats?.assignedToMeCount || 0}</div>
@@ -231,7 +231,7 @@ export function PlatformSupportConsole({
           )}
         >
           <div>
-            <div className="text-[10px] sm:text-[11px] text-amber-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-amber-400 font-semibold uppercase tracking-wider">
               Waiting
             </div>
             <div className="text-lg sm:text-xl font-black text-amber-400 mt-0.5">{stats?.waitingCustomerCount || 0}</div>
@@ -256,7 +256,7 @@ export function PlatformSupportConsole({
           )}
         >
           <div>
-            <div className="text-[10px] sm:text-[11px] text-rose-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-rose-400 font-semibold uppercase tracking-wider">
               Urgent SLA
             </div>
             <div className="text-lg sm:text-xl font-black text-rose-400 mt-0.5">{stats?.urgentCount || 0}</div>
@@ -269,7 +269,7 @@ export function PlatformSupportConsole({
         {/* Avg First Response */}
         <div className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
           <div>
-            <div className="text-[10px] sm:text-[11px] text-purple-400 font-semibold uppercase tracking-wider">
+            <div className="text-2xs sm:text-2xs text-purple-400 font-semibold uppercase tracking-wider">
               Avg SLA
             </div>
             <div className="text-lg sm:text-xl font-black text-purple-400 mt-0.5">
@@ -347,7 +347,7 @@ export function PlatformSupportConsole({
                   key={tab.key}
                   onClick={() => setActiveQueueTab(tab.key)}
                   className={cn(
-                    'px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer',
+                    'px-2.5 py-1 rounded-lg text-2xs font-semibold whitespace-nowrap transition-colors cursor-pointer',
                     activeQueueTab === tab.key
                       ? 'bg-indigo-600 text-white shadow-xs'
                       : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
@@ -375,7 +375,7 @@ export function PlatformSupportConsole({
                 <p>No tickets matching current filters.</p>
                 <button
                   onClick={resetFilters}
-                  className="px-3 py-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 bg-slate-950 border border-slate-800 rounded-lg"
+                  className="px-3 py-1 text-2xs font-bold text-indigo-400 hover:text-indigo-300 bg-slate-950 border border-slate-800 rounded-lg"
                 >
                   Reset Filters
                 </button>
@@ -400,15 +400,15 @@ export function PlatformSupportConsole({
                         : 'hover:bg-slate-800/40 text-slate-300'
                     )}
                   >
-                    <div className="flex items-center justify-between text-[11px]">
+                    <div className="flex items-center justify-between text-2xs">
                       <span className="font-mono font-bold text-indigo-400">{conv.ticket_number}</span>
                       <div className="flex items-center gap-1">
                         {conv.priority === 'urgent' && (
-                          <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-rose-950 text-rose-300 border border-rose-800">
+                          <span className="px-1.5 py-0.2 rounded text-2xs font-bold bg-rose-950 text-rose-300 border border-rose-800">
                             URGENT
                           </span>
                         )}
-                        <span className={cn('px-1.5 py-0.2 rounded text-[10px] border font-medium', statusConfig.badgeClass)}>
+                        <span className={cn('px-1.5 py-0.2 rounded text-2xs border font-medium', statusConfig.badgeClass)}>
                           {statusConfig.labelEn}
                         </span>
                       </div>
@@ -416,7 +416,7 @@ export function PlatformSupportConsole({
 
                     <div className="font-bold text-xs text-slate-100 truncate">{conv.subject}</div>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <div className="flex items-center justify-between text-2xs text-slate-400">
                       <span className="truncate max-w-[140px] text-slate-300 font-medium">
                         {conv.company_name || 'Tenant'}
                       </span>

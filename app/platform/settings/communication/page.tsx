@@ -397,39 +397,39 @@ export default function PlatformEmailGatewayPage() {
           {/* Status Overview Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-indigo-500">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Active Provider
               </span>
               <div className="text-lg font-bold text-white capitalize flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
                 {gateway?.provider?.toUpperCase() || 'SMTP'} Gateway
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-2xs text-slate-500 mt-1 block">
                 AES-256-GCM Encrypted
               </span>
             </Card>
 
             <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-emerald-500">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Status
               </span>
               <div className="text-lg font-bold text-emerald-400 flex items-center gap-1.5">
                 <CheckCircle2 className="h-4 w-4" />
                 {gateway?.last_test_status?.toUpperCase() || 'READY'}
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-2xs text-slate-500 mt-1 block">
                 Last Tested: {gateway?.last_tested_at ? formatTime(gateway.last_tested_at) : 'Active'}
               </span>
             </Card>
 
             <Card className="bg-slate-900/90 border-slate-800 p-4 border-l-4 border-l-purple-500">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Platform Sender
               </span>
               <div className="text-xs font-bold text-slate-200 truncate mt-1">
                 {gateway?.sender_email || senderEmail}
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block truncate">
+              <span className="text-2xs text-slate-500 mt-1 block truncate">
                 Display: {gateway?.sender_name || senderName}
               </span>
             </Card>
@@ -454,7 +454,7 @@ export default function PlatformEmailGatewayPage() {
                   Connect official InkFlow platform Google Workspace or Gmail account for OAuth 2.0 authenticated system delivery.
                 </p>
               </div>
-              <div className="mt-3 text-[10px] font-mono text-slate-500">
+              <div className="mt-3 text-2xs font-mono text-slate-500">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -476,7 +476,7 @@ export default function PlatformEmailGatewayPage() {
                   Configure corporate SMTP host for platform registration, OTPs, password resets, and system notices.
                 </p>
               </div>
-              <div className="mt-3 text-[10px] font-mono text-slate-500">
+              <div className="mt-3 text-2xs font-mono text-slate-500">
                 Scope: Platform Global Email
               </div>
             </div>
@@ -502,7 +502,7 @@ export default function PlatformEmailGatewayPage() {
                         <div className="font-bold text-xs text-white">
                           Connected Account: {gateway.gmail_account_email || gateway.sender_email}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-2xs text-slate-400">
                           Display Name: {gateway.gmail_display_name || gateway.sender_name}
                         </div>
                       </div>
@@ -557,10 +557,10 @@ export default function PlatformEmailGatewayPage() {
                           <AlertTriangle className="h-4 w-4 shrink-0" />
                           <span>Google Cloud OAuth Setup Note</span>
                         </div>
-                        <p className="text-[11px] text-amber-400/90 leading-relaxed">
+                        <p className="text-2xs text-amber-400/90 leading-relaxed">
                           To enable Platform Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 font-mono text-[11px] text-slate-300 space-y-1">
+                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 font-mono text-2xs text-slate-300 space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
                             <span className={googleOAuthStatus.hasClientId ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
@@ -581,14 +581,14 @@ export default function PlatformEmailGatewayPage() {
                           </div>
                         </div>
                         {googleOAuthStatus.redirectUri && (
-                          <div className="text-[11px] text-slate-400">
+                          <div className="text-2xs text-slate-400">
                             <strong className="text-slate-300">Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-slate-950 rounded font-mono text-[10px] break-all select-all text-slate-300 border border-slate-800">
+                            <code className="block mt-1 p-2 bg-slate-950 rounded font-mono text-2xs break-all select-all text-slate-300 border border-slate-800">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
                         )}
-                        <p className="text-[10px] text-slate-400 pt-1">
+                        <p className="text-2xs text-slate-400 pt-1">
                           Tip: The platform can use <strong>Platform Dedicated SMTP</strong> immediately below without any Google Cloud project setup.
                         </p>
                       </div>
@@ -662,7 +662,7 @@ export default function PlatformEmailGatewayPage() {
                       <button
                         type="button"
                         onClick={() => setShowSecret(!showSecret)}
-                        className="text-[11px] text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                        className="text-2xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
                       >
                         {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         {showSecret ? 'Hide' : 'Reveal'}
@@ -788,7 +788,7 @@ export default function PlatformEmailGatewayPage() {
                   >
                     <div className="flex items-center justify-between">
                       <span className="truncate font-semibold">{tpl.name}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
+                      <span className={`text-2xs px-1.5 py-0.5 rounded font-mono ${isSelected ? 'bg-indigo-700 text-white' : 'bg-slate-800 text-slate-400'}`}>
                         {tpl.event_type}
                       </span>
                     </div>
@@ -803,7 +803,7 @@ export default function PlatformEmailGatewayPage() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <div>
                   <h4 className="font-bold text-sm text-white">{selectedTemplate.name}</h4>
-                  <span className="text-[11px] font-mono text-indigo-400">{selectedTemplate.event_type}</span>
+                  <span className="text-2xs font-mono text-indigo-400">{selectedTemplate.event_type}</span>
                 </div>
 
                 <Button size="sm" onClick={handleSaveTemplate} className="h-8 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold">
@@ -898,15 +898,15 @@ export default function PlatformEmailGatewayPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-slate-800/30">
-                          <td className="py-3 px-4 font-mono text-[11px] text-slate-400">
+                          <td className="py-3 px-4 font-mono text-2xs text-slate-400">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
-                            <span className="text-indigo-400 text-[10px]">{log.event_type}</span>
+                            <span className="text-indigo-400 text-2xs">{log.event_type}</span>
                           </td>
                           <td className="py-3 px-4 font-medium text-white">{log.recipient}</td>
                           <td className="py-3 px-4 truncate max-w-xs text-slate-300">{log.subject}</td>
                           <td className="py-3 px-4 text-center">
                             <Badge
-                              className={`text-[9px] uppercase ${
+                              className={`text-2xs uppercase ${
                                 log.status === 'sent'
                                   ? 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                                   : log.status === 'failed'

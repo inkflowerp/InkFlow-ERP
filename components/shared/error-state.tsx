@@ -50,7 +50,7 @@ export function ErrorState({
       </p>
 
       {errorCode && (
-        <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 mb-5">
+        <span className="font-mono text-2xs px-2 py-0.5 rounded bg-rose-200/60 dark:bg-rose-900/60 text-rose-800 dark:text-rose-300 mb-5">
           ERROR CODE: {errorCode}
         </span>
       )}

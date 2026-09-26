@@ -321,7 +321,7 @@ export default function EmployeeAttendancePage() {
               </div>
 
               <div>
-                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
+                <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                   {tBilingual('Today\'s Shift Status', 'আজকের শিফট অবস্থা')}
                 </span>
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mt-0.5">
@@ -429,7 +429,7 @@ export default function EmployeeAttendancePage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+            <div className="flex items-center gap-1.5 text-slate-500 text-2xs">
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>{tBilingual('Authoritative Geofence & QR Verified', 'কিউআর ও জিপিএস ভেরিফাইড')}</span>
             </div>
@@ -508,7 +508,7 @@ export default function EmployeeAttendancePage() {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Badge
-                      className={`text-[10px] font-mono font-bold ${
+                      className={`text-2xs font-mono font-bold ${
                         rec.attendance_type === 'CHECK_IN'
                           ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
                           : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-300 dark:border-amber-800'
@@ -540,7 +540,7 @@ export default function EmployeeAttendancePage() {
                 </div>
 
                 <div className="flex items-center gap-2 self-end sm:self-auto">
-                  <Badge variant="outline" className="text-[10px] bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
+                  <Badge variant="outline" className="text-2xs bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300">
                     {rec.verification_status}
                   </Badge>
 

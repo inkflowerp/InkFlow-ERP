@@ -734,7 +734,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
                   <span>
                     {locale === 'bn' ? 'ডিজাইন স্টুডিও ও প্রি-প্রেস কোয়ালিটি' : 'Design Studio & Pre-Press Quality Panel'}
                   </span>
-                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-bold py-0.5">
+                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 text-2xs font-bold py-0.5">
                     Pre-Press Hub
                   </Badge>
                 </h1>
@@ -815,7 +815,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
                 <span className="text-xs truncate font-semibold">{t.label}</span>
               </div>
               <span
-                className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
                   isActive
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'

@@ -266,12 +266,12 @@ export default function TenantSubscriptionPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-[10px] px-2.5 py-0.5">
+              <Badge className="bg-amber-400 text-slate-950 font-black tracking-wider uppercase text-2xs px-2.5 py-0.5">
                 {isTrial ? 'Free Trial' : currentPlan.name}
               </Badge>
 
               <Badge
-                className={`text-[10px] font-bold capitalize px-2 py-0.5 ${
+                className={`text-2xs font-bold capitalize px-2 py-0.5 ${
                   isTrial
                     ? isTrialExpired
                       ? 'bg-red-500 text-white'
@@ -320,13 +320,13 @@ export default function TenantSubscriptionPage() {
               {isBn ? accountTypeMeta.nameBn : accountTypeMeta.nameEn}: {isBn ? accountTypeMeta.descriptionBn : accountTypeMeta.descriptionEn}
             </p>
 
-            <div className="text-[11px] text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
+            <div className="text-2xs text-slate-400 pt-1 flex items-center gap-3 flex-wrap">
               <span>
                 {isTrial ? 'Trial Ends:' : 'Period Ends:'}{' '}
                 <strong className="text-white font-mono">
                   {formatDate(trialExpiresAt || planExpiresAt || subscription.current_period_end, locale)}
                 </strong>{' '}
-                <span className="text-amber-300 font-mono text-[10px]">
+                <span className="text-amber-300 font-mono text-2xs">
                   ({isTrial
                     ? isTrialExpired
                       ? 'Expired'
@@ -398,7 +398,7 @@ export default function TenantSubscriptionPage() {
           </div>
 
           {subscription.custom_limits_override && (
-            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 text-[10px]">
+            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300 border-purple-200 text-2xs">
               Custom Overrides Active
             </Badge>
           )}
@@ -428,7 +428,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(userLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{userLimit.percentage}% used</span>
               <span>{Math.max(0, userLimit.limit - userLimit.current)} seats left</span>
             </div>
@@ -453,7 +453,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(branchLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{branchLimit.percentage}% used</span>
               <span>{Math.max(0, branchLimit.limit - branchLimit.current)} available</span>
             </div>
@@ -476,7 +476,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(storageLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{storageLimit.percentage}% used</span>
               <span>{(storageLimit.limit - storageLimit.current).toFixed(1)} GB free</span>
             </div>
@@ -499,7 +499,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(orderLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{orderLimit.percentage}% used</span>
               <span>Resets on 1st of month</span>
             </div>
@@ -522,7 +522,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(customerLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{customerLimit.percentage}% used</span>
               <span>{customerLimit.limit - customerLimit.current} entries left</span>
             </div>
@@ -545,7 +545,7 @@ export default function TenantSubscriptionPage() {
                 style={{ width: `${Math.min(productLimit.percentage, 100)}%` }}
               />
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-1 flex justify-between">
               <span>{productLimit.percentage}% used</span>
               <span>{productLimit.limit - productLimit.current} products left</span>
             </div>
@@ -589,7 +589,7 @@ export default function TenantSubscriptionPage() {
                   events.map((ev) => (
                     <tr key={ev.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${
                           ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                             : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
@@ -599,7 +599,7 @@ export default function TenantSubscriptionPage() {
                           {ev.event_type}
                         </span>
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px]">
+                      <td className="py-3 px-4 font-mono text-2xs">
                         {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
                       </td>
                       <td className="py-3 px-4 font-mono font-bold">
@@ -628,7 +628,7 @@ export default function TenantSubscriptionPage() {
               events.map((ev) => (
                 <div key={ev.id} className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    <span className={`px-2 py-0.5 rounded-full text-2xs font-bold ${
                       ev.event_type === 'PLAN_UPGRADED' || ev.event_type === 'PAYMENT_VERIFIED' || ev.event_type === 'RENEWED'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         : ev.event_type === 'PAYMENT_FAILED' || ev.event_type === 'EXPIRED'
@@ -644,7 +644,7 @@ export default function TenantSubscriptionPage() {
                   <div className="text-xs text-slate-700 dark:text-slate-300 font-mono">
                     {ev.previous_plan_code || 'trial'} → <strong className="text-slate-900 dark:text-white">{ev.new_plan_code || 'starter'}</strong>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                  <div className="flex items-center justify-between text-2xs text-slate-500 pt-1">
                     <span>{ev.reason || 'Lifecycle action'}</span>
                     <span>{formatDate(ev.created_at, locale)}</span>
                   </div>
@@ -696,7 +696,7 @@ export default function TenantSubscriptionPage() {
                         {inv.invoice_number}
                       </td>
                       <td className="py-3 px-4 uppercase text-slate-700 dark:text-slate-300 font-semibold">
-                        {inv.plan_name} <span className="text-[10px] text-slate-400 font-normal">({inv.billing_interval})</span>
+                        {inv.plan_name} <span className="text-2xs text-slate-400 font-normal">({inv.billing_interval})</span>
                       </td>
                       <td className="py-3 px-4 font-mono font-bold">
                         <CurrencyDisplay amount={inv.amount} />
@@ -704,11 +704,11 @@ export default function TenantSubscriptionPage() {
                       <td className="py-3 px-4 uppercase text-slate-600 dark:text-slate-300">
                         {inv.payment_method}
                       </td>
-                      <td className="py-3 px-4 font-mono text-[11px] text-slate-500">
+                      <td className="py-3 px-4 font-mono text-2xs text-slate-500">
                         {inv.transaction_ref}
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        <span className={`px-2 py-0.5 rounded-full text-2xs font-bold uppercase ${
                           inv.status === 'paid'
                             ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                             : inv.status === 'failed'
@@ -741,7 +741,7 @@ export default function TenantSubscriptionPage() {
                     <span className="font-mono text-xs font-bold text-slate-900 dark:text-white">
                       {inv.invoice_number}
                     </span>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    <span className={`px-2 py-0.5 rounded-full text-2xs font-bold uppercase ${
                       inv.status === 'paid'
                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                         : inv.status === 'failed'
@@ -759,7 +759,7 @@ export default function TenantSubscriptionPage() {
                       <CurrencyDisplay amount={inv.amount} />
                     </span>
                   </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1">
+                  <div className="flex items-center justify-between text-2xs text-slate-500 font-mono pt-1">
                     <span>{inv.payment_method?.toUpperCase()} • {inv.transaction_ref}</span>
                     <span>{formatDate(inv.billing_date, locale)}</span>
                   </div>

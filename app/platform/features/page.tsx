@@ -548,7 +548,7 @@ export default function PlatformFeaturesPage() {
           <div className="text-2xl font-black text-white mt-1">
             {overview?.total_flags || 0}
           </div>
-          <div className="text-[11px] text-indigo-300 mt-1">
+          <div className="text-2xs text-indigo-300 mt-1">
             Across {overview?.categories?.length || 6} ERP domains
           </div>
         </Card>
@@ -562,7 +562,7 @@ export default function PlatformFeaturesPage() {
           <div className="text-2xl font-black text-emerald-400 mt-1">
             {overview?.enabled_globally || 0}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">
+          <div className="text-2xs text-slate-400 mt-1">
             {overview && overview.total_flags > 0
               ? `${Math.round((overview.enabled_globally / overview.total_flags) * 100)}% platform enablement`
               : '0% enabled'}
@@ -578,7 +578,7 @@ export default function PlatformFeaturesPage() {
           <div className="text-2xl font-black text-purple-300 mt-1">
             {overview?.beta_flags_count || 0}
           </div>
-          <div className="text-[11px] text-purple-400 mt-1">
+          <div className="text-2xs text-purple-400 mt-1">
             Pilot features in testing
           </div>
         </Card>
@@ -592,7 +592,7 @@ export default function PlatformFeaturesPage() {
           <div className="text-2xl font-black text-cyan-300 mt-1">
             {overview?.total_overrides_count || 0}
           </div>
-          <div className="text-[11px] text-cyan-400 mt-1">
+          <div className="text-2xs text-cyan-400 mt-1">
             Custom VIP / SLA company rules
           </div>
         </Card>
@@ -653,7 +653,7 @@ export default function PlatformFeaturesPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-800/60 text-xs">
           {/* Category Chips */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-slate-400 text-[11px] mr-1">Category:</span>
+            <span className="text-slate-400 text-2xs mr-1">Category:</span>
             {[
               { id: 'all', label: 'All Domains' },
               { id: 'core', label: 'Core ERP' },
@@ -746,26 +746,26 @@ export default function PlatformFeaturesPage() {
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-center gap-2">
                             <h3 className="font-bold text-sm text-white">{flag.name}</h3>
-                            <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                            <span className="font-mono text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
                               {flag.key}
                             </span>
                             <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded border ${catInfo.bg} ${catInfo.color} ${catInfo.border}`}
+                              className={`text-2xs font-bold px-2 py-0.5 rounded border ${catInfo.bg} ${catInfo.color} ${catInfo.border}`}
                             >
                               {catInfo.label}
                             </span>
                             {flag.is_beta && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
+                              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30">
                                 Beta / Pilot
                               </span>
                             )}
                             {flag.is_critical && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-300 border border-red-500/30">
+                              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-red-500/10 text-red-300 border border-red-500/30">
                                 Critical System
                               </span>
                             )}
                             {flag.overrides_count > 0 && (
-                              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                              <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
                                 {flag.overrides_count} Tenant Override{flag.overrides_count > 1 ? 's' : ''}
                               </span>
                             )}
@@ -775,7 +775,7 @@ export default function PlatformFeaturesPage() {
                             {flag.description}
                           </p>
 
-                          <div className="text-[10px] text-slate-500 flex items-center gap-3 pt-0.5">
+                          <div className="text-2xs text-slate-500 flex items-center gap-3 pt-0.5">
                             <span>Min Plan Tier: <strong className="text-slate-300 capitalize">{flag.min_plan || 'all'}</strong></span>
                             <span>•</span>
                             <span>Global Status: <strong className={flag.is_enabled ? 'text-emerald-400' : 'text-slate-400'}>{flag.is_enabled ? 'Active / Enabled' : 'Inactive / Disabled'}</strong></span>
@@ -858,13 +858,13 @@ export default function PlatformFeaturesPage() {
                 <Building2 className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+                <div className="text-2xs text-slate-400 font-semibold uppercase tracking-wider">
                   Selected Tenant Organization
                 </div>
                 <div className="font-bold text-sm text-white flex items-center gap-2">
                   <span>{selectedCompany ? selectedCompany.name : 'Choose a tenant'}</span>
                   {selectedCompany && (
-                    <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-bold">
+                    <span className="text-2xs uppercase px-2 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 font-bold">
                       {selectedCompany.plan} Plan
                     </span>
                   )}
@@ -920,15 +920,15 @@ export default function PlatformFeaturesPage() {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-sm text-white">{flag.name}</h4>
-                          <span className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
+                          <span className="font-mono text-2xs px-2 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800">
                             {flag.key}
                           </span>
                           {isOverridden ? (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-200 border border-cyan-500/40">
+                            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-200 border border-cyan-500/40">
                               Custom Tenant Override Active
                             </span>
                           ) : (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                            <span className="text-2xs font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
                               Inherited Global Default ({flag.is_enabled ? 'Enabled' : 'Disabled'})
                             </span>
                           )}
@@ -937,7 +937,7 @@ export default function PlatformFeaturesPage() {
                         <p className="text-xs text-slate-400 max-w-2xl">{flag.description}</p>
 
                         {override?.notes && (
-                          <div className="text-[11px] text-cyan-300 font-mono mt-1 bg-cyan-950/40 p-1.5 rounded-lg border border-cyan-800/40 inline-block">
+                          <div className="text-2xs text-cyan-300 font-mono mt-1 bg-cyan-950/40 p-1.5 rounded-lg border border-cyan-800/40 inline-block">
                             Override Note: {override.notes} • Updated {formatDate(override.updated_at)}
                           </div>
                         )}
@@ -1099,7 +1099,7 @@ export default function PlatformFeaturesPage() {
                     onChange={(e) => setCreateForm({ ...createForm, is_enabled: e.target.checked })}
                     className="rounded text-indigo-600 focus:ring-0"
                   />
-                  <span className="text-slate-200 text-[11px] font-semibold">Enabled Globally</span>
+                  <span className="text-slate-200 text-2xs font-semibold">Enabled Globally</span>
                 </label>
 
                 <label className="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
@@ -1109,7 +1109,7 @@ export default function PlatformFeaturesPage() {
                     onChange={(e) => setCreateForm({ ...createForm, is_beta: e.target.checked })}
                     className="rounded text-purple-600 focus:ring-0"
                   />
-                  <span className="text-purple-300 text-[11px] font-semibold">Beta / Pilot</span>
+                  <span className="text-purple-300 text-2xs font-semibold">Beta / Pilot</span>
                 </label>
 
                 <label className="flex items-center gap-2 p-2 bg-slate-950 border border-slate-800 rounded-xl cursor-pointer">
@@ -1119,7 +1119,7 @@ export default function PlatformFeaturesPage() {
                     onChange={(e) => setCreateForm({ ...createForm, is_critical: e.target.checked })}
                     className="rounded text-red-600 focus:ring-0"
                   />
-                  <span className="text-red-300 text-[11px] font-semibold">Critical System</span>
+                  <span className="text-red-300 text-2xs font-semibold">Critical System</span>
                 </label>
               </div>
 
@@ -1166,10 +1166,10 @@ export default function PlatformFeaturesPage() {
             <form onSubmit={handleSaveEditFlag} className="space-y-3.5 text-xs">
               <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
                 <div>
-                  <div className="text-[10px] text-slate-500">Key Slug</div>
+                  <div className="text-2xs text-slate-500">Key Slug</div>
                   <div className="font-mono text-white text-xs font-bold">{editingFlag.key}</div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
+                <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">
                   ID: {editingFlag.id.slice(0, 8)}...
                 </span>
               </div>
@@ -1273,7 +1273,7 @@ export default function PlatformFeaturesPage() {
                 <label className="text-slate-400 font-semibold block mb-1">Target Feature Flag</label>
                 <div className="p-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white font-mono font-bold flex items-center justify-between">
                   <span>{overrideModalFlag.name}</span>
-                  <span className="text-[10px] text-slate-400 font-mono">({overrideModalFlag.key})</span>
+                  <span className="text-2xs text-slate-400 font-mono">({overrideModalFlag.key})</span>
                 </div>
               </div>
 
@@ -1374,7 +1374,7 @@ export default function PlatformFeaturesPage() {
               <p className="text-slate-300">
                 Are you sure you want to permanently delete <strong>{deletingFlag.name}</strong> (<code>{deletingFlag.key}</code>)?
               </p>
-              <div className="p-3 bg-red-950/50 border border-red-900/60 rounded-xl text-red-200 text-[11px]">
+              <div className="p-3 bg-red-950/50 border border-red-900/60 rounded-xl text-red-200 text-2xs">
                 Deleting this flag will remove all global settings and cascade delete any active tenant overrides.
               </div>
 

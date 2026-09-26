@@ -110,7 +110,7 @@ export default function PlatformForgotPasswordPage() {
                   />
                 </div>
 
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] text-slate-400">
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-2xs text-slate-400">
                   Password reset tokens are single-use, expire after 15 minutes, and invalidate all existing active sessions upon completion.
                 </div>
 

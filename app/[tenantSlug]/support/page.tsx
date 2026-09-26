@@ -153,7 +153,7 @@ export default function TenantSupportPage() {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 shrink-0">
-          <Badge variant="outline" className="bg-white/80 dark:bg-slate-900/80 text-[10px] font-mono border-blue-200 dark:border-blue-800">
+          <Badge variant="outline" className="bg-white/80 dark:bg-slate-900/80 text-2xs font-mono border-blue-200 dark:border-blue-800">
             {tBilingual('SLA: 24/7 Priority Support', 'এসএলএ: ২৪/৭ অগ্রাধিকার সহায়তা')}
           </Badge>
         </div>
@@ -171,7 +171,7 @@ export default function TenantSupportPage() {
               <Printer className="h-4 w-4" />
               <span className="font-bold text-xs">{tBilingual('POS Printer Setup', 'পিওএস প্রিন্টার সেটআপ')}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
+            <p className="text-2xs text-slate-500 leading-snug">
               {tBilingual('Configure thermal receipt printer & barcode scanners on shop floor.', 'দোকান বা শো-রুমের থার্মাল স্লিপ প্রিন্টার সেটআপ।')}
             </p>
           </button>
@@ -185,7 +185,7 @@ export default function TenantSupportPage() {
               <FileSpreadsheet className="h-4 w-4" />
               <span className="font-bold text-xs">{tBilingual('Mushak 6.3 Invoicing', 'মূসক ৬.৩ চালান')}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
+            <p className="text-2xs text-slate-500 leading-snug">
               {tBilingual('NBR compliant 13-digit BIN tax invoice format & VDS withholding setup.', 'এনবিআর স্বীকৃত ভ্যাট চালান ও বিআইএন নিবন্ধন।')}
             </p>
           </button>
@@ -199,7 +199,7 @@ export default function TenantSupportPage() {
               <QrCode className="h-4 w-4" />
               <span className="font-bold text-xs">{tBilingual('Attendance Device', 'হাজিরা ডিভাইস')}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
+            <p className="text-2xs text-slate-500 leading-snug">
               {tBilingual('Connect factory biometric fingerprint reader or geofenced QR check-in.', 'কারখানার ফিঙ্গারপ্রিন্ট বা কিউআর কোড হাজিরা।')}
             </p>
           </button>
@@ -213,7 +213,7 @@ export default function TenantSupportPage() {
               <CreditCard className="h-4 w-4" />
               <span className="font-bold text-xs">{tBilingual('bKash & Billing Help', 'বিকাশ ও বিলিং')}</span>
             </div>
-            <p className="text-[11px] text-slate-500 leading-snug">
+            <p className="text-2xs text-slate-500 leading-snug">
               {tBilingual('Resolve automated payment webhook & monthly billing plan questions.', 'বিকাশ/নগদ পেমেন্ট ও সাবস্ক্রিপশন সংক্রান্ত প্রশ্ন।')}
             </p>
           </button>

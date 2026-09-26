@@ -185,7 +185,7 @@ export function CustomerSelector({
                           {tBilingual(cust.name, cust.nameBn || cust.name)}
                           {cust.company ? ` (${cust.company})` : ''}
                         </span>
-                        <span className="flex items-center gap-1 text-slate-400 text-[11px]">
+                        <span className="flex items-center gap-1 text-slate-400 text-2xs">
                           <Phone className="h-3 w-3 shrink-0" />
                           {cust.phone}
                         </span>
@@ -194,7 +194,7 @@ export function CustomerSelector({
                       <div className="flex items-center gap-2 shrink-0">
                         {cust.outstandingDue && cust.outstandingDue > 0 ? (
                           <div className="text-right">
-                            <span className="text-[10px] text-red-500 block">Due</span>
+                            <span className="text-2xs text-red-500 block">Due</span>
                             <CurrencyDisplay
                               amount={cust.outstandingDue}
                               colorVariant="danger"

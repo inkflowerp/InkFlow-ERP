@@ -446,7 +446,7 @@ export default function PlatformPermissionsPage() {
             <Users className="h-4 w-4 text-indigo-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">{templates.length || 6}</div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Seeded across all organizations</p>
+          <p className="text-2xs text-slate-400 mt-0.5">Seeded across all organizations</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -455,7 +455,7 @@ export default function PlatformPermissionsPage() {
             <Layers className="h-4 w-4 text-emerald-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">14</div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Commercial, press, stock, &amp; HR</p>
+          <p className="text-2xs text-slate-400 mt-0.5">Commercial, press, stock, &amp; HR</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -464,7 +464,7 @@ export default function PlatformPermissionsPage() {
             <Sliders className="h-4 w-4 text-amber-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">6</div>
-          <p className="text-[11px] text-slate-400 mt-0.5">View, Create, Edit, Del, Appr, Full</p>
+          <p className="text-2xs text-slate-400 mt-0.5">View, Create, Edit, Del, Appr, Full</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -473,7 +473,7 @@ export default function PlatformPermissionsPage() {
             <ShieldCheck className="h-4 w-4 text-violet-400" />
           </div>
           <div className="text-2xl font-black text-emerald-400 mt-1">Fail-Closed</div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Explicit authorization required</p>
+          <p className="text-2xs text-slate-400 mt-0.5">Explicit authorization required</p>
         </Card>
       </div>
 
@@ -519,11 +519,11 @@ export default function PlatformPermissionsPage() {
                       <span className="h-2 w-2 rounded-full bg-indigo-400 shadow-xs shadow-indigo-400 shrink-0" />
                     )}
                   </div>
-                  <div className="text-[11px] text-slate-400/90 truncate font-medium">{tmpl.name_bn}</div>
+                  <div className="text-2xs text-slate-400/90 truncate font-medium">{tmpl.name_bn}</div>
                 </div>
 
                 <div className="mt-3 pt-2 border-t border-slate-800/60">
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 font-mono mb-1">
+                  <div className="flex items-center justify-between text-2xs text-slate-400 font-mono mb-1">
                     <span>{count} perms</span>
                     <span className={pct > 50 ? 'text-emerald-400 font-bold' : 'text-slate-400'}>{pct}%</span>
                   </div>
@@ -573,7 +573,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('grant_view')}
                   disabled={saving}
-                  className="h-8 text-[11px] font-semibold border-slate-800 bg-slate-900 text-sky-400 hover:bg-sky-950/40 hover:border-sky-800"
+                  className="h-8 text-2xs font-semibold border-slate-800 bg-slate-900 text-sky-400 hover:bg-sky-950/40 hover:border-sky-800"
                 >
                   <CheckSquare className="h-3.5 w-3.5 mr-1" />
                   Grant View-Only
@@ -584,7 +584,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('grant_all')}
                   disabled={saving}
-                  className="h-8 text-[11px] font-semibold border-slate-800 bg-slate-900 text-emerald-400 hover:bg-emerald-950/40 hover:border-emerald-800"
+                  className="h-8 text-2xs font-semibold border-slate-800 bg-slate-900 text-emerald-400 hover:bg-emerald-950/40 hover:border-emerald-800"
                 >
                   <Sparkles className="h-3.5 w-3.5 mr-1" />
                   Grant Full Access
@@ -595,7 +595,7 @@ export default function PlatformPermissionsPage() {
                   variant="outline"
                   onClick={() => handleBatchRoleAction('revoke_all')}
                   disabled={saving}
-                  className="h-8 text-[11px] font-semibold border-slate-800 bg-slate-900 text-rose-400 hover:bg-rose-950/40 hover:border-rose-800"
+                  className="h-8 text-2xs font-semibold border-slate-800 bg-slate-900 text-rose-400 hover:bg-rose-950/40 hover:border-rose-800"
                 >
                   <Square className="h-3.5 w-3.5 mr-1" />
                   Zero-Trust Clear
@@ -624,7 +624,7 @@ export default function PlatformPermissionsPage() {
                       key={catKey}
                       type="button"
                       onClick={() => setCategoryFilter(catKey)}
-                      className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border ${
+                      className={`px-2.5 py-1 rounded-lg text-2xs font-semibold whitespace-nowrap transition-all border ${
                         isActive
                           ? 'bg-indigo-600/90 text-white border-indigo-500 shadow-xs'
                           : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
@@ -641,16 +641,16 @@ export default function PlatformPermissionsPage() {
           {/* Matrix Table */}
           <CardContent className="p-0 overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-[11px]">
+              <thead className="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase tracking-wider text-2xs">
                 <tr>
                   <th className="py-3.5 px-4 w-80">Resource Domain &amp; Bengali Label</th>
                   {ACTIONS.map((a) => (
                     <th key={a.key} className="py-3.5 px-3 text-center min-w-[90px]">
                       <div className="flex flex-col items-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${a.color}`}>
+                        <span className={`px-2 py-0.5 rounded text-2xs font-mono font-bold border ${a.color}`}>
                           {a.label}
                         </span>
-                        <span className="text-[9px] text-slate-400 font-normal lowercase mt-0.5 hidden sm:inline">
+                        <span className="text-2xs text-slate-400 font-normal lowercase mt-0.5 hidden sm:inline">
                           {a.desc}
                         </span>
                       </div>
@@ -704,11 +704,11 @@ export default function PlatformPermissionsPage() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-bold text-white text-xs">{meta.label}</span>
-                                <span className="text-[10px] text-indigo-400/80 font-medium">
+                                <span className="text-2xs text-indigo-400/80 font-medium">
                                   ({meta.name_bn})
                                 </span>
                               </div>
-                              <div className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">{meta.desc}</div>
+                              <div className="text-2xs text-slate-400 mt-0.5 line-clamp-1">{meta.desc}</div>
                             </div>
                           </div>
                         </td>
@@ -742,7 +742,7 @@ export default function PlatformPermissionsPage() {
                             size="sm"
                             variant="ghost"
                             onClick={() => handleGrantAllForResource(resourceKey, !allGranted)}
-                            className={`h-7 text-[11px] px-2.5 font-semibold transition-all ${
+                            className={`h-7 text-2xs px-2.5 font-semibold transition-all ${
                               allGranted
                                 ? 'text-rose-400 hover:text-rose-300 hover:bg-rose-950/40'
                                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -772,7 +772,7 @@ export default function PlatformPermissionsPage() {
             <p className="text-slate-400 leading-relaxed">
               When a new printing enterprise registers on InkFlow ERP, the platform cloning worker creates localized role copies for their organization based on these exact blueprints. Tenant Business Owners can subsequently grant customized roles to local counter staff and press operators without mutating the platform system root template.
             </p>
-            <div className="flex flex-wrap gap-4 pt-2 text-[11px] text-slate-400 font-mono">
+            <div className="flex flex-wrap gap-4 pt-2 text-2xs text-slate-400 font-mono">
               <span className="flex items-center gap-1.5 text-emerald-400">
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 Zero-Trust Default

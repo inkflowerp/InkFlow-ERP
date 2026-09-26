@@ -237,7 +237,7 @@ export function PlatformChatPane({
             <h2 className="text-xs sm:text-sm font-bold text-slate-100 truncate" title={conversation.subject}>
               {conversation.subject}
             </h2>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5 truncate">
+            <div className="flex items-center gap-1.5 text-2xs text-slate-400 mt-0.5 truncate">
               <span className="font-semibold text-slate-200 truncate">{conversation.company_name || 'Tenant'}</span>
               <span>·</span>
               <span className="truncate">{conversation.created_by_name}</span>
@@ -251,7 +251,7 @@ export function PlatformChatPane({
           <select
             value={conversation.category}
             onChange={(e) => onUpdateCategory(e.target.value as SupportCategory)}
-            className="hidden sm:inline-block px-2.5 py-1 text-[11px] rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer max-w-[130px] truncate"
+            className="hidden sm:inline-block px-2.5 py-1 text-2xs rounded-lg font-medium bg-slate-800 text-slate-200 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer max-w-[130px] truncate"
             title="Ticket Category"
           >
             {SUPPORT_CATEGORIES.map((cat) => (
@@ -266,7 +266,7 @@ export function PlatformChatPane({
             value={conversation.status}
             onChange={(e) => onUpdateStatus(e.target.value as SupportStatus)}
             className={cn(
-              'px-2.5 py-1 text-[11px] rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
+              'px-2.5 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
               statusConfig.badgeClass
             )}
             title="Ticket Status"
@@ -283,7 +283,7 @@ export function PlatformChatPane({
             value={conversation.priority}
             onChange={(e) => onUpdatePriority(e.target.value as SupportPriority)}
             className={cn(
-              'px-2 py-1 text-[11px] rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
+              'px-2 py-1 text-2xs rounded-lg font-semibold border focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer',
               priorityConfig.badgeClass
             )}
             title="Ticket Priority"
@@ -298,7 +298,7 @@ export function PlatformChatPane({
           {conversation.assigned_to !== currentAdminId && currentAdminId && (
             <button
               onClick={() => onAssignTicket(currentAdminId, currentAdminName || 'Staff')}
-              className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900/80 border border-indigo-800 rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 px-2.5 py-1 text-2xs font-semibold text-indigo-300 bg-indigo-950/70 hover:bg-indigo-900/80 border border-indigo-800 rounded-lg transition-colors cursor-pointer"
               title="Assign this ticket to yourself"
             >
               <UserCheck className="w-3.5 h-3.5 text-indigo-400" />
@@ -337,7 +337,7 @@ export function PlatformChatPane({
             <div key={group.dateKey} className="space-y-4">
               {/* Date Group Header */}
               <div className="flex justify-center my-3">
-                <span className="px-3 py-0.5 rounded-full bg-slate-900/90 border border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-400 shadow-xs">
+                <span className="px-3 py-0.5 rounded-full bg-slate-900/90 border border-slate-800 text-2xs font-bold uppercase tracking-wider text-slate-400 shadow-xs">
                   {group.dateLabel}
                 </span>
               </div>
@@ -347,10 +347,10 @@ export function PlatformChatPane({
                 if (msg.message_type === 'system_event') {
                   return (
                     <div key={msg.id} className="flex justify-center my-2">
-                      <div className="px-3.5 py-1 rounded-full bg-slate-900/80 text-[11px] text-slate-400 border border-slate-800 flex items-center gap-1.5 shadow-xs">
+                      <div className="px-3.5 py-1 rounded-full bg-slate-900/80 text-2xs text-slate-400 border border-slate-800 flex items-center gap-1.5 shadow-xs">
                         <Clock className="w-3 h-3 text-slate-500" />
                         <span>{msg.body}</span>
-                        <span className="text-[10px] text-slate-500">· {formatTime(msg.created_at)}</span>
+                        <span className="text-2xs text-slate-500">· {formatTime(msg.created_at)}</span>
                       </div>
                     </div>
                   )
@@ -366,7 +366,7 @@ export function PlatformChatPane({
                             <Lock className="w-3.5 h-3.5 text-amber-400" />
                             <span>INTERNAL NOTE (Platform Staff Only)</span>
                           </div>
-                          <span className="text-[11px] text-amber-400/80">
+                          <span className="text-2xs text-amber-400/80">
                             {msg.sender_name} · {formatTime(msg.created_at)}
                           </span>
                         </div>
@@ -386,18 +386,18 @@ export function PlatformChatPane({
                     className={cn('flex flex-col', isCustomer ? 'items-start' : 'items-end')}
                   >
                     {/* Sender Header */}
-                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] text-slate-400">
+                    <div className="flex items-center gap-1.5 mb-1 px-1 text-2xs text-slate-400">
                       {isCustomer ? (
                         <div className="flex items-center gap-1 font-semibold text-slate-300">
                           <User className="w-3.5 h-3.5 text-slate-400" />
                           <span>{msg.sender_name}</span>
-                          <span className="text-[10px] text-slate-400 font-normal">(Customer)</span>
+                          <span className="text-2xs text-slate-400 font-normal">(Customer)</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1 text-indigo-400 font-semibold">
                           <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" />
                           <span>{msg.sender_name}</span>
-                          <span className="text-[10px] text-indigo-300/80 font-normal">(Platform Staff)</span>
+                          <span className="text-2xs text-indigo-300/80 font-normal">(Platform Staff)</span>
                         </div>
                       )}
                       <span>· {formatTime(msg.created_at)}</span>
@@ -429,7 +429,7 @@ export function PlatformChatPane({
                                   <FileText className="w-4 h-4 text-amber-400 shrink-0" />
                                 )}
                                 <span className="truncate font-medium">{att.name}</span>
-                                <span className="text-[10px] text-slate-400">
+                                <span className="text-2xs text-slate-400">
                                   ({Math.round(att.size / 1024)} KB)
                                 </span>
                               </div>
@@ -498,7 +498,7 @@ export function PlatformChatPane({
                 key={idx}
                 type="button"
                 onClick={() => insertSnippet(chip.text)}
-                className="px-2 py-1 rounded-md text-[11px] font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap border border-slate-800/80 transition-colors"
+                className="px-2 py-1 rounded-md text-2xs font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800 whitespace-nowrap border border-slate-800/80 transition-colors"
               >
                 {chip.label}
               </button>
@@ -508,7 +508,7 @@ export function PlatformChatPane({
 
         {/* Private Note Warning Banner */}
         {isInternalNote && (
-          <div className="px-3 py-1.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-[11px] flex items-center gap-2">
+          <div className="px-3 py-1.5 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-2xs flex items-center gap-2">
             <Lock className="w-3.5 h-3.5 shrink-0 text-amber-400" />
             <span>Private note mode active: Customer will NOT see this message or receive any notifications.</span>
           </div>

@@ -362,7 +362,7 @@ export default function PlatformHealthPage() {
                 {summary?.overall_system_status || 'HEALTHY'}
               </span>
               {lastPingTime && (
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-2xs font-mono text-slate-400">
                   Last verified: {lastPingTime}
                 </span>
               )}
@@ -379,11 +379,11 @@ export default function PlatformHealthPage() {
 
         <div className="flex items-center gap-3 text-xs flex-wrap">
           <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center min-w-[110px]">
-            <div className="text-[10px] text-slate-400 font-semibold uppercase">DB Connection Pool</div>
+            <div className="text-2xs text-slate-400 font-semibold uppercase">DB Connection Pool</div>
             <div className="font-black text-white text-sm mt-0.5">24 / 100 conns</div>
           </div>
           <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-center min-w-[100px]">
-            <div className="text-[10px] text-slate-400 font-semibold uppercase">Avg API Latency</div>
+            <div className="text-2xs text-slate-400 font-semibold uppercase">Avg API Latency</div>
             <div className="font-black text-emerald-400 text-sm mt-0.5">38 ms</div>
           </div>
         </div>
@@ -400,7 +400,7 @@ export default function PlatformHealthPage() {
           <div className="text-2xl font-black text-white mt-2">
             {summary?.failed_jobs_count || 0}
           </div>
-          <div className="text-[11px] text-amber-400 mt-1">Background workers</div>
+          <div className="text-2xs text-amber-400 mt-1">Background workers</div>
         </Card>
 
         {/* 2. Failed Alerts */}
@@ -412,7 +412,7 @@ export default function PlatformHealthPage() {
           <div className="text-2xl font-black text-white mt-2">
             {summary?.failed_notifications_count || 0}
           </div>
-          <div className="text-[11px] text-red-400 mt-1">SMS &amp; WhatsApp drops</div>
+          <div className="text-2xs text-red-400 mt-1">SMS &amp; WhatsApp drops</div>
         </Card>
 
         {/* 3. Storage Usage */}
@@ -424,7 +424,7 @@ export default function PlatformHealthPage() {
           <div className="text-2xl font-black text-white mt-2">
             {storageUsedGb > 0 ? `${storageUsedGb.toFixed(2)} GB` : '0 GB'}
           </div>
-          <div className="text-[11px] text-cyan-400 mt-1">
+          <div className="text-2xs text-cyan-400 mt-1">
             of {storageTotalGb} GB ({storagePct}%)
           </div>
         </Card>
@@ -438,7 +438,7 @@ export default function PlatformHealthPage() {
           <div className="text-2xl font-black text-white mt-2">
             {summary?.api_failures_count || 0}
           </div>
-          <div className="text-[11px] text-purple-400 mt-1">bKash / PGW timeouts</div>
+          <div className="text-2xs text-purple-400 mt-1">bKash / PGW timeouts</div>
         </Card>
 
         {/* 5. Integration Errors */}
@@ -450,7 +450,7 @@ export default function PlatformHealthPage() {
           <div className="text-2xl font-black text-white mt-2">
             {summary?.integration_errors_count || 0}
           </div>
-          <div className="text-[11px] text-indigo-400 mt-1">NBR Mushak 6.3 sync</div>
+          <div className="text-2xs text-indigo-400 mt-1">NBR Mushak 6.3 sync</div>
         </Card>
       </div>
 
@@ -466,7 +466,7 @@ export default function PlatformHealthPage() {
               Live health, latency, and heartbeat status of critical cloud components.
             </p>
           </div>
-          <span className="text-[11px] font-mono text-slate-400">
+          <span className="text-2xs font-mono text-slate-400">
             6 of 6 Core Nodes Online
           </span>
         </div>
@@ -492,15 +492,15 @@ export default function PlatformHealthPage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-white text-xs">{sub.name}</h4>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{sub.desc}</p>
-                    <div className="flex items-center gap-2 mt-2 text-[10px] text-slate-400">
+                    <p className="text-2xs text-slate-400 mt-0.5">{sub.desc}</p>
+                    <div className="flex items-center gap-2 mt-2 text-2xs text-slate-400">
                       <span>Latency: <strong className="text-slate-200 font-mono">{sub.latency}</strong></span>
                     </div>
                   </div>
                 </div>
 
                 <span
-                  className={`shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-md border uppercase ${
+                  className={`shrink-0 text-2xs font-bold px-2 py-0.5 rounded-md border uppercase ${
                     isOk
                       ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800'
                       : 'bg-amber-950/80 text-amber-300 border-amber-800'
@@ -661,7 +661,7 @@ export default function PlatformHealthPage() {
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span
-                              className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                              className={`text-2xs font-black uppercase px-2 py-0.5 rounded-full border ${
                                 event.severity === 'error' || event.severity === 'critical'
                                   ? 'bg-red-500/20 text-red-300 border-red-500/40'
                                   : event.severity === 'warning'
@@ -674,16 +674,16 @@ export default function PlatformHealthPage() {
                             <span className="font-mono text-xs font-bold text-white">
                               {event.service_name}
                             </span>
-                            <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
+                            <span className="font-mono text-2xs text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
                               Category: {event.category}
                             </span>
                             {event.company_name && (
-                              <span className="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                              <span className="text-2xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
                                 {event.company_name}
                               </span>
                             )}
                             {event.resolved && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                              <span className="text-2xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                                 Resolved
                               </span>
                             )}
@@ -693,7 +693,7 @@ export default function PlatformHealthPage() {
                             {event.message}
                           </p>
 
-                          <div className="text-[10px] text-slate-400">
+                          <div className="text-2xs text-slate-400">
                             Logged: {new Date(event.created_at).toLocaleString()}
                           </div>
                         </div>
@@ -750,15 +750,15 @@ export default function PlatformHealthPage() {
 
                     {/* Expandable JSON Error Payload */}
                     {isExpanded && event.error_details && (
-                      <div className="mt-3 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-[11px] text-cyan-300 overflow-x-auto relative">
+                      <div className="mt-3 p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-2xs text-cyan-300 overflow-x-auto relative">
                         <div className="flex items-center justify-between mb-1">
-                          <span className="text-[10px] text-slate-400 uppercase font-semibold">
+                          <span className="text-2xs text-slate-400 uppercase font-semibold">
                             Diagnostic Error Payload
                           </span>
                           <button
                             type="button"
                             onClick={() => handleCopyPayload(event.error_details, event.id)}
-                            className="text-[10px] text-slate-400 hover:text-white inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-800"
+                            className="text-2xs text-slate-400 hover:text-white inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-800"
                           >
                             <Copy className="h-2.5 w-2.5" />
                             {copiedPayloadId === event.id ? 'Copied' : 'Copy JSON'}

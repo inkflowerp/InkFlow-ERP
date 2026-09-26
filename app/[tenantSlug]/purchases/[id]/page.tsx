@@ -342,7 +342,7 @@ export default function PurchaseOrderDetailPage() {
           <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">
             <CurrencyDisplay amount={po.grand_total} />
           </div>
-          <span className="text-[11px] text-slate-400 font-mono">Agreed Contract Rate</span>
+          <span className="text-2xs text-slate-400 font-mono">Agreed Contract Rate</span>
         </Card>
 
         <Card className="p-4 border-l-4 border-l-emerald-500">
@@ -350,7 +350,7 @@ export default function PurchaseOrderDetailPage() {
           <div className="text-2xl font-black text-emerald-600 mt-1">
             <CurrencyDisplay amount={po.paid_amount} />
           </div>
-          <span className="text-[11px] text-emerald-600 font-medium">
+          <span className="text-2xs text-emerald-600 font-medium">
             {po.grand_total > 0 ? Math.round((po.paid_amount / po.grand_total) * 100) : 0}% settled
           </span>
         </Card>
@@ -360,7 +360,7 @@ export default function PurchaseOrderDetailPage() {
           <div className="text-2xl font-black text-red-600 mt-1">
             <CurrencyDisplay amount={po.due_amount} />
           </div>
-          <span className="text-[11px] text-slate-400">Payable against received challans</span>
+          <span className="text-2xs text-slate-400">Payable against received challans</span>
         </Card>
       </div>
 
@@ -440,19 +440,19 @@ export default function PurchaseOrderDetailPage() {
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center pt-1 border-t border-slate-200/60 dark:border-slate-800">
                   <div className="p-1.5 rounded bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-                    <div className="text-[10px] text-slate-400">Ordered</div>
+                    <div className="text-2xs text-slate-400">Ordered</div>
                     <div className="font-mono font-bold text-slate-900 dark:text-white">{item.quantity_ordered} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-                    <div className="text-[10px] text-emerald-600">Received</div>
+                    <div className="text-2xs text-emerald-600">Received</div>
                     <div className="font-mono font-bold text-emerald-700 dark:text-emerald-300">{item.quantity_received} {item.unit}</div>
                   </div>
                   <div className="p-1.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800">
-                    <div className="text-[10px] text-red-600">Remaining</div>
+                    <div className="text-2xs text-red-600">Remaining</div>
                     <div className="font-mono font-bold text-red-700 dark:text-red-300">{item.quantity_remaining} {item.unit}</div>
                   </div>
                 </div>
-                <div className="text-[11px] text-slate-400 text-right font-mono">
+                <div className="text-2xs text-slate-400 text-right font-mono">
                   Unit Cost: {formatBDT(item.unit_cost)} / {item.unit}
                 </div>
               </div>
@@ -472,7 +472,7 @@ export default function PurchaseOrderDetailPage() {
                 <TrendingUp className="h-4 w-4 text-blue-600" />
                 Procurement Price Benchmarks: {benchmark.material_name}
               </CardTitle>
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-[10px]">
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-300 text-2xs">
                 Procurement Intelligence
               </Badge>
             </div>
@@ -487,7 +487,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="text-lg font-black text-slate-900 dark:text-white mt-0.5">
                   {formatBDT(benchmark.last_price)}
                 </div>
-                <span className="text-[10px] text-slate-500">Most recent order</span>
+                <span className="text-2xs text-slate-500">Most recent order</span>
               </div>
 
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
@@ -495,7 +495,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="text-lg font-black text-blue-600 mt-0.5">
                   {formatBDT(benchmark.average_price)}
                 </div>
-                <span className="text-[10px] text-blue-600">Weighted market avg</span>
+                <span className="text-2xs text-blue-600">Weighted market avg</span>
               </div>
 
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
@@ -503,7 +503,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="text-lg font-black text-emerald-600 mt-0.5">
                   {formatBDT(benchmark.lowest_price)}
                 </div>
-                <span className="text-[10px] text-emerald-600">Best historical rate</span>
+                <span className="text-2xs text-emerald-600">Best historical rate</span>
               </div>
 
               <div className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-xs">
@@ -511,7 +511,7 @@ export default function PurchaseOrderDetailPage() {
                 <div className="text-lg font-black text-red-600 mt-0.5">
                   {formatBDT(benchmark.highest_price)}
                 </div>
-                <span className="text-[10px] text-red-500">Ceiling market rate</span>
+                <span className="text-2xs text-red-500">Ceiling market rate</span>
               </div>
             </div>
           </CardContent>
@@ -539,7 +539,7 @@ export default function PurchaseOrderDetailPage() {
                   <div className="text-slate-700 dark:text-slate-300 font-medium">
                     Challan: <strong>{grn.challan_number || 'N/A'}</strong> • Receiver: {grn.received_by_name}
                   </div>
-                  {grn.notes && <p className="text-[11px] text-slate-500">{grn.notes}</p>}
+                  {grn.notes && <p className="text-2xs text-slate-500">{grn.notes}</p>}
                 </div>
               ))
             ) : (
@@ -562,11 +562,11 @@ export default function PurchaseOrderDetailPage() {
                 <div key={p.id} className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 space-y-1">
                   <div className="flex justify-between font-bold">
                     <span className="text-emerald-600 font-mono">{formatBDT(p.amount)}</span>
-                    <span className="uppercase text-[10px] px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">
+                    <span className="uppercase text-2xs px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800">
                       {p.payment_method}
                     </span>
                   </div>
-                  <div className="text-slate-600 dark:text-slate-400 text-[11px]">
+                  <div className="text-slate-600 dark:text-slate-400 text-2xs">
                     {p.payment_date} • {p.bank_name || p.mfs_transaction_id || 'Cash Counter'}
                     {p.cheque_number && ` (Cheque: ${p.cheque_number})`}
                   </div>

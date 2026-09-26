@@ -152,12 +152,12 @@ export function DeliveryKpiBar({
             )}
           >
             <div className="flex items-center justify-between w-full">
-              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider line-clamp-1 bangla-text">
+              <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider line-clamp-1 bangla-text">
                 {tBilingual(c.labelEn, c.labelBn)}
               </span>
               <div className="flex items-center gap-1.5">
                 {c.badge && (
-                  <Badge variant="outline" className={cn('text-[9px] py-0 px-1 font-bold font-mono', c.badgeColor)}>
+                  <Badge variant="outline" className={cn('text-2xs py-0 px-1 font-bold font-mono', c.badgeColor)}>
                     {c.badge}
                   </Badge>
                 )}
@@ -178,7 +178,7 @@ export function DeliveryKpiBar({
               </div>
             </div>
 
-            <div className="flex items-center justify-between w-full text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+            <div className="flex items-center justify-between w-full text-2xs text-slate-400 dark:text-slate-500 font-medium">
               <span className="truncate bangla-text">{tBilingual(c.subtextEn, c.subtextBn)}</span>
               <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all shrink-0 ml-1 text-blue-500" />
             </div>

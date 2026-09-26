@@ -82,7 +82,7 @@ export function PlatformTicketInfo({
     >
       {/* 1. Ticket Overview Header */}
       <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-        <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-[11px] text-indigo-400">
+        <div className="flex items-center gap-1.5 font-bold uppercase tracking-wider text-2xs text-indigo-400">
           <Tag className="w-3.5 h-3.5 text-indigo-400" />
           <span>Ticket Inspector</span>
         </div>
@@ -107,14 +107,14 @@ export function PlatformTicketInfo({
 
         <div className="flex items-center justify-between">
           <span className="text-slate-400 font-medium">Status</span>
-          <span className={cn('px-2 py-0.5 rounded-md font-medium border text-[11px]', statusConfig.badgeClass)}>
+          <span className={cn('px-2 py-0.5 rounded-md font-medium border text-2xs', statusConfig.badgeClass)}>
             {statusConfig.labelEn}
           </span>
         </div>
 
         <div className="flex items-center justify-between">
           <span className="text-slate-400 font-medium">Priority</span>
-          <span className={cn('px-2 py-0.5 rounded-md font-medium border text-[11px]', priorityConfig.badgeClass)}>
+          <span className={cn('px-2 py-0.5 rounded-md font-medium border text-2xs', priorityConfig.badgeClass)}>
             {priorityConfig.labelEn}
           </span>
         </div>
@@ -136,18 +136,18 @@ export function PlatformTicketInfo({
       {/* 3. Tenant Context Card */}
       <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
             <Building2 className="w-3.5 h-3.5 text-blue-400" />
             <span>Tenant Workspace</span>
           </div>
-          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
+          <span className="text-2xs font-mono px-1.5 py-0.5 rounded-md bg-slate-900 border border-slate-800 text-slate-400">
             /{conversation.company_slug || 'tenant'}
           </span>
         </div>
 
         <div>
           <div className="font-bold text-slate-100 text-sm truncate">{conversation.company_name || 'Organization'}</div>
-          <div className="text-[11px] text-slate-400 font-mono flex items-center gap-1 mt-0.5">
+          <div className="text-2xs text-slate-400 font-mono flex items-center gap-1 mt-0.5">
             <span>ID: {conversation.company_id.slice(0, 8)}...</span>
             <button
               type="button"
@@ -168,7 +168,7 @@ export function PlatformTicketInfo({
           {conversation.created_by_email && (
             <div className="flex items-center gap-2 text-slate-400">
               <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-              <span className="truncate text-[11px]">{conversation.created_by_email}</span>
+              <span className="truncate text-2xs">{conversation.created_by_email}</span>
             </div>
           )}
         </div>
@@ -195,7 +195,7 @@ export function PlatformTicketInfo({
 
       {/* 4. SLA & Timestamps */}
       <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+        <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
           <Timer className="w-3.5 h-3.5 text-purple-400" />
           <span>SLA &amp; Timestamps</span>
         </div>
@@ -232,12 +232,12 @@ export function PlatformTicketInfo({
       {/* 5. Attached Context Metadata (if any) */}
       {conversation.context_metadata && Object.keys(conversation.context_metadata).length > 0 && (
         <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80 space-y-2.5 shadow-xs">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 uppercase tracking-wider">
+          <div className="flex items-center gap-1.5 text-2xs font-bold text-slate-300 uppercase tracking-wider">
             <FileText className="w-3.5 h-3.5 text-cyan-400" />
             <span>Attached Context</span>
           </div>
 
-          <div className="space-y-1.5 text-slate-300 font-mono text-[11px] bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
+          <div className="space-y-1.5 text-slate-300 font-mono text-2xs bg-slate-900/90 p-2.5 rounded-xl border border-slate-800">
             {Object.entries(conversation.context_metadata).map(([key, val]) => (
               <div key={key} className="flex justify-between gap-2">
                 <span className="text-slate-400 shrink-0">{key}:</span>

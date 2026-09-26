@@ -892,7 +892,7 @@ export default function OrdersPage() {
                 <span className="text-xs truncate">{s.label}</span>
               </div>
               <span
-                className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
+                className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
                   isActive
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'

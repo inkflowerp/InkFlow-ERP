@@ -73,11 +73,11 @@ function InkFlowPlatformLogo({ className = '' }: { className?: string }) {
           <span className="text-lg sm:text-xl font-black tracking-tight text-white leading-none">
             InkFlow
           </span>
-          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
+          <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 uppercase tracking-wider">
             PLATFORM
           </span>
         </div>
-        <div className="text-[8px] sm:text-[9px] tracking-[0.3em] font-bold text-slate-400 uppercase mt-0.5 leading-none">
+        <div className="text-2xs sm:text-2xs tracking-[0.3em] font-bold text-slate-400 uppercase mt-0.5 leading-none">
           CONTROL CENTER
         </div>
       </div>
@@ -236,7 +236,7 @@ function PlatformLoginForm() {
         {/* Right Header Area: Live Status Pill & Language Dropdown */}
         <div className="flex items-center gap-2 sm:gap-3">
           {/* Live Status indicator */}
-          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-[11px] text-slate-300 backdrop-blur-md">
+          <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/80 border border-slate-800 text-2xs text-slate-300 backdrop-blur-md">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -300,7 +300,7 @@ function PlatformLoginForm() {
           
           {/* Platform Administration Header & Accent Line */}
           <div>
-            <div className="text-[10px] xl:text-[11px] font-bold tracking-[0.24em] text-slate-400 uppercase">
+            <div className="text-2xs xl:text-2xs font-bold tracking-[0.24em] text-slate-400 uppercase">
               {t.platformBadge}
             </div>
             <div className="w-9 h-[2.5px] rounded-full bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500 mt-1.5" />
@@ -329,7 +329,7 @@ function PlatformLoginForm() {
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat1Title}</div>
-                <div className="text-[11px] xl:text-xs text-slate-400 leading-normal">{t.feat1Desc}</div>
+                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat1Desc}</div>
               </div>
             </div>
 
@@ -340,7 +340,7 @@ function PlatformLoginForm() {
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat2Title}</div>
-                <div className="text-[11px] xl:text-xs text-slate-400 leading-normal">{t.feat2Desc}</div>
+                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat2Desc}</div>
               </div>
             </div>
 
@@ -351,7 +351,7 @@ function PlatformLoginForm() {
               </div>
               <div className="space-y-0.5">
                 <div className="text-xs xl:text-sm font-bold text-slate-200">{t.feat3Title}</div>
-                <div className="text-[11px] xl:text-xs text-slate-400 leading-normal">{t.feat3Desc}</div>
+                <div className="text-2xs xl:text-xs text-slate-400 leading-normal">{t.feat3Desc}</div>
               </div>
             </div>
           </div>
@@ -374,7 +374,7 @@ function PlatformLoginForm() {
                 <p className="text-xs text-slate-300 mt-0.5">
                   {requiresMfa ? t.mfaDesc : t.cardSubtitle}
                 </p>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   {t.cardNotice}
                 </p>
               </div>
@@ -393,7 +393,7 @@ function PlatformLoginForm() {
                         variant="outline"
                         size="sm"
                         onClick={() => executeSignIn()}
-                        className="text-[10px] h-6 border-red-700 bg-red-900/40 text-white hover:bg-red-900 px-2"
+                        className="text-2xs h-6 border-red-700 bg-red-900/40 text-white hover:bg-red-900 px-2"
                       >
                         <RefreshCw className="h-3 w-3 mr-1" />
                         Try Again
@@ -417,7 +417,7 @@ function PlatformLoginForm() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label htmlFor="platform-mfa" className="text-[10px] font-bold tracking-wider text-slate-400 uppercase">
+                    <Label htmlFor="platform-mfa" className="text-2xs font-bold tracking-wider text-slate-400 uppercase">
                       {t.mfaLabel}
                     </Label>
                     <div className="relative">
@@ -467,7 +467,7 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-email"
-                      className="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                      className="text-2xs font-bold tracking-wider text-slate-400 uppercase"
                     >
                       {t.emailLabel}
                     </Label>
@@ -486,7 +486,7 @@ function PlatformLoginForm() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder={t.emailPlaceholder}
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-[13px] text-white placeholder:text-slate-600 transition-all outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white placeholder:text-slate-600 transition-all outline-none"
                       />
                     </div>
                   </div>
@@ -495,7 +495,7 @@ function PlatformLoginForm() {
                   <div className="space-y-1">
                     <Label
                       htmlFor="platform-password"
-                      className="text-[10px] font-bold tracking-wider text-slate-400 uppercase"
+                      className="text-2xs font-bold tracking-wider text-slate-400 uppercase"
                     >
                       {t.passwordLabel}
                     </Label>
@@ -514,7 +514,7 @@ function PlatformLoginForm() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder={t.passwordPlaceholder}
-                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-[13px] text-white placeholder:text-slate-600 transition-all outline-none"
+                        className="w-full bg-[#070A16]/90 border border-slate-700/60 hover:border-slate-600 focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 rounded-xl pl-9 pr-9 py-2 text-xs sm:text-sm text-white placeholder:text-slate-600 transition-all outline-none"
                       />
                       <button
                         type="button"
@@ -531,7 +531,7 @@ function PlatformLoginForm() {
                   <div className="flex justify-end pt-0.5">
                     <Link
                       href="/platform/forgot-password"
-                      className="text-[10px] sm:text-[11px] text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
+                      className="text-2xs sm:text-2xs text-purple-400 hover:text-purple-300 font-medium transition-colors hover:underline"
                     >
                       {t.forgotPassword}
                     </Link>
@@ -542,7 +542,7 @@ function PlatformLoginForm() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 active:scale-[0.99] text-white font-bold text-xs sm:text-[13px] py-2.5 px-4 rounded-xl shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] sm:min-h-[42px]"
+                      className="w-full bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 active:scale-[0.99] text-white font-bold text-xs sm:text-sm py-2.5 px-4 rounded-xl shadow-lg shadow-purple-900/40 hover:shadow-purple-900/60 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed min-h-[40px] sm:min-h-[42px]"
                     >
                       {isLoading ? (
                         <>
@@ -561,14 +561,14 @@ function PlatformLoginForm() {
                   {/* Divider */}
                   <div className="relative flex items-center justify-center py-0.5">
                     <div className="w-full border-t border-slate-800/80" />
-                    <span className="bg-[#0C1021] px-2 text-[9px] font-bold tracking-wider text-slate-500 uppercase">
+                    <span className="bg-[#0C1021] px-2 text-2xs font-bold tracking-wider text-slate-500 uppercase">
                       {t.orDivider}
                     </span>
                     <div className="w-full border-t border-slate-800/80" />
                   </div>
 
                   {/* Business Login Alternative */}
-                  <div className="text-center text-[11px] text-slate-400">
+                  <div className="text-center text-2xs text-slate-400">
                     {t.lookingForBusiness}{' '}
                     <Link
                       href="/login"
@@ -580,15 +580,15 @@ function PlatformLoginForm() {
                   </div>
 
                   {/* Secure Access Information Box */}
-                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#070A14]/90 border border-slate-800/80 text-[10px] text-slate-400 flex items-start gap-2.5">
+                  <div className="mt-2.5 p-2.5 rounded-xl bg-[#070A14]/90 border border-slate-800/80 text-2xs text-slate-400 flex items-start gap-2.5">
                     <div className="w-4 h-4 rounded-md bg-indigo-950/60 border border-indigo-800/40 flex items-center justify-center text-indigo-400 shrink-0 mt-0.5">
                       <Shield className="h-2.5 w-2.5 text-indigo-400" />
                     </div>
                     <div className="space-y-0.5">
-                      <div className="font-bold text-slate-300 tracking-wider uppercase text-[9px]">
+                      <div className="font-bold text-slate-300 tracking-wider uppercase text-2xs">
                         {t.secureNoticeTitle}
                       </div>
-                      <div className="leading-relaxed text-slate-400 text-[10px]">
+                      <div className="leading-relaxed text-slate-400 text-2xs">
                         {t.secureNoticeText}
                       </div>
                     </div>
@@ -602,9 +602,9 @@ function PlatformLoginForm() {
       </main>
 
       {/* --- Footer Area --- */}
-      <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-500 border-t border-slate-800/50 shrink-0">
+      <footer className="relative z-20 w-full max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-2.5 sm:py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-2xs text-slate-500 border-t border-slate-800/50 shrink-0">
         {/* Platform Motto */}
-        <div className="tracking-[0.22em] font-semibold uppercase text-slate-400 flex items-center gap-1.5 text-[9px]">
+        <div className="tracking-[0.22em] font-semibold uppercase text-slate-400 flex items-center gap-1.5 text-2xs">
           <span>PRINT</span>
           <span className="text-purple-500 font-normal">›</span>
           <span>PEOPLE</span>

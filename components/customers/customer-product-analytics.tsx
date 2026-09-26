@@ -206,14 +206,14 @@ export function CustomerProductAnalytics({
                       {item.productName}
                     </div>
                     {item.productNameBn && (
-                      <div className="text-[11px] text-slate-500">{item.productNameBn}</div>
+                      <div className="text-2xs text-slate-500">{item.productNameBn}</div>
                     )}
-                    <div className="text-[10px] text-slate-400 mt-0.5">
+                    <div className="text-2xs text-slate-400 mt-0.5">
                       {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                     </div>
                   </td>
                   <td className="py-3 px-3 text-right font-semibold text-slate-900 dark:text-white">
-                    {item.totalQuantity.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal uppercase">{item.unit}</span>
+                    {item.totalQuantity.toLocaleString()} <span className="text-2xs text-slate-400 font-normal uppercase">{item.unit}</span>
                   </td>
                   <td className="py-3 px-3 text-right font-medium text-slate-600 dark:text-slate-300">
                     {formatBDT(item.lastRate)}
@@ -248,7 +248,7 @@ export function CustomerProductAnalytics({
                   {item.productNameBn && (
                     <div className="text-xs text-slate-500">{item.productNameBn}</div>
                   )}
-                  <div className="text-[10px] text-slate-400 mt-0.5">
+                  <div className="text-2xs text-slate-400 mt-0.5">
                     {item.invoiceCount} {item.invoiceCount === 1 ? 'invoice' : 'invoices'}
                   </div>
                 </div>
@@ -260,19 +260,19 @@ export function CustomerProductAnalytics({
 
               <div className="grid grid-cols-3 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs">
                 <div>
-                  <div className="text-[10px] text-slate-400">Total Qty</div>
+                  <div className="text-2xs text-slate-400">Total Qty</div>
                   <div className="font-semibold text-slate-900 dark:text-white">
-                    {item.totalQuantity} <span className="uppercase text-[9px] text-slate-400">{item.unit}</span>
+                    {item.totalQuantity} <span className="uppercase text-2xs text-slate-400">{item.unit}</span>
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400">Last Rate</div>
+                  <div className="text-2xs text-slate-400">Last Rate</div>
                   <div className="font-semibold text-slate-700 dark:text-slate-300">
                     {formatBDT(item.lastRate)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] text-slate-400">Last Date</div>
+                  <div className="text-2xs text-slate-400">Last Date</div>
                   <div className="font-medium text-slate-600 dark:text-slate-400 truncate">
                     {item.lastPurchaseDate}
                   </div>

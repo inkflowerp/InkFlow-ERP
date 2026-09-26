@@ -77,7 +77,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'মোট স্টক মূল্য' : 'Total Stock Value'}
           </span>
           <DollarSign className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -85,7 +85,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-slate-900 dark:text-white mt-1 font-numeric">
           <CurrencyDisplay amount={displayTotalValue} />
         </div>
-        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
+        <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium block mt-0.5">
           {materials.length} {isBn ? 'কাঁচামাল' : 'Materials'} • {readyProducts.length} {isBn ? 'প্রোডাক্ট' : 'Products'}
         </span>
       </Card>
@@ -102,7 +102,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'রি-অর্ডার সতর্কতা' : 'Low Stock Warning'}
           </span>
           <AlertTriangle className={cn('h-3.5 w-3.5', lowStockMaterials.length > 0 ? 'text-amber-600' : 'text-slate-400')} />
@@ -110,7 +110,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-amber-600 dark:text-amber-400 mt-1 font-numeric">
           {lowStockMaterials.length}
         </div>
-        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium block mt-0.5">
+        <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium block mt-0.5">
           {isBn ? 'রি-অর্ডার লেভেলের নিচে' : 'Below reorder point'}
         </span>
       </Card>
@@ -127,7 +127,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'স্টক শূন্য (শূন্য মজুদ)' : 'Out of Stock'}
           </span>
           <AlertOctagon className={cn('h-3.5 w-3.5', outOfStockMaterials.length > 0 ? 'text-rose-600' : 'text-slate-400')} />
@@ -135,7 +135,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-rose-600 dark:text-rose-400 mt-1 font-numeric">
           {outOfStockMaterials.length}
         </div>
-        <span className="text-[10px] text-rose-600 dark:text-rose-400 font-medium block mt-0.5">
+        <span className="text-2xs text-rose-600 dark:text-rose-400 font-medium block mt-0.5">
           {isBn ? 'স্টক নিঃশেষ' : 'Zero warehouse stock'}
         </span>
       </Card>
@@ -149,7 +149,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'সক্রিয় মিডিয়া রোল' : 'Active Rolls'}
           </span>
           <Disc className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -157,7 +157,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1 font-numeric">
           {rolls.length}
         </div>
-        <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-medium block mt-0.5">
+        <span className="text-2xs text-indigo-600 dark:text-indigo-400 font-medium block mt-0.5">
           {mountedRollsCount} {isBn ? 'মেশিনে মাউন্ট করা' : 'mounted on press'}
         </span>
       </Card>
@@ -174,7 +174,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'পেন্ডিং ইনওয়ার্ড' : 'Pending Inward'}
           </span>
           <Truck className={cn('h-3.5 w-3.5', pendingInwardPOs.length > 0 ? 'text-blue-600' : 'text-slate-400')} />
@@ -182,7 +182,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-blue-600 dark:text-blue-400 mt-1 font-numeric">
           {pendingInwardPOs.length} {isBn ? 'অর্ডার' : 'POs'}
         </div>
-        <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium block mt-0.5">
+        <span className="text-2xs text-blue-600 dark:text-blue-400 font-medium block mt-0.5">
           {isBn ? 'GRN রিসিভিং অপেক্ষমান' : 'Awaiting GRN receipt'}
         </span>
       </Card>
@@ -196,7 +196,7 @@ export function InventoryKpiBar({
         )}
       >
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
             {isBn ? 'ব্যবহারযোগ্য অবশিষ্টাংশ' : 'Usable Remnants'}
           </span>
           <Scissors className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
@@ -204,7 +204,7 @@ export function InventoryKpiBar({
         <div className="text-xl font-black text-purple-600 dark:text-purple-400 mt-1 font-numeric">
           {remnants.length}
         </div>
-        <span className="text-[10px] text-purple-600 dark:text-purple-400 font-medium block mt-0.5">
+        <span className="text-2xs text-purple-600 dark:text-purple-400 font-medium block mt-0.5">
           {isBn ? 'সাশ্রয়ী অফ-কাট উপলব্ধ' : 'Available offcuts'}
         </span>
       </Card>

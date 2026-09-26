@@ -333,7 +333,7 @@ export function SupplierModal({
               </span>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800"
+                className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800"
               >
                 {formData.supplier_code || 'VENDOR'}
               </Badge>
@@ -433,7 +433,7 @@ export function SupplierModal({
                       required
                     />
                     {fieldErrors.supplier_name && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{fieldErrors.supplier_name}</span>
                       </p>
@@ -489,7 +489,7 @@ export function SupplierModal({
                       {tBilingual('Primary Supply Category', 'প্রধান উপাদানের ক্যাটাগরি')} <span className="text-rose-500">*</span>
                     </Label>
                   </div>
-                  <span className="text-[11px] text-slate-400">Used for fast purchase PO filtering</span>
+                  <span className="text-2xs text-slate-400">Used for fast purchase PO filtering</span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -517,7 +517,7 @@ export function SupplierModal({
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             {cat.labelEn.split(' ')[0]}
                           </div>
-                          <div className="text-[10px] text-slate-500 truncate">{cat.labelBn}</div>
+                          <div className="text-2xs text-slate-500 truncate">{cat.labelBn}</div>
                         </div>
                       </button>
                     )
@@ -590,7 +590,7 @@ export function SupplierModal({
                       />
                     </div>
                     {fieldErrors.mobile && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{fieldErrors.mobile}</span>
                       </p>
@@ -606,7 +606,7 @@ export function SupplierModal({
                         <button
                           type="button"
                           onClick={handleCopyMobileToWhatsapp}
-                          className="text-[10px] text-teal-600 hover:text-teal-700 font-bold flex items-center gap-0.5 cursor-pointer"
+                          className="text-2xs text-teal-600 hover:text-teal-700 font-bold flex items-center gap-0.5 cursor-pointer"
                         >
                           <Copy className="h-2.5 w-2.5" /> Same
                         </button>
@@ -690,8 +690,8 @@ export function SupplierModal({
                           <div className="text-xs font-bold text-slate-900 dark:text-white truncate">
                             📍 {hub.nameEn.split(' ')[0]}
                           </div>
-                          <div className="text-[10px] text-teal-700 dark:text-teal-400 truncate">{hub.nameBn}</div>
-                          <div className="text-[10px] text-slate-400 truncate mt-0.5">{hub.area}</div>
+                          <div className="text-2xs text-teal-700 dark:text-teal-400 truncate">{hub.nameBn}</div>
+                          <div className="text-2xs text-slate-400 truncate mt-0.5">{hub.area}</div>
                         </button>
                       )
                     })}
@@ -775,11 +775,11 @@ export function SupplierModal({
                             <span className="text-xs font-bold text-slate-900 dark:text-white">
                               {tBilingual(term.labelEn, term.labelBn)}
                             </span>
-                            <Badge variant="outline" className="text-[10px] font-mono">
+                            <Badge variant="outline" className="text-2xs font-mono">
                               {term.days > 0 ? `${term.days} Days` : 'Spot'}
                             </Badge>
                           </div>
-                          <div className="text-[10px] text-slate-400 mt-1 leading-tight">
+                          <div className="text-2xs text-slate-400 mt-1 leading-tight">
                             {tBilingual(term.descriptionEn, term.descriptionBn || term.descriptionEn)}
                           </div>
                         </button>

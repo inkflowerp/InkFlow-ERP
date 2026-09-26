@@ -74,28 +74,28 @@ export const OrderCard = React.memo(function OrderCard({
     >
       {/* Top Notification Strip */}
       {(isUrgent || isDueToday || order.isWalkIn) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-2xs font-bold">
           <div className="flex items-center gap-2">
             {order.isWalkIn && (
-              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+              <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide flex items-center gap-1">
                 <UserCheck className="h-3 w-3" />
                 <span>{tBilingual('Walk-in Counter Customer', 'দোকানে বসা কাস্টমার')}</span>
               </span>
             )}
             {isDueToday && (
-              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+              <span className="bg-rose-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 <span>{tBilingual('Due Today', 'আজকের ডেলিভারি')}</span>
               </span>
             )}
             {isUrgent && !isDueToday && (
-              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide flex items-center gap-1">
+              <span className="bg-red-600 text-white px-2 py-0.5 rounded text-2xs uppercase tracking-wide flex items-center gap-1">
                 <AlertTriangle className="h-3 w-3" />
                 <span>{tBilingual('Urgent Order', 'অতি জরুরী অর্ডার')}</span>
               </span>
             )}
           </div>
-          <span className="text-slate-500 text-[10px] font-mono">
+          <span className="text-slate-500 text-2xs font-mono">
             {order.deliveryDate ? `${tBilingual('Delivery Target: ', 'ডেলিভারি টার্গেট: ')}${order.deliveryDate}` : ''}
           </span>
         </div>
@@ -128,7 +128,7 @@ export const OrderCard = React.memo(function OrderCard({
                   Job: #{order.jobNumber}
                 </span>
               )}
-              <span className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded uppercase">
+              <span className="text-2xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-1.5 py-0.5 rounded uppercase">
                 {order.origin.replace('_', ' ')}
               </span>
             </div>
@@ -150,14 +150,14 @@ export const OrderCard = React.memo(function OrderCard({
               </div>
             )}
             {order.customerAddress && (
-              <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+              <p className="text-2xs text-slate-500 line-clamp-1 mt-0.5">
                 📍 {order.customerAddress}
               </p>
             )}
           </div>
 
           {/* Quick Date Footer */}
-          <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
+          <div className="text-2xs text-slate-400 flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/60">
             <span>{tBilingual('Booking: ', 'বুকিং: ')}{order.orderDate}</span>
             <span>{tBilingual('Delivery: ', 'ডেলিভারি: ')}{order.deliveryDate || 'N/A'}</span>
           </div>
@@ -166,7 +166,7 @@ export const OrderCard = React.memo(function OrderCard({
         {/* Center Column: Multi-Item Technical Specs Breakdown (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-2 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-3 lg:pb-0 lg:pr-4">
           <div className="space-y-1.5">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
               <span>{tBilingual(`Work Specs (${order.items.length} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length}টি):`)}</span>
               <span className="font-mono text-slate-500">
                 {tBilingual(`Total Items: ${order.itemsCount}`, `মোট আইটেম: ${order.itemsCount}`)}
@@ -178,17 +178,17 @@ export const OrderCard = React.memo(function OrderCard({
               {order.items.map((it, idx) => (
                 <div
                   key={it.id || idx}
-                  className="p-2 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[11px] space-y-0.5"
+                  className="p-2 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-0.5"
                 >
                   <div className="flex items-start justify-between gap-1">
                     <strong className="text-slate-800 dark:text-slate-200 line-clamp-1 font-semibold">
                       {it.itemName}
                     </strong>
-                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-[10px]">
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
                       {formatOrderItemQuantityAndUnit(it, tBilingual)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 font-mono flex-wrap">
+                  <div className="flex items-center gap-2 text-2xs text-slate-500 font-mono flex-wrap">
                     {it.dimensions && <span>📐 {it.dimensions}</span>}
                     {it.materialSpec && <span>• 📄 {it.materialSpec}</span>}
                     {it.finishing && <span>• ✨ {it.finishing}</span>}
@@ -196,23 +196,23 @@ export const OrderCard = React.memo(function OrderCard({
                   {/* Workflow routing & item classification tag */}
                   <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
                     {it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product' ? (
-                      <span className="text-[9px] font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
+                      <span className="text-2xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
                         {tBilingual('Ready Product (In Stock)', 'রেডি প্রোডাক্ট (ইন-স্টক)')}
                       </span>
                     ) : it.itemKind === 'outsource' || it.workflowRouting === 'outsource' ? (
-                      <span className="text-[9px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                      <span className="text-2xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
                         {tBilingual('Outsourced Product', 'আউটসোর্স পণ্য')}
                       </span>
                     ) : it.workflowRouting === 'design_required' ? (
-                      <span className="text-[9px] font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800">
+                      <span className="text-2xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800">
                         {tBilingual('Custom Print (Design Needed)', 'কাস্টম প্রিন্ট (ডিজাইন দরকার)')}
                       </span>
                     ) : it.workflowRouting === 'design_ok' ? (
-                      <span className="text-[9px] font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-200 dark:border-cyan-800">
+                      <span className="text-2xs font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-200 dark:border-cyan-800">
                         {tBilingual('Ready File Verified', 'রেডি ফাইল চেক')}
                       </span>
                     ) : (
-                      <span className="text-[9px] font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
+                      <span className="text-2xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
                         {tBilingual('Machine Floor Production', 'প্রেসে প্রোডাকশন')}
                       </span>
                     )}
@@ -227,7 +227,7 @@ export const OrderCard = React.memo(function OrderCard({
         <div className="lg:col-span-3 flex flex-col justify-between space-y-2.5">
           {/* Live Status Selector */}
           <div className="p-2 rounded-lg bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-1">
-            <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase">
+            <div className="flex items-center justify-between text-2xs font-bold text-slate-500 uppercase">
               <span>{tBilingual('Live Current Status:', 'বর্তমান অবস্থা:')}</span>
               <span className={`inline-block w-2 h-2 rounded-full ${currentStatusConfig.dotColor} animate-pulse`} />
             </div>
@@ -246,13 +246,13 @@ export const OrderCard = React.memo(function OrderCard({
 
           {/* Financial Breakdown */}
           <div className="bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700/80 space-y-1 text-xs">
-            <div className="flex items-center justify-between text-slate-500 text-[11px]">
+            <div className="flex items-center justify-between text-slate-500 text-2xs">
               <span>{tBilingual('Total Amount:', 'মোট মূল্য:')}</span>
               <strong className="font-mono text-slate-900 dark:text-white font-bold">
                 ৳{order.totalAmount.toLocaleString()}
               </strong>
             </div>
-            <div className="flex items-center justify-between text-slate-500 text-[11px]">
+            <div className="flex items-center justify-between text-slate-500 text-2xs">
               <span>{tBilingual('Paid / Advance:', 'জমা / অগ্রিম:')}</span>
               <span className="font-mono text-emerald-600 font-semibold">
                 ৳{order.advanceAmount.toLocaleString()}
@@ -266,10 +266,10 @@ export const OrderCard = React.memo(function OrderCard({
                 ৳{order.dueAmount.toLocaleString()}
               </span>
             </div>
-            <div className="pt-1 flex items-center justify-between text-[10px]">
+            <div className="pt-1 flex items-center justify-between text-2xs">
               <span className="text-slate-400">{tBilingual('Payment:', 'পেমেন্ট:')}</span>
               <span
-                className={`font-bold uppercase px-1.5 py-0.2 rounded text-[9px] ${
+                className={`font-bold uppercase px-1.5 py-0.2 rounded text-2xs ${
                   isPaid
                     ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                     : isPartial
@@ -350,7 +350,7 @@ export const OrderCard = React.memo(function OrderCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onPrintJobTicket(order)}
-                className="text-[11px] h-7 px-1 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
+                className="text-2xs h-7 px-1 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-indigo-950 font-bold"
                 title={tBilingual('Print Production Job Ticket', 'প্রোডাকশন জব স্লিপ প্রিন্ট')}
               >
                 <Printer className="h-3 w-3 mr-1 text-indigo-600 dark:text-indigo-400" />
@@ -362,7 +362,7 @@ export const OrderCard = React.memo(function OrderCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onOpenWhatsApp(order)}
-                className="text-[11px] h-7 px-1 border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
+                className="text-2xs h-7 px-1 border-emerald-300 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950"
                 title={tBilingual('Send WhatsApp Update', 'হোয়াটসঅ্যাপ বার্তা পাঠান')}
               >
                 <MessageSquare className="h-3 w-3 mr-1" />
@@ -374,7 +374,7 @@ export const OrderCard = React.memo(function OrderCard({
                 size="sm"
                 variant="outline"
                 onClick={() => onOpenQuickStatus(order)}
-                className="text-[11px] h-7 px-1 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                className="text-2xs h-7 px-1 border-slate-300 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
                 title={tBilingual('Change Workflow Stage', 'কাজের পর্যায় পরিবর্তন')}
               >
                 <ArrowRight className="h-3 w-3 mr-1" />

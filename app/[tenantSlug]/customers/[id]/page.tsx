@@ -968,7 +968,7 @@ export default function CustomerProfilePage() {
         </Link>
 
         {customer.created_at && (
-          <span className="text-[11px] text-slate-400">
+          <span className="text-2xs text-slate-400">
             Customer since {new Date(customer.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
         )}
@@ -1210,7 +1210,7 @@ export default function CustomerProfilePage() {
                   Open Business & Action Items
                 </CardTitle>
               </div>
-              <Badge variant="outline" className="text-[10px] font-semibold">
+              <Badge variant="outline" className="text-2xs font-semibold">
                 {unpaidInvoices.length} Unpaid • {openQuotations.length} Open Quotes • {activeOrders.length} Active Orders
               </Badge>
             </CardHeader>
@@ -1232,14 +1232,14 @@ export default function CustomerProfilePage() {
                       {unpaidInvoices.length > 0 && (
                         <button
                           onClick={() => setIsRecordPayOpen(true)}
-                          className="text-[10px] font-bold text-emerald-600 hover:underline"
+                          className="text-2xs font-bold text-emerald-600 hover:underline"
                         >
                           {tBilingual('Pay', 'পরিশোধ')}
                         </button>
                       )}
                     </div>
                     {unpaidInvoices.length === 0 ? (
-                      <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium py-2 flex items-center gap-1">
+                      <p className="text-2xs text-emerald-600 dark:text-emerald-400 font-medium py-2 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" /> Account Settled (No unpaid invoices)
                       </p>
                     ) : (
@@ -1256,7 +1256,7 @@ export default function CustomerProfilePage() {
                               >
                                 {inv.invoice_number}
                               </Link>
-                              <div className="text-[10px] text-slate-400">
+                              <div className="text-2xs text-slate-400">
                                 {inv.invoice_date}
                               </div>
                             </div>
@@ -1264,7 +1264,7 @@ export default function CustomerProfilePage() {
                               <div className="font-bold text-rose-600 text-xs">
                                 Due ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                               </div>
-                              <div className="text-[9px] text-slate-400">
+                              <div className="text-2xs text-slate-400">
                                 Total ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                             </div>
@@ -1283,13 +1283,13 @@ export default function CustomerProfilePage() {
                       </span>
                       <Link
                         href={getTenantNavHref(`/quotations/new?customerId=${customer.id}`, pathname, slug)}
-                        className="text-[10px] font-bold text-blue-600 hover:underline"
+                        className="text-2xs font-bold text-blue-600 hover:underline"
                       >
                         {tBilingual('New Quote', 'নতুন কোটেশন')}
                       </Link>
                     </div>
                     {openQuotations.length === 0 ? (
-                      <p className="text-[11px] text-slate-400 py-2">No pending quotations</p>
+                      <p className="text-2xs text-slate-400 py-2">No pending quotations</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {openQuotations.map((q) => (
@@ -1304,7 +1304,7 @@ export default function CustomerProfilePage() {
                               >
                                 {q.quotation_number}
                               </Link>
-                              <div className="text-[10px] text-slate-400 capitalize">
+                              <div className="text-2xs text-slate-400 capitalize">
                                 Status: {q.status}
                               </div>
                             </div>
@@ -1326,13 +1326,13 @@ export default function CustomerProfilePage() {
                       </span>
                       <Link
                         href={getTenantNavHref('/orders', pathname, slug)}
-                        className="text-[10px] font-bold text-blue-600 hover:underline"
+                        className="text-2xs font-bold text-blue-600 hover:underline"
                       >
                         View
                       </Link>
                     </div>
                     {activeOrders.length === 0 ? (
-                      <p className="text-[11px] text-slate-400 py-2">No active production orders</p>
+                      <p className="text-2xs text-slate-400 py-2">No active production orders</p>
                     ) : (
                       <div className="space-y-1.5 max-h-48 overflow-y-auto">
                         {activeOrders.map((ord) => (
@@ -1347,7 +1347,7 @@ export default function CustomerProfilePage() {
                               >
                                 {ord.order_number}
                               </Link>
-                              <div className="text-[10px] text-cyan-600 dark:text-cyan-400 capitalize">
+                              <div className="text-2xs text-cyan-600 dark:text-cyan-400 capitalize">
                                 {ord.status.replace('_', ' ')}
                               </div>
                             </div>
@@ -1394,7 +1394,7 @@ export default function CustomerProfilePage() {
                             <div className="font-bold text-slate-900 dark:text-white">
                               {inv.invoice_number}
                             </div>
-                            <div className="text-[11px] text-slate-400">
+                            <div className="text-2xs text-slate-400">
                               {inv.invoice_date}
                             </div>
                           </div>
@@ -1405,7 +1405,7 @@ export default function CustomerProfilePage() {
                                 ৳{Number(inv.grand_total).toLocaleString('en-IN')}
                               </div>
                               {Number(inv.due_amount) > 0 && (
-                                <div className="text-[10px] text-rose-500 font-semibold">
+                                <div className="text-2xs text-rose-500 font-semibold">
                                   Due: ৳{Number(inv.due_amount).toLocaleString('en-IN')}
                                 </div>
                               )}
@@ -1414,7 +1414,7 @@ export default function CustomerProfilePage() {
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-[10px] capitalize',
+                                'text-2xs capitalize',
                                 inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
                                 inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
                                 inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
@@ -1457,7 +1457,7 @@ export default function CustomerProfilePage() {
                             <div className="font-bold text-slate-900 dark:text-white">
                               MR #{pay.receipt_number}
                             </div>
-                            <div className="text-[11px] text-slate-400">
+                            <div className="text-2xs text-slate-400">
                               {pay.payment_date} • via {pay.payment_method.toUpperCase()}
                             </div>
                           </div>
@@ -1501,12 +1501,12 @@ export default function CustomerProfilePage() {
                     <Tag className="h-3.5 w-3.5 text-blue-600" />
                     <span>Special Pricing Configured</span>
                   </div>
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-2xs">
                     {rates.filter((r) => r.hasCustomRate).length} Custom Rates
                   </Badge>
                 </div>
 
-                <p className="text-[11px] text-slate-500 leading-relaxed">
+                <p className="text-2xs text-slate-500 leading-relaxed">
                   Automated rate fallback ensures this customer always gets their agreed rate on new quotations and invoices.
                 </p>
 
@@ -1582,7 +1582,7 @@ export default function CustomerProfilePage() {
                         <Badge
                           variant="outline"
                           className={cn(
-                            'text-[10px] capitalize',
+                            'text-2xs capitalize',
                             inv.status === 'paid' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
                             inv.status === 'unpaid' && 'bg-rose-50 text-rose-700 border-rose-200',
                             inv.status === 'partially_paid' && 'bg-amber-50 text-amber-700 border-amber-200'
@@ -1726,7 +1726,7 @@ export default function CustomerProfilePage() {
                         ৳{Number(q.grand_total).toLocaleString('en-IN')}
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <Badge variant="outline" className="text-[10px] capitalize">
+                        <Badge variant="outline" className="text-2xs capitalize">
                           {q.status}
                         </Badge>
                       </td>

@@ -106,12 +106,12 @@ export function MachineQueueView({
                   >
                     {group.machine_name}
                   </Link>
-                  <Badge variant="outline" className="text-[10px] uppercase font-mono">
+                  <Badge variant="outline" className="text-2xs uppercase font-mono">
                     {group.machine_code}
                   </Badge>
                   {getStatusBadge(group.operating_status)}
                 </div>
-                <div className="text-[11px] text-slate-500 flex items-center gap-2">
+                <div className="text-2xs text-slate-500 flex items-center gap-2">
                   <span className="capitalize">{group.machine_type.replace('_', ' ')}</span>
                   <span>•</span>
                   <span className="capitalize">{group.department}</span>
@@ -129,7 +129,7 @@ export function MachineQueueView({
               <div className="text-right">
                 <div className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 justify-end">
                   <span>{(group.total_scheduled_minutes_today / 60).toFixed(1)} hrs booked</span>
-                  <span className="text-[11px] text-slate-400">({group.daily_utilization_percent}%)</span>
+                  <span className="text-2xs text-slate-400">({group.daily_utilization_percent}%)</span>
                 </div>
                 <div className="w-28 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mt-1 overflow-hidden">
                   <div
@@ -144,7 +144,7 @@ export function MachineQueueView({
               {/* NOW SLOT */}
               <div className="rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center gap-1">
                     <Flame className="h-3 w-3 text-blue-600 animate-pulse" />
                     NOW (চলমান কাজ)
                   </span>
@@ -152,7 +152,7 @@ export function MachineQueueView({
                     <Link
                       href={getTenantNavHref(`/production/${group.now.task_id || group.now.job_number}`, pathname, tenantSlug)}
                     >
-                      <Badge variant="outline" className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 hover:bg-blue-200 cursor-pointer">
+                      <Badge variant="outline" className="text-2xs bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 hover:bg-blue-200 cursor-pointer">
                         Job #{group.now.job_number}
                       </Badge>
                     </Link>
@@ -167,7 +167,7 @@ export function MachineQueueView({
                     >
                       {group.now.task_name}
                     </Link>
-                    <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                    <div className="text-2xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-slate-400" />
                         {group.now.operator_name}
@@ -186,7 +186,7 @@ export function MachineQueueView({
               {/* NEXT SLOT */}
               <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-3 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1">
                     <ArrowRight className="h-3 w-3" />
                     NEXT (পরবর্তী কাজ)
                   </span>
@@ -194,7 +194,7 @@ export function MachineQueueView({
                     <Link
                       href={getTenantNavHref(`/production/${group.next.task_id || group.next.job_number}`, pathname, tenantSlug)}
                     >
-                      <Badge variant="outline" className="text-[10px] font-mono hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
+                      <Badge variant="outline" className="text-2xs font-mono hover:bg-slate-200 dark:hover:bg-slate-800 cursor-pointer">
                         Job #{group.next.job_number}
                       </Badge>
                     </Link>
@@ -209,7 +209,7 @@ export function MachineQueueView({
                     >
                       {group.next.task_name}
                     </Link>
-                    <div className="text-[11px] text-slate-600 dark:text-slate-400 flex items-center justify-between">
+                    <div className="text-2xs text-slate-600 dark:text-slate-400 flex items-center justify-between">
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3 text-slate-400" />
                         {group.next.operator_name}
@@ -228,14 +228,14 @@ export function MachineQueueView({
               {/* LATER QUEUE */}
               {group.later.length > 0 && (
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  <span className="text-2xs font-bold uppercase tracking-wider text-slate-500">
                     LATER IN QUEUE ({group.later.length} Jobs)
                   </span>
                   <div className="mt-1.5 space-y-1 max-h-24 overflow-y-auto pr-1">
                     {group.later.map((later) => (
                       <div
                         key={later.task_id}
-                        className="flex items-center justify-between text-[11px] py-1 border-b border-slate-100 dark:border-slate-800 last:border-0"
+                        className="flex items-center justify-between text-2xs py-1 border-b border-slate-100 dark:border-slate-800 last:border-0"
                       >
                         <span className="font-medium truncate max-w-[160px]">
                           #{later.job_number}: {later.task_name}

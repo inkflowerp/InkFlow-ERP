@@ -559,20 +559,20 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                         <div className="flex items-center gap-1.5 truncate">
                           <span className="truncate">{role.name}</span>
                           {role.name_bn && (
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate font-normal">({role.name_bn})</span>
+                            <span className="text-2xs text-slate-400 dark:text-slate-500 truncate font-normal">({role.name_bn})</span>
                           )}
                         </div>
-                        <div className="text-[10px] text-slate-400 dark:text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-400 dark:text-slate-500 font-mono">
                           {role.permissions?.length || 0} permissions granted
                         </div>
                       </div>
 
                       {role.is_system ? (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 shrink-0">
+                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700 shrink-0">
                           System
                         </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-[9px] px-1 py-0 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 shrink-0">
+                        <Badge variant="outline" className="text-2xs px-1 py-0 bg-purple-50 dark:bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 shrink-0">
                           Custom
                         </Badge>
                       )}
@@ -601,11 +601,11 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       </CardTitle>
 
                       {selectedRole.is_system ? (
-                        <Badge variant="outline" className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
+                        <Badge variant="outline" className="text-2xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700">
                           System Role
                         </Badge>
                       ) : (
-                        <Badge className="bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 text-[10px]">
+                        <Badge className="bg-purple-50 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-500/30 text-2xs">
                           Custom Role
                         </Badge>
                       )}
@@ -634,7 +634,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   {/* Actions Toolbar */}
                   <div className="flex items-center gap-2">
                     {unsavedChangesCount > 0 && (
-                      <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 animate-pulse">
+                      <Badge variant="outline" className="text-2xs bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 animate-pulse">
                         {unsavedChangesCount} unsaved change(s)
                       </Badge>
                     )}
@@ -717,12 +717,12 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400 mr-1 font-medium">Batch:</span>
+                    <span className="text-2xs text-slate-500 dark:text-slate-400 mr-1 font-medium">Batch:</span>
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'view_all')}
-                      className="h-7 px-2 text-[11px] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       + Grant View
                     </Button>
@@ -730,7 +730,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'grant_all')}
-                      className="h-7 px-2 text-[11px] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       + Grant All
                     </Button>
@@ -738,7 +738,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'revoke_delete')}
-                      className="h-7 px-2 text-[11px] border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                      className="h-7 px-2 text-2xs border-rose-200 dark:border-rose-900/40 text-rose-600 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                     >
                       - Revoke Delete
                     </Button>
@@ -746,7 +746,7 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                       variant="outline"
                       size="sm"
                       onClick={() => handleCategoryAction(selectedCategory, 'clear_all')}
-                      className="h-7 px-2 text-[11px] border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="h-7 px-2 text-2xs border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
                     >
                       Clear Category
                     </Button>
@@ -769,11 +769,11 @@ export function RolesMatrixTab({ companyId, tenantSlug, onRolesChanged }: RolesM
                             <div className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
                               {spec.label}
                               <span className="text-slate-500 dark:text-slate-400 font-normal">({spec.labelBn})</span>
-                              <Badge variant="outline" className="text-[9px] font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
+                              <Badge variant="outline" className="text-2xs font-mono px-1 py-0 uppercase bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
                                 {moduleKey}
                               </Badge>
                             </div>
-                            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{spec.description}</div>
+                            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">{spec.description}</div>
                           </div>
                         </div>
 

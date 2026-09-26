@@ -42,7 +42,7 @@ export function LanguageSwitcher({
       {showIcon && (
         <Globe2 className="h-4 w-4 text-cyan-500 dark:text-cyan-400 shrink-0 transition-transform group-hover:rotate-12 duration-200" />
       )}
-      <span className={cn('font-bold tracking-tight', isBn && 'bangla-text text-[13px] sm:text-[14px]')}>
+      <span className={cn('font-bold tracking-tight', isBn && 'bangla-text text-xs sm:text-sm')}>
         {isBn ? 'বাং' : 'EN'}
       </span>
     </button>

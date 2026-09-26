@@ -777,7 +777,7 @@ export function IssueMasterRollModal({
               <Badge
                 variant="outline"
                 className={cn(
-                  'text-[11px] font-mono font-bold py-1 px-2.5 shadow-2xs',
+                  'text-2xs font-mono font-bold py-1 px-2.5 shadow-2xs',
                   currentStoreStock > 0
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300'
                     : 'bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-300'
@@ -826,7 +826,7 @@ export function IssueMasterRollModal({
                 <Label className="text-xs font-semibold block">
                   {tBilingual('Source Store Location', 'উৎস স্টোর লোকেশন')}
                 </Label>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
                   <Sparkles className="h-3 w-3" /> Auto
                 </span>
               </div>
@@ -858,7 +858,7 @@ export function IssueMasterRollModal({
                 </span>
                 <span className="text-rose-500">*</span>
               </Label>
-              <Badge variant="outline" className="text-[11px] font-mono font-medium border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 bg-blue-100/50 dark:bg-blue-900/50">
+              <Badge variant="outline" className="text-2xs font-mono font-medium border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-300 bg-blue-100/50 dark:bg-blue-900/50">
                 {configuredSizeOptions.length} {configuredSizeOptions.length === 1 ? 'Option Available' : 'Options Available'}
               </Badge>
             </div>
@@ -906,7 +906,7 @@ export function IssueMasterRollModal({
                     >
                       <div className="flex items-center gap-1.5">
                         <span>{opt.label}</span>
-                        <span className={cn('text-[10px] font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
+                        <span className={cn('text-2xs font-normal opacity-90', isSelected ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400')}>
                           • {opt.stock_display}
                         </span>
                       </div>
@@ -930,7 +930,7 @@ export function IssueMasterRollModal({
                   `পরিমাণ (${purchaseUnitName})`
                 )} (e.g. Roll, Bottle, Sheet) <span className="text-rose-500">*</span>
               </Label>
-              <Badge variant="secondary" className="text-[10px] font-mono font-bold">
+              <Badge variant="secondary" className="text-2xs font-mono font-bold">
                 {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
                 {(purchaseUnitName.toLowerCase() !== consumptionUnitName.toLowerCase() || singleUnitQuantity > 1) &&
                   ` = ${totalBatchQuantity.toLocaleString()} ${consumptionUnitName.toUpperCase()}`}
@@ -972,7 +972,7 @@ export function IssueMasterRollModal({
                   size="sm"
                   variant={quantityRolls === q ? 'default' : 'outline'}
                   onClick={() => setQuantityRolls(q)}
-                  className="h-7 text-[11px] px-2.5 font-bold cursor-pointer"
+                  className="h-7 text-2xs px-2.5 font-bold cursor-pointer"
                 >
                   {q} {formatUnitPlural(q, purchaseUnitName)}
                 </Button>
@@ -1072,7 +1072,7 @@ export function IssueMasterRollModal({
               variant="ghost"
               size="sm"
               onClick={() => setShowAdvancedTag(!showAdvancedTag)}
-              className="h-6 text-[11px] text-indigo-700 dark:text-indigo-300 font-semibold px-2 cursor-pointer"
+              className="h-6 text-2xs text-indigo-700 dark:text-indigo-300 font-semibold px-2 cursor-pointer"
             >
               {showAdvancedTag ? 'Hide Custom Tag' : 'Customize Tag / Lot'}
             </Button>
@@ -1083,7 +1083,7 @@ export function IssueMasterRollModal({
               {generatedRollCode}
               {quantityRolls > 1 && ` (to ...-${String(quantityRolls).padStart(2, '0')})`}
             </Badge>
-            <span className="text-[11px] text-slate-500 font-medium font-mono">
+            <span className="text-2xs text-slate-500 font-medium font-mono">
               Auto-tracked for Factory Floor Consumption
             </span>
           </div>
@@ -1091,7 +1091,7 @@ export function IssueMasterRollModal({
           {showAdvancedTag && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2.5 border-t border-indigo-200 dark:border-indigo-900/60">
               <div>
-                <Label className="text-[11px] font-semibold mb-1 block">Batch / Lot Number</Label>
+                <Label className="text-2xs font-semibold mb-1 block">Batch / Lot Number</Label>
                 <Input
                   placeholder="e.g. LOT-2026-B8"
                   value={lotNumber}
@@ -1100,7 +1100,7 @@ export function IssueMasterRollModal({
                 />
               </div>
               <div>
-                <Label className="text-[11px] font-semibold mb-1 block">Custom Tag Override</Label>
+                <Label className="text-2xs font-semibold mb-1 block">Custom Tag Override</Label>
                 <Input
                   placeholder="e.g. TAG-CUSTOM-001"
                   value={customRollTag}
@@ -1117,27 +1117,27 @@ export function IssueMasterRollModal({
         {/* ========================================================= */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Unit Measure</span>
+            <span className="text-2xs uppercase font-bold text-slate-400 block">Unit Measure</span>
             <span className="text-sm font-black text-slate-900 dark:text-white font-mono truncate block" title={unitMeasureDisplay}>
               {unitMeasureDisplay}
             </span>
-            <span className="text-[10px] text-slate-500 block">per {purchaseUnitName}</span>
+            <span className="text-2xs text-slate-500 block">per {purchaseUnitName}</span>
           </Card>
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 block">
+            <span className="text-2xs uppercase font-bold text-blue-600 dark:text-blue-400 block">
               Issue Quantity
             </span>
             <span className="text-sm font-black text-blue-600 dark:text-blue-400 font-mono">
               {quantityRolls} {formatUnitPlural(quantityRolls, purchaseUnitName)}
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               {totalBatchQuantity.toLocaleString()} {consumptionUnitName.toUpperCase()} total
             </span>
           </Card>
 
           <Card className="p-3 bg-white dark:bg-slate-900 border shadow-xs">
-            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 block">
+            <span className="text-2xs uppercase font-bold text-slate-500 dark:text-slate-400 block">
               Destination
             </span>
             <span className="text-sm font-black text-slate-800 dark:text-slate-200 font-mono truncate block">
@@ -1145,7 +1145,7 @@ export function IssueMasterRollModal({
                 ? machineryList.find((m) => m.id === machineId)?.name || 'Machine Press'
                 : 'Floor Staging'}
             </span>
-            <span className="text-[10px] text-slate-500 block">
+            <span className="text-2xs text-slate-500 block">
               {destination === 'machine' ? 'Mounted to Press' : 'Floor Staging Area'}
             </span>
           </Card>
@@ -1158,7 +1158,7 @@ export function IssueMasterRollModal({
                 : 'bg-white dark:bg-slate-900'
             )}
           >
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Projected Store Stock</span>
+            <span className="text-2xs uppercase font-bold text-slate-400 block">Projected Store Stock</span>
             <span
               className={cn(
                 'text-sm font-black font-mono',
@@ -1168,7 +1168,7 @@ export function IssueMasterRollModal({
               {projectedRemainingUnits} {formatUnitPlural(projectedRemainingUnits, purchaseUnitName)} ({Math.max(0, projectedStoreBalance).toLocaleString()}{' '}
               {consumptionUnitName.toUpperCase()})
             </span>
-            <span className="text-[10px] text-slate-500 block truncate">
+            <span className="text-2xs text-slate-500 block truncate">
               {isStoreShortage ? `⚠️ Deficit (${Math.abs(projectedStoreBalance).toLocaleString()} ${consumptionUnitName.toUpperCase()})` : `in ${sourceLocationName}`}
             </span>
           </Card>
@@ -1186,7 +1186,7 @@ export function IssueMasterRollModal({
               variant="outline"
               size="sm"
               onClick={() => setShowPrintLabel(!showPrintLabel)}
-              className="h-7 text-[11px] font-bold px-2.5 cursor-pointer"
+              className="h-7 text-2xs font-bold px-2.5 cursor-pointer"
             >
               {showPrintLabel ? 'Hide Label' : 'Show Ticket'}
             </Button>
@@ -1197,7 +1197,7 @@ export function IssueMasterRollModal({
               <div className="w-full max-w-sm p-4 bg-white dark:bg-slate-900 border-2 border-slate-900 dark:border-slate-100 rounded-xl shadow-md space-y-2.5 text-slate-900 dark:text-slate-100">
                 <div className="flex items-center justify-between border-b pb-2">
                   <div className="font-black text-xs tracking-wider">INKFLOW ERP MATERIAL TICKET</div>
-                  <Badge variant="outline" className="font-mono text-[9px] font-bold uppercase">
+                  <Badge variant="outline" className="font-mono text-2xs font-bold uppercase">
                     {purchaseUnitName}
                   </Badge>
                 </div>
@@ -1209,7 +1209,7 @@ export function IssueMasterRollModal({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-[10px] font-mono border-t border-b py-2">
+                <div className="grid grid-cols-2 gap-2 text-2xs font-mono border-t border-b py-2">
                   <div>
                     <span className="text-slate-400 block">UNIT MEASURE:</span>
                     <strong>{unitMeasureDisplay}</strong>
@@ -1236,7 +1236,7 @@ export function IssueMasterRollModal({
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[10px] text-slate-400 pt-1">
+                <div className="flex items-center justify-between text-2xs text-slate-400 pt-1">
                   <span>DATE: {new Date().toLocaleDateString('en-GB')}</span>
                   <span>OPERATOR: {operatorName}</span>
                 </div>

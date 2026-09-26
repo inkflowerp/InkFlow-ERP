@@ -168,8 +168,8 @@ function ResetPasswordForm() {
                 </div>
 
                 {/* Password strength criteria */}
-                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-[11px] space-y-1.5">
-                  <div className="font-semibold text-slate-400 text-[10px] uppercase tracking-wider">
+                <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-2xs space-y-1.5">
+                  <div className="font-semibold text-slate-400 text-2xs uppercase tracking-wider">
                     Password Requirements:
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">

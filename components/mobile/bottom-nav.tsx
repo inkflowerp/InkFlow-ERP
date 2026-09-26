@@ -59,7 +59,7 @@ export function MobileBottomNav() {
             }`}
           >
             <LayoutDashboard className="h-5 w-5 shrink-0" />
-            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+            <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
             </span>
           </Link>
@@ -74,7 +74,7 @@ export function MobileBottomNav() {
             }`}
           >
             <Printer className="h-5 w-5 shrink-0" />
-            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+            <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('My Work', 'আমার কাজ')}
             </span>
           </Link>
@@ -89,7 +89,7 @@ export function MobileBottomNav() {
             <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/40 border-2 border-slate-950 active:scale-95 transition-transform">
               <Plus className="h-6 w-6 stroke-[3]" />
             </div>
-            <span className="text-[10px] font-black text-white mt-1 bangla-text whitespace-nowrap">
+            <span className="text-2xs font-black text-white mt-1 bangla-text whitespace-nowrap">
               {tBilingual('New Work', 'নতুন কাজ')}
             </span>
           </button>
@@ -104,7 +104,7 @@ export function MobileBottomNav() {
             }`}
           >
             <MessageSquare className="h-5 w-5 shrink-0" />
-            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+            <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('Messages', 'মেসেজ')}
             </span>
           </Link>
@@ -117,7 +117,7 @@ export function MobileBottomNav() {
             aria-label="Open Full Menu and Modules"
           >
             <Menu className="h-5 w-5 shrink-0" />
-            <span className="text-[10px] font-semibold mt-1 truncate max-w-[60px]">
+            <span className="text-2xs font-semibold mt-1 truncate max-w-[60px]">
               {tBilingual('More', 'আরও')}
             </span>
             {(!isOnline || pendingCount > 0) && (

@@ -161,7 +161,7 @@ export function PaySupplierVoucherModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Issue Payment Voucher to Supplier', 'মহাজনকে বিল পরিশোধ / পেমেন্ট ভাউচার')}
               </span>
-              <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {voucherNumber || 'PV-NEW'}
               </Badge>
             </div>
@@ -179,27 +179,27 @@ export function PaySupplierVoucherModal({
         {/* VENDOR BALANCE SUMMARY BANNER */}
         <div className="p-4 rounded-xl bg-gradient-to-r from-teal-50 to-slate-50 dark:from-teal-950/40 dark:to-slate-900/60 border border-teal-200 dark:border-teal-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div>
-            <span className="text-[10px] uppercase font-bold text-teal-700 dark:text-teal-300 tracking-wider">
+            <span className="text-2xs uppercase font-bold text-teal-700 dark:text-teal-300 tracking-wider">
               {tBilingual('Current Payable Balance', 'বর্তমান বকেয়া পাওনা')}
             </span>
             <div className="text-2xl font-black text-teal-900 dark:text-teal-100 font-mono mt-0.5">
               {formatBDT(currentBalance)}
             </div>
-            <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            <div className="text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
               Terms: <strong className="text-slate-700 dark:text-slate-300">{supplier.payment_terms.replace('_', ' ').toUpperCase()}</strong>
               {supplier.market_hub && ` • 📍 ${supplier.market_hub}`}
             </div>
           </div>
 
           <div className="text-left sm:text-right border-t sm:border-t-0 sm:border-l border-teal-200 dark:border-teal-800 pt-2 sm:pt-0 sm:pl-4">
-            <span className="text-[10px] uppercase font-bold text-slate-400">
+            <span className="text-2xs uppercase font-bold text-slate-400">
               {tBilingual('Balance After Payment', 'পেমেন্ট পরবর্তী অবশিষ্ট')}
             </span>
             <div className="text-xl font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
               {formatBDT(remainingBalance)}
             </div>
             {numAmount > 0 && numAmount >= currentBalance && (
-              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-[10px] mt-1 border-0">
+              <Badge className="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 text-2xs mt-1 border-0">
                 {tBilingual('Full Due Settled', 'সম্পূর্ণ পরিশোধিত')}
               </Badge>
             )}
@@ -223,7 +223,7 @@ export function PaySupplierVoucherModal({
                   key={p.pct}
                   type="button"
                   onClick={() => handleSetPresetPercentage(p.pct)}
-                  className="text-[10px] font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-100 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                  className="text-2xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-teal-100 dark:hover:bg-teal-950 text-slate-700 dark:text-slate-300 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                 >
                   {p.label}
                 </button>
@@ -250,7 +250,7 @@ export function PaySupplierVoucherModal({
             />
           </div>
           {fieldErrors.amount && (
-            <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+            <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
               <AlertCircle className="w-3.5 h-3.5 shrink-0" />
               <span>{fieldErrors.amount}</span>
             </p>
@@ -285,7 +285,7 @@ export function PaySupplierVoucherModal({
                 >
                   <Icon className="h-4 w-4" />
                   <div className="text-xs font-bold">{m.labelEn}</div>
-                  <div className="text-[10px] text-slate-400">{m.labelBn}</div>
+                  <div className="text-2xs text-slate-400">{m.labelBn}</div>
                 </button>
               )
             })}
@@ -329,7 +329,7 @@ export function PaySupplierVoucherModal({
                   required
                 />
                 {fieldErrors.chequeNumber && (
-                  <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                  <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                     <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                     <span>{fieldErrors.chequeNumber}</span>
                   </p>

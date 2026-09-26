@@ -92,7 +92,7 @@ export const DesignCompareModal = React.memo(function DesignCompareModal({
           <div className="flex flex-col bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
             <div className="bg-slate-800/80 px-3 py-1.5 text-xs font-semibold text-slate-300 border-b border-slate-700 flex justify-between">
               <span>ভার্সন v{versionA?.version_number}</span>
-              <span className="text-[10px] text-slate-400">{versionA?.created_at?.split('T')[0]}</span>
+              <span className="text-2xs text-slate-400">{versionA?.created_at?.split('T')[0]}</span>
             </div>
             <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -104,7 +104,7 @@ export const DesignCompareModal = React.memo(function DesignCompareModal({
           <div className="flex flex-col bg-slate-900 rounded-lg border border-slate-800 overflow-hidden">
             <div className="bg-emerald-950/60 px-3 py-1.5 text-xs font-semibold text-emerald-300 border-b border-emerald-800/60 flex justify-between">
               <span>ভার্সন v{versionB?.version_number} (Latest)</span>
-              <span className="text-[10px] text-emerald-400">{versionB?.created_at?.split('T')[0]}</span>
+              <span className="text-2xs text-emerald-400">{versionB?.created_at?.split('T')[0]}</span>
             </div>
             <div className="flex-1 flex items-center justify-center p-2 overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -576,7 +576,7 @@ export default function PlatformSubscriptionsPage() {
           <div className="text-2xl font-black text-white mt-1">
             <CurrencyDisplay amount={metrics.total_mrr} />
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 flex items-center justify-between">
+          <div className="text-2xs text-slate-400 mt-1 flex items-center justify-between">
             <span>ARR: <CurrencyDisplay amount={metrics.total_arr} /></span>
             <span className="text-emerald-400 font-mono font-bold">100% Live</span>
           </div>
@@ -589,7 +589,7 @@ export default function PlatformSubscriptionsPage() {
             <Building2 className="h-4 w-4 text-indigo-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">{metrics.active_paid_count}</div>
-          <div className="text-[11px] text-indigo-300 mt-1">
+          <div className="text-2xs text-indigo-300 mt-1">
             {metrics.annual_subscribers_count} Annual • {metrics.monthly_subscribers_count} Monthly
           </div>
         </Card>
@@ -601,7 +601,7 @@ export default function PlatformSubscriptionsPage() {
             <Clock className="h-4 w-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white mt-1">{metrics.trial_count}</div>
-          <div className="text-[11px] text-cyan-400 mt-1">
+          <div className="text-2xs text-cyan-400 mt-1">
             {metrics.total_subscriptions} total registered tenants
           </div>
         </Card>
@@ -615,7 +615,7 @@ export default function PlatformSubscriptionsPage() {
           <div className="text-2xl font-black text-amber-400 mt-1">
             {metrics.expiring_soon_count + metrics.past_due_count + metrics.suspended_count}
           </div>
-          <div className="text-[11px] text-amber-300/80 mt-1">
+          <div className="text-2xs text-amber-300/80 mt-1">
             {metrics.expiring_soon_count} Expiring &le;7d • {metrics.past_due_count} Past Due • {metrics.suspended_count} Susp.
           </div>
         </Card>
@@ -629,7 +629,7 @@ export default function PlatformSubscriptionsPage() {
           <div className="text-2xl font-black text-white mt-1">
             <CurrencyDisplay amount={metrics.arpa} />
           </div>
-          <div className="text-[11px] text-purple-300 mt-1">
+          <div className="text-2xs text-purple-300 mt-1">
             Per active paying account
           </div>
         </Card>
@@ -661,7 +661,7 @@ export default function PlatformSubscriptionsPage() {
               >
                 <span>{tab.label}</span>
                 <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                  className={`text-2xs px-1.5 py-0.2 rounded-full font-mono ${
                     statusFilter === tab.id
                       ? 'bg-white/20 text-white'
                       : 'bg-slate-800 text-slate-300'
@@ -757,7 +757,7 @@ export default function PlatformSubscriptionsPage() {
       <Card className="bg-slate-900 border-slate-800 overflow-hidden shadow-xl">
         <CardContent className="p-0 overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-[10px] border-b border-slate-800">
+            <thead className="bg-slate-950 text-slate-400 font-semibold uppercase text-2xs border-b border-slate-800">
               <tr>
                 <th className="py-3 px-4">Tenant Company</th>
                 <th className="py-3 px-4">Plan &amp; Interval</th>
@@ -800,10 +800,10 @@ export default function PlatformSubscriptionsPage() {
                           <span>{s.company_name}</span>
                           <ExternalLink className="h-3 w-3 text-slate-500 opacity-60 hover:opacity-100" />
                         </Link>
-                        <div className="text-[11px] font-mono text-indigo-400">
+                        <div className="text-2xs font-mono text-indigo-400">
                           {s.company_slug}.printerp.com.bd
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-0.5">
+                        <div className="text-2xs text-slate-400 mt-0.5">
                           {s.owner_name} • {s.owner_phone}
                         </div>
                       </td>
@@ -812,7 +812,7 @@ export default function PlatformSubscriptionsPage() {
                       <td className="py-3 px-4">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <span
-                            className={`capitalize px-2 py-0.5 rounded text-[10px] font-bold border ${
+                            className={`capitalize px-2 py-0.5 rounded text-2xs font-bold border ${
                               s.plan_code === 'enterprise'
                                 ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
                                 : s.plan_code === 'business'
@@ -824,13 +824,13 @@ export default function PlatformSubscriptionsPage() {
                           >
                             {s.plan_name}
                           </span>
-                          <span className="text-[10px] text-slate-400 capitalize font-mono">
+                          <span className="text-2xs text-slate-400 capitalize font-mono">
                             ({s.billing_interval})
                           </span>
                         </div>
                         {hasCustomOverrides && (
                           <div className="mt-1">
-                            <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold inline-flex items-center gap-1">
+                            <span className="text-2xs px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 border border-amber-500/30 font-semibold inline-flex items-center gap-1">
                               <Sparkles className="h-2.5 w-2.5" />
                               Custom Quotas
                             </span>
@@ -842,10 +842,10 @@ export default function PlatformSubscriptionsPage() {
                       <td className="py-3 px-4 font-mono">
                         <div className="font-bold text-white text-sm">
                           <CurrencyDisplay amount={s.monthly_rate} />
-                          <span className="text-[10px] text-slate-400 font-normal"> /mo</span>
+                          <span className="text-2xs text-slate-400 font-normal"> /mo</span>
                         </div>
                         {s.billing_interval === 'yearly' && (
-                          <div className="text-[10px] text-indigo-400 mt-0.5">
+                          <div className="text-2xs text-indigo-400 mt-0.5">
                             <CurrencyDisplay amount={s.yearly_rate} /> /yr billed
                           </div>
                         )}
@@ -855,7 +855,7 @@ export default function PlatformSubscriptionsPage() {
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-1.5">
                           <span
-                            className={`capitalize px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                            className={`capitalize px-2 py-0.5 rounded-full text-2xs font-bold border ${
                               s.status === 'active'
                                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                                 : s.status === 'trial'
@@ -873,7 +873,7 @@ export default function PlatformSubscriptionsPage() {
                           {/* Expiry / Countdown indicator */}
                           {s.status === 'trial' ? (
                             <span
-                              className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                              className={`text-2xs font-mono px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 3
                                   ? 'bg-red-950 text-red-300 font-bold border border-red-800'
                                   : 'bg-slate-800 text-slate-300 border border-slate-700'
@@ -885,7 +885,7 @@ export default function PlatformSubscriptionsPage() {
                             </span>
                           ) : s.status === 'active' ? (
                             <span
-                              className={`text-[10px] font-mono px-1.5 py-0.2 rounded ${
+                              className={`text-2xs font-mono px-1.5 py-0.2 rounded ${
                                 s.days_remaining <= 7
                                   ? 'bg-amber-950 text-amber-300 font-bold border border-amber-800'
                                   : 'bg-slate-800 text-slate-400 border border-slate-700'
@@ -896,7 +896,7 @@ export default function PlatformSubscriptionsPage() {
                           ) : null}
                         </div>
 
-                        <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-1">
+                        <div className="text-2xs text-slate-500 mt-1 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           <span>
                             {s.is_trial && s.trial_ends_at
@@ -909,9 +909,9 @@ export default function PlatformSubscriptionsPage() {
                       {/* Quota & Resource Usage */}
                       <td className="py-3 px-4 text-slate-300">
                         <div className="space-y-1">
-                          <div className="flex items-center justify-between text-[11px]">
+                          <div className="flex items-center justify-between text-2xs">
                             <span>Users: <strong className="text-white">{s.users_count}</strong>/{s.users_limit}</span>
-                            <span className="text-[10px] text-slate-400">{userUsagePct}%</span>
+                            <span className="text-2xs text-slate-400">{userUsagePct}%</span>
                           </div>
                           {/* Mini Progress Bar */}
                           <div className="w-28 h-1.5 bg-slate-800 rounded-full overflow-hidden">
@@ -927,7 +927,7 @@ export default function PlatformSubscriptionsPage() {
                             />
                           </div>
 
-                          <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                          <div className="text-2xs text-slate-400 flex items-center gap-2">
                             <span>{s.branches_count}/{s.branches_limit} branches</span>
                             <span>•</span>
                             <span>{s.orders_this_month}/{s.orders_limit} orders</span>
@@ -938,14 +938,14 @@ export default function PlatformSubscriptionsPage() {
                       {/* Payment & Gateway */}
                       <td className="py-3 px-4">
                         {s.is_trial ? (
-                          <span className="text-[10px] text-cyan-400 font-mono font-bold">Free Trial</span>
+                          <span className="text-2xs text-cyan-400 font-mono font-bold">Free Trial</span>
                         ) : (
                           <div>
-                            <span className="capitalize px-1.5 py-0.2 rounded text-[10px] font-bold bg-slate-800 text-emerald-300 border border-slate-700">
+                            <span className="capitalize px-1.5 py-0.2 rounded text-2xs font-bold bg-slate-800 text-emerald-300 border border-slate-700">
                               {s.payment_method_type || 'bKash'}
                             </span>
                             {s.last_payment_reference && (
-                              <div className="text-[10px] font-mono text-slate-400 mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
+                              <div className="text-2xs font-mono text-slate-400 mt-1 truncate max-w-[130px]" title={s.last_payment_reference}>
                                 Ref: {s.last_payment_reference}
                               </div>
                             )}
@@ -1158,12 +1158,12 @@ export default function PlatformSubscriptionsPage() {
 
                 {showOverrideSection && (
                   <div className="space-y-3 pt-2 border-t border-slate-800 animate-in fade-in">
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-2xs text-slate-400">
                       Override plan default maximum quotas specifically for this VIP or enterprise tenant:
                     </p>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Max Users</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Max Users</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_users ?? configuringSub.users_limit}
@@ -1177,7 +1177,7 @@ export default function PlatformSubscriptionsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Max Branches</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Max Branches</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_branches ?? configuringSub.branches_limit}
@@ -1191,7 +1191,7 @@ export default function PlatformSubscriptionsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Storage GB</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Storage GB</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.storage_gb ?? configuringSub.storage_limit_gb}
@@ -1205,7 +1205,7 @@ export default function PlatformSubscriptionsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Monthly Orders</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Monthly Orders</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.monthly_orders ?? configuringSub.orders_limit}
@@ -1219,7 +1219,7 @@ export default function PlatformSubscriptionsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Max Customers</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Max Customers</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_customers ?? configuringSub.customers_limit}
@@ -1233,7 +1233,7 @@ export default function PlatformSubscriptionsPage() {
                         />
                       </div>
                       <div>
-                        <label className="text-slate-400 text-[10px] block mb-0.5">Max Products</label>
+                        <label className="text-slate-400 text-2xs block mb-0.5">Max Products</label>
                         <Input
                           type="number"
                           value={configCustomOverrides.max_products ?? configuringSub.products_limit}
@@ -1524,7 +1524,7 @@ export default function PlatformSubscriptionsPage() {
               </p>
 
               {statusToggleSub.targetStatus === 'suspended' && (
-                <div className="p-3 bg-red-950/50 border border-red-900/60 rounded-xl text-red-200 text-[11px] flex items-start gap-2">
+                <div className="p-3 bg-red-950/50 border border-red-900/60 rounded-xl text-red-200 text-2xs flex items-start gap-2">
                   <ShieldAlert className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
                   <span>
                     Suspending a tenant immediately blocks all company users from logging in and accessing POS, production, and billing.

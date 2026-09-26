@@ -108,17 +108,17 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
                 <span>Invoice #{invoiceNumber}</span>
                 <ExternalLink className="h-3 w-3 opacity-60" />
               </Link>
-              <span className="bg-blue-200/80 dark:bg-blue-900/70 text-blue-900 dark:text-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-blue-200/80 dark:bg-blue-900/70 text-blue-900 dark:text-blue-200 text-2xs font-bold px-2 py-0.5 rounded-full">
                 {jobs.length} {isBn ? 'প্রোডাকশন কাজ' : 'Production Job(s)'}
               </span>
               {readyProductItems.length > 0 && (
-                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <span className="bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                   <Package className="h-3 w-3" />
                   <span>{readyProductItems.length} {isBn ? 'রেডি প্রোডাক্ট' : 'Ready Product'}</span>
                 </span>
               )}
               {outsourceItems.length > 0 && (
-                <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 border border-purple-300 dark:border-purple-800 text-2xs font-bold px-2 py-0.5 rounded-full">
                   {outsourceItems.length} {isBn ? 'আউটসোর্স' : 'Outsource'}
                 </span>
               )}
@@ -126,7 +126,7 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-0.5">
               <span className="font-semibold text-slate-900 dark:text-white">{customerName}</span>
               {customerPhone && (
-                <span className="text-[11px] font-mono text-emerald-700 dark:text-emerald-400">
+                <span className="text-2xs font-mono text-emerald-700 dark:text-emerald-400">
                   • {customerPhone}
                 </span>
               )}

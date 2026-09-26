@@ -264,7 +264,7 @@ export function StockAdjustmentModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
+                className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
               >
                 Audit Log
               </Badge>
@@ -429,7 +429,7 @@ export function StockAdjustmentModal({
           {/* Configured Roll Sizes Breakdown Display */}
           {stockBreakdown && stockBreakdown.roll_items && stockBreakdown.roll_items.length > 0 && (
             <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
+              <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1.5">
                 Active Configured Sizes & SFT Breakdown ({stockBreakdown.purchase_unit_display}):
               </span>
               <div className="flex flex-wrap gap-1.5">
@@ -437,15 +437,15 @@ export function StockAdjustmentModal({
                   <Badge
                     key={idx}
                     variant="outline"
-                    className="text-[11px] font-mono py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
+                    className="text-2xs font-mono py-1 px-2.5 bg-slate-50 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1.5"
                   >
                     <span className="font-bold text-amber-600 dark:text-amber-400">
                       {item.width_ft}ft × {item.length_ft}ft:
                     </span>
                     <span className="font-semibold">{item.roll_count} Roll(s)</span>
-                    <span className="text-slate-400 text-[10px]">({item.total_sft.toLocaleString()} SFT)</span>
+                    <span className="text-slate-400 text-2xs">({item.total_sft.toLocaleString()} SFT)</span>
                     {item.purchase_price ? (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-[10px]">
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-2xs">
                         @ ৳{item.purchase_price}
                       </span>
                     ) : null}
@@ -545,7 +545,7 @@ export function StockAdjustmentModal({
           {/* Variance & Financial Impact HUD */}
           <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
             <div>
-              <span className="text-[10px] text-slate-400 block font-semibold uppercase">Quantity Variance:</span>
+              <span className="text-2xs text-slate-400 block font-semibold uppercase">Quantity Variance:</span>
               <div
                 className={cn(
                   'text-base font-black font-mono flex items-center gap-1.5 mt-0.5',
@@ -566,14 +566,14 @@ export function StockAdjustmentModal({
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-400 block font-semibold uppercase">Unit Valuation:</span>
+              <span className="text-2xs text-slate-400 block font-semibold uppercase">Unit Valuation:</span>
               <div className="text-base font-bold font-mono text-slate-700 dark:text-slate-300 mt-0.5">
                 {formatBDT(unitCost)} / {activeMaterial?.unit || 'unit'}
               </div>
             </div>
 
             <div>
-              <span className="text-[10px] text-slate-400 block font-semibold uppercase">Financial Impact:</span>
+              <span className="text-2xs text-slate-400 block font-semibold uppercase">Financial Impact:</span>
               <div
                 className={cn(
                   'text-base font-black font-mono mt-0.5',
@@ -603,7 +603,7 @@ export function StockAdjustmentModal({
                 key={idx}
                 type="button"
                 onClick={() => setReason(p.reasonEn)}
-                className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                className="text-2xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
               >
                 🏷️ {p.tag}
               </button>

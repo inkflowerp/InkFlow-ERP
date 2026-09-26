@@ -629,9 +629,9 @@ export default function PlatformPlansPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
           <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Active SaaS Tiers</div>
+              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Active SaaS Tiers</div>
               <div className="text-2xl font-black text-white">{telemetry.activePlansCount} Plans</div>
-              <div className="text-[11px] text-indigo-400">Total {plans.length} configured</div>
+              <div className="text-2xs text-indigo-400">Total {plans.length} configured</div>
             </div>
             <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
               <Boxes className="h-5 w-5" />
@@ -640,9 +640,9 @@ export default function PlatformPlansPage() {
 
           <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Free Trial Window</div>
+              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Free Trial Window</div>
               <div className="text-2xl font-black text-amber-400">{telemetry.trialDays} Days</div>
-              <div className="text-[11px] text-amber-300/70">Full module access evaluation</div>
+              <div className="text-2xs text-amber-300/70">Full module access evaluation</div>
             </div>
             <div className="h-10 w-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
               <Clock className="h-5 w-5" />
@@ -651,11 +651,11 @@ export default function PlatformPlansPage() {
 
           <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Commercial Pricing Range</div>
+              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Commercial Pricing Range</div>
               <div className="text-xl font-black text-emerald-400">
                 <CurrencyDisplay amount={telemetry.minPrice} /> - <CurrencyDisplay amount={telemetry.maxPrice} />
               </div>
-              <div className="text-[11px] text-emerald-300/70">Monthly BDT / tier</div>
+              <div className="text-2xs text-emerald-300/70">Monthly BDT / tier</div>
             </div>
             <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <Tag className="h-5 w-5" />
@@ -664,9 +664,9 @@ export default function PlatformPlansPage() {
 
           <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between shadow-md">
             <div className="space-y-0.5">
-              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tenant Distribution</div>
+              <div className="text-2xs font-bold text-slate-400 uppercase tracking-wider">Tenant Distribution</div>
               <div className="text-2xl font-black text-white">{telemetry.totalTenants} Tenants</div>
-              <div className="text-[11px] text-slate-400">
+              <div className="text-2xs text-slate-400">
                 {telemetry.trialTenants} Trial · {telemetry.paidTenants} Commercial
               </div>
             </div>
@@ -761,17 +761,17 @@ export default function PlatformPlansPage() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-amber-900/40 pb-5">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
+                <span className="px-2.5 py-0.5 rounded-full text-2xs font-black uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
                   Free Evaluation Tier
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-800 text-amber-200 border border-amber-500/20">
+                <span className="px-2.5 py-0.5 rounded-full text-2xs font-bold bg-slate-800 text-amber-200 border border-amber-500/20">
                   {trialPlan.trial_days ?? 30} Days Duration
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   ৳0 / Evaluation
                 </span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                <span className="px-2 py-0.5 rounded-full text-2xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
                   {subscriberCounts['trial'] || 0} Active Evaluations
                 </span>
               </div>
@@ -865,11 +865,11 @@ export default function PlatformPlansPage() {
                     <ShieldCheck className="h-4 w-4 text-emerald-400" />
                     Trial Modules
                   </span>
-                  <span className="font-mono text-[11px] px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded font-bold">
+                  <span className="font-mono text-2xs px-1.5 py-0.5 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded font-bold">
                     {trialPlan.features.length} / {ALL_FEATURES.length}
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-400 mt-2">
+                <div className="text-2xs text-slate-400 mt-2">
                   {trialPlan.features.length === ALL_FEATURES.length
                     ? 'All ERP modules fully unlocked during evaluation.'
                     : `${trialPlan.features.length} modules unlocked for trial evaluation.`}
@@ -879,7 +879,7 @@ export default function PlatformPlansPage() {
               <button
                 type="button"
                 onClick={handleOpenTrialEditor}
-                className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 mt-2 cursor-pointer"
+                className="text-2xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 mt-2 cursor-pointer"
               >
                 Configure Gating Matrix <ChevronRight className="h-3.5 w-3.5" />
               </button>
@@ -898,7 +898,7 @@ export default function PlatformPlansPage() {
             </div>
 
             {paidPlans.some((p) => !p.is_active) && (
-              <span className="text-[11px] text-slate-500">
+              <span className="text-2xs text-slate-500">
                 Includes {paidPlans.filter((p) => !p.is_active).length} archived plan(s)
               </span>
             )}
@@ -929,15 +929,15 @@ export default function PlatformPlansPage() {
                       </div>
 
                       <div className="flex flex-col items-end gap-1">
-                        <span className="uppercase text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+                        <span className="uppercase text-2xs font-mono px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
                           {plan.code}
                         </span>
                         {isArchived ? (
-                          <Badge variant="outline" className="text-[9px] bg-slate-800 text-slate-400 border-slate-700">
+                          <Badge variant="outline" className="text-2xs bg-slate-800 text-slate-400 border-slate-700">
                             Archived
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[9px] bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
+                          <Badge variant="outline" className="text-2xs bg-emerald-500/10 text-emerald-300 border-emerald-500/30">
                             Active
                           </Badge>
                         )}
@@ -954,10 +954,10 @@ export default function PlatformPlansPage() {
                         <CurrencyDisplay amount={plan.price_monthly} />
                         <span className="text-xs text-slate-400 font-normal"> / month</span>
                       </div>
-                      <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                      <div className="text-2xs text-slate-400 flex items-center gap-1.5 flex-wrap">
                         <span>or <strong className="text-white"><CurrencyDisplay amount={plan.price_yearly} /></strong> / year</span>
                         {yearlySavings > 0 && (
-                          <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-800/60">
+                          <span className="text-2xs font-bold text-emerald-400 bg-emerald-950/60 px-1.5 py-0.2 rounded border border-emerald-800/60">
                             Save <CurrencyDisplay amount={yearlySavings} />
                           </span>
                         )}
@@ -976,7 +976,7 @@ export default function PlatformPlansPage() {
                         <button
                           type="button"
                           onClick={() => setEditingLimitsPlan(plan)}
-                          className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                          className="text-2xs font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
                         >
                           Quick Edit
                         </button>
@@ -1014,7 +1014,7 @@ export default function PlatformPlansPage() {
                     <div className="space-y-1.5">
                       <div className="text-xs font-bold text-slate-300 flex items-center justify-between">
                         <span>Modules Enabled</span>
-                        <span className="text-[11px] font-mono text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-900/60 font-semibold">
+                        <span className="text-2xs font-mono text-indigo-300 bg-indigo-950/60 px-1.5 py-0.5 rounded border border-indigo-900/60 font-semibold">
                           {plan.features.length} / {ALL_FEATURES.length}
                         </span>
                       </div>
@@ -1022,13 +1022,13 @@ export default function PlatformPlansPage() {
                         {plan.features.slice(0, 6).map((f) => (
                           <span
                             key={f}
-                            className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 border border-slate-700/60"
+                            className="px-1.5 py-0.5 rounded text-2xs bg-slate-800 text-slate-300 border border-slate-700/60"
                           >
                             {FEATURE_METADATA[f]?.name || f}
                           </span>
                         ))}
                         {plan.features.length > 6 && (
-                          <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-900 font-bold">
+                          <span className="px-1.5 py-0.5 rounded text-2xs bg-indigo-950 text-indigo-300 border border-indigo-900 font-bold">
                             +{plan.features.length - 6} more
                           </span>
                         )}
@@ -1036,7 +1036,7 @@ export default function PlatformPlansPage() {
                     </div>
 
                     {/* Subscriber count */}
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-800/80">
+                    <div className="flex items-center justify-between text-2xs text-slate-400 pt-1 border-t border-slate-800/80">
                       <span>Subscribed Tenants:</span>
                       <strong className="text-white font-medium">
                         {subscriberCount} {subscriberCount === 1 ? 'tenant' : 'tenants'}
@@ -1116,7 +1116,7 @@ export default function PlatformPlansPage() {
                   {plans.map((p) => (
                     <th key={p.id} className="p-4 text-center min-w-[150px]">
                       <div className="font-bold text-white text-sm">{p.name}</div>
-                      <div className="text-[11px] text-slate-400 font-normal">
+                      <div className="text-2xs text-slate-400 font-normal">
                         {p.code === 'trial' ? (
                           <span className="text-amber-400 font-bold">Free Evaluation ({p.trial_days || 14}d)</span>
                         ) : (
@@ -1128,7 +1128,7 @@ export default function PlatformPlansPage() {
                       <div className="mt-1">
                         <button
                           onClick={() => (p.code === 'trial' ? handleOpenTrialEditor() : handleOpenEditPlan(p))}
-                          className="text-[10px] text-indigo-400 hover:underline font-semibold"
+                          className="text-2xs text-indigo-400 hover:underline font-semibold"
                         >
                           Edit Tier →
                         </button>
@@ -1219,7 +1219,7 @@ export default function PlatformPlansPage() {
                         <tr key={feat} className="hover:bg-slate-800/40 transition-colors">
                           <td className="p-3 pl-4 sticky left-0 bg-slate-900 z-10">
                             <div className="font-semibold text-slate-200">{meta?.name || feat}</div>
-                            <div className="text-[10px] text-slate-400">{meta?.description}</div>
+                            <div className="text-2xs text-slate-400">{meta?.description}</div>
                           </td>
                           {plans.map((p) => {
                             const isIncluded = p.features.includes(feat)
@@ -1340,7 +1340,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Users</Label>
+                    <Label className="text-slate-400 text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1355,7 +1355,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Branches</Label>
+                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1370,7 +1370,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Storage (GB)</Label>
+                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1385,7 +1385,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Monthly Orders</Label>
+                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1400,7 +1400,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Customers</Label>
+                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1415,7 +1415,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Products</Label>
+                    <Label className="text-slate-400 text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1443,7 +1443,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => setEditingTrialPlan((prev) => prev ? ({ ...prev, features: [...ALL_FEATURES] as FeatureCode[] }) : null)}
-                      className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300"
+                      className="text-2xs font-semibold text-indigo-400 hover:text-indigo-300"
                     >
                       Select All
                     </button>
@@ -1456,7 +1456,7 @@ export default function PlatformPlansPage() {
                           features: ['basic_sales', 'basic_customers', 'quotation_pdf', 'delivery_challan'] as FeatureCode[],
                         }) : null)
                       }
-                      className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
                     >
                       Reset to Basic
                     </button>
@@ -1470,7 +1470,7 @@ export default function PlatformPlansPage() {
                     return (
                       <label
                         key={feat}
-                        className={`flex items-center justify-between p-2 rounded-lg text-[11px] cursor-pointer transition-colors ${
+                        className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-amber-950/30 text-amber-200 border border-amber-900/40'
                             : 'text-slate-500 hover:bg-slate-900/60'
@@ -1478,7 +1478,7 @@ export default function PlatformPlansPage() {
                       >
                         <div className="truncate mr-2">
                           <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-[10px] text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"
@@ -1502,7 +1502,7 @@ export default function PlatformPlansPage() {
               </div>
 
               <div className="flex items-center justify-between pt-3 border-t border-slate-800">
-                <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <div className="text-2xs text-slate-400 flex items-center gap-1.5">
                   <Info className="h-3.5 w-3.5 text-amber-400 shrink-0" />
                   <span>Duration syncs with platform tenant onboarding defaults automatically.</span>
                 </div>
@@ -1612,7 +1612,7 @@ export default function PlatformPlansPage() {
                         price_yearly: editingPlan.price_monthly * 10,
                       })
                     }
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
+                    className="text-2xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
                   >
                     Auto-apply 2 Months Free (10x Monthly)
                   </button>
@@ -1620,7 +1620,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Monthly Rate (৳ BDT)</Label>
+                    <Label className="text-slate-400 text-2xs">Monthly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
@@ -1631,7 +1631,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Yearly Rate (৳ BDT)</Label>
+                    <Label className="text-slate-400 text-2xs">Yearly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
@@ -1653,7 +1653,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Users</Label>
+                    <Label className="text-slate-400 text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1663,7 +1663,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Branches</Label>
+                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1673,7 +1673,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Storage (GB)</Label>
+                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1683,7 +1683,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Monthly Orders</Label>
+                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1693,7 +1693,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Customers</Label>
+                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1703,7 +1703,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Products</Label>
+                    <Label className="text-slate-400 text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
@@ -1726,7 +1726,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'all')}
-                      className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300"
+                      className="text-2xs font-semibold text-indigo-400 hover:text-indigo-300"
                     >
                       Select All
                     </button>
@@ -1734,7 +1734,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'starter')}
-                      className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
                     >
                       Starter Preset
                     </button>
@@ -1742,7 +1742,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'business')}
-                      className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
                     >
                       Business Preset
                     </button>
@@ -1750,7 +1750,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('edit', 'clear')}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-400"
+                      className="text-2xs font-semibold text-slate-500 hover:text-slate-400"
                     >
                       Clear
                     </button>
@@ -1764,7 +1764,7 @@ export default function PlatformPlansPage() {
                     return (
                       <label
                         key={feat}
-                        className={`flex items-center justify-between p-2 rounded-lg text-[11px] cursor-pointer transition-colors ${
+                        className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
                             : 'text-slate-500 hover:bg-slate-900/60'
@@ -1772,7 +1772,7 @@ export default function PlatformPlansPage() {
                       >
                         <div className="truncate mr-2">
                           <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-[10px] text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"
@@ -1807,7 +1807,7 @@ export default function PlatformPlansPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className="text-slate-400 text-[11px]">Sort Order</Label>
+                  <Label className="text-slate-400 text-2xs">Sort Order</Label>
                   <Input
                     type="number"
                     value={editingPlan.sort_order}
@@ -2029,7 +2029,7 @@ export default function PlatformPlansPage() {
                         price_yearly: newPlan.price_monthly * 10,
                       })
                     }
-                    className="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
+                    className="text-2xs text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer"
                   >
                     Auto 2 Months Free (10x Monthly)
                   </button>
@@ -2037,7 +2037,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Monthly Rate (৳ BDT)</Label>
+                    <Label className="text-slate-400 text-2xs">Monthly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
@@ -2051,7 +2051,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Yearly Rate (৳ BDT)</Label>
+                    <Label className="text-slate-400 text-2xs">Yearly Rate (৳ BDT)</Label>
                     <Input
                       type="number"
                       required
@@ -2073,7 +2073,7 @@ export default function PlatformPlansPage() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Users</Label>
+                    <Label className="text-slate-400 text-2xs">Max Users</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2083,7 +2083,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Branches</Label>
+                    <Label className="text-slate-400 text-2xs">Max Branches</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2093,7 +2093,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Storage (GB)</Label>
+                    <Label className="text-slate-400 text-2xs">Storage (GB)</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2103,7 +2103,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Monthly Orders</Label>
+                    <Label className="text-slate-400 text-2xs">Monthly Orders</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2113,7 +2113,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Customers</Label>
+                    <Label className="text-slate-400 text-2xs">Max Customers</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2123,7 +2123,7 @@ export default function PlatformPlansPage() {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-[11px]">Max Products</Label>
+                    <Label className="text-slate-400 text-2xs">Max Products</Label>
                     <Input
                       type="number"
                       min={1}
@@ -2146,7 +2146,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'all')}
-                      className="text-[11px] font-semibold text-indigo-400 hover:text-indigo-300"
+                      className="text-2xs font-semibold text-indigo-400 hover:text-indigo-300"
                     >
                       Select All
                     </button>
@@ -2154,7 +2154,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'starter')}
-                      className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
                     >
                       Starter Preset
                     </button>
@@ -2162,7 +2162,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'business')}
-                      className="text-[11px] font-semibold text-slate-400 hover:text-slate-300"
+                      className="text-2xs font-semibold text-slate-400 hover:text-slate-300"
                     >
                       Business Preset
                     </button>
@@ -2170,7 +2170,7 @@ export default function PlatformPlansPage() {
                     <button
                       type="button"
                       onClick={() => applyPresetToPlan('new', 'clear')}
-                      className="text-[11px] font-semibold text-slate-500 hover:text-slate-400"
+                      className="text-2xs font-semibold text-slate-500 hover:text-slate-400"
                     >
                       Clear
                     </button>
@@ -2184,7 +2184,7 @@ export default function PlatformPlansPage() {
                     return (
                       <label
                         key={feat}
-                        className={`flex items-center justify-between p-2 rounded-lg text-[11px] cursor-pointer transition-colors ${
+                        className={`flex items-center justify-between p-2 rounded-lg text-2xs cursor-pointer transition-colors ${
                           isEnabled
                             ? 'bg-indigo-950/40 text-indigo-200 border border-indigo-900/40'
                             : 'text-slate-500 hover:bg-slate-900/60'
@@ -2192,7 +2192,7 @@ export default function PlatformPlansPage() {
                       >
                         <div className="truncate mr-2">
                           <div className="font-semibold text-slate-200">{meta.name}</div>
-                          <div className="text-[10px] text-slate-400 truncate">{meta.name_bn}</div>
+                          <div className="text-2xs text-slate-400 truncate">{meta.name_bn}</div>
                         </div>
                         <input
                           type="checkbox"

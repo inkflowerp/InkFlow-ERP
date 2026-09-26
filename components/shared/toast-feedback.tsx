@@ -120,7 +120,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 <div className="space-y-0.5 min-w-0">
                   <div className="font-bold text-white bangla-text truncate">{displayTitle}</div>
                   {displayMessage && (
-                    <div className="text-[11px] text-slate-300 bangla-text leading-relaxed">
+                    <div className="text-2xs text-slate-300 bangla-text leading-relaxed">
                       {displayMessage}
                     </div>
                   )}

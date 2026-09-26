@@ -367,7 +367,7 @@ export default function BranchesSettingsPage() {
                     `শাখা সীমা: ${toBengaliDigits(currentPlan.max_branches)} টির মধ্যে ${toBengaliDigits(branches.length)} টি শাখা সক্রিয়`
                   )}
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 bangla-text">
+            <p className="text-2xs text-slate-500 dark:text-slate-400 bangla-text">
               {branchCheck.exceeded
                 ? tBilingual('Branch limit reached. Upgrade to Enterprise to add multi-branch factory locations.', 'শাখার সর্বোচ্চ সীমা পূর্ণ হয়েছে। নতুন হাব/শাখা যোগ করতে প্ল্যান আপগ্রেড করুন।')
                 : tBilingual(`Configured for ${currentPlan.name}.`, `${currentPlan.name_bn}-এ পরিচালিত।`)}
@@ -427,13 +427,13 @@ export default function BranchesSettingsPage() {
                       {branch.name}
                     </h3>
                     {branch.isMain && (
-                      <Badge variant="default" className="text-[10px] bg-blue-600">
+                      <Badge variant="default" className="text-2xs bg-blue-600">
                         <Star className="h-3 w-3 mr-1 fill-white" />
                         {tBilingual('Head Office', 'প্রধান কার্যালয়')}
                       </Badge>
                     )}
                     {!branch.isActive && (
-                      <Badge variant="outline" className="text-[10px] border-rose-300 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300">
+                      <Badge variant="outline" className="text-2xs border-rose-300 text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300">
                         {tBilingual('Inactive', 'নিষ্ক্রিয়')}
                       </Badge>
                     )}

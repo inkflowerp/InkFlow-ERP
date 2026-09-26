@@ -322,7 +322,7 @@ export default function DeliveryChallanDetailPage() {
               </div>
             </div>
             <div className="text-right shrink-0">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              <div className="text-2xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">
                 {locale === 'bn' ? 'মোট বকেয়া' : 'Pending Due'}
               </div>
               <div className="text-lg font-black text-amber-950 dark:text-amber-200 font-mono">
@@ -345,16 +345,16 @@ export default function DeliveryChallanDetailPage() {
             >
               {/* Header */}
               <div className="text-center space-y-1 pb-3 border-b-2 border-slate-900 dark:border-slate-100 print:border-slate-900 relative">
-                <div className="absolute right-0 top-0 text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border border-slate-300 dark:border-slate-700 text-slate-700 print:text-slate-800">
+                <div className="absolute right-0 top-0 text-2xs font-mono px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold border border-slate-300 dark:border-slate-700 text-slate-700 print:text-slate-800">
                   {copyMeta.badge}
                 </div>
                 <h1 className="text-xl font-black tracking-tight print:text-slate-900">{company?.name || 'InkFlow Printing & Signage'}</h1>
-                {company?.address && <p className="text-slate-500 print:text-slate-600 text-[11px]">{company.address}</p>}
+                {company?.address && <p className="text-slate-500 print:text-slate-600 text-2xs">{company.address}</p>}
                 
                 <div className="inline-block mt-2 px-6 py-1 rounded-full bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 print:bg-slate-900 print:text-white font-black text-xs tracking-wider uppercase">
                   DELIVERY CHALLAN • ডেলিভারি চালানপত্র
                 </div>
-                <div className="text-[11px] font-bold text-slate-600 dark:text-slate-400 print:text-slate-700">
+                <div className="text-2xs font-bold text-slate-600 dark:text-slate-400 print:text-slate-700">
                   {copyMeta.titleBn} — ({copyMeta.titleEn})
                 </div>
               </div>
@@ -362,7 +362,7 @@ export default function DeliveryChallanDetailPage() {
               {/* Challan & Transit Meta */}
               <div className="grid grid-cols-2 gap-6 p-4 rounded-xl bg-slate-50 dark:bg-slate-900 print:bg-slate-50 border border-slate-200 dark:border-slate-800 print:border-slate-300 text-xs print:text-slate-900">
                 <div className="space-y-1.5">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 print:text-slate-600">
+                  <span className="text-2xs uppercase font-bold text-slate-400 print:text-slate-600">
                     Consignee / Deliver To (প্রাপক):
                   </span>
                   <div className="font-bold text-sm text-slate-900 dark:text-white print:text-slate-900">{challan.customer_name}</div>
@@ -406,7 +406,7 @@ export default function DeliveryChallanDetailPage() {
 
               {/* Line Items Table */}
               <table className="w-full text-left border-collapse border border-slate-300 dark:border-slate-700 print:border-slate-400 text-xs print:text-slate-900">
-                <thead className="bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold text-[11px] print:text-slate-900">
+                <thead className="bg-slate-100 dark:bg-slate-900 print:bg-slate-100 font-bold text-2xs print:text-slate-900">
                   <tr>
                     <th className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 text-center w-12">ক্র./SL</th>
                     <th className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400">
@@ -432,7 +432,7 @@ export default function DeliveryChallanDetailPage() {
                       <td className="p-2.5 border border-slate-300 dark:border-slate-700 print:border-slate-400 font-bold text-slate-900 dark:text-white print:text-slate-900">
                         {item.product_description}
                         {item.is_delivered && (
-                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 print:hidden">
+                          <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 print:hidden">
                             ডেলিভার্ড
                           </span>
                         )}
@@ -453,7 +453,7 @@ export default function DeliveryChallanDetailPage() {
 
               {/* Due on Delivery Box for Accounts Copy & General Copy */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg text-[11px] text-slate-600 dark:text-slate-400 print:text-slate-700 space-y-1 border border-slate-200 dark:border-slate-800 print:border-slate-300">
+                <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg text-2xs text-slate-600 dark:text-slate-400 print:text-slate-700 space-y-1 border border-slate-200 dark:border-slate-800 print:border-slate-300">
                   <strong className="print:text-slate-900 text-slate-900 dark:text-white">
                     ডেলিভারির নিয়মাবলী ও শর্তসমূহ (Terms of Delivery):
                   </strong>
@@ -465,15 +465,15 @@ export default function DeliveryChallanDetailPage() {
                 {/* Due / Payment Verification Block */}
                 <div className="p-3 bg-slate-50 dark:bg-slate-900 print:bg-slate-50 rounded-lg border border-slate-200 dark:border-slate-800 print:border-slate-300 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-[11px] uppercase tracking-wider text-slate-500 print:text-slate-700">
+                    <span className="font-bold text-2xs uppercase tracking-wider text-slate-500 print:text-slate-700">
                       পেমেন্ট / বিল হিসাব (Payment Status):
                     </span>
                     {calculatedDue > 0 ? (
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                      <span className="text-2xs font-black px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                         বকেয়া বাকি আছে (DUE ON DELIVERY)
                       </span>
                     ) : (
-                      <span className="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                      <span className="text-2xs font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
                         সম্পূর্ণ পরিশোধিত (PAID IN FULL)
                       </span>
                     )}
@@ -485,7 +485,7 @@ export default function DeliveryChallanDetailPage() {
                     </strong>
                   </div>
                   {copyMeta.key === 'office' && (
-                    <div className="pt-2 text-[10px] text-slate-500 print:text-slate-700 space-y-1 border-t border-dashed border-slate-300">
+                    <div className="pt-2 text-2xs text-slate-500 print:text-slate-700 space-y-1 border-t border-dashed border-slate-300">
                       <div>[ ] নগদ টাকা আদায় করা হয়েছে (MR No: _________)</div>
                       <div>[ ] বিকাশ/নগদ/ব্যাংক ট্রান্সফার ভেরিফাইড (Trx ID: _________)</div>
                     </div>
@@ -496,38 +496,38 @@ export default function DeliveryChallanDetailPage() {
               {/* 3-Party Signatures Block */}
               <div className="pt-10 grid grid-cols-3 gap-4 text-xs page-break-inside-avoid print-avoid-break">
                 <div className="text-center space-y-1.5">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-[11px]">
+                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">
                     {(challan as any).dispatched_by_name || (challan as any).created_by_name || 'Warehouse In-charge'}
                   </div>
                   <div className="border-t border-slate-400 pt-1 font-bold print:text-slate-900">
                     প্রেরকের স্বাক্ষর
-                    <div className="text-[10px] font-normal text-slate-500 print:text-slate-600">(Dispatched By)</div>
+                    <div className="text-2xs font-normal text-slate-500 print:text-slate-600">(Dispatched By)</div>
                   </div>
                 </div>
 
                 <div className="text-center space-y-1.5">
-                  <div className="font-mono text-slate-400 print:text-slate-600 text-[11px]">
+                  <div className="font-mono text-slate-400 print:text-slate-600 text-2xs">
                     {challan.delivery_person_name || 'Driver / Carrier'}
                   </div>
                   <div className="border-t border-slate-400 pt-1 font-bold print:text-slate-900">
                     বাহকের স্বাক্ষর
-                    <div className="text-[10px] font-normal text-slate-500 print:text-slate-600">(Carried By / Driver)</div>
+                    <div className="text-2xs font-normal text-slate-500 print:text-slate-600">(Carried By / Driver)</div>
                   </div>
                 </div>
 
                 <div className="text-center space-y-1.5">
                   {challan.receiver_signature ? (
-                    <div className="font-mono text-emerald-600 print:text-emerald-800 font-bold text-[11px]">
+                    <div className="font-mono text-emerald-600 print:text-emerald-800 font-bold text-2xs">
                       Signed: {challan.receiver_signature} ({challan.receiver_name})
                     </div>
                   ) : (
-                    <div className="font-mono text-slate-400 print:text-slate-600 italic text-[11px]">
+                    <div className="font-mono text-slate-400 print:text-slate-600 italic text-2xs">
                       সিল ও স্বাক্ষর (Seal & Sign)
                     </div>
                   )}
                   <div className="border-t border-slate-400 pt-1 font-bold print:text-slate-900">
                     গ্রহীতার স্বাক্ষর ও সিল
-                    <div className="text-[10px] font-normal text-slate-500 print:text-slate-600">(Received in Good Condition)</div>
+                    <div className="text-2xs font-normal text-slate-500 print:text-slate-600">(Received in Good Condition)</div>
                   </div>
                 </div>
               </div>

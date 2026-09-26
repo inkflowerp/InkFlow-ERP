@@ -61,7 +61,7 @@ export function ProductionTaskTable({
     switch (status) {
       case 'in_progress':
         return (
-          <Badge className="bg-blue-600 text-white text-[10px] font-bold gap-1 animate-pulse">
+          <Badge className="bg-blue-600 text-white text-2xs font-bold gap-1 animate-pulse">
             <span className="h-1.5 w-1.5 rounded-full bg-white" />
             <span>{isBn ? 'মেশিনে চলমান' : 'Running'}</span>
           </Badge>
@@ -69,26 +69,26 @@ export function ProductionTaskTable({
       case 'ready':
       case 'scheduled':
         return (
-          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 text-[10px] font-bold">
+          <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold">
             {isBn ? 'শিডিউল্ড' : 'Scheduled'}
           </Badge>
         )
       case 'on_hold':
         return (
-          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold gap-1">
+          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold gap-1">
             <AlertTriangle className="h-3 w-3 text-amber-600" />
             <span>{isBn ? 'স্থগিতাদেশ' : 'On Hold'}</span>
           </Badge>
         )
       case 'rework':
         return (
-          <Badge className="bg-rose-600 text-white text-[10px] font-bold">
+          <Badge className="bg-rose-600 text-white text-2xs font-bold">
             {isBn ? 'রি-ওয়ার্ক' : 'Rework'}
           </Badge>
         )
       case 'completed':
         return (
-          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold gap-1">
+          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold gap-1">
             <CheckCircle2 className="h-3 w-3 text-emerald-600" />
             <span>{isBn ? 'সম্পন্ন' : 'Completed'}</span>
           </Badge>
@@ -96,7 +96,7 @@ export function ProductionTaskTable({
       case 'queued':
       default:
         return (
-          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 text-[10px]">
+          <Badge variant="outline" className="bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-300 text-2xs">
             {isBn ? 'কিউ' : 'Queued'}
           </Badge>
         )
@@ -142,11 +142,11 @@ export function ProductionTaskTable({
                     <div className="font-mono font-bold text-blue-600 dark:text-blue-400">
                       {task.task_number}
                     </div>
-                    <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+                    <div className="font-mono text-2xs text-slate-400 mt-0.5">
                       Job: {task.job_number || 'N/A'}
                     </div>
                     {task.priority === 'urgent' && (
-                      <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[9px] font-black bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 mt-1">
+                      <span className="inline-flex items-center px-1.5 py-0.2 rounded text-2xs font-black bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 mt-1">
                         URGENT
                       </span>
                     )}
@@ -157,7 +157,7 @@ export function ProductionTaskTable({
                     <div className="font-bold text-slate-900 dark:text-white">
                       {task.task_name}
                     </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5">
+                    <div className="text-2xs text-slate-500 mt-0.5">
                       {task.customer_name || 'Direct Client'} • Qty: <strong>{task.quantity} {task.unit || 'pcs'}</strong>
                     </div>
                   </td>
@@ -167,7 +167,7 @@ export function ProductionTaskTable({
                     <div className="font-semibold text-slate-800 dark:text-slate-200 capitalize">
                       {task.department}
                     </div>
-                    <div className="text-[11px] text-blue-600 dark:text-blue-400 font-mono mt-0.5 flex items-center gap-1">
+                    <div className="text-2xs text-blue-600 dark:text-blue-400 font-mono mt-0.5 flex items-center gap-1">
                       <Cpu className="h-3 w-3 text-slate-400" />
                       <span>{task.assigned_machine_name || 'Floor Bench'}</span>
                     </div>
@@ -183,7 +183,7 @@ export function ProductionTaskTable({
                     ) : (
                       <span className="text-slate-400">—</span>
                     )}
-                    <div className="text-[10px] text-slate-500 font-sans truncate max-w-[140px] mt-0.5">
+                    <div className="text-2xs text-slate-500 font-sans truncate max-w-[140px] mt-0.5">
                       {task.required_material || 'Press Substrate'}
                     </div>
                   </td>
@@ -225,7 +225,7 @@ export function ProductionTaskTable({
                             size="sm"
                             variant="outline"
                             onClick={() => onPause(task)}
-                            className="h-7 text-[11px] px-2 border-amber-300 text-amber-800 hover:bg-amber-50"
+                            className="h-7 text-2xs px-2 border-amber-300 text-amber-800 hover:bg-amber-50"
                           >
                             <Pause className="h-3 w-3 mr-1" />
                             {isBn ? 'পজ' : 'Pause'}
@@ -233,7 +233,7 @@ export function ProductionTaskTable({
                           <Button
                             size="sm"
                             onClick={() => onComplete(task)}
-                            className="h-7 text-[11px] px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
+                            className="h-7 text-2xs px-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
                           >
                             <CheckCircle2 className="h-3 w-3 mr-1" />
                             {isBn ? 'সম্পন্ন' : 'Done'}
@@ -244,7 +244,7 @@ export function ProductionTaskTable({
                           size="sm"
                           variant="outline"
                           onClick={() => onResume(task)}
-                          className="h-7 text-[11px] px-2 border-emerald-300 text-emerald-800 hover:bg-emerald-50"
+                          className="h-7 text-2xs px-2 border-emerald-300 text-emerald-800 hover:bg-emerald-50"
                         >
                           <Play className="h-3 w-3 mr-1" />
                           {isBn ? 'রিজিউম' : 'Resume'}
@@ -253,13 +253,13 @@ export function ProductionTaskTable({
                         <Button
                           size="sm"
                           onClick={() => onStart(task)}
-                          className="h-7 text-[11px] px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold"
+                          className="h-7 text-2xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold"
                         >
                           <Play className="h-3 w-3 mr-1" />
                           {isBn ? 'স্টার্ট' : 'Start'}
                         </Button>
                       ) : (
-                        <span className="text-[11px] text-emerald-600 font-bold">
+                        <span className="text-2xs text-emerald-600 font-bold">
                           ✓ Complete
                         </span>
                       )}
@@ -292,11 +292,11 @@ export function ProductionTaskTable({
 
             <div className="grid grid-cols-2 gap-2 p-2 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800 font-mono">
               <div>
-                <span className="text-[10px] text-slate-400 block font-sans">Machine</span>
+                <span className="text-2xs text-slate-400 block font-sans">Machine</span>
                 <strong>{task.assigned_machine_name || 'Floor Bench'}</strong>
               </div>
               <div>
-                <span className="text-[10px] text-slate-400 block font-sans">Substrate</span>
+                <span className="text-2xs text-slate-400 block font-sans">Substrate</span>
                 <span className="truncate block">{task.required_material || 'Standard'}</span>
               </div>
             </div>

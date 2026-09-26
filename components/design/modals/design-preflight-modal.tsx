@@ -111,7 +111,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 </div>
                 <div>
                   <div className="font-bold text-xs">Color Mode: CMYK Process</div>
-                  <div className="text-[10px] opacity-80">RGB কালার শিফট এড়াতে CMYK নিশ্চিত</div>
+                  <div className="text-2xs opacity-80">RGB কালার শিফট এড়াতে CMYK নিশ্চিত</div>
                 </div>
               </div>
 
@@ -133,7 +133,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 </div>
                 <div>
                   <div className="font-bold text-xs">Resolution: ≥ 300 DPI High-Res</div>
-                  <div className="text-[10px] opacity-80">ফাটা/ব্লার ছবি বাদ দিয়ে হাই-রেজ আর্টওয়ার্ক</div>
+                  <div className="text-2xs opacity-80">ফাটা/ব্লার ছবি বাদ দিয়ে হাই-রেজ আর্টওয়ার্ক</div>
                 </div>
               </div>
 
@@ -155,7 +155,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 </div>
                 <div>
                   <div className="font-bold text-xs">Bleed: 3mm / 2.0&quot; Margins</div>
-                  <div className="text-[10px] opacity-80">কাটিং ও ফ্রেমিং মার্জিন সংরক্ষিত</div>
+                  <div className="text-2xs opacity-80">কাটিং ও ফ্রেমিং মার্জিন সংরক্ষিত</div>
                 </div>
               </div>
 
@@ -177,7 +177,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
                 </div>
                 <div>
                   <div className="font-bold text-xs">Fonts: Converted to Outlines/Curves</div>
-                  <div className="text-[10px] opacity-80">ফন্ট মিসিং সমস্যা এড়াতে কার্ভ করা হয়েছে</div>
+                  <div className="text-2xs opacity-80">ফন্ট মিসিং সমস্যা এড়াতে কার্ভ করা হয়েছে</div>
                 </div>
               </div>
             </div>
@@ -207,7 +207,7 @@ export const DesignPreflightModal = React.memo(function DesignPreflightModal({
               ))}
             </select>
             {selectedMachineObj && (
-              <div className="text-[11px] text-slate-500 bg-slate-100 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
+              <div className="text-2xs text-slate-500 bg-slate-100 dark:bg-slate-800 p-2 rounded border border-slate-200 dark:border-slate-700">
                 <span className="font-bold text-slate-700 dark:text-slate-300">স্পেসিফিকেশন:</span> {selectedMachineObj.specs} | <span className="font-bold text-slate-700 dark:text-slate-300">ফ্লোর:</span> {selectedMachineObj.location}
               </div>
             )}

@@ -300,7 +300,7 @@ export function AssignMachineryModal({
             <Info className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="font-bold">Manual / Outsourced Production Step</p>
-              <p className="text-[11px] opacity-90">
+              <p className="text-2xs opacity-90">
                 This task does not require physical machinery fleet allocation. You can proceed with
                 manual team scheduling or outsourced service tracking.
               </p>
@@ -328,7 +328,7 @@ export function AssignMachineryModal({
                       ? 'Smart Preselection:'
                       : 'Notice:'}
                   </p>
-                  <p className="text-[11px]">
+                  <p className="text-2xs">
                     {eligibilitySummary.singleMachineNotice.message}
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export function AssignMachineryModal({
             {eligibilitySummary && eligibilitySummary.totalFleetCount === 0 && (
               <div className="p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-400">
                 <p className="font-bold text-slate-800 dark:text-slate-200">No registered machinery</p>
-                <p className="text-[11px] mt-0.5">
+                <p className="text-2xs mt-0.5">
                   Your company currently operates with 0 machines registered. Work orders will continue seamlessly as manual fabrication or outsourced workflows.
                 </p>
               </div>

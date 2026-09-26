@@ -71,7 +71,7 @@ export default function PlatformDashboardPage() {
       {/* 5.1 HEADER */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 border-b border-slate-800/80 pb-4 sm:pb-6">
         <div>
-          <div className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-2xs sm:text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             Platform Control Center • Bangladesh SaaS
           </div>
@@ -92,7 +92,7 @@ export default function PlatformDashboardPage() {
                 key={r}
                 type="button"
                 onClick={() => setDateRange(r)}
-                className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer text-[11px] sm:text-xs ${
+                className={`px-2.5 py-1 rounded-lg font-semibold uppercase tracking-wider transition-colors cursor-pointer text-2xs sm:text-xs ${
                   dateRange === r ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-400 hover:text-white'
                 }`}
               >
@@ -129,11 +129,11 @@ export default function PlatformDashboardPage() {
               Needs Attention
             </h2>
             {data.needs_attention.length > 0 ? (
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
+              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30">
                 {data.needs_attention.length} Actionable
               </span>
             ) : (
-              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 0 Issues
               </span>
             )}
@@ -146,7 +146,7 @@ export default function PlatformDashboardPage() {
             <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
             <div>
               <div className="font-bold">✓ Everything is operating normally.</div>
-              <div className="text-emerald-400/80 text-[11px]">All tenant subscriptions are current and system health is optimal.</div>
+              <div className="text-emerald-400/80 text-2xs">All tenant subscriptions are current and system health is optimal.</div>
             </div>
           </div>
         ) : (
@@ -169,7 +169,7 @@ export default function PlatformDashboardPage() {
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <span
-                        className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md border ${
+                        className={`text-2xs font-mono font-bold uppercase px-2 py-0.5 rounded-md border ${
                           isCrit
                             ? 'bg-red-500/20 text-red-300 border-red-500/40'
                             : isWarn
@@ -179,7 +179,7 @@ export default function PlatformDashboardPage() {
                       >
                         {item.severity}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono">{item.timestamp}</span>
+                      <span className="text-2xs text-slate-400 font-mono">{item.timestamp}</span>
                     </div>
 
                     <div className="font-bold text-sm text-white">{item.title}</div>
@@ -188,7 +188,7 @@ export default function PlatformDashboardPage() {
                         {item.tenant_name ? `Tenant: ${item.tenant_name}` : `System: ${item.system_name}`}
                       </div>
                     )}
-                    <p className="text-[11px] text-slate-400 leading-relaxed">{item.reason}</p>
+                    <p className="text-2xs text-slate-400 leading-relaxed">{item.reason}</p>
                   </div>
 
                   <Link
@@ -218,58 +218,58 @@ export default function PlatformDashboardPage() {
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Active Companies</span>
               <Building2 className="h-3.5 w-3.5 text-indigo-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.active_companies}</div>
-            <div className="text-[10px] text-emerald-400 mt-1 font-semibold flex items-center gap-0.5">
+            <div className="text-2xs text-emerald-400 mt-1 font-semibold flex items-center gap-0.5">
               <ArrowUpRight className="h-3 w-3" /> of {data.total_companies} total
             </div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Monthly Recurring</span>
               <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">
               <CurrencyDisplay amount={data.revenue_mrr} />
             </div>
-            <div className="text-[10px] text-slate-400 mt-1">
+            <div className="text-2xs text-slate-400 mt-1">
               ARR: <CurrencyDisplay amount={data.revenue_arr} />
             </div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Free Trials</span>
               <Clock className="h-3.5 w-3.5 text-cyan-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.trial_companies}</div>
-            <div className="text-[10px] text-cyan-400 mt-1 font-semibold">Active trials</div>
+            <div className="text-2xs text-cyan-400 mt-1 font-semibold">Active trials</div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Past Due / Risk</span>
               <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             </div>
             <div className="text-2xl font-black text-amber-400 mt-1.5">{data.past_due_companies}</div>
-            <div className="text-[10px] text-amber-400 mt-1">Renewal failed</div>
+            <div className="text-2xs text-amber-400 mt-1">Renewal failed</div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Orders Processed</span>
               <Layers className="h-3.5 w-3.5 text-purple-400" />
             </div>
             <div className="text-2xl font-black text-white mt-1.5">{data.orders_count.toLocaleString()}</div>
-            <div className="text-[10px] text-purple-400 mt-1">Live this month</div>
+            <div className="text-2xs text-purple-400 mt-1">Live this month</div>
           </Card>
 
           <Card className="bg-slate-900/90 border-slate-800 p-4">
-            <div className="text-[11px] font-semibold text-slate-400 flex items-center justify-between">
+            <div className="text-2xs font-semibold text-slate-400 flex items-center justify-between">
               <span>Cloud Storage</span>
               <HardDrive className="h-3.5 w-3.5 text-pink-400" />
             </div>
@@ -278,7 +278,7 @@ export default function PlatformDashboardPage() {
                 ? `${data.storage_used_gb.toFixed(2)} GB`
                 : `${data.storage_used_mb || (data.storage_used_gb * 1024).toFixed(1)} MB`}
             </div>
-            <div className="text-[10px] text-pink-400 mt-1 font-semibold">
+            <div className="text-2xs text-pink-400 mt-1 font-semibold">
               {data.storage_total_gb > 0
                 ? `${((data.storage_used_gb / data.storage_total_gb) * 100).toFixed(1)}% of ${
                     data.storage_total_gb >= 1000
@@ -323,7 +323,7 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.healthy ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-400">Good standing</div>
+                <div className="text-2xs text-slate-400">Good standing</div>
               </Link>
 
               <Link
@@ -334,7 +334,7 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-amber-300 mt-1">
                   {data.company_health_breakdown?.at_risk ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-400">Near limits/slow</div>
+                <div className="text-2xs text-slate-400">Near limits/slow</div>
               </Link>
 
               <Link
@@ -345,7 +345,7 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-red-300 mt-1">
                   {data.company_health_breakdown?.critical ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-400">Delinquent</div>
+                <div className="text-2xs text-slate-400">Delinquent</div>
               </Link>
 
               <Link
@@ -356,11 +356,11 @@ export default function PlatformDashboardPage() {
                 <div className="text-2xl font-black text-white mt-1">
                   {data.company_health_breakdown?.suspended ?? 0}
                 </div>
-                <div className="text-[10px] text-slate-500">Access locked</div>
+                <div className="text-2xs text-slate-500">Access locked</div>
               </Link>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-2xs text-slate-400 flex items-center justify-between">
               <span>Platform Health Engine evaluates subscription, storage %, recent errors, and meaningful activity.</span>
               <Link href="/platform/customer-success" className="text-indigo-400 hover:underline font-semibold shrink-0 ml-2">
                 Customer Success →
@@ -398,7 +398,7 @@ export default function PlatformDashboardPage() {
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="font-bold text-white">{tier.plan_name}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
+                    <span className="text-2xs font-mono px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 uppercase">
                       {tier.plan_code}
                     </span>
                   </div>
@@ -484,8 +484,8 @@ export default function PlatformDashboardPage() {
                 className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1 hover:border-slate-700 transition-colors"
                 title={svc.notes || `${svc.name}: ${label}`}
               >
-                <div className="text-[11px] font-bold text-slate-300 truncate" title={svc.name}>{svc.name}</div>
-                <div className={`text-[10px] font-semibold flex items-center justify-center gap-1 ${color}`}>
+                <div className="text-2xs font-bold text-slate-300 truncate" title={svc.name}>{svc.name}</div>
+                <div className={`text-2xs font-semibold flex items-center justify-center gap-1 ${color}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${dotBg}`} />
                   <span className="truncate">{label}</span>
                 </div>
@@ -525,16 +525,16 @@ export default function PlatformDashboardPage() {
                     <span className="text-slate-500">•</span>
                     <span className="font-semibold text-white">{act.target_company_name || act.entity_type || 'Platform'}</span>
                   </div>
-                  <div className="text-[11px] text-slate-400">
+                  <div className="text-2xs text-slate-400">
                     {act.reason || act.details?.description || act.details?.note || (typeof act.details === 'object' && Object.keys(act.details).length > 0 ? JSON.stringify(act.details).slice(0, 80) : 'Administrative action executed')}
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <div className="font-mono text-[11px] text-slate-400">
+                  <div className="font-mono text-2xs text-slate-400">
                     {formatTime(act.created_at)}
                   </div>
-                  <div className="text-[10px] text-slate-500">{act.actor_email}</div>
+                  <div className="text-2xs text-slate-500">{act.actor_email}</div>
                 </div>
               </div>
             ))

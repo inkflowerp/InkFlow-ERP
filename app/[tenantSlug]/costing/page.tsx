@@ -912,14 +912,14 @@ export default function JobCostingPage() {
               <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
                 {tBilingual('Average Realized Margin', 'গড় অর্জিত মার্জিন')}
               </span>
-              <span className="text-[10px] font-black px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900">
+              <span className="text-2xs font-black px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900">
                 Target &gt; 25%
               </span>
             </div>
             <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
               {isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
             </div>
-            <span className="text-[11px] text-emerald-600 font-medium">
+            <span className="text-2xs text-emerald-600 font-medium">
               Across {completedJobs.length} completed production runs
             </span>
           </Card>
@@ -930,14 +930,14 @@ export default function JobCostingPage() {
             <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
               {isSalesRoleShielded ? '৳ ••••••' : <CurrencyDisplay amount={totalActualProfit} />}
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Total Billed: {formatBDT(totalRevenue)}</span>
+            <span className="text-2xs text-slate-400 font-mono">Total Billed: {formatBDT(totalRevenue)}</span>
           </Card>
 
           {/* Cost Overruns Alert */}
           <Card className="p-4 border-l-4 border-l-amber-500 rounded-2xl shadow-xs">
             <span className="text-xs font-semibold text-slate-500">{tBilingual('Budget Overruns', 'বাজেট অতিরিক্ত ব্যয়')}</span>
             <div className="text-2xl font-black text-amber-600 mt-1 font-mono">{overrunJobsCount} Jobs</div>
-            <span className="text-[11px] text-amber-600 font-medium">Transport/Labor overtime exceeded</span>
+            <span className="text-2xs text-amber-600 font-medium">Transport/Labor overtime exceeded</span>
           </Card>
 
           {/* Material & Nesting Savings */}
@@ -946,7 +946,7 @@ export default function JobCostingPage() {
             <div className="text-2xl font-black text-purple-600 mt-1 font-mono">
               {isSalesRoleShielded ? '৳ ••••••' : formatBDT(totalSavings)}
             </div>
-            <span className="text-[11px] text-purple-600 font-medium">Favorable gang-run nesting</span>
+            <span className="text-2xs text-purple-600 font-medium">Favorable gang-run nesting</span>
           </Card>
         </div>
 
@@ -960,7 +960,7 @@ export default function JobCostingPage() {
                 Factory internal substrate purchase rates, machine electricity costs, and raw margin % are hidden.
               </span>
             </div>
-            <span className="font-mono text-[10px] uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
+            <span className="font-mono text-2xs uppercase font-bold bg-amber-200 text-amber-900 px-2 py-0.5 rounded shrink-0 self-start sm:self-auto">
               Role: Sales Executive
             </span>
           </div>
@@ -1072,7 +1072,7 @@ export default function JobCostingPage() {
                         <div className="font-medium text-slate-700 dark:text-slate-300 max-w-[220px] truncate">
                           {cst.item_title}
                         </div>
-                        <div className="text-[10px] font-mono text-slate-400 max-w-[220px] truncate">{cst.dimensions_spec}</div>
+                        <div className="text-2xs font-mono text-slate-400 max-w-[220px] truncate">{cst.dimensions_spec}</div>
                       </td>
 
                       {/* Selling Price */}
@@ -1099,12 +1099,12 @@ export default function JobCostingPage() {
                       {/* Realized Margin */}
                       <td className="py-3.5 px-4 text-center font-mono">
                         {isSalesRoleShielded ? (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600">
+                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-600">
                             Shielded
                           </span>
                         ) : cst.status === 'actualized' ? (
                           <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-black ${
+                            className={`inline-flex items-center px-2 py-0.5 rounded text-2xs font-black ${
                               cst.act.margin_percentage >= 25
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                                 : cst.act.margin_percentage >= 15
@@ -1115,30 +1115,30 @@ export default function JobCostingPage() {
                             {cst.act.margin_percentage}%
                           </span>
                         ) : (
-                          <span className="text-slate-400 text-[10px]">Est: {cst.est.margin_percentage}%</span>
+                          <span className="text-slate-400 text-2xs">Est: {cst.est.margin_percentage}%</span>
                         )}
                       </td>
 
                       {/* Variance Status */}
                       <td className="py-3.5 px-4">
                         {isSalesRoleShielded ? (
-                          <span className="text-[10px] text-slate-400 font-mono">Active</span>
+                          <span className="text-2xs text-slate-400 font-mono">Active</span>
                         ) : cst.status === 'actualized' ? (
                           (cst.variances?.total_variance || 0) < 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
                               <TrendingDown className="h-3 w-3 text-emerald-600" />
                               Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                             </span>
                           ) : (cst.variances?.total_variance || 0) > 0 ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
+                            <span className="inline-flex items-center gap-1 text-2xs font-bold text-red-700 bg-red-50 px-2 py-0.5 rounded-lg border border-red-200">
                               <TrendingUp className="h-3 w-3 text-red-600" />
                               Overrun +{formatBDT(cst.variances.total_variance)}
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-500 font-mono">On Budget</span>
+                            <span className="text-2xs text-slate-500 font-mono">On Budget</span>
                           )
                         ) : (
-                          <span className="text-[10px] text-blue-600 font-mono font-medium">In Production</span>
+                          <span className="text-2xs text-blue-600 font-mono font-medium">In Production</span>
                         )}
                       </td>
 
@@ -1152,7 +1152,7 @@ export default function JobCostingPage() {
                               setNegotiatingJob(cst)
                               setDiscountPercent(5)
                             }}
-                            className="h-7 text-[11px] px-2 text-slate-700 dark:text-slate-300 border-slate-300 hover:bg-slate-50 rounded-lg"
+                            className="h-7 text-2xs px-2 text-slate-700 dark:text-slate-300 border-slate-300 hover:bg-slate-50 rounded-lg"
                           >
                             Negotiate
                           </Button>
@@ -1175,7 +1175,7 @@ export default function JobCostingPage() {
                                   other_cost: cst.act?.other_cost || cst.est.other_cost,
                                 })
                               }}
-                              className="h-7 text-[11px] px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg"
+                              className="h-7 text-2xs px-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg"
                             >
                               Actuals
                             </Button>
@@ -1223,12 +1223,12 @@ export default function JobCostingPage() {
                         {formatBDT(cst.selling_price)}
                       </div>
                       {isSalesRoleShielded ? (
-                        <span className="px-2 py-0.5 rounded text-[9px] font-bold bg-slate-100 text-slate-600">
+                        <span className="px-2 py-0.5 rounded text-2xs font-bold bg-slate-100 text-slate-600">
                           Shielded
                         </span>
                       ) : cst.status === 'actualized' ? (
                         <span
-                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-black ${
+                          className={`inline-flex items-center px-1.5 py-0.5 rounded text-2xs font-black ${
                             cst.act.margin_percentage >= 25
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
                               : cst.act.margin_percentage >= 15
@@ -1239,20 +1239,20 @@ export default function JobCostingPage() {
                           {cst.act.margin_percentage}% Margin
                         </span>
                       ) : (
-                        <span className="text-slate-400 text-[10px]">Est: {cst.est.margin_percentage}%</span>
+                        <span className="text-slate-400 text-2xs">Est: {cst.est.margin_percentage}%</span>
                       )}
                     </div>
                   </div>
 
                   <div className="text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/50 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/60">
                     <div className="font-medium text-slate-800 dark:text-slate-200">{cst.item_title}</div>
-                    <div className="text-[11px] font-mono text-slate-400 mt-0.5">{cst.dimensions_spec}</div>
+                    <div className="text-2xs font-mono text-slate-400 mt-0.5">{cst.dimensions_spec}</div>
                   </div>
 
                   {/* Costs & Variance Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-400 block uppercase">Est vs Act Cost</span>
+                      <span className="text-2xs text-slate-400 block uppercase">Est vs Act Cost</span>
                       <span className="font-mono font-semibold">
                         {isSalesRoleShielded
                           ? '••••••'
@@ -1260,23 +1260,23 @@ export default function JobCostingPage() {
                       </span>
                     </div>
                     <div className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800">
-                      <span className="text-[10px] text-slate-400 block uppercase">Variance</span>
+                      <span className="text-2xs text-slate-400 block uppercase">Variance</span>
                       {isSalesRoleShielded ? (
                         <span className="font-mono text-slate-400">••••</span>
                       ) : cst.status === 'actualized' ? (
                         (cst.variances?.total_variance || 0) < 0 ? (
-                          <span className="text-[11px] font-bold text-emerald-600 font-mono">
+                          <span className="text-2xs font-bold text-emerald-600 font-mono">
                             Saved {formatBDT(Math.abs(cst.variances?.total_variance || 0))}
                           </span>
                         ) : (cst.variances?.total_variance || 0) > 0 ? (
-                          <span className="text-[11px] font-bold text-red-600 font-mono">
+                          <span className="text-2xs font-bold text-red-600 font-mono">
                             +{formatBDT(cst.variances.total_variance)}
                           </span>
                         ) : (
-                          <span className="text-[11px] text-slate-500 font-mono">On Budget</span>
+                          <span className="text-2xs text-slate-500 font-mono">On Budget</span>
                         )
                       ) : (
-                        <span className="text-[11px] text-blue-600 font-mono">In Prod</span>
+                        <span className="text-2xs text-blue-600 font-mono">In Prod</span>
                       )}
                     </div>
                   </div>
@@ -1361,7 +1361,7 @@ export default function JobCostingPage() {
                     className="text-left p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-xs transition-colors"
                   >
                     <div className="font-semibold text-slate-800 dark:text-slate-200">{tBilingual(p.nameEn, p.nameBn || p.nameEn)}</div>
-                    <div className="text-[10px] text-slate-500 font-mono mt-0.5">Preset Ref: {formatBDT(p.selling)}</div>
+                    <div className="text-2xs text-slate-500 font-mono mt-0.5">Preset Ref: {formatBDT(p.selling)}</div>
                   </button>
                 ))}
               </div>
@@ -1437,7 +1437,7 @@ export default function JobCostingPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">1. Substrate (মিডিয়া/বোর্ড)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">1. Substrate (মিডিয়া/বোর্ড)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1448,7 +1448,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">2. Ink (কালি/ইঙ্ক)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">2. Ink (কালি/ইঙ্ক)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1459,7 +1459,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">3. Machine Power (বিদ্যুৎ)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">3. Machine Power (বিদ্যুৎ)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1470,7 +1470,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">4. Finishing (ল্যামিনেশন)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">4. Finishing (ল্যামিনেশন)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1481,7 +1481,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">5. Labor (মজুরি/অপারেটর)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">5. Labor (মজুরি/অপারেটর)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1492,7 +1492,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">6. Fabrication (ওয়েল্ডিং)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">6. Fabrication (ওয়েল্ডিং)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1503,7 +1503,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">7. Installation (ফিটিং/ক্রেন)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">7. Installation (ফিটিং/ক্রেন)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1514,7 +1514,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">8. Transport (ভ্যান/সিএনজি)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">8. Transport (ভ্যান/সিএনজি)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1525,7 +1525,7 @@ export default function JobCostingPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[11px] text-slate-600 dark:text-slate-400 block truncate">9. Other (প্যাকেজিং/বাফার)</span>
+                  <span className="text-2xs text-slate-600 dark:text-slate-400 block truncate">9. Other (প্যাকেজিং/বাফার)</span>
                   <Input
                     type="number"
                     min="0"
@@ -1747,7 +1747,7 @@ export default function JobCostingPage() {
               {/* 9-Head Actuals Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs">
                 <div className="space-y-1">
-                  <Label className="text-[11px]">1. Material (মিডিয়া)</Label>
+                  <Label className="text-2xs">1. Material (মিডিয়া)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1756,11 +1756,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.material_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.material_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">2. Ink (কালি)</Label>
+                  <Label className="text-2xs">2. Ink (কালি)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1769,11 +1769,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.ink_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">3. Machine Power</Label>
+                  <Label className="text-2xs">3. Machine Power</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1782,11 +1782,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.machine_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">4. Finishing (ল্যামিনেশন)</Label>
+                  <Label className="text-2xs">4. Finishing (ল্যামিনেশন)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1795,11 +1795,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.finishing_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">5. Labor (মজুরি)</Label>
+                  <Label className="text-2xs">5. Labor (মজুরি)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1808,11 +1808,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.labor_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">6. Fabrication (ওয়েল্ডিং)</Label>
+                  <Label className="text-2xs">6. Fabrication (ওয়েল্ডিং)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1821,11 +1821,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.fabrication_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">7. Installation (ফিটিং)</Label>
+                  <Label className="text-2xs">7. Installation (ফিটিং)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1834,11 +1834,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.installation_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">8. Transport (পরিবহন)</Label>
+                  <Label className="text-2xs">8. Transport (পরিবহন)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1847,11 +1847,11 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.transport_cost)}</span>
                 </div>
 
                 <div className="space-y-1">
-                  <Label className="text-[11px]">9. Other (অন্যান্য)</Label>
+                  <Label className="text-2xs">9. Other (অন্যান্য)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1860,7 +1860,7 @@ export default function JobCostingPage() {
                     className="h-7 text-xs font-mono"
                     required
                   />
-                  <span className="text-[10px] text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.other_cost)}</span>
+                  <span className="text-2xs text-slate-400 font-mono block">Est: {formatBDT(editingJob.est.other_cost)}</span>
                 </div>
               </div>
 

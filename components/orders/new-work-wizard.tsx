@@ -501,7 +501,7 @@ export function NewWorkWizard({
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-emerald-900 dark:text-emerald-100">{selectedCustomer.name}</span>
-                      <Badge className="bg-emerald-600 text-white text-[10px]">{tBilingual('Selected', 'নির্বাচিত')}</Badge>
+                      <Badge className="bg-emerald-600 text-white text-2xs">{tBilingual('Selected', 'নির্বাচিত')}</Badge>
                     </div>
                     <p className="text-xs text-emerald-700 dark:text-emerald-300 font-mono flex items-center gap-2">
                       <span>📞 {(selectedCustomer as any).phone || selectedCustomer.mobile}</span>
@@ -552,15 +552,15 @@ export function NewWorkWizard({
                     >
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">{(c as any).phone || c.mobile}</div>
+                        <div className="text-2xs text-slate-500 font-mono">{(c as any).phone || c.mobile}</div>
                       </div>
                       <div className="text-right">
                         {(c as any).current_balance && Number((c as any).current_balance) > 0 ? (
-                          <div className="text-rose-600 text-[11px] font-bold">
+                          <div className="text-rose-600 text-2xs font-bold">
                             বাকি: ৳{Number((c as any).current_balance).toLocaleString()}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-emerald-600 font-medium">ক্লিয়ার</span>
+                          <span className="text-2xs text-emerald-600 font-medium">ক্লিয়ার</span>
                         )}
                       </div>
                     </div>
@@ -600,7 +600,7 @@ export function NewWorkWizard({
                 }`}
               >
                 <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{p.nameBn}</div>
-                <div className="text-[11px] text-slate-500">{p.nameEn}</div>
+                <div className="text-2xs text-slate-500">{p.nameEn}</div>
                 <div className="text-xs font-semibold text-blue-600 dark:text-blue-400">
                   ৳{p.defaultRate}/{p.defaultUnit}
                 </div>
@@ -764,15 +764,15 @@ export function NewWorkWizard({
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                   <div className="space-y-1">
-                    <Label className="text-[11px]">{tBilingual('Target Machine', 'মেশিন বরাদ্দ')}</Label>
+                    <Label className="text-2xs">{tBilingual('Target Machine', 'মেশিন বরাদ্দ')}</Label>
                     <Input value={assignedMachine} onChange={(e) => setAssignedMachine(e.target.value)} className="h-8 text-xs" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px]">{tBilingual('Color Profile', 'কালার প্রোফাইল')}</Label>
+                    <Label className="text-2xs">{tBilingual('Color Profile', 'কালার প্রোফাইল')}</Label>
                     <Input value={colorProfile} onChange={(e) => setColorProfile(e.target.value)} className="h-8 text-xs" />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px]">{tBilingual('Priority', 'জরুরি কিনা')}</Label>
+                    <Label className="text-2xs">{tBilingual('Priority', 'জরুরি কিনা')}</Label>
                     <select
                       value={priority}
                       onChange={(e) => setPriority(e.target.value as any)}
@@ -849,7 +849,7 @@ export function NewWorkWizard({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
+                    <Label className="text-2xs font-semibold">{tBilingual('Advance Amount', 'জমা টাকা')}</Label>
                     <Input
                       type="number"
                       min="0"
@@ -861,7 +861,7 @@ export function NewWorkWizard({
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-semibold">{tBilingual('Payment Channel', 'পেমেন্ট মাধ্যম')}</Label>
+                    <Label className="text-2xs font-semibold">{tBilingual('Payment Channel', 'পেমেন্ট মাধ্যম')}</Label>
                     <select
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value as any)}

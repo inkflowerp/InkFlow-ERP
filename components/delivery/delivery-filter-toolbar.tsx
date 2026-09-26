@@ -146,7 +146,7 @@ export function DeliveryFilterToolbar({
       {/* Secondary Method Filters (For Challans View) */}
       {viewMode === 'challans' && (
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
-          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 shrink-0 mr-1 bangla-text">
+          <span className="text-2xs font-semibold text-slate-400 dark:text-slate-500 shrink-0 mr-1 bangla-text">
             {tBilingual('Method:', 'মাধ্যম:')}
           </span>
           {methodTabs.map((tab) => {

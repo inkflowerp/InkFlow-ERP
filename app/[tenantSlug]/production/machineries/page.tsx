@@ -520,13 +520,13 @@ export default function MachineriesListPage() {
                 {/* Specs / Capacity Bar */}
                 <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-800 text-xs">
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Capacity</span>
+                    <span className="text-slate-400 block text-2xs uppercase font-bold">Capacity</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
                       {m.production_capacity ? `${m.production_capacity} ${m.capacity_unit}` : 'Standard'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 block text-[10px] uppercase font-bold">Dimensions</span>
+                    <span className="text-slate-400 block text-2xs uppercase font-bold">Dimensions</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
                       {m.max_width ? `Max: ${m.max_width}" W` : 'Continuous'}
                     </span>
@@ -540,7 +540,7 @@ export default function MachineriesListPage() {
                       <Disc className="h-3.5 w-3.5 text-indigo-600 shrink-0" />
                       Roll: {m.active_mounted_roll_tag}
                     </span>
-                    <Badge variant="outline" className="text-[10px] bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
+                    <Badge variant="outline" className="text-2xs bg-indigo-100/60 text-indigo-700 border-indigo-300 shrink-0">
                       Mounted
                     </Badge>
                   </div>
@@ -548,7 +548,7 @@ export default function MachineriesListPage() {
 
                 {/* Lifetime Production Meters */}
                 {(Number(m.total_sft_produced || 0) > 0 || Number(m.total_impressions || 0) > 0) && (
-                  <div className="flex items-center justify-between text-[11px] px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 font-mono text-slate-600 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-2xs px-2 py-1 rounded bg-slate-100/60 dark:bg-slate-800/40 font-mono text-slate-600 dark:text-slate-400">
                     <span>Meter:</span>
                     <span className="font-bold text-slate-800 dark:text-slate-200">
                       {m.total_sft_produced ? `${Number(m.total_sft_produced).toLocaleString()} SFT` : `${Number(m.total_impressions).toLocaleString()} Imp`}
@@ -565,7 +565,7 @@ export default function MachineriesListPage() {
                     >
                       ⚡ Active Job: {m.current_assignment.job_order?.job_number || m.current_assignment.production_job?.production_job_number || 'Running'}
                     </Link>
-                    <span className="text-slate-600 dark:text-slate-400 text-[11px] block">
+                    <span className="text-slate-600 dark:text-slate-400 text-2xs block">
                       Operator: {m.current_assignment.operator_name || 'Assigned Operator'}
                     </span>
                   </div>
@@ -577,7 +577,7 @@ export default function MachineriesListPage() {
                   <div className="text-xs text-slate-500 flex items-center justify-between">
                     <span>Location: <strong>{m.location || 'Main Floor'}</strong></span>
                     {m.next_maintenance && (
-                      <span className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                      <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
                         Maint: {new Date(m.next_maintenance.scheduled_date).toLocaleDateString()}
                       </span>
                     )}
@@ -686,9 +686,9 @@ export default function MachineriesListPage() {
                     >
                       {m.name}
                     </Link>
-                    <span className="block font-mono text-[11px] text-slate-500">{m.code}</span>
+                    <span className="block font-mono text-2xs text-slate-500">{m.code}</span>
                     {m.active_mounted_roll_tag && (
-                      <span className="inline-flex items-center gap-1 text-[10px] text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
+                      <span className="inline-flex items-center gap-1 text-2xs text-indigo-700 dark:text-indigo-300 font-bold bg-indigo-50 dark:bg-indigo-950/40 px-1.5 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 mt-1">
                         <Disc className="h-3 w-3" />
                         {m.active_mounted_roll_tag}
                       </span>

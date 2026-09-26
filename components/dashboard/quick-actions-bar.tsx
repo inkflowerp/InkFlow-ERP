@@ -333,7 +333,7 @@ export function QuickActionsBar({
               {tBilingual('Quick Actions', 'দ্রুত তৈরি ও এন্ট্রি')}
             </h2>
           </div>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:inline bangla-text">
+          <span className="text-2xs text-slate-500 dark:text-slate-400 font-medium hidden sm:inline bangla-text">
             {tBilingual('1-click direct creation modals • No page change', '১-ক্লিকে সরাসরি তৈরি করুন • পেজ পরিবর্তনের প্রয়োজন নেই')}
           </span>
         </div>
@@ -361,10 +361,10 @@ export function QuickActionsBar({
 
                 {/* Title & Subtitle */}
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
+                  <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-tight bangla-text break-words">
                     {tBilingual(action.labelEn, action.labelBn)}
                   </div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate bangla-text mt-0.5 leading-tight">
+                  <div className="text-2xs sm:text-2xs text-slate-500 dark:text-slate-400 truncate bangla-text mt-0.5 leading-tight">
                     {tBilingual(action.subEn, action.subBn)}
                   </div>
                 </div>

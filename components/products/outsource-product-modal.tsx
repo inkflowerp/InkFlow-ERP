@@ -583,11 +583,11 @@ export function OutsourceProductModal({
               <span className="text-base font-bold text-slate-900 dark:text-white">
                 {initialData ? `Edit Outsource Product: ${initialData.name}` : 'New Outsource Product'}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800">
                 Non-Inventory Item
               </Badge>
               {sellingPrice !== '' && Number(sellingPrice) > 0 && (
-                <Badge variant="outline" className="text-[10px] font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
+                <Badge variant="outline" className="text-2xs font-mono py-0.5 px-2 bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800">
                   ৳{Number(sellingPrice).toFixed(2)} / {unit}
                 </Badge>
               )}
@@ -713,7 +713,7 @@ export function OutsourceProductModal({
                     required
                   />
                   {fieldErrors.name && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.name}</span>
                     </p>
@@ -872,35 +872,35 @@ export function OutsourceProductModal({
               {/* Live Commercial Margin Bar */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/80">
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
+                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Vendor Cost (Buy)</span>
                   <div className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-0.5">
                     ৳{Number(vendorCost) || 0}
                   </div>
-                  <span className="text-[10px] text-slate-500">per {unit}</span>
+                  <span className="text-2xs text-slate-500">per {unit}</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Selling Price</span>
+                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Selling Price</span>
                   <div className="text-lg font-bold font-mono text-blue-600 mt-0.5">
                     ৳{Number(sellingPrice) || 0}
                   </div>
-                  <span className="text-[10px] text-slate-500">per {unit}</span>
+                  <span className="text-2xs text-slate-500">per {unit}</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Profit</span>
+                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Profit</span>
                   <div className="text-lg font-bold font-mono text-emerald-600 mt-0.5">
                     ৳{marginMetrics.grossProfit}
                   </div>
-                  <span className="text-[10px] text-slate-500">Markup: {marginMetrics.markupPercent}%</span>
+                  <span className="text-2xs text-slate-500">Markup: {marginMetrics.markupPercent}%</span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Margin %</span>
+                  <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-300 tracking-wider block">Gross Margin %</span>
                   <div className="text-lg font-bold font-mono text-emerald-600 mt-0.5">
                     {marginMetrics.grossMarginPercent}%
                   </div>
-                  <span className="text-[10px] text-slate-500">Target: {targetMargin}%</span>
+                  <span className="text-2xs text-slate-500">Target: {targetMargin}%</span>
                 </div>
               </div>
 
@@ -919,7 +919,7 @@ export function OutsourceProductModal({
                     placeholder="e.g. 1800"
                     className="mt-1 h-9 text-xs font-mono font-bold"
                   />
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">Price paid to third-party subcontractor</span>
+                  <span className="text-2xs text-slate-400 mt-0.5 block">Price paid to third-party subcontractor</span>
                 </div>
 
                 <div>
@@ -934,7 +934,7 @@ export function OutsourceProductModal({
                     className="mt-1 h-9 text-xs font-mono font-bold text-purple-600"
                   />
                   {suggestedSellingPrice > 0 && (
-                    <span className="text-[10px] text-purple-600 mt-0.5 block font-semibold">
+                    <span className="text-2xs text-purple-600 mt-0.5 block font-semibold">
                       Suggested: ৳{suggestedSellingPrice} (Click to apply)
                     </span>
                   )}
@@ -961,12 +961,12 @@ export function OutsourceProductModal({
                     required
                   />
                   {fieldErrors.sellingPrice && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.sellingPrice}</span>
                     </p>
                   )}
-                  <span className="text-[10px] text-slate-400 mt-0.5 block">Default selling price billed to clients</span>
+                  <span className="text-2xs text-slate-400 mt-0.5 block">Default selling price billed to clients</span>
                 </div>
               </div>
 
@@ -984,7 +984,7 @@ export function OutsourceProductModal({
                     variant="outline"
                     size="sm"
                     onClick={handleAutoFillTiers}
-                    className="h-7 px-2.5 text-[11px] font-bold text-purple-700 border-purple-200 hover:bg-purple-50 cursor-pointer"
+                    className="h-7 px-2.5 text-2xs font-bold text-purple-700 border-purple-200 hover:bg-purple-50 cursor-pointer"
                   >
                     <Sparkles className="w-3 h-3 mr-1" />
                     Auto-Calculate Tiers
@@ -993,7 +993,7 @@ export function OutsourceProductModal({
 
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
                   <div>
-                    <Label className="text-[11px] font-semibold text-slate-500">Retail Rate (৳)</Label>
+                    <Label className="text-2xs font-semibold text-slate-500">Retail Rate (৳)</Label>
                     <Input
                       type="number"
                       value={priceTiers.retail}
@@ -1004,7 +1004,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-[11px] font-semibold text-slate-500">Corporate (-5%)</Label>
+                    <Label className="text-2xs font-semibold text-slate-500">Corporate (-5%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.corporate}
@@ -1015,7 +1015,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-[11px] font-semibold text-slate-500">Dealer (-10%)</Label>
+                    <Label className="text-2xs font-semibold text-slate-500">Dealer (-10%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.dealer}
@@ -1026,7 +1026,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-[11px] font-semibold text-slate-500">Wholesale (-15%)</Label>
+                    <Label className="text-2xs font-semibold text-slate-500">Wholesale (-15%)</Label>
                     <Input
                       type="number"
                       value={priceTiers.wholesale}
@@ -1037,7 +1037,7 @@ export function OutsourceProductModal({
                   </div>
 
                   <div>
-                    <Label className="text-[11px] font-semibold text-slate-500">Custom / VIP</Label>
+                    <Label className="text-2xs font-semibold text-slate-500">Custom / VIP</Label>
                     <Input
                       type="number"
                       value={priceTiers.custom}
@@ -1105,7 +1105,7 @@ export function OutsourceProductModal({
                   <span className="font-bold text-purple-900 dark:text-purple-200 block">
                     Non-Inventory Item Routing Architecture
                   </span>
-                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-[11px]">
+                  <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-2xs">
                     This product is configured as a <strong>Non-Inventory Item</strong>. When included in quotations and job orders, it will <strong>not</strong> consume internal warehouse stock rolls (e.g. flex banner or vinyl rolls) and will bypass internal machine queues, routing directly into vendor procurement and dispatch tickets.
                   </p>
                 </div>

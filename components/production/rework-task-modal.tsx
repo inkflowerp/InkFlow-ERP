@@ -101,7 +101,7 @@ export function ReworkTaskModal({
             <RotateCcw className="h-4 w-4 text-rose-600" />
             <span>{task.task_name}</span>
           </div>
-          <p className="text-[11px] text-rose-800/80 dark:text-rose-300/80">
+          <p className="text-2xs text-rose-800/80 dark:text-rose-300/80">
             Original task records are preserved for costing and audit purposes. A new linked high-priority rework task will be queued.
           </p>
         </div>

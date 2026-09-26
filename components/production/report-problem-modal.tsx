@@ -127,14 +127,14 @@ export function ReportProblemModal({
         <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 flex items-center justify-between">
           <div className="space-y-0.5 min-w-0">
             <div className="flex items-center gap-2">
-              <Badge className="bg-rose-600 text-white text-[10px] font-bold">
+              <Badge className="bg-rose-600 text-white text-2xs font-bold">
                 {tBilingual(`Job #${task.job_number || 'N/A'}`, `কাজ #${task.job_number || 'N/A'}`)}
               </Badge>
               <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
                 {task.task_name}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-2xs text-slate-500">
               {task.customer_name} • {task.quantity} {task.unit}
             </p>
           </div>
@@ -200,7 +200,7 @@ export function ReportProblemModal({
               <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                 {tBilingual('Take Photo or Upload Image', 'ক্যামেরা দিয়ে ছবি তুলুন বা আপলোড করুন')}
               </span>
-              <span className="text-[10px] text-slate-500">JPG, PNG up to 10MB</span>
+              <span className="text-2xs text-slate-500">JPG, PNG up to 10MB</span>
               <input type="file" accept="image/*" capture="environment" onChange={handleFileChange} className="hidden" />
             </label>
           )}
@@ -220,7 +220,7 @@ export function ReportProblemModal({
         </div>
 
         {/* Warning Explanation */}
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 p-2.5 rounded-lg">
+        <p className="text-2xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-900 p-2.5 rounded-lg">
           {tBilingual(
             'Submitting this will pause this job, mark it as blocked, and immediately alert the Production Floor Manager.',
             'এটি জমা দিলে কাজ সাময়িকভাবে স্থগিত হবে এবং প্রোডাকশন ম্যানেজারের কাছে তাৎক্ষণিক সতর্কতা চলে যাবে।'

@@ -408,7 +408,7 @@ export default function CompanySettingsPage() {
                   <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${item.color} shrink-0`}>
                     <Icon className="h-4.5 w-4.5" />
                   </div>
-                  <Badge variant="outline" className="text-[10px] font-mono font-semibold px-2 py-0.5">
+                  <Badge variant="outline" className="text-2xs font-mono font-semibold px-2 py-0.5">
                     {item.badge}
                   </Badge>
                 </div>
@@ -417,7 +417,7 @@ export default function CompanySettingsPage() {
                     <span>{item.title}</span>
                     <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all text-blue-600" />
                   </div>
-                  <div className="text-[11px] text-slate-400 mt-0.5">{item.titleBn}</div>
+                  <div className="text-2xs text-slate-400 mt-0.5">{item.titleBn}</div>
                   <p className="text-xs text-slate-500 mt-1 leading-relaxed line-clamp-2">{item.desc}</p>
                 </div>
               </div>
@@ -506,7 +506,7 @@ export default function CompanySettingsPage() {
                     <Label htmlFor="legal_name">
                       {tBilingual('Registered Legal Entity Name (for NBR & Contracts)', 'নিবন্ধিত আইনি নাম (চুক্তি ও এনবিআর এর জন্য)')}
                     </Label>
-                    <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                    <span className="text-2xs text-blue-600 dark:text-blue-400 font-medium">
                       {tBilingual('For contracts & VAT challans', 'চুক্তি ও ভ্যাট চালানের জন্য')}
                     </span>
                   </div>
@@ -515,7 +515,7 @@ export default function CompanySettingsPage() {
                     placeholder="e.g. Rapid Print Solutions Limited"
                     {...register('legal_name')}
                   />
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-2xs text-slate-500">
                     {tBilingual(
                       'Official registered company name used for formal contracts, legal tender submissions, and NBR Mushak forms.',
                       'অফিসিয়াল নিবন্ধিত নাম যা সরকারি চুক্তি, টেন্ডার এবং এনবিআর মূসক ফর্মে ব্যবহৃত হয়।'
@@ -543,7 +543,7 @@ export default function CompanySettingsPage() {
                       ) : (
                         <div className="text-center p-2">
                           <ImageIcon className="h-5 w-5 mx-auto text-slate-400" />
-                          <span className="text-[9px] text-slate-400 block mt-0.5">
+                          <span className="text-2xs text-slate-400 block mt-0.5">
                             {tBilingual('No Logo', 'লোগো নেই')}
                           </span>
                         </div>
@@ -555,7 +555,7 @@ export default function CompanySettingsPage() {
                         placeholder="https://example.com/logo.png"
                         {...register('logo_url')}
                       />
-                      <span className="text-[11px] text-slate-500 block">
+                      <span className="text-2xs text-slate-500 block">
                         {tBilingual(
                           'Will appear on header of printed quotations, job challans, and customer receipts.',
                           'প্রিন্টকৃত কোটেশন, ডেলিভারি চালান ও মানি রসিদের শীর্ষে প্রদর্শিত হবে।'
@@ -679,7 +679,7 @@ export default function CompanySettingsPage() {
                       key={preset}
                       type="button"
                       onClick={() => setValue('office_hours', preset, { shouldDirty: true })}
-                      className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
+                      className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
                     >
                       {preset}
                     </button>
@@ -703,7 +703,7 @@ export default function CompanySettingsPage() {
                       key={preset}
                       type="button"
                       onClick={() => setValue('holidays', preset, { shouldDirty: true })}
-                      className="text-[11px] px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
+                      className="text-2xs px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 min-h-[32px]"
                     >
                       {preset}
                     </button>
@@ -743,7 +743,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('BIN (Business Identification Number)', 'ভ্যাট নিবন্ধন নম্বর (বিআইএন)')}
                   </Label>
                   <Input id="bin_no" placeholder="e.g. 004819284-0101" {...register('bin_no')} />
-                  <span className="text-[11px] text-slate-500">
+                  <span className="text-2xs text-slate-500">
                     {tBilingual('NBR 9 or 13-digit registration', 'এনবিআর ৯ বা ১৩ ডিজিট নিবন্ধন')}
                   </span>
                 </div>
@@ -828,7 +828,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Quotation Prefix', 'কোটেশন প্রিফিক্স')}
                   </Label>
                   <Input id="quotation_prefix" placeholder="QT" {...register('quotation_prefix')} />
-                  <span className="text-[11px] text-slate-500">Example: QT-2026-0012</span>
+                  <span className="text-2xs text-slate-500">Example: QT-2026-0012</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -836,7 +836,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Invoice Prefix', 'ইনভয়েস প্রিফিক্স')}
                   </Label>
                   <Input id="invoice_prefix" placeholder="INV" {...register('invoice_prefix')} />
-                  <span className="text-[11px] text-slate-500">Example: INV-2026-0482</span>
+                  <span className="text-2xs text-slate-500">Example: INV-2026-0482</span>
                 </div>
 
                 <div className="space-y-1.5">
@@ -844,7 +844,7 @@ export default function CompanySettingsPage() {
                     {tBilingual('Challan Prefix', 'চালান প্রিফিক্স')}
                   </Label>
                   <Input id="challan_prefix" placeholder="CH" {...register('challan_prefix')} />
-                  <span className="text-[11px] text-slate-500">Example: CH-2026-0091</span>
+                  <span className="text-2xs text-slate-500">Example: CH-2026-0091</span>
                 </div>
               </div>
             </CardContent>

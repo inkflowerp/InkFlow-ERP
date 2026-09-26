@@ -83,7 +83,7 @@ export function DeliveryInstallationTable({
                     <span>{ins.installation_number}</span>
                   </div>
                   {ins.order_number && (
-                    <span className="text-[10px] text-slate-400 font-normal block font-mono">
+                    <span className="text-2xs text-slate-400 font-normal block font-mono">
                       ({ins.order_number})
                     </span>
                   )}
@@ -94,7 +94,7 @@ export function DeliveryInstallationTable({
                   <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
                     {ins.customer_name}
                   </div>
-                  <div className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5 truncate">
+                  <div className="text-2xs text-slate-500 flex items-center gap-1 mt-0.5 truncate">
                     <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
                     <span className="truncate">{ins.site_location || 'Customer Location'}</span>
                   </div>
@@ -107,7 +107,7 @@ export function DeliveryInstallationTable({
                     <span>{ins.installer_lead_name || 'Lead Rigging Officer'}</span>
                   </div>
                   {ins.crew_members && ins.crew_members.length > 0 && (
-                    <div className="text-[10px] text-slate-400 truncate max-w-[180px] mt-0.5">
+                    <div className="text-2xs text-slate-400 truncate max-w-[180px] mt-0.5">
                       Crew: {ins.crew_members.join(', ')}
                     </div>
                   )}
@@ -118,7 +118,7 @@ export function DeliveryInstallationTable({
                   <div className="font-semibold text-slate-800 dark:text-slate-200">
                     {ins.installation_date}
                   </div>
-                  <div className="text-[10px] text-slate-400">
+                  <div className="text-2xs text-slate-400">
                     {ins.scheduled_time || '10:00 AM - 04:00 PM'}
                   </div>
                 </td>
@@ -140,7 +140,7 @@ export function DeliveryInstallationTable({
                       size="sm"
                       onClick={() => onUpdateStatus(ins.id, ins.status === 'scheduled' ? 'on_site' : 'completed')}
                       className={cn(
-                        'h-7 text-[11px] px-2.5 font-bold shadow-xs cursor-pointer',
+                        'h-7 text-2xs px-2.5 font-bold shadow-xs cursor-pointer',
                         ins.status === 'scheduled'
                           ? 'bg-purple-600 hover:bg-purple-700 text-white'
                           : 'bg-emerald-600 hover:bg-emerald-700 text-white'
@@ -177,11 +177,11 @@ export function DeliveryInstallationTable({
 
             <div className="grid grid-cols-2 gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/60 text-xs border border-slate-100 dark:border-slate-800">
               <div>
-                <span className="text-[10px] uppercase font-semibold text-slate-400 block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
+                <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'টিম লিড' : 'Crew Lead'}</span>
                 <span className="font-medium text-slate-800 dark:text-slate-200">{ins.installer_lead_name || 'Lead Officer'}</span>
               </div>
               <div>
-                <span className="text-[10px] uppercase font-semibold text-slate-400 block">{isBn ? 'তারিখ' : 'Date'}</span>
+                <span className="text-2xs uppercase font-semibold text-slate-400 block">{isBn ? 'তারিখ' : 'Date'}</span>
                 <span className="font-mono text-slate-700 dark:text-slate-300">{ins.installation_date}</span>
               </div>
             </div>

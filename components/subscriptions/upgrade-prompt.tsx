@@ -155,11 +155,11 @@ export function UpgradePrompt({
         </div>
 
         <div className="flex items-center justify-center gap-2 mb-2">
-          <Badge variant="outline" className="text-[11px] font-mono border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
+          <Badge variant="outline" className="text-2xs font-mono border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300 bangla-text">
             {tBilingual(`${currentPlan.name} (Current)`, `${currentPlan.name_bn} (বর্তমান)`)}
           </Badge>
           <ArrowRight className="h-3 w-3 text-slate-400" />
-          <Badge className="text-[11px] font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
+          <Badge className="text-2xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 text-white bangla-text">
             <Crown className="h-3 w-3 mr-1" />
             {tBilingual(statusTitleEn, statusTitleBn)}
           </Badge>

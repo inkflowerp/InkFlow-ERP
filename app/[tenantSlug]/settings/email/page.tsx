@@ -457,7 +457,7 @@ export default function TenantEmailSettingsPage() {
                 </div>
 
                 <Badge
-                  className={`text-[10px] uppercase font-bold self-start sm:self-center ${
+                  className={`text-2xs uppercase font-bold self-start sm:self-center ${
                     hasConfiguredGateway
                       ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                       : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300'
@@ -484,7 +484,7 @@ export default function TenantEmailSettingsPage() {
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-slate-900 dark:text-white">Gmail (Google OAuth 2.0)</span>
-                    <Badge className="text-[9px] bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
+                    <Badge className="text-2xs bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                       Recommended
                     </Badge>
                   </div>
@@ -494,7 +494,7 @@ export default function TenantEmailSettingsPage() {
                   One-click sign in with Google. 100% secure, zero password sharing, and high inbox delivery.
                 </p>
               </div>
-              <div className="mt-3 text-[11px] font-mono text-slate-400">
+              <div className="mt-3 text-2xs font-mono text-slate-400">
                 Protocol: Google Gmail API (OAuth2)
               </div>
             </div>
@@ -517,7 +517,7 @@ export default function TenantEmailSettingsPage() {
                   Connect any standard SMTP host (cPanel, Google Workspace, Office 365, Zoho Mail, Mailgun).
                 </p>
               </div>
-              <div className="mt-3 text-[11px] font-mono text-slate-400">
+              <div className="mt-3 text-2xs font-mono text-slate-400">
                 Protocol: TLS / SSL / STARTTLS
               </div>
             </div>
@@ -549,7 +549,7 @@ export default function TenantEmailSettingsPage() {
                           <div className="font-bold text-xs text-slate-900 dark:text-white">
                             Connected Account: {gateway.gmail_account_email || gateway.sender_email}
                           </div>
-                          <div className="text-[11px] text-slate-500">
+                          <div className="text-2xs text-slate-500">
                             Display Name: {gateway.gmail_display_name || gateway.sender_name}
                           </div>
                         </div>
@@ -580,7 +580,7 @@ export default function TenantEmailSettingsPage() {
 
                     <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border text-xs text-slate-500 space-y-1">
                       <span className="font-semibold text-slate-700 dark:text-slate-300 block">Security Guarantee:</span>
-                      <p className="text-[11px] leading-relaxed">
+                      <p className="text-2xs leading-relaxed">
                         InkFlow uses official Google OAuth 2.0 with limited `gmail.send` scope. We never have access to read your inbox messages, and tokens are encrypted at rest with AES-256-GCM.
                       </p>
                     </div>
@@ -612,10 +612,10 @@ export default function TenantEmailSettingsPage() {
                           <AlertTriangle className="h-4 w-4 shrink-0" />
                           <span>Google Cloud OAuth Setup Note</span>
                         </div>
-                        <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
+                        <p className="text-2xs text-amber-700 dark:text-amber-400 leading-relaxed">
                           To enable 1-click Gmail connection, configure Google Cloud OAuth 2.0 Web Application credentials in your server environment (<code>.env.local</code> or Vercel Environment Variables):
                         </p>
-                        <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 font-mono text-[11px] text-slate-700 dark:text-slate-300 space-y-1">
+                        <div className="bg-white/80 dark:bg-slate-900/80 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60 font-mono text-2xs text-slate-700 dark:text-slate-300 space-y-1">
                           <div className="flex items-center justify-between">
                             <span>GOOGLE_CLIENT_ID</span>
                             <span className={googleOAuthStatus.hasClientId ? 'text-emerald-600 font-bold' : 'text-rose-500 font-bold'}>
@@ -636,14 +636,14 @@ export default function TenantEmailSettingsPage() {
                           </div>
                         </div>
                         {googleOAuthStatus.redirectUri && (
-                          <div className="text-[11px] text-slate-600 dark:text-slate-400">
+                          <div className="text-2xs text-slate-600 dark:text-slate-400">
                             <strong>Google Cloud Authorized Redirect URI:</strong>
-                            <code className="block mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded font-mono text-[10px] break-all select-all">
+                            <code className="block mt-1 p-2 bg-slate-100 dark:bg-slate-900 rounded font-mono text-2xs break-all select-all">
                               {googleOAuthStatus.redirectUri}
                             </code>
                           </div>
                         )}
-                        <p className="text-[10px] text-slate-500 pt-1">
+                        <p className="text-2xs text-slate-500 pt-1">
                           Tip: You can use standard <strong>Custom SMTP</strong> immediately below without any Google Cloud project setup.
                         </p>
                       </div>
@@ -720,7 +720,7 @@ export default function TenantEmailSettingsPage() {
                       <button
                         type="button"
                         onClick={() => setShowSecret(!showSecret)}
-                        className="text-[11px] text-blue-600 hover:underline flex items-center gap-1"
+                        className="text-2xs text-blue-600 hover:underline flex items-center gap-1"
                       >
                         {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                         {showSecret ? 'Hide' : 'Reveal'}
@@ -855,7 +855,7 @@ export default function TenantEmailSettingsPage() {
                   }`}
                 >
                   <span className="truncate">{tpl.name}</span>
-                  <span className={`text-[10px] font-mono ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
+                  <span className={`text-2xs font-mono ${isSelected ? 'text-blue-100' : 'text-slate-400'}`}>
                     {tpl.event_type}
                   </span>
                 </button>
@@ -868,7 +868,7 @@ export default function TenantEmailSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-3 border-b gap-2">
                 <div>
                   <h4 className="font-bold text-sm text-slate-900 dark:text-white">{selectedTemplate.name}</h4>
-                  <span className="text-[11px] font-mono text-blue-600">{selectedTemplate.event_type}</span>
+                  <span className="text-2xs font-mono text-blue-600">{selectedTemplate.event_type}</span>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -876,7 +876,7 @@ export default function TenantEmailSettingsPage() {
                     <button
                       type="button"
                       onClick={() => setTemplateLang('en')}
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-md ${
+                      className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
                         templateLang === 'en' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >
@@ -885,7 +885,7 @@ export default function TenantEmailSettingsPage() {
                     <button
                       type="button"
                       onClick={() => setTemplateLang('bn')}
-                      className={`px-2.5 py-1 text-[11px] font-bold rounded-md ${
+                      className={`px-2.5 py-1 text-2xs font-bold rounded-md ${
                         templateLang === 'bn' ? 'bg-blue-600 text-white' : 'text-slate-600 dark:text-slate-400'
                       }`}
                     >
@@ -943,7 +943,7 @@ export default function TenantEmailSettingsPage() {
 
               {/* Rendered Preview */}
               <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border space-y-1">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Live Preview:</span>
+                <span className="text-2xs font-bold uppercase text-slate-400">Live Preview:</span>
                 <div
                   className="p-3 bg-white text-slate-900 text-xs rounded border max-h-40 overflow-y-auto"
                   dangerouslySetInnerHTML={{
@@ -1011,7 +1011,7 @@ export default function TenantEmailSettingsPage() {
                       )
                       .map((log) => (
                         <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-900/40">
-                          <td className="py-2.5 px-3 font-mono text-[11px]">
+                          <td className="py-2.5 px-3 font-mono text-2xs">
                             <div>{new Date(log.created_at).toLocaleDateString()}</div>
                             <span className="text-slate-400">{log.event_type}</span>
                           </td>
@@ -1023,7 +1023,7 @@ export default function TenantEmailSettingsPage() {
                           </td>
                           <td className="py-2.5 px-3 text-center">
                             <Badge
-                              className={`text-[9px] uppercase ${
+                              className={`text-2xs uppercase ${
                                 log.status === 'sent'
                                   ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300'
                                   : log.status === 'failed'

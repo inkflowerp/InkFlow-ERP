@@ -191,7 +191,7 @@ export function SupplierMaterialRateModal({
                   ? tBilingual('Update Material Contract Rate', 'মেটেরিয়াল চুক্তি দর আপডেট করুন')
                   : tBilingual('Add Negotiated Material Rate', 'নতুন মেটেরিয়াল চুক্তি দর যুক্ত করুন')}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {supplier.supplier_name}
               </Badge>
             </div>
@@ -248,7 +248,7 @@ export function SupplierMaterialRateModal({
                 required
               />
               {fieldErrors.material_name && (
-                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{fieldErrors.material_name}</span>
                 </p>
@@ -325,7 +325,7 @@ export function SupplierMaterialRateModal({
                 />
               </div>
               {fieldErrors.contract_price_bdt && (
-                <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                   <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                   <span>{fieldErrors.contract_price_bdt}</span>
                 </p>

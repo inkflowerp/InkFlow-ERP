@@ -86,7 +86,7 @@ export function ThemeToggle({ className, showDropdown = false, size = 'md' }: Th
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-36 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 dark:border-slate-800 dark:bg-slate-900 animate-in fade-in-0 zoom-in-95">
-          <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+          <div className="px-2 py-1 text-2xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             {tBilingual('Theme', 'থিম')}
           </div>
           <div className="space-y-0.5">

@@ -124,7 +124,7 @@ export function FollowUpModal({
           </div>
           <div>
             <h2 className="text-sm font-bold text-slate-900 dark:text-white">Record Quotation Follow-up</h2>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-2xs text-slate-500">
               Log client conversation, update status, and schedule next contact
             </p>
           </div>
@@ -146,7 +146,7 @@ export function FollowUpModal({
           <div className="text-slate-300 font-semibold truncate">
             {quotation.customer_name} {quotation.customer_company && `(${quotation.customer_company})`}
           </div>
-          <div className="text-[11px] text-slate-400 font-mono flex items-center gap-3">
+          <div className="text-2xs text-slate-400 font-mono flex items-center gap-3">
             <span>📞 {quotation.customer_phone}</span>
             <span>•</span>
             <span>Valid Until: {quotation.valid_until}</span>
@@ -185,7 +185,7 @@ export function FollowUpModal({
                   }`}
                 >
                   <Icon className="h-3.5 w-3.5" />
-                  <span className="text-[10px]">{m.label}</span>
+                  <span className="text-2xs">{m.label}</span>
                 </button>
               )
             })}
@@ -219,7 +219,7 @@ export function FollowUpModal({
             <Label htmlFor="followUpNote" className="text-xs font-semibold">
               Follow-Up Notes <span className="text-rose-500">*</span>
             </Label>
-            <span className="text-[10px] text-slate-400">Internal only • Never shared with customer</span>
+            <span className="text-2xs text-slate-400">Internal only • Never shared with customer</span>
           </div>
           <textarea
             id="followUpNote"
@@ -239,28 +239,28 @@ export function FollowUpModal({
             <button
               type="button"
               onClick={() => handleQuickSchedule(1)}
-              className="px-2.5 py-1 text-[11px] rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+              className="px-2.5 py-1 text-2xs rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
             >
               Tomorrow
             </button>
             <button
               type="button"
               onClick={() => handleQuickSchedule(3)}
-              className="px-2.5 py-1 text-[11px] rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+              className="px-2.5 py-1 text-2xs rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
             >
               In 3 Days
             </button>
             <button
               type="button"
               onClick={() => handleQuickSchedule(7)}
-              className="px-2.5 py-1 text-[11px] rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
+              className="px-2.5 py-1 text-2xs rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-medium cursor-pointer"
             >
               In 1 Week
             </button>
             <button
               type="button"
               onClick={() => handleQuickSchedule(0)}
-              className="px-2.5 py-1 text-[11px] rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-500 font-medium cursor-pointer"
+              className="px-2.5 py-1 text-2xs rounded-md border border-slate-200 hover:bg-slate-100 dark:border-slate-800 dark:hover:bg-slate-800 text-slate-500 font-medium cursor-pointer"
             >
               No Follow-Up
             </button>

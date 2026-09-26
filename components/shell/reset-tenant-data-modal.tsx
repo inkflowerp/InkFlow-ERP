@@ -171,7 +171,7 @@ export function ResetTenantDataModal({
           </div>
 
           {/* Safe Items Notice */}
-          <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 text-emerald-300/90 text-[11px] flex items-center gap-2">
+          <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-800/40 text-emerald-300/90 text-2xs flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
             <span>
               {tBilingual(

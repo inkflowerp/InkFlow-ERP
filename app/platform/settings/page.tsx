@@ -239,7 +239,7 @@ export default function PlatformSettingsPage() {
               Root Governance &amp; Infrastructure
             </span>
             {hasUnsavedChanges && (
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold animate-pulse">
+              <span className="text-2xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold animate-pulse">
                 Unsaved Changes
               </span>
             )}
@@ -318,7 +318,7 @@ export default function PlatformSettingsPage() {
             <div>
               <div className="font-bold text-sm text-white flex items-center gap-2">
                 PLATFORM MAINTENANCE MODE ACTIVE
-                <span className="text-[10px] bg-red-600 text-white font-black px-2 py-0.5 rounded-full uppercase">
+                <span className="text-2xs bg-red-600 text-white font-black px-2 py-0.5 rounded-full uppercase">
                   Live Banner
                 </span>
               </div>
@@ -348,7 +348,7 @@ export default function PlatformSettingsPage() {
             <span>Operational</span>
             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">PostgreSQL + Redis Vault</p>
+          <p className="text-2xs text-slate-400 mt-0.5">PostgreSQL + Redis Vault</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -357,7 +357,7 @@ export default function PlatformSettingsPage() {
             <Database className="h-4 w-4 text-indigo-400" />
           </div>
           <div className="text-xl sm:text-2xl font-black text-white mt-1">PITR Enabled</div>
-          <p className="text-[11px] text-slate-400 mt-0.5">{settings?.backup_retention_days ?? 90} Days Retention</p>
+          <p className="text-2xs text-slate-400 mt-0.5">{settings?.backup_retention_days ?? 90} Days Retention</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -368,7 +368,7 @@ export default function PlatformSettingsPage() {
           <div className="text-xl sm:text-2xl font-black text-white mt-1">
             {settings?.default_vat_rate_pct ?? 15}% {settings?.default_currency || 'BDT'}
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">NBR Mushak 6.3 Baseline</p>
+          <p className="text-2xs text-slate-400 mt-0.5">NBR Mushak 6.3 Baseline</p>
         </Card>
 
         <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
@@ -379,7 +379,7 @@ export default function PlatformSettingsPage() {
           <div className="text-xl sm:text-2xl font-black text-white mt-1">
             {settings?.default_trial_days ?? 14} Days
           </div>
-          <p className="text-[11px] text-slate-400 mt-0.5">Full ERP Suite Unlocked</p>
+          <p className="text-2xs text-slate-400 mt-0.5">Full ERP Suite Unlocked</p>
         </Card>
       </div>
 
@@ -397,7 +397,7 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 Email Gateway &amp; SMTP
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">SMTP, Resend, SendGrid &amp; SES</p>
+              <p className="text-2xs text-slate-400 mt-0.5">SMTP, Resend, SendGrid &amp; SES</p>
             </div>
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
@@ -415,7 +415,7 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 Integrations &amp; Webhooks
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">SMS, WhatsApp &amp; Payment sync</p>
+              <p className="text-2xs text-slate-400 mt-0.5">SMS, WhatsApp &amp; Payment sync</p>
             </div>
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-purple-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
@@ -433,7 +433,7 @@ export default function PlatformSettingsPage() {
               <div className="text-xs font-bold text-white flex items-center gap-1.5">
                 RBAC Role Blueprints
               </div>
-              <p className="text-[11px] text-slate-400 mt-0.5">6 System templates &amp; 14 modules</p>
+              <p className="text-2xs text-slate-400 mt-0.5">6 System templates &amp; 14 modules</p>
             </div>
           </div>
           <ArrowRight className="h-3.5 w-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0 ml-2" />
@@ -488,52 +488,52 @@ export default function PlatformSettingsPage() {
         <CardContent className="p-5">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Last Continuous Snapshot
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <Clock className="h-4 w-4 text-emerald-400" />
                 {backup ? formatTime(backup.last_backup_time) : 'Recent'}
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-2xs text-slate-500 mt-1 block">
                 Age: {backup?.backup_age_hours || 0.5} hours ago
               </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Retention Window
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <HardDrive className="h-4 w-4 text-indigo-400" />
                 {settings?.backup_retention_days || backup?.retention_days || 90} Days Continuous
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-2xs text-slate-500 mt-1 block">
                 WAL Archives + Daily Cold Vault
               </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Last Restore Drill
               </span>
               <div className="text-sm font-bold text-white flex items-center gap-1.5">
                 <FileCheck2 className="h-4 w-4 text-cyan-400" />
                 {backup?.last_restore_test_date ? backup.last_restore_test_date.slice(0, 10) : '2026-09-08'}
               </div>
-              <span className="text-[10px] text-emerald-400 font-semibold mt-1 block">
+              <span className="text-2xs text-emerald-400 font-semibold mt-1 block">
                 Status: {backup?.last_restore_status.toUpperCase() || 'PASSED'} (0 Data Loss)
               </span>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800/80">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block mb-1">
+              <span className="text-2xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                 Storage Target
               </span>
               <div className="text-xs font-semibold text-slate-300 truncate">
                 GCS Coldline (asia-south1)
               </div>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-2xs text-slate-500 mt-1 block">
                 Encrypted with AES-256 (GCM)
               </span>
             </div>
@@ -577,7 +577,7 @@ export default function PlatformSettingsPage() {
                   placeholder="e.g. InkFlow ERP or PrintERP"
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Reflected across marketing headers, tenant sidebars, emails, and platform console.
                 </span>
               </div>
@@ -592,7 +592,7 @@ export default function PlatformSettingsPage() {
                   placeholder="e.g. The Complete Printing &amp; Signage Operating System"
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Displayed on auth showcase, public landing page, and documentation headers.
                 </span>
               </div>
@@ -625,7 +625,7 @@ export default function PlatformSettingsPage() {
                     </div>
                   )}
                 </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   PNG/SVG URL for navigation bars and official platform branding.
                 </span>
               </div>
@@ -652,7 +652,7 @@ export default function PlatformSettingsPage() {
                     />
                   </div>
                 </div>
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Browser tab shortcut icon, dynamically updated in head link tags.
                 </span>
               </div>
@@ -685,7 +685,7 @@ export default function PlatformSettingsPage() {
                   placeholder="e.g. inkflow.com.bd or localhost:3000"
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Root domain for tenant subdomains (e.g. customer.domain.com), OAuth redirects, and link generation.
                 </span>
               </div>
@@ -700,7 +700,7 @@ export default function PlatformSettingsPage() {
                   placeholder="e.g. PrintERP SaaS - Operating System for Printing &amp; Signage in Bangladesh"
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Title tag rendered across browser tabs and search engine results.
                 </span>
               </div>
@@ -716,7 +716,7 @@ export default function PlatformSettingsPage() {
                   rows={3}
                   className="w-full p-2.5 text-xs bg-slate-950 border border-slate-800 text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-600 resize-none"
                 />
-                <span className="text-[10px] text-slate-500 mt-0.5 block">
+                <span className="text-2xs text-slate-500 mt-0.5 block">
                   Used in HTML meta description tags and social link previews.
                 </span>
               </div>
@@ -750,7 +750,7 @@ export default function PlatformSettingsPage() {
                     placeholder="e.g. +880 1819-876543 / +880 1711-234567"
                     className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">
+                  <span className="text-2xs text-slate-500 mt-1 block">
                     Shown in customer support &amp; inquiries.
                   </span>
                 </div>
@@ -764,7 +764,7 @@ export default function PlatformSettingsPage() {
                     placeholder="support@printerp.com.bd"
                     className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">
+                  <span className="text-2xs text-slate-500 mt-1 block">
                     Official email address for correspondence.
                   </span>
                 </div>
@@ -777,7 +777,7 @@ export default function PlatformSettingsPage() {
                     placeholder="+880 1819-876543"
                     className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                   />
-                  <span className="text-[10px] text-slate-500 mt-1 block">
+                  <span className="text-2xs text-slate-500 mt-1 block">
                     Telephone for direct caller desk.
                   </span>
                 </div>
@@ -793,7 +793,7 @@ export default function PlatformSettingsPage() {
                   placeholder="e.g. Arambagh Press Cluster, Motijheel, Dhaka-1000, Bangladesh"
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Displayed in public website footer, contact page, and platform disclosures.
                 </span>
               </div>
@@ -830,7 +830,7 @@ export default function PlatformSettingsPage() {
                   }
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
+                <span className="text-2xs text-slate-500 mt-1 block">Valid range: 5 to 1,440 minutes (24 hours).</span>
               </div>
 
               <div>
@@ -850,7 +850,7 @@ export default function PlatformSettingsPage() {
                   }
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">Valid range: 10 to 10,000 req/min.</span>
+                <span className="text-2xs text-slate-500 mt-1 block">Valid range: 10 to 10,000 req/min.</span>
               </div>
 
               <div>
@@ -867,13 +867,13 @@ export default function PlatformSettingsPage() {
                   }
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">Cap per single tenant export JSON archive.</span>
+                <span className="text-2xs text-slate-500 mt-1 block">Cap per single tenant export JSON archive.</span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
                 <div>
                   <span className="text-xs font-semibold text-slate-300 block">Enforce 2FA for Platform Admins</span>
-                  <span className="text-[10px] text-slate-500">Require TOTP authentication on all admin logins</span>
+                  <span className="text-2xs text-slate-500">Require TOTP authentication on all admin logins</span>
                 </div>
                 <input
                   type="checkbox"
@@ -888,7 +888,7 @@ export default function PlatformSettingsPage() {
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80">
                 <div>
                   <span className="text-xs font-semibold text-slate-300 block">Automated Daily Backups</span>
-                  <span className="text-[10px] text-slate-500">Enable scheduled daily database exports &amp; WAL archives</span>
+                  <span className="text-2xs text-slate-500">Enable scheduled daily database exports &amp; WAL archives</span>
                 </div>
                 <input
                   type="checkbox"
@@ -987,7 +987,7 @@ export default function PlatformSettingsPage() {
                       variant="ghost"
                       disabled={testingWebhook}
                       onClick={handleTestWebhook}
-                      className="h-6 text-[10px] px-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-950/40 cursor-pointer"
+                      className="h-6 text-2xs px-2 text-indigo-400 hover:text-indigo-300 hover:bg-indigo-950/40 cursor-pointer"
                     >
                       <Send className="h-2.5 w-2.5 mr-1" />
                       {testingWebhook ? 'Pinging...' : 'Test Webhook'}
@@ -1002,7 +1002,7 @@ export default function PlatformSettingsPage() {
                   placeholder="https://hooks.slack.com/services/..."
                   className="h-9 text-xs bg-slate-950 border-slate-800 text-slate-100 rounded-xl font-mono"
                 />
-                <span className="text-[10px] text-slate-500 mt-1 block">
+                <span className="text-2xs text-slate-500 mt-1 block">
                   Dispatches automated JSON notifications upon critical service outage or failover event.
                 </span>
               </div>
@@ -1013,7 +1013,7 @@ export default function PlatformSettingsPage() {
                     Maintenance Advisory Message
                   </label>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] text-slate-400">Maintenance Mode:</span>
+                    <span className="text-2xs text-slate-400">Maintenance Mode:</span>
                     <input
                       type="checkbox"
                       checked={Boolean(settings.maintenance_mode_enabled)}

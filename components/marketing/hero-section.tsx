@@ -35,11 +35,11 @@ export function HeroSection({ onOpenDemo }: HeroSectionProps) {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] sm:w-[500px] md:w-[700px] h-[280px] sm:h-[400px] bg-gradient-to-tr from-cyan-500/15 via-blue-600/10 to-fuchsia-600/15 blur-[100px] sm:blur-[140px] pointer-events-none -z-10" />
       
       {/* Subtle Print Registration Crop Marks (Top Left & Top Right) */}
-      <div className="absolute top-28 left-8 text-slate-800 pointer-events-none hidden xl:block font-mono text-[10px]">
+      <div className="absolute top-28 left-8 text-slate-800 pointer-events-none hidden xl:block font-mono text-2xs">
         <span className="inline-block border-t border-l border-slate-700 w-4 h-4 mr-1" />
         REGISTRATION BLEED 3mm
       </div>
-      <div className="absolute top-28 right-8 text-slate-800 pointer-events-none hidden xl:block font-mono text-[10px]">
+      <div className="absolute top-28 right-8 text-slate-800 pointer-events-none hidden xl:block font-mono text-2xs">
         CMYK 300DPI
         <span className="inline-block border-t border-r border-slate-700 w-4 h-4 ml-1" />
       </div>

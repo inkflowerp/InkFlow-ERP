@@ -113,7 +113,7 @@ export function PrintableQrPoster({
 
         {/* Location Badge */}
         <div className="my-6 text-center space-y-1">
-          <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest block">
+          <span className="text-2xs font-bold text-indigo-600 uppercase tracking-widest block">
             Official Attendance Terminal (হাজিরা পয়েন্ট)
           </span>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -169,7 +169,7 @@ export function PrintableQrPoster({
         </div>
 
         {/* Footer Meta */}
-        <div className="mt-8 pt-4 border-t border-slate-200 flex items-center justify-between text-[10px] text-slate-400 font-mono">
+        <div className="mt-8 pt-4 border-t border-slate-200 flex items-center justify-between text-2xs text-slate-400 font-mono">
           <div>
             <span>Generated: {generatedDate}</span>
           </div>

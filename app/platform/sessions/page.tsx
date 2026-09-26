@@ -148,7 +148,7 @@ export default function PlatformSessionsPage() {
             <Shield className="h-4 w-4 text-indigo-400" />
             <h3 className="font-bold text-white text-sm">Active Authorized Sessions ({sessions.length})</h3>
           </div>
-          <span className="text-[11px] text-slate-400">Tokens cryptographically validated via Supabase Auth</span>
+          <span className="text-2xs text-slate-400">Tokens cryptographically validated via Supabase Auth</span>
         </div>
 
         <div className="space-y-3">
@@ -180,16 +180,16 @@ export default function PlatformSessionsPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-bold text-white text-xs">{sess.device_name || 'Secure Browser'}</span>
                       {sess.is_current && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                        <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
                           Current Session
                         </span>
                       )}
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
+                      <span className="text-2xs font-mono px-2 py-0.5 rounded-full bg-slate-900 text-slate-400 border border-slate-800">
                         IP: {sess.ip_address || '127.0.0.1'}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-4 text-[11px] text-slate-400 flex-wrap">
+                    <div className="flex items-center gap-4 text-2xs text-slate-400 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Globe className="h-3 w-3 text-slate-500" />
                         {sess.location || 'Dhaka, Bangladesh'}
@@ -231,7 +231,7 @@ export default function PlatformSessionsPage() {
             <h3 className="font-bold text-white text-sm">Recent Authentication Events</h3>
           </div>
           <Link href="/platform/audit">
-            <span className="text-[11px] text-indigo-400 hover:text-indigo-300 font-medium">
+            <span className="text-2xs text-indigo-400 hover:text-indigo-300 font-medium">
               View Complete Audit Logs &rarr;
             </span>
           </Link>

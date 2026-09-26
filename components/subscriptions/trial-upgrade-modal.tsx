@@ -256,7 +256,7 @@ export function TrialUpgradeModal() {
                 )}
               >
                 <span>{tBilingual('Yearly Billing', 'বাৎসরিক বিলিং')}</span>
-                <span className="bg-emerald-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
+                <span className="bg-emerald-500 text-white text-2xs font-black px-2 py-0.5 rounded-full uppercase">
                   {tBilingual('2 Mo Free', '২ মাস ফ্রি')}
                 </span>
               </button>
@@ -310,7 +310,7 @@ export function TrialUpgradeModal() {
                   )}
                 >
                   {isRecommended && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-[11px] font-bold px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-2xs font-bold px-3.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm whitespace-nowrap z-10 bangla-text">
                       {tBilingual('Most Popular', 'জনপ্রিয় পছন্দ')}
                     </div>
                   )}
@@ -430,7 +430,7 @@ export function TrialUpgradeModal() {
                           {tBilingual(p.name, p.nameBn)}
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-400 capitalize truncate max-w-full">
+                      <span className="text-2xs text-slate-400 capitalize truncate max-w-full">
                         {p.id === 'bkash' && 'Instant MFS'}
                         {p.id === 'sslcommerz' && 'Cards / Net Banking'}
                         {p.id === 'nagad' && 'Nagad Direct'}
@@ -457,7 +457,7 @@ export function TrialUpgradeModal() {
 
             {currentTrxId && (
               <div className="pt-2 space-y-2">
-                <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bangla-text block">
+                <label className="text-2xs font-semibold text-slate-600 dark:text-slate-400 bangla-text block">
                   {tBilingual('Provider Transaction ID / Reference (For Server Verification):', 'প্রোভাইডার ট্রানজেকশন আইডি / রেফারেন্স নম্বর:')}
                 </label>
                 <div className="flex gap-2">

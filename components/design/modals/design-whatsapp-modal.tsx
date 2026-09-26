@@ -136,7 +136,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
                   }`}
                 >
                   <span className="truncate">{t.title}</span>
-                  <span className="text-[10px] font-normal opacity-70 mt-1">{t.badge}</span>
+                  <span className="text-2xs font-normal opacity-70 mt-1">{t.badge}</span>
                 </button>
               ))}
             </div>
@@ -156,7 +156,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
                 className="font-mono text-xs bg-slate-50 dark:bg-slate-800 border-slate-300 dark:border-slate-700"
               />
             </div>
-            <div className="text-[11px] text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">
+            <div className="text-2xs text-slate-500 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-md border border-slate-200 dark:border-slate-700">
               <span className="font-semibold text-slate-700 dark:text-slate-300">অটো ৮৮ ফরম্যাট:</span> +{sanitizeBangladeshiPhone(phoneNumber)}
             </div>
           </div>
@@ -181,7 +181,7 @@ export const DesignWhatsAppModal = React.memo(function DesignWhatsAppModal({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="text-[11px] text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
+                className="text-2xs text-emerald-700 dark:text-emerald-400 hover:underline flex items-center gap-1 font-semibold"
               >
                 {isCopied ? <Check className="h-3 w-3 text-emerald-600" /> : <Copy className="h-3 w-3" />}
                 <span>{isCopied ? 'কপি হয়েছে' : 'কপি করুন'}</span>

@@ -32,7 +32,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
       {/* Operator Greeting Banner */}
       <div className="p-4 sm:p-5 bg-gradient-to-r from-blue-700 to-indigo-800 text-white rounded-2xl shadow-md flex items-center justify-between">
         <div className="space-y-0.5">
-          <Badge className="bg-white/20 text-white border-none text-[11px] font-semibold">
+          <Badge className="bg-white/20 text-white border-none text-2xs font-semibold">
             {tBilingual('Operator Terminal', 'প্রেস ও ফ্লোর টার্মিনাল')}
           </Badge>
           <h1 className="text-xl sm:text-2xl font-black">
@@ -45,7 +45,7 @@ export function OperatorDashboard({ tasks, onRefresh }: OperatorDashboardProps) 
 
         <div className="text-right hidden sm:block">
           <div className="text-2xl font-black font-mono">{activeCount}</div>
-          <div className="text-[11px] text-blue-200">
+          <div className="text-2xs text-blue-200">
             {tBilingual('Currently Active', 'বর্তমানে চলমান')}
           </div>
         </div>

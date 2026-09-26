@@ -252,7 +252,7 @@ export function PricingFinishingTariffs({
                       <td className="py-3 px-4">
                         <div className="font-bold text-slate-900 dark:text-white">{fin.name}</div>
                         {fin.name_bn && (
-                          <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium bangla-text">
+                          <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                             {fin.name_bn}
                           </div>
                         )}
@@ -269,7 +269,7 @@ export function PricingFinishingTariffs({
                       <td className="py-3 px-4">
                         <Badge
                           variant="outline"
-                          className={`text-[10px] font-mono font-bold ${
+                          className={`text-2xs font-mono font-bold ${
                             marginPct >= 40
                               ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                               : 'bg-amber-50 text-amber-800 border-amber-200'

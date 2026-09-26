@@ -91,7 +91,7 @@ export function TopNav() {
             <Search className="h-4 w-4 text-indigo-500 dark:text-indigo-400 shrink-0" />
             <span className="truncate bangla-text font-medium text-slate-500 dark:text-slate-400">{t('common.search')}</span>
           </div>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[11px] font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
+          <kbd className="hidden md:inline-flex items-center gap-0.5 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-2xs font-bold text-slate-500 dark:border-slate-700 dark:bg-slate-900 font-mono shrink-0 shadow-2xs">
             ⌘K
           </kbd>
         </button>

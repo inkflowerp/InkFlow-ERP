@@ -1037,7 +1037,7 @@ export function NewPurchaseModal({
               </h2>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
+                className="text-2xs uppercase font-mono py-0.5 px-2 bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700"
               >
                 Procurement
               </Badge>
@@ -1123,7 +1123,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
                 activeStep === 1
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1146,7 +1146,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
                 activeStep === 2
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1171,7 +1171,7 @@ export function NewPurchaseModal({
           >
             <div
               className={cn(
-                'h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-mono',
+                'h-5 w-5 rounded-full flex items-center justify-center text-2xs font-mono',
                 activeStep === 3
                   ? 'bg-amber-600 text-white'
                   : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1201,7 +1201,7 @@ export function NewPurchaseModal({
                     type="button"
                     onClick={() => setSupplierMode('existing')}
                     className={cn(
-                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-[11px]',
+                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
                       supplierMode === 'existing'
                         ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-xs'
                         : 'text-slate-500 hover:text-slate-800'
@@ -1213,7 +1213,7 @@ export function NewPurchaseModal({
                     type="button"
                     onClick={() => setSupplierMode('new')}
                     className={cn(
-                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-[11px]',
+                      'px-2.5 py-1 rounded-md font-semibold transition-all cursor-pointer text-2xs',
                       supplierMode === 'new'
                         ? 'bg-white dark:bg-slate-700 text-amber-700 dark:text-amber-300 shadow-xs'
                         : 'text-slate-500 hover:text-slate-800'
@@ -1250,7 +1250,7 @@ export function NewPurchaseModal({
                       ))}
                     </select>
                     {fieldErrors.supplier && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{fieldErrors.supplier}</span>
                       </p>
@@ -1261,21 +1261,21 @@ export function NewPurchaseModal({
                   {currentSupplier && (
                     <div className="p-3 bg-amber-50/60 dark:bg-amber-950/30 rounded-xl border border-amber-200 dark:border-amber-800 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Contact Person:</span>
+                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Contact Person:</span>
                         <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
                           <User className="h-3.5 w-3.5 text-amber-600" />
                           <span>{currentSupplier.contact_person || 'Managing Director'}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Phone & Email:</span>
+                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Phone & Email:</span>
                         <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5">
                           <Phone className="h-3.5 w-3.5 text-amber-600" />
                           <span>{currentSupplier.mobile}</span>
                         </div>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-500 dark:text-slate-400 block">Warehouse Address:</span>
+                        <span className="text-2xs text-slate-500 dark:text-slate-400 block">Warehouse Address:</span>
                         <div className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5 mt-0.5 truncate">
                           <MapPin className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                           <span className="truncate">{currentSupplier.address || 'Dhaka, Bangladesh'}</span>
@@ -1304,7 +1304,7 @@ export function NewPurchaseModal({
                       required
                     />
                     {fieldErrors.customSupplierName && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{fieldErrors.customSupplierName}</span>
                       </p>
@@ -1328,7 +1328,7 @@ export function NewPurchaseModal({
                       required
                     />
                     {fieldErrors.supplierPhone && (
-                      <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                      <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                         <span>{fieldErrors.supplierPhone}</span>
                       </p>
@@ -1433,7 +1433,7 @@ export function NewPurchaseModal({
                     required
                   />
                   {fieldErrors.expectedDate && (
-                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
+                    <p className="text-2xs text-rose-600 dark:text-rose-400 font-medium mt-1 flex items-center gap-1">
                       <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                       <span>{fieldErrors.expectedDate}</span>
                     </p>
@@ -1523,14 +1523,14 @@ export function NewPurchaseModal({
                 >
                   <div className="flex items-center justify-between gap-2 pb-1 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-2">
-                      <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 font-mono font-bold flex items-center justify-center text-[10px]">
+                      <span className="h-5 w-5 rounded-md bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 font-mono font-bold flex items-center justify-center text-2xs">
                         #{idx + 1}
                       </span>
                       <span className="font-bold text-slate-800 dark:text-slate-200">
                         {item.material_name || 'Select Material or Hardware Item'}
                       </span>
                       {item.category && (
-                        <Badge variant="outline" className="text-[9px] py-0 px-1.5 uppercase font-mono">
+                        <Badge variant="outline" className="text-2xs py-0 px-1.5 uppercase font-mono">
                           {item.category}
                         </Badge>
                       )}
@@ -1561,7 +1561,7 @@ export function NewPurchaseModal({
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
                     {/* Item Selector */}
                     <div className="sm:col-span-5">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">
                         Item / Substrate / Hardware <span className="text-rose-500">*</span>
                       </Label>
                       <select
@@ -1646,7 +1646,7 @@ export function NewPurchaseModal({
 
                     {/* Quantity */}
                     <div className="sm:col-span-2">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">
                         Qty <span className="text-rose-500">*</span>
                       </Label>
                       <Input
@@ -1662,7 +1662,7 @@ export function NewPurchaseModal({
 
                     {/* Unit */}
                     <div className="sm:col-span-2">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">Unit</Label>
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">Unit</Label>
                       <Input
                         type="text"
                         value={item.unit}
@@ -1674,7 +1674,7 @@ export function NewPurchaseModal({
 
                     {/* Unit Cost */}
                     <div className="sm:col-span-3">
-                      <Label className="text-[11px] text-slate-500 mb-0.5 block">
+                      <Label className="text-2xs text-slate-500 mb-0.5 block">
                         Unit Rate (৳) <span className="text-rose-500">*</span>
                       </Label>
                       <Input
@@ -1690,7 +1690,7 @@ export function NewPurchaseModal({
                   </div>
 
                   {/* Line Detail Calculation & Stock Hints */}
-                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-2xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
                       {item.config_description && (
                         <span className="font-mono text-slate-700 dark:text-slate-300">
@@ -1698,7 +1698,7 @@ export function NewPurchaseModal({
                         </span>
                       )}
                       {item.current_stock_hint !== undefined && (
-                        <span className="text-[10px]">
+                        <span className="text-2xs">
                           Store Stock: <strong className="text-slate-700 dark:text-slate-200">{item.current_stock_hint}</strong> (Min: {item.reorder_level_hint || 0})
                         </span>
                       )}
@@ -1720,13 +1720,13 @@ export function NewPurchaseModal({
             {/* Quick Total Bar for Step 2 */}
             <div className="p-3 rounded-xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex justify-between items-center text-xs">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-mono text-[10px]">
+                <Badge variant="outline" className="font-mono text-2xs">
                   {items.length} Order Line(s)
                 </Badge>
                 <span className="text-slate-500 dark:text-slate-400">Total Quantities Configured</span>
               </div>
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Subtotal:</span>{' '}
+                <span className="text-2xs text-slate-400 uppercase font-bold tracking-wider">Subtotal:</span>{' '}
                 <span className="text-lg font-black text-amber-700 dark:text-amber-400 font-mono">
                   {formatBDT(itemsSubtotal)}
                 </span>
@@ -1908,7 +1908,7 @@ export function NewPurchaseModal({
                     key={idx}
                     type="button"
                     onClick={() => setNotes((prev) => (prev ? `${prev}\n${tmpl}` : tmpl))}
-                    className="text-[10px] font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
+                    className="text-2xs font-medium bg-slate-100 dark:bg-slate-800 hover:bg-amber-100 dark:hover:bg-amber-950/60 text-slate-700 dark:text-slate-300 px-2 py-1 rounded-md border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
                     + {tmpl.split(' ')[0]} {tmpl.split(' ')[1]} {tmpl.split(' ')[2]}...
                   </button>
@@ -1927,7 +1927,7 @@ export function NewPurchaseModal({
             {/* Final Financial Commitment Summary */}
             <div className="p-4 rounded-xl bg-linear-to-br from-amber-500/10 via-amber-500/5 to-slate-900/5 dark:from-amber-950/40 dark:to-slate-900 border border-amber-300 dark:border-amber-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">
+                <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
                   Items Subtotal
                 </span>
                 <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
@@ -1936,7 +1936,7 @@ export function NewPurchaseModal({
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-semibold uppercase">
+                <span className="text-2xs text-slate-500 dark:text-slate-400 block font-semibold uppercase">
                   VAT & Freight
                 </span>
                 <div className="text-sm font-bold font-mono text-slate-800 dark:text-slate-200 mt-0.5">
@@ -1945,7 +1945,7 @@ export function NewPurchaseModal({
               </div>
 
               <div>
-                <span className="text-[10px] text-amber-700 dark:text-amber-300 block font-bold uppercase">
+                <span className="text-2xs text-amber-700 dark:text-amber-300 block font-bold uppercase">
                   PO Grand Total
                 </span>
                 <div className="text-base font-black font-mono text-amber-700 dark:text-amber-400 mt-0.5">
@@ -1954,7 +1954,7 @@ export function NewPurchaseModal({
               </div>
 
               <div>
-                <span className="text-[10px] text-rose-600 dark:text-rose-400 block font-bold uppercase">
+                <span className="text-2xs text-rose-600 dark:text-rose-400 block font-bold uppercase">
                   Due on Delivery
                 </span>
                 <div className="text-base font-black font-mono text-rose-600 dark:text-rose-400 mt-0.5">

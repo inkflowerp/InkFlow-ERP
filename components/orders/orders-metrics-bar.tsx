@@ -149,7 +149,7 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
             } ${isActive ? c.activeBorder : ''}`}
           >
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 truncate">
+              <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400 truncate">
                 {c.subtitle}
               </span>
               <Icon className={`h-4 w-4 shrink-0 ${c.color}`} />
@@ -158,7 +158,7 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
               <span className={`font-black tracking-tight text-slate-900 dark:text-white font-mono ${c.isCurrency ? 'text-base' : 'text-xl'}`}>
                 {c.count}
               </span>
-              <span className="text-[10px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-[85px]">
+              <span className="text-2xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[85px]">
                 {c.title}
               </span>
             </div>

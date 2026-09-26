@@ -95,7 +95,7 @@ export function Customer360View({
 
           {/* Due Balance Card */}
           <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-right min-w-[160px]">
-            <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
               {tBilingual('Receivable Due', 'বাকি টাকা')}
             </div>
             <div className={`text-xl font-black font-mono ${dueAmount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
@@ -216,7 +216,7 @@ export function Customer360View({
                       <Badge variant="outline" className="text-xs font-semibold capitalize">
                         {j.status}
                       </Badge>
-                      <div className="text-[11px] text-slate-500 mt-1">Due: {j.deadline}</div>
+                      <div className="text-2xs text-slate-500 mt-1">Due: {j.deadline}</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -242,7 +242,7 @@ export function Customer360View({
                           {inv.invoice_number}
                         </span>
                         <Badge
-                          className={`text-[10px] font-bold ${
+                          className={`text-2xs font-bold ${
                             inv.status === 'paid' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white'
                           }`}
                         >
@@ -283,7 +283,7 @@ export function Customer360View({
                     <div className="space-y-0.5">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold font-mono">{p.receipt_number}</span>
-                        <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                        <Badge variant="outline" className="text-2xs uppercase font-bold">
                           {p.payment_method}
                         </Badge>
                       </div>
@@ -294,7 +294,7 @@ export function Customer360View({
                       <div className="text-base font-bold font-mono text-emerald-600">
                         +৳{p.amount.toLocaleString()}
                       </div>
-                      <div className="text-[11px] text-slate-400 font-mono">{p.created_at.split('T')[0]}</div>
+                      <div className="text-2xs text-slate-400 font-mono">{p.created_at.split('T')[0]}</div>
                     </div>
                   </CardContent>
                 </Card>

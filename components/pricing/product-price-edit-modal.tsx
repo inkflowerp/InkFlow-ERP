@@ -149,7 +149,7 @@ export function ProductPriceEditModal({
               <span className="text-base font-black text-slate-900 dark:text-white">
                 {tBilingual('Edit Selling Rate & Customer Tiers', 'বিক্রয় দর ও গ্রাহক রেট নির্ধারণ')}
               </span>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
+              <Badge variant="outline" className="text-2xs uppercase font-mono py-0.5 px-2 bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-300 border-teal-200 dark:border-teal-800">
                 {product.unit || 'sft'}
               </Badge>
             </div>
@@ -285,7 +285,7 @@ export function ProductPriceEditModal({
                 {tBilingual('Customer Category Tier Rates', 'গ্রাহক ক্যাটাগরি দর')}
               </h3>
             </div>
-            <span className="text-[11px] text-slate-400">
+            <span className="text-2xs text-slate-400">
               {tBilingual('Auto-resolved in quotations based on client profile', 'কোটেশনে ক্লায়েন্ট প্রোফাইল অনুযায়ী নির্ধারিত হবে')}
             </span>
           </div>
@@ -307,7 +307,7 @@ export function ProductPriceEditModal({
                         <button
                           type="button"
                           onClick={() => handleApplyPresetDiscount(key, 15)}
-                          className="text-[10px] font-bold text-blue-600 hover:underline"
+                          className="text-2xs font-bold text-blue-600 hover:underline"
                         >
                           -15%
                         </button>
@@ -316,7 +316,7 @@ export function ProductPriceEditModal({
                         <button
                           type="button"
                           onClick={() => handleApplyPresetDiscount(key, 10)}
-                          className="text-[10px] font-bold text-purple-600 hover:underline"
+                          className="text-2xs font-bold text-purple-600 hover:underline"
                         >
                           -10%
                         </button>
@@ -325,7 +325,7 @@ export function ProductPriceEditModal({
                         <button
                           type="button"
                           onClick={() => handleApplyPresetDiscount(key, 12)}
-                          className="text-[10px] font-bold text-amber-600 hover:underline"
+                          className="text-2xs font-bold text-amber-600 hover:underline"
                         >
                           -12%
                         </button>
@@ -334,7 +334,7 @@ export function ProductPriceEditModal({
                         <button
                           type="button"
                           onClick={() => handleApplyPresetDiscount(key, 8)}
-                          className="text-[10px] font-bold text-indigo-600 hover:underline"
+                          className="text-2xs font-bold text-indigo-600 hover:underline"
                         >
                           -8%
                         </button>

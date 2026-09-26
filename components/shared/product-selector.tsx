@@ -107,7 +107,7 @@ export function ProductSelector({
                       setOpen(false)
                     }}
                     className={cn(
-                      'flex items-center justify-between rounded-lg p-2 text-xs sm:text-[13px] cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800',
+                      'flex items-center justify-between rounded-lg p-2 text-xs sm:text-sm cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800',
                       isSelected && 'bg-blue-50 text-blue-900 dark:bg-blue-950/50 font-semibold'
                     )}
                   >

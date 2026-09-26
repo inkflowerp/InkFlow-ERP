@@ -866,12 +866,12 @@ export function WorkOrderModal({
               </span>
               <Badge
                 variant="outline"
-                className="text-[10px] uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
+                className="text-2xs uppercase font-mono py-0.5 px-1.5 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800"
               >
                 Pre-Press Flow
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+            <p className="text-2xs text-slate-500 dark:text-slate-400">
               {tBilingual(
                 'Fast pre-press booking with instant invoice dispatch to manager',
                 'দ্রুত প্রি-প্রেস বুকিং ও ম্যানেজারের নিকট তাৎক্ষণিক ইনভয়েস প্রেরণের সুবিধা'
@@ -907,7 +907,7 @@ export function WorkOrderModal({
                 {tBilingual('Production Workflow Routing', 'প্রোডাকশন ওয়ার্কফ্লো রাউটিং')}
               </h3>
             </div>
-            <span className="text-[11px] text-indigo-700 dark:text-indigo-400 font-medium">
+            <span className="text-2xs text-indigo-700 dark:text-indigo-400 font-medium">
               {workflowRouting === 'design_required' && '🎨 Designer ➔ Proof ➔ Customer Approval ➔ Print'}
               {workflowRouting === 'design_ok' && '⚡ Artwork Verified ➔ Direct Machine Queue'}
               {workflowRouting === 'ready_production' && '🚀 Fast-Track ➔ Direct Production & Delivery Dispatch'}
@@ -931,7 +931,7 @@ export function WorkOrderModal({
                 </span>
                 {workflowRouting === 'ready_production' && <CheckCircle2 className="h-4 w-4 text-blue-600" />}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-2xs text-slate-500 mt-1">
                 Fast-track. Auto-routes custom items to Production Planning and ready items to Delivery.
               </p>
             </button>
@@ -952,7 +952,7 @@ export function WorkOrderModal({
                 </span>
                 {workflowRouting === 'design_ok' && <CheckCircle2 className="h-4 w-4 text-emerald-600" />}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-2xs text-slate-500 mt-1">
                 Print-ready file verified. Routes straight to prepress flightcheck & print floor.
               </p>
             </button>
@@ -973,7 +973,7 @@ export function WorkOrderModal({
                 </span>
                 {workflowRouting === 'design_required' && <CheckCircle2 className="h-4 w-4 text-indigo-600" />}
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">
+              <p className="text-2xs text-slate-500 mt-1">
                 Creates Designer task. Requires customer proof approval before printing.
               </p>
             </button>
@@ -1096,11 +1096,11 @@ export function WorkOrderModal({
                     >
                       <div>
                         <div className="font-bold text-slate-900 dark:text-slate-100">{c.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">
+                        <div className="text-2xs text-slate-500 font-mono">
                           {c.mobile} {c.company_name ? `• ${c.company_name}` : ''}
                         </div>
                       </div>
-                      <Badge variant="outline" className="text-[9px] uppercase font-mono">
+                      <Badge variant="outline" className="text-2xs uppercase font-mono">
                         {c.customer_type || 'Retail'}
                       </Badge>
                     </div>
@@ -1260,7 +1260,7 @@ export function WorkOrderModal({
                       {isService && (
                         <Badge
                           variant="outline"
-                          className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-[10px] font-bold"
+                          className="bg-indigo-50 text-indigo-700 border-indigo-300 dark:bg-indigo-950/40 dark:text-indigo-300 text-2xs font-bold"
                         >
                           🖨️ Printing & Service
                         </Badge>
@@ -1268,7 +1268,7 @@ export function WorkOrderModal({
                       {isReadyProduct && (
                         <Badge
                           variant="outline"
-                          className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold"
+                          className="bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 text-2xs font-bold"
                         >
                           📦 Ready Product
                         </Badge>
@@ -1276,7 +1276,7 @@ export function WorkOrderModal({
                       {isMaterial && (
                         <Badge
                           variant="outline"
-                          className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-[10px] font-bold"
+                          className="bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/40 dark:text-purple-300 text-2xs font-bold"
                         >
                           🧵 Raw Material
                         </Badge>
@@ -1284,7 +1284,7 @@ export function WorkOrderModal({
                       {isCustom && (
                         <Badge
                           variant="outline"
-                          className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-[10px] font-bold"
+                          className="bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 text-2xs font-bold"
                         >
                           Manual
                         </Badge>
@@ -1367,12 +1367,12 @@ export function WorkOrderModal({
                         </Label>
                         {isCustom && (
                           <div className="flex items-center gap-1">
-                            <span className="text-[10px] text-slate-400 mr-1">Mode:</span>
+                            <span className="text-2xs text-slate-400 mr-1">Mode:</span>
                             <button
                               type="button"
                               onClick={() => handleToggleItemKind(index, 'service')}
                               className={cn(
-                                'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
                                 isService ? 'bg-indigo-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                               )}
                             >
@@ -1382,7 +1382,7 @@ export function WorkOrderModal({
                               type="button"
                               onClick={() => handleToggleItemKind(index, 'ready_product')}
                               className={cn(
-                                'px-1.5 py-0.5 rounded text-[10px] font-bold transition-all cursor-pointer',
+                                'px-1.5 py-0.5 rounded text-2xs font-bold transition-all cursor-pointer',
                                 isReadyProduct ? 'bg-emerald-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-600'
                               )}
                             >
@@ -1404,14 +1404,14 @@ export function WorkOrderModal({
                   {/* Dimension Presets for Services */}
                   {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-[11px] font-bold text-slate-400 mr-1">Standard Sizes:</span>
+                      <span className="text-2xs font-bold text-slate-400 mr-1">Standard Sizes:</span>
                       {item.available_dimension_presets.map((preset, pIdx) => (
                         <button
                           key={pIdx}
                           type="button"
                           onClick={() => handleApplyPreset(index, preset)}
                           className={cn(
-                            'px-2 py-0.5 rounded-md text-[11px] font-semibold border transition-all cursor-pointer',
+                            'px-2 py-0.5 rounded-md text-2xs font-semibold border transition-all cursor-pointer',
                             item.width === String(preset.width) && item.height === String(preset.length)
                               ? 'bg-blue-600 text-white border-blue-600'
                               : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-blue-400'
@@ -1427,7 +1427,7 @@ export function WorkOrderModal({
                   {isService && (
                     <div className="grid grid-cols-2 sm:grid-cols-6 gap-2.5">
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Width</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Width</Label>
                         <Input
                           type="number"
                           step="0.1"
@@ -1439,7 +1439,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Height</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Height</Label>
                         <Input
                           type="number"
                           step="0.1"
@@ -1451,7 +1451,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Dim. Unit</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Dim. Unit</Label>
                         <select
                           value={item.dimension_unit || 'ft'}
                           onChange={(e) => handleItemChange(index, 'dimension_unit', e.target.value)}
@@ -1465,7 +1465,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Qty (Prints)</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Qty (Prints)</Label>
                         <Input
                           type="number"
                           min="1"
@@ -1477,7 +1477,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Finishing</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Finishing</Label>
                         <select
                           value={item.finishing || 'None'}
                           onChange={(e) => handleItemChange(index, 'finishing', e.target.value)}
@@ -1501,7 +1501,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Add-ons</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Add-ons</Label>
                         <select
                           value={item.add_on || 'None'}
                           onChange={(e) => handleItemChange(index, 'add_on', e.target.value)}
@@ -1522,22 +1522,22 @@ export function WorkOrderModal({
                   {isReadyProduct && (
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
                       <div className="sm:col-span-6 flex flex-col justify-center">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block mb-0.5">
+                        <span className="text-2xs uppercase font-bold text-slate-400 block mb-0.5">
                           Physical Specs & Packaging
                         </span>
                         <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-700 dark:text-slate-300 font-medium">
                           {item.dimensions_spec ? (
-                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-[11px]">
+                            <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-mono text-2xs">
                               📐 {item.dimensions_spec}
                             </span>
                           ) : (
-                            <span className="text-slate-400 italic text-[11px]">Standard Factory Size</span>
+                            <span className="text-slate-400 italic text-2xs">Standard Factory Size</span>
                           )}
                         </div>
                       </div>
 
                       <div className="sm:col-span-3">
-                        <Label className="text-[11px] font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
                         <Input
                           type="number"
                           min="1"
@@ -1549,7 +1549,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div className="sm:col-span-3">
-                        <Label className="text-[11px] font-semibold mb-1 block">Unit</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Unit</Label>
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -1570,7 +1570,7 @@ export function WorkOrderModal({
                   {isMaterial && (
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Quantity</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Quantity</Label>
                         <Input
                           type="number"
                           min="0.1"
@@ -1583,7 +1583,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Usage Unit</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Usage Unit</Label>
                         <select
                           value={item.unit}
                           onChange={(e) => handleItemChange(index, 'unit', e.target.value)}
@@ -1600,7 +1600,7 @@ export function WorkOrderModal({
                       </div>
 
                       <div>
-                        <Label className="text-[11px] font-semibold mb-1 block">Material Spec</Label>
+                        <Label className="text-2xs font-semibold mb-1 block">Material Spec</Label>
                         <Input
                           placeholder="e.g. 280 GSM Frontlit"
                           value={item.dimensions_spec || ''}
@@ -1613,7 +1613,7 @@ export function WorkOrderModal({
 
                   {/* Substrate / Printable Material pill for service */}
                   {isService && item.printable_material_name && (
-                    <div className="flex items-center gap-2 text-[11px] text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
+                    <div className="flex items-center gap-2 text-2xs text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800">
                       <Layers className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
                       <span>
                         Linked Substrate: <strong>{item.printable_material_name}</strong>
@@ -1624,12 +1624,12 @@ export function WorkOrderModal({
                   {/* Advanced Specs Drawer */}
                   {item.showAdvanced && (
                     <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2 text-xs animate-in fade-in-0">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                      <span className="text-2xs uppercase font-bold text-slate-400 block">
                         Advanced Production Specs
                       </span>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <Label className="text-[11px] font-semibold mb-1 block">Material / Structure Spec</Label>
+                          <Label className="text-2xs font-semibold mb-1 block">Material / Structure Spec</Label>
                           <Input
                             placeholder="e.g. 3mm Cast Acrylic, 280 GSM Frontlit"
                             value={item.dimensions_spec || ''}
@@ -1638,7 +1638,7 @@ export function WorkOrderModal({
                           />
                         </div>
                         <div>
-                          <Label className="text-[11px] font-semibold mb-1 block">Item Special Instructions</Label>
+                          <Label className="text-2xs font-semibold mb-1 block">Item Special Instructions</Label>
                           <Input
                             placeholder="e.g. 1-inch extra margin for framing..."
                             value={item.notes || ''}
@@ -1722,11 +1722,11 @@ export function WorkOrderModal({
                   <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
                     {tBilingual('Click to browse or Drag & Drop .JPG / .PNG', 'ফাইল নির্বাচন করুন অথবা ড্র্যাগ করুন')}
                   </p>
-                  <p className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold">
-                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-[10px]">Ctrl+V</kbd> anywhere to paste screenshot
+                  <p className="text-2xs text-blue-600 dark:text-blue-400 font-semibold">
+                    💡 Tip: Press <kbd className="px-1 py-0.5 rounded bg-slate-200 dark:bg-slate-800 font-mono text-2xs">Ctrl+V</kbd> anywhere to paste screenshot
                   </p>
                 </div>
-                <p className="text-[10px] text-slate-400">
+                <p className="text-2xs text-slate-400">
                   Supported formats: <strong>.JPG, .JPEG, .PNG</strong>
                 </p>
               </div>

@@ -169,6 +169,70 @@ button, input, select, textarea {
   font-family: inherit;
 }
 
+/* ==============================================================================
+   Application-Wide Typography Normalization & Font-Size Consistency
+   Enforces WCAG AA legibility, prevents Bengali diacritic clipping, and
+   harmonizes font sizes across all cards, modals, tables, badges & controls.
+   ============================================================================== */
+
+/* 1. Standardized 2xs utility */
+.text-2xs {
+  font-size: 0.6875rem !important; /* 11px */
+  line-height: 1rem !important;
+}
+
+/* 2. Micro-text utility normalization: Any remaining or dynamically computed arbitrary pixel sizes */
+.text-\[6px\], .text-\[7px\], .text-\[8px\], .text-\[9px\],
+[class*="text-[6px]"], [class*="text-[7px]"], [class*="text-[8px]"], [class*="text-[9px]"] {
+  font-size: 0.6875rem !important; /* 11px accessible floor (text-2xs) */
+  line-height: 1rem !important;
+  letter-spacing: 0.01em;
+}
+
+.text-\[10px\], [class*="text-[10px]"],
+.text-\[11px\], [class*="text-[11px]"] {
+  font-size: 0.6875rem !important; /* 11px normalized with text-2xs */
+  line-height: 1rem !important;
+}
+
+.text-\[13px\], [class*="text-[13px]"] {
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.1875rem !important;
+}
+
+.text-\[14px\], [class*="text-[14px]"] {
+  font-size: 0.875rem !important; /* 14px text-sm */
+  line-height: 1.25rem !important;
+}
+
+/* 3. Global Table Typography Consistency */
+table th {
+  font-size: 0.75rem; /* 12px text-xs */
+  line-height: 1.125rem;
+  letter-spacing: 0.025em;
+  font-weight: 700;
+}
+
+table td {
+  font-size: 0.8125rem; /* 13px clean readable table cell data */
+  line-height: 1.25rem;
+}
+
+/* 4. Form Controls standard sizing: uniform 14px base prevents iOS auto-zoom */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+select,
+textarea {
+  font-size: 0.875rem; /* 14px text-sm */
+  line-height: 1.25rem;
+}
+
+/* 5. Consistent Badge & Chip Typography */
+[data-badge],
+.badge-label {
+  font-feature-settings: "tnum" 1;
+}
+
+
 option {
   background-color: #ffffff;
   color: #0f172a;

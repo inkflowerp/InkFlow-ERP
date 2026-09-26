@@ -151,11 +151,11 @@ export function PricingMatrixTable({
                     <td className="py-3 px-4">
                       <div className="font-bold text-slate-900 dark:text-white">{p.name}</div>
                       {p.name_bn && (
-                        <div className="text-[11px] text-teal-700 dark:text-teal-400 font-medium bangla-text">
+                        <div className="text-2xs text-teal-700 dark:text-teal-400 font-medium bangla-text">
                           {p.name_bn}
                         </div>
                       )}
-                      <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+                      <div className="flex items-center gap-2 text-2xs text-slate-400 font-mono mt-0.5">
                         <span className="uppercase">{p.unit || 'sft'}</span>
                         {p.category && <span>• {p.category}</span>}
                         {marginPct !== null && (

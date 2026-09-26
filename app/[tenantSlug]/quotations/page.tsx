@@ -966,7 +966,7 @@ export default function QuotationsPage() {
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                     <span>{locale === 'bn' ? 'কোটেশন ও সেলস পাইপলাইন' : 'Quotations & Sales Pipeline'}</span>
-                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold py-0.5">
+                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
                       Live BDT ৳
                     </Badge>
                   </h1>
@@ -1118,14 +1118,14 @@ export default function QuotationsPage() {
             {/* 1. Total Quoted / Pipeline Value */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <span>Total Quoted</span>
                 <FileSpreadsheet className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
                 {formatBDT(effectiveMetrics?.totalPipelineValue || 0)}
               </div>
-              <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
+              <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1 flex items-center gap-1">
                 <span className="font-semibold text-slate-700 dark:text-slate-300">{effectiveMetrics?.totalCount || 0}</span>
                 <span>Proposals Created</span>
               </div>
@@ -1134,14 +1134,14 @@ export default function QuotationsPage() {
             {/* 2. Won / Accepted */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/40 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-              <div className="flex items-center justify-between text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
                 <span>Accepted / Won</span>
                 <FileCheck2 className="h-3.5 w-3.5 text-emerald-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400 mt-1.5">
                 {formatBDT(effectiveMetrics?.wonValue || 0)}
               </div>
-              <div className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
+              <div className="text-2xs text-emerald-700/80 dark:text-emerald-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
                 <span className="font-semibold">{effectiveMetrics?.wonCount || 0}</span>
                 <span>Converted to Orders</span>
               </div>
@@ -1150,14 +1150,14 @@ export default function QuotationsPage() {
             {/* 3. Pending / Sent */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/40 shadow-xs hover:border-amber-300 dark:hover:border-amber-800 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-              <div className="flex items-center justify-between text-[11px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                 <span>Active Pipeline</span>
                 <Clock className="h-3.5 w-3.5 text-amber-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-amber-600 dark:text-amber-400 mt-1.5">
                 {formatBDT(effectiveMetrics?.pendingValue || 0)}
               </div>
-              <div className="text-[11px] text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
+              <div className="text-2xs text-amber-700/80 dark:text-amber-400/80 font-numeric tabular-nums mt-1 flex items-center gap-1">
                 <span className="font-semibold">{effectiveMetrics?.pendingCount || 0}</span>
                 <span>Awaiting Decision</span>
               </div>
@@ -1166,7 +1166,7 @@ export default function QuotationsPage() {
             {/* 4. Expiring Soon */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-300/80 dark:border-rose-900/50 shadow-xs hover:border-rose-400 dark:hover:border-rose-800 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-600" />
-              <div className="text-[11px] font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
+              <div className="text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider flex items-center justify-between">
                 <span>Expiring Soon</span>
                 {(effectiveMetrics?.expiringCount || 0) > 0 ? (
                   <span className="h-2 w-2 rounded-full bg-rose-600 animate-ping" />
@@ -1177,7 +1177,7 @@ export default function QuotationsPage() {
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-rose-600 dark:text-rose-400 mt-1.5">
                 {formatBDT(effectiveMetrics?.expiringValue || 0)}
               </div>
-              <div className="text-[11px] text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
+              <div className="text-2xs text-rose-600/90 font-numeric tabular-nums mt-1 flex items-center gap-1">
                 <span className="font-semibold">{effectiveMetrics?.expiringCount || 0}</span>
                 <span>Critical / Warning</span>
               </div>
@@ -1186,14 +1186,14 @@ export default function QuotationsPage() {
             {/* 5. Avg. Deal Value */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-violet-500" />
-              <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 <span>Avg Deal Value</span>
                 <Building className="h-3.5 w-3.5 text-purple-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-slate-900 dark:text-white mt-1.5">
                 {formatBDT(effectiveMetrics?.avgDealValue || 0)}
               </div>
-              <div className="text-[11px] text-slate-500 font-numeric tabular-nums mt-1">
+              <div className="text-2xs text-slate-500 font-numeric tabular-nums mt-1">
                 Avg Margin: <strong className="text-slate-700 dark:text-slate-300">{effectiveMetrics?.avgMargin || 40}%</strong>
               </div>
             </Card>
@@ -1201,13 +1201,13 @@ export default function QuotationsPage() {
             {/* 6. Win Rate % */}
             <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-blue-200/80 dark:border-blue-900/40 shadow-xs hover:border-blue-300 dark:hover:border-blue-800 transition-all rounded-2xl relative overflow-hidden group">
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-sky-500 to-blue-600" />
-              <div className="flex items-center justify-between text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
+              <div className="flex items-center justify-between text-2xs font-bold text-blue-700 dark:text-blue-400 uppercase tracking-wider">
                 <span>Win Rate</span>
                 <Activity className="h-3.5 w-3.5 text-blue-500 group-hover:scale-110 transition-transform" />
               </div>
               <div className="text-lg sm:text-xl font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400 mt-1.5 flex items-baseline gap-1">
                 <span>{effectiveMetrics?.winRate || 0}%</span>
-                <span className={cn('text-[10px] font-bold', healthTier.color)}>({healthTier.label})</span>
+                <span className={cn('text-2xs font-bold', healthTier.color)}>({healthTier.label})</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
                 <div
@@ -1250,7 +1250,7 @@ export default function QuotationsPage() {
               <span>Quotations Directory</span>
               <Badge
                 className={cn(
-                  'text-[10px] py-0 px-1.5 font-bold',
+                  'text-2xs py-0 px-1.5 font-bold',
                   activeTab === 'quotations'
                     ? 'bg-blue-800 text-white'
                     : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -1274,7 +1274,7 @@ export default function QuotationsPage() {
               {urgentAlertCount > 0 ? (
                 <Badge
                   className={cn(
-                    'text-[10px] py-0 px-1.5 font-bold',
+                    'text-2xs py-0 px-1.5 font-bold',
                     activeTab === 'attention'
                       ? 'bg-amber-800 text-white'
                       : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
@@ -1285,7 +1285,7 @@ export default function QuotationsPage() {
               ) : (
                 <Badge
                   className={cn(
-                    'text-[10px] py-0 px-1.5 font-bold',
+                    'text-2xs py-0 px-1.5 font-bold',
                     activeTab === 'attention'
                       ? 'bg-amber-800 text-white'
                       : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
@@ -1312,11 +1312,11 @@ export default function QuotationsPage() {
                     <div>
                       <div className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
                         <span>Commercial Follow-up Alert</span>
-                        <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-[10px] py-0 font-bold">
+                        <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-2xs py-0 font-bold">
                           {urgentAlertCount} Proposals Needing Action
                         </Badge>
                       </div>
-                      <div className="text-[11px] text-amber-800/90 dark:text-amber-300/80">
+                      <div className="text-2xs text-amber-800/90 dark:text-amber-300/80">
                         Proposals expiring soon, scheduled for customer outreach today, or requiring immediate order conversion.
                       </div>
                     </div>
@@ -1397,14 +1397,14 @@ export default function QuotationsPage() {
                                 {item.customerName}
                               </span>
                               {item.customerCompany && (
-                                <span className="text-slate-500 text-[11px] font-medium">({item.customerCompany})</span>
+                                <span className="text-slate-500 text-2xs font-medium">({item.customerCompany})</span>
                               )}
                               <span className="font-mono text-blue-600 dark:text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-md">
                                 #{item.quotationNumber}
                               </span>
                             </div>
 
-                            <div className="text-[11px] text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
+                            <div className="text-2xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
                               <span>
                                 Phone:{' '}
                                 {item.customerPhone ? (
@@ -1433,7 +1433,7 @@ export default function QuotationsPage() {
                               </div>
                               <span
                                 className={cn(
-                                  'text-[10px] font-bold uppercase tracking-wider block',
+                                  'text-2xs font-bold uppercase tracking-wider block',
                                   item.urgency === 'critical'
                                     ? 'text-rose-600 dark:text-rose-400'
                                     : item.urgency === 'follow_up'
@@ -1498,7 +1498,7 @@ export default function QuotationsPage() {
                         Sector Streams (This Period)
                       </span>
                     </div>
-                    <span className="text-[11px] font-mono text-slate-400">
+                    <span className="text-2xs font-mono text-slate-400">
                       Total: {formatBDT(effectiveMetrics.totalPipelineValue)}
                     </span>
                   </div>
@@ -1517,9 +1517,9 @@ export default function QuotationsPage() {
                               <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
                             </span>
                             <div className="flex items-center gap-2 font-mono">
-                              <span className="text-slate-400 text-[11px]">{sec.count} quotes</span>
+                              <span className="text-slate-400 text-2xs">{sec.count} quotes</span>
                               <span className="font-bold text-slate-900 dark:text-white">{formatBDT(sec.value)}</span>
-                              <span className="text-blue-600 font-bold text-[10px] w-8 text-right">({pct}%)</span>
+                              <span className="text-blue-600 font-bold text-2xs w-8 text-right">({pct}%)</span>
                             </div>
                           </div>
                           <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
@@ -1546,26 +1546,26 @@ export default function QuotationsPage() {
                           Commercial Conversion Metrics
                         </span>
                       </div>
-                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-[10px] font-bold">
+                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-2xs font-bold">
                         Win Rate: {effectiveMetrics.winRate}%
                       </Badge>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-1">
                       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Est. 50% Advance</span>
+                        <span className="text-2xs uppercase font-bold text-slate-400 block">Est. 50% Advance</span>
                         <span className="text-base font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400">
                           {formatBDT(effectiveMetrics.expectedAdvance)}
                         </span>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">Upon Job Order Confirmation</span>
+                        <span className="text-2xs text-slate-500 block mt-0.5">Upon Job Order Confirmation</span>
                       </div>
 
                       <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Average Deal Margin</span>
+                        <span className="text-2xs uppercase font-bold text-slate-400 block">Average Deal Margin</span>
                         <span className="text-base font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400">
                           {effectiveMetrics.avgMargin}%
                         </span>
-                        <span className="text-[10px] text-slate-500 block mt-0.5">Target Minimum: 35%</span>
+                        <span className="text-2xs text-slate-500 block mt-0.5">Target Minimum: 35%</span>
                       </div>
                     </div>
                   </div>
@@ -1594,7 +1594,7 @@ export default function QuotationsPage() {
               {/* Sector Streams Filter & Active Pipeline Highlights */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 border border-slate-800 shadow-md">
                 <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-                  <span className="text-[11px] uppercase font-bold text-slate-400 mr-1 hidden md:inline">
+                  <span className="text-2xs uppercase font-bold text-slate-400 mr-1 hidden md:inline">
                     Sector:
                   </span>
                   {[
@@ -1619,7 +1619,7 @@ export default function QuotationsPage() {
                         <span>{sec.icon}</span>
                         <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
                         <span
-                          className={`text-[10px] px-1.5 py-0.2 rounded-full ${
+                          className={`text-2xs px-1.5 py-0.2 rounded-full ${
                             isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-400'
                           }`}
                         >
@@ -1632,7 +1632,7 @@ export default function QuotationsPage() {
 
                 <div className="flex items-center gap-3 shrink-0 text-xs border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-semibold text-slate-400 block">
+                    <span className="text-2xs uppercase font-semibold text-slate-400 block">
                       {locale === 'bn' ? 'চলতি পাইপলাইন' : 'Active Pipeline'}
                     </span>
                     <span className="font-mono font-bold text-cyan-300">
@@ -1641,7 +1641,7 @@ export default function QuotationsPage() {
                   </div>
                   <div className="h-6 w-px bg-white/10 hidden sm:block" />
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-semibold text-amber-400 block">
+                    <span className="text-2xs uppercase font-semibold text-amber-400 block">
                       {locale === 'bn' ? 'প্রত্যাশিত অগ্রিম (৫০%)' : 'Est. Advance (50%)'}
                     </span>
                     <span className="font-mono font-bold text-amber-300">
@@ -1683,7 +1683,7 @@ export default function QuotationsPage() {
                           {tab.count > 0 && (
                             <span
                               className={cn(
-                                'text-[10px] px-1.5 py-0.2 rounded-full',
+                                'text-2xs px-1.5 py-0.2 rounded-full',
                                 isSelected
                                   ? 'bg-white/20 text-white dark:bg-slate-900/20 dark:text-slate-900'
                                   : tab.badgeColor ||
