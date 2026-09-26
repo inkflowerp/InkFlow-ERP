@@ -48,6 +48,7 @@ import {
 import { ProductRecord } from '@/types/product.types'
 import { cn } from '@/lib/utils'
 import { dispatchToast } from '@/components/shared/toast-feedback'
+import { formatCustomerIdNo } from '@/lib/formatters'
 
 export interface NewCustomerModalProps {
   open: boolean
@@ -74,6 +75,8 @@ export function NewCustomerModal({
   const [activeTab, setActiveTab] = useState<'info' | 'rates'>('info')
 
   // 1. Basic Information
+  const [customerIdNo, setCustomerIdNo] = useState<string>('')
+  const [customerCode, setCustomerCode] = useState<string>('')
   const [name, setName] = useState<string>(initialName)
   const [nameBn, setNameBn] = useState<string>('')
   const [companyName, setCompanyName] = useState<string>('')
@@ -141,6 +144,8 @@ export function NewCustomerModal({
   // Reset and focus when modal opens
   useEffect(() => {
     if (open) {
+      setCustomerIdNo('')
+      setCustomerCode('')
       setName(initialName || '')
       setMobile(initialPhone || '')
       setWhatsapp(initialPhone || '')
@@ -240,6 +245,8 @@ export function NewCustomerModal({
     try {
       const res = await createCustomerAction({
         company_id: activeCompanyId,
+        customer_id_no: customerIdNo.trim() || undefined,
+        customer_code: customerCode.trim() || undefined,
         name: name.trim(),
         name_bn: nameBn.trim() || null,
         company_name: companyName.trim() || null,
@@ -449,10 +456,13 @@ export function NewCustomerModal({
                   className="p-2.5 rounded-lg bg-white/90 dark:bg-slate-900/90 border border-amber-200/80 dark:border-amber-900/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                 >
                   <div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="font-bold text-slate-900 dark:text-white">
                         {m.customer.name}
                       </span>
+                      <Badge variant="outline" className="font-mono text-[10px] px-1.5 py-0 text-blue-700 bg-blue-50/50 border-blue-200 dark:border-blue-900 dark:text-blue-300">
+                        {formatCustomerIdNo(m.customer)}
+                      </Badge>
                       {m.customer.company_name && (
                         <span className="text-slate-500 dark:text-slate-400 text-xs">
                           • {m.customer.company_name}
@@ -557,15 +567,28 @@ export function NewCustomerModal({
                   </select>
                 </div>
 
-                <div className="sm:col-span-2">
+                <div>
                   <Label className="text-xs font-semibold mb-1 block">
-                    Company Name (Optional)
+                    Customer ID (কাস্টমার আইডি)
                   </Label>
                   <Input
-                    placeholder="e.g. Apex Media Limited"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="text-xs h-9"
+                    placeholder="Auto (e.g. CUST-0002)"
+                    value={customerIdNo}
+                    onChange={(e) => setCustomerIdNo(e.target.value)}
+                    className="text-xs h-9 font-mono"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Leave empty to auto-generate</p>
+                </div>
+
+                <div>
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Customer Code (গ্রাহক কোড)
+                  </Label>
+                  <Input
+                    placeholder="e.g. APX-01 or REF-01"
+                    value={customerCode}
+                    onChange={(e) => setCustomerCode(e.target.value)}
+                    className="text-xs h-9 font-mono"
                   />
                 </div>
 
@@ -577,6 +600,18 @@ export function NewCustomerModal({
                     placeholder="e.g. Mr. Kabir (Purchase Officer)"
                     value={contactPerson}
                     onChange={(e) => setContactPerson(e.target.value)}
+                    className="text-xs h-9"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 lg:col-span-3">
+                  <Label className="text-xs font-semibold mb-1 block">
+                    Company Name (Optional)
+                  </Label>
+                  <Input
+                    placeholder="e.g. Apex Media Limited"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
                     className="text-xs h-9"
                   />
                 </div>

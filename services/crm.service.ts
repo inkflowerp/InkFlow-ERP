@@ -143,6 +143,9 @@ export class CrmService {
       const whatsappMatch =
         (c.whatsapp && c.whatsapp.includes(q)) || (cleanedQ.length >= 3 && whatsappDigits.includes(cleanedQ))
 
+      const idNoMatch = (c.customer_id_no && c.customer_id_no.toLowerCase().includes(q)) || false
+      const codeMatch = (c.customer_code && c.customer_code.toLowerCase().includes(q)) || false
+
       return (
         nameMatch ||
         nameBnMatch ||
@@ -150,7 +153,9 @@ export class CrmService {
         emailMatch ||
         areaMatch ||
         phoneMatch ||
-        whatsappMatch
+        whatsappMatch ||
+        idNoMatch ||
+        codeMatch
       )
     })
   }

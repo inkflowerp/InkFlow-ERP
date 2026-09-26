@@ -11,6 +11,7 @@ import { buildPaginatedResponse } from '../api/pagination-helper.ts'
 import type { PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 import { coalesceQuery, invalidateQueryCache } from '../performance/query-coalesce.ts'
+import { isReadyProduct } from '../units.ts'
 
 export class OrderRepository {
   static async getOrders(companyId: string): Promise<SalesOrderRecord[]> {
@@ -253,6 +254,116 @@ export class OrderRepository {
     const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
     all.unshift(localOrder)
     PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)
+
+    // Auto-provision design job if order needs design or design check
+    try {
+      const isDesignReq =
+        workflowRouting === 'design_required' ||
+        localOrder.items?.some(
+          (it: any) => (it as any).design_required || (it as any).workflow_routing === 'design_required'
+        )
+      const isDesignOk =
+        workflowRouting === 'design_ok' ||
+        localOrder.items?.some((it: any) => (it as any).workflow_routing === 'design_ok')
+
+      if (isDesignReq || isDesignOk) {
+        const designJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+        const eligibleItems = (localOrder.items || []).filter((it: any) => {
+          if (isReadyProduct(it) || it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') {
+            return false
+          }
+          if (localOrder.workflow_routing === 'design_required' || localOrder.workflow_routing === 'design_ok') {
+            return true
+          }
+          return it.design_required || it.workflow_routing === 'design_required' || it.workflow_routing === 'design_ok'
+        })
+
+        const itemsToProcess =
+          eligibleItems.length > 0
+            ? eligibleItems
+            : localOrder.items && localOrder.items.length > 0
+            ? []
+            : [null]
+
+        itemsToProcess.forEach((targetItem: any, idx: number) => {
+          const itemReq =
+            targetItem?.design_required ||
+            targetItem?.workflow_routing === 'design_required' ||
+            workflowRouting === 'design_required'
+          const itemOk =
+            targetItem?.workflow_routing === 'design_ok' || (workflowRouting === 'design_ok' && !itemReq)
+          const routingMode = itemOk ? 'design_ok' : 'design_required'
+          const itemTitle =
+            targetItem?.item_name ||
+            (itemOk ? 'Customer Supplied Artwork (Check)' : 'Work Order Artwork')
+
+          const hasExisting = designJobs.some(
+            (dj) =>
+              (dj.sales_order_id === localOrder.id || dj.order_number === localOrder.order_number) &&
+              (dj.title === itemTitle || dj.invoice_item_id === targetItem?.id)
+          )
+          if (!hasExisting) {
+            const dsnId = `dsn-${Date.now()}-${idx}`
+            const ordSuffix = itemsToProcess.length > 1 ? `-${String.fromCharCode(65 + idx)}` : ''
+            const newDesignJob = {
+              id: dsnId,
+              company_id: localOrder.company_id,
+              sales_order_id: localOrder.id,
+              order_number: localOrder.order_number,
+              design_number: `DSN-${(localOrder.order_number || 'ORD').replace('ORD-', '')}${ordSuffix}`,
+              customer_id: localOrder.customer_id,
+              customer_name: localOrder.customer_name,
+              customer_phone: localOrder.customer_phone,
+              customer_address: localOrder.customer_address,
+              title: itemTitle,
+              product_name: targetItem?.item_name || null,
+              designer_name: localOrder.salesperson_name || 'Design Team',
+              priority: localOrder.priority || 'urgent',
+              status: isDesignOk ? 'received' : 'received',
+              workflow_routing: routingMode,
+              commercial_status: localOrder.commercial_status || 'invoice_required',
+              customer_approval_required: !itemOk,
+              deadline: localOrder.delivery_date
+                ? `${localOrder.delivery_date} 18:00`
+                : new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+              instructions:
+                localOrder.notes ||
+                (itemOk
+                  ? 'Customer supplied artwork registered for pre-press verification.'
+                  : 'Design brief ingested from Commercial Orders.'),
+              dimensions_spec: targetItem
+                ? `${targetItem.width}×${targetItem.height} ${targetItem.dimension_unit || 'ft'}`
+                : 'Standard Spec',
+              current_version: 1,
+              revision_count: 0,
+              is_locked: false,
+              versions: [
+                {
+                  id: `dv-${Date.now()}-${idx}`,
+                  design_job_id: dsnId,
+                  version_number: 1,
+                  version_label: itemOk ? 'Version 1 (Customer Supplied Artwork)' : 'Version 1 (Initial Brief)',
+                  proof_file_name: itemOk ? 'customer_artwork.pdf' : 'order_brief.png',
+                  proof_file_url:
+                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                  file_format: 'png',
+                  change_notes: itemOk
+                    ? 'Customer supplied artwork registered for pre-press check.'
+                    : 'Initial work order artwork brief registered.',
+                  uploaded_by_name: localOrder.salesperson_name || 'Commercial Hub',
+                  is_approved: itemOk,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+            PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newDesignJob)
+          }
+        })
+      }
+    } catch {}
+
     return localOrder
   }
 

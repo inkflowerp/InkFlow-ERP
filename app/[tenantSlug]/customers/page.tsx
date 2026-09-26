@@ -55,18 +55,10 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
 
+import { formatCustomerIdNo as canonicalFormatCustomerIdNo } from '@/lib/formatters'
+
 export function formatCustomerIdNo(c: Partial<CustomerRecord>, index?: number): string {
-  if (c.customer_id_no && c.customer_id_no.trim()) return c.customer_id_no.trim()
-  if (c.customer_code && c.customer_code.trim()) return c.customer_code.trim()
-  if (c.id) {
-    const raw = c.id.replace(/-/g, '')
-    if (/^\d+$/.test(raw)) {
-      return `CUST-${raw.padStart(3, '0')}`
-    }
-    const suffix = raw.slice(-4).toUpperCase()
-    return `CUST-${suffix}`
-  }
-  return `CUST-${String((index !== undefined ? index + 1 : 1)).padStart(3, '0')}`
+  return canonicalFormatCustomerIdNo(c, index)
 }
 
 function getLocalInvoices(slug?: string, companySlug?: string, companyId?: string): any[] {
@@ -440,7 +432,9 @@ export default function CustomersPage() {
             (c.mobile && c.mobile.includes(q)) ||
             (c.whatsapp && c.whatsapp.includes(q)) ||
             (c.area && c.area.toLowerCase().includes(q)) ||
-            (c.customer_id_no && c.customer_id_no.toLowerCase().includes(q))
+            (c.customer_id_no && c.customer_id_no.toLowerCase().includes(q)) ||
+            (c.customer_code && c.customer_code.toLowerCase().includes(q)) ||
+            formatCustomerIdNo(c).toLowerCase().includes(q)
         )
       }
 

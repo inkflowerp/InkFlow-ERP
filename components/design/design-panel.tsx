@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react'
-import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { useParams, usePathname } from 'next/navigation'
 import {
   Sparkles,
   Layers,
@@ -9,10 +10,16 @@ import {
   CheckCircle2,
   Printer,
   PlusCircle,
+  Plus,
   RefreshCw,
   Palette,
+  Trash2,
+  X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
+import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -22,6 +29,7 @@ import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
 import type { DesignJobRecord } from '@/types/design.types'
 import type { ProductionJobRecord, ProductionTaskRecord } from '@/types/production.types'
+import { WorkOrderModal } from '@/components/shared/work-order-modal'
 
 import {
   type PreflightState,
@@ -47,14 +55,18 @@ export interface DesignPanelProps {
 
 export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const params = useParams()
+  const pathname = usePathname()
   const { company } = useTenant()
-  const { tBilingual } = useI18n()
+  const { tBilingual, locale } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const { user } = useAuth()
   const companyId = company?.id || tenantSlug
 
   // Hydration Mount State
   const [mounted, setMounted] = useState(false)
+
+  // Work Order Modal State (matching Commercial Orders & Job Hub)
+  const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
 
   // Data States
   const [jobs, setJobs] = useState<DesignJobRecord[]>([])
@@ -702,48 +714,74 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   ]
 
   return (
-    <div className="space-y-4 pb-12">
-      {/* Toast Notification */}
-      {notification && (
-        <div
-          className={`p-3 rounded-lg text-xs font-bold flex items-center justify-between shadow-lg transition-all animate-in fade-in slide-in-from-top-2 duration-200 ${
-            notification.type === 'warning'
-              ? 'bg-amber-600 text-white'
-              : notification.type === 'info'
-              ? 'bg-blue-600 text-white'
-              : 'bg-emerald-600 text-white'
-          }`}
-        >
-          <span>{notification.msg}</span>
-          <button
-            type="button"
-            onClick={() => setNotification(null)}
-            className="text-white/80 hover:text-white ml-2 text-xs font-mono"
-          >
-            ✕
-          </button>
-        </div>
-      )}
+    <div className="space-y-4 pb-16 max-w-7xl mx-auto">
+      {/* =========================================================================
+          1. HEADER & PRIMARY WORKSPACE ACTIONS (Matching Quotation & Billing UI)
+         ========================================================================= */}
+      <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden">
+        {/* Subtle decorative glow */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-purple-500/5 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Page Header */}
-      <PageHeader
-        titleEn="Design Studio & Pre-Press Quality Panel"
-        titleBn="ডিজাইন স্টুডিও ও প্রি-প্রেস কোয়ালিটি"
-        descriptionEn="Graphic design workbench, preflight verification, proof versions, and WhatsApp customer approval hub."
-        descriptionBn="গ্রাফিক ডিজাইন ওয়ার্কবেঞ্চ, প্রি-ফ্লাইট কোয়ালিটি চেক, প্রুফ ভার্সন ও গ্রাহক হোয়াটসঅ্যাপ অনুমোদন হাব।"
-        icon={Palette}
-        iconColor="text-pink-600 dark:text-pink-400"
-        actions={
-          <Button
-            type="button"
-            onClick={() => setIsNewJobModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 shadow-md"
-          >
-            <PlusCircle className="h-4 w-4 mr-1.5" />
-            <span>{tBilingual('+ New Artwork / Walk-In Job', '+ নতুন ডিজাইন / ওয়াক-ইন কাজ')}</span>
-          </Button>
-        }
-      />
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5">
+              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 text-white flex items-center justify-center shadow-sm shadow-indigo-500/20">
+                <Palette className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                  <span>
+                    {locale === 'bn' ? 'ডিজাইন স্টুডিও ও প্রি-প্রেস কোয়ালিটি' : 'Design Studio & Pre-Press Quality Panel'}
+                  </span>
+                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 text-[10px] font-bold py-0.5">
+                    Pre-Press Hub
+                  </Badge>
+                </h1>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  {locale === 'bn'
+                    ? 'গ্রাফিক ডিজাইন ওয়ার্কবেঞ্চ, প্রি-ফ্লাইট কোয়ালিটি চেক, প্রুফ ভার্সন ও গ্রাহক হোয়াটসঅ্যাপ অনুমোদন হাব'
+                    : 'Graphic design workbench, preflight verification, proof versions, and WhatsApp customer approval hub.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href={getTenantNavHref('/trash?tab=design', pathname, tenantSlug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
+              >
+                <Trash2 className="h-3.5 w-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Trash Bin</span>
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
+              title="Refresh Design Jobs"
+            >
+              <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-indigo-600')} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+
+            <Button
+              size="sm"
+              onClick={() => setIsWorkOrderModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-bold shadow-sm shadow-indigo-500/20 h-9 px-4 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
+            >
+              <Plus className="h-4 w-4" />
+              <span>{tBilingual('Work Order', 'ওয়ার্ক অর্ডার')}</span>
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Top Metrics KPI Bar */}
       <DesignMetricsBar
@@ -753,7 +791,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       />
 
       {/* 4 Practical Press Tabs Navigation */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-100 dark:bg-slate-800/60 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
         {tabsConfig.map((t) => {
           const Icon = t.icon
           const isActive = activeTab === t.id
@@ -762,15 +800,19 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
               key={t.id}
               type="button"
               onClick={() => setActiveTab(t.id)}
-              className={`p-2.5 rounded-lg text-left transition-all flex items-center justify-between ${
+              className={`p-2.5 rounded-xl text-left transition-all flex items-center justify-between cursor-pointer ${
                 isActive
-                  ? 'bg-white dark:bg-slate-900 text-indigo-950 dark:text-white shadow-sm font-bold border border-indigo-200 dark:border-indigo-800'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold border border-slate-200/80 dark:border-slate-700/80'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
               }`}
             >
               <div className="flex items-center gap-2 truncate">
-                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
-                <span className="text-xs truncate">{t.label}</span>
+                <Icon
+                  className={`h-4 w-4 shrink-0 ${
+                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'
+                  }`}
+                />
+                <span className="text-xs truncate font-semibold">{t.label}</span>
               </div>
               <span
                 className={`text-[11px] font-mono px-2 py-0.5 rounded-full font-bold ${
@@ -919,6 +961,44 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
           isOpen={compareModalState.isOpen}
           onClose={() => setCompareModalState({ isOpen: false, job: null })}
           job={compareModalState.job}
+        />
+      )}
+
+      {/* Floating Toast Notification (Matching Quotation & Billing) */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
+          <Sparkles className="h-4 w-4 text-indigo-400 dark:text-indigo-600 shrink-0" />
+          <span>{notification.msg}</span>
+          <button
+            type="button"
+            onClick={() => setNotification(null)}
+            className="p-1 text-slate-400 hover:text-white dark:hover:text-black cursor-pointer ml-1"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Add Work Order Modal (Same as Commercial Orders & Job Hub) */}
+      {isWorkOrderModalOpen && (
+        <WorkOrderModal
+          isOpen={isWorkOrderModalOpen}
+          onClose={() => {
+            setIsWorkOrderModalOpen(false)
+            loadData()
+          }}
+          onSuccess={() => {
+            setIsWorkOrderModalOpen(false)
+            loadData()
+            showNotification(
+              tBilingual(
+                'Work Order created successfully and added to Design Studio.',
+                'ওয়ার্ক অর্ডার তৈরি হয়েছে এবং ডিজাইন স্টুডিওতে যুক্ত হয়েছে।'
+              ),
+              'success'
+            )
+          }}
+          companyId={companyId}
         />
       )}
 

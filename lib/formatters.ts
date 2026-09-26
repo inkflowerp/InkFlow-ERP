@@ -503,3 +503,58 @@ export function tBilingual(enText: string, bnText?: string | null): string {
   return enText
 }
 
+/**
+ * Canonical Customer ID Formatter across PrintERP
+ * Ensures deterministic, professional, non-garbled customer IDs across Directory, Customer 360, CSV, and Modals.
+ */
+export function formatCustomerIdNo(
+  c?: {
+    id?: string | null
+    customer_id_no?: string | null
+    customer_code?: string | null
+    [key: string]: any
+  } | null,
+  index?: number
+): string {
+  if (!c) {
+    return `CUST-${String((index !== undefined ? index + 1 : 1)).padStart(3, '0')}`
+  }
+
+  if (c.customer_id_no && typeof c.customer_id_no === 'string' && c.customer_id_no.trim()) {
+    return c.customer_id_no.trim()
+  }
+  if (c.customer_code && typeof c.customer_code === 'string' && c.customer_code.trim()) {
+    return c.customer_code.trim()
+  }
+
+  if (c.id && typeof c.id === 'string') {
+    const idTrimmed = c.id.trim()
+
+    // If prefixed with cust- or cust_ or c- (e.g. cust-01, cust-1, cust-101, c-5, cust-beximco)
+    if (/^(?:cust|c)[-_]/i.test(idTrimmed)) {
+      const stripped = idTrimmed.replace(/^(?:cust|c)[-_]/i, '')
+      if (/^\d+$/.test(stripped)) {
+        return `CUST-${stripped.padStart(3, '0')}`
+      }
+      // Text after prefix (e.g. cust-beximco -> CUST-BEXIMCO)
+      const sanitized = stripped.toUpperCase()
+      if (sanitized.length <= 15) {
+        return `CUST-${sanitized}`
+      }
+    }
+
+    // Purely numeric string ID (e.g. "1", "42")
+    if (/^\d+$/.test(idTrimmed)) {
+      return `CUST-${idTrimmed.padStart(3, '0')}`
+    }
+
+    // Standard UUID (e.g. 90cd8139-e000-471f-85b3-5bdd07a7a609)
+    const uuidClean = idTrimmed.replace(/-/g, '').toUpperCase()
+    if (uuidClean.length === 32) {
+      return `CUST-${uuidClean.slice(0, 6)}`
+    }
+  }
+
+  return `CUST-${String((index !== undefined ? index + 1 : 1)).padStart(3, '0')}`
+}
+

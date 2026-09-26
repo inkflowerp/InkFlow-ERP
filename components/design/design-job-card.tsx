@@ -87,15 +87,15 @@ export const DesignJobCard = React.memo(function DesignJobCard({
 
   return (
     <div
-      className={`rounded-xl border transition-all duration-200 overflow-hidden bg-white dark:bg-slate-900 ${
+      className={`rounded-2xl border transition-all duration-200 overflow-hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm shadow-xs ${
         isUrgent
-          ? 'border-rose-300 dark:border-rose-900/60 shadow-sm ring-1 ring-rose-400/20'
-          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'border-rose-300 dark:border-rose-900/60 ring-1 ring-rose-400/20'
+          : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
       {/* Top Banner for Urgent / Walk-in / Due Today */}
       {(isUrgent || isWalkIn || isDueToday) && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
+        <div className="bg-gradient-to-r from-amber-500/10 via-rose-500/10 to-transparent px-4 py-1.5 border-b border-amber-200/50 dark:border-amber-900/40 flex items-center justify-between text-[11px] font-bold">
           <div className="flex items-center gap-2">
             {isWalkIn && (
               <span className="bg-orange-600 text-white px-2 py-0.5 rounded text-[10px] uppercase tracking-wide">
@@ -129,26 +129,34 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Link
                   href={workbenchHref}
-                  className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
+                  className="font-mono text-xs font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors inline-flex items-center gap-1"
                 >
                   <span>#{job.design_number}</span>
                   <ExternalLink className="h-2.5 w-2.5 opacity-60" />
                 </Link>
+                {job.order_number && (
+                  <Link
+                    href={getTenantNavHref('/orders', pathname, tenantSlug)}
+                    className="font-mono text-xs font-semibold text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-lg border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors"
+                  >
+                    Ord: #{job.order_number}
+                  </Link>
+                )}
                 {job.invoice_number && invoiceHref && (
                   <Link
                     href={invoiceHref}
-                    className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
                   >
                     Inv: #{job.invoice_number}
                   </Link>
                 )}
                 {job.workflow_routing === 'design_ok' ? (
-                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded flex items-center gap-1">
+                  <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
                     <FileCheck className="h-3 w-3" />
                     <span>রেডি ফাইল চেক (Design OK)</span>
                   </span>
                 ) : (
-                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded flex items-center gap-1">
+                  <span className="text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1">
                     <Sparkles className="h-3 w-3" />
                     <span>নতুন ডিজাইন দরকার</span>
                   </span>

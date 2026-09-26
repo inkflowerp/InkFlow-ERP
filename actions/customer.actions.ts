@@ -19,6 +19,8 @@ import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { PaginatedResult } from '@/lib/api/pagination-helper'
 
 export interface CreateCustomerInput {
+  customer_id_no?: string | null
+  customer_code?: string | null
   customer_kind?: 'business' | 'individual'
   customer_category?: 'retail' | 'corporate' | 'agency' | 'dealer' | 'government' | 'regular' | 'reseller'
   rate_level?: 'default' | 'retail' | 'corporate' | 'dealer' | 'custom'

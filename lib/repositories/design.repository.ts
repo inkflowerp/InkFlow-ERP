@@ -46,6 +46,190 @@ export class DesignRepository {
         if (j?.id) jobMap.set(j.id, j)
       }
 
+      // Auto-pull design required and design check work from Commercial Orders & Job Hub
+      const orders: any[] = [
+        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []),
+        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.ORDERS, companyId) || []),
+      ]
+
+      try {
+        const supabase = await createClient()
+        const { data: dbOrders } = await (supabase as any)
+          .from('sales_orders')
+          .select('*, items:sales_order_items(*)')
+          .eq('company_id', companyId)
+        if (dbOrders && Array.isArray(dbOrders)) {
+          orders.push(...dbOrders)
+        }
+      } catch {}
+
+      if (typeof window !== 'undefined') {
+        try {
+          const candidateKeys = [
+            STORAGE_KEYS.ORDERS,
+            `${STORAGE_KEYS.ORDERS}__${companyId}`,
+            `${STORAGE_KEYS.ORDERS}__default`,
+          ]
+          for (const key of candidateKeys) {
+            const raw = localStorage.getItem(key)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                orders.push(...parsed)
+              }
+            }
+          }
+        } catch {}
+      }
+
+      const tenantOrdersMap = new Map<string, any>()
+      for (const ord of orders) {
+        if (!ord || (!ord.id && !ord.order_number)) continue
+        if (!isMatchingTenant(ord.company_id)) continue
+        const key = ord.id || ord.order_number
+        if (!tenantOrdersMap.has(key)) {
+          tenantOrdersMap.set(key, ord)
+        }
+      }
+
+      const newAutoJobs: DesignJobRecord[] = []
+      const existingAll = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+
+      for (const order of tenantOrdersMap.values()) {
+        const orderRouting = order.workflow_routing
+        const orderNeedsDesign =
+          orderRouting === 'design_required' ||
+          orderRouting === 'design_ok' ||
+          order.status === 'in_design' ||
+          (order.items &&
+            Array.isArray(order.items) &&
+            order.items.some(
+              (it: any) =>
+                it.design_required ||
+                it.workflow_routing === 'design_required' ||
+                it.workflow_routing === 'design_ok'
+            ))
+
+        if (!orderNeedsDesign) continue
+
+        const items = Array.isArray(order.items) && order.items.length > 0 ? order.items : [null]
+
+        items.forEach((it: any, idx: number) => {
+          if (it) {
+            if (isReadyProduct(it) || it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') {
+              return
+            }
+          }
+
+          const isDesignOk = Boolean(
+            it?.workflow_routing === 'design_ok' ||
+              (!it?.design_required && it?.workflow_routing !== 'design_required' && orderRouting === 'design_ok')
+          )
+          const isDesignReq = Boolean(
+            it?.design_required ||
+              it?.workflow_routing === 'design_required' ||
+              orderRouting === 'design_required' ||
+              order.status === 'in_design' ||
+              !isDesignOk
+          )
+
+          if (!isDesignOk && !isDesignReq) return
+
+          // Check if design job already exists for this order/item
+          const existingJob = Array.from(jobMap.values()).find((j) => {
+            if (j.company_id && !isMatchingTenant(j.company_id)) return false
+            const matchesOrder =
+              (order.id && j.sales_order_id === order.id) ||
+              (order.order_number && (j.order_number === order.order_number || (j as any).order_id === order.order_number))
+            if (!matchesOrder) return false
+            if (it && it.id && j.invoice_item_id === it.id) return true
+            if (it && it.item_name && (j.title === it.item_name || j.product_name === it.item_name)) return true
+            if (!it) return true
+            return false
+          })
+
+          if (!existingJob) {
+            const dsnId = (it && it.design_job_id) || `dsn-ord-${order.id || Date.now()}-${idx}`
+            const ordSuffix = items.length > 1 ? `-${String.fromCharCode(65 + idx)}` : ''
+            const dsnNum = `DSN-${(order.order_number || 'ORD').replace('ORD-', '')}${ordSuffix}`
+            const routingMode = isDesignOk ? 'design_ok' : 'design_required'
+
+            const title =
+              it?.item_name ||
+              it?.item_description ||
+              (isDesignOk ? 'Customer Supplied File Check' : 'Order Artwork Design')
+
+            const newJob: DesignJobRecord = {
+              id: dsnId,
+              company_id: order.company_id || companyId,
+              sales_order_id: order.id || null,
+              order_number: order.order_number || null,
+              design_number: dsnNum,
+              customer_id: order.customer_id || null,
+              customer_name: order.customer_name || 'Commercial Customer',
+              customer_phone: order.customer_phone || (order as any).phone || null,
+              customer_address: order.customer_address || (order as any).address || null,
+              title: title,
+              product_name: it?.item_name || it?.product_name || null,
+              dimensions_spec:
+                it?.dimensions_spec ||
+                (it?.width && it?.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : null),
+              quantity: Number(it?.quantity) || 1,
+              unit: it?.unit || 'pcs',
+              material: it?.material_spec || it?.printable_material_name || (it as any)?.material || null,
+              finishing: it?.finishing || null,
+              designer_name: order.salesperson_name || 'Design Team',
+              priority: (order.priority as any) || 'urgent',
+              deadline: order.delivery_date
+                ? `${order.delivery_date} 18:00`
+                : new Date(Date.now() + 2 * 86400000).toISOString().split('T')[0],
+              status: isDesignOk ? 'received' : 'received',
+              workflow_routing: routingMode,
+              commercial_status: order.commercial_status || (order.invoice_id ? 'invoice_created' : 'invoice_required'),
+              invoice_id: order.invoice_id || null,
+              invoice_number: order.invoice_number || null,
+              customer_approval_required: !isDesignOk,
+              instructions:
+                order.notes ||
+                (isDesignOk
+                  ? 'Customer supplied artwork registered for pre-press verification.'
+                  : 'Design work order brief from Commercial Orders.'),
+              current_version: 1,
+              revision_count: 0,
+              is_locked: false,
+              versions: [
+                {
+                  id: `dv-ord-${Date.now()}-${idx}`,
+                  design_job_id: dsnId,
+                  version_number: 1,
+                  version_label: isDesignOk ? 'Version 1 (Customer Supplied Artwork)' : 'Version 1 (Order Brief)',
+                  proof_file_name: isDesignOk ? 'customer_artwork.pdf' : 'order_brief.png',
+                  proof_file_url:
+                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+                  file_format: 'png',
+                  change_notes: isDesignOk
+                    ? 'Customer supplied artwork registered for pre-press check.'
+                    : 'Initial commercial order brief registered.',
+                  uploaded_by_name: order.salesperson_name || 'Commercial Hub',
+                  is_approved: isDesignOk,
+                  created_at: new Date().toISOString(),
+                },
+              ],
+              created_at: order.created_at || new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }
+
+            jobMap.set(dsnId, newJob)
+            newAutoJobs.push(newJob)
+          }
+        })
+      }
+
+      if (newAutoJobs.length > 0) {
+        const mergedJobs = [...existingAll, ...newAutoJobs]
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, mergedJobs)
+      }
+
       return Array.from(jobMap.values())
     }, 1500)
   }

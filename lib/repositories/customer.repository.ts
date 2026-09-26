@@ -1,4 +1,6 @@
 import { createClient } from '../supabase/server.ts'
+import { createAdminClient } from '../supabase/admin.ts'
+import { formatCustomerIdNo } from '../formatters.ts'
 import type {
   CustomerRecord,
   CustomerCommunication,
@@ -72,8 +74,9 @@ export class CustomerRepository {
                 countMap.set(inv.customer_id, (countMap.get(inv.customer_id) || 0) + 1)
               }
             }
-            return list.map((c) => ({
+            return list.map((c, idx) => ({
               ...c,
+              customer_id_no: c.customer_id_no || formatCustomerIdNo(c, idx),
               total_due_balance: dueMap.has(c.id) ? dueMap.get(c.id)! : (Number(c.total_due_balance) || 0),
               total_invoiced_amount: billedMap.has(c.id) ? billedMap.get(c.id)! : (Number(c.total_invoiced_amount) || 0),
               total_paid_amount: paidMap.has(c.id) ? paidMap.get(c.id)! : (Number(c.total_paid_amount) || 0),
@@ -121,8 +124,9 @@ export class CustomerRepository {
           }
         }
 
-        return rawCustomers.map((c) => ({
+        return rawCustomers.map((c, idx) => ({
           ...c,
+          customer_id_no: c.customer_id_no || formatCustomerIdNo(c, idx),
           total_due_balance: dueMap.has(c.id) ? dueMap.get(c.id)! : (Number(c.total_due_balance) || 0),
           total_invoiced_amount: billedMap.has(c.id) ? billedMap.get(c.id)! : (Number(c.total_invoiced_amount) || 0),
           total_paid_amount: paidMap.has(c.id) ? paidMap.get(c.id)! : (Number(c.total_paid_amount) || 0),
@@ -232,11 +236,11 @@ export class CustomerRepository {
         if (digits.length >= 4) {
           const phoneTerm = `%${digits}%`
           query = query.or(
-            `name.ilike.${term},name_bn.ilike.${term},company_name.ilike.${term},contact_person.ilike.${term},mobile.ilike.${phoneTerm},whatsapp.ilike.${phoneTerm},area.ilike.${term}`
+            `name.ilike.${term},name_bn.ilike.${term},company_name.ilike.${term},contact_person.ilike.${term},mobile.ilike.${phoneTerm},whatsapp.ilike.${phoneTerm},area.ilike.${term},customer_id_no.ilike.${term},customer_code.ilike.${term}`
           )
         } else {
           query = query.or(
-            `name.ilike.${term},name_bn.ilike.${term},company_name.ilike.${term},contact_person.ilike.${term},mobile.ilike.${term},whatsapp.ilike.${term},area.ilike.${term}`
+            `name.ilike.${term},name_bn.ilike.${term},company_name.ilike.${term},contact_person.ilike.${term},mobile.ilike.${term},whatsapp.ilike.${term},area.ilike.${term},customer_id_no.ilike.${term},customer_code.ilike.${term}`
           )
         }
       }
@@ -375,6 +379,7 @@ export class CustomerRepository {
 
         return {
           ...c,
+          customer_id_no: c.customer_id_no || formatCustomerIdNo(c),
           total_invoices_count: invStat?.count || 0,
           total_invoiced_amount: Math.round((invStat?.totalBilled || 0) * 100) / 100,
           total_paid_amount: Math.round((invStat?.totalPaid || 0) * 100) / 100,
@@ -425,6 +430,7 @@ export class CustomerRepository {
           const fin = await this.getCustomerFinancialSummary(companyId, id)
           return {
             ...(data as CustomerRecord),
+            customer_id_no: (data as CustomerRecord).customer_id_no || formatCustomerIdNo(data),
             total_invoices_count: fin.totalInvoices,
             total_invoiced_amount: fin.totalInvoiceAmount,
             total_paid_amount: fin.totalPaid,
@@ -435,7 +441,11 @@ export class CustomerRepository {
             last_order_number: fin.lastOrder?.orderNumber || null,
           }
         } catch {
-          return data as unknown as CustomerRecord
+          const rec = data as unknown as CustomerRecord
+          return {
+            ...rec,
+            customer_id_no: rec.customer_id_no || formatCustomerIdNo(rec),
+          }
         }
       }
     }
@@ -447,6 +457,7 @@ export class CustomerRepository {
         const fin = await this.getCustomerFinancialSummary(companyId, id)
         return {
           ...localCust,
+          customer_id_no: localCust.customer_id_no || formatCustomerIdNo(localCust),
           total_invoices_count: fin.totalInvoices,
           total_invoiced_amount: fin.totalInvoiceAmount,
           total_paid_amount: fin.totalPaid,
@@ -457,11 +468,64 @@ export class CustomerRepository {
           last_order_number: fin.lastOrder?.orderNumber || null,
         }
       } catch {
-        return localCust
+        return {
+          ...localCust,
+          customer_id_no: localCust.customer_id_no || formatCustomerIdNo(localCust),
+        }
       }
     }
 
     return null
+  }
+
+  /**
+   * Generates the next sequential Customer ID (e.g. CUST-0001, CUST-0002)
+   */
+  static async getNextCustomerId(companyId: string): Promise<string> {
+    if (!companyId) return 'CUST-0001'
+
+    if (isSupabaseConfigured()) {
+      try {
+        const admin = createAdminClient()
+        const { data: seq } = await (admin as any)
+          .from('document_sequences')
+          .select('*')
+          .eq('company_id', companyId)
+          .eq('doc_type', 'customer')
+          .maybeSingle()
+
+        const prefix = seq?.prefix || 'CUST'
+        const padding = seq?.padding || 4
+        let nextVal = (seq?.current_val ? Number(seq.current_val) : 0) + 1
+
+        await (admin as any).from('document_sequences').upsert({
+          company_id: companyId,
+          doc_type: 'customer',
+          prefix,
+          current_val: nextVal,
+          padding,
+          updated_at: new Date().toISOString(),
+        })
+
+        return `${prefix}-${String(nextVal).padStart(padding, '0')}`
+      } catch {
+        try {
+          const supabase = await createClient()
+          const { count } = await (supabase as any)
+            .from('customers')
+            .select('*', { count: 'exact', head: true })
+            .eq('company_id', companyId)
+          return `CUST-${String((count || 0) + 1).padStart(4, '0')}`
+        } catch {
+          // Local fallback
+        }
+      }
+    }
+
+    const all = (PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []).filter(
+      (c) => c.company_id === companyId
+    )
+    return `CUST-${String(all.length + 1).padStart(4, '0')}`
   }
 
   /**
@@ -472,14 +536,20 @@ export class CustomerRepository {
   ): Promise<CustomerRecord> {
     if (!isSupabaseConfigured()) {
       if (isTestMode()) {
+        const existingList = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+        const fallbackIdNo =
+          customer.customer_id_no?.trim() ||
+          customer.customer_code?.trim() ||
+          formatCustomerIdNo(customer, existingList.length)
         const newRecord: any = {
           id: customer.id || crypto.randomUUID(),
+          customer_id_no: fallbackIdNo,
+          customer_code: customer.customer_code?.trim() || null,
           ...customer,
           is_active: customer.is_active !== undefined ? customer.is_active : true,
           created_at: customer.created_at || new Date().toISOString(),
           updated_at: customer.updated_at || new Date().toISOString(),
         }
-        const existingList = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
         PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, [...existingList, newRecord])
         return newRecord as CustomerRecord
       }
@@ -489,10 +559,14 @@ export class CustomerRepository {
     const customerType = customer.customer_type || customer.customer_category || 'regular'
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
     const resolvedId = customer.id && uuidRegex.test(customer.id) ? customer.id : crypto.randomUUID()
+    const resolvedCustomerIdNo =
+      customer.customer_id_no?.trim() || (await this.getNextCustomerId(customer.company_id))
 
     const payload: any = {
       id: resolvedId,
       company_id: customer.company_id,
+      customer_id_no: resolvedCustomerIdNo,
+      customer_code: customer.customer_code?.trim() || null,
       name: customer.name.trim(),
       name_bn: customer.name_bn?.trim() || null,
       company_name: customer.company_name?.trim() || null,
@@ -531,6 +605,7 @@ export class CustomerRepository {
     const createdRecord = data as unknown as CustomerRecord
     return {
       ...createdRecord,
+      customer_id_no: createdRecord.customer_id_no || resolvedCustomerIdNo,
       customer_category: (createdRecord.customer_type as any) || 'regular',
     }
   }
@@ -581,6 +656,7 @@ export class CustomerRepository {
     const updatedRecord = data as unknown as CustomerRecord
     return {
       ...updatedRecord,
+      customer_id_no: updatedRecord.customer_id_no || formatCustomerIdNo(updatedRecord),
       customer_category: (updatedRecord.customer_type as any) || 'regular',
     }
   }

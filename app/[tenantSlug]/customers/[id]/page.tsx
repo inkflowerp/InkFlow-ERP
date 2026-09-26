@@ -57,6 +57,7 @@ import {
 import { recordPaymentAction } from '@/actions/billing.actions'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
+import { formatCustomerIdNo } from '@/lib/formatters'
 import {
   CustomerRecord,
   ResolvedProductRate,
@@ -428,6 +429,8 @@ export default function CustomerProfilePage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   // Edit Customer Form State
+  const [editCustomerIdNo, setEditCustomerIdNo] = useState('')
+  const [editCustomerCode, setEditCustomerCode] = useState('')
   const [editName, setEditName] = useState('')
   const [editNameBn, setEditNameBn] = useState('')
   const [editCompanyName, setEditCompanyName] = useState('')
@@ -494,7 +497,7 @@ export default function CustomerProfilePage() {
       if (!cust.customer_id_no) {
         cust = {
           ...cust,
-          customer_id_no: cust.customer_code || `CUST-${cust.id.slice(0, 6).toUpperCase()}`,
+          customer_id_no: formatCustomerIdNo(cust),
         }
       }
 
@@ -697,6 +700,8 @@ export default function CustomerProfilePage() {
       setOrders(mergedOrds)
 
       // Pre-fill edit form
+      setEditCustomerIdNo(cust.customer_id_no || formatCustomerIdNo(cust))
+      setEditCustomerCode(cust.customer_code || '')
       setEditName(cust.name)
       setEditNameBn(cust.name_bn || '')
       setEditCompanyName(cust.company_name || '')
@@ -753,6 +758,8 @@ export default function CustomerProfilePage() {
       const res = await updateCustomerAction(
         customer.id,
         {
+          customer_id_no: editCustomerIdNo.trim() || null,
+          customer_code: editCustomerCode.trim() || null,
           name: editName.trim(),
           name_bn: editNameBn.trim() || null,
           company_name: editCompanyName.trim() || null,
@@ -991,7 +998,7 @@ export default function CustomerProfilePage() {
                   </span>
                 )}
                 <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
-                  {customer.customer_id_no || customer.customer_code || `CUST-${customer.id.slice(0, 6).toUpperCase()}`}
+                  {formatCustomerIdNo(customer)}
                 </span>
                 <Badge
                   variant="outline"
@@ -1777,6 +1784,27 @@ export default function CustomerProfilePage() {
             </div>
 
             <form onSubmit={handleSaveEdit} className="space-y-3.5 max-h-[70vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{tBilingual('Customer ID', 'কাস্টমার আইডি')}</Label>
+                  <Input
+                    value={editCustomerIdNo}
+                    onChange={(e) => setEditCustomerIdNo(e.target.value)}
+                    placeholder="e.g. CUST-0001"
+                    className="text-xs h-9 font-mono font-bold"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs font-semibold">{tBilingual('Customer Code', 'গ্রাহক কোড')}</Label>
+                  <Input
+                    value={editCustomerCode}
+                    onChange={(e) => setEditCustomerCode(e.target.value)}
+                    placeholder="e.g. AC-01"
+                    className="text-xs h-9 font-mono"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
                 <Label className="text-xs font-semibold">Customer Name *</Label>
                 <Input
