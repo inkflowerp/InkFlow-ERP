@@ -13,6 +13,7 @@ import {
   classifyLoginIdentifier,
   isValidUsernameFormat,
   sanitizeUsername,
+  generateSafeEmployeeUsername,
 } from '../../lib/auth/identifier-helper.ts'
 import { AuthService } from '../../services/auth.service.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../../lib/db/data-store.ts'
@@ -184,6 +185,23 @@ describe('Employee Login & Invitation Lifecycle Unit Tests', () => {
     it('sanitizes display names into valid username handles', () => {
       assert.strictEqual(sanitizeUsername(' Rahim  Ullah '), 'rahim.ullah')
       assert.strictEqual(sanitizeUsername('MD. Shamsul Alam'), 'md.shamsul.alam')
+    })
+
+    it('generates safe usernames for English and non-ASCII (Bengali) names', () => {
+      // Standard English name
+      const enUser = generateSafeEmployeeUsername('Rahim Uddin', 'EMP-001', '01712345678')
+      assert.strictEqual(enUser, 'rahim.uddin')
+      assert.strictEqual(isValidUsernameFormat(enUser).valid, true)
+
+      // Bengali name with badge ID
+      const bnUserWithId = generateSafeEmployeeUsername('রহিম উদ্দিন', 'EMP-042', '01712345678')
+      assert.strictEqual(bnUserWithId, 'emp042')
+      assert.strictEqual(isValidUsernameFormat(bnUserWithId).valid, true)
+
+      // Bengali name without badge ID, uses mobile digits
+      const bnUserWithPhone = generateSafeEmployeeUsername('করিম শেখ', undefined, '01819988776')
+      assert.strictEqual(bnUserWithPhone, 'emp.988776')
+      assert.strictEqual(isValidUsernameFormat(bnUserWithPhone).valid, true)
     })
   })
 

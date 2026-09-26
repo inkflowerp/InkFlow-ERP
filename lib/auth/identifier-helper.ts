@@ -187,3 +187,41 @@ export function sanitizeUsername(username: string): string {
     .replace(/\.{2,}/g, '.')
     .replace(/^[-._]+|[-._]+$/g, '')
 }
+
+/**
+ * Generates a clean, valid username [a-z0-9_.-] (3-30 chars).
+ * If name contains Bengali or non-ASCII characters that leave < 3 characters,
+ * falls back to employee badge number, phone digits, or a random safe suffix.
+ */
+export function generateSafeEmployeeUsername(
+  name?: string | null,
+  employeeIdNumber?: string | null,
+  phone?: string | null
+): string {
+  if (name) {
+    const fromName = sanitizeUsername(name)
+    if (fromName.length >= 3 && fromName.length <= 30) {
+      return fromName
+    }
+  }
+
+  if (employeeIdNumber) {
+    const cleanId = employeeIdNumber.toLowerCase().replace(/[^a-z0-9]/g, '')
+    if (cleanId.length >= 2) {
+      const candidate = cleanId.startsWith('emp') ? cleanId : `emp_${cleanId}`
+      if (candidate.length >= 3 && candidate.length <= 30) return candidate
+      if (candidate.length > 30) return candidate.slice(0, 30)
+    }
+  }
+
+  if (phone) {
+    const digits = phone.replace(/\D/g, '')
+    if (digits.length >= 4) {
+      return `emp.${digits.slice(-6)}`
+    }
+  }
+
+  const rnd = Math.floor(1000 + Math.random() * 9000)
+  return `emp_${rnd}`
+}
+

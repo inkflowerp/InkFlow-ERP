@@ -106,6 +106,11 @@ import {
   sendEmployeeInvitationAction,
   updateEmployeeLoginCredentialsAction,
 } from '@/actions/workforce.actions'
+import {
+  sanitizeUsername,
+  isValidUsernameFormat,
+  generateSafeEmployeeUsername,
+} from '@/lib/auth/identifier-helper'
 
 const ROLE_PRESETS = [
   {
@@ -723,33 +728,86 @@ function EmployeeListContent() {
     setIsEditModalOpen(true)
   }
 
-  const handleOpen360 = (emp: EmployeeRecord) => {
+  const handleOpen360 = (
+    emp: EmployeeRecord,
+    initialTab: 'overview' | 'duty' | 'compensation' | 'payment' | 'idcard' | 'notes' = 'overview',
+    editCreds = false
+  ) => {
     setSelectedEmployee(emp)
-    setDrawerTab('overview')
-    setIsEditingCredentials(false)
+    setDrawerTab(initialTab)
+    setIsEditingCredentials(editCreds)
     const pc = emp.portal_credentials
+    const cleanUname = pc?.username || generateSafeEmployeeUsername(emp.name, emp.employee_id_number, emp.mobile)
     setCredsForm({
       create_login: pc?.create_login ?? false,
-      email: pc?.email || emp.email || '',
-      username: pc?.username || emp.name.toLowerCase().replace(/\s+/g, '.'),
-      password: pc?.password || '',
-      role: pc?.role || 'operator',
+      email: pc?.email || emp.email || `${cleanUname}@${tenantSlug || 'workspace'}.inkflow.app`,
+      username: cleanUname,
+      password: pc?.password || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
+      role: pc?.role || emp.role?.toLowerCase() || 'operator',
       send_invitation: true,
     })
     setIs360DrawerOpen(true)
   }
 
+  const handleCopyLoginCard = (emp: EmployeeRecord) => {
+    const pc = emp.portal_credentials
+    const resolvedOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+    const portalUrl = `${resolvedOrigin}/${tenantSlug || 'workspace'}/portal`
+    const cardText = `
+🏢 InkFlow PrintERP - Employee Access Pass
+═════════════════════════════════════════
+👤 Name: ${emp.name}${emp.name_bn ? ` (${emp.name_bn})` : ''}
+🆔 Employee ID: ${emp.employee_id_number}
+💼 Role: ${pc?.role || emp.role || 'Staff'}
+🏢 Department: ${emp.department}
+
+🔐 LOGIN CREDENTIALS:
+🌐 Portal URL: ${portalUrl}
+👤 Username: ${pc?.username || 'emp.' + emp.employee_id_number}
+📧 Email: ${pc?.email || emp.email || 'N/A'}
+📱 Mobile: ${emp.mobile || 'N/A'}
+🔑 Password: ${pc?.password || '(Existing / Contact Admin)'}
+
+📌 Login Tips: You can log in using either your Username, Email, or Mobile Number.
+═════════════════════════════════════════`.trim()
+
+    navigator.clipboard?.writeText(cardText)
+    triggerCopy('login_card_all')
+    notify('Employee credentials card copied to clipboard!')
+  }
+
+  const handleCopyWhatsAppInvite = (emp: EmployeeRecord) => {
+    const pc = emp.portal_credentials
+    const resolvedOrigin = typeof window !== 'undefined' ? window.location.origin : ''
+    const portalUrl = `${resolvedOrigin}/${tenantSlug || 'workspace'}/portal`
+    const waText = `
+আসসালামু আলাইকুম ${emp.name},
+InkFlow PrintERP পোর্টালে আপনার কর্মচারী অ্যাকাউন্ট প্রস্তুত করা হয়েছে।
+
+🌐 লগইন লিংক: ${portalUrl}
+👤 ইউজারনেম: ${pc?.username || emp.employee_id_number}
+📱 মোবাইল: ${emp.mobile || 'N/A'}
+🔑 পাসওয়ার্ড: ${pc?.password || '(অ্যাডমিনের কাছ থেকে সংগ্রহ করুন)'}
+
+আপনি এই তথ্য দিয়ে লগইন করে আপনার কাজের অর্ডার, প্রোডাকশন শিফট, ডিজিটাল হাজিরা ও বেতন বিবরণী দেখতে পারবেন।
+ধন্যবাদ!`.trim()
+
+    navigator.clipboard?.writeText(waText)
+    triggerCopy('whatsapp_invite')
+    notify('WhatsApp invitation text copied to clipboard!')
+  }
+
   const handleSendInvitation = async (emp: EmployeeRecord, overrideEmail?: string) => {
-    const targetEmail = overrideEmail || emp.portal_credentials?.email || emp.email
-    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local')) {
-      notify('Please configure a valid email address for this employee to send an invitation link.')
+    const targetEmail = (overrideEmail || emp.portal_credentials?.email || emp.email || '').trim().toLowerCase()
+    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local') || targetEmail.endsWith('.inkflow.app')) {
+      notify('Please configure a valid personal/corporate email address for this employee to send an invitation link.')
       setIsEditingCredentials(true)
       return
     }
 
     setIsInviting(true)
     try {
-      const res = await sendEmployeeInvitationAction(emp.id, undefined, targetEmail)
+      const res = await sendEmployeeInvitationAction(emp.id, tenantSlug, targetEmail)
       if (res.success && res.data?.inviteUrl) {
         notify(`Invitation link sent successfully to ${res.data.email || targetEmail}!`)
         setInviteModalData({
@@ -784,14 +842,22 @@ function EmployeeListContent() {
     if (!selectedEmployee) return
     setIsSavingCreds(true)
     try {
-      const res = await updateEmployeeLoginCredentialsAction(selectedEmployee.id, {
-        create_login: credsForm.create_login,
-        email: credsForm.email.trim() || undefined,
-        username: credsForm.username.trim() || undefined,
-        password: credsForm.password.trim() || undefined,
-        role: credsForm.role || 'operator',
-        send_invitation: credsForm.send_invitation,
-      })
+      const sanitizedUname = credsForm.username.trim()
+        ? sanitizeUsername(credsForm.username)
+        : generateSafeEmployeeUsername(selectedEmployee.name, selectedEmployee.employee_id_number, selectedEmployee.mobile)
+
+      const res = await updateEmployeeLoginCredentialsAction(
+        selectedEmployee.id,
+        {
+          create_login: credsForm.create_login,
+          email: credsForm.email.trim() || undefined,
+          username: sanitizedUname,
+          password: credsForm.password.trim() || undefined,
+          role: credsForm.role || 'operator',
+          send_invitation: credsForm.send_invitation,
+        },
+        tenantSlug
+      )
 
       if (res.success && res.data) {
         notify('Login credentials updated successfully.')
@@ -827,7 +893,7 @@ function EmployeeListContent() {
         create_login: enable,
         status: enable ? ('active' as const) : ('disabled' as const),
       }
-      const res = await updateEmployeeLoginCredentialsAction(selectedEmployee.id, updatedCreds)
+      const res = await updateEmployeeLoginCredentialsAction(selectedEmployee.id, updatedCreds, tenantSlug)
       if (res.success && res.data) {
         notify(enable ? 'Portal login enabled for this employee.' : 'Portal login disabled for this employee.')
         setSelectedEmployee(res.data)
@@ -982,7 +1048,7 @@ function EmployeeListContent() {
       }
 
       if (isEdit && selectedEmployee) {
-        const res = await updateEmployeeAction(selectedEmployee.id, payload)
+        const res = await updateEmployeeAction(selectedEmployee.id, payload, tenantSlug)
         if (res.success) {
           notify('Employee record updated successfully.')
           setIsEditModalOpen(false)
@@ -991,7 +1057,7 @@ function EmployeeListContent() {
           notify(res.error || 'Failed to update employee.')
         }
       } else {
-        const res = await createEmployeeAction(payload)
+        const res = await createEmployeeAction(payload, tenantSlug)
         if (res.success) {
           notify('New employee enrolled successfully.')
           setIsAddModalOpen(false)
@@ -1006,7 +1072,7 @@ function EmployeeListContent() {
   const handleDeleteEmployee = async () => {
     if (!selectedEmployee) return
     startTransition(async () => {
-      const res = await deleteEmployeeAction(selectedEmployee.id)
+      const res = await deleteEmployeeAction(selectedEmployee.id, tenantSlug)
       if (res.success) {
         notify('Employee deleted successfully.')
         setIsDeleteModalOpen(false)
@@ -1358,8 +1424,31 @@ function EmployeeListContent() {
                               <span className="text-2xs text-slate-400 font-normal">({emp.name_bn})</span>
                             )}
                           </div>
-                          <div className="text-2xs text-slate-500 capitalize">
-                            {emp.employee_type.replace('_', ' ')}
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-2xs text-slate-500 capitalize">
+                              {emp.employee_type.replace('_', ' ')}
+                            </span>
+                            {emp.portal_credentials?.create_login ? (
+                              <button
+                                type="button"
+                                onClick={() => handleOpen360(emp, 'notes', false)}
+                                className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded text-3xs font-mono font-semibold bg-blue-50 text-blue-700 dark:bg-blue-950/70 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 transition-colors cursor-pointer"
+                                title="Click to view/manage login credentials"
+                              >
+                                <Key className="w-2.5 h-2.5 text-blue-600" />
+                                <span>@{emp.portal_credentials.username || 'active'}</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleOpen360(emp, 'notes', true)}
+                                className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-3xs text-slate-400 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="Click to setup portal credentials"
+                              >
+                                <Lock className="w-2.5 h-2.5" />
+                                <span>No Portal</span>
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1436,8 +1525,17 @@ function EmployeeListContent() {
                         <Button
                           size="sm"
                           variant="ghost"
+                          className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                          onClick={() => handleOpen360(emp, 'notes', !emp.portal_credentials?.create_login)}
+                          title="Manage Credentials & Portal Access"
+                        >
+                          <Key className="w-3.5 h-3.5" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           className="h-7 w-7 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                          onClick={() => handleOpen360(emp)}
+                          onClick={() => handleOpen360(emp, 'overview')}
                           title="View 360° Profile"
                         >
                           <Eye className="w-3.5 h-3.5" />
@@ -1483,8 +1581,36 @@ function EmployeeListContent() {
                       {emp.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <h4 className="font-bold text-sm text-slate-900 dark:text-white">{emp.name}</h4>
-                      <p className="text-xs text-slate-500 font-mono">{emp.employee_id_number}</p>
+                      <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-1.5">
+                        <span>{emp.name}</span>
+                        {emp.name_bn && (
+                          <span className="text-2xs text-slate-400 font-normal">({emp.name_bn})</span>
+                        )}
+                      </h4>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-xs text-slate-500 font-mono">{emp.employee_id_number}</p>
+                        {emp.portal_credentials?.create_login ? (
+                          <button
+                            type="button"
+                            onClick={() => handleOpen360(emp, 'notes', false)}
+                            className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded text-3xs font-mono font-medium bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-900 hover:bg-blue-100 cursor-pointer"
+                            title="Portal Login Active"
+                          >
+                            <Key className="w-2.5 h-2.5 text-blue-600" />
+                            @{emp.portal_credentials.username || 'active'}
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleOpen360(emp, 'notes', true)}
+                            className="inline-flex items-center gap-0.5 px-1 rounded text-3xs text-slate-400 hover:text-blue-600 bg-slate-100 dark:bg-slate-800 cursor-pointer"
+                            title="Setup Portal Login"
+                          >
+                            <Lock className="w-2.5 h-2.5" />
+                            No Portal
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <Badge
@@ -1529,7 +1655,17 @@ function EmployeeListContent() {
                   </span>
 
                   <div className="flex items-center gap-1">
-                    <Button size="sm" variant="outline" className="h-7 text-xs px-2 gap-1" onClick={() => handleOpen360(emp)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2 gap-1 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950"
+                      onClick={() => handleOpen360(emp, 'notes', !emp.portal_credentials?.create_login)}
+                      title="Manage Credentials & Portal"
+                    >
+                      <Key className="w-3 h-3" />
+                      <span>{tBilingual('Login', 'লগইন')}</span>
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 text-xs px-2 gap-1" onClick={() => handleOpen360(emp, 'overview')}>
                       <Eye className="w-3 h-3" />
                       {tBilingual('360° Profile', 'প্রোফাইল')}
                     </Button>
@@ -2883,17 +3019,33 @@ function EmployeeListContent() {
                       <input
                         type="checkbox"
                         checked={empForm.portal_credentials.create_login}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const isChecked = e.target.checked
+                          const safeUname = generateSafeEmployeeUsername(
+                            empForm.portal_credentials.username || empForm.name,
+                            empForm.nid_number || 'EMP',
+                            empForm.mobile
+                          )
+                          const defaultEmail =
+                            empForm.portal_credentials.email ||
+                            empForm.email ||
+                            (empForm.mobile
+                              ? `${empForm.mobile}@${tenantSlug || 'workspace'}.inkflow.app`
+                              : `${safeUname}@${tenantSlug || 'workspace'}.inkflow.app`)
+                          const defaultPass =
+                            empForm.portal_credentials.password ||
+                            `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`
                           setEmpForm({
                             ...empForm,
                             portal_credentials: {
                               ...empForm.portal_credentials,
-                              create_login: e.target.checked,
-                              email: empForm.portal_credentials.email || empForm.email || `${empForm.mobile}@company.local`,
-                              username: empForm.portal_credentials.username || empForm.name.toLowerCase().replace(/\s+/g, '.'),
+                              create_login: isChecked,
+                              email: defaultEmail,
+                              username: safeUname,
+                              password: defaultPass,
                             },
                           })
-                        }
+                        }}
                         className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4"
                       />
                       <span className="text-xs font-bold text-blue-800 dark:text-blue-300">
@@ -2910,7 +3062,7 @@ function EmployeeListContent() {
                         </Label>
                         <Input
                           type="email"
-                          placeholder="e.g. rahim@company.com"
+                          placeholder="e.g. employee@company.com"
                           value={empForm.portal_credentials.email}
                           onChange={(e) =>
                             setEmpForm({
@@ -2926,23 +3078,57 @@ function EmployeeListContent() {
                       </div>
 
                       <div className="space-y-1">
-                        <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                          {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
-                        </Label>
+                        <div className="flex items-center justify-between">
+                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
+                          </Label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const suggested = generateSafeEmployeeUsername(
+                                empForm.name,
+                                empForm.nid_number || 'EMP',
+                                empForm.mobile
+                              )
+                              setEmpForm({
+                                ...empForm,
+                                portal_credentials: { ...empForm.portal_credentials, username: suggested },
+                              })
+                            }}
+                            className="text-2xs text-blue-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+                          >
+                            <Sparkles className="w-2.5 h-2.5" />
+                            Auto Suggest
+                          </button>
+                        </div>
                         <Input
-                          placeholder="e.g. rahim_operator"
+                          placeholder="e.g. rahim.op"
                           value={empForm.portal_credentials.username}
                           onChange={(e) =>
                             setEmpForm({
                               ...empForm,
                               portal_credentials: {
                                 ...empForm.portal_credentials,
-                                username: e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''),
+                                username: sanitizeUsername(e.target.value),
                               },
                             })
                           }
                           className="text-xs h-9 font-mono"
                         />
+                        {empForm.portal_credentials.username && (
+                          <div className="text-3xs mt-0.5">
+                            {isValidUsernameFormat(empForm.portal_credentials.username).valid ? (
+                              <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                                <CheckCircle2 className="w-2.5 h-2.5" /> Valid username
+                              </span>
+                            ) : (
+                              <span className="text-rose-500 flex items-center gap-0.5">
+                                <AlertTriangle className="w-2.5 h-2.5" />{' '}
+                                {isValidUsernameFormat(empForm.portal_credentials.username).reason}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="space-y-1">
@@ -2997,6 +3183,7 @@ function EmployeeListContent() {
                           <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
                           <option value="accounts">{tBilingual('Accountant / Billing', 'অ্যাকাউন্ট্যান্ট')}</option>
                           <option value="manager">{tBilingual('Branch Manager', 'ব্রাঞ্চ ম্যানেজার')}</option>
+                          <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                         </select>
                       </div>
 
@@ -4387,10 +4574,17 @@ function EmployeeListContent() {
                           variant="outline"
                           className="h-7 text-xs px-2.5 bg-blue-600 text-white hover:bg-blue-700 border-none"
                           onClick={() => {
+                            const safeUser = generateSafeEmployeeUsername(
+                              selectedEmployee.name,
+                              selectedEmployee.employee_id_number,
+                              selectedEmployee.mobile
+                            )
+                            const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
+                            const fallbackEmail = selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
                             setCredsForm({
                               create_login: true,
-                              email: selectedEmployee.email || `${selectedEmployee.mobile}@company.local`,
-                              username: selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                              email: fallbackEmail,
+                              username: safeUser,
                               password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
                               role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
                               send_invitation: true,
@@ -4525,6 +4719,26 @@ function EmployeeListContent() {
                       <div className="flex flex-wrap items-center gap-2 pt-1">
                         <Button
                           size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 font-semibold"
+                          onClick={() => handleCopyLoginCard(selectedEmployee)}
+                        >
+                          <Copy className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>{tBilingual('Copy Login Pass', 'লগইন কার্ড কপি')}</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 text-xs gap-1.5 bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-800 hover:bg-green-100 font-semibold"
+                          onClick={() => handleCopyWhatsAppInvite(selectedEmployee)}
+                        >
+                          <Share2 className="w-3.5 h-3.5 text-green-600" />
+                          <span>{tBilingual('Copy WhatsApp Invite', 'হোয়াটসঅ্যাপ')}</span>
+                        </Button>
+
+                        <Button
+                          size="sm"
                           className="h-8 text-xs gap-1.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-xs"
                           onClick={() => handleSendInvitation(selectedEmployee)}
                           disabled={isInviting}
@@ -4532,12 +4746,12 @@ function EmployeeListContent() {
                           {isInviting ? (
                             <>
                               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                              <span>{tBilingual('Sending Invitation...', 'পাঠানো হচ্ছে...')}</span>
+                              <span>{tBilingual('Sending...', 'পাঠানো হচ্ছে...')}</span>
                             </>
                           ) : (
                             <>
                               <Send className="w-3.5 h-3.5" />
-                              <span>{tBilingual('Send Invitation Link to Employee Email', 'কর্মীর ইমেইলে আমন্ত্রণ লিংক পাঠান')}</span>
+                              <span>{tBilingual('Send Email Invite', 'ইমেইল আমন্ত্রণ')}</span>
                             </>
                           )}
                         </Button>
@@ -4545,14 +4759,21 @@ function EmployeeListContent() {
                         <Button
                           size="sm"
                           variant="outline"
-                          className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                          className="h-8 text-xs gap-1.5 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 font-medium"
                           onClick={() => {
+                            const safeUser = selectedEmployee.portal_credentials?.username || generateSafeEmployeeUsername(
+                              selectedEmployee.name,
+                              selectedEmployee.employee_id_number,
+                              selectedEmployee.mobile
+                            )
+                            const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
+                            const defaultEmail = selectedEmployee.portal_credentials?.email || selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
                             setCredsForm({
                               create_login: true,
-                              email: selectedEmployee.portal_credentials?.email || selectedEmployee.email || '',
-                              username: selectedEmployee.portal_credentials?.username || selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                              email: defaultEmail,
+                              username: safeUser,
                               password: selectedEmployee.portal_credentials?.password || '',
-                              role: selectedEmployee.portal_credentials?.role || 'operator',
+                              role: selectedEmployee.portal_credentials?.role || (selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator'),
                               send_invitation: true,
                             })
                             setIsEditingCredentials(true)
@@ -4578,7 +4799,7 @@ function EmployeeListContent() {
                             }}
                           >
                             <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
-                            <span>{tBilingual('View Invite Details', 'আমন্ত্রণ বিবরণ দেখুন')}</span>
+                            <span>{tBilingual('View Invite Details', 'আমন্ত্রণ বিবরণ')}</span>
                           </Button>
                         )}
                       </div>
@@ -4588,27 +4809,77 @@ function EmployeeListContent() {
                     <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-blue-500/20">
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                         <div className="space-y-1">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Login Email *', 'লগইন ইমেইল *')}
-                          </Label>
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {tBilingual('Login Email *', 'লগইন ইমেইল *')}
+                            </Label>
+                            {(!credsForm.email || credsForm.email.includes('.local')) && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
+                                  const u = credsForm.username || generateSafeEmployeeUsername(
+                                    selectedEmployee.name,
+                                    selectedEmployee.employee_id_number,
+                                    selectedEmployee.mobile
+                                  )
+                                  setCredsForm({ ...credsForm, email: `${u}@${cleanSlug}.inkflow.app` })
+                                }}
+                                className="text-2xs text-blue-600 hover:underline"
+                              >
+                                Auto Domain
+                              </button>
+                            )}
+                          </div>
                           <Input
                             placeholder="e.g. rahim@company.com"
                             value={credsForm.email}
-                            onChange={(e) => setCredsForm({ ...credsForm, email: e.target.value })}
+                            onChange={(e) => setCredsForm({ ...credsForm, email: e.target.value.trim() })}
                             className="text-xs h-9"
                           />
                         </div>
 
                         <div className="space-y-1">
-                          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                            {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
-                          </Label>
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {tBilingual('Login Username *', 'লগইন ইউজারনেম *')}
+                            </Label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const suggested = generateSafeEmployeeUsername(
+                                  selectedEmployee.name,
+                                  selectedEmployee.employee_id_number,
+                                  selectedEmployee.mobile
+                                )
+                                setCredsForm({ ...credsForm, username: suggested })
+                              }}
+                              className="text-2xs text-blue-600 hover:underline flex items-center gap-0.5"
+                            >
+                              <Sparkles className="w-3 h-3 text-amber-500" />
+                              Auto Suggest
+                            </button>
+                          </div>
                           <Input
                             placeholder="e.g. rahim.op"
                             value={credsForm.username}
-                            onChange={(e) => setCredsForm({ ...credsForm, username: e.target.value.toLowerCase().replace(/\s+/g, '.') })}
+                            onChange={(e) => setCredsForm({ ...credsForm, username: sanitizeUsername(e.target.value) })}
                             className="text-xs h-9 font-mono"
                           />
+                          {credsForm.username && (
+                            <div className="text-2xs flex items-center gap-1">
+                              {isValidUsernameFormat(credsForm.username).valid ? (
+                                <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+                                  <Check className="w-3 h-3" /> Valid username format
+                                </span>
+                              ) : (
+                                <span className="text-rose-500 flex items-center gap-0.5">
+                                  <AlertTriangle className="w-3 h-3" />
+                                  {isValidUsernameFormat(credsForm.username).reason}
+                                </span>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <div className="space-y-1">
@@ -4726,10 +4997,17 @@ function EmployeeListContent() {
                         size="sm"
                         className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white gap-1.5"
                         onClick={() => {
+                          const safeUser = generateSafeEmployeeUsername(
+                            selectedEmployee.name,
+                            selectedEmployee.employee_id_number,
+                            selectedEmployee.mobile
+                          )
+                          const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
+                          const fallbackEmail = selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
                           setCredsForm({
                             create_login: true,
-                            email: selectedEmployee.email || `${selectedEmployee.mobile}@company.local`,
-                            username: selectedEmployee.name.toLowerCase().replace(/\s+/g, '.'),
+                            email: fallbackEmail,
+                            username: safeUser,
                             password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
                             role: selectedEmployee.role ? selectedEmployee.role.toLowerCase() : 'operator',
                             send_invitation: true,

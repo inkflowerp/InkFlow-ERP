@@ -12,6 +12,7 @@ import { createAdminClient } from '../lib/supabase/admin.ts'
 import { TenantRepository } from '../lib/repositories/tenant.repository.ts'
 import { AuthEmailService } from './auth-email.service.ts'
 import { AuthService } from './auth.service.ts'
+import { sanitizeUsername, isValidUsernameFormat, generateSafeEmployeeUsername } from '../lib/auth/identifier-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../lib/db/data-store.ts'
 import type {
   EmployeeRecord,
@@ -118,9 +119,12 @@ export class WorkforceService {
     const otRate = Number(input.overtime_hourly_rate || ((hourlyRate > 0 ? hourlyRate : 100) * 1.5).toFixed(2))
 
     // Ensure no duplicate credentials across login accounts (Email, Username, Phone, Badge ID)
+    const sanitizedUsername = input.portal_credentials?.username?.trim()
+      ? sanitizeUsername(input.portal_credentials.username)
+      : undefined
     const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
       email: input.portal_credentials?.email || input.email,
-      username: input.portal_credentials?.username,
+      username: sanitizedUsername,
       phone: input.mobile,
       employeeIdNumber: input.employee_id_number,
       companyId: input.company_id,
@@ -234,9 +238,12 @@ export class WorkforceService {
     }
 
     // Ensure no duplicate credentials on update
+    const sanitizedUsername = updates.portal_credentials?.username?.trim()
+      ? sanitizeUsername(updates.portal_credentials.username)
+      : undefined
     const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
       email: updates.portal_credentials?.email || updates.email,
-      username: updates.portal_credentials?.username,
+      username: sanitizedUsername,
       phone: updates.mobile,
       employeeIdNumber: updates.employee_id_number,
       excludeEmployeeId: id,
@@ -359,14 +366,19 @@ export class WorkforceService {
       return { employee: updated || { ...employee, portal_credentials: updatedCreds } }
     }
 
+    const cleanUsername = generateSafeEmployeeUsername(
+      portalCreds.username || employee.name,
+      employee.employee_id_number,
+      employee.mobile
+    )
+
     let email = portalCreds.email?.trim().toLowerCase()
     if (!email || !email.includes('@')) {
       if (employee.email && employee.email.includes('@')) {
         email = employee.email.trim().toLowerCase()
       } else {
-        const cleanSlug = employee.company_id.replace(/^comp-/, '').replace(/^co-/, '')
-        const uname = (portalCreds.username || employee.mobile).replace(/[^a-zA-Z0-9._-]/g, '')
-        email = `${uname}@${cleanSlug}.local`
+        const cleanSlug = (companySlug || employee.company_id).replace(/^comp-/, '').replace(/^co-/, '').replace(/[^a-z0-9-]/g, '')
+        email = `${cleanUsername}@${cleanSlug || 'workspace'}.inkflow.app`
       }
     }
 
@@ -377,10 +389,30 @@ export class WorkforceService {
       const admin = createAdminClient()
 
       if (!userId) {
-        const { data: userList } = await admin.auth.admin.listUsers()
-        const existingAuth = userList?.users?.find((u) => u.email?.toLowerCase() === email)
-        if (existingAuth) {
-          userId = existingAuth.id
+        // 1. Try finding existing user by email in user_profiles
+        try {
+          const { data: existingProf } = await (admin as any)
+            .from('user_profiles')
+            .select('id')
+            .ilike('email', email)
+            .maybeSingle()
+          if (existingProf?.id) {
+            userId = existingProf.id
+          }
+        } catch {}
+
+        // 2. Try auth admin listUsers
+        if (!userId) {
+          try {
+            const { data: userList } = await admin.auth.admin.listUsers({ page: 1, perPage: 100 })
+            const existingAuth = userList?.users?.find((u) => u.email?.toLowerCase() === email)
+            if (existingAuth?.id) {
+              userId = existingAuth.id
+            }
+          } catch {}
+        }
+
+        if (userId) {
           if (portalCreds.password?.trim()) {
             await admin.auth.admin.updateUserById(userId, {
               password: portalCreds.password.trim(),
@@ -388,6 +420,7 @@ export class WorkforceService {
             })
           }
         } else {
+          // 3. Create new user in Auth
           const { data: newUser, error: createErr } = await admin.auth.admin.createUser({
             email,
             password,
@@ -396,16 +429,37 @@ export class WorkforceService {
               full_name: employee.name,
               name_bn: employee.name_bn || null,
               phone: employee.mobile,
-              username: portalCreds.username || email.split('@')[0],
+              username: cleanUsername,
               employee_id: employee.employee_id_number,
               preferred_locale: 'bn',
             },
           })
+
           if (!createErr && newUser?.user) {
             userId = newUser.user.id
+          } else if (
+            createErr?.message?.toLowerCase().includes('already') ||
+            (createErr as any)?.code === 'email_exists'
+          ) {
+            try {
+              const { data: existingProf } = await (admin as any)
+                .from('user_profiles')
+                .select('id')
+                .ilike('email', email)
+                .maybeSingle()
+              if (existingProf?.id) {
+                userId = existingProf.id
+                if (userId && portalCreds.password?.trim()) {
+                  await admin.auth.admin.updateUserById(userId, {
+                    password: portalCreds.password.trim(),
+                    email_confirm: true,
+                  })
+                }
+              }
+            } catch {}
           }
         }
-      } else if (portalCreds.password?.trim()) {
+      } else if (userId && portalCreds.password?.trim()) {
         try {
           await admin.auth.admin.updateUserById(userId, {
             password: portalCreds.password.trim(),
@@ -418,7 +472,7 @@ export class WorkforceService {
         await (admin as any).from('user_profiles').upsert({
           id: userId,
           email,
-          username: portalCreds.username ? portalCreds.username.trim().toLowerCase() : null,
+          username: cleanUsername,
           full_name: employee.name,
           full_name_bn: employee.name_bn || null,
           phone: employee.mobile || null,
@@ -430,7 +484,7 @@ export class WorkforceService {
         try {
           await (admin as any).from('profiles').upsert({
             id: userId,
-            username: portalCreds.username ? portalCreds.username.trim().toLowerCase() : null,
+            username: cleanUsername,
             full_name: employee.name,
             full_name_bn: employee.name_bn || null,
             phone: employee.mobile || null,
@@ -481,7 +535,9 @@ export class WorkforceService {
         // Also sync local data store for memory/offline fallback
         try {
           const localUsers = PrintERPDataStore.get<any[]>(STORAGE_KEYS.COMPANY_USERS) || []
-          const existingIdx = localUsers.findIndex((u: any) => u.user_id === userId && u.company_id === employee.company_id)
+          const existingIdx = localUsers.findIndex(
+            (u: any) => u.user_id === userId && u.company_id === employee.company_id
+          )
           const updatedCuRecord = {
             id: companyUserId || `cu-${userId}`,
             company_id: employee.company_id,
@@ -516,7 +572,8 @@ export class WorkforceService {
     let inviteUrl: string | undefined = undefined
     let inviteSentAt: string | undefined = undefined
 
-    if (sendInvite && email && !email.endsWith('.local')) {
+    const isSystemEmail = email.endsWith('.local') || email.endsWith('.inkflow.app')
+    if (sendInvite && email && !isSystemEmail) {
       try {
         const resolvedBaseUrl = appUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
         const rec = await AuthEmailService.createVerificationRecord({
@@ -548,7 +605,7 @@ export class WorkforceService {
       ...portalCreds,
       create_login: true,
       email,
-      username: portalCreds.username || email.split('@')[0],
+      username: cleanUsername,
       password,
       role: portalCreds.role || 'operator',
       user_id: userId,
@@ -560,7 +617,7 @@ export class WorkforceService {
     const updatedEmployee = await WorkforceRepository.updateEmployee(employee.id, employee.company_id, {
       portal_credentials: updatedCreds,
       user_id: userId,
-      email: employee.email || (email.endsWith('.local') ? null : email),
+      email: employee.email || (isSystemEmail ? null : email),
     })
 
     return {
@@ -590,10 +647,10 @@ export class WorkforceService {
       ''
     ).trim().toLowerCase()
 
-    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local')) {
+    if (!targetEmail || !targetEmail.includes('@') || targetEmail.endsWith('.local') || targetEmail.endsWith('.inkflow.app')) {
       return {
         success: false,
-        message: 'A valid email address is required to dispatch an invitation link.',
+        message: 'A valid personal or corporate email address is required to dispatch an email invitation. For system-generated credentials, please copy the Login Pass or WhatsApp Invite instead.',
       }
     }
 
@@ -647,24 +704,37 @@ export class WorkforceService {
       throw new Error('Employee record not found.')
     }
 
-    // Ensure no duplicate credentials when updating credentials
-    const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
-      email: credentials.email || employee.email,
-      username: credentials.username,
-      phone: employee.mobile,
-      excludeEmployeeId: employeeId,
-      excludeUserId: employee.user_id,
-      companyId,
-    })
+    const cleanUsername = credentials.username?.trim()
+      ? sanitizeUsername(credentials.username)
+      : (credentials.create_login
+          ? generateSafeEmployeeUsername(credentials.username || employee.name, employee.employee_id_number, employee.mobile)
+          : undefined)
 
-    if (!uniquenessCheck.available) {
-      throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+    const cleanCredentials: PortalCredentials = {
+      ...credentials,
+      username: cleanUsername,
     }
 
-    const shouldSendInvite = Boolean(credentials.send_invitation)
+    // Ensure no duplicate credentials when updating credentials with portal login enabled
+    if (cleanCredentials.create_login) {
+      const uniquenessCheck = await AuthService.validateIdentifierUniqueness({
+        email: cleanCredentials.email || employee.portal_credentials?.email || employee.email,
+        username: cleanCredentials.username,
+        phone: employee.mobile,
+        excludeEmployeeId: employeeId,
+        excludeUserId: employee.user_id,
+        companyId,
+      })
+
+      if (!uniquenessCheck.available) {
+        throw new Error(uniquenessCheck.error || 'Duplicate credential detected')
+      }
+    }
+
+    const shouldSendInvite = Boolean(cleanCredentials.send_invitation)
     const result = await this.syncEmployeePortalLogin(
       employee,
-      credentials,
+      cleanCredentials,
       actorName,
       companyName,
       companySlug,
