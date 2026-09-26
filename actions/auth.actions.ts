@@ -108,6 +108,27 @@ export async function loginAction(formData: FormData) {
   const targetPath = redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('/login')
     ? redirectTo
     : '/dashboard'
+
+  let isLocalhostRequest = false
+  try {
+    const headerStore = await headers()
+    const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase()
+    if (host.includes('localhost') || host.includes('127.0.0.1')) {
+      isLocalhostRequest = true
+    }
+  } catch {}
+
+  if (isLocalhostRequest) {
+    let clean = targetPath
+    if (clean.startsWith(`/${session.companySlug}/`)) {
+      clean = clean.slice(`/${session.companySlug}`.length)
+    } else if (clean === `/${session.companySlug}`) {
+      clean = '/dashboard'
+    }
+    const cleanDestination = clean.startsWith('/') ? clean : `/${clean}`
+    redirect(`/${session.companySlug}${cleanDestination}`)
+  }
+
   const targetSubdomainUrl = getTenantLink(session.companySlug, targetPath)
   redirect(targetSubdomainUrl)
 }

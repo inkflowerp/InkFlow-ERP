@@ -170,8 +170,14 @@ function LoginForm() {
         // Resolve active host topology to avoid redundant slug prefixes on subdomains
         let isCurrentHostSubdomain = false
         let currentHostTenantSlug: string | null = null
+        let isLocalhost = false
         if (typeof window !== 'undefined') {
           const resHost = resolveHostname(window.location.host)
+          isLocalhost = Boolean(
+            resHost.isLocalhost ||
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1'
+          )
           if (resHost.hostType === 'tenant') {
             isCurrentHostSubdomain = true
             currentHostTenantSlug = resHost.tenantSlug
@@ -207,7 +213,12 @@ function LoginForm() {
               cleanSubPath = '/dashboard'
             }
           }
-          destination = getTenantLink(targetSlug, cleanSubPath)
+          if (isLocalhost) {
+            const formattedSubPath = cleanSubPath.startsWith('/') ? cleanSubPath : `/${cleanSubPath}`
+            destination = `/${targetSlug}${formattedSubPath}`
+          } else {
+            destination = getTenantLink(targetSlug, cleanSubPath)
+          }
         }
 
         // Hard redirect to force HTTP request headers to include the updated tenant session cookie

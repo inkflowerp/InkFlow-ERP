@@ -9,8 +9,14 @@ export async function updateSession(request: NextRequest) {
   try {
     const rawHost = request.headers.get('host') || request.nextUrl.host
     const hostResolution = resolveHostname(rawHost)
-    const { hostType, tenantSlug, rootDomain, isDevelopment } = hostResolution
+    const { hostType, tenantSlug, rootDomain, isDevelopment, isLocalhost } = hostResolution
     const hostWithoutPort = (rawHost || '').toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0].split(':')[0]
+    const isLocal = Boolean(
+      isLocalhost ||
+      isDevelopment ||
+      hostWithoutPort === 'localhost' ||
+      hostWithoutPort === '127.0.0.1'
+    )
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
@@ -340,6 +346,10 @@ export async function updateSession(request: NextRequest) {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
         if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
+          if (isLocal) {
+            const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
+            return applyNoCacheHeaders(NextResponse.redirect(redirectUrl, 307))
+          }
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return applyNoCacheHeaders(NextResponse.redirect(new URL(tenantUrl), 307))
         } else if (hasAuthError && hasValidTenantCookie) {
@@ -355,6 +365,10 @@ export async function updateSession(request: NextRequest) {
       if (pathname === '/dashboard') {
         if (hasValidTenantCookie && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
+          if (isLocal) {
+            const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
+            return NextResponse.redirect(redirectUrl, 307)
+          }
           const tenantUrl = getTenantLink(targetSlug, `/dashboard`, rootDomain)
           return NextResponse.redirect(new URL(tenantUrl), 307)
         } else {
@@ -383,6 +397,22 @@ export async function updateSession(request: NextRequest) {
       if (!isKnownRootSegment && pathParts.length > 0 && isValidSlugFormat(firstSegment)) {
         const potentialSlug = firstSegment.toLowerCase().trim()
         const subPath = pathParts.slice(1).join('/')
+
+        // On localhost: Do not redirect to *.localhost (which fails DNS resolution on Windows).
+        // Pass through directly to Next.js path-based routing app/[tenantSlug]/...
+        if (isLocal) {
+          const requestHeaders = new Headers(request.headers)
+          requestHeaders.set('x-tenant-slug', potentialSlug)
+          requestHeaders.set('x-tenant-hostname', rawHost)
+          const res = NextResponse.next({
+            request: {
+              headers: requestHeaders,
+            },
+          })
+          responseCookies.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
+          return res
+        }
+
         const tenantUrl = getTenantLink(
           potentialSlug,
           subPath ? `/${subPath}${search}` : `/dashboard${search}`,
