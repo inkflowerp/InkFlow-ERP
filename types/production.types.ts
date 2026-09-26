@@ -229,7 +229,39 @@ export interface ProductionTaskRecord {
   invoice_number?: string | null
 }
 
-
+export interface UnifiedProductionJob {
+  id: string
+  jobNumber: string
+  orderNumber?: string | null
+  invoiceNumber?: string | null
+  invoiceId?: string | null
+  salesOrderId?: string | null
+  title: string
+  productName: string
+  customerName: string
+  customerPhone?: string | null
+  priority: TaskPriority | JobPriority
+  deadline?: string | null
+  dimensions?: string | null
+  quantity: number
+  unit: string
+  material?: string | null
+  instructions?: string | null
+  status: ProductionJobStatus | ProductionTaskStatus | 'finishing'
+  tasks: ProductionTaskRecord[]
+  activeTask?: ProductionTaskRecord | null
+  assignedMachineName?: string | null
+  assignedOperatorName?: string | null
+  isBlockedByCommercialGate?: boolean
+  commercialGateReason?: string | null
+  isBlockedByDesignGate?: boolean
+  designGateReason?: string | null
+  isBlockedByDependency?: boolean
+  blockingDependencyTaskName?: string | null
+  created_at: string
+  updated_at?: string
+  allInvoiceItems?: any[]
+}
 export interface CreateProductionTaskInput {
   job_order_id: string
   production_job_id?: string | null

@@ -14,6 +14,11 @@ import {
   Truck,
   Sparkles,
   Scissors,
+  X,
+  Clock,
+  UserCheck,
+  AlertOctagon,
+  RefreshCw,
 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -32,6 +37,10 @@ export interface ProductionFilterToolbarProps {
   urgentOnly: boolean
   onToggleUrgentOnly: (val: boolean) => void
   onAutoGenerateClick: () => void
+  quickFilter?: string
+  onSelectQuickFilter?: (qf: string) => void
+  onRefresh?: () => void
+  isRefreshing?: boolean
 }
 
 export function ProductionFilterToolbar({
@@ -44,6 +53,10 @@ export function ProductionFilterToolbar({
   urgentOnly,
   onToggleUrgentOnly,
   onAutoGenerateClick,
+  quickFilter = 'all',
+  onSelectQuickFilter,
+  onRefresh,
+  isRefreshing = false,
 }: ProductionFilterToolbarProps) {
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
@@ -51,38 +64,71 @@ export function ProductionFilterToolbar({
   const departments = [
     { id: 'all', labelEn: 'All Sectors', labelBn: 'সকল বিভাগ', icon: Layers },
     { id: 'printing', labelEn: 'Digital Wide-Format', labelBn: 'ডিজিটাল প্রিন্ট', icon: Printer },
-    { id: 'offset', labelEn: 'Offset Press & Plates', labelBn: 'অফসেট প্রেস', icon: Printer },
-    { id: 'finishing', labelEn: 'Lamination & Die-Cut', labelBn: 'ফিনিশিং ও বাইন্ডিং', icon: Scissors },
-    { id: 'fabrication', labelEn: '3D Signage & Metal', labelBn: 'সাইনেজ ও মেটাল', icon: Wrench },
+    { id: 'offset', labelEn: 'Offset Press', labelBn: 'অফসেট প্রেস', icon: Printer },
+    { id: 'finishing', labelEn: 'Finishing & Binding', labelBn: 'ফিনিশিং ও বাইন্ডিং', icon: Scissors },
+    { id: 'fabrication', labelEn: 'Signage & Metal', labelBn: 'সাইনেজ ও মেটাল', icon: Wrench },
     { id: 'installation', labelEn: 'Site Rigging', labelBn: 'ইনস্টলেশন', icon: Truck },
   ]
 
+  const quickFilterChips = [
+    { id: 'all', labelEn: 'All Jobs', labelBn: 'সকল কাজ', icon: Layers },
+    { id: 'urgent', labelEn: 'Urgent Only', labelBn: 'জরুরি ডেলিভারি', icon: ShieldAlert, color: 'text-rose-600' },
+    { id: 'due_today', labelEn: 'Due Today', labelBn: 'আজকের ডেলিভারি', icon: Clock, color: 'text-amber-600' },
+    { id: 'running', labelEn: 'Running Floor', labelBn: 'মেশিনে রানিং', icon: Flame, color: 'text-blue-600' },
+    { id: 'walk_in', labelEn: 'Walk-in Clients', labelBn: 'দোকানে বসা', icon: UserCheck, color: 'text-orange-600' },
+    { id: 'on_hold', labelEn: 'On Hold', labelBn: 'স্থগিতাদেশ', icon: AlertOctagon, color: 'text-amber-600' },
+  ]
+
   return (
-    <div className="space-y-3 bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-      {/* Top Row: View Mode Switcher + Auto-Generate Trigger */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3">
+      {/* Top Row: Search + Quick Chips + View Mode Switcher */}
+      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        {/* Search Input */}
+        <div className="relative flex-1 min-w-[240px]">
+          <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Input
+            value={search}
+            onChange={(e) => onSearchChange(e.target.value)}
+            placeholder={
+              isBn
+                ? 'জব নম্বর, ইনভয়েস #, অর্ডার #, কাস্টমার বা মেশিন খুঁজুন...'
+                : 'Search job #, invoice #, order #, client, or machine...'
+            }
+            className="text-xs pl-9 pr-8 h-9 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800"
+          />
+          {search && (
+            <button
+              type="button"
+              onClick={() => onSearchChange('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+
         {/* 4-Way View Mode Switcher */}
-        <div className="flex flex-wrap items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-lg">
+        <div className="flex flex-wrap items-center gap-1 bg-slate-100/90 dark:bg-slate-800/90 p-1 rounded-xl shrink-0">
           <button
             type="button"
             onClick={() => onViewModeChange('board')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'board'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <LayoutGrid className="h-3.5 w-3.5" />
-            <span>{isBn ? 'প্রোডাকশন বোর্ড' : 'Kanban Board'}</span>
+            <span>{isBn ? 'কার্ড ভিউ' : 'Cards View'}</span>
           </button>
 
           <button
             type="button"
             onClick={() => onViewModeChange('terminal')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'terminal'
                 ? 'bg-blue-600 text-white shadow-xs font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Printer className="h-3.5 w-3.5" />
@@ -93,37 +139,37 @@ export function ProductionFilterToolbar({
           <button
             type="button"
             onClick={() => onViewModeChange('machine_queues')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'machine_queues'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Cpu className="h-3.5 w-3.5 text-purple-600" />
-            <span>{isBn ? 'মেশিন কিউ (NOW/NEXT)' : 'Fleet Queues'}</span>
+            <span>{isBn ? 'মেশিন কিউ' : 'Fleet Queues'}</span>
           </button>
 
           <button
             type="button"
             onClick={() => onViewModeChange('table')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'table'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <TableIcon className="h-3.5 w-3.5" />
-            <span>{isBn ? 'টাস্ক তালিকা' : 'Task List'}</span>
+            <span>{isBn ? 'টাস্ক তালিকা' : 'Task Table'}</span>
           </button>
         </div>
 
-        {/* Right Action: Auto Generate Tasks button */}
-        <div className="flex items-center gap-2">
+        {/* Action: Auto Generate Tasks */}
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             size="sm"
             variant="outline"
             onClick={onAutoGenerateClick}
-            className="text-xs h-8 gap-1.5 border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40"
+            className="text-xs h-9 gap-1.5 border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 rounded-xl cursor-pointer"
           >
             <Sparkles className="h-3.5 w-3.5 text-blue-600" />
             <span>{isBn ? 'অর্ডার থেকে টাস্ক জেনারেট' : 'Auto-Generate Tasks'}</span>
@@ -131,57 +177,56 @@ export function ProductionFilterToolbar({
         </div>
       </div>
 
-      {/* Bottom Row: Sector / Department Chips + Priority Flag + Search */}
+      {/* Bottom Row: Quick Filter Chips (No duplicate emojis) + Sector Selector */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-        {/* Department Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs">
-          {departments.map((dept) => {
-            const Icon = dept.icon
-            const isSelected = selectedDept === dept.id
+        {/* Quick Filter Chips */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 text-xs scrollbar-none">
+          {quickFilterChips.map((chip) => {
+            const Icon = chip.icon
+            const isSelected =
+              chip.id === 'urgent' ? urgentOnly : (quickFilter === chip.id && !urgentOnly)
+
             return (
               <button
-                key={dept.id}
+                key={chip.id}
                 type="button"
-                onClick={() => onSelectDept(dept.id)}
-                className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 ${
+                onClick={() => {
+                  if (chip.id === 'urgent') {
+                    onToggleUrgentOnly(!urgentOnly)
+                  } else {
+                    if (urgentOnly) onToggleUrgentOnly(false)
+                    if (onSelectQuickFilter) onSelectQuickFilter(chip.id)
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                   isSelected
                     ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 font-bold shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'
+                    : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:bg-slate-700'
                 }`}
               >
-                <Icon className="h-3 w-3" />
-                <span>{isBn ? dept.labelBn : dept.labelEn}</span>
+                <Icon className={`h-3.5 w-3.5 ${chip.color || ''}`} />
+                <span>{isBn ? chip.labelBn : chip.labelEn}</span>
               </button>
             )
           })}
         </div>
 
-        {/* Filters & Search */}
-        <div className="flex items-center gap-2">
-          {/* Urgent / Rush toggle */}
-          <button
-            type="button"
-            onClick={() => onToggleUrgentOnly(!urgentOnly)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 border ${
-              urgentOnly
-                ? 'bg-rose-600 text-white border-rose-600 shadow-xs'
-                : 'bg-white text-rose-600 border-rose-200 dark:bg-slate-900 dark:border-rose-900/60 hover:bg-rose-50'
-            }`}
+        {/* Sector / Department Selector */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className="text-[11px] text-slate-400 hidden md:inline">
+            {isBn ? 'বিভাগ:' : 'Sector:'}
+          </span>
+          <select
+            value={selectedDept}
+            onChange={(e) => onSelectDept(e.target.value)}
+            className="text-xs h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2.5 font-medium shadow-xs focus:outline-hidden"
           >
-            <ShieldAlert className="h-3.5 w-3.5" />
-            <span>{isBn ? 'জরুরি কাজ' : 'Rush Only'}</span>
-          </button>
-
-          {/* Search Box */}
-          <div className="relative flex-1 sm:w-56">
-            <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <Input
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={isBn ? 'জব, কাস্টমার, মিডিয়া খুঁজুন...' : 'Search job, client, media...'}
-              className="text-xs pl-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800"
-            />
-          </div>
+            {departments.map((dept) => (
+              <option key={dept.id} value={dept.id}>
+                {isBn ? dept.labelBn : dept.labelEn}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

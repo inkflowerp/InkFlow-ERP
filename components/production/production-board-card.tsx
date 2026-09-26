@@ -210,7 +210,7 @@ export function ProductionBoardCard({
         </div>
 
         {/* Action Controls */}
-        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-1.5">
+        <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-1.5">
           <div className="flex items-center gap-1">
             {onPrintTicket && (
               <Button
@@ -218,7 +218,7 @@ export function ProductionBoardCard({
                 variant="ghost"
                 onClick={() => onPrintTicket(task)}
                 title="Print Job Ticket"
-                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900"
+                className="h-7 w-7 p-0 text-slate-500 hover:text-slate-900 shrink-0"
               >
                 <FileCheck2 className="h-3.5 w-3.5" />
               </Button>
@@ -229,22 +229,22 @@ export function ProductionBoardCard({
                 variant="ghost"
                 onClick={() => onSendWhatsApp(task)}
                 title="Send WhatsApp Update"
-                className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                className="h-7 w-7 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 shrink-0"
               >
                 <MessageSquare className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex flex-wrap items-center gap-1 ml-auto">
           {task.status === 'on_hold' && onResume && (
             <Button
               size="sm"
               variant="outline"
               onClick={() => onResume(task)}
-              className="h-7 text-[11px] px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700"
+              className="h-7 text-[11px] px-2 text-amber-700 border-amber-300 hover:bg-amber-50 dark:border-amber-700 rounded-lg shrink-0"
             >
-              Resume Task
+              Resume
             </Button>
           )}
 
@@ -253,7 +253,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="ghost"
               onClick={() => onHold(task)}
-              className="h-7 text-[11px] px-2 text-slate-500 hover:text-amber-600"
+              className="h-7 text-[11px] px-1.5 text-slate-500 hover:text-amber-600 rounded-lg shrink-0"
             >
               Hold
             </Button>
@@ -264,7 +264,7 @@ export function ProductionBoardCard({
               size="sm"
               variant="outline"
               onClick={() => onSchedule(task)}
-              className="h-7 text-[11px] px-2 text-blue-600 border-blue-200 hover:bg-blue-50"
+              className="h-7 text-[11px] px-2 text-blue-600 border-blue-200 hover:bg-blue-50 rounded-lg shrink-0"
             >
               Schedule
             </Button>
@@ -276,10 +276,10 @@ export function ProductionBoardCard({
               variant="default"
               onClick={() => onStart(task)}
               disabled={task.is_blocked_by_dependency || task.is_blocked_by_commercial_gate || task.is_blocked_by_design_gate}
-              className="h-7 text-[11px] px-2 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-7 text-[11px] px-2.5 bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 font-semibold rounded-lg shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Play className="h-3 w-3 fill-current" />
-              Start
+              <span>Start</span>
             </Button>
           )}
 
