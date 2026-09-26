@@ -1,33 +1,21 @@
 -- ==============================================================================
--- InkFlow ERP SaaS - Migration 101: Fix company_users is_active & Financial RPCs
+-- InkFlow ERP SaaS - Migration 105: Fix companies owner_id & financial atomic RPCs
+-- Fixes: column "owner_id" does not exist in public.companies
 -- Ensures:
---   1. ALTER TABLE public.company_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN DEFAULT true;
---   2. Synchronizes is_active based on status = 'active'
+--   1. ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL;
+--   2. ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 --   3. Recreates record_multi_invoice_payment_atomic, record_financial_write_off_atomic,
---      cancel_invoice_atomic, record_cheque_dishonor_atomic, and Finance 360 RPCs
---      with resilient company membership check: (status = 'active' OR is_active = true)
+--      cancel_invoice_atomic, record_cheque_dishonor_atomic, and record_expense_with_journal_atomic
+--      with resilient company membership check including tenant_memberships and companies.
 -- ==============================================================================
 
--- 0. ADD OWNER_ID & CREATED_BY COLUMNS TO COMPANIES IF MISSING
+-- 1. ADD OWNER_ID & CREATED_BY COLUMNS TO COMPANIES IF MISSING
 ALTER TABLE IF EXISTS public.companies
     ADD COLUMN IF NOT EXISTS owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
     ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL;
 
--- 1. ADD IS_ACTIVE COLUMN TO COMPANY_USERS IF MISSING
-ALTER TABLE IF EXISTS public.company_users
-    ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true;
-
--- Ensure consistency between status and is_active
-UPDATE public.company_users
-SET is_active = (status = 'active')
-WHERE is_active IS NULL OR (status = 'disabled' AND is_active = true);
-
--- Add index for fast company membership verification
-CREATE INDEX IF NOT EXISTS idx_company_users_auth_active
-    ON public.company_users (user_id, company_id, is_active);
-
-CREATE INDEX IF NOT EXISTS idx_company_users_auth_status
-    ON public.company_users (user_id, company_id, status);
+CREATE INDEX IF NOT EXISTS idx_companies_owner_id ON public.companies(owner_id);
+CREATE INDEX IF NOT EXISTS idx_companies_created_by ON public.companies(created_by);
 
 
 -- 2. HARDENED RECORD_MULTI_INVOICE_PAYMENT_ATOMIC

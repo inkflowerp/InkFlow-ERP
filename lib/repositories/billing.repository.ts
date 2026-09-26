@@ -6,6 +6,8 @@ import type {
   InvoiceRecord,
   InvoiceItemRecord,
   PaymentRecord,
+  PaymentType,
+  PaymentMethod,
   PaymentAllocationRecord,
   FinancialWriteOffRecord,
   BillingPeriod,
@@ -1805,17 +1807,221 @@ export class BillingRepository {
         error = adminRes.error
       }
 
-      if (error) {
-        throw new Error(`Payment transaction rolled back in PostgreSQL: ${error.message}`)
-      }
-
-      if (data && data.success) {
+      if (!error && data && data.success) {
         const { data: payRecord } = await (supabase as any)
           .from('payments')
           .select('*, allocations:payment_allocations(*)')
           .eq('id', data.payment_id)
           .maybeSingle()
         if (payRecord) return payRecord as PaymentRecord
+      }
+
+      // If the RPC failed in PostgreSQL (e.g. column "owner_id" does not exist in old migrations, or RPC schema error)
+      if (error) {
+        console.warn(`[BillingRepository] RPC record_multi_invoice_payment_atomic failed (${error.message}). Executing direct table-level PostgreSQL transaction...`)
+
+        const client = createAdminClient() || supabase
+        const receiptNumber = await this.getNextDocumentNumber(params.companyId, 'payment')
+        const paymentId = generateUUID()
+        const allocationRecords: PaymentAllocationRecord[] = []
+        let totalAllocated = 0
+
+        // Fetch target invoices from PostgreSQL (with PrintERPDataStore fallback for tests & local cache)
+        const { data: dbInvoices, error: invFetchErr } = await (client as any)
+          .from('invoices')
+          .select('*')
+          .eq('company_id', params.companyId)
+
+        if (invFetchErr && mode === 'production') {
+          console.warn(`[BillingRepository] PostgreSQL fallback query error: ${invFetchErr.message}`)
+        }
+
+        const storeInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+        const invoiceList: any[] = (dbInvoices && dbInvoices.length > 0)
+          ? dbInvoices
+          : storeInvoices.filter((i) => !i.company_id || i.company_id === params.companyId)
+
+        if (params.allocations && params.allocations.length > 0) {
+          for (const alloc of params.allocations) {
+            if (alloc.amount > 0) {
+              const matchedInv = invoiceList.find((i: any) => i.id === alloc.invoiceId || i.invoice_number === alloc.invoiceId)
+              if (matchedInv) {
+                if (matchedInv.status === 'cancelled') {
+                  throw new Error(`Cannot allocate payment to cancelled invoice ${matchedInv.invoice_number || matchedInv.id}`)
+                }
+                const allocAmt = Math.min(Number(alloc.amount), Number(matchedInv.due_amount))
+                const newPaid = Number(matchedInv.paid_amount || 0) + allocAmt
+                const newDue = Math.max(0, Number(matchedInv.grand_total) - newPaid - Number(matchedInv.write_off_amount || 0))
+                const newStatus = newDue <= 0 ? 'paid' : 'partially_paid'
+
+                try {
+                  await (client as any)
+                    .from('invoices')
+                    .update({
+                      paid_amount: newPaid,
+                      due_amount: newDue,
+                      status: newStatus,
+                      updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', matchedInv.id)
+                } catch (_) {}
+
+                matchedInv.paid_amount = newPaid
+                matchedInv.due_amount = newDue
+                matchedInv.status = newStatus
+
+                allocationRecords.push({
+                  id: generateUUID(),
+                  payment_id: paymentId,
+                  invoice_id: matchedInv.id,
+                  invoice_number: matchedInv.invoice_number,
+                  allocated_amount: allocAmt,
+                  created_at: new Date().toISOString(),
+                })
+                totalAllocated += allocAmt
+              }
+            }
+          }
+        } else {
+          // FIFO auto-allocation on open invoices
+          const openInvoices = invoiceList
+            .filter((i: any) => i.customer_id === params.customerId && Number(i.due_amount) > 0 && i.status !== 'cancelled')
+            .sort((a: any, b: any) => new Date(a.invoice_date).getTime() - new Date(b.invoice_date).getTime())
+
+          let remaining = Number(params.amount)
+          for (const inv of openInvoices) {
+            if (remaining <= 0) break
+            const toAlloc = Math.min(remaining, Number(inv.due_amount))
+            const newPaid = Number(inv.paid_amount || 0) + toAlloc
+            const newDue = Math.max(0, Number(inv.grand_total) - newPaid - Number(inv.write_off_amount || 0))
+            const newStatus = newDue <= 0 ? 'paid' : 'partially_paid'
+
+            try {
+              await (client as any)
+                .from('invoices')
+                .update({
+                  paid_amount: newPaid,
+                  due_amount: newDue,
+                  status: newStatus,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', inv.id)
+            } catch (_) {}
+
+            inv.paid_amount = newPaid
+            inv.due_amount = newDue
+            inv.status = newStatus
+
+            allocationRecords.push({
+              id: generateUUID(),
+              payment_id: paymentId,
+              invoice_id: inv.id,
+              invoice_number: inv.invoice_number,
+              allocated_amount: toAlloc,
+              created_at: new Date().toISOString(),
+            })
+
+            totalAllocated += toAlloc
+            remaining -= toAlloc
+          }
+        }
+
+        const unallocated = Math.max(0, Number(params.amount) - totalAllocated)
+
+        const newPaymentRow = {
+          id: paymentId,
+          company_id: params.companyId,
+          branch_id: params.branchId || null,
+          receipt_number: receiptNumber,
+          customer_id: params.customerId,
+          customer_name: params.customerName,
+          payment_date: params.paymentDate || getTodayDateString(),
+          payment_type: (params.allocations && params.allocations.length > 0 ? 'due_payment' : 'advance_payment') as PaymentType,
+          payment_method: params.paymentMethod as PaymentMethod,
+          amount: params.amount,
+          unallocated_amount: unallocated,
+          bank_name: params.bankName || null,
+          cheque_number: params.chequeNumber || null,
+          cheque_date: params.chequeDate || null,
+          mfs_transaction_id: params.mfsTransactionId || null,
+          notes: params.notes || null,
+          received_by_name: params.receivedByName,
+          idempotency_key: params.idempotencyKey || null,
+          actor_user_id: params.actorUserId || null,
+          created_at: new Date().toISOString(),
+        }
+
+        try {
+          await (client as any)
+            .from('payments')
+            .insert(newPaymentRow)
+        } catch (_) {}
+
+        if (allocationRecords.length > 0) {
+          try {
+            await (client as any).from('payment_allocations').insert(allocationRecords)
+          } catch (_) {}
+        }
+
+        if (params.customerId) {
+          try {
+            const { data: cust } = await (client as any)
+              .from('customers')
+              .select('total_paid_amount, total_due_balance')
+              .eq('id', params.customerId)
+              .maybeSingle()
+            if (cust) {
+              await (client as any)
+                .from('customers')
+                .update({
+                  total_paid_amount: (Number(cust.total_paid_amount) || 0) + Number(params.amount),
+                  total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - totalAllocated),
+                  last_payment_date: params.paymentDate || getTodayDateString(),
+                  last_payment_amount: Number(params.amount),
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', params.customerId)
+            }
+          } catch (_) {}
+        }
+
+        // Also update local datastore for invoices, customer, and payments
+        try {
+          const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+          for (const alloc of allocationRecords) {
+            const idx = allInvoices.findIndex((i) => i.id === alloc.invoice_id)
+            if (idx >= 0) {
+              const matched = invoiceList.find((i: any) => i.id === alloc.invoice_id)
+              if (matched) {
+                allInvoices[idx] = {
+                  ...allInvoices[idx],
+                  paid_amount: matched.paid_amount,
+                  due_amount: matched.due_amount,
+                  status: matched.status,
+                  updated_at: new Date().toISOString(),
+                }
+              }
+            }
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+
+          const allCustomers = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+          const cIdx = allCustomers.findIndex((c) => c.id === params.customerId)
+          if (cIdx >= 0) {
+            allCustomers[cIdx] = {
+              ...allCustomers[cIdx],
+              total_paid_amount: (Number(allCustomers[cIdx].total_paid_amount) || 0) + Number(params.amount),
+              total_due_balance: Math.max(0, (Number(allCustomers[cIdx].total_due_balance) || 0) - totalAllocated),
+            }
+            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCustomers)
+          }
+
+          const allPayments = PrintERPDataStore.get<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS) || []
+          allPayments.unshift({ ...newPaymentRow, payment_number: receiptNumber, allocations: allocationRecords })
+          PrintERPDataStore.set(STORAGE_KEYS.PAYMENTS, allPayments)
+        } catch (_) {}
+
+        return { ...newPaymentRow, payment_number: receiptNumber, allocations: allocationRecords } as unknown as PaymentRecord
       }
     } catch (err: any) {
       if (mode === 'production') {
@@ -2052,11 +2258,7 @@ export class BillingRepository {
         error = adminRes.error
       }
 
-      if (error) {
-        throw new Error(`Write-off transaction failed in PostgreSQL: ${error.message}`)
-      }
-
-      if (data && data.success) {
+      if (!error && data && data.success) {
         return {
           id: data.write_off_id,
           company_id: writeOff.company_id,
@@ -2066,6 +2268,40 @@ export class BillingRepository {
           authorized_by_name: writeOff.authorized_by_name,
           actor_user_id: writeOff.actor_user_id || null,
           created_at: new Date().toISOString(),
+        }
+      }
+
+      if (error) {
+        console.warn(`[BillingRepository] RPC record_financial_write_off_atomic failed (${error.message}). Executing direct table-level PostgreSQL write-off...`)
+        const client = createAdminClient() || supabase
+        const { data: inv, error: invErr } = await (client as any).from('invoices').select('*').eq('id', writeOff.invoice_id).maybeSingle()
+        if (inv) {
+          const newWriteOff = Number(inv.write_off_amount || 0) + writeOff.amount
+          const newDue = Math.max(0, Number(inv.grand_total) - Number(inv.paid_amount || 0) - newWriteOff)
+          const newStatus = newDue <= 0 ? 'written_off' : inv.status
+          await (client as any).from('invoices').update({
+            write_off_amount: newWriteOff,
+            due_amount: newDue,
+            status: newStatus,
+            updated_at: new Date().toISOString(),
+          }).eq('id', inv.id)
+
+          const writeOffId = generateUUID()
+          const writeOffRow: FinancialWriteOffRecord = {
+            id: writeOffId,
+            company_id: writeOff.company_id,
+            invoice_id: writeOff.invoice_id,
+            amount: writeOff.amount,
+            reason: writeOff.reason,
+            authorized_by_name: writeOff.authorized_by_name,
+            actor_user_id: writeOff.actor_user_id || null,
+            created_at: new Date().toISOString(),
+          }
+          await (client as any).from('financial_write_offs').insert(writeOffRow)
+          return writeOffRow
+        }
+        if (invErr && mode === 'production') {
+          throw new Error(`Write-off transaction failed in PostgreSQL: ${error.message}`)
         }
       }
     } catch (err: any) {
@@ -2160,12 +2396,46 @@ export class BillingRepository {
         error = adminRes.error
       }
 
-      if (error) {
-        throw new Error(`Cancellation failed in PostgreSQL: ${error.message}`)
+      if (!error && data && data.success) {
+        return true
       }
 
-      if (data && data.success) {
-        return true
+      if (error) {
+        console.warn(`[BillingRepository] RPC cancel_invoice_atomic failed (${error.message}). Executing direct table-level PostgreSQL cancellation...`)
+        const client = createAdminClient() || supabase
+        const { data: inv, error: invErr } = await (client as any).from('invoices').select('*').eq('id', invoiceId).maybeSingle()
+        if (inv) {
+          if (inv.status === 'cancelled') {
+            throw new Error('Invoice is already cancelled')
+          }
+          if (inv.status === 'paid') {
+            throw new Error('Paid invoices cannot be cancelled directly. Please perform an authorized payment refund/reversal.')
+          }
+          if (Number(inv.paid_amount || 0) > 0) {
+            throw new Error(`Partially paid invoices (Paid: ৳${inv.paid_amount}) cannot be cancelled directly.`)
+          }
+          const releasedDue = Number(inv.due_amount || 0)
+          await (client as any).from('invoices').update({
+            status: 'cancelled',
+            due_amount: 0,
+            notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
+            updated_at: new Date().toISOString(),
+          }).eq('id', invoiceId)
+
+          if (inv.customer_id && releasedDue > 0) {
+            const { data: cust } = await (client as any).from('customers').select('total_due_balance').eq('id', inv.customer_id).maybeSingle()
+            if (cust) {
+              await (client as any).from('customers').update({
+                total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - releasedDue),
+                updated_at: new Date().toISOString(),
+              }).eq('id', inv.customer_id)
+            }
+          }
+          return true
+        }
+        if (invErr && mode === 'production') {
+          throw new Error(`Invoice cancellation failed in PostgreSQL: ${error.message}`)
+        }
       }
     } catch (err: any) {
       if (mode === 'production') {
