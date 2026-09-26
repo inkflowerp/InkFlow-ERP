@@ -831,6 +831,7 @@ function MobileOperatorPanelContent() {
             loadData()
           } else {
             showNotification(`Error: ${res.error}`)
+            throw new Error(res.error || 'Failed to complete task.')
           }
         }}
       />

@@ -15,6 +15,7 @@ import {
   AlertOctagon,
   HelpCircle,
   TrendingDown,
+  Info,
 } from 'lucide-react'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { dispatchToast } from '@/components/shared/toast-feedback'
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { useI18n } from '@/i18n/context'
 import {
   ProductionTaskRecord,
   DefectReasonCode,
@@ -29,7 +31,11 @@ import {
 } from '@/types/production.types'
 import { InventoryRollRecord, RollFeedCalculationResult } from '@/types/inventory.types'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
-import { RollConsumptionEngine } from '@/lib/domain/roll-consumption-engine'
+import {
+  RollConsumptionEngine,
+  parseTaskDimensions,
+  type ParsedJobDimensions,
+} from '@/lib/domain/roll-consumption-engine'
 import {
   requestAndIssueFloorRollAction,
   getInventoryRollsAction,
@@ -63,6 +69,9 @@ export function CompleteTaskModal({
   task,
   onComplete,
 }: CompleteTaskModalProps) {
+  const { locale, tBilingual } = useI18n()
+  const isBn = locale === 'bn'
+
   const [goodQty, setGoodQty] = useState<number>(1)
   const [hasScrap, setHasScrap] = useState(false)
   const [scrapQty, setScrapQty] = useState<number>(0)
@@ -103,11 +112,19 @@ export function CompleteTaskModal({
     return filtered
   }
 
+  // Parse task dimensions cleanly (converts inches to feet if needed)
+  const parsedDims = useMemo(() => parseTaskDimensions(task), [task])
+  const jobWidthFt = parsedDims.widthFt
+  const jobLengthFt = parsedDims.lengthFt
+  const singleUnitAreaSft = parsedDims.areaSft
+
   useEffect(() => {
     if (!task) return
 
+    const initialGood = task.good_quantity ?? (task.quantity !== undefined ? Math.max(0, task.quantity - (task.rejected_quantity || 0)) : 1)
     const initScrap = Boolean(task.rejected_quantity && task.rejected_quantity > 0)
-    setGoodQty(task.good_quantity ?? (task.quantity ? Math.max(1, task.quantity - (task.rejected_quantity || 0)) : 1))
+
+    setGoodQty(initialGood)
     setHasScrap(initScrap)
     setScrapQty(task.rejected_quantity || 0)
     setDefectReason((task.defect_reason as DefectReasonCode) || (initScrap ? 'banding' : ''))
@@ -121,25 +138,71 @@ export function CompleteTaskModal({
     setRequestRollSuccess(null)
 
     loadRolls().then((rolls) => {
-      // Auto pre-select roll
-      const preSelected = rolls.find(
-        (r) =>
-          r.id === task.mounted_roll_id ||
-          (task.assigned_machine_id && r.mounted_machine_id === task.assigned_machine_id)
-      )
-      if (preSelected) {
-        setSelectedRollId(preSelected.id)
-      } else if (rolls.length > 0) {
+      // Check if machine or task is sheet-fed / offset / laser (non-roll)
+      const machineName = (task.assigned_machine_name || '').toLowerCase()
+      const taskDept = (task.department || task.task_type || '').toLowerCase()
+      const isSheetFed =
+        machineName.includes('heidelberg') ||
+        machineName.includes('sm74') ||
+        machineName.includes('speedmaster') ||
+        machineName.includes('bizhub') ||
+        machineName.includes('offset') ||
+        machineName.includes('xerox') ||
+        machineName.includes('ricoh') ||
+        machineName.includes('canon') ||
+        machineName.includes('screen') ||
+        machineName.includes('manual') ||
+        taskDept === 'finishing'
+
+      if (isSheetFed && !task.mounted_roll_id) {
+        setSelectedRollId('')
+        return
+      }
+
+      // 1. Task specifically has a mounted roll
+      const byTaskId = rolls.find((r) => r.id === task.mounted_roll_id)
+      if (byTaskId) {
+        setSelectedRollId(byTaskId.id)
+        return
+      }
+
+      // 2. Machine has a mounted roll
+      if (task.assigned_machine_id) {
+        const byMachine = rolls.find((r) => r.mounted_machine_id === task.assigned_machine_id)
+        if (byMachine) {
+          setSelectedRollId(byMachine.id)
+          return
+        }
+      }
+
+      // 3. Roll matching required material
+      if (task.required_material) {
+        const matLower = task.required_material.toLowerCase()
+        const byMaterial = rolls.find((r) =>
+          (r.material?.name && r.material.name.toLowerCase().includes(matLower)) ||
+          ((r as any).material_name && (r as any).material_name.toLowerCase().includes(matLower)) ||
+          (r.roll_tag && r.roll_tag.toLowerCase().includes(matLower)) ||
+          (r.roll_code && r.roll_code.toLowerCase().includes(matLower))
+        )
+        if (byMaterial) {
+          setSelectedRollId(byMaterial.id)
+          return
+        }
+      }
+
+      // 4. Default: If wide format / roll job, pick the best fitting roll, else allow no deduction
+      const fittingRoll = rolls.find((r) => r.width_ft >= parsedDims.widthFt || r.width_ft >= parsedDims.lengthFt)
+      if (fittingRoll) {
+        setSelectedRollId(fittingRoll.id)
+      } else if (rolls.length > 0 && !isSheetFed) {
         setSelectedRollId(rolls[0].id)
+      } else {
+        setSelectedRollId('')
       }
     })
-  }, [task, isOpen])
+  }, [task, isOpen, parsedDims])
 
   const selectedRoll = availableRolls.find((r) => r.id === selectedRollId)
-
-  // Job Dimensions in Feet
-  const jobWidthFt = task ? (Number(task.width) || (task.unit === 'ft' || task.unit === 'sft' ? 3 : 1)) : 1
-  const jobLengthFt = task ? (Number(task.height) || (task.unit === 'ft' || task.unit === 'sft' ? 5 : 1)) : 1
 
   // Deterministic Roll Feed Calculation
   const rollCalc: RollFeedCalculationResult | null = useMemo(() => {
@@ -149,7 +212,7 @@ export function CompleteTaskModal({
       roll_current_length_ft: Number(selectedRoll.current_length_ft ?? (selectedRoll.remaining_area_sft / selectedRoll.width_ft)),
       job_width_ft: jobWidthFt,
       job_length_ft: jobLengthFt,
-      quantity: Number(goodQty) || 1,
+      quantity: Number(goodQty) >= 0 ? Number(goodQty) : 1,
       orientation,
       bleed_allowance_in: Number(bleedInches) || 0,
       wastage_length_ft: hasScrap ? Number(scrapWastageLengthFt) || 0 : 0,
@@ -159,13 +222,12 @@ export function CompleteTaskModal({
 
   if (!task) return null
 
-  const isSftUnit = task.unit === 'sft' || task.unit === 'sqft' || (task.width && task.height)
-  const taskAreaSft = (task.width && task.height)
-    ? Math.round(task.width * task.height * goodQty * 100) / 100
-    : (isSftUnit ? goodQty : 0)
+  const taskAreaSft = Math.round(singleUnitAreaSft * (Number(goodQty) || 0) * 100) / 100
 
   const scrapAreaSft = hasScrap
-    ? (rollCalc ? rollCalc.wastage_area_sft : (task.width && task.height ? Math.round(task.width * task.height * scrapQty * 100) / 100 : scrapQty))
+    ? (rollCalc
+        ? rollCalc.wastage_area_sft
+        : Math.round(singleUnitAreaSft * (Number(scrapQty) || 0) * 100) / 100)
     : 0
 
   // 1-Click Request New Roll from Warehouse to Print Floor
@@ -207,7 +269,7 @@ export function CompleteTaskModal({
     setIsSubmitting(true)
     try {
       await onComplete(task.id, {
-        good_quantity: Number(goodQty) || 0,
+        good_quantity: Number(goodQty) >= 0 ? Number(goodQty) : 0,
         rejected_quantity: hasScrap ? Number(scrapQty || (rollCalc ? rollCalc.wastage_length_ft : 0)) : 0,
         defect_reason: hasScrap && defectReason ? defectReason : null,
         scrap_notes: hasScrap && scrapNotes ? scrapNotes : null,
@@ -246,33 +308,73 @@ export function CompleteTaskModal({
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Task Summary Banner */}
-        <div className="p-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl space-y-1 text-xs">
-          <div className="flex items-center justify-between font-bold text-slate-900 dark:text-white">
-            <span className="text-sm font-black">{task.task_name}</span>
-            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-              {task.department}
-            </Badge>
+        <div className="p-3.5 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800/40 border border-slate-200 dark:border-slate-800 rounded-xl space-y-2 text-xs">
+          <div className="flex items-center justify-between gap-2 flex-wrap font-bold text-slate-900 dark:text-white">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-black tracking-tight">{task.task_name}</span>
+              <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                {task.department}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Badge variant="outline" className="text-2xs font-mono font-bold">
+                {task.task_number}
+              </Badge>
+              <Badge className={
+                task.status === 'in_progress' ? 'bg-emerald-500 text-white' :
+                task.status === 'paused' ? 'bg-amber-500 text-white' :
+                task.status === 'on_hold' ? 'bg-rose-500 text-white' :
+                'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200'
+              }>
+                {task.status.toUpperCase()}
+              </Badge>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 text-slate-500 font-mono text-2xs pt-1">
-            <span>Job: <strong>{task.job_number || 'N/A'}</strong></span>
-            <span>•</span>
-            <span>Customer: <strong>{task.customer_name || 'Direct'}</strong></span>
-            {task.width && task.height && (
-              <>
-                <span>•</span>
-                <span>Print Size: <strong>{task.width}ft × {task.height}ft ({taskAreaSft} SFT)</strong></span>
-              </>
-            )}
-            {task.assigned_machine_name && (
-              <>
-                <span>•</span>
-                <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300">
-                  <Cpu className="h-3 w-3" />
-                  <strong>{task.assigned_machine_name}</strong>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-2xs pt-1 border-t border-slate-200/80 dark:border-slate-800">
+            <div className="space-y-0.5">
+              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Job / Invoice:</span>
+              <strong className="text-slate-800 dark:text-slate-200 font-mono text-xs">{task.job_number || task.invoice_number || 'N/A'}</strong>
+            </div>
+
+            <div className="space-y-0.5">
+              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Customer:</span>
+              <strong className="text-slate-800 dark:text-slate-200 truncate block text-xs" title={task.customer_name || 'Direct Client'}>
+                {task.customer_name || 'Direct Client'}
+              </strong>
+            </div>
+
+            <div className="space-y-0.5">
+              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Print Size / Specs:</span>
+              <strong className="text-slate-800 dark:text-slate-200 block text-xs">
+                {parsedDims.displayStr}
+              </strong>
+            </div>
+
+            <div className="space-y-0.5">
+              <span className="text-slate-400 font-semibold uppercase tracking-wider block">Station / Machine:</span>
+              <strong className="text-slate-800 dark:text-slate-200 truncate block text-xs">
+                {task.assigned_machine_name || 'Floor Station'}
+              </strong>
+            </div>
+          </div>
+
+          {(task.required_material || (task as any).service_name) && (
+            <div className="flex items-center gap-3 text-2xs text-slate-600 dark:text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60 flex-wrap">
+              {task.required_material && (
+                <span className="flex items-center gap-1">
+                  <span className="font-semibold text-slate-400">Material:</span>
+                  <strong className="text-blue-700 dark:text-blue-300">{task.required_material}</strong>
                 </span>
-              </>
-            )}
-          </div>
+              )}
+              {(task as any).service_name && (
+                <span className="flex items-center gap-1">
+                  <span className="font-semibold text-slate-400">Service:</span>
+                  <strong className="text-indigo-700 dark:text-indigo-300">{(task as any).service_name}</strong>
+                </span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quantities Row */}
@@ -284,7 +386,7 @@ export function CompleteTaskModal({
             <div className="flex items-center gap-2">
               <Input
                 type="number"
-                min="0.01"
+                min="0"
                 step="any"
                 value={goodQty}
                 onChange={(e) => setGoodQty(Number(e.target.value))}
@@ -324,7 +426,7 @@ export function CompleteTaskModal({
               onChange={(e) => setSelectedRollId(e.target.value)}
               className="w-full h-10 px-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-mono font-bold"
             >
-              <option value="">-- No roll deduction --</option>
+              <option value="">-- No roll deduction (Sheet-fed / Pre-cut / Manual) --</option>
               {availableRolls.map((roll) => (
                 <option key={roll.id} value={roll.id}>
                   {roll.roll_code || roll.roll_tag} ({roll.width_ft}ft wide) • {roll.current_length_ft ?? (roll.remaining_area_sft / roll.width_ft)}ft left ({roll.remaining_area_sft} SFT)
@@ -371,7 +473,7 @@ export function CompleteTaskModal({
                   <span>Print Orientation</span>
                   {rollCalc && (
                     <Badge variant={rollCalc.is_fit_across_width ? 'outline' : 'destructive'} className="text-2xs py-0">
-                      {rollCalc.is_fit_across_width ? '✓ Fits Roll Width' : '✗ Exceeds Roll Width'}
+                      {rollCalc.is_fit_across_width ? '✓ Fits Roll Width' : 'Multi-Panel / Tiling'}
                     </Badge>
                   )}
                 </Label>
@@ -420,6 +522,19 @@ export function CompleteTaskModal({
                 </div>
               </div>
             </div>
+
+            {/* Warning if job exceeds single roll width — Informative, not blocking! */}
+            {rollCalc && !rollCalc.is_fit_across_width && (
+              <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-lg text-xs font-medium text-amber-900 dark:text-amber-200 flex items-start gap-2">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold">Exceeds Single Roll Width ({orientation === 'normal' ? jobWidthFt : jobLengthFt}ft &gt; {selectedRoll.width_ft}ft):</span>
+                  <p className="text-2xs text-amber-800 dark:text-amber-300 mt-0.5">
+                    Job will proceed as multi-panel tiling or manual custom feed. Full roll length deduction will still be logged.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* LIVE TELEMETRY CALCULATION HUD */}
             {rollCalc && (
@@ -510,23 +625,25 @@ export function CompleteTaskModal({
           {hasScrap && (
             <div className="mt-3 p-3.5 bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/60 rounded-xl space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* Scrap Linear Length in Feet */}
+                {/* Scrap Quantity / Linear Length */}
                 <div className="space-y-1">
                   <Label className="text-xs font-bold text-rose-900 dark:text-rose-200">
-                    Scrap Wastage Length (Linear Feet)
+                    {selectedRoll
+                      ? 'Scrap Wastage Length (Linear Feet)'
+                      : `Scrap / Defective Quantity (${task.unit || 'pcs'})`}
                   </Label>
                   <Input
                     type="number"
-                    min="0.1"
+                    min="0"
                     step="any"
-                    value={scrapWastageLengthFt || ''}
+                    value={selectedRoll ? (scrapWastageLengthFt || '') : (scrapQty || '')}
                     onChange={(e) => {
-                      const val = Number(e.target.value)
+                      const val = Number(e.target.value) || 0
                       setScrapWastageLengthFt(val)
                       setScrapQty(val)
                     }}
                     className="h-9 font-mono font-bold text-sm bg-white dark:bg-slate-900 border-rose-300 dark:border-rose-800"
-                    placeholder="e.g. 2.5 ft"
+                    placeholder={selectedRoll ? 'e.g. 2.5 ft' : 'e.g. 5'}
                     required={hasScrap}
                   />
                   {scrapAreaSft > 0 && (
@@ -596,7 +713,7 @@ export function CompleteTaskModal({
             <Input
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Clean roll cut; passed to Grommeting"
+              placeholder="e.g. Clean print run; passed to Finishing/Dispatch"
               className="h-9 text-xs"
             />
           </div>
@@ -611,19 +728,27 @@ export function CompleteTaskModal({
             disabled={isSubmitting}
             className="text-xs h-9 px-4 cursor-pointer"
           >
-            Cancel
+            {isBn ? 'বাতিল' : 'Cancel'}
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting || (rollCalc ? !rollCalc.is_fit_across_width : false)}
-            className="text-xs font-bold h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer gap-1.5"
+            disabled={isSubmitting}
+            className="text-xs font-bold h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer gap-1.5 transition-all"
           >
-            <CheckCircle2 className="h-4 w-4" />
-            <span>{isSubmitting ? 'Completing...' : 'Complete & Update Flow'}</span>
+            {isSubmitting ? (
+              <>
+                <RotateCw className="h-4 w-4 animate-spin" />
+                <span>{isBn ? 'সম্পন্ন হচ্ছে...' : 'Completing...'}</span>
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-4 w-4" />
+                <span>{isBn ? 'সম্পন্ন ও আপডেট করুন' : 'Complete & Update Flow'}</span>
+              </>
+            )}
           </Button>
         </div>
       </form>
     </ModalDialog>
   )
 }
-

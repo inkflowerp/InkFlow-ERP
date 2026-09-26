@@ -986,9 +986,11 @@ export default function AdvancedProductionPage() {
         loadData(true)
       } else {
         showNotification(`Error: ${res.error}`, 'error')
+        throw new Error(res.error || 'Failed to complete task.')
       }
     } catch (err: any) {
       showNotification(`Error: ${err.message}`, 'error')
+      throw err
     }
   }
 

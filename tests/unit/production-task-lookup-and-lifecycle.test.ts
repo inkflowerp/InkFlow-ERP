@@ -226,4 +226,128 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
     assert.ok(machineAfter)
     assert.strictEqual(machineAfter.status, 'available')
   })
+
+  it('6. Allows completing tasks directly from queued, ready, or on_hold without throwing invalid transition', async () => {
+    const queuedTaskId = 'tsk-queued-complete-01'
+    const queuedTask: ProductionTaskRecord = {
+      id: queuedTaskId,
+      company_id: TENANT_ID,
+      task_number: 'TSK-000009-1',
+      task_name: 'Print: Star Flex Banner for Customer',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 5,
+      unit: 'pcs',
+      priority: 'urgent',
+      status: 'queued',
+      customer_name: 'Direct Walk-in',
+      job_number: 'INV-000009',
+      width: 48,
+      height: 36,
+      dimension_unit: 'in',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, queuedTask)
+
+    // Completing directly from 'queued' must succeed smoothly
+    const res = await ProductionPlanningService.completeTask(queuedTaskId, TENANT_ID, {
+      good_quantity: 5,
+      rejected_quantity: 0,
+      notes: 'Direct fast print run on floor',
+    })
+    assert.ok(res.completedTask)
+    assert.strictEqual(res.completedTask.status, 'completed')
+    assert.strictEqual(res.completedTask.good_quantity, 5)
+    assert.ok(res.completedTask.actual_start, 'actual_start should be populated automatically')
+    assert.ok(res.completedTask.actual_end, 'actual_end should be populated')
+
+    // Task on hold can also be completed directly
+    const onHoldTaskId = 'tsk-onhold-complete-02'
+    const onHoldTask: ProductionTaskRecord = {
+      id: onHoldTaskId,
+      company_id: TENANT_ID,
+      task_number: 'TSK-000009-2',
+      task_name: 'Finishing: Eyelet and Grommeting',
+      task_type: 'finishing',
+      department: 'finishing',
+      sequence_order: 2,
+      quantity: 5,
+      unit: 'pcs',
+      priority: 'normal',
+      status: 'on_hold',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, onHoldTask)
+
+    const holdRes = await ProductionPlanningService.completeTask(onHoldTaskId, TENANT_ID, {
+      good_quantity: 5,
+      rejected_quantity: 0,
+    })
+    assert.strictEqual(holdRes.completedTask.status, 'completed')
+  })
+
+  it('7. Matches task numbers with leading zero variations (TSK-000009-1 vs TSK-009-1)', async () => {
+    assert.strictEqual(ProductionTaskRepository.matchesTaskNumber('TSK-000009-1', 'TSK-009-1'), true)
+    assert.strictEqual(ProductionTaskRepository.matchesTaskNumber('TSK-009-1', 'TSK-000009-1'), true)
+    assert.strictEqual(ProductionTaskRepository.matchesTaskNumber('TSK-000009-2', 'TSK-009-2'), true)
+    assert.strictEqual(ProductionTaskRepository.matchesTaskNumber('TSK-000009-1', 'TSK-000009-2'), false)
+    assert.strictEqual(ProductionTaskRepository.matchesTaskNumber('TSK-10-1', 'TSK-010-1'), true)
+
+    // Lookup task stored as TSK-009-1 when searching for TSK-000009-1
+    const task: ProductionTaskRecord = {
+      id: 'tsk-nine-01',
+      company_id: TENANT_ID,
+      task_number: 'TSK-009-1',
+      task_name: 'Print: Shop Banner',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 1,
+      unit: 'pcs',
+      priority: 'normal',
+      status: 'in_progress',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+
+    const found = await ProductionPlanningService.getTaskById('TSK-000009-1', TENANT_ID)
+    assert.ok(found, 'Should find task TSK-009-1 when queried with TSK-000009-1')
+    assert.strictEqual(found.id, 'tsk-nine-01')
+  })
+
+  it('8. Accurately parses dimensions and converts inches to feet for wide format feed', async () => {
+    const { parseTaskDimensions } = await import('../../lib/domain/roll-consumption-engine.ts')
+
+    // Case A: 48in x 36in banner
+    const parsedInch = parseTaskDimensions({
+      width: 48,
+      height: 36,
+      dimension_unit: 'in',
+    } as any)
+    assert.strictEqual(parsedInch.widthFt, 4)
+    assert.strictEqual(parsedInch.lengthFt, 3)
+    assert.strictEqual(parsedInch.areaSft, 12)
+
+    // Case B: Dimensions given as spec string "10 × 3 ft"
+    const parsedSpec = parseTaskDimensions({
+      dimensions_spec: '10 × 3 ft',
+    } as any)
+    assert.strictEqual(parsedSpec.widthFt, 10)
+    assert.strictEqual(parsedSpec.lengthFt, 3)
+    assert.strictEqual(parsedSpec.areaSft, 30)
+
+    // Case C: Large numbers without explicit unit assumed inches (36 x 24)
+    const parsedAutoInches = parseTaskDimensions({
+      width: 36,
+      height: 24,
+    } as any)
+    assert.strictEqual(parsedAutoInches.widthFt, 3)
+    assert.strictEqual(parsedAutoInches.lengthFt, 2)
+    assert.strictEqual(parsedAutoInches.areaSft, 6)
+  })
 })
+

@@ -240,3 +240,97 @@ export class RollConsumptionEngine {
     }
   }
 }
+
+export interface ParsedJobDimensions {
+  widthFt: number
+  lengthFt: number
+  displayStr: string
+  unit: string
+  areaSft: number
+}
+
+/**
+ * Robust dimension parser that converts various task units (inches, mm, cm, spec strings)
+ * into standardized linear feet for roll feeding and square feet for area deduction.
+ */
+export function parseTaskDimensions(task: any): ParsedJobDimensions {
+  if (!task) {
+    return { widthFt: 1, lengthFt: 1, displayStr: '1ft × 1ft', unit: 'ft', areaSft: 1 }
+  }
+
+  let w = Number(task.width) || 0
+  let h = Number(task.height) || 0
+  let unit = (task.dimension_unit || '').toLowerCase().trim()
+
+  // 1. If width or height missing, try parsing dimensions_spec (e.g. "10 × 3 ft", "36 x 24 in", "4' x 3'", "1200 x 600 mm")
+  if ((!w || !h) && task.dimensions_spec) {
+    const raw = task.dimensions_spec.toLowerCase()
+    if (raw.includes('ft') || raw.includes('feet') || raw.includes("'")) {
+      unit = 'ft'
+    } else if (raw.includes('in') || raw.includes('inch') || raw.includes('"')) {
+      unit = 'in'
+    } else if (raw.includes('mm')) {
+      unit = 'mm'
+    } else if (raw.includes('cm')) {
+      unit = 'cm'
+    }
+
+    const matches = raw.match(/(\d+(?:\.\d+)?)\s*(?:[×x*]|by)\s*(\d+(?:\.\d+)?)/)
+    if (matches) {
+      w = parseFloat(matches[1]) || 0
+      h = parseFloat(matches[2]) || 0
+    }
+  }
+
+  // 2. Fallbacks if still not specified
+  if (!w || !h) {
+    if (task.unit === 'sft' || task.unit === 'sqft') {
+      const qty = Number(task.quantity) || 1
+      return {
+        widthFt: 3,
+        lengthFt: Math.max(1, Math.round((qty / 3) * 100) / 100),
+        displayStr: `${qty} SFT`,
+        unit: 'sft',
+        areaSft: qty,
+      }
+    }
+    return { widthFt: 1, lengthFt: 1, displayStr: '1 × 1 ft', unit: 'ft', areaSft: 1 }
+  }
+
+  // 3. Infer unit if not explicit
+  if (!unit) {
+    if (task.unit === 'sft' || task.unit === 'sqft') {
+      unit = w <= 16 && h <= 50 ? 'ft' : 'in'
+    } else if (w > 20 || h > 20) {
+      unit = 'in'
+    } else {
+      unit = 'ft'
+    }
+  }
+
+  let widthFt = w
+  let lengthFt = h
+
+  if (unit === 'in' || unit === 'inch' || unit === 'inches') {
+    widthFt = Math.round((w / 12) * 100) / 100
+    lengthFt = Math.round((h / 12) * 100) / 100
+  } else if (unit === 'mm') {
+    widthFt = Math.round((w / 304.8) * 100) / 100
+    lengthFt = Math.round((h / 304.8) * 100) / 100
+  } else if (unit === 'cm') {
+    widthFt = Math.round((w / 30.48) * 100) / 100
+    lengthFt = Math.round((h / 30.48) * 100) / 100
+  }
+
+  widthFt = Math.max(0.1, widthFt)
+  lengthFt = Math.max(0.1, lengthFt)
+  const areaSft = Math.round(widthFt * lengthFt * 100) / 100
+
+  const displayStr =
+    unit === 'in' || unit === 'inch' || unit === 'inches'
+      ? `${w}" × ${h}" (${widthFt}ft × ${lengthFt}ft • ${areaSft} SFT)`
+      : `${w}ft × ${h}ft (${areaSft} SFT)`
+
+  return { widthFt, lengthFt, displayStr, unit, areaSft }
+}
+

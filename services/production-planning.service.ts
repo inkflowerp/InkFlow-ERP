@@ -48,12 +48,12 @@ export class ProductionPlanningService {
     if (currentStatus === newStatus) return true
 
     const allowedTransitions: Record<ProductionTaskStatus, ProductionTaskStatus[]> = {
-      queued: ['scheduled', 'ready', 'in_progress', 'on_hold', 'cancelled'],
-      scheduled: ['ready', 'in_progress', 'on_hold', 'cancelled'],
-      ready: ['in_progress', 'on_hold', 'cancelled'],
+      queued: ['scheduled', 'ready', 'in_progress', 'completed', 'on_hold', 'cancelled'],
+      scheduled: ['ready', 'in_progress', 'completed', 'on_hold', 'cancelled'],
+      ready: ['in_progress', 'completed', 'on_hold', 'cancelled'],
       in_progress: ['paused', 'completed', 'on_hold', 'rework', 'cancelled'],
       paused: ['in_progress', 'completed', 'on_hold', 'cancelled'],
-      on_hold: ['ready', 'queued', 'scheduled', 'in_progress', 'cancelled'],
+      on_hold: ['ready', 'queued', 'scheduled', 'in_progress', 'completed', 'cancelled'],
       rework: ['in_progress', 'completed', 'cancelled', 'on_hold'],
       completed: ['rework'], // completed cannot transition except spawning rework
       cancelled: [], // terminal
@@ -537,8 +537,11 @@ export class ProductionPlanningService {
     const task = await this.getTaskById(taskId, companyId, taskPayload)
     if (!task) throw new Error('Task not found')
 
-    if (task.status === 'on_hold') {
-      throw new Error('Cannot complete task while on hold. Resume or start task first.')
+    if (task.status === 'completed') {
+      return {
+        completedTask: task,
+        nextReadyTask: null,
+      }
     }
 
     if (!this.isValidStatusTransition(task.status, 'completed')) {
@@ -547,12 +550,16 @@ export class ProductionPlanningService {
 
     const now = new Date()
     let actualDuration: number | null = null
-    if (task.actual_start) {
-      const startMs = new Date(task.actual_start).getTime()
-      actualDuration = Math.max(1, Math.round((now.getTime() - startMs) / 60000))
+    const actualStart = task.actual_start || task.created_at || now.toISOString()
+    if (actualStart) {
+      const startMs = new Date(actualStart).getTime()
+      if (!isNaN(startMs)) {
+        actualDuration = Math.max(1, Math.round((now.getTime() - startMs) / 60000))
+      }
     }
 
     const completed = await ProductionTaskRepository.updateTaskStatus(taskId, companyId, 'completed', {
+      actual_start: task.actual_start || actualStart,
       actual_end: now.toISOString(),
       actual_duration_minutes: actualDuration,
       good_quantity: completionData?.good_quantity ?? (completionData as any)?.completed_quantity ?? task.quantity,

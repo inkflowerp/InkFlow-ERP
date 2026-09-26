@@ -327,6 +327,31 @@ export class ProductionTaskRepository {
       })
   }
 
+  static matchesTaskNumber(a?: string | null, b?: string | null): boolean {
+    if (!a || !b) return false
+    if (a === b) return true
+    const cleanA = a.trim().replace(/^TSK-/, '')
+    const cleanB = b.trim().replace(/^TSK-/, '')
+    if (cleanA === cleanB) return true
+    const partsA = cleanA.split('-')
+    const partsB = cleanB.split('-')
+    if (partsA.length === 2 && partsB.length === 2) {
+      const numA = parseInt(partsA[0], 10)
+      const numB = parseInt(partsB[0], 10)
+      if (!isNaN(numA) && !isNaN(numB) && numA === numB && partsA[1] === partsB[1]) {
+        return true
+      }
+    }
+    if (partsA.length === 1 && partsB.length === 1) {
+      const numA = parseInt(partsA[0], 10)
+      const numB = parseInt(partsB[0], 10)
+      if (!isNaN(numA) && !isNaN(numB) && numA === numB) {
+        return true
+      }
+    }
+    return cleanA.includes(cleanB) || cleanB.includes(cleanA)
+  }
+
   static async getTaskById(
     id: string,
     companyId: string,
@@ -381,7 +406,7 @@ export class ProductionTaskRepository {
     const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     let found = all.find(
       (t: ProductionTaskRecord) =>
-        (t.id === id || t.task_number === id || (id.startsWith('TSK-') && t.task_number?.includes(id.replace('TSK-', '')))) &&
+        (t.id === id || t.task_number === id || this.matchesTaskNumber(t.task_number, id)) &&
         this.isMatchingCompany(t.company_id, companyId)
     )
 
@@ -391,7 +416,7 @@ export class ProductionTaskRepository {
         const tasks = await this.getTasks(companyId)
         found = tasks.find(
           (t) =>
-            (t.id === id || t.task_number === id || (id.startsWith('TSK-') && t.task_number?.includes(id.replace('TSK-', '')))) &&
+            (t.id === id || t.task_number === id || this.matchesTaskNumber(t.task_number, id)) &&
             this.isMatchingCompany(t.company_id, companyId)
         )
       } catch {}
@@ -586,7 +611,12 @@ export class ProductionTaskRepository {
     const all = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
     const idx = all.findIndex(
       (t: ProductionTaskRecord) =>
-        (t.id === id || t.task_number === id || t.id === param1 || t.task_number === param1) &&
+        (t.id === id ||
+          t.task_number === id ||
+          t.id === param1 ||
+          t.task_number === param1 ||
+          this.matchesTaskNumber(t.task_number, id) ||
+          this.matchesTaskNumber(t.task_number, param1)) &&
         (!companyId || this.isMatchingCompany(t.company_id, companyId))
     )
     if (idx >= 0) {
