@@ -245,12 +245,33 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
 
     // 2. Authoritative Database Platform Admin Verification (Mandatory Step 2)
     const adminClient = createAdminClient()
-    const { data: adminRecord, error: dbError } = await (adminClient as any)
+    let { data: adminRecord, error: dbError } = await (adminClient as any)
       .from('platform_admins')
       .select('*')
       .eq('user_id', authenticatedUser.id)
       .eq('is_active', true)
       .maybeSingle()
+
+    if (!adminRecord && authenticatedUser.email) {
+      const { data: recordByEmail } = await (adminClient as any)
+        .from('platform_admins')
+        .select('*')
+        .ilike('email', authenticatedUser.email)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (recordByEmail) {
+        adminRecord = recordByEmail
+        if (recordByEmail.user_id !== authenticatedUser.id) {
+          try {
+            await (adminClient as any)
+              .from('platform_admins')
+              .update({ user_id: authenticatedUser.id, updated_at: new Date().toISOString() })
+              .eq('id', recordByEmail.id)
+          } catch {}
+        }
+      }
+    }
 
     if (dbError || !adminRecord || !adminRecord.is_active) {
       return null // FAIL CLOSED: Authenticated user is not an active platform admin
@@ -259,11 +280,16 @@ export const getAuthenticatedPlatformContext = cache(async function getAuthentic
     // 3. Optional auxiliary session metadata (only valid if matches authenticated user ID)
     let auxiliaryPreferences: any = adminRecord.preferences
     try {
-      const { cookies } = await import('next/headers.js')
+      const { cookies } = await import('next/headers')
       const cookieStore = await cookies()
       const sessCookie = cookieStore.get(PLATFORM_SESSION_COOKIE)?.value
       if (sessCookie) {
-        const parsed = JSON.parse(decodeURIComponent(sessCookie))
+        let parsed: any = null
+        try {
+          parsed = JSON.parse(decodeURIComponent(sessCookie))
+        } catch {
+          parsed = JSON.parse(sessCookie)
+        }
         if (parsed && (parsed.userId === authenticatedUser.id || parsed.adminId === adminRecord.id)) {
           if (parsed.preferences) {
             auxiliaryPreferences = { ...adminRecord.preferences, ...parsed.preferences }

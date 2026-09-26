@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { Database } from '@/types/database.types'
 import { TENANT_SESSION_COOKIE, PLATFORM_SESSION_COOKIE } from '@/lib/auth/types'
-import { resolveHostname, isReservedSlug, isValidSlugFormat } from '@/lib/tenant/tenant-resolution'
+import { resolveHostname, isReservedSlug, isValidSlugFormat, getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function updateSession(request: NextRequest) {
@@ -47,6 +47,8 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.next({ request })
     }
 
+    const responseCookies: { name: string; value: string; options?: any }[] = []
+
     // Helper: Anti-cache headers to prevent bfcache retention of sensitive pages
     const applyNoCacheHeaders = (response: NextResponse) => {
       response.headers.set(
@@ -56,6 +58,7 @@ export async function updateSession(request: NextRequest) {
       response.headers.set('Pragma', 'no-cache')
       response.headers.set('Expires', '0')
       response.headers.set('Surrogate-Control', 'no-store')
+      responseCookies.forEach(({ name, value, options }) => response.cookies.set(name, value, options))
       return response
     }
 
@@ -174,18 +177,21 @@ export async function updateSession(request: NextRequest) {
     const allCookies = request.cookies.getAll()
     const hasSupabaseAuthCookies = allCookies.some((c) => c.name.startsWith('sb-') && c.name.includes('-auth-token'))
 
-    let responseCookies: { name: string; value: string; options?: any }[] = []
-
     if (supabaseUrl && supabaseAnonKey && hasSupabaseAuthCookies) {
       try {
+        const cookieOpts = getAuthCookieOptions(rawHost)
         const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
+          cookieOptions: cookieOpts.domain ? { domain: cookieOpts.domain } : undefined,
           cookies: {
             getAll() {
               return request.cookies.getAll()
             },
             setAll(cookiesToSet) {
-              cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-              responseCookies = cookiesToSet
+              cookiesToSet.forEach(({ name, value, options }) => {
+                const mergedOptions = cookieOpts.domain ? { ...options, domain: cookieOpts.domain } : options
+                request.cookies.set(name, value)
+                responseCookies.push({ name, value, options: mergedOptions })
+              })
             },
           },
         })

@@ -210,6 +210,7 @@ export function getRootDomain(): string {
     process.env.NEXT_PUBLIC_APP_DOMAIN ||
     process.env.ROOT_DOMAIN ||
     process.env.VERCEL_PROJECT_PRODUCTION_URL ||
+    process.env.VERCEL_URL ||
     process.env.NEXT_PUBLIC_VERCEL_URL
 
   if (configured && configured.trim() !== '') {

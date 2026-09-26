@@ -61,7 +61,8 @@ export function createClient() {
     return fallbackClient
   }
 
-  const baseCookieOptions = getAuthCookieOptions()
+  const host = typeof window !== 'undefined' && window.location ? window.location.host : undefined
+  const baseCookieOptions = getAuthCookieOptions(host)
   const client = createBrowserClient<Database>(
     supabaseUrl!,
     supabaseAnonKey!,

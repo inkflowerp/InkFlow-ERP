@@ -22,9 +22,19 @@ async function getRequestBaseUrl(): Promise<string> {
   }
 }
 
+async function getCookieOptions() {
+  try {
+    const headerStore = await headers()
+    const requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || undefined
+    return getAuthCookieOptions(requestHost)
+  } catch {
+    return getAuthCookieOptions()
+  }
+}
+
 export async function clearTenantSessionCookie() {
   const cookieStore = await cookies()
-  const opts = getAuthCookieOptions()
+  const opts = await getCookieOptions()
 
   // 1. Clear host-scoped cookie
   cookieStore.delete(TENANT_SESSION_COOKIE)
@@ -88,7 +98,7 @@ export async function loginAction(formData: FormData) {
 
   // Store server-side tenant session cookie across subdomains
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
 
   // Audit track successful login with the verified user ID and company
   if (session.companyId) {
@@ -154,7 +164,7 @@ export async function signInAction(email: string, pass: string) {
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
 
   if (session.companyId) {
     try {
@@ -243,7 +253,7 @@ export async function verifyRegistrationOtpAction(email: string, otp: string) {
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
 
   revalidatePath('/', 'layout')
   return result
@@ -261,7 +271,7 @@ export async function verifyRegistrationTokenAction(token: string, email?: strin
 
   const session = result.data.session
   const cookieStore = await cookies()
-  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
+  cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
 
   revalidatePath('/', 'layout')
   return result
@@ -276,7 +286,7 @@ export async function checkEmailVerificationStatusAction(email: string) {
   if (result.success && result.data?.isVerified && result.data.session) {
     const session = result.data.session
     const cookieStore = await cookies()
-    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), getAuthCookieOptions())
+    cookieStore.set(TENANT_SESSION_COOKIE, encodeURIComponent(JSON.stringify(session)), await getCookieOptions())
     revalidatePath('/', 'layout')
   }
 

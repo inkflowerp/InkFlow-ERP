@@ -13,9 +13,15 @@ export async function createClient() {
     set: () => {},
   }
 
+  let requestHost: string | undefined
+
   try {
-    const { cookies } = await import('next/headers')
+    const { cookies, headers } = await import('next/headers')
     cookieStore = await cookies()
+    try {
+      const headerStore = await headers()
+      requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || undefined
+    } catch {}
   } catch {
     // Standalone Node.js / test environment without Next.js headers
   }
@@ -36,7 +42,7 @@ export async function createClient() {
     )
   }
 
-  const baseCookieOptions = getAuthCookieOptions()
+  const baseCookieOptions = getAuthCookieOptions(requestHost)
 
   return createServerClient<Database>(
     supabaseUrl,
@@ -53,7 +59,7 @@ export async function createClient() {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, {
                   ...options,
-                  ...(baseCookieOptions.domain ? { domain: baseCookieOptions.domain } : {}),
+                  domain: baseCookieOptions.domain || undefined,
                 })
               )
             }

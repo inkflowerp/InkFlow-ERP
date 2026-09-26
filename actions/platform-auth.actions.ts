@@ -15,6 +15,8 @@ import {
 import { PlatformSessionData, PlatformUserRecord } from '@/lib/auth/types'
 import { createClient as createSupabaseServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { classifyLoginIdentifier } from '@/lib/auth/identifier-helper'
 
 export interface PlatformLoginResult {
   success: boolean
@@ -37,12 +39,12 @@ export interface PlatformLoginResult {
  * Single Source of Truth: Supabase Auth -> Authenticated auth.uid() -> platform_admins -> Fail Closed.
  */
 export async function platformLoginAction(formData: FormData): Promise<PlatformLoginResult> {
-  const email = (formData.get('email') as string)?.trim()?.toLowerCase()
+  const emailInput = (formData.get('email') as string)?.trim()
   const password = formData.get('password') as string
   const mfaCode = (formData.get('mfaCode') as string)?.trim()
   const redirectTo = (formData.get('redirectTo') as string) || '/platform'
 
-  if (!email || !password) {
+  if (!emailInput || !password) {
     return {
       success: false,
       error: 'Platform Email and Password are required.',
@@ -50,7 +52,7 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
   }
 
   // 1. Enforce sliding window rate limit on platform auth attempts (5 requests / 60s per email/IP)
-  const rateLimitKey = `platform_auth_${email}`
+  const rateLimitKey = `platform_auth_${emailInput.toLowerCase()}`
   const rateLimit = checkRateLimit(rateLimitKey, 'auth')
   if (!rateLimit.success) {
     return {
@@ -66,11 +68,52 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
     headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     headerList.get('x-real-ip') ||
     'Unknown IP'
+  const requestHost = headerList.get('x-forwarded-host') || headerList.get('host') || undefined
+  const cookieOpts = getAuthCookieOptions(requestHost)
 
   try {
+    const adminClient = createAdminClient()
+    let resolvedEmail = emailInput.toLowerCase()
+
+    // 1b. Direct resolution against platform_admins first (phone, email, or username)
+    const classification = classifyLoginIdentifier(emailInput)
+    if (classification.type === 'phone' && classification.phoneVariants) {
+      const { data: adminByPhone } = await (adminClient as any)
+        .from('platform_admins')
+        .select('email')
+        .in('phone', classification.phoneVariants.candidates)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (adminByPhone?.email) {
+        resolvedEmail = adminByPhone.email.toLowerCase()
+      }
+    } else if (classification.type === 'email') {
+      resolvedEmail = classification.normalized
+    } else {
+      const { data: adminByPrefix } = await (adminClient as any)
+        .from('platform_admins')
+        .select('email')
+        .ilike('email', `${emailInput}@%`)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (adminByPrefix?.email) {
+        resolvedEmail = adminByPrefix.email.toLowerCase()
+      }
+    }
+
+    // If still not an email format, check general user resolution
+    if (!resolvedEmail.includes('@')) {
+      try {
+        resolvedEmail = await AuthService.resolveLoginEmail(emailInput)
+      } catch {
+        resolvedEmail = emailInput.toLowerCase()
+      }
+    }
+
     // 2. Authoritative Supabase Auth verification
     const supabase = await createSupabaseServerClient()
-    const resolvedEmail = await AuthService.resolveLoginEmail(email)
     const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
       email: resolvedEmail,
       password,
@@ -79,7 +122,7 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
     if (authErr || !authData?.user) {
       await PlatformService.recordPlatformLogin(
         'unknown',
-        email,
+        emailInput,
         'Unknown User',
         ipAddress,
         userAgent,
@@ -97,20 +140,42 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
     const authUserId = authData.user.id
 
     // 3. Query PostgreSQL platform_admins table for active membership
-    const adminClient = createAdminClient()
-    const { data: adminRecord, error: adminErr } = await (adminClient as any)
+    let { data: adminRecord, error: adminErr } = await (adminClient as any)
       .from('platform_admins')
       .select('*')
       .eq('user_id', authUserId)
       .eq('is_active', true)
       .maybeSingle()
 
+    // Fallback: match by email in case user_id is null or out of sync, then sync user_id
+    if (!adminRecord && (authData.user.email || resolvedEmail)) {
+      const emailToMatch = (authData.user.email || resolvedEmail).toLowerCase()
+      const { data: recordByEmail } = await (adminClient as any)
+        .from('platform_admins')
+        .select('*')
+        .ilike('email', emailToMatch)
+        .eq('is_active', true)
+        .maybeSingle()
+
+      if (recordByEmail) {
+        adminRecord = recordByEmail
+        if (recordByEmail.user_id !== authUserId) {
+          try {
+            await (adminClient as any)
+              .from('platform_admins')
+              .update({ user_id: authUserId, updated_at: new Date().toISOString() })
+              .eq('id', recordByEmail.id)
+          } catch {}
+        }
+      }
+    }
+
     if (adminErr || !adminRecord) {
       // User is authenticated in Supabase but is NOT an active platform administrator
       await supabase.auth.signOut()
       await PlatformService.recordPlatformLogin(
         authUserId,
-        email,
+        emailInput,
         'Unauthorized Candidate',
         ipAddress,
         userAgent,
@@ -164,7 +229,7 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
 
     // 6. Store UI session cookie
     const sessionPayload: PlatformSessionData = {
-      userId: adminRecord.user_id,
+      userId: authUserId,
       adminId: adminRecord.id,
       email: adminRecord.email,
       fullName: adminRecord.full_name,
@@ -175,11 +240,9 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
     }
 
     const cookieStore = await cookies()
-    cookieStore.set(PLATFORM_SESSION_COOKIE, JSON.stringify(sessionPayload), {
+    cookieStore.set(PLATFORM_SESSION_COOKIE, encodeURIComponent(JSON.stringify(sessionPayload)), {
+      ...cookieOpts,
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
       maxAge: 60 * 60 * 24, // 24 hours
     })
 
@@ -249,22 +312,25 @@ export async function platformLoginAction(formData: FormData): Promise<PlatformL
  */
 export async function platformLogoutAction(): Promise<{ success: boolean; redirectUrl: string }> {
   try {
+    const headerList = await headers()
+    const requestHost = headerList.get('x-forwarded-host') || headerList.get('host') || undefined
+    const cookieOpts = getAuthCookieOptions(requestHost)
     const currentUser = await getCurrentPlatformUser()
     const cookieStore = await cookies()
 
     // 1. Invalidate platform session cookie
     cookieStore.set(PLATFORM_SESSION_COOKIE, '', {
+      ...cookieOpts,
       path: '/',
       maxAge: 0,
       expires: new Date(0),
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
     })
     cookieStore.delete(PLATFORM_SESSION_COOKIE)
 
     // 2. Invalidate support tenant cookie
     cookieStore.set('printerp_support_tenant', '', {
+      ...cookieOpts,
       path: '/',
       maxAge: 0,
       expires: new Date(0),

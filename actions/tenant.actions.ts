@@ -1,6 +1,6 @@
 'use server'
 
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { TenantService, CreateCompanyInput } from '@/services/tenant.service'
@@ -12,6 +12,16 @@ import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
 import { getTenantBaseUrl } from '@/lib/tenant/tenant-url'
 import type { ApiResponse } from '@/types/common.types'
 import type { CompanyRow } from '@/types/tenant.types'
+
+async function getCookieOptions() {
+  try {
+    const headerStore = await headers()
+    const requestHost = headerStore.get('x-forwarded-host') || headerStore.get('host') || undefined
+    return getAuthCookieOptions(requestHost)
+  } catch {
+    return getAuthCookieOptions()
+  }
+}
 
 /**
  * Server action for real-time slug availability check during onboarding
@@ -69,7 +79,7 @@ export async function createCompanyAction(
     cookieStore.set(
       TENANT_SESSION_COOKIE,
       encodeURIComponent(JSON.stringify(sessionData)),
-      getAuthCookieOptions()
+      await getCookieOptions()
     )
   }
 
@@ -130,7 +140,7 @@ export async function switchCompanyAction(slug: string) {
   cookieStore.set(
     TENANT_SESSION_COOKIE,
     encodeURIComponent(JSON.stringify(sessionData)),
-    getAuthCookieOptions()
+    await getCookieOptions()
   )
 
   revalidatePath('/', 'layout')
