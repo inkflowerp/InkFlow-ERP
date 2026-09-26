@@ -7,19 +7,39 @@ import { getTenantLink } from '@/lib/tenant/tenant-url'
 
 export async function updateSession(request: NextRequest) {
   try {
-    // 0. Next.js Server Actions: NEVER intercept, redirect or block Server Actions!
-    // Next.js App Router Server Actions authenticate internally via getVerifiedTenant/getOptionalTenant.
-    // Returning a redirect on Server Action breaks client with "An unexpected response was received from the server".
-    if (request.headers.has('next-action')) {
-      return NextResponse.next({ request })
-    }
-
     const rawHost = request.headers.get('host') || request.nextUrl.host
     const hostResolution = resolveHostname(rawHost)
     const { hostType, tenantSlug, rootDomain, isDevelopment } = hostResolution
     const hostWithoutPort = (rawHost || '').toLowerCase().trim().replace(/^https?:\/\//i, '').split('/')[0].split(':')[0]
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
+
+    // 0. Next.js Server Actions: NEVER redirect or block Server Actions!
+    // Next.js App Router Server Actions authenticate internally via getVerifiedTenant/getOptionalTenant.
+    // Returning a redirect on Server Action breaks client with "An unexpected response was received from the server".
+    // HOWEVER, on tenant subdomains (e.g. rangao.inkflow-erp.vercel.app), routes are compiled inside app/[tenantSlug]/...
+    // Clean subdomain paths (e.g. /hr/employees) MUST be rewritten to /[tenantSlug]/hr/employees with tenant headers
+    // so Next.js matches the action in the route manifest without 404ing!
+    if (request.headers.has('next-action')) {
+      if (hostType === 'tenant' && tenantSlug) {
+        const rewriteUrl = request.nextUrl.clone()
+        if (pathname === '/' || pathname === '') {
+          rewriteUrl.pathname = `/${tenantSlug}/dashboard`
+        } else if (!pathname.startsWith(`/${tenantSlug}/`) && pathname !== `/${tenantSlug}`) {
+          rewriteUrl.pathname = `/${tenantSlug}${pathname}`
+        }
+        const requestHeaders = new Headers(request.headers)
+        requestHeaders.set('x-tenant-slug', tenantSlug)
+        requestHeaders.set('x-tenant-hostname', rawHost)
+        requestHeaders.set('x-forwarded-tenant-path', pathname)
+        return NextResponse.rewrite(rewriteUrl, {
+          request: {
+            headers: requestHeaders,
+          },
+        })
+      }
+      return NextResponse.next({ request })
+    }
 
     // Helper: Anti-cache headers to prevent bfcache retention of sensitive pages
     const applyNoCacheHeaders = (response: NextResponse) => {

@@ -528,8 +528,8 @@ function EmployeeListContent() {
     setIsLoading(true)
     try {
       const [empRes, branchRes] = await Promise.all([
-        getEmployeesAction(),
-        listBranchesAction(),
+        getEmployeesAction(undefined, tenantSlug),
+        listBranchesAction(undefined, tenantSlug),
       ])
 
       if (empRes.success && empRes.data) setEmployees(empRes.data)
