@@ -102,6 +102,7 @@ export interface DesignJobRecord {
   all_invoice_items?: any[]
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
+  display_status?: string | null
   created_at: string
   updated_at: string
 }

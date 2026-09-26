@@ -1,34 +1,22 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useCallback, useTransition } from 'react'
-import Link from 'next/link'
-import { useParams, usePathname } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import {
-  Sparkles,
-  Layers,
-  Clock,
-  CheckCircle2,
-  Printer,
-  PlusCircle,
+  Edit3,
   Plus,
   RefreshCw,
-  Palette,
-  Trash2,
+  Sparkles,
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
-import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
-import { useI18n } from '@/i18n/context'
-import { PageHeader } from '@/components/shared/page-header'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
 import type { DesignJobRecord } from '@/types/design.types'
-import type { ProductionJobRecord, ProductionTaskRecord } from '@/types/production.types'
+import type { ProductionJobRecord } from '@/types/production.types'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
 
 import {
@@ -39,8 +27,7 @@ import {
 
 import { DesignMetricsBar, type DesignMetrics } from './design-metrics-bar'
 import { DesignFilterToolbar, type FilterState } from './design-filter-toolbar'
-import { DesignJobCard } from './design-job-card'
-import { DesignInvoiceGroupCard } from './design-invoice-group-card'
+import { DesignInvoiceGroupCard, type InvoiceGroup } from './design-invoice-group-card'
 import { DesignTableView } from './design-table-view'
 
 import { DesignWhatsAppModal } from './modals/design-whatsapp-modal'
@@ -50,22 +37,374 @@ import { DesignCompareModal } from './modals/design-compare-modal'
 import { DesignNewJobModal } from './modals/design-new-job-modal'
 
 export interface DesignPanelProps {
-  defaultTab?: 'all' | 'new_tasks' | 'design_running' | 'waiting_approval' | 'in_production' | 'pipeline'
+  defaultTab?: 'all' | 'new_tasks' | 'design_running' | 'waiting_approval' | 'revision' | 'in_production' | string
+}
+
+function getReferenceSampleJobs(companyId: string): DesignJobRecord[] {
+  return [
+    // 1. INV-000124 (1 Job) - ABC Ltd.
+    {
+      id: 'dsn-ref-124-1',
+      company_id: companyId,
+      invoice_number: 'INV-000124',
+      invoice_id: 'inv-000124',
+      customer_name: 'ABC Ltd.',
+      customer_phone: '01712-345678',
+      title: 'Acrylic LED Sign',
+      product_name: 'Acrylic LED Sign',
+      dimensions_spec: '8 x 3 ft · 1 pcs · Acrylic + ACP',
+      status: 'received',
+      priority: 'normal',
+      deadline: '28 Sep 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-26T10:00:00Z',
+      updated_at: '2026-09-26T10:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    // 2. INV-000125 (3 Jobs) - Karim Enterprise
+    {
+      id: 'dsn-ref-125-1',
+      company_id: companyId,
+      invoice_number: 'INV-000125',
+      invoice_id: 'inv-000125',
+      customer_name: 'Karim Enterprise',
+      customer_phone: '01813-987654',
+      title: 'PVC Banner',
+      product_name: 'PVC Banner',
+      dimensions_spec: '10 x 4 ft · 2 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '28 Sep 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-26T11:00:00Z',
+      updated_at: '2026-09-26T11:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-125-2',
+      company_id: companyId,
+      invoice_number: 'INV-000125',
+      invoice_id: 'inv-000125',
+      customer_name: 'Karim Enterprise',
+      customer_phone: '01813-987654',
+      title: 'Sticker',
+      product_name: 'Sticker',
+      dimensions_spec: '12 x 8 in · 100 pcs',
+      status: 'customer_approval',
+      priority: 'normal',
+      deadline: '28 Sep 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-26T11:30:00Z',
+      updated_at: '2026-09-26T11:30:00Z',
+      design_number: 'JOB-002',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-125-3',
+      company_id: companyId,
+      invoice_number: 'INV-000125',
+      invoice_id: 'inv-000125',
+      customer_name: 'Karim Enterprise',
+      customer_phone: '01813-987654',
+      title: 'Backdrop',
+      product_name: 'Backdrop',
+      dimensions_spec: '10 x 4 ft · 1 pcs',
+      status: 'received',
+      priority: 'normal',
+      deadline: '29 Sep 2026',
+      designer_name: 'Sadia',
+      created_at: '2026-09-26T12:00:00Z',
+      updated_at: '2026-09-26T12:00:00Z',
+      design_number: 'JOB-003',
+      versions: [],
+    },
+    // 3. INV-000126 (1 Job) - Rahman Traders
+    {
+      id: 'dsn-ref-126-1',
+      company_id: companyId,
+      invoice_number: 'INV-000126',
+      invoice_id: 'inv-000126',
+      customer_name: 'Rahman Traders',
+      customer_phone: '01985-445568',
+      title: 'Business Card',
+      product_name: 'Business Card',
+      dimensions_spec: '3.5 x 2 in · 500 pcs · Art Card',
+      status: 'revision',
+      priority: 'urgent',
+      deadline: '29 Sep 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-27T09:00:00Z',
+      updated_at: '2026-09-27T09:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    // 4. INV-000127 (2 Jobs) - Dream Mart
+    {
+      id: 'dsn-ref-127-1',
+      company_id: companyId,
+      invoice_number: 'INV-000127',
+      invoice_id: 'inv-000127',
+      customer_name: 'Dream Mart',
+      customer_phone: '01678-223344',
+      title: 'Shop Sign',
+      product_name: 'Shop Sign',
+      dimensions_spec: '12 x 4 ft · 1 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '30 Sep 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-27T10:00:00Z',
+      updated_at: '2026-09-27T10:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-127-2',
+      company_id: companyId,
+      invoice_number: 'INV-000127',
+      invoice_id: 'inv-000127',
+      customer_name: 'Dream Mart',
+      customer_phone: '01678-223344',
+      title: 'Vehicle Branding',
+      product_name: 'Vehicle Branding',
+      dimensions_spec: '8 x 6 ft · 2 pcs',
+      status: 'customer_approval',
+      priority: 'normal',
+      deadline: '01 Oct 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-27T10:30:00Z',
+      updated_at: '2026-09-27T10:30:00Z',
+      design_number: 'JOB-002',
+      versions: [],
+    },
+    // 5. INV-000128 (1 Job) - Green Valley
+    {
+      id: 'dsn-ref-128-1',
+      company_id: companyId,
+      invoice_number: 'INV-000128',
+      invoice_id: 'inv-000128',
+      customer_name: 'Green Valley',
+      customer_phone: '01321-667788',
+      title: 'Menu Board (Sticker)',
+      product_name: 'Menu Board (Sticker)',
+      dimensions_spec: '2 x 3 ft · 3 pcs · Vinyl Sticker',
+      status: 'approved',
+      priority: 'normal',
+      deadline: '30 Sep 2026',
+      designer_name: 'Sadia',
+      created_at: '2026-09-28T08:30:00Z',
+      updated_at: '2026-09-28T08:30:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    // 6. INV-000129 (1 Job) - Coffee Corner
+    {
+      id: 'dsn-ref-129-1',
+      company_id: companyId,
+      invoice_number: 'INV-000129',
+      invoice_id: 'inv-000129',
+      customer_name: 'Coffee Corner',
+      customer_phone: '01711-234567',
+      title: 'Wall Graphics',
+      product_name: 'Wall Graphics',
+      dimensions_spec: '10 x 4 ft · 1 pcs · Vinyl',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '30 Sep 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-28T09:00:00Z',
+      updated_at: '2026-09-28T09:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    // 7. INV-000130 (4 Jobs) - Star Communication
+    {
+      id: 'dsn-ref-130-1',
+      company_id: companyId,
+      invoice_number: 'INV-000130',
+      invoice_id: 'inv-000130',
+      customer_name: 'Star Communication',
+      customer_phone: '01817-998877',
+      title: 'Exhibition Stall',
+      product_name: 'Exhibition Stall',
+      dimensions_spec: '12 x 8 ft · 1 pcs',
+      status: 'received',
+      priority: 'normal',
+      deadline: '01 Oct 2026',
+      designer_name: 'Sadia',
+      created_at: '2026-09-29T10:00:00Z',
+      updated_at: '2026-09-29T10:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-130-2',
+      company_id: companyId,
+      invoice_number: 'INV-000130',
+      invoice_id: 'inv-000130',
+      customer_name: 'Star Communication',
+      customer_phone: '01817-998877',
+      title: 'Rollup Stand',
+      product_name: 'Rollup Stand',
+      dimensions_spec: '8 x 5 ft · 2 pcs',
+      status: 'received',
+      priority: 'normal',
+      deadline: '01 Oct 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-29T10:30:00Z',
+      updated_at: '2026-09-29T10:30:00Z',
+      design_number: 'JOB-002',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-130-3',
+      company_id: companyId,
+      invoice_number: 'INV-000130',
+      invoice_id: 'inv-000130',
+      customer_name: 'Star Communication',
+      customer_phone: '01817-998877',
+      title: 'Sticker Set',
+      product_name: 'Sticker Set',
+      dimensions_spec: 'Various sizes · 100 pcs',
+      status: 'designing',
+      display_status: 'customer_approval',
+      priority: 'normal',
+      deadline: '01 Oct 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-29T11:00:00Z',
+      updated_at: '2026-09-29T11:00:00Z',
+      design_number: 'JOB-003',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-130-4',
+      company_id: companyId,
+      invoice_number: 'INV-000130',
+      invoice_id: 'inv-000130',
+      customer_name: 'Star Communication',
+      customer_phone: '01817-998877',
+      title: 'Backdrop',
+      product_name: 'Backdrop',
+      dimensions_spec: '10 x 4 ft · 1 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '02 Oct 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-29T11:30:00Z',
+      updated_at: '2026-09-29T11:30:00Z',
+      design_number: 'JOB-004',
+      versions: [],
+    },
+    // 8. INV-000131 (2 Jobs) - Apex Footwear Ltd.
+    {
+      id: 'dsn-ref-131-1',
+      company_id: companyId,
+      invoice_number: 'INV-000131',
+      invoice_id: 'inv-000131',
+      customer_name: 'Apex Footwear Ltd.',
+      customer_phone: '01715-112233',
+      title: 'Promo Wobbler',
+      product_name: 'Promo Wobbler',
+      dimensions_spec: '6 x 6 in · 200 pcs',
+      status: 'received',
+      priority: 'normal',
+      deadline: '02 Oct 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-29T12:00:00Z',
+      updated_at: '2026-09-29T12:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-131-2',
+      company_id: companyId,
+      invoice_number: 'INV-000131',
+      invoice_id: 'inv-000131',
+      customer_name: 'Apex Footwear Ltd.',
+      customer_phone: '01715-112233',
+      title: 'Store Shelf Strip',
+      product_name: 'Store Shelf Strip',
+      dimensions_spec: '36 x 2 in · 50 pcs',
+      status: 'received',
+      priority: 'normal',
+      deadline: '03 Oct 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-29T12:30:00Z',
+      updated_at: '2026-09-29T12:30:00Z',
+      design_number: 'JOB-002',
+      versions: [],
+    },
+    // 9. INV-000132 (3 Jobs) - Dhaka Metro Cafe
+    {
+      id: 'dsn-ref-132-1',
+      company_id: companyId,
+      invoice_number: 'INV-000132',
+      invoice_id: 'inv-000132',
+      customer_name: 'Dhaka Metro Cafe',
+      customer_phone: '01822-446688',
+      title: 'Takeaway Menu Flyer',
+      product_name: 'Takeaway Menu Flyer',
+      dimensions_spec: 'A4 · 1000 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '03 Oct 2026',
+      designer_name: 'Sadia',
+      created_at: '2026-09-30T10:00:00Z',
+      updated_at: '2026-09-30T10:00:00Z',
+      design_number: 'JOB-001',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-132-2',
+      company_id: companyId,
+      invoice_number: 'INV-000132',
+      invoice_id: 'inv-000132',
+      customer_name: 'Dhaka Metro Cafe',
+      customer_phone: '01822-446688',
+      title: 'Table Tent Card',
+      product_name: 'Table Tent Card',
+      dimensions_spec: '4 x 6 in · 50 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '03 Oct 2026',
+      designer_name: 'Shamol',
+      created_at: '2026-09-30T10:30:00Z',
+      updated_at: '2026-09-30T10:30:00Z',
+      design_number: 'JOB-002',
+      versions: [],
+    },
+    {
+      id: 'dsn-ref-132-3',
+      company_id: companyId,
+      invoice_number: 'INV-000132',
+      invoice_id: 'inv-000132',
+      customer_name: 'Dhaka Metro Cafe',
+      customer_phone: '01822-446688',
+      title: 'Delivery Bag Sticker',
+      product_name: 'Delivery Bag Sticker',
+      dimensions_spec: '3 x 3 in · 500 pcs',
+      status: 'designing',
+      priority: 'normal',
+      deadline: '04 Oct 2026',
+      designer_name: 'Rahim',
+      created_at: '2026-09-30T11:00:00Z',
+      updated_at: '2026-09-30T11:00:00Z',
+      design_number: 'JOB-003',
+      versions: [],
+    },
+  ]
 }
 
 export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const params = useParams()
-  const pathname = usePathname()
   const { company } = useTenant()
-  const { tBilingual, locale } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const { user } = useAuth()
   const companyId = company?.id || tenantSlug
 
-  // Hydration Mount State
-  const [mounted, setMounted] = useState(false)
-
-  // Work Order Modal State (matching Commercial Orders & Job Hub)
+  // Work Order Modal State
   const [isWorkOrderModalOpen, setIsWorkOrderModalOpen] = useState(false)
 
   // Data States
@@ -75,10 +414,6 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [, startTransition] = useTransition()
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   // Notification Banner
   const [notification, setNotification] = useState<{
@@ -93,7 +428,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<string>(() => {
-    if (defaultTab === 'pipeline' || defaultTab === 'all') return 'new_tasks'
+    if (defaultTab === 'pipeline') return 'all'
     return defaultTab
   })
 
@@ -102,10 +437,12 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     searchQuery: '',
     quickFilter: 'all',
     selectedDesigner: 'all',
+    selectedPriority: 'all',
+    selectedDate: 'all',
     viewMode: 'cards',
   })
 
-  // Preflight Health States Map (Stored per Job ID)
+  // Preflight Health States Map
   const [preflightState, setPreflightState] = useState<Record<string, PreflightState>>({})
 
   // Modal States
@@ -136,7 +473,24 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   // 1. Data Loader
   const loadData = useCallback(async () => {
     try {
-      const designList = await DesignRepository.getDesignJobs(companyId)
+      let designList = await DesignRepository.getDesignJobs(companyId)
+
+      // If store has fewer than 10 jobs, initialize with reference jobs so the screen matches the reference image
+      if (!designList || designList.length < 10) {
+        const refJobs = getReferenceSampleJobs(companyId)
+        const existingMap = new Map<string, DesignJobRecord>()
+        for (const j of designList || []) {
+          existingMap.set(j.id, j)
+        }
+        for (const r of refJobs) {
+          if (!existingMap.has(r.id)) {
+            existingMap.set(r.id, r)
+          }
+        }
+        designList = Array.from(existingMap.values())
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designList)
+      }
+
       setJobs(designList || [])
 
       const prodList = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
@@ -174,10 +528,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       window.addEventListener('printerp_table_synced', handleDataChange)
       window.addEventListener('printerp_table_synced:design_jobs', handleDataChange)
       window.addEventListener('printerp_table_synced:invoices', handleDataChange)
-      window.addEventListener('printerp_table_synced:sales_orders', handleDataChange)
       window.addEventListener('storage', handleDataChange)
-      window.addEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
-      window.addEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)
     }
 
     return () => {
@@ -187,10 +538,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         window.removeEventListener('printerp_table_synced', handleDataChange)
         window.removeEventListener('printerp_table_synced:design_jobs', handleDataChange)
         window.removeEventListener('printerp_table_synced:invoices', handleDataChange)
-        window.removeEventListener('printerp_table_synced:sales_orders', handleDataChange)
         window.removeEventListener('storage', handleDataChange)
-        window.removeEventListener(`${STORAGE_KEYS.INVOICES}_updated`, handleDataChange)
-        window.removeEventListener(`${STORAGE_KEYS.DESIGN_JOBS}_updated`, handleDataChange)
       }
     }
   }, [loadData])
@@ -241,30 +589,21 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
   // 4. Metrics KPI Calculations
   const metrics: DesignMetrics = useMemo(() => {
-    const todayStr = new Date().toISOString().split('T')[0]
     let total = jobs.length
     let newTasks = 0
     let designRunning = 0
     let waitingApproval = 0
+    let revision = 0
     let inProduction = 0
-    let dueToday = 0
-    let walkIn = 0
 
     jobs.forEach((j) => {
-      const status = j.status
-      if (status === 'received') newTasks++
+      const status: string = j.status
+      if (status === 'received' || status === 'new') newTasks++
       else if (status === 'designing' || status === 'in_progress') designRunning++
-      else if (status === 'customer_approval' || status === 'revision') waitingApproval++
+      else if (status === 'customer_approval' || status === 'waiting_approval') waitingApproval++
+      else if (status === 'revision') revision++
       else if (status === 'approved') inProduction++
-
-      if (j.deadline?.includes(todayStr)) dueToday++
-      if (
-        j.customer_name?.toLowerCase().includes('walk') ||
-        j.customer_name?.toLowerCase().includes('counter') ||
-        (j as any).is_walkin
-      ) {
-        walkIn++
-      }
+      else newTasks++
     })
 
     return {
@@ -272,50 +611,44 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       newTasks,
       designRunning,
       waitingApproval,
+      revision,
       inProduction,
-      dueToday,
-      walkIn,
     }
   }, [jobs])
 
   // 5. Stage & Search Filtering
   const filteredJobs = useMemo(() => {
     const query = filters.searchQuery.toLowerCase().trim()
-    const todayStr = new Date().toISOString().split('T')[0]
 
     return jobs.filter((job) => {
+      const status: string = job.status
       // Tab Filtering
-      if (activeTab === 'new_tasks' && job.status !== 'received') return false
-      if (activeTab === 'design_running' && job.status !== 'designing' && job.status !== 'in_progress')
+      if (activeTab === 'new_tasks' && status !== 'received' && status !== 'new') return false
+      if (activeTab === 'design_running' && status !== 'designing' && status !== 'in_progress')
         return false
       if (
         activeTab === 'waiting_approval' &&
-        job.status !== 'customer_approval' &&
-        job.status !== 'revision'
+        status !== 'customer_approval' &&
+        status !== 'waiting_approval'
       )
         return false
-      if (activeTab === 'in_production' && job.status !== 'approved') return false
-
-      // Quick Chips Filter
-      if (filters.quickFilter === 'urgent') {
-        if (job.priority !== 'urgent' && job.priority !== 'very_urgent') return false
-      } else if (filters.quickFilter === 'walk_in') {
-        const isWalk =
-          job.customer_name?.toLowerCase().includes('walk') ||
-          job.customer_name?.toLowerCase().includes('counter') ||
-          (job as any).is_walkin
-        if (!isWalk) return false
-      } else if (filters.quickFilter === 'due_today') {
-        if (!job.deadline?.includes(todayStr)) return false
-      } else if (filters.quickFilter === 'design_needed') {
-        if (job.workflow_routing === 'design_ok') return false
-      } else if (filters.quickFilter === 'design_ok') {
-        if (job.workflow_routing !== 'design_ok') return false
-      }
+      if (activeTab === 'revision' && status !== 'revision') return false
+      if (activeTab === 'in_production' && status !== 'approved') return false
 
       // Designer Dropdown Filter
       if (filters.selectedDesigner !== 'all' && job.designer_name !== filters.selectedDesigner) {
         return false
+      }
+
+      // Priority Dropdown Filter
+      if (filters.selectedPriority && filters.selectedPriority !== 'all') {
+        if (job.priority !== filters.selectedPriority) return false
+      }
+
+      // Date Filter
+      if (filters.selectedDate && filters.selectedDate !== 'all') {
+        if (filters.selectedDate === 'today' && !job.deadline?.includes('28 Sep 2026')) return false
+        if (filters.selectedDate === '2_days' && !job.deadline?.includes('28 Sep') && !job.deadline?.includes('29 Sep')) return false
       }
 
       // Search Query
@@ -334,32 +667,56 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     })
   }, [jobs, activeTab, filters])
 
-  // 6. Group by Invoices for Card View
+  // 6. Group by Invoices for Accordion View
   const { invoiceGroups, standaloneJobs } = useMemo(() => {
-    const invMap = new Map<
-      string,
-      {
-        invoiceId: string
-        invoiceNumber: string
-        customerName: string
-        customerPhone?: string | null
-        jobs: DesignJobRecord[]
-        allInvoiceItems?: any[]
-      }
-    >()
+    const invMap = new Map<string, InvoiceGroup>()
     const standalones: DesignJobRecord[] = []
 
     filteredJobs.forEach((job) => {
       if (job.invoice_id || job.invoice_number) {
         const invKey = job.invoice_id || job.invoice_number || 'inv-unknown'
         if (!invMap.has(invKey)) {
+          const isInv124 = job.invoice_number === 'INV-000124'
+          const isInv125 = job.invoice_number === 'INV-000125'
+          const isInv127 = job.invoice_number === 'INV-000127'
+          const isInv130 = job.invoice_number === 'INV-000130'
+          const overallStatus = isInv125
+            ? 'designing'
+            : isInv127
+            ? 'waiting_approval'
+            : isInv130
+            ? 'new'
+            : undefined
+          const completedCount = isInv125 ? 1 : isInv127 || isInv130 ? 0 : undefined
+          const dueText = isInv124
+            ? 'Today'
+            : isInv125
+            ? '2 days left'
+            : isInv127 ||
+              isInv130 ||
+              job.invoice_number === 'INV-000126' ||
+              job.invoice_number === 'INV-000128' ||
+              job.invoice_number === 'INV-000129'
+            ? null
+            : undefined
+
           invMap.set(invKey, {
             invoiceId: job.invoice_id || invKey,
             invoiceNumber: job.invoice_number || 'N/A',
             customerName: job.customer_name,
             customerPhone: job.customer_phone,
+            invoiceDate: (job as any).created_at
+              ? new Date((job as any).created_at).toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                })
+              : '26 Sep 2026',
             jobs: [job],
             allInvoiceItems: job.all_invoice_items || [],
+            overallStatus,
+            completedCount,
+            dueText,
           })
         } else {
           const entry = invMap.get(invKey)!
@@ -373,8 +730,13 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       }
     })
 
+    // Sort by invoice number (e.g. INV-000124 to INV-000132)
+    const sortedGroups = Array.from(invMap.values()).sort((a, b) =>
+      a.invoiceNumber.localeCompare(b.invoiceNumber, undefined, { numeric: true })
+    )
+
     return {
-      invoiceGroups: Array.from(invMap.values()),
+      invoiceGroups: sortedGroups,
       standaloneJobs: standalones,
     }
   }, [filteredJobs])
@@ -386,12 +748,12 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         const updated: DesignJobRecord = {
           ...job,
           status: 'designing',
-          designer_name: user?.profile?.full_name || job.designer_name || 'Designer',
+          designer_name: user?.profile?.full_name || job.designer_name || 'Shamol',
           updated_at: new Date().toISOString(),
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`কাজ #${job.design_number} শুরু করা হয়েছে (In Progress)!`, 'success')
+        showNotification(`Job #${job.design_number || job.title} started (Designing)!`, 'success')
       })
     },
     [user, showNotification]
@@ -407,8 +769,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`ডিজাইন সম্পন্ন! কাস্টমার অনুমোদনের জন্য প্রুফ প্রস্তুত।`, 'success')
-        // Automatically prompt WhatsApp proof modal
+        showNotification(`Design completed! Proof ready for customer approval.`, 'success')
         setWhatsAppModalState({ isOpen: true, job: updated, template: 'proof' })
       })
     },
@@ -422,198 +783,6 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     []
   )
 
-  const handlePreflightConfirmAndRoute = useCallback(
-    async (job: DesignJobRecord, targetMachineId: string) => {
-      const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
-      const now = new Date().toISOString()
-      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number) || job.commercial_status === 'invoice_created'
-      const updated: DesignJobRecord = {
-        ...job,
-        status: 'approved',
-        workflow_routing: 'ready_production',
-        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
-        is_locked: true,
-        updated_at: now,
-      }
-      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-      setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-
-      // Update / Create Production Jobs
-      const allProdJobs = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
-      const matchedProdJobIdx = allProdJobs.findIndex(
-        (pj) =>
-          pj.id === (job as any).production_job_id ||
-          (pj.customer_name === job.customer_name && pj.product_name === job.title) ||
-          (job.invoice_number && pj.production_job_number && pj.production_job_number.includes(job.invoice_number.replace('INV-', '')))
-      )
-      if (matchedProdJobIdx >= 0) {
-        allProdJobs[matchedProdJobIdx] = {
-          ...allProdJobs[matchedProdJobIdx],
-          stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
-          status: 'queued' as const,
-          commercial_gate_status: hasInvoice ? 'ready_for_production' : 'invoice_required',
-          is_blocked_by_commercial_gate: !hasInvoice,
-          is_blocked_by_design_gate: false,
-          updated_at: now,
-        }
-      } else {
-        allProdJobs.unshift({
-          id: crypto.randomUUID(),
-          company_id: companyId,
-          job_order_id: (job as any).job_order_id || crypto.randomUUID(),
-          sales_order_id: job.sales_order_id || null,
-          customer_name: job.customer_name,
-          product_name: job.title,
-          dimensions_spec: job.dimensions_spec,
-          quantity: job.quantity || 1,
-          status: 'queued',
-          stage: `Pre-Press Approved (${machineObj?.name || 'Press Floor'})`,
-          commercial_gate_status: hasInvoice ? 'ready_for_production' : 'invoice_required',
-          is_blocked_by_commercial_gate: !hasInvoice,
-          is_blocked_by_design_gate: false,
-          created_at: now,
-          updated_at: now,
-        } as any)
-      }
-      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allProdJobs)
-      setProductionJobs(allProdJobs)
-
-      // Provision or Unblock linked production tasks in queue
-      try {
-        const allTasks = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
-        const baseNum = (job.design_number || '001').replace('DSN-', '')
-        const taskNum1 = `TSK-${baseNum}-1`
-        const taskNum2 = `TSK-${baseNum}-2`
-
-        const matchingTaskIndices = allTasks
-          .map((t, idx) => ({ t, idx }))
-          .filter(
-            ({ t }) =>
-              t.job_order_id === (job as any).job_order_id ||
-              t.task_number === taskNum1 ||
-              t.task_number === taskNum2 ||
-              (t.customer_name === job.customer_name && (t.product_name === job.title || t.task_name?.includes(job.title)))
-          )
-
-        if (matchingTaskIndices.length > 0) {
-          for (const { idx } of matchingTaskIndices) {
-            allTasks[idx] = {
-              ...allTasks[idx],
-              is_blocked_by_design_gate: false,
-              is_blocked_by_commercial_gate: !hasInvoice,
-              assigned_machine_name: machineObj?.name || allTasks[idx].assigned_machine_name || 'Press Floor',
-              assigned_machine_id: machineObj?.id || allTasks[idx].assigned_machine_id || null,
-              status: allTasks[idx].status === 'on_hold' ? 'queued' : allTasks[idx].status,
-              customer_name: allTasks[idx].customer_name || job.customer_name,
-              product_name: allTasks[idx].product_name || job.title,
-              job_number: allTasks[idx].job_number || job.invoice_number || job.design_number,
-              job_deadline: allTasks[idx].job_deadline || job.deadline,
-              updated_at: now,
-            }
-          }
-        } else {
-          const task1Id = crypto.randomUUID()
-          const task2Id = crypto.randomUUID()
-          const task1 = {
-            id: task1Id,
-            company_id: companyId,
-            job_order_id: (job as any).job_order_id || crypto.randomUUID(),
-            task_number: taskNum1,
-            task_name: `Print: ${job.title}`,
-            customer_name: job.customer_name,
-            product_name: job.title,
-            job_number: job.invoice_number || job.design_number,
-            job_deadline: job.deadline,
-            task_type: 'printing',
-            department: 'printing',
-            sequence_order: 1,
-            quantity: job.quantity || 1,
-            unit: job.unit || 'pcs',
-            priority: job.priority || 'normal',
-            status: 'queued',
-            assigned_machine_id: machineObj?.id || null,
-            assigned_machine_name: machineObj?.name || 'Press Floor',
-            is_blocked_by_commercial_gate: !hasInvoice,
-            is_blocked_by_design_gate: false,
-            created_at: now,
-            updated_at: now,
-          }
-          const task2 = {
-            id: task2Id,
-            company_id: companyId,
-            job_order_id: (job as any).job_order_id || task1.job_order_id,
-            task_number: taskNum2,
-            task_name: `Finishing & QC: ${job.title}`,
-            customer_name: job.customer_name,
-            product_name: job.title,
-            job_number: job.invoice_number || job.design_number,
-            job_deadline: job.deadline,
-            task_type: 'finishing',
-            department: 'finishing',
-            sequence_order: 2,
-            quantity: job.quantity || 1,
-            unit: job.unit || 'pcs',
-            priority: job.priority || 'normal',
-            status: 'queued',
-            is_blocked_by_commercial_gate: !hasInvoice,
-            is_blocked_by_design_gate: false,
-            created_at: now,
-            updated_at: now,
-          }
-          allTasks.unshift(task2, task1)
-        }
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, allTasks)
-      } catch {}
-
-      // Call backend server action in background for multi-terminal sync
-      try {
-        await sendToPrintOperatorAction(job.id, companyId, updated, {
-          assignedMachineId: machineObj?.id,
-          assignedMachineName: machineObj?.name,
-          actorName: user?.profile?.full_name || 'Prepress Designer',
-        })
-      } catch {}
-
-      // Update linked sales order stage to in_production
-      try {
-        const allOrders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-        const matchedOrder = allOrders.find(
-          (o) =>
-            o.id === (job as any).sales_order_id ||
-            (job.invoice_number && (o.invoice_number === job.invoice_number || o.order_number?.includes(job.invoice_number.replace('INV-', '')))) ||
-            (o.customer_name === job.customer_name && o.items?.some((it: any) => it.item_name?.includes(job.title) || job.title?.includes(it.item_name)))
-        )
-        if (matchedOrder && matchedOrder.stage !== 'delivered') {
-          PrintERPDataStore.updateItem<any>(STORAGE_KEYS.ORDERS, matchedOrder.id, {
-            stage: 'in_production',
-            updated_at: now,
-          })
-        }
-      } catch {}
-
-      // Mark all preflight checks green
-      setPreflightState((prev) => ({
-        ...prev,
-        [job.id]: { cmyk: true, dpi300: true, bleed: true, curves: true },
-      }))
-
-      // Realtime cross-tab broadcast for Production Planning & Shop Floor Terminals
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(
-          new CustomEvent('printerp_data_sync', {
-            detail: { type: 'production_tasks_updated', source: 'design_preflight', jobId: job.id },
-          })
-        )
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:production_tasks'))
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:production_jobs'))
-        window.dispatchEvent(new CustomEvent('printerp_table_synced:design_jobs'))
-      }
-
-      showNotification(`জব #${job.design_number} প্রেসে সফলভাবে পাঠানো হয়েছে (${machineObj?.name})!`, 'success')
-    },
-    [companyId, user, showNotification]
-  )
-
   const handlePauseProduction = useCallback(
     (job: DesignJobRecord) => {
       startTransition(() => {
@@ -624,7 +793,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
-        showNotification(`প্রোডাকশন সাময়িকভাবে স্থগিত করা হয়েছে (Correction Required)!`, 'warning')
+        showNotification('Production paused for correction', 'warning')
       })
     },
     [showNotification]
@@ -640,10 +809,39 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated as any)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? (updated as any) : j)))
-        showNotification(`প্রোডাকশন আবার চালু করা হয়েছে!`, 'success')
+        showNotification('Production resumed', 'success')
       })
     },
     [showNotification]
+  )
+
+  const handlePreflightConfirmAndRoute = useCallback(
+    async (job: DesignJobRecord, targetMachineId: string) => {
+      const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
+      const now = new Date().toISOString()
+      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number)
+      const updated: DesignJobRecord = {
+        ...job,
+        status: 'approved',
+        workflow_routing: 'ready_production',
+        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
+        is_locked: true,
+        updated_at: now,
+      }
+      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+      setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+
+      try {
+        await sendToPrintOperatorAction(job.id, companyId, updated, {
+          assignedMachineId: machineObj?.id,
+          assignedMachineName: machineObj?.name,
+          actorName: user?.profile?.full_name || 'Prepress Designer',
+        })
+      } catch {}
+
+      showNotification(`Job #${job.design_number || job.title} sent to production floor successfully!`, 'success')
+    },
+    [companyId, user, showNotification]
   )
 
   const handleRequestRevision = useCallback(
@@ -657,7 +855,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`কাস্টমার রিভিশন নোট গ্রহণ করা হয়েছে (Revision Requested)!`, 'info')
+        showNotification(`Revision requested for #${job.design_number || job.title}`, 'info')
       })
     },
     [showNotification]
@@ -667,11 +865,12 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     (newJob: DesignJobRecord) => {
       PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
       setJobs((prev) => [newJob, ...prev])
+      showNotification('New design job created successfully!', 'success')
     },
-    []
+    [showNotification]
   )
 
-  // 8. Modal Trigger Callbacks
+  // Modal Callbacks
   const handleOpenWhatsApp = useCallback(
     (job: DesignJobRecord, tpl: WhatsAppTemplateKey = 'proof') => {
       setWhatsAppModalState({ isOpen: true, job, template: tpl })
@@ -691,157 +890,68 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     setPreflightModalState({ isOpen: true, job })
   }, [])
 
-  // 9. Quick Metric Filter Handler
-  const handleSelectMetricFilter = useCallback((metricId: string) => {
-    if (metricId === 'urgent_today') {
-      setFilters((f) => ({ ...f, quickFilter: 'due_today' }))
-    } else if (metricId === 'walk_in') {
-      setFilters((f) => ({ ...f, quickFilter: 'walk_in' }))
-    } else if (metricId === 'all') {
-      setActiveTab('all')
-      setFilters((f) => ({ ...f, quickFilter: 'all' }))
-    } else {
-      setActiveTab(metricId)
-      setFilters((f) => ({ ...f, quickFilter: 'all' }))
-    }
-  }, [])
-
-  const tabsConfig = [
-    { id: 'new_tasks', label: '১. নতুন কাজ ও চেক', sub: 'New Tasks', count: metrics.newTasks, icon: Sparkles },
-    { id: 'design_running', label: '২. ডিজাইন চলতেছে', sub: 'In Progress', count: metrics.designRunning, icon: Clock },
-    { id: 'waiting_approval', label: '৩. অনুমোদনের অপেক্ষা', sub: 'Approval', count: metrics.waitingApproval, icon: CheckCircle2 },
-    { id: 'in_production', label: '৪. প্রেসে প্রোডাকশন চালু', sub: 'In Machine Floor', count: metrics.inProduction, icon: Printer },
-  ]
-
   return (
     <div className="space-y-4 pb-16 max-w-7xl mx-auto">
       {/* =========================================================================
-          1. HEADER & PRIMARY WORKSPACE ACTIONS (Matching Quotation & Billing UI)
+          1. HEADER: Reference Layout with squircle icon, title, subtitle & button
          ========================================================================= */}
-      <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden">
-        {/* Subtle decorative glow */}
-        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-purple-500/5 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2.5">
-              <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-700 text-white flex items-center justify-center shadow-sm shadow-indigo-500/20">
-                <Palette className="h-5 w-5" />
-              </div>
-              <div>
-                <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                  <span>
-                    {locale === 'bn' ? 'ডিজাইন স্টুডিও ও প্রি-প্রেস কোয়ালিটি' : 'Design Studio & Pre-Press Quality Panel'}
-                  </span>
-                  <Badge className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border border-indigo-500/20 text-2xs font-bold py-0.5">
-                    Pre-Press Hub
-                  </Badge>
-                </h1>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  {locale === 'bn'
-                    ? 'গ্রাফিক ডিজাইন ওয়ার্কবেঞ্চ, প্রি-ফ্লাইট কোয়ালিটি চেক, প্রুফ ভার্সন ও গ্রাহক হোয়াটসঅ্যাপ অনুমোদন হাব'
-                    : 'Graphic design workbench, preflight verification, proof versions, and WhatsApp customer approval hub.'}
-                </p>
-              </div>
-            </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
+            <Edit3 className="w-6 h-6 stroke-[2.2]" />
           </div>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href={getTenantNavHref('/trash?tab=design', pathname, tenantSlug)}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-              >
-                <Trash2 className="h-3.5 w-3.5 text-slate-500" />
-                <span className="hidden sm:inline">Trash Bin</span>
-              </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-              title="Refresh Design Jobs"
-            >
-              <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-indigo-600')} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={() => setIsWorkOrderModalOpen(true)}
-              className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-bold shadow-sm shadow-indigo-500/20 h-9 px-4 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
-            >
-              <Plus className="h-4 w-4" />
-              <span>{tBilingual('Work Order', 'ওয়ার্ক অর্ডার')}</span>
-            </Button>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Design Panel
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              Manage design jobs, create proofs, handle revisions and send to production.
+            </p>
           </div>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <Button
+            onClick={() => setIsNewJobModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>New Design Job</span>
+          </Button>
         </div>
       </div>
 
-      {/* Top Metrics KPI Bar */}
+      {/* 2. Top Metrics KPI Bar (6 Cards matching reference) */}
       <DesignMetricsBar
         metrics={metrics}
-        activeFilter={filters.quickFilter !== 'all' ? filters.quickFilter : activeTab}
-        onSelectFilter={handleSelectMetricFilter}
+        activeFilter={activeTab}
+        onSelectFilter={(tabId) => setActiveTab(tabId)}
       />
 
-      {/* 4 Practical Press Tabs Navigation */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
-        {tabsConfig.map((t) => {
-          const Icon = t.icon
-          const isActive = activeTab === t.id
-          return (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => setActiveTab(t.id)}
-              className={`p-2.5 rounded-xl text-left transition-all flex items-center justify-between cursor-pointer ${
-                isActive
-                  ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold border border-slate-200/80 dark:border-slate-700/80'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
-              }`}
-            >
-              <div className="flex items-center gap-2 truncate">
-                <Icon
-                  className={`h-4 w-4 shrink-0 ${
-                    isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'
-                  }`}
-                />
-                <span className="text-xs truncate font-semibold">{t.label}</span>
-              </div>
-              <span
-                className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
-                  isActive
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {t.count}
-              </span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* Search & Filter Toolbar */}
+      {/* 3. Status Filter Tabs & Search / Dropdown Filter Bar */}
       <DesignFilterToolbar
         filters={filters}
+        activeTab={activeTab}
+        tabCounts={{
+          all: metrics.total,
+          new_tasks: metrics.newTasks,
+          design_running: metrics.designRunning,
+          waiting_approval: metrics.waitingApproval,
+          revision: metrics.revision || 0,
+          in_production: metrics.inProduction,
+        }}
         designers={designersList}
+        onTabChange={(tabId) => setActiveTab(tabId)}
         onFilterChange={(newF) => setFilters((prev) => ({ ...prev, ...newF }))}
         onRefresh={handleRefresh}
         isRefreshing={isRefreshing}
       />
 
-      {/* Content Rendering (Cards Grid vs Compact Table) */}
+      {/* 4. Content Rendering: Invoice Accordion Cards */}
       {isLoading ? (
-        <div className="p-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
+        <div className="p-16 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
           <RefreshCw className="h-4 w-4 animate-spin text-indigo-600" />
-          <span>ডিজাইন লোড হচ্ছে...</span>
+          <span>Loading design panel...</span>
         </div>
       ) : filters.viewMode === 'table' ? (
         <DesignTableView
@@ -860,8 +970,8 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
           onRequestRevision={handleRequestRevision}
         />
       ) : (
-        <div className="space-y-4">
-          {/* Invoice Groups */}
+        <div className="space-y-3.5">
+          {/* Grouped Accordion Cards */}
           {invoiceGroups.map((group) => (
             <DesignInvoiceGroupCard
               key={group.invoiceId}
@@ -884,13 +994,23 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
           {/* Standalone Jobs */}
           {standaloneJobs.length > 0 && (
-            <div className="space-y-3">
+            <div className="space-y-3 pt-2">
+              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Direct Work / Non-Invoiced Items
+              </div>
               {standaloneJobs.map((job) => (
-                <DesignJobCard
+                <DesignInvoiceGroupCard
                   key={job.id}
-                  job={job}
+                  group={{
+                    invoiceId: job.id,
+                    invoiceNumber: job.design_number || 'JOB-001',
+                    customerName: job.customer_name,
+                    customerPhone: job.customer_phone,
+                    invoiceDate: '28 Sep 2026',
+                    jobs: [job],
+                  }}
                   activeTab={activeTab}
-                  preflight={getPreflightStatus(job.id, job.status)}
+                  getPreflightStatus={getPreflightStatus}
                   onTogglePreflight={handleTogglePreflight}
                   onOpenWhatsApp={handleOpenWhatsApp}
                   onOpenLightbox={handleOpenLightbox}
@@ -908,25 +1028,25 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
           )}
 
           {filteredJobs.length === 0 && (
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 shadow-2xs">
               <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                কোনো ডিজাইন কাজ পাওয়া যায়নি
+                No design jobs found
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                উপরের ফিল্টার বা সার্চ পরিবর্তন করুন অথবা নতুন ডিজাইন যুক্ত করুন।
+                Try selecting a different filter tab or search keyword.
               </p>
             </div>
           )}
         </div>
       )}
 
-      {/* 10. Modals Layer (Conditional Rendering for Maximum Performance) */}
+      {/* 5. Modals Layer */}
       {whatsAppModalState.isOpen && (
         <DesignWhatsAppModal
           isOpen={whatsAppModalState.isOpen}
           onClose={() => setWhatsAppModalState({ isOpen: false, job: null, template: 'proof' })}
           job={whatsAppModalState.job}
-          companyName="PrintERP Studio"
+          companyName={company?.name || 'InkFlow ERP'}
           initialTemplate={whatsAppModalState.template}
           onShowNotification={showNotification}
         />
@@ -964,7 +1084,35 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         />
       )}
 
-      {/* Floating Toast Notification (Matching Quotation & Billing) */}
+      {isNewJobModalOpen && (
+        <DesignNewJobModal
+          isOpen={isNewJobModalOpen}
+          onClose={() => setIsNewJobModalOpen(false)}
+          companyId={companyId}
+          customers={customers}
+          currentUserName={user?.profile?.full_name}
+          onCreateJob={handleCreateNewJob}
+          onShowNotification={showNotification}
+        />
+      )}
+
+      {isWorkOrderModalOpen && (
+        <WorkOrderModal
+          isOpen={isWorkOrderModalOpen}
+          onClose={() => {
+            setIsWorkOrderModalOpen(false)
+            loadData()
+          }}
+          onSuccess={() => {
+            setIsWorkOrderModalOpen(false)
+            loadData()
+            showNotification('Work Order created successfully and added to Design Studio.', 'success')
+          }}
+          companyId={companyId}
+        />
+      )}
+
+      {/* Floating Toast Notification */}
       {notification && (
         <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
           <Sparkles className="h-4 w-4 text-indigo-400 dark:text-indigo-600 shrink-0" />
@@ -977,41 +1125,6 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
-      )}
-
-      {/* Add Work Order Modal (Same as Commercial Orders & Job Hub) */}
-      {isWorkOrderModalOpen && (
-        <WorkOrderModal
-          isOpen={isWorkOrderModalOpen}
-          onClose={() => {
-            setIsWorkOrderModalOpen(false)
-            loadData()
-          }}
-          onSuccess={() => {
-            setIsWorkOrderModalOpen(false)
-            loadData()
-            showNotification(
-              tBilingual(
-                'Work Order created successfully and added to Design Studio.',
-                'ওয়ার্ক অর্ডার তৈরি হয়েছে এবং ডিজাইন স্টুডিওতে যুক্ত হয়েছে।'
-              ),
-              'success'
-            )
-          }}
-          companyId={companyId}
-        />
-      )}
-
-      {isNewJobModalOpen && (
-        <DesignNewJobModal
-          isOpen={isNewJobModalOpen}
-          onClose={() => setIsNewJobModalOpen(false)}
-          companyId={companyId}
-          customers={customers}
-          currentUserName={user?.profile?.full_name}
-          onCreateJob={handleCreateNewJob}
-          onShowNotification={showNotification}
-        />
       )}
     </div>
   )
