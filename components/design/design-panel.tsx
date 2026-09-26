@@ -364,7 +364,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     const groups = Array.from(invMap.values()).map((group) => {
       const gJobs = group.jobs
       const completedCount = gJobs.filter(
-        (j) => j.status === 'approved' || j.status === 'sent_to_production' || j.status === 'completed'
+        (j) => j.status === 'approved' || (j.status as string) === 'sent_to_production' || (j.status as string) === 'completed'
       ).length
 
       // Determine overall group status based on lifecycle
@@ -373,9 +373,9 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         overallStatus = 'approved'
       } else if (gJobs.some((j) => j.status === 'revision')) {
         overallStatus = 'revision'
-      } else if (gJobs.some((j) => j.status === 'waiting_approval' || j.status === 'customer_approval')) {
+      } else if (gJobs.some((j) => (j.status as string) === 'waiting_approval' || j.status === 'customer_approval')) {
         overallStatus = 'waiting_approval'
-      } else if (gJobs.some((j) => j.status === 'sent_to_production')) {
+      } else if (gJobs.some((j) => (j.status as string) === 'sent_to_production')) {
         overallStatus = 'in_production'
       } else if (gJobs.some((j) => j.status === 'designing' || j.status === 'in_progress')) {
         overallStatus = 'designing'
