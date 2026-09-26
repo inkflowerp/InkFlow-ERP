@@ -72,7 +72,7 @@ import { dispatchToast } from '@/components/shared/toast-feedback'
 import { cn } from '@/lib/utils'
 
 export type QuotationPeriod = 'this_month' | 'this_week' | 'today' | 'all_time' | 'custom'
-export type QuotationTab = 'overview' | 'quotations' | 'attention'
+export type QuotationTab = 'quotations' | 'attention'
 export type PipelinePriorityTab = 'all' | 'expiring' | 'follow_up' | 'high_value'
 
 export interface QuotationOverviewMetrics {
@@ -595,7 +595,7 @@ export default function QuotationsPage() {
   const [notification, setNotification] = useState<string | null>(null)
 
   // Navigation tab
-  const [activeTab, setActiveTab] = useState<QuotationTab>('overview')
+  const [activeTab, setActiveTab] = useState<QuotationTab>('quotations')
 
   // Date period filters
   const [selectedPeriod, setSelectedPeriod] = useState<QuotationPeriod>('this_month')
@@ -965,7 +965,7 @@ export default function QuotationsPage() {
                 </div>
                 <div>
                   <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <span>{locale === 'bn' ? 'কোটেশন ও সেলস পাইপলাইন' : 'Quotations & Sales Pipeline'}</span>
+                    <span>{locale === 'bn' ? 'কোটেশন' : 'Quotations'}</span>
                     <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
                       Live BDT ৳
                     </Badge>
@@ -980,40 +980,6 @@ export default function QuotationsPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5">
-              <Link href={getTenantNavHref('/trash?tab=quotations', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-slate-500" />
-                  <span className="hidden sm:inline">Trash Bin</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/pricing?tab=calculator', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-                >
-                  <Calculator className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="hidden sm:inline">{tBilingual('Estimator', 'ক্যালকুলেটর')}</span>
-                </Button>
-              </Link>
-
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadQuotationsData(false)}
-                disabled={isRefreshing}
-                className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-                title="Refresh Quotations"
-              >
-                <RefreshCw className={cn('h-3.5 w-3.5', isRefreshing && 'animate-spin text-blue-600')} />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-
               <Button
                 size="sm"
                 onClick={() => {
@@ -1037,82 +1003,6 @@ export default function QuotationsPage() {
             2. KPI SUMMARY CARDS (TOTAL QUOTED, WON, PENDING, EXPIRING, AVG DEAL, WIN RATE)
            ========================================================================= */}
         <div className="space-y-3">
-          {/* Period Selector & Custom Date-to-Date Range Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold">
-                {(['today', 'this_week', 'this_month', 'all_time', 'custom'] as QuotationPeriod[]).map((p) => {
-                  const labels: Record<QuotationPeriod, string> = {
-                    today: 'Today',
-                    this_week: 'This Week',
-                    this_month: 'This Month',
-                    all_time: 'All Time',
-                    custom: 'Custom Date',
-                  }
-                  const isSelected = selectedPeriod === p
-                  return (
-                    <button
-                      key={p}
-                      onClick={() => setSelectedPeriod(p)}
-                      className={cn(
-                        'px-3 py-1.5 rounded-lg transition-all cursor-pointer font-bold',
-                        isSelected
-                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                      )}
-                    >
-                      {labels[p]}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Date-to-Date Range Inputs */}
-              {selectedPeriod === 'custom' && (
-                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs animate-in fade-in slide-in-from-left-2">
-                  <input
-                    type="date"
-                    value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
-                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
-                    title="From Date"
-                  />
-                  <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
-                  <input
-                    type="date"
-                    value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
-                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
-                    title="To Date"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => loadQuotationsData(false)}
-                    className="h-7 px-2.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
-                  >
-                    Apply
-                  </Button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center gap-2.5 text-xs text-slate-500 font-mono">
-              <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                <Calendar className="h-3.5 w-3.5 text-blue-500" />
-                <span>
-                  {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
-                </span>
-              </div>
-              <button
-                onClick={() => loadQuotationsData(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-                title="Refresh financial metrics"
-              >
-                <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
-              </button>
-            </div>
-          </div>
-
           {/* 6 Executive Metric Cards */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {/* 1. Total Quoted / Pipeline Value */}
@@ -1217,25 +1107,89 @@ export default function QuotationsPage() {
               </div>
             </Card>
           </div>
+
+          {/* Period Selector & Custom Date-to-Date Range Bar (Below KPI Cards) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold">
+                {(['today', 'this_week', 'this_month', 'all_time', 'custom'] as QuotationPeriod[]).map((p) => {
+                  const labels: Record<QuotationPeriod, string> = {
+                    today: 'Today',
+                    this_week: 'This Week',
+                    this_month: 'This Month',
+                    all_time: 'All Time',
+                    custom: 'Custom Date',
+                  }
+                  const isSelected = selectedPeriod === p
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setSelectedPeriod(p)}
+                      className={cn(
+                        'px-3 py-1.5 rounded-lg transition-all cursor-pointer font-bold',
+                        isSelected
+                          ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                      )}
+                    >
+                      {labels[p]}
+                    </button>
+                  )
+                })}
+              </div>
+
+              {/* Date-to-Date Range Inputs */}
+              {selectedPeriod === 'custom' && (
+                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs animate-in fade-in slide-in-from-left-2">
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                    title="From Date"
+                  />
+                  <span className="text-slate-400 font-bold px-0.5 text-xs">to</span>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="px-2 py-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white font-mono text-xs focus:ring-1 focus:ring-blue-500 outline-none"
+                    title="To Date"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => loadQuotationsData(false)}
+                    className="h-7 px-2.5 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer rounded-lg"
+                  >
+                    Apply
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2.5 text-xs text-slate-500 font-mono">
+              <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                <Calendar className="h-3.5 w-3.5 text-blue-500" />
+                <span>
+                  {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
+                </span>
+              </div>
+              <button
+                onClick={() => loadQuotationsData(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Refresh financial metrics"
+              >
+                <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* =========================================================================
-            3. MAIN NAVIGATION TABS (OVERVIEW / QUOTATIONS / ATTENTION HUB)
+            3. MAIN NAVIGATION TABS (QUOTATIONS / ATTENTION HUB)
            ========================================================================= */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-            <button
-              onClick={() => setActiveTab('overview')}
-              className={cn(
-                'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-                activeTab === 'overview'
-                  ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span>Overview</span>
-            </button>
 
             <button
               onClick={() => setActiveTab('quotations')}
@@ -1298,296 +1252,7 @@ export default function QuotationsPage() {
           </div>
 
           {/* -------------------------------------------------------------------------
-              TAB 1: OVERVIEW & PIPELINE PRIORITIES ACTION HUB
-             ------------------------------------------------------------------------- */}
-          {activeTab === 'overview' && (
-            <div className="space-y-4">
-              {/* Urgent Commercial Follow-up Alert Banner */}
-              {urgentAlertCount > 0 && (
-                <div className="p-4 bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-base shrink-0">
-                      ⚠️
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-amber-950 dark:text-amber-200 flex items-center gap-2">
-                        <span>Commercial Follow-up Alert</span>
-                        <Badge className="bg-amber-500/20 text-amber-900 dark:text-amber-200 border border-amber-500/30 text-2xs py-0 font-bold">
-                          {urgentAlertCount} Proposals Needing Action
-                        </Badge>
-                      </div>
-                      <div className="text-2xs text-amber-800/90 dark:text-amber-300/80">
-                        Proposals expiring soon, scheduled for customer outreach today, or requiring immediate order conversion.
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button
-                    size="sm"
-                    onClick={() => setActiveTab('attention')}
-                    className="h-8 px-3.5 text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-xs shrink-0 cursor-pointer gap-1.5 rounded-xl"
-                  >
-                    <span>Review Attention Hub</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              )}
-
-              {/* Pipeline Priorities — Action Hub */}
-              <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-                <CardHeader className="p-4 bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <div className="h-6 w-6 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-xs">
-                        !
-                      </div>
-                      <CardTitle className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Pipeline Priorities — Action Hub
-                      </CardTitle>
-                    </div>
-                    <CardDescription className="text-xs text-slate-500">
-                      Active proposals requiring immediate customer outreach, price negotiation, or order conversion
-                    </CardDescription>
-                  </div>
-
-                  {/* Priority Filter Pills */}
-                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-semibold">
-                    {[
-                      { id: 'all', label: 'All Urgent' },
-                      { id: 'expiring', label: 'Expiring Soon' },
-                      { id: 'follow_up', label: 'Follow-up Due' },
-                      { id: 'high_value', label: 'High Value' },
-                    ].map((tab) => (
-                      <button
-                        key={tab.id}
-                        onClick={() => setPriorityTab(tab.id as any)}
-                        className={cn(
-                          'px-2.5 py-1 rounded-lg transition-all cursor-pointer',
-                          priorityTab === tab.id
-                            ? 'bg-rose-600 text-white shadow-xs font-bold'
-                            : 'text-slate-600 dark:text-slate-300 hover:text-slate-900'
-                        )}
-                      >
-                        {tab.label}
-                      </button>
-                    ))}
-                  </div>
-                </CardHeader>
-
-                <CardContent className="p-0">
-                  {filteredPriorityItems.length === 0 ? (
-                    <div className="p-10 text-center space-y-2">
-                      <CheckCircle2 className="h-9 w-9 text-emerald-500 mx-auto" />
-                      <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                        All commercial proposals are on track!
-                      </p>
-                      <p className="text-xs text-slate-500">No overdue follow-ups or expiring quotes in this view.</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-96 overflow-y-auto">
-                      {filteredPriorityItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="p-4 hover:bg-slate-50/70 dark:hover:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs transition-colors"
-                        >
-                          {/* Left info */}
-                          <div className="space-y-1.5">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="font-black text-slate-900 dark:text-white text-sm">
-                                {item.customerName}
-                              </span>
-                              {item.customerCompany && (
-                                <span className="text-slate-500 text-2xs font-medium">({item.customerCompany})</span>
-                              )}
-                              <span className="font-mono text-blue-600 dark:text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-md">
-                                #{item.quotationNumber}
-                              </span>
-                            </div>
-
-                            <div className="text-2xs text-slate-500 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono">
-                              <span>
-                                Phone:{' '}
-                                {item.customerPhone ? (
-                                  <a
-                                    href={`tel:${item.customerPhone}`}
-                                    className="text-slate-700 dark:text-slate-300 font-bold hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1"
-                                    title="Call Customer"
-                                  >
-                                    <Phone className="h-3 w-3 text-slate-400" />
-                                    <span>{item.customerPhone}</span>
-                                  </a>
-                                ) : (
-                                  <strong className="text-slate-400">—</strong>
-                                )}
-                              </span>
-                              <span>Valid Until: {item.validUntil}</span>
-                              <span className="text-slate-400 truncate max-w-xs">{item.itemsSummary}</span>
-                            </div>
-                          </div>
-
-                          {/* Right: Grand total prominence & Action buttons */}
-                          <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
-                            <div className="text-right">
-                              <div className="font-numeric tabular-nums font-black text-slate-900 dark:text-white text-base">
-                                {formatBDT(item.grandTotal)}
-                              </div>
-                              <span
-                                className={cn(
-                                  'text-2xs font-bold uppercase tracking-wider block',
-                                  item.urgency === 'critical'
-                                    ? 'text-rose-600 dark:text-rose-400'
-                                    : item.urgency === 'follow_up'
-                                    ? 'text-amber-600 dark:text-amber-400'
-                                    : 'text-blue-600 dark:text-blue-400'
-                                )}
-                              >
-                                {item.urgencyLabel}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleSendWhatsApp(item.quotation)}
-                                className="h-8 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700/60 dark:text-emerald-300 gap-1 rounded-xl"
-                                title="Send WhatsApp Quotation Proposal"
-                              >
-                                <MessageSquare className="h-3.5 w-3.5" />
-                                <span>WhatsApp</span>
-                              </Button>
-
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenFollowUp(item.quotation)}
-                                className="h-8 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs gap-1 cursor-pointer rounded-xl"
-                              >
-                                <Clock className="h-3.5 w-3.5" />
-                                <span>Follow-Up</span>
-                              </Button>
-
-                              <Link href={getTenantNavHref(`/quotations/${item.id}`, pathname, slug)}>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-8 text-xs text-slate-500 hover:text-slate-900 dark:hover:text-white px-2 rounded-xl"
-                                  title="View Quotation Cockpit"
-                                >
-                                  <ExternalLink className="h-3.5 w-3.5" />
-                                </Button>
-                              </Link>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Supplementary Overview Grids: Sector Breakdown & Commercial Performance */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Sector Stream Distribution */}
-                <Card className="p-4 border-slate-200/80 dark:border-slate-800/80 shadow-xs rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
-                        📊
-                      </div>
-                      <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                        Sector Streams (This Period)
-                      </span>
-                    </div>
-                    <span className="text-2xs font-mono text-slate-400">
-                      Total: {formatBDT(effectiveMetrics.totalPipelineValue)}
-                    </span>
-                  </div>
-
-                  <div className="space-y-3 pt-1">
-                    {sectorBreakdown.map((sec) => {
-                      const pct =
-                        effectiveMetrics.totalPipelineValue > 0
-                          ? Math.round((sec.value / effectiveMetrics.totalPipelineValue) * 100)
-                          : 0
-                      return (
-                        <div key={sec.id} className="space-y-1">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                              <span>{sec.icon}</span>
-                              <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
-                            </span>
-                            <div className="flex items-center gap-2 font-mono">
-                              <span className="text-slate-400 text-2xs">{sec.count} quotes</span>
-                              <span className="font-bold text-slate-900 dark:text-white">{formatBDT(sec.value)}</span>
-                              <span className="text-blue-600 font-bold text-2xs w-8 text-right">({pct}%)</span>
-                            </div>
-                          </div>
-                          <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                            <div
-                              className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </Card>
-
-                {/* Commercial Pipeline Performance */}
-                <Card className="p-4 border-slate-200/80 dark:border-slate-800/80 shadow-xs rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-7 w-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
-                          🎯
-                        </div>
-                        <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
-                          Commercial Conversion Metrics
-                        </span>
-                      </div>
-                      <Badge className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20 text-2xs font-bold">
-                        Win Rate: {effectiveMetrics.winRate}%
-                      </Badge>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <span className="text-2xs uppercase font-bold text-slate-400 block">Est. 50% Advance</span>
-                        <span className="text-base font-black font-numeric tabular-nums text-emerald-600 dark:text-emerald-400">
-                          {formatBDT(effectiveMetrics.expectedAdvance)}
-                        </span>
-                        <span className="text-2xs text-slate-500 block mt-0.5">Upon Job Order Confirmation</span>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
-                        <span className="text-2xs uppercase font-bold text-slate-400 block">Average Deal Margin</span>
-                        <span className="text-base font-black font-numeric tabular-nums text-blue-600 dark:text-blue-400">
-                          {effectiveMetrics.avgMargin}%
-                        </span>
-                        <span className="text-2xs text-slate-500 block mt-0.5">Target Minimum: 35%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <span className="text-xs text-slate-500">
-                      Need custom dimensional pricing calculation?
-                    </span>
-                    <Link href={getTenantNavHref('/pricing?tab=calculator', pathname, slug)}>
-                      <Button size="sm" variant="outline" className="h-7 text-xs font-bold gap-1 rounded-lg">
-                        <Calculator className="h-3 w-3 text-blue-600" />
-                        <span>Open Estimator</span>
-                      </Button>
-                    </Link>
-                  </div>
-                </Card>
-              </div>
-            </div>
-          )}
-
-          {/* -------------------------------------------------------------------------
-              TAB 2: QUOTATIONS DIRECTORY
+              TAB 1: QUOTATIONS DIRECTORY
              ------------------------------------------------------------------------- */}
           {activeTab === 'quotations' && (
             <div className="space-y-4">
