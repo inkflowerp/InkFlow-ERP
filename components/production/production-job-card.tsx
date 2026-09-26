@@ -318,53 +318,80 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               )}
             </div>
 
-            {/* Job Specifications Strip: Product and services name, Size, Quantity, Finishing, Add-on */}
-            <div className="mt-2.5 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] space-y-2">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                <div>
-                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'প্রোডাক্ট ও সার্ভিস:' : 'Product & Services:'}</span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200 block truncate" title={`${job.productName || job.title} • ${job.serviceName || 'Print Service'}`}>
+            {/* Job Specifications Strip: Prominently Highlighted Service, Size, Quantity, Finishing, Add-on */}
+            <div className="mt-2.5 bg-gradient-to-r from-slate-50 via-blue-50/20 to-slate-50 dark:from-slate-800/80 dark:via-blue-950/20 dark:to-slate-800/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/80 text-[11px] space-y-2.5 shadow-2xs">
+              {/* Product Title Bar with HIGHLIGHTED Service Name */}
+              <div className="flex items-center justify-between gap-2 flex-wrap pb-2 border-b border-slate-200/80 dark:border-slate-700/80">
+                <div className="flex items-center gap-1.5 truncate max-w-[65%]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                    {isBn ? 'প্রোডাক্ট:' : 'Product:'}
+                  </span>
+                  <span className="font-bold text-slate-900 dark:text-white truncate text-xs" title={job.productName || job.title}>
                     {job.productName || job.title}
                   </span>
-                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block truncate">
-                    {job.serviceName || 'Commercial Print Service'}
+                </div>
+
+                {/* 1. HIGHLIGHTED Service Name */}
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <span className="text-[10px] font-semibold text-slate-400">{isBn ? 'সার্ভিস:' : 'Service:'}</span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg font-bold text-[11px] bg-blue-100 text-blue-900 dark:bg-blue-950 dark:text-blue-200 border border-blue-300 dark:border-blue-700 shadow-2xs">
+                    <Layers className="h-3 w-3 text-blue-600 dark:text-blue-400 shrink-0" />
+                    <span className="truncate max-w-[150px]">{job.serviceName || 'Commercial Print'}</span>
                   </span>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'সাইজ / পরিমাপ:' : 'Size / Dimensions:'}</span>
-                  <strong className="font-mono text-slate-700 dark:text-slate-200 block truncate">
-                    {job.dimensions || 'Standard Spec'}
-                  </strong>
-                </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'পরিমাণ (Quantity):' : 'Quantity (Qty):'}</span>
-                  <strong className="font-mono text-slate-700 dark:text-slate-200 block">
-                    {job.quantity} {job.unit || 'pcs'}
-                  </strong>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-700/80">
-                <div>
-                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'ফিনিশিং (Finishing):' : 'Finishing:'}</span>
-                  <div className="flex items-center gap-1 flex-wrap mt-0.5">
+              {/* 4-Tile High-Visibility Specification Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {/* 2. HIGHLIGHTED Size / Dimensions */}
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-900/90 border border-amber-300/80 dark:border-amber-800/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-amber-800 dark:text-amber-400 uppercase tracking-wide flex items-center gap-1">
+                    <span>📐</span>
+                    <span>{isBn ? 'সাইজ / মাপ:' : 'Size / Dimensions:'}</span>
+                  </span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white text-xs mt-1 truncate" title={job.dimensions || 'Standard Spec'}>
+                    {job.dimensions || 'Standard Spec'}
+                  </span>
+                </div>
+
+                {/* 3. HIGHLIGHTED Quantity (Qty) */}
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-900/90 border border-emerald-300/80 dark:border-emerald-800/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wide flex items-center gap-1">
+                    <Package className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{isBn ? 'পরিমাণ (Qty):' : 'Quantity (Qty):'}</span>
+                  </span>
+                  <span className="font-mono font-bold text-emerald-800 dark:text-emerald-300 text-xs mt-1">
+                    {job.quantity} {job.unit || 'pcs'}
+                  </span>
+                </div>
+
+                {/* 4. HIGHLIGHTED Finishing */}
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-900/90 border border-teal-300/80 dark:border-teal-800/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-teal-800 dark:text-teal-400 uppercase tracking-wide flex items-center gap-1">
+                    <Scissors className="h-3 w-3 text-teal-600 dark:text-teal-400 shrink-0" />
+                    <span>{isBn ? 'ফিনিশিং:' : 'Finishing:'}</span>
+                  </span>
+                  <div className="mt-1">
                     {job.finishing ? (
-                      <span className="font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 text-[10px] inline-flex items-center gap-1">
-                        <Scissors className="h-2.5 w-2.5 text-emerald-600" />
-                        <span>{job.finishing}</span>
+                      <span className="font-bold text-teal-900 dark:text-teal-200 text-[11px] truncate block leading-tight" title={job.finishing}>
+                        {job.finishing}
                       </span>
                     ) : (
                       <span className="text-slate-400 text-[10px] italic">{isBn ? 'কোন ফিনিশিং নেই' : 'None'}</span>
                     )}
                   </div>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'অ্যাড-অন (Add-on):' : 'Add-on:'}</span>
-                  <div className="flex items-center gap-1 flex-wrap mt-0.5">
+
+                {/* 5. HIGHLIGHTED Add-on */}
+                <div className="p-2 rounded-xl bg-white dark:bg-slate-900/90 border border-purple-300/80 dark:border-purple-800/60 shadow-2xs flex flex-col justify-between">
+                  <span className="text-[10px] font-bold text-purple-800 dark:text-purple-400 uppercase tracking-wide flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-purple-600 dark:text-purple-400 shrink-0" />
+                    <span>{isBn ? 'অ্যাড-অন:' : 'Add-on:'}</span>
+                  </span>
+                  <div className="mt-1">
                     {job.addOns ? (
-                      <span className="font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800 text-[10px] inline-flex items-center gap-1">
-                        <Sparkles className="h-2.5 w-2.5 text-indigo-600" />
-                        <span>{job.addOns}</span>
+                      <span className="font-bold text-purple-900 dark:text-purple-200 text-[11px] truncate block leading-tight" title={job.addOns}>
+                        {job.addOns}
                       </span>
                     ) : (
                       <span className="text-slate-400 text-[10px] italic">{isBn ? 'কোন অ্যাড-অন নেই' : 'None'}</span>
