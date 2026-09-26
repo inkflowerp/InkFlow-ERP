@@ -735,6 +735,44 @@ export class ProductionPlanningService {
             stage: 'ready_delivery',
           })
         }
+
+        // Automatically dispatch to Delivery and Dispatch Terminal
+        try {
+          const { LogisticsRepository } = await import('../lib/repositories/logistics.repository.ts')
+          const allChallans = await LogisticsRepository.getChallans(companyId)
+          const targetRef = task.job_number || task.task_number.replace(/-[0-9]+$/, '')
+          const existingChallan = allChallans.find(
+            (c) =>
+              c.invoice_number === targetRef ||
+              c.order_number === targetRef ||
+              (c.items && c.items.some((it: any) => it.product_description?.includes(task.product_name || '')))
+          )
+          if (!existingChallan) {
+            const cleanRef = targetRef.replace(/[^A-Za-z0-9]/g, '')
+            await LogisticsRepository.createChallan({
+              company_id: companyId,
+              customer_id: (task as any).customer_id || '',
+              challan_number: `CH-${cleanRef}`,
+              invoice_number: task.job_number?.startsWith('INV-') ? task.job_number : undefined,
+              order_number: task.job_number?.startsWith('ORD-') ? task.job_number : undefined,
+              customer_name: task.customer_name || 'Direct Customer',
+              customer_phone: task.customer_phone || '',
+              delivery_address: 'Main Counter / Dispatch Bay',
+              delivery_method: 'hand_delivery',
+              status: 'pending_dispatch',
+              dispatch_date: new Date().toISOString().split('T')[0],
+              items: [
+                {
+                  product_description: task.product_name || task.task_name,
+                  quantity: task.quantity,
+                  unit: task.unit || 'pcs',
+                  status: 'ready_for_delivery',
+                  is_delivered: false,
+                },
+              ],
+            })
+          }
+        } catch (_) {}
       } catch (_) {}
     }
 

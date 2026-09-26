@@ -28,9 +28,12 @@ import {
   Sparkles,
   ChevronRight,
   Package,
+  Truck,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
   ProductionTaskRecord,
   UnifiedProductionJob,
@@ -84,6 +87,7 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
   const orderHref = job.orderNumber
     ? getTenantNavHref(`/orders`, pathname, tenantSlug)
     : null
+  const deliveryHref = getTenantNavHref(`/delivery`, pathname, tenantSlug)
 
   // Active task is the task currently running, or the first non-completed task
   const activeTask =
@@ -95,12 +99,69 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
   const isAllTasksCompleted =
     job.tasks.length > 0 && job.tasks.every((t) => t.status === 'completed')
 
+  const isPrintTask = activeTask?.task_type === 'printing' || activeTask?.department === 'printing'
+  const isFinishingTask = activeTask?.task_type === 'finishing' || activeTask?.department === 'finishing'
+
+  const hasFinishingTask = job.tasks.some(
+    (t) => t.department === 'finishing' || t.task_type === 'finishing'
+  )
+  const hasFinishingPending = job.tasks.some(
+    (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
+  )
+  const isPrintingCompleted = job.tasks.some(
+    (t) => (t.department === 'printing' || t.task_type === 'printing') && t.status === 'completed'
+  )
+
+  // Material selection & Wastage states
+  const [selectedMaterial, setSelectedMaterial] = React.useState<string>(
+    activeTask?.required_material || job.material || ''
+  )
+  const [wastageQty, setWastageQty] = React.useState<number>(activeTask?.rejected_quantity || 0)
+  const [wastageReason, setWastageReason] = React.useState<string>(activeTask?.defect_reason || 'banding')
+
+  React.useEffect(() => {
+    if (activeTask) {
+      if (activeTask.required_material) {
+        setSelectedMaterial(activeTask.required_material)
+      } else if (job.material) {
+        setSelectedMaterial(job.material)
+      }
+      if (activeTask.rejected_quantity) {
+        setWastageQty(activeTask.rejected_quantity)
+      }
+    }
+  }, [activeTask?.id, activeTask?.required_material, job.material])
+
+  const handleMaterialChange = (newMat: string) => {
+    setSelectedMaterial(newMat)
+    if (activeTask) {
+      activeTask.required_material = newMat
+      try {
+        const tasks = PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+        const idx = tasks.findIndex((t) => t.id === activeTask.id)
+        if (idx !== -1) {
+          tasks[idx] = { ...tasks[idx], required_material: newMat, updated_at: new Date().toISOString() }
+          PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, tasks)
+        }
+      } catch (_) {}
+    }
+  }
+
   const getStatusBadge = () => {
-    if (isAllTasksCompleted || job.status === 'completed') {
+    if (job.status === 'ready_delivery' || (isPrintingCompleted && !hasFinishingTask) || isAllTasksCompleted || job.status === 'completed') {
       return (
         <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-emerald-300 dark:border-emerald-800">
-          <CheckCircle2 className="h-3 w-3 text-emerald-600" />
-          <span>{isBn ? 'সম্পন্ন (Completed)' : 'Completed'}</span>
+          <Truck className="h-3 w-3 text-emerald-600" />
+          <span>{isBn ? 'ডেলিভারি ও ডিসপ্যাচে প্রেরিত' : 'Sent to Delivery and Dispatch'}</span>
+        </span>
+      )
+    }
+
+    if (activeTask?.department === 'finishing' || job.status === 'finishing' || (isPrintingCompleted && hasFinishingPending)) {
+      return (
+        <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-indigo-300 dark:border-indigo-800">
+          <Scissors className="h-3 w-3 text-indigo-600" />
+          <span>{isBn ? 'ফিনিশিংয়ে প্রেরিত (Sent to Finishing)' : 'Sent to Finishing'}</span>
         </span>
       )
     }
@@ -108,8 +169,8 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     if (activeTask?.status === 'in_progress') {
       return (
         <span className="text-[10px] font-bold bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-blue-300 dark:border-blue-800 animate-pulse">
-          <Play className="h-3 w-3 text-blue-600" />
-          <span>{isBn ? 'মেশিনে রানিং (Running)' : 'Running on Floor'}</span>
+          {isPrintTask ? <Printer className="h-3 w-3 text-blue-600" /> : <Play className="h-3 w-3 text-blue-600" />}
+          <span>{isPrintTask ? (isBn ? 'প্রিন্ট রানিং' : 'Printing in Progress') : (isBn ? 'ফ্লোরে রানিং' : 'Running on Floor')}</span>
         </span>
       )
     }
@@ -128,15 +189,6 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
         <span className="text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-amber-300 dark:border-amber-800">
           <AlertOctagon className="h-3 w-3 text-amber-600" />
           <span>{isBn ? 'স্থগিতাদেশ (On Hold)' : 'On Hold'}</span>
-        </span>
-      )
-    }
-
-    if (activeTask?.department === 'finishing' || job.status === 'finishing') {
-      return (
-        <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300 px-2 py-0.5 rounded-lg flex items-center gap-1 border border-indigo-300 dark:border-indigo-800">
-          <Scissors className="h-3 w-3 text-indigo-600" />
-          <span>{isBn ? 'ফিনিশিং ও কিউসি (Finishing)' : 'Finishing & QC'}</span>
         </span>
       )
     }
@@ -266,30 +318,63 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
               )}
             </div>
 
-            {/* Job Specifications Strip */}
-            <div className="mt-2.5 grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-[11px]">
-              <div>
-                <span className="text-slate-400 block text-[10px]">{isBn ? 'সাইজ / পরিমাপ:' : 'Size / Dimensions:'}</span>
-                <strong className="font-mono text-slate-700 dark:text-slate-200">
-                  {job.dimensions || 'Standard Spec'}
-                </strong>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px]">{isBn ? 'পরিমাণ (Qty):' : 'Quantity (Qty):'}</span>
-                <strong className="font-mono text-slate-700 dark:text-slate-200">
-                  {job.quantity} {job.unit || 'pcs'}
-                </strong>
-              </div>
-              {job.material && (
-                <div className="col-span-2">
-                  <span className="text-slate-400 block text-[10px]">{isBn ? 'মেটেরিয়াল ও মিডিয়া:' : 'Material & Substrate:'}</span>
-                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
-                    {job.material}
+            {/* Job Specifications Strip: Product and services name, Size, Quantity, Finishing, Add-on */}
+            <div className="mt-2.5 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 text-[11px] space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'প্রোডাক্ট ও সার্ভিস:' : 'Product & Services:'}</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 block truncate" title={`${job.productName || job.title} • ${job.serviceName || 'Print Service'}`}>
+                    {job.productName || job.title}
+                  </span>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block truncate">
+                    {job.serviceName || 'Commercial Print Service'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'সাইজ / পরিমাপ:' : 'Size / Dimensions:'}</span>
+                  <strong className="font-mono text-slate-700 dark:text-slate-200 block truncate">
+                    {job.dimensions || 'Standard Spec'}
                   </strong>
                 </div>
-              )}
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'পরিমাণ (Quantity):' : 'Quantity (Qty):'}</span>
+                  <strong className="font-mono text-slate-700 dark:text-slate-200 block">
+                    {job.quantity} {job.unit || 'pcs'}
+                  </strong>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200/80 dark:border-slate-700/80">
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'ফিনিশিং (Finishing):' : 'Finishing:'}</span>
+                  <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                    {job.finishing ? (
+                      <span className="font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800 text-[10px] inline-flex items-center gap-1">
+                        <Scissors className="h-2.5 w-2.5 text-emerald-600" />
+                        <span>{job.finishing}</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 text-[10px] italic">{isBn ? 'কোন ফিনিশিং নেই' : 'None'}</span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-semibold">{isBn ? 'অ্যাড-অন (Add-on):' : 'Add-on:'}</span>
+                  <div className="flex items-center gap-1 flex-wrap mt-0.5">
+                    {job.addOns ? (
+                      <span className="font-semibold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md border border-indigo-200 dark:border-indigo-800 text-[10px] inline-flex items-center gap-1">
+                        <Sparkles className="h-2.5 w-2.5 text-indigo-600" />
+                        <span>{job.addOns}</span>
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 text-[10px] italic">{isBn ? 'কোন অ্যাড-অন নেই' : 'None'}</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {job.instructions && (
-                <div className="col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-1.5 text-slate-600 dark:text-slate-400">
+                <div className="border-t border-slate-200/80 dark:border-slate-700/80 pt-1.5 text-slate-600 dark:text-slate-400">
                   <span className="text-[10px] font-bold text-slate-500 block">{isBn ? 'কাস্টমার নির্দেশনা:' : 'Instructions:'}</span>
                   <p className="line-clamp-2 text-[10px] italic">{job.instructions}</p>
                 </div>
@@ -434,6 +519,80 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   {activeTask?.quantity || job.quantity} {activeTask?.unit || job.unit || 'pcs'}
                 </span>
               </div>
+
+              {/* Printing Material Selection */}
+              <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-slate-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Layers className="h-3 w-3 text-blue-600 shrink-0" />
+                    <span>{isBn ? 'প্রিন্টিং মেটেরিয়াল:' : 'Printing Material Selection:'}</span>
+                  </span>
+                  {selectedMaterial && (
+                    <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">Selected ✓</span>
+                  )}
+                </div>
+                <select
+                  value={selectedMaterial || activeTask?.required_material || job.material || ''}
+                  onChange={(e) => handleMaterialChange(e.target.value)}
+                  className="w-full text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="">-- Choose Printing Material --</option>
+                  <option value="Star Flex (320 GSM)">Star Flex (320 GSM)</option>
+                  <option value="Blackout Flex (340 GSM)">Blackout Flex (340 GSM)</option>
+                  <option value="PVC Vinyl Glossy (120 GSM)">PVC Vinyl Glossy (120 GSM)</option>
+                  <option value="PVC Vinyl Matte (120 GSM)">PVC Vinyl Matte (120 GSM)</option>
+                  <option value="Reflective Sheeting Honeycomb">Reflective Sheeting Honeycomb</option>
+                  <option value="Canvas Substrate (260 GSM)">Canvas Substrate (260 GSM)</option>
+                  <option value="Backlit Film (180 GSM)">Backlit Film (180 GSM)</option>
+                  <option value="One Way Vision Sticker">One Way Vision Sticker</option>
+                  <option value="Art Card 300 GSM">Art Card 300 GSM</option>
+                  <option value="Art Card 350 GSM">Art Card 350 GSM</option>
+                  <option value="Swedish Board 300 GSM">Swedish Board 300 GSM</option>
+                  <option value="Offset Paper 80 GSM">Offset Paper 80 GSM</option>
+                </select>
+              </div>
+
+              {/* Wastage / Scrap Field */}
+              <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1.5 bg-amber-50/60 dark:bg-amber-950/30 p-2 rounded-xl border border-amber-200 dark:border-amber-800/50">
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="font-bold text-amber-900 dark:text-amber-200 flex items-center gap-1">
+                    <AlertTriangle className="h-3 w-3 text-amber-600 shrink-0" />
+                    <span>{isBn ? 'ওয়েস্টেজ ও অপচয় (Wastage / Scrap):' : 'Wastage / Scrap Field:'}</span>
+                  </span>
+                  <span className="text-[9px] font-mono text-amber-700 dark:text-amber-400">
+                    {activeTask?.unit || job.unit || 'pcs'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <div>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="any"
+                      value={wastageQty || ''}
+                      onChange={(e) => setWastageQty(Number(e.target.value))}
+                      placeholder={isBn ? 'অপচয় পরিমাণ' : 'Wastage qty (অপচয়)'}
+                      className="h-7 text-xs font-mono bg-white dark:bg-slate-900 border-amber-300 dark:border-amber-700"
+                    />
+                  </div>
+                  <div>
+                    <select
+                      value={wastageReason}
+                      onChange={(e) => setWastageReason(e.target.value)}
+                      className="h-7 w-full text-[10px] rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 px-1 text-slate-800 dark:text-slate-200 focus:outline-hidden cursor-pointer"
+                    >
+                      <option value="banding">Color Banding (ব্যান্ডিং)</option>
+                      <option value="head_strike">Head Strike (হেড স্ট্রাইক)</option>
+                      <option value="media_wrinkle">Media Wrinkle (মিডিয়া কুঁচকানো)</option>
+                      <option value="color_mismatch">Color Mismatch (কালার অমিল)</option>
+                      <option value="cutting_misalignment">Cutting Error (কাটিং ভুল)</option>
+                      <option value="operator_error">Operator Mistake (অপারেটর ভুল)</option>
+                      <option value="material_defect">Defective Roll (ত্রুটিযুক্ত রোল)</option>
+                      <option value="other">Other Scrap (অন্যান্য)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Commercial Hold Warning */}
@@ -536,11 +695,19 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 </Button>
               )}
 
-              {/* Primary Action Button */}
-              {isAllTasksCompleted ? (
-                <div className="h-8 px-3 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center gap-1 border border-emerald-300 dark:border-emerald-800">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>{isBn ? 'সব কাজ সম্পন্ন' : 'All Tasks Completed'}</span>
+              {/* Primary Action Button: Start Printing / Complete / Sent to Delivery */}
+              {isAllTasksCompleted || job.status === 'ready_delivery' || (isPrintingCompleted && !hasFinishingTask) ? (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className="h-8 px-3 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-bold text-xs flex items-center gap-1.5 border border-emerald-300 dark:border-emerald-800">
+                    <Truck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                    <span>{isBn ? 'ডেলিভারি ও ডিসপ্যাচে প্রেরিত' : 'Sent to Delivery and Dispatch'}</span>
+                  </div>
+                  <Link
+                    href={deliveryHref}
+                    className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-colors shrink-0"
+                  >
+                    <span>{isBn ? 'ডিসপ্যাচ দেখুন ➔' : 'View in Dispatch ➔'}</span>
+                  </Link>
                 </div>
               ) : activeTask?.status === 'in_progress' ? (
                 <div className="flex items-center gap-1.5">
@@ -558,11 +725,22 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                   {onCompleteTask && (
                     <Button
                       size="sm"
-                      onClick={() => onCompleteTask(activeTask)}
-                      className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs cursor-pointer gap-1"
+                      onClick={() =>
+                        onCompleteTask({
+                          ...activeTask,
+                          rejected_quantity: wastageQty,
+                          defect_reason: wastageQty > 0 ? wastageReason : null,
+                          scrap_notes: wastageQty > 0 ? wastageReason : null,
+                        })
+                      }
+                      className="h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs cursor-pointer gap-1.5"
                     >
-                      <CheckCircle2 className="h-3 w-3" />
-                      <span>{isBn ? 'সম্পন্ন ও কর্তন' : 'Complete Step'}</span>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+                      <span>
+                        {isPrintTask
+                          ? isBn ? 'প্রিন্ট সম্পন্ন করুন' : 'Complete Printing'
+                          : isBn ? 'ফিনিশিং সম্পন্ন করুন' : 'Complete Finishing'}
+                      </span>
                     </Button>
                   )}
                 </div>
@@ -570,16 +748,35 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                 activeTask && onStartTask && (
                   <Button
                     size="sm"
-                    onClick={() => onStartTask(activeTask)}
+                    onClick={() =>
+                      onStartTask({
+                        ...activeTask,
+                        required_material: selectedMaterial || activeTask.required_material,
+                      })
+                    }
                     disabled={
                       activeTask.is_blocked_by_dependency ||
                       activeTask.is_blocked_by_commercial_gate ||
                       activeTask.is_blocked_by_design_gate
                     }
-                    className="h-8 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-8 text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-3.5 rounded-xl shadow-xs cursor-pointer flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <Play className="h-3 w-3 fill-white" />
-                    <span>{isBn ? 'কাজ শুরু করুন' : 'Start Task'}</span>
+                    {isPrintTask ? (
+                      <>
+                        <Printer className="h-3.5 w-3.5" />
+                        <span>{isBn ? 'প্রিন্ট শুরু করুন' : 'Start Printing'}</span>
+                      </>
+                    ) : isFinishingTask ? (
+                      <>
+                        <Scissors className="h-3.5 w-3.5" />
+                        <span>{isBn ? 'ফিনিশিং শুরু করুন' : 'Start Finishing'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-3 w-3 fill-white" />
+                        <span>{isBn ? 'কাজ শুরু করুন' : 'Start Task'}</span>
+                      </>
+                    )}
                   </Button>
                 )
               )}

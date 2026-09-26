@@ -227,6 +227,11 @@ export interface ProductionTaskRecord {
   design_gate_reason?: string | null
   invoice_id?: string | null
   invoice_number?: string | null
+  service_name?: string | null
+  finishing?: string | null
+  selected_finishing?: any[] | null
+  add_ons?: string | null
+  selected_add_ons?: any[] | null
 }
 
 export interface UnifiedProductionJob {
@@ -238,6 +243,7 @@ export interface UnifiedProductionJob {
   salesOrderId?: string | null
   title: string
   productName: string
+  serviceName?: string | null
   customerName: string
   customerPhone?: string | null
   priority: TaskPriority | JobPriority
@@ -246,8 +252,12 @@ export interface UnifiedProductionJob {
   quantity: number
   unit: string
   material?: string | null
+  finishing?: string | null
+  selectedFinishing?: any[] | null
+  addOns?: string | null
+  selectedAddOns?: any[] | null
   instructions?: string | null
-  status: ProductionJobStatus | ProductionTaskStatus | 'finishing'
+  status: ProductionJobStatus | ProductionTaskStatus | 'finishing' | 'ready_delivery'
   tasks: ProductionTaskRecord[]
   activeTask?: ProductionTaskRecord | null
   assignedMachineName?: string | null

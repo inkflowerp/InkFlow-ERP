@@ -222,9 +222,9 @@ export class LogisticsRepository {
 
   static async createChallan(challan: {
     company_id: string
-    customer_id: string
+    customer_id?: string | null
     customer_name: string
-    customer_phone: string
+    customer_phone?: string | null
     delivery_address: string
     [key: string]: any
   }): Promise<DeliveryChallanRecord> {
@@ -319,9 +319,9 @@ export class LogisticsRepository {
         id: challan.id || `chl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         company_id: effectiveCompanyId,
         challan_number: challanNumber,
-        customer_id: challan.customer_id,
+        customer_id: challan.customer_id || '',
         customer_name: challan.customer_name,
-        customer_phone: challan.customer_phone,
+        customer_phone: challan.customer_phone || '',
         sales_order_id: challan.sales_order_id || null,
         order_number: challan.order_number || null,
         delivery_address: challan.delivery_address,

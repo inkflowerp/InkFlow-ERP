@@ -119,6 +119,9 @@ export class DesignRepository {
             if (isReadyProduct(it) || it.item_kind === 'ready_product' || it.workflow_routing === 'ready_product') {
               return
             }
+            if (it.design_required === false && it.workflow_routing !== 'design_required' && it.workflow_routing !== 'design_ok') {
+              return
+            }
           }
 
           const isDesignOk = Boolean(
@@ -128,9 +131,7 @@ export class DesignRepository {
           const isDesignReq = Boolean(
             it?.design_required ||
               it?.workflow_routing === 'design_required' ||
-              orderRouting === 'design_required' ||
-              order.status === 'in_design' ||
-              !isDesignOk
+              (it?.design_required !== false && (orderRouting === 'design_required' || order.status === 'in_design'))
           )
 
           if (!isDesignOk && !isDesignReq) return

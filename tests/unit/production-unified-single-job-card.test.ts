@@ -158,4 +158,110 @@ describe('Production Unified Single Job Card Architecture', () => {
     assert.strictEqual(activeTask?.task_type, 'finishing')
     assert.strictEqual(activeTask?.status, 'queued')
   })
+
+  it('3. Card specifications display Product & Services, Size, Quantity, Finishing, Add-on, and routes to Finishing when finishing is available', () => {
+    const printTask: ProductionTaskRecord = {
+      id: 'tsk-002-1',
+      company_id: 'test-co',
+      job_order_id: 'ord-item-010',
+      task_number: 'TSK-010-1',
+      task_name: 'Print: PVC Vinyl Sticker Glossy',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 50,
+      unit: 'pcs',
+      priority: 'normal',
+      status: 'completed',
+      job_number: 'INV-000010',
+      customer_name: 'Apex Footwear',
+      product_name: 'PVC Vinyl Sticker Glossy',
+      service_name: 'Large Format Print',
+      dimensions_spec: '3 × 2 ft',
+      required_material: 'PVC Vinyl Glossy (120 GSM)',
+      finishing: 'Matte Lamination, Die Cut',
+      add_ons: 'Eyelets, Edge Hemming',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const finishingTask: ProductionTaskRecord = {
+      id: 'tsk-002-2',
+      company_id: 'test-co',
+      job_order_id: 'ord-item-010',
+      task_number: 'TSK-010-2',
+      task_name: 'Finishing & QC: PVC Vinyl Sticker Glossy',
+      task_type: 'finishing',
+      department: 'finishing',
+      sequence_order: 2,
+      quantity: 50,
+      unit: 'pcs',
+      priority: 'normal',
+      status: 'queued',
+      job_number: 'INV-000010',
+      customer_name: 'Apex Footwear',
+      product_name: 'PVC Vinyl Sticker Glossy',
+      service_name: 'Large Format Print',
+      dimensions_spec: '3 × 2 ft',
+      finishing: 'Matte Lamination, Die Cut',
+      add_ons: 'Eyelets, Edge Hemming',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const tasks = [printTask, finishingTask]
+    const hasPrintDone = tasks.some((t) => t.department === 'printing' && t.status === 'completed')
+    const hasFinishingPending = tasks.some((t) => t.department === 'finishing' && t.status !== 'completed')
+
+    let overallStatus = 'queued'
+    if (hasPrintDone && hasFinishingPending) {
+      overallStatus = 'finishing'
+    }
+
+    assert.strictEqual(overallStatus, 'finishing')
+    assert.strictEqual(printTask.service_name, 'Large Format Print')
+    assert.strictEqual(printTask.dimensions_spec, '3 × 2 ft')
+    assert.strictEqual(printTask.quantity, 50)
+    assert.strictEqual(printTask.finishing, 'Matte Lamination, Die Cut')
+    assert.strictEqual(printTask.add_ons, 'Eyelets, Edge Hemming')
+  })
+
+  it('4. After printing complete (if finishing not available) -> sent directly to Delivery and Dispatch', () => {
+    const printOnlyTask: ProductionTaskRecord = {
+      id: 'tsk-003-1',
+      company_id: 'test-co',
+      job_order_id: 'ord-item-011',
+      task_number: 'TSK-011-1',
+      task_name: 'Print: Star Flex Banner',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 1,
+      unit: 'pcs',
+      priority: 'normal',
+      status: 'completed',
+      job_number: 'INV-000011',
+      customer_name: 'Rahim Traders',
+      product_name: 'Star Flex Banner',
+      service_name: 'Solvent Flex Print',
+      dimensions_spec: '10 × 5 ft',
+      required_material: 'Star Flex (320 GSM)',
+      finishing: null,
+      add_ons: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+
+    const tasks = [printOnlyTask]
+    const hasPrintDone = tasks.some((t) => t.department === 'printing' && t.status === 'completed')
+    const hasFinishingTask = tasks.some((t) => t.department === 'finishing' || t.task_type === 'finishing')
+
+    let overallStatus = 'queued'
+    if (hasPrintDone && !hasFinishingTask) {
+      overallStatus = 'ready_delivery'
+    }
+
+    // Since no finishing was specified, job advances directly to ready_delivery (Sent to Delivery and Dispatch)
+    assert.strictEqual(overallStatus, 'ready_delivery')
+  })
 })

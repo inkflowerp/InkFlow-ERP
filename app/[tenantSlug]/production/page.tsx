@@ -208,6 +208,34 @@ export default function AdvancedProductionPage() {
                 Boolean(dj.invoice_id) ||
                 Boolean(dj.invoice_number) ||
                 dj.commercial_status === 'invoice_created'
+
+              const hasFinishing = Boolean(
+                (dj.finishing && dj.finishing !== 'None' && dj.finishing !== 'none') ||
+                (dj.selected_finishing && dj.selected_finishing.length > 0)
+              )
+
+              const finishingStr =
+                dj.finishing ||
+                (dj.selected_finishing?.length
+                  ? dj.selected_finishing.map((f: any) => f.name).join(', ')
+                  : null)
+              const addOnsStr =
+                (dj as any).add_ons ||
+                (dj.selected_add_ons?.length
+                  ? dj.selected_add_ons.map((a: any) => a.name).join(', ')
+                  : null)
+              const serviceNameStr =
+                (dj as any).service_name ||
+                (dj as any).category_preset ||
+                (dj as any).category ||
+                'Commercial Printing'
+
+              const dimensionsStr =
+                dj.dimensions_spec ||
+                (dj.width && dj.height
+                  ? `${dj.width} × ${dj.height} ${dj.unit || 'in'}`
+                  : null)
+
               const task1: any = {
                 id: crypto.randomUUID(),
                 company_id: effCompany,
@@ -217,6 +245,8 @@ export default function AdvancedProductionPage() {
                 customer_name: dj.customer_name,
                 customer_phone: dj.customer_phone || dj.mobile,
                 product_name: dj.product_name || dj.title,
+                service_name: serviceNameStr,
+                dimensions_spec: dimensionsStr,
                 job_number: dj.invoice_number || dj.design_number,
                 invoice_number: dj.invoice_number,
                 invoice_id: dj.invoice_id,
@@ -227,31 +257,11 @@ export default function AdvancedProductionPage() {
                 quantity: dj.quantity || 1,
                 unit: dj.unit || 'pcs',
                 priority: dj.priority || 'normal',
-                status: 'queued',
-                is_blocked_by_commercial_gate: !hasInvoice,
-                is_blocked_by_design_gate: false,
-                created_at: now,
-                updated_at: now,
-              }
-              const task2: any = {
-                id: crypto.randomUUID(),
-                company_id: effCompany,
-                job_order_id: task1.job_order_id,
-                task_number: taskNum2,
-                task_name: `Finishing & QC: ${dj.title}`,
-                customer_name: dj.customer_name,
-                customer_phone: dj.customer_phone || dj.mobile,
-                product_name: dj.product_name || dj.title,
-                job_number: dj.invoice_number || dj.design_number,
-                invoice_number: dj.invoice_number,
-                invoice_id: dj.invoice_id,
-                job_deadline: dj.deadline,
-                task_type: 'finishing',
-                department: 'finishing',
-                sequence_order: 2,
-                quantity: dj.quantity || 1,
-                unit: dj.unit || 'pcs',
-                priority: dj.priority || 'normal',
+                required_material: dj.material || 'Star Flex (320 GSM)',
+                finishing: finishingStr,
+                selected_finishing: dj.selected_finishing || null,
+                add_ons: addOnsStr,
+                selected_add_ons: dj.selected_add_ons || null,
                 status: 'queued',
                 is_blocked_by_commercial_gate: !hasInvoice,
                 is_blocked_by_design_gate: false,
@@ -259,8 +269,163 @@ export default function AdvancedProductionPage() {
                 updated_at: now,
               }
               taskMap.set(task1.id, task1)
-              taskMap.set(task2.id, task2)
               addedAnyLocal = true
+
+              if (hasFinishing) {
+                const task2: any = {
+                  id: crypto.randomUUID(),
+                  company_id: effCompany,
+                  job_order_id: task1.job_order_id,
+                  task_number: taskNum2,
+                  task_name: `Finishing & QC: ${dj.title}`,
+                  customer_name: dj.customer_name,
+                  customer_phone: dj.customer_phone || dj.mobile,
+                  product_name: dj.product_name || dj.title,
+                  service_name: serviceNameStr,
+                  dimensions_spec: dimensionsStr,
+                  job_number: dj.invoice_number || dj.design_number,
+                  invoice_number: dj.invoice_number,
+                  invoice_id: dj.invoice_id,
+                  job_deadline: dj.deadline,
+                  task_type: 'finishing',
+                  department: 'finishing',
+                  sequence_order: 2,
+                  quantity: dj.quantity || 1,
+                  unit: dj.unit || 'pcs',
+                  priority: dj.priority || 'normal',
+                  required_material: dj.material,
+                  finishing: finishingStr,
+                  selected_finishing: dj.selected_finishing || null,
+                  add_ons: addOnsStr,
+                  selected_add_ons: dj.selected_add_ons || null,
+                  status: 'queued',
+                  is_blocked_by_commercial_gate: !hasInvoice,
+                  is_blocked_by_design_gate: false,
+                  created_at: now,
+                  updated_at: now,
+                }
+                taskMap.set(task2.id, task2)
+              }
+            } else {
+              // Enrich existing tasks with design job metadata if missing
+              const finishingStr =
+                dj.finishing ||
+                (dj.selected_finishing?.length
+                  ? dj.selected_finishing.map((f: any) => f.name).join(', ')
+                  : null)
+              const addOnsStr =
+                (dj as any).add_ons ||
+                (dj.selected_add_ons?.length
+                  ? dj.selected_add_ons.map((a: any) => a.name).join(', ')
+                  : null)
+              const serviceNameStr =
+                (dj as any).service_name ||
+                (dj as any).category_preset ||
+                (dj as any).category ||
+                'Commercial Printing'
+              const dimensionsStr =
+                dj.dimensions_spec ||
+                (dj.width && dj.height
+                  ? `${dj.width} × ${dj.height} ${dj.unit || 'in'}`
+                  : null)
+
+              for (const [id, t] of taskMap.entries()) {
+                const isMatch =
+                  (dj.job_order_id && t.job_order_id === dj.job_order_id) ||
+                  t.task_number === taskNum1 ||
+                  t.task_number === taskNum2 ||
+                  (t.customer_name === dj.customer_name &&
+                    (t.product_name === dj.title || t.task_name?.includes(dj.title)))
+                if (isMatch) {
+                  let updated = false
+                  if (!t.service_name && serviceNameStr) {
+                    t.service_name = serviceNameStr
+                    updated = true
+                  }
+                  if (!t.finishing && finishingStr) {
+                    t.finishing = finishingStr
+                    t.selected_finishing = dj.selected_finishing || null
+                    updated = true
+                  }
+                  if (!t.add_ons && addOnsStr) {
+                    t.add_ons = addOnsStr
+                    t.selected_add_ons = dj.selected_add_ons || null
+                    updated = true
+                  }
+                  if (!(t as any).dimensions_spec && dimensionsStr) {
+                    (t as any).dimensions_spec = dimensionsStr
+                    updated = true
+                  }
+                  if (!t.required_material && dj.material) {
+                    t.required_material = dj.material
+                    updated = true
+                  }
+                  if (updated) {
+                    taskMap.set(id, t)
+                    addedAnyLocal = true
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // 4. Scan local invoices to enrich any tasks missing specs/services/finishing
+        const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+        for (const inv of localInvoices) {
+          if (inv.items && Array.isArray(inv.items)) {
+            for (const item of inv.items) {
+              for (const [id, t] of taskMap.entries()) {
+                const matchesInvoice =
+                  (t.invoice_number && t.invoice_number === inv.invoice_number) ||
+                  (t.invoice_id && t.invoice_id === inv.id) ||
+                  (t.job_number && (t.job_number === inv.invoice_number || t.job_number === inv.id))
+                if (matchesInvoice) {
+                  let updated = false
+                  const itemService = item.service_name || item.category || item.category_preset
+                  if (!t.service_name && itemService) {
+                    t.service_name = itemService
+                    updated = true
+                  }
+                  const itemFinishing =
+                    item.finishing ||
+                    (item.selected_finishing?.length
+                      ? item.selected_finishing.map((f: any) => f.name).join(', ')
+                      : null)
+                  if (!t.finishing && itemFinishing) {
+                    t.finishing = itemFinishing
+                    t.selected_finishing = item.selected_finishing || null
+                    updated = true
+                  }
+                  const itemAddOns =
+                    item.add_ons ||
+                    (item.selected_add_ons?.length
+                      ? item.selected_add_ons.map((a: any) => a.name).join(', ')
+                      : null)
+                  if (!t.add_ons && itemAddOns) {
+                    t.add_ons = itemAddOns
+                    t.selected_add_ons = item.selected_add_ons || null
+                    updated = true
+                  }
+                  const itemDim =
+                    item.dimensions_spec ||
+                    (item.width && item.height
+                      ? `${item.width} × ${item.height} ${item.unit || 'in'}`
+                      : null)
+                  if (!(t as any).dimensions_spec && itemDim) {
+                    (t as any).dimensions_spec = itemDim
+                    updated = true
+                  }
+                  if (!t.required_material && (item.material || item.material_spec)) {
+                    t.required_material = item.material || item.material_spec
+                    updated = true
+                  }
+                  if (updated) {
+                    taskMap.set(id, t)
+                    addedAnyLocal = true
+                  }
+                }
+              }
             }
           }
         }
@@ -410,6 +575,8 @@ export default function AdvancedProductionPage() {
   // ==============================================================================
   const unifiedJobs = useMemo(() => {
     const jobMap = new Map<string, UnifiedProductionJob>()
+    const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+    const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
 
     for (const t of filteredTasks) {
       // Grouping key: by job_order_id OR (job_number + customer + product)
@@ -418,6 +585,84 @@ export default function AdvancedProductionPage() {
         t.job_order_id ||
         t.production_job_id ||
         `${cleanJobNum}___${t.customer_name || 'anon'}___${t.product_name || t.task_name.replace(/^(Print|Finishing & QC|Printing):\s*/, '')}`
+
+      // Match design job & invoice for metadata enrichment
+      const matchedDj = localDesignJobs.find(
+        (dj) =>
+          (dj.invoice_number && (dj.invoice_number === cleanJobNum || dj.invoice_number === t.invoice_number)) ||
+          (dj.design_number && (dj.design_number === cleanJobNum || dj.design_number === t.job_number)) ||
+          (dj.job_order_id && dj.job_order_id === t.job_order_id) ||
+          (dj.customer_name === t.customer_name && (dj.title === t.product_name || t.task_name?.includes(dj.title)))
+      )
+      const matchedInv = localInvoices.find(
+        (inv) =>
+          inv.invoice_number === cleanJobNum ||
+          inv.invoice_number === t.invoice_number ||
+          inv.id === t.invoice_id
+      )
+      const matchedInvItem =
+        matchedInv?.items?.find(
+          (it: any) =>
+            (t.product_name && (it.product_name === t.product_name || it.description?.includes(t.product_name))) ||
+            it.category ||
+            it.category_preset
+        ) || matchedInv?.items?.[0]
+
+      const serviceNameStr =
+        t.service_name ||
+        matchedDj?.service_name ||
+        matchedDj?.category_preset ||
+        matchedDj?.category ||
+        matchedInvItem?.service_name ||
+        matchedInvItem?.category ||
+        matchedInvItem?.category_preset ||
+        'Commercial Printing'
+
+      const dimensionsStr =
+        (t as any).dimensions_spec ||
+        (t.width && t.height ? `${t.width} × ${t.height} ${t.dimension_unit || t.unit || 'in'}` : null) ||
+        matchedDj?.dimensions_spec ||
+        (matchedDj?.width && matchedDj?.height ? `${matchedDj.width} × ${matchedDj.height} ${matchedDj.unit || 'in'}` : null) ||
+        matchedInvItem?.dimensions_spec ||
+        (matchedInvItem?.width && matchedInvItem?.height ? `${matchedInvItem.width} × ${matchedInvItem.height} ${matchedInvItem.unit || 'in'}` : null) ||
+        'Standard Spec'
+
+      const finishingStr =
+        t.finishing ||
+        (t.selected_finishing?.length ? t.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
+        matchedDj?.finishing ||
+        (matchedDj?.selected_finishing?.length ? matchedDj.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
+        matchedInvItem?.finishing ||
+        (matchedInvItem?.selected_finishing?.length ? matchedInvItem.selected_finishing.map((f: any) => f.name).join(', ') : null) ||
+        null
+
+      const selectedFinishingArr =
+        t.selected_finishing ||
+        matchedDj?.selected_finishing ||
+        matchedInvItem?.selected_finishing ||
+        null
+
+      const addOnsStr =
+        t.add_ons ||
+        (t.selected_add_ons?.length ? t.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
+        (matchedDj as any)?.add_ons ||
+        (matchedDj?.selected_add_ons?.length ? matchedDj.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
+        (matchedInvItem as any)?.add_ons ||
+        (matchedInvItem?.selected_add_ons?.length ? matchedInvItem.selected_add_ons.map((a: any) => a.name).join(', ') : null) ||
+        null
+
+      const selectedAddOnsArr =
+        t.selected_add_ons ||
+        matchedDj?.selected_add_ons ||
+        matchedInvItem?.selected_add_ons ||
+        null
+
+      const materialStr =
+        t.required_material ||
+        matchedDj?.material ||
+        matchedInvItem?.material ||
+        matchedInvItem?.material_spec ||
+        'Star Flex (320 GSM)'
 
       if (!jobMap.has(groupKey)) {
         const title =
@@ -434,17 +679,19 @@ export default function AdvancedProductionPage() {
           salesOrderId: (t as any).sales_order_id,
           title,
           productName: t.product_name || title,
+          serviceName: serviceNameStr,
           customerName: t.customer_name || 'Direct Client',
           customerPhone: t.customer_phone,
           priority: t.priority,
           deadline: t.job_deadline,
-          dimensions:
-            t.width && t.height
-              ? `${t.width} × ${t.height} ${t.dimension_unit || t.unit || 'in'}`
-              : null,
+          dimensions: dimensionsStr,
           quantity: t.quantity || 1,
           unit: t.unit || 'pcs',
-          material: t.required_material,
+          material: materialStr,
+          finishing: finishingStr,
+          selectedFinishing: selectedFinishingArr,
+          addOns: addOnsStr,
+          selectedAddOns: selectedAddOnsArr,
           instructions: t.description || t.notes,
           status: t.status,
           tasks: [t],
@@ -475,6 +722,20 @@ export default function AdvancedProductionPage() {
           existing.invoiceNumber = t.invoice_number
           existing.invoiceId = t.invoice_id
         }
+        if (!existing.serviceName && serviceNameStr) {
+          existing.serviceName = serviceNameStr
+        }
+        if ((!existing.dimensions || existing.dimensions === 'Standard Spec') && dimensionsStr) {
+          existing.dimensions = dimensionsStr
+        }
+        if (!existing.finishing && finishingStr) {
+          existing.finishing = finishingStr
+          existing.selectedFinishing = selectedFinishingArr
+        }
+        if (!existing.addOns && addOnsStr) {
+          existing.addOns = addOnsStr
+          existing.selectedAddOns = selectedAddOnsArr
+        }
       }
     }
 
@@ -491,15 +752,18 @@ export default function AdvancedProductionPage() {
 
       // Check if print is done and finishing is active/queued
       const hasPrintDone = job.tasks.some(
-        (t) => t.department === 'printing' && t.status === 'completed'
+        (t) => (t.department === 'printing' || t.task_type === 'printing') && t.status === 'completed'
+      )
+      const hasFinishingTask = job.tasks.some(
+        (t) => t.department === 'finishing' || t.task_type === 'finishing'
       )
       const hasFinishingPending = job.tasks.some(
-        (t) => t.department === 'finishing' && t.status !== 'completed'
+        (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
       )
 
       let overallStatus: any = 'queued'
       if (allCompleted) {
-        overallStatus = 'completed'
+        overallStatus = hasFinishingTask ? 'completed' : 'ready_delivery'
       } else if (runningTask) {
         overallStatus = 'in_progress'
       } else if (pausedTask) {
@@ -509,7 +773,11 @@ export default function AdvancedProductionPage() {
       } else if (reworkTask) {
         overallStatus = 'rework'
       } else if (hasPrintDone && hasFinishingPending) {
+        // After printing complete (if finishing available) -> sent to finishing
         overallStatus = 'finishing'
+      } else if (hasPrintDone && !hasFinishingTask) {
+        // After printing complete (if finishing not available) -> sent to Delivery and Dispatch
+        overallStatus = 'ready_delivery'
       } else if (scheduledTask) {
         overallStatus = 'scheduled'
       }
@@ -549,11 +817,12 @@ export default function AdvancedProductionPage() {
       if (activeTab === 'finishing') {
         return (
           job.status === 'finishing' ||
-          job.activeTask?.department === 'finishing'
+          job.activeTask?.department === 'finishing' ||
+          job.activeTask?.task_type === 'finishing'
         )
       }
       if (activeTab === 'completed') {
-        return job.status === 'completed'
+        return job.status === 'completed' || job.status === 'ready_delivery'
       }
       return true
     })
@@ -598,11 +867,15 @@ export default function AdvancedProductionPage() {
     let completed = 0
 
     unifiedJobs.forEach((j) => {
-      if (j.status === 'completed') {
+      if (j.status === 'completed' || j.status === 'ready_delivery') {
         completed++
       } else if (j.status === 'in_progress' || j.status === 'paused') {
         running++
-      } else if (j.status === 'finishing' || j.activeTask?.department === 'finishing') {
+      } else if (
+        j.status === 'finishing' ||
+        j.activeTask?.department === 'finishing' ||
+        j.activeTask?.task_type === 'finishing'
+      ) {
         finishing++
       } else {
         queued++
@@ -616,7 +889,7 @@ export default function AdvancedProductionPage() {
   const kpiMetrics = useMemo(() => {
     const base = ProductionService.calculateProductionKpis(tasks, machineQueues)
     const finishingCount = tasks.filter(
-      (t) => t.department === 'finishing' && t.status !== 'completed'
+      (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
     ).length
     return {
       ...base,
@@ -629,8 +902,11 @@ export default function AdvancedProductionPage() {
     try {
       const res = await startProductionTaskAction(task.id, false, undefined, task)
       if (res.success) {
+        const isPrint = task.department === 'printing' || task.task_type === 'printing'
         showNotification(
-          isBn ? `কাজ শুরু হয়েছে: ${task.task_name}` : `Started task: ${task.task_name}`,
+          isBn
+            ? `${isPrint ? 'প্রিন্ট' : 'কাজ'} শুরু হয়েছে: ${task.task_name}`
+            : `Started ${isPrint ? 'printing' : 'task'}: ${task.task_name}`,
           'success'
         )
         loadData(true)
@@ -690,12 +966,23 @@ export default function AdvancedProductionPage() {
         completeTaskTarget || undefined
       )
       if (res.success) {
-        showNotification(
-          isBn
-            ? `টাস্ক সম্পন্ন হয়েছে! কাঁচামাল স্টক থেকে কর্তন করা হয়েছে।`
-            : `Task completed! Material deducted & workflow advanced.`,
-          'success'
-        )
+        const nextTask = res.data?.nextReadyTask
+        if (nextTask && (nextTask.department === 'finishing' || nextTask.task_type === 'finishing')) {
+          showNotification(
+            isBn
+              ? `প্রিন্ট সম্পন্ন! কাজটি সফলভাবে ফিনিশিং বিভাগে প্রেরিত হয়েছে (Sent to Finishing)।`
+              : `Printing completed! Job sent to Finishing Department.`,
+            'success'
+          )
+        } else {
+          showNotification(
+            isBn
+              ? `প্রিন্ট সম্পন্ন! ফিনিশিং প্রয়োজন না থাকায় সরাসরি ডেলিভারি ও ডিসপ্যাচে প্রেরিত হয়েছে (Sent to Delivery & Dispatch)।`
+              : `Printing completed! Sent directly to Delivery and Dispatch.`,
+            'success'
+          )
+        }
+        setCompleteTaskTarget(null)
         loadData(true)
       } else {
         showNotification(`Error: ${res.error}`, 'error')

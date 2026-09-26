@@ -106,16 +106,17 @@ export function CompleteTaskModal({
   useEffect(() => {
     if (!task) return
 
-    setGoodQty(task.quantity || 1)
-    setHasScrap(false)
-    setScrapQty(0)
-    setDefectReason('')
-    setScrapNotes('')
-    setNotes('')
+    const initScrap = Boolean(task.rejected_quantity && task.rejected_quantity > 0)
+    setGoodQty(task.good_quantity ?? (task.quantity ? Math.max(1, task.quantity - (task.rejected_quantity || 0)) : 1))
+    setHasScrap(initScrap)
+    setScrapQty(task.rejected_quantity || 0)
+    setDefectReason((task.defect_reason as DefectReasonCode) || (initScrap ? 'banding' : ''))
+    setScrapNotes(task.scrap_notes || '')
+    setNotes(task.notes || '')
     setOrientation('normal')
     setBleedInches(3)
-    setScrapWastageLengthFt(0)
-    setScrapWastageReason('banding')
+    setScrapWastageLengthFt(task.rejected_quantity || 0)
+    setScrapWastageReason((task.defect_reason as string) || 'banding')
     setRequestRollError(null)
     setRequestRollSuccess(null)
 
