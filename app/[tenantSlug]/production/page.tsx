@@ -1151,102 +1151,61 @@ export default function AdvancedProductionPage() {
     <FeatureGate feature="production">
       <div className="space-y-4 pb-16 max-w-7xl mx-auto">
         {/* =========================================================================
-            1. HEADER BANNER (Matching Quotation & Billing / Design Studio UI)
+            1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
            ========================================================================= */}
-        <div className="bg-gradient-to-br from-white via-slate-50/50 to-blue-50/30 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-800/40 p-5 sm:p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs relative overflow-hidden">
-          {/* Decorative ambient blur orbs */}
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute bottom-0 left-1/3 -mb-10 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
-
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2.5">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-indigo-700 text-white flex items-center justify-center shadow-sm shadow-blue-500/20">
-                  <Printer className="h-5 w-5" />
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <span>
-                      {isBn
-                        ? 'প্রোডাকশন প্ল্যানিং ও শপ ফ্লোর টার্মিনাল'
-                        : 'Production Planning & Shop Floor Terminal'}
-                    </span>
-                    <Badge className="bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20 text-2xs font-bold py-0.5">
-                      Shop Floor Hub
-                    </Badge>
-                  </h1>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {isBn
-                      ? 'টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফিনিশিং ফেব্রিকেশন এবং অপারেটর ফ্লোর এক্সিকিউশন'
-                      : 'Live machine dispatching, multi-stage task progression, finishing floor, and shop floor terminal execution.'}
-                  </p>
-                </div>
-              </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/25 shrink-0">
+              <Printer className="w-6 h-6 stroke-[2.2]" />
             </div>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {isBn ? 'প্রোডাকশন প্ল্যানিং ও প্রিন্টিং ফ্লোর' : 'Printing Floor & Production'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                {isBn
+                  ? 'টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফ্লোর এক্সিকিউশন ও অপারেটর ট্র্যাকিং।'
+                  : 'Live machine dispatching, multi-stage task progression, shop floor execution, and operator tracking.'}
+              </p>
+            </div>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Link href={getTenantNavHref('/trash?tab=production', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-                >
-                  <Trash2 className="h-3.5 w-3.5 text-slate-500" />
-                  <span className="hidden sm:inline">Trash Bin</span>
-                </Button>
-              </Link>
-
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-                className="border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold shadow-xs h-9 gap-1.5 cursor-pointer text-slate-600 dark:text-slate-300 rounded-xl"
-                title="Refresh Production Jobs"
+                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
               >
-                <RefreshCw
-                  className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`}
-                />
-                <span className="hidden sm:inline">Refresh</span>
+                <Cpu className="h-4 w-4 text-blue-600" />
+                <span>{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
               </Button>
+            </Link>
 
-              <Link href={getTenantNavHref('/finishing', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs font-semibold h-9 px-3 gap-1.5 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer"
-                >
-                  <Scissors className="h-3.5 w-3.5 text-indigo-600" />
-                  <span className="hidden sm:inline">{isBn ? 'ফিনিশিং ফ্লোর' : 'Finishing Floor'}</span>
-                </Button>
-              </Link>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+              title="Refresh Production Jobs"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
 
-              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-xs font-semibold h-9 px-3 gap-1.5 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer"
-                >
-                  <Cpu className="h-3.5 w-3.5 text-blue-600" />
-                  <span className="hidden sm:inline">{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
-                </Button>
-              </Link>
-
-              {/* Primary Action Button: Work Order (Opens WorkOrderModal, identical to Commercial Orders Hub & Design Studio) */}
-              <Button
-                size="sm"
-                onClick={() => setIsWorkOrderModalOpen(true)}
-                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white text-xs font-bold shadow-sm shadow-blue-500/20 h-9 px-4 gap-1.5 cursor-pointer rounded-xl transition-transform active:scale-[0.98]"
-              >
-                <Plus className="h-4 w-4" />
-                <span>{tBilingual('Work Order', 'ওয়ার্ক অর্ডার')}</span>
-              </Button>
-            </div>
+            <Button
+              onClick={() => setIsWorkOrderModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>{tBilingual('New Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
+            </Button>
           </div>
         </div>
 
         {/* =========================================================================
-            2. TOP METRICS KPI BAR (Modernized glassmorphism cards)
+            2. TOP METRICS KPI BAR (Modernized matching DesignMetricsBar)
            ========================================================================= */}
         <ProductionKpiBar
           metrics={kpiMetrics}
@@ -1262,11 +1221,10 @@ export default function AdvancedProductionPage() {
         />
 
         {/* =========================================================================
-            3. PRACTICAL PRESS / SHOP FLOOR TABS (Matching Design Studio Tabs)
+            3. PRACTICAL PRESS / SHOP FLOOR TABS (Pill row matching Design Panel)
            ========================================================================= */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
+        <div className="flex flex-wrap items-center gap-2">
           {tabsConfig.map((t) => {
-            const Icon = t.icon
             const isActive = activeTab === t.id
             return (
               <button
@@ -1276,25 +1234,18 @@ export default function AdvancedProductionPage() {
                   setActiveTab(t.id)
                   setSelectedKpiFilter('all')
                 }}
-                className={`p-2.5 rounded-xl text-left transition-all flex items-center justify-between cursor-pointer ${
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
                   isActive
-                    ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs font-bold border border-slate-200/80 dark:border-slate-700/80'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50'
+                    ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                 }`}
               >
-                <div className="flex items-center gap-2 truncate">
-                  <Icon
-                    className={`h-4 w-4 shrink-0 ${
-                      isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'
-                    }`}
-                  />
-                  <span className="text-xs truncate font-semibold">{t.label}</span>
-                </div>
+                <span>{t.label}</span>
                 <span
-                  className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
+                  className={`text-2xs px-2 py-0.5 rounded-full font-bold font-mono ${
                     isActive
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                      ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                   }`}
                 >
                   {t.count}

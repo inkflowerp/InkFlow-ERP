@@ -4,13 +4,12 @@ import React from 'react'
 import {
   Layers,
   Sparkles,
+  Edit3,
   Printer,
   Truck,
   CheckCircle2,
-  AlertTriangle,
-  BadgePercent,
-  Wallet,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
 import type { OrderStage } from './types'
 
@@ -44,123 +43,86 @@ export const OrdersMetricsBar = React.memo(function OrdersMetricsBar({
 
   const cards = [
     {
-      id: 'all',
-      type: 'stage' as const,
-      title: tBilingual('Total Orders', 'মোট অর্ডার'),
-      subtitle: tBilingual('All Active', 'সকল অর্ডার'),
+      id: 'all' as const,
+      label: tBilingual('Total Orders', 'মোট অর্ডার'),
       count: metrics.total,
       icon: Layers,
-      color: 'text-slate-700 dark:text-slate-200',
-      bgColor: 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800',
-      activeBorder: 'border-slate-800 dark:border-slate-200 ring-2 ring-slate-400/30',
+      iconBg: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
     },
     {
-      id: 'new_orders',
-      type: 'stage' as const,
-      title: tBilingual('New Orders', 'নতুন অর্ডার'),
-      subtitle: tBilingual('New Intake', 'ইনটেক কিউ'),
+      id: 'new_orders' as const,
+      label: tBilingual('New Orders', 'নতুন অর্ডার'),
       count: metrics.newOrders,
       icon: Sparkles,
-      color: 'text-amber-600 dark:text-amber-400',
-      bgColor: 'bg-amber-50/50 dark:bg-amber-950/20 border-amber-200 dark:border-amber-900/50',
-      activeBorder: 'border-amber-500 ring-2 ring-amber-400/30',
+      iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400',
     },
     {
-      id: 'in_design',
-      type: 'stage' as const,
-      title: tBilingual('In Design', 'ডিজাইন ও চেক'),
-      subtitle: tBilingual('Studio Proof', 'প্রি-প্রেস'),
+      id: 'in_design' as const,
+      label: tBilingual('In Design', 'ডিজাইন ও চেক'),
       count: metrics.inDesign,
-      icon: Sparkles,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50',
-      activeBorder: 'border-blue-500 ring-2 ring-blue-400/30',
+      icon: Edit3,
+      iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400',
     },
     {
-      id: 'in_production',
-      type: 'stage' as const,
-      title: tBilingual('In Production', 'প্রেসে প্রোডাকশন'),
-      subtitle: tBilingual('Machine Floor', 'মেশিন ফ্লোর'),
+      id: 'in_production' as const,
+      label: tBilingual('In Production', 'প্রেসে প্রোডাকশন'),
       count: metrics.inProduction,
       icon: Printer,
-      color: 'text-indigo-600 dark:text-indigo-400',
-      bgColor: 'bg-indigo-50/50 dark:bg-indigo-950/20 border-indigo-200 dark:border-indigo-900/50',
-      activeBorder: 'border-indigo-500 ring-2 ring-indigo-400/30',
+      iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400',
     },
     {
-      id: 'ready_delivery',
-      type: 'stage' as const,
-      title: tBilingual('Ready Delivery', 'ডেলিভারি রেডি'),
-      subtitle: tBilingual('Ready for Pickup', 'কাউন্টার প্রস্তুত'),
+      id: 'ready_delivery' as const,
+      label: tBilingual('Ready Delivery', 'ডেলিভারি রেডি'),
       count: metrics.readyDelivery,
       icon: Truck,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-50/50 dark:bg-purple-950/20 border-purple-200 dark:border-purple-900/50',
-      activeBorder: 'border-purple-500 ring-2 ring-purple-400/30',
+      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
     },
     {
-      id: 'due_today',
-      type: 'filter' as const,
-      title: tBilingual('Due Today', 'আজকের ডেলিভারি'),
-      subtitle: tBilingual('Delivery Target', 'টার্গেট ডেলিভারি'),
-      count: metrics.dueToday,
+      id: 'delivered' as const,
+      label: tBilingual('Delivered', 'ডেলিভারি সম্পন্ন'),
+      count: metrics.delivered,
       icon: CheckCircle2,
-      color: 'text-rose-600 dark:text-rose-400',
-      bgColor: 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/50',
-      activeBorder: 'border-rose-500 ring-2 ring-rose-400/30',
-    },
-    {
-      id: 'unpaid_due',
-      type: 'filter' as const,
-      title: tBilingual('Due Receivable', 'মোট বকেয়া বাকি'),
-      subtitle: tBilingual('Pending Balance', 'বকেয়া ব্যালেন্স'),
-      count: `৳${metrics.totalDueAmount.toLocaleString()}`,
-      isCurrency: true,
-      icon: Wallet,
-      color: 'text-emerald-700 dark:text-emerald-400',
-      bgColor: 'bg-emerald-50/50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50',
-      activeBorder: 'border-emerald-500 ring-2 ring-emerald-400/30',
+      iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
     },
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       {cards.map((c) => {
         const Icon = c.icon
-        const isActive =
-          c.type === 'stage'
-            ? activeStage === c.id && activeQuickFilter === 'all'
-            : activeQuickFilter === c.id
+        const isActive = activeStage === c.id && activeQuickFilter === 'all'
 
         return (
           <button
             key={c.id}
             type="button"
             onClick={() => {
-              if (c.type === 'stage') {
-                onSelectStage(c.id as OrderStage)
-                onSelectQuickFilter('all')
-              } else {
-                onSelectQuickFilter(c.id)
-              }
+              onSelectStage(c.id)
+              onSelectQuickFilter('all')
             }}
-            className={`p-3 rounded-xl border text-left transition-all duration-200 hover:shadow-sm ${
-              c.bgColor
-            } ${isActive ? c.activeBorder : ''}`}
+            className={cn(
+              'bg-white dark:bg-slate-900 border rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-150 flex items-center gap-3.5 shadow-2xs hover:shadow-xs cursor-pointer',
+              isActive
+                ? 'border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
+                : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
+            )}
           >
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400 truncate">
-                {c.subtitle}
-              </span>
-              <Icon className={`h-4 w-4 shrink-0 ${c.color}`} />
+            <div
+              className={cn(
+                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform',
+                c.iconBg
+              )}
+            >
+              <Icon className="w-5 h-5 stroke-[2.2]" />
             </div>
-            <div className="flex items-baseline justify-between">
-              <span className={`font-black tracking-tight text-slate-900 dark:text-white font-mono ${c.isCurrency ? 'text-base' : 'text-xl'}`}>
+
+            <div className="min-w-0">
+              <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white leading-none">
                 {c.count}
-              </span>
-              <span className="text-2xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[85px]">
-                {c.title}
-              </span>
+              </div>
+              <div className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
+                {c.label}
+              </div>
             </div>
           </button>
         )

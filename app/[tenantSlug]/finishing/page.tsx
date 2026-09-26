@@ -59,6 +59,7 @@ import {
 } from '@/actions/production-planning.actions'
 import { HoldTaskModal } from '@/components/production/hold-task-modal'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
+import { cn } from '@/lib/utils'
 
 // Station Categories
 type StationCategory =
@@ -444,45 +445,72 @@ export default function FinishingAndFabricationPage() {
   return (
     <FeatureGate feature="production">
       <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
-        {/* Header */}
-        <PageHeader
-          titleEn="Finishing & Fabrication Floor"
-          titleBn="ফিনিশিং ও সাইনেজ ফেব্রিকেশন ফ্লোর"
-          descriptionEn="Post-press operations, binding, acrylic 3D fabrication, neon wiring, electrical testing, and QC inspection."
-          descriptionBn="পোস্ট-প্রেস ফিনিশিং, বাইন্ডিং, এক্রিলিক ৩ডি ও নিয়ন ফেব্রিকেশন, ইলেকট্রিক্যাল টেস্ট ও কিউসি ইন্সপেকশন।"
-          icon={Scissors}
-          iconColor="text-indigo-600"
-          actions={
-            <div className="flex items-center gap-2 flex-wrap">
-              <Link href={getTenantNavHref('/production', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800">
-                  <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
-                  {tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}
-                </Button>
-              </Link>
-              <Link href={getTenantNavHref('/operator', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5">
-                  <Printer className="h-3.5 w-3.5 text-blue-600" />
-                  {tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}
-                </Button>
-              </Link>
-              <Link href={getTenantNavHref('/delivery', pathname, slug)}>
-                <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-emerald-200 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-300">
-                  <Truck className="h-3.5 w-3.5 text-emerald-600" />
-                  {tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}
-                </Button>
-              </Link>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => loadData(false)}
-                className="text-xs h-9 px-2 text-slate-500 hover:text-slate-900 dark:hover:text-slate-100"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              </Button>
+        {/* =========================================================================
+            1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
+           ========================================================================= */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
+              <Scissors className="w-6 h-6 stroke-[2.2]" />
             </div>
-          }
-        />
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+                {tBilingual('Finishing & Fabrication Floor', 'ফিনিশিং ও সাইনেজ ফেব্রিকেশন')}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                {tBilingual(
+                  'Post-press binding, die-cutting, acrylic 3D fabrication, neon wiring, and final QC inspection.',
+                  'পোস্ট-প্রেস ফিনিশিং, বাইন্ডিং, এক্রিলিক ৩ডি ও নিয়ন ফেব্রিকেশন এবং কিউসি ইন্সপেকশন।'
+                )}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <Link href={getTenantNavHref('/production', pathname, slug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+              >
+                <LayoutGrid className="h-4 w-4 text-indigo-600" />
+                <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
+              </Button>
+            </Link>
+
+            <Link href={getTenantNavHref('/delivery', pathname, slug)}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl cursor-pointer shadow-2xs"
+              >
+                <Truck className="h-4 w-4 text-emerald-600" />
+                <span>{tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}</span>
+              </Button>
+            </Link>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadData(false)}
+              disabled={loading}
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+              title="Refresh Tasks"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
+
+            <Link href={getTenantNavHref('/operator', pathname, slug)}>
+              <Button
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
+              >
+                <Printer className="w-4 h-4 stroke-[2.5]" />
+                <span>{tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}</span>
+              </Button>
+            </Link>
+          </div>
+        </div>
 
         {/* Toast Notification */}
         {notification && (
@@ -502,102 +530,182 @@ export default function FinishingAndFabricationPage() {
           </div>
         )}
 
-        {/* TOP STATION KPI METRICS BAR */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <Card className="border border-indigo-100 dark:border-indigo-950/50 bg-indigo-50/40 dark:bg-indigo-950/20 shadow-xs">
-            <CardContent className="p-3.5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-indigo-600/10 dark:bg-indigo-400/10 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shrink-0">
-                <Scissors className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-2xs font-bold text-indigo-900/70 dark:text-indigo-300/70 uppercase truncate">
-                  {tBilingual('Digital Finishing', 'ডিজিটাল ফিনিশিং')}
+        {/* =========================================================================
+            2. TOP STATION METRICS KPI BAR (6 Cards matching DesignMetricsBar)
+           ========================================================================= */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {[
+            {
+              id: 'all',
+              label: tBilingual('Total Tasks', 'মোট কাজ'),
+              count: tasks.length,
+              icon: Layers,
+              iconBg: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
+              active: selectedStation === 'all' && selectedStatus === 'all',
+              onClick: () => {
+                setSelectedStation('all')
+                setSelectedStatus('all')
+              },
+            },
+            {
+              id: 'digital_finishing',
+              label: tBilingual('Digital Wide', 'ডিজিটাল ফিনিশিং'),
+              count: stationMetrics.digitalCount,
+              icon: Scissors,
+              iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400',
+              active: selectedStation === 'digital_finishing',
+              onClick: () => {
+                setSelectedStation('digital_finishing')
+                setSelectedStatus('all')
+              },
+            },
+            {
+              id: 'offset_binding',
+              label: tBilingual('Offset & Binding', 'অফসেট ও বাইন্ডিং'),
+              count: stationMetrics.offsetCount,
+              icon: Layers,
+              iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400',
+              active: selectedStation === 'offset_binding',
+              onClick: () => {
+                setSelectedStation('offset_binding')
+                setSelectedStatus('all')
+              },
+            },
+            {
+              id: 'signage_fabrication',
+              label: tBilingual('Signage & Acrylic', 'সাইনেজ ও এক্রিলিক'),
+              count: stationMetrics.signageCount,
+              icon: Wrench,
+              iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-950/80 dark:text-amber-400',
+              active: selectedStation === 'signage_fabrication',
+              onClick: () => {
+                setSelectedStation('signage_fabrication')
+                setSelectedStatus('all')
+              },
+            },
+            {
+              id: 'in_progress',
+              label: tBilingual('Active on Bench', 'বেঞ্চে চলমান'),
+              count: stationMetrics.inProgressCount,
+              icon: Play,
+              iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
+              active: selectedStatus === 'in_progress',
+              onClick: () => {
+                setSelectedStatus('in_progress')
+              },
+            },
+            {
+              id: 'completed',
+              label: tBilingual('QC Passed Today', 'আজ সম্পন্ন'),
+              count: stationMetrics.qcReadyCount,
+              icon: CheckCircle2,
+              iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
+              active: selectedStatus === 'completed',
+              onClick: () => {
+                setSelectedStatus('completed')
+              },
+            },
+          ].map((card) => {
+            const Icon = card.icon
+            return (
+              <button
+                key={card.id}
+                type="button"
+                onClick={card.onClick}
+                className={cn(
+                  'bg-white dark:bg-slate-900 border rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-150 flex items-center gap-3.5 shadow-2xs hover:shadow-xs cursor-pointer',
+                  card.active
+                    ? 'border-indigo-500/80 ring-2 ring-indigo-500/20 shadow-xs'
+                    : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
+                )}
+              >
+                <div
+                  className={cn(
+                    'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform',
+                    card.iconBg
+                  )}
+                >
+                  <Icon className="w-5 h-5 stroke-[2.2]" />
                 </div>
-                <div className="text-xl font-extrabold text-indigo-900 dark:text-indigo-100">
-                  {stationMetrics.digitalCount} <span className="text-xs font-normal text-slate-500">jobs</span>
+                <div className="min-w-0">
+                  <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white leading-none">
+                    {card.count}
+                  </div>
+                  <div className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
+                    {card.label}
+                  </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-blue-100 dark:border-blue-950/50 bg-blue-50/40 dark:bg-blue-950/20 shadow-xs">
-            <CardContent className="p-3.5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-blue-600/10 dark:bg-blue-400/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
-                <Layers className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-2xs font-bold text-blue-900/70 dark:text-blue-300/70 uppercase truncate">
-                  {tBilingual('Offset Binding', 'অফসেট ও বাইন্ডিং')}
-                </div>
-                <div className="text-xl font-extrabold text-blue-900 dark:text-blue-100">
-                  {stationMetrics.offsetCount} <span className="text-xs font-normal text-slate-500">jobs</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-amber-100 dark:border-amber-950/50 bg-amber-50/40 dark:bg-amber-950/20 shadow-xs">
-            <CardContent className="p-3.5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-amber-600/10 dark:bg-amber-400/10 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
-                <Wrench className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-2xs font-bold text-amber-900/70 dark:text-amber-300/70 uppercase truncate">
-                  {tBilingual('Signage & Acrylic', 'সাইনেজ ও এক্রিলিক')}
-                </div>
-                <div className="text-xl font-extrabold text-amber-900 dark:text-amber-100">
-                  {stationMetrics.signageCount} <span className="text-xs font-normal text-slate-500">jobs</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border border-emerald-100 dark:border-emerald-950/50 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
-            <CardContent className="p-3.5 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-emerald-600/10 dark:bg-emerald-400/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="text-2xs font-bold text-emerald-900/70 dark:text-emerald-300/70 uppercase truncate">
-                  {tBilingual('Active On Bench', 'বেঞ্চে চলমান')}
-                </div>
-                <div className="text-xl font-extrabold text-emerald-900 dark:text-emerald-100">
-                  {stationMetrics.inProgressCount} <span className="text-xs font-normal text-slate-500">active</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </button>
+            )
+          })}
         </div>
 
-        {/* STATION CATEGORIES TABS & SEARCH BAR */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl overflow-x-auto">
-            {STATION_CATEGORIES.map((cat) => {
-              const Icon = cat.icon
-              const isSelected = selectedStation === cat.id
-              return (
-                <button
-                  key={cat.id}
-                  onClick={() => setSelectedStation(cat.id)}
-                  className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+        {/* =========================================================================
+            3. STATION CATEGORIES TABS (Pills matching Design Panel)
+           ========================================================================= */}
+        <div className="flex flex-wrap items-center gap-2">
+          {STATION_CATEGORIES.map((cat) => {
+            const Icon = cat.icon
+            const isSelected = selectedStation === cat.id
+            const count =
+              cat.id === 'all'
+                ? tasks.length
+                : cat.id === 'digital_finishing'
+                ? stationMetrics.digitalCount
+                : cat.id === 'offset_binding'
+                ? stationMetrics.offsetCount
+                : cat.id === 'signage_fabrication'
+                ? stationMetrics.signageCount
+                : stationMetrics.qcReadyCount
+
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setSelectedStation(cat.id)}
+                className={cn(
+                  'px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs',
+                  isSelected
+                    ? 'bg-indigo-600 dark:bg-indigo-600 text-white shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+                )}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{tBilingual(cat.labelEn, cat.labelBn)}</span>
+                <span
+                  className={cn(
+                    'text-2xs px-2 py-0.5 rounded-full font-bold font-mono',
                     isSelected
-                      ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                  }`}
+                      ? 'bg-white text-indigo-600 dark:bg-white dark:text-indigo-600'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  )}
                 >
-                  <Icon className="h-3.5 w-3.5" />
-                  <span>{tBilingual(cat.labelEn, cat.labelBn)}</span>
-                </button>
-              )
-            })}
+                  {count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* =========================================================================
+            4. UNIFIED SEARCH & FILTER TOOLBAR (Matching DesignFilterToolbar)
+           ========================================================================= */}
+        <div className="bg-white dark:bg-slate-900 px-3.5 py-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+          <div className="relative w-full md:flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={tBilingual('Search Job #, task, customer, product, material...', 'জব নম্বর, টাস্ক, কাস্টমার খুঁজুন...')}
+              className="pl-9 text-xs bg-transparent border-0 focus-visible:ring-0 shadow-none h-8 text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+            />
           </div>
 
-          {/* Search & Status Filter */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5 w-full md:w-auto justify-end flex-wrap">
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="text-xs font-semibold rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-800 shadow-xs dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
             >
               <option value="all">⚡ All Statuses</option>
               <option value="ready">Ready for Floor</option>
@@ -605,16 +713,6 @@ export default function FinishingAndFabricationPage() {
               <option value="on_hold">On Hold</option>
               <option value="completed">Completed Today</option>
             </select>
-
-            <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={tBilingual('Search Job #, task, customer...', 'জব নম্বর, টাস্ক খুঁজুন...')}
-                className="pl-8 text-xs h-9 bg-white dark:bg-slate-900"
-              />
-            </div>
           </div>
         </div>
 
@@ -629,19 +727,19 @@ export default function FinishingAndFabricationPage() {
             const taskConsumables = consumablesLog[task.id] || { eyelets: 0, glueTubes: 0, ledModules: 0, powerUnits: 0 }
 
             return (
-              <Card
+              <div
                 key={task.id}
-                className={`border transition-all ${
+                className={cn(
+                  'rounded-2xl border border-l-4 transition-all duration-200 p-4 space-y-3 shadow-2xs hover:shadow-xs overflow-hidden',
                   isRunning
-                    ? 'border-indigo-300 bg-indigo-50/20 dark:border-indigo-800 dark:bg-indigo-950/20 shadow-xs'
+                    ? 'border-indigo-500/80 border-l-indigo-600 bg-white dark:bg-slate-900 ring-2 ring-indigo-500/10'
                     : isCompleted
-                    ? 'border-emerald-200 bg-emerald-50/10 dark:border-emerald-900/40'
+                    ? 'border-emerald-500/80 border-l-emerald-600 bg-emerald-50/10 dark:bg-emerald-950/20'
                     : isOnHold
-                    ? 'border-amber-200 bg-amber-50/20 dark:border-amber-900/40'
-                    : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300'
-                }`}
+                    ? 'border-amber-500/80 border-l-amber-600 bg-amber-50/20 dark:bg-amber-950/20'
+                    : 'border-slate-200/80 dark:border-slate-800/80 border-l-slate-400 dark:border-l-slate-600 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                )}
               >
-                <CardContent className="p-4 space-y-3">
                   {/* Card Header Row */}
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1 min-w-0">
@@ -830,8 +928,7 @@ export default function FinishingAndFabricationPage() {
                       )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             )
           })}
 

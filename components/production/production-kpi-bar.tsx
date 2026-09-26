@@ -3,16 +3,13 @@
 import React from 'react'
 import {
   Printer,
-  Flame,
   Clock,
-  AlertTriangle,
   CheckCircle2,
-  Cpu,
   ShieldAlert,
   Layers,
   Scissors,
-  Play,
 } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { useI18n } from '@/i18n/context'
 import { ProductionKpiMetrics } from '@/services/production.service'
 
@@ -22,7 +19,7 @@ export interface ProductionKpiBarProps {
   onSelectFilter: (filterId: string) => void
 }
 
-export function ProductionKpiBar({
+export const ProductionKpiBar = React.memo(function ProductionKpiBar({
   metrics,
   selectedFilter,
   onSelectFilter,
@@ -30,128 +27,84 @@ export function ProductionKpiBar({
   const { locale, tBilingual } = useI18n()
   const isBn = locale === 'bn'
 
-  const kpis = [
+  const cards = [
     {
       id: 'all',
-      titleEn: 'Total Jobs',
-      titleBn: 'মোট কাজ',
+      label: isBn ? 'মোট কাজ' : 'Total Jobs',
       count: metrics.totalTasks,
       icon: Layers,
-      color: 'text-slate-700 dark:text-slate-200',
-      iconBg: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300',
-      activeBorder: 'border-slate-800 dark:border-slate-200 ring-2 ring-slate-800/10',
-      bgColor: 'bg-white/90 dark:bg-slate-900/90',
+      iconBg: 'bg-slate-50 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
     },
     {
       id: 'running',
-      titleEn: 'Running Now',
-      titleBn: 'মেশিনে রানিং',
+      label: isBn ? 'মেশিনে রানিং' : 'Running Now',
       count: metrics.runningNow,
-      icon: Play,
-      color: 'text-blue-600 dark:text-blue-400',
-      iconBg: 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400',
-      activeBorder: 'border-blue-500 ring-2 ring-blue-500/20',
-      bgColor: 'bg-gradient-to-br from-white via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/20',
-      badge: 'LIVE',
-      badgeColor: 'bg-blue-600 text-white',
+      icon: Printer,
+      iconBg: 'bg-blue-50 text-blue-600 dark:bg-blue-950/80 dark:text-blue-400',
     },
     {
       id: 'queued',
-      titleEn: 'Queued & Ready',
-      titleBn: 'মাউন্টিং প্রস্তুত',
+      label: isBn ? 'মাউন্টিং প্রস্তুত' : 'Queued & Ready',
       count: metrics.queuedReady,
       icon: Clock,
-      color: 'text-purple-600 dark:text-purple-400',
-      iconBg: 'bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400',
-      activeBorder: 'border-purple-500 ring-2 ring-purple-500/20',
-      bgColor: 'bg-gradient-to-br from-white via-white to-purple-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-purple-950/20',
+      iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
     },
     {
       id: 'finishing',
-      titleEn: 'Finishing & QC',
-      titleBn: 'ফিনিশিং ও কিউসি',
+      label: isBn ? 'ফিনিশিং ও কিউসি' : 'Finishing & QC',
       count: metrics.finishingCount ?? 0,
       icon: Scissors,
-      color: 'text-indigo-600 dark:text-indigo-400',
-      iconBg: 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400',
-      activeBorder: 'border-indigo-500 ring-2 ring-indigo-500/20',
-      bgColor: 'bg-gradient-to-br from-white via-white to-indigo-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/20',
+      iconBg: 'bg-indigo-50 text-indigo-600 dark:bg-indigo-950/80 dark:text-indigo-400',
     },
     {
       id: 'urgent',
-      titleEn: 'Rush / Urgent',
-      titleBn: 'জরুরি ডেলিভারি',
+      label: isBn ? 'জরুরি ডেলিভারি' : 'Rush / Urgent',
       count: metrics.urgentCount,
       icon: ShieldAlert,
-      color: 'text-rose-600 dark:text-rose-400',
-      iconBg: 'bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400',
-      activeBorder: 'border-rose-500 ring-2 ring-rose-500/20',
-      bgColor: 'bg-gradient-to-br from-white via-white to-rose-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-rose-950/20',
-      badge: metrics.urgentCount > 0 ? 'URGENT' : undefined,
-      badgeColor: 'bg-rose-600 text-white animate-pulse',
+      iconBg: 'bg-rose-50 text-rose-600 dark:bg-rose-950/80 dark:text-rose-400',
     },
     {
       id: 'completed',
-      titleEn: 'Completed Today',
-      titleBn: 'আজ সম্পন্ন',
+      label: isBn ? 'আজ সম্পন্ন' : 'Completed',
       count: metrics.completedToday,
       icon: CheckCircle2,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      iconBg: 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400',
-      activeBorder: 'border-emerald-500 ring-2 ring-emerald-500/20',
-      bgColor: 'bg-gradient-to-br from-white via-white to-emerald-50/30 dark:from-slate-900 dark:via-slate-900 dark:to-emerald-950/20',
+      iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
     },
   ]
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
-      {kpis.map((kpi) => {
-        const Icon = kpi.icon
-        const isSelected = selectedFilter === kpi.id
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {cards.map((card) => {
+        const Icon = card.icon
+        const isActive = selectedFilter === card.id
 
         return (
           <button
-            key={kpi.id}
+            key={card.id}
             type="button"
-            onClick={() => onSelectFilter(isSelected && kpi.id !== 'all' ? 'all' : kpi.id)}
-            className="text-left w-full focus:outline-hidden transition-transform active:scale-[0.98] cursor-pointer"
+            onClick={() => onSelectFilter(isActive && card.id !== 'all' ? 'all' : card.id)}
+            className={cn(
+              'bg-white dark:bg-slate-900 border rounded-2xl p-3.5 sm:p-4 text-left transition-all duration-150 flex items-center gap-3.5 shadow-2xs hover:shadow-xs cursor-pointer',
+              isActive
+                ? 'border-blue-500/80 ring-2 ring-blue-500/20 shadow-xs'
+                : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
+            )}
           >
             <div
-              className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 relative overflow-hidden backdrop-blur-md shadow-xs ${
-                isSelected
-                  ? `${kpi.activeBorder} shadow-sm bg-white dark:bg-slate-900`
-                  : 'border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700'
-              } ${kpi.bgColor}`}
-            >
-              {kpi.badge && (
-                <div className="absolute right-2.5 top-2.5">
-                  <span
-                    className={`text-2xs font-black px-1.5 py-0.5 rounded-full uppercase tracking-wider ${kpi.badgeColor}`}
-                  >
-                    {kpi.badge}
-                  </span>
-                </div>
+              className={cn(
+                'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform',
+                card.iconBg
               )}
+            >
+              <Icon className="w-5 h-5 stroke-[2.2]" />
+            </div>
 
-              <div className="flex items-center gap-2">
-                <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 ${kpi.iconBg}`}>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-                  {isBn ? kpi.titleBn : kpi.titleEn}
-                </span>
+            <div className="min-w-0">
+              <div className="text-xl sm:text-2xl font-bold font-mono tracking-tight text-slate-900 dark:text-white leading-none">
+                {card.count}
               </div>
-
-              <div className="mt-2 flex items-baseline justify-between">
-                <div className={`text-2xl sm:text-3xl font-black font-mono tracking-tight ${kpi.color}`}>
-                  {kpi.count}
-                </div>
-                {kpi.id === 'running' && (
-                  <span className="text-2xs font-mono font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-600 animate-ping" />
-                    Fleet
-                  </span>
-                )}
+              <div className="text-2xs sm:text-xs text-slate-500 dark:text-slate-400 font-medium mt-1 truncate">
+                {card.label}
               </div>
             </div>
           </button>
@@ -159,4 +112,4 @@ export function ProductionKpiBar({
       })}
     </div>
   )
-}
+})

@@ -66,10 +66,10 @@ export const OrderCard = React.memo(function OrderCard({
 
   return (
     <div
-      className={`rounded-xl border transition-all duration-200 overflow-hidden bg-white dark:bg-slate-900 ${
+      className={`rounded-2xl border border-l-4 transition-all duration-200 overflow-hidden bg-white dark:bg-slate-900 shadow-2xs hover:shadow-xs ${
         isUrgent
-          ? 'border-rose-300 dark:border-rose-900/60 shadow-sm ring-1 ring-rose-400/20'
-          : 'border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
+          ? 'border-rose-300 dark:border-rose-900/60 border-l-rose-600 shadow-xs ring-1 ring-rose-400/20'
+          : 'border-slate-200/80 dark:border-slate-800/80 border-l-indigo-600 hover:border-slate-300 dark:hover:border-slate-700'
       }`}
     >
       {/* Top Notification Strip */}

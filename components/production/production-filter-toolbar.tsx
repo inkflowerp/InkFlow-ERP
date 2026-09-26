@@ -80,7 +80,7 @@ export function ProductionFilterToolbar({
   ]
 
   return (
-    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-3 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs space-y-3">
+    <div className="bg-white dark:bg-slate-900 p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xs space-y-3">
       {/* Top Row: Search + Quick Chips + View Mode Switcher */}
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
         {/* Search Input */}
@@ -94,7 +94,7 @@ export function ProductionFilterToolbar({
                 ? 'জব নম্বর, ইনভয়েস #, অর্ডার #, কাস্টমার বা মেশিন খুঁজুন...'
                 : 'Search job #, invoice #, order #, client, or machine...'
             }
-            className="text-xs pl-9 pr-8 h-9 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800"
+            className="text-xs pl-9 pr-8 h-8 rounded-xl bg-slate-50/80 dark:bg-slate-950/60 border-slate-200/80 dark:border-slate-800 text-slate-800 dark:text-slate-200 placeholder:text-slate-400 shadow-none focus-visible:ring-0"
           />
           {search && (
             <button
@@ -198,10 +198,10 @@ export function ProductionFilterToolbar({
                     if (onSelectQuickFilter) onSelectQuickFilter(chip.id)
                   }
                 }}
-                className={`px-3 py-1.5 rounded-xl font-medium whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
+                className={`px-3.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs ${
                   isSelected
-                    ? 'bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 font-bold shadow-xs'
-                    : 'bg-slate-100/80 text-slate-600 hover:bg-slate-200 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:bg-slate-700'
+                    ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 font-bold shadow-xs'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
                 }`}
               >
                 <Icon className={`h-3.5 w-3.5 ${chip.color || ''}`} />
@@ -219,7 +219,7 @@ export function ProductionFilterToolbar({
           <select
             value={selectedDept}
             onChange={(e) => onSelectDept(e.target.value)}
-            className="text-xs h-8 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-2.5 font-medium shadow-xs focus:outline-hidden"
+            className="text-xs font-medium rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 h-8 text-slate-700 dark:text-slate-300 outline-none cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
           >
             {departments.map((dept) => (
               <option key={dept.id} value={dept.id}>

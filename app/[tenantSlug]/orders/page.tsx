@@ -830,25 +830,49 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Page Header */}
-      <PageHeader
-        titleEn="Commercial Orders & Job Hub"
-        titleBn="অর্ডার ও প্রোডাকশন হাব"
-        descriptionEn="End-to-end commercial order intake, payment gating, design proofing, production routing, and customer dispatch."
-        descriptionBn="প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো, ডিজাইন অনুমোদন ও কারখানা ডেলিভারি ব্যবস্থাপনা।"
-        icon={Briefcase}
-        iconColor="text-indigo-600 dark:text-indigo-400"
-        actions={
+      {/* =========================================================================
+          1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
+         ========================================================================= */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
+        <div className="flex items-center gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
+            <Briefcase className="w-6 h-6 stroke-[2.2]" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {tBilingual('Orders & Job Flow', 'অর্ডার ও জব ফ্লো হাব')}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+              {tBilingual(
+                'Track commercial sales orders, intake routing, job tickets, and delivery progress.',
+                'প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো ও কারখানা ডেলিভারি ব্যবস্থাপনা।'
+              )}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button
-            type="button"
-            onClick={() => setIsWorkOrderModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs h-9 shadow-md"
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+            title="Refresh Orders"
           >
-            <Plus className="h-4 w-4 mr-1.5" />
+            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </Button>
+
+          <Button
+            onClick={() => setIsWorkOrderModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
           </Button>
-        }
-      />
+        </div>
+      </div>
 
       {/* Top Metrics KPI Bar */}
       <OrdersMetricsBar
@@ -868,10 +892,9 @@ export default function OrdersPage() {
         }}
       />
 
-      {/* 6 Lifecycle Stage Tabs Navigation */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 bg-slate-100 dark:bg-slate-800/60 p-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+      {/* 6 Lifecycle Stage Tabs (Pill Row matching Design Panel) */}
+      <div className="flex flex-wrap items-center gap-2">
         {stagesConfig.map((s) => {
-          const Icon = s.icon
           const isActive = activeStage === s.id && filters.quickFilter === 'all'
           return (
             <button
@@ -881,21 +904,18 @@ export default function OrdersPage() {
                 setActiveStage(s.id)
                 setFilters((f) => ({ ...f, quickFilter: 'all' }))
               }}
-              className={`p-2.5 rounded-lg text-left transition-all flex items-center justify-between ${
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer shadow-2xs ${
                 isActive
-                  ? 'bg-white dark:bg-slate-900 text-indigo-950 dark:text-white shadow-sm font-bold border border-indigo-200 dark:border-indigo-800'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-blue-600 dark:bg-blue-600 text-white shadow-xs'
+                  : 'bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80'
               }`}
             >
-              <div className="flex items-center gap-1.5 truncate">
-                <Icon className={`h-4 w-4 shrink-0 ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`} />
-                <span className="text-xs truncate">{s.label}</span>
-              </div>
+              <span>{s.label}</span>
               <span
-                className={`text-2xs font-mono px-2 py-0.5 rounded-full font-bold ${
+                className={`text-2xs px-2 py-0.5 rounded-full font-bold font-mono ${
                   isActive
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                    ? 'bg-white text-blue-600 dark:bg-white dark:text-blue-600'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                 }`}
               >
                 {s.count}
