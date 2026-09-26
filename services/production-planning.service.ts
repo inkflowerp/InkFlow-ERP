@@ -488,7 +488,11 @@ export class ProductionPlanningService {
 
     // If machine is assigned, set machine status to in_use
     if (task.assigned_machine_id) {
-      await MachineryRepository.updateStatus(task.assigned_machine_id, companyId, 'in_use')
+      try {
+        await MachineryRepository.updateStatus(task.assigned_machine_id, companyId, 'in_use')
+      } catch (err: any) {
+        console.warn(`[ProductionPlanningService] Failed to set machine ${task.assigned_machine_id} to in_use:`, err?.message || err)
+      }
     }
 
     return await ProductionTaskRepository.updateTaskStatus(taskId, companyId, 'in_progress', extraUpdates)
@@ -679,12 +683,16 @@ export class ProductionPlanningService {
         }
       } catch (_) {}
 
-      const activeOnMachine = await ProductionTaskRepository.getTasks(companyId, {
-        assigned_machine_id: task.assigned_machine_id,
-        status: 'in_progress',
-      })
-      if (activeOnMachine.length === 0) {
-        await MachineryRepository.updateStatus(task.assigned_machine_id, companyId, 'available')
+      try {
+        const activeOnMachine = await ProductionTaskRepository.getTasks(companyId, {
+          assigned_machine_id: task.assigned_machine_id,
+          status: 'in_progress',
+        })
+        if (activeOnMachine.length === 0) {
+          await MachineryRepository.updateStatus(task.assigned_machine_id, companyId, 'available')
+        }
+      } catch (err: any) {
+        console.warn(`[ProductionPlanningService] Failed to set machine ${task.assigned_machine_id} to available:`, err?.message || err)
       }
     }
 

@@ -182,4 +182,48 @@ describe('Production Task Lookup and Resilient Lifecycle Tests', () => {
     assert.strictEqual(result.nextReadyTask.id, task2.id)
     assert.strictEqual(result.nextReadyTask.status, 'ready')
   })
+
+  it('5. Automatically provisions preset machine (heidelberg_sm74) and resiliently starts and completes task with machine tracking', async () => {
+    PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [])
+
+    const taskId = 'tsk-heidelberg-test'
+    const task: ProductionTaskRecord = {
+      id: taskId,
+      company_id: TENANT_ID,
+      task_number: 'TSK-HD-001',
+      task_name: 'Offset Printing: Catalog Book',
+      task_type: 'printing',
+      department: 'printing',
+      sequence_order: 1,
+      quantity: 500,
+      unit: 'sheet',
+      priority: 'normal',
+      status: 'queued',
+      assigned_machine_id: 'heidelberg_sm74',
+      is_blocked_by_commercial_gate: false,
+      is_blocked_by_design_gate: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_TASKS, task)
+
+    // Starting task assigned to heidelberg_sm74 should succeed without "Machinery heidelberg_sm74 not found" error
+    const started = await ProductionPlanningService.startTask(taskId, TENANT_ID, 'op-02', 'Faruk Offset Lead')
+    assert.strictEqual(started.status, 'in_progress')
+
+    // Machine should now exist and be in_use
+    const { MachineryRepository } = await import('../../lib/repositories/machinery.repository.ts')
+    const machine = await MachineryRepository.getMachineryById('heidelberg_sm74', TENANT_ID)
+    assert.ok(machine, 'heidelberg_sm74 should be auto-provisioned')
+    assert.strictEqual(machine.status, 'in_use')
+    assert.strictEqual(machine.name, 'Heidelberg Speedmaster SM-74 (4-Color Offset)')
+
+    // Completing task should set machine back to available
+    const completed = await ProductionPlanningService.completeTask(taskId, TENANT_ID, { good_quantity: 500, rejected_quantity: 5 })
+    assert.strictEqual(completed.completedTask.status, 'completed')
+
+    const machineAfter = await MachineryRepository.getMachineryById('heidelberg_sm74', TENANT_ID)
+    assert.ok(machineAfter)
+    assert.strictEqual(machineAfter.status, 'available')
+  })
 })

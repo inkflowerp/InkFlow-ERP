@@ -14,6 +14,116 @@ import type {
 } from '../../types/machinery.types.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
+export const PRESET_MACHINES: Record<string, Partial<MachineryRecord>> = {
+  heidelberg_sm74: {
+    id: 'heidelberg_sm74',
+    name: 'Heidelberg Speedmaster SM-74 (4-Color Offset)',
+    code: 'M-SM74',
+    machine_type: 'offset_printing',
+    category: 'printing',
+    department: 'printing',
+    status: 'available',
+    max_width: 29,
+    max_height: 20,
+    estimated_speed: 15000,
+    speed_unit: 'sheets/hour',
+  },
+  roland_truevis: {
+    id: 'roland_truevis',
+    name: 'Roland TrueVIS VG3-640 (Large Format Eco-Solvent)',
+    code: 'M-VG640',
+    machine_type: 'large_format_printing',
+    category: 'printing',
+    department: 'printing',
+    status: 'available',
+    max_width: 64,
+    estimated_speed: 350,
+    speed_unit: 'sft/hour',
+  },
+  polar_115x: {
+    id: 'polar_115x',
+    name: 'Polar 115X High-Speed Guillotine Cutter',
+    code: 'M-POLAR',
+    machine_type: 'finishing',
+    category: 'finishing',
+    department: 'finishing',
+    status: 'available',
+    max_width: 45,
+    estimated_speed: 1000,
+    speed_unit: 'cuts/hour',
+  },
+  fuji_xerox_c1000i: {
+    id: 'fuji_xerox_c1000i',
+    name: 'Fuji Xerox Color 1000i Press',
+    code: 'M-FX1000',
+    machine_type: 'digital_printing',
+    category: 'printing',
+    department: 'printing',
+    status: 'available',
+    max_width: 13,
+    max_height: 19,
+    estimated_speed: 3000,
+    speed_unit: 'sheets/hour',
+  },
+  manual_finishing: {
+    id: 'manual_finishing',
+    name: 'Manual Finishing Bench / Handwork',
+    code: 'M-MANUAL',
+    machine_type: 'finishing',
+    category: 'finishing',
+    department: 'finishing',
+    status: 'available',
+    estimated_speed: 50,
+    speed_unit: 'pcs/hour',
+  },
+}
+
+export function buildDefaultMachineryRecord(
+  id: string,
+  companyId: string,
+  overrides?: Partial<MachineryRecord>
+): MachineryRecord {
+  const preset = PRESET_MACHINES[id]
+  const now = new Date().toISOString()
+  return {
+    id,
+    company_id: companyId,
+    name: overrides?.name || preset?.name || id.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+    code: overrides?.code || preset?.code || `M-${id.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}`,
+    machine_type: overrides?.machine_type || preset?.machine_type || 'other',
+    category: overrides?.category || preset?.category || 'printing',
+    department: overrides?.department || preset?.department || 'printing',
+    status: (overrides?.status || preset?.status || 'available') as MachineryStatus,
+    is_archived: false,
+    supported_production_types: ['printing', 'finishing'],
+    supported_materials: [],
+    supported_units: ['pcs', 'sft', 'sheet'],
+    max_width: preset?.max_width ?? null,
+    max_height: preset?.max_height ?? null,
+    dimension_unit: 'inch',
+    production_capacity: 1000,
+    capacity_unit: 'pcs/hour',
+    estimated_speed: preset?.estimated_speed ?? 1000,
+    speed_unit: preset?.speed_unit ?? 'pcs/hour',
+    setup_time_mins: 15,
+    changeover_time_mins: 10,
+    operators_required_count: 1,
+    purchase_cost: 0,
+    hourly_machine_cost: 0,
+    per_unit_machine_cost: 0,
+    electricity_cost_per_hour: 0,
+    maintenance_cost_per_hour: 0,
+    other_operating_cost_per_hour: 0,
+    total_operating_hours: 0,
+    total_impressions: 0,
+    total_sft_produced: 0,
+    created_at: now,
+    updated_at: now,
+    ...(preset || {}),
+    ...(overrides || {}),
+  }
+}
+
 export class MachineryRepository {
   /**
    * Fetches all machineries for a tenant with optional filtering
@@ -69,16 +179,28 @@ export class MachineryRepository {
         )
       }
 
-      return records
+      if (records.length > 0) return records
     } catch (err: any) {
-      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-      let records = all.filter((m: MachineryRecord) => m.company_id === companyId)
-      if (filters?.search?.trim()) {
-        const q = filters.search.toLowerCase().trim()
-        records = records.filter((m: MachineryRecord) => m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q))
-      }
-      return records
+      // Supabase unavailable or table empty, proceed to local store
     }
+
+    const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+    let records = all.filter((m: MachineryRecord) => !m.company_id || m.company_id === companyId || companyId === 'default')
+
+    // If local store is also empty, auto-seed standard press fleet
+    if (records.length === 0) {
+      const seeded: MachineryRecord[] = Object.keys(PRESET_MACHINES).map((key) =>
+        buildDefaultMachineryRecord(key, companyId)
+      )
+      PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, ...seeded])
+      records = seeded
+    }
+
+    if (filters?.search?.trim()) {
+      const q = filters.search.toLowerCase().trim()
+      records = records.filter((m: MachineryRecord) => m.name.toLowerCase().includes(q) || m.code.toLowerCase().includes(q))
+    }
+    return records
   }
 
   /**
@@ -105,10 +227,30 @@ export class MachineryRepository {
       data = resData
     } catch (err: any) {
       const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-      return all.find((m: MachineryRecord) => m.id === id && m.company_id === companyId) || null
+      const found = all.find((m: MachineryRecord) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default'))
+      if (found) return found
+
+      // Auto-provision if it matches a preset machine
+      if (PRESET_MACHINES[id]) {
+        const autoMachine = buildDefaultMachineryRecord(id, companyId)
+        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        return autoMachine
+      }
+      return null
     }
 
-    if (!data) return null
+    if (!data) {
+      const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
+      const found = all.find((m: MachineryRecord) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default'))
+      if (found) return found
+
+      if (PRESET_MACHINES[id]) {
+        const autoMachine = buildDefaultMachineryRecord(id, companyId)
+        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        return autoMachine
+      }
+      return null
+    }
 
     const machine = data as unknown as MachineryRecord
 
@@ -310,9 +452,11 @@ export class MachineryRepository {
       return data as unknown as MachineryRecord
     } catch (err: any) {
       const all = PrintERPDataStore.get<MachineryRecord[]>(STORAGE_KEYS.MACHINERIES) || []
-      const existing = all.find((m) => m.id === id && m.company_id === companyId) || (all.find((m) => m.id === id) as MachineryRecord)
+      const existing = all.find((m) => (m.id === id || m.code === id) && (!m.company_id || m.company_id === companyId || companyId === 'default')) || (all.find((m) => m.id === id) as MachineryRecord)
       if (!existing) {
-        throw new Error(`Machinery ${id} not found`)
+        const autoMachine = buildDefaultMachineryRecord(id, companyId, payload)
+        PrintERPDataStore.set(STORAGE_KEYS.MACHINERIES, [...all, autoMachine])
+        return autoMachine
       }
       const updated: MachineryRecord = {
         ...existing,
