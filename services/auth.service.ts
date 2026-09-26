@@ -91,7 +91,7 @@ export class AuthService {
       try {
         const { data: emp } = await (admin as any)
           .from('employees')
-          .select('id, email, mobile, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials')
           .in('mobile', candidates)
           .limit(1)
           .maybeSingle()
@@ -100,6 +100,14 @@ export class AuthService {
           const creds = emp.portal_credentials as any
           if (creds?.email) return creds.email.toLowerCase()
           if (emp.email) return emp.email.toLowerCase()
+          if (emp.user_id) {
+            const { data: prof } = await (admin as any)
+              .from('user_profiles')
+              .select('email')
+              .eq('id', emp.user_id)
+              .maybeSingle()
+            if (prof?.email) return prof.email.toLowerCase()
+          }
         }
       } catch {}
 
@@ -136,7 +144,7 @@ export class AuthService {
       try {
         const { data: empBadge } = await (admin as any)
           .from('employees')
-          .select('id, email, mobile, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials')
           .ilike('employee_id_number', norm)
           .limit(1)
           .maybeSingle()
@@ -145,11 +153,42 @@ export class AuthService {
           const creds = empBadge.portal_credentials as any
           if (creds?.email) return creds.email.toLowerCase()
           if (empBadge.email) return empBadge.email.toLowerCase()
+          if (empBadge.user_id) {
+            const { data: userProf } = await (admin as any)
+              .from('user_profiles')
+              .select('email')
+              .eq('id', empBadge.user_id)
+              .maybeSingle()
+            if (userProf?.email) return userProf.email.toLowerCase()
+          }
+          if (empBadge.mobile) {
+            const phoneVar = parseAndNormalizePhone(empBadge.mobile)
+            const cands = phoneVar ? phoneVar.candidates : [empBadge.mobile]
+            const { data: userProf } = await (admin as any)
+              .from('user_profiles')
+              .select('id, email')
+              .in('phone', cands)
+              .limit(1)
+              .maybeSingle()
+            if (userProf?.email) {
+              try {
+                await (admin as any)
+                  .from('employees')
+                  .update({
+                    user_id: userProf.id,
+                    email: userProf.email,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', empBadge.id)
+              } catch {}
+              return userProf.email.toLowerCase()
+            }
+          }
         }
 
         const { data: empUser } = await (admin as any)
           .from('employees')
-          .select('id, email, mobile, portal_credentials')
+          .select('id, email, mobile, user_id, portal_credentials')
           .filter('portal_credentials->>username', 'ilike', norm)
           .limit(1)
           .maybeSingle()
@@ -158,6 +197,37 @@ export class AuthService {
           const creds = empUser.portal_credentials as any
           if (creds?.email) return creds.email.toLowerCase()
           if (empUser.email) return empUser.email.toLowerCase()
+          if (empUser.user_id) {
+            const { data: userProf } = await (admin as any)
+              .from('user_profiles')
+              .select('email')
+              .eq('id', empUser.user_id)
+              .maybeSingle()
+            if (userProf?.email) return userProf.email.toLowerCase()
+          }
+          if (empUser.mobile) {
+            const phoneVar = parseAndNormalizePhone(empUser.mobile)
+            const cands = phoneVar ? phoneVar.candidates : [empUser.mobile]
+            const { data: userProf } = await (admin as any)
+              .from('user_profiles')
+              .select('id, email')
+              .in('phone', cands)
+              .limit(1)
+              .maybeSingle()
+            if (userProf?.email) {
+              try {
+                await (admin as any)
+                  .from('employees')
+                  .update({
+                    user_id: userProf.id,
+                    email: userProf.email,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', empUser.id)
+              } catch {}
+              return userProf.email.toLowerCase()
+            }
+          }
         }
       } catch {}
 

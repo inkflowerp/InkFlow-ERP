@@ -171,12 +171,18 @@ function LoginForm() {
         let isCurrentHostSubdomain = false
         let currentHostTenantSlug: string | null = null
         let isLocalhost = false
+        let isPslDomain = false
         if (typeof window !== 'undefined') {
           const resHost = resolveHostname(window.location.host)
           isLocalhost = Boolean(
             resHost.isLocalhost ||
             window.location.hostname === 'localhost' ||
             window.location.hostname === '127.0.0.1'
+          )
+          isPslDomain = Boolean(
+            window.location.hostname.endsWith('.vercel.app') ||
+            window.location.hostname.endsWith('.pages.dev') ||
+            window.location.hostname.endsWith('.netlify.app')
           )
           if (resHost.hostType === 'tenant') {
             isCurrentHostSubdomain = true
@@ -188,22 +194,29 @@ function LoginForm() {
         if (isCurrentHostSubdomain) {
           if (currentHostTenantSlug && currentHostTenantSlug !== targetSlug) {
             // User logged in on workspace A, but account belongs to workspace B
-            window.location.href = getTenantLink(targetSlug, paramRedirect || '/dashboard')
-            return
-          }
-          // Authenticated directly on matching tenant subdomain -> clean relative URL
-          let clean = '/dashboard'
-          if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
-            clean = paramRedirect
-            if (clean.startsWith(`/${targetSlug}/`)) {
-              clean = clean.slice(`/${targetSlug}`.length) || '/dashboard'
-            } else if (clean === `/${targetSlug}`) {
-              clean = '/dashboard'
+            if (isLocalhost || isPslDomain) {
+              const cleanSub = paramRedirect && !paramRedirect.startsWith('/login') ? paramRedirect : '/dashboard'
+              const formattedSubPath = cleanSub.startsWith('/') ? cleanSub : `/${cleanSub}`
+              destination = `/${targetSlug}${formattedSubPath}`
+            } else {
+              window.location.href = getTenantLink(targetSlug, paramRedirect || '/dashboard')
+              return
             }
+          } else {
+            // Authenticated directly on matching tenant subdomain -> clean relative URL
+            let clean = '/dashboard'
+            if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
+              clean = paramRedirect
+              if (clean.startsWith(`/${targetSlug}/`)) {
+                clean = clean.slice(`/${targetSlug}`.length) || '/dashboard'
+              } else if (clean === `/${targetSlug}`) {
+                clean = '/dashboard'
+              }
+            }
+            destination = clean
           }
-          destination = clean
         } else {
-          // On root domain (e.g. inkflow.com.bd, localhost:3000)
+          // On root domain (e.g. inkflow.com.bd, inkflow-erp.vercel.app, localhost:3000)
           let cleanSubPath = '/dashboard'
           if (paramRedirect && paramRedirect.startsWith('/') && !paramRedirect.startsWith('/login')) {
             cleanSubPath = paramRedirect
@@ -213,7 +226,7 @@ function LoginForm() {
               cleanSubPath = '/dashboard'
             }
           }
-          if (isLocalhost) {
+          if (isLocalhost || isPslDomain) {
             const formattedSubPath = cleanSubPath.startsWith('/') ? cleanSubPath : `/${cleanSubPath}`
             destination = `/${targetSlug}${formattedSubPath}`
           } else {

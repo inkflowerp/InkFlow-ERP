@@ -174,19 +174,34 @@ export async function GET(request: Request) {
       }
 
       // Determine safe redirect destination
-      let destination = getTenantLink(company.slug, '/dashboard')
+      const isPslOrLocal = Boolean(
+        origin.includes('localhost') ||
+        origin.includes('127.0.0.1') ||
+        origin.includes('.vercel.app') ||
+        origin.includes('.pages.dev') ||
+        origin.includes('.netlify.app')
+      )
+
+      let cleanNext = '/dashboard'
       if (
         next &&
         next.startsWith('/') &&
         !next.startsWith('/login') &&
         !next.startsWith('/auth')
       ) {
-        let cleanNext = next
+        cleanNext = next
         if (cleanNext.startsWith(`/${company.slug}/`)) {
-          cleanNext = cleanNext.slice(`/${company.slug}`.length)
+          cleanNext = cleanNext.slice(`/${company.slug}`.length) || '/dashboard'
         } else if (cleanNext === `/${company.slug}`) {
           cleanNext = '/dashboard'
         }
+      }
+
+      let destination: string
+      if (isPslOrLocal) {
+        const formattedSubPath = cleanNext.startsWith('/') ? cleanNext : `/${cleanNext}`
+        destination = `${origin}/${company.slug}${formattedSubPath}`
+      } else {
         destination = getTenantLink(company.slug, cleanNext)
       }
 

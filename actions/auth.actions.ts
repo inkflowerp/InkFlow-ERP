@@ -9,7 +9,7 @@ import { checkRateLimit } from '@/lib/security/rate-limiter'
 import { TENANT_SESSION_COOKIE } from '@/lib/auth/types'
 import { getCurrentTenant } from '@/lib/auth/tenant-auth'
 import { resolveRequestOrigin } from '@/lib/security/runtime-env'
-import { getAuthCookieOptions } from '@/lib/tenant/tenant-resolution'
+import { getAuthCookieOptions, resolveHostname, isReservedSlug } from '@/lib/tenant/tenant-resolution'
 import { getTenantLink } from '@/lib/tenant/tenant-url'
 import { createClient } from '@/lib/supabase/server'
 
@@ -88,7 +88,22 @@ export async function loginAction(formData: FormData) {
     }
   }
 
-  const result = await AuthService.signIn(email, password)
+  let targetCompanySlug: string | undefined
+  try {
+    const headerStore = await headers()
+    const headerSlug = headerStore.get('x-tenant-slug')
+    if (headerSlug && !isReservedSlug(headerSlug)) {
+      targetCompanySlug = headerSlug
+    } else {
+      const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
+      const hostRes = resolveHostname(host)
+      if (hostRes.hostType === 'tenant' && hostRes.tenantSlug) {
+        targetCompanySlug = hostRes.tenantSlug
+      }
+    }
+  } catch {}
+
+  const result = await AuthService.signIn(email, password, targetCompanySlug)
   if (!result.success || !result.data) {
     await clearTenantSessionCookie()
     return result
@@ -119,16 +134,22 @@ export async function loginAction(formData: FormData) {
     ? redirectTo
     : '/dashboard'
 
-  let isLocalhostRequest = false
+  let isPslOrLocalRequest = false
   try {
     const headerStore = await headers()
-    const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase()
-    if (host.includes('localhost') || host.includes('127.0.0.1')) {
-      isLocalhostRequest = true
+    const host = (headerStore.get('x-forwarded-host') || headerStore.get('host') || '').toLowerCase().split(':')[0]
+    if (
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      host.endsWith('.vercel.app') ||
+      host.endsWith('.pages.dev') ||
+      host.endsWith('.netlify.app')
+    ) {
+      isPslOrLocalRequest = true
     }
   } catch {}
 
-  if (isLocalhostRequest) {
+  if (isPslOrLocalRequest) {
     let clean = targetPath
     if (clean.startsWith(`/${session.companySlug}/`)) {
       clean = clean.slice(`/${session.companySlug}`.length)
@@ -156,7 +177,22 @@ export async function signInAction(email: string, pass: string) {
     }
   }
 
-  const result = await AuthService.signIn(email, pass)
+  let targetCompanySlug: string | undefined
+  try {
+    const headerStore = await headers()
+    const headerSlug = headerStore.get('x-tenant-slug')
+    if (headerSlug && !isReservedSlug(headerSlug)) {
+      targetCompanySlug = headerSlug
+    } else {
+      const host = headerStore.get('x-forwarded-host') || headerStore.get('host')
+      const hostRes = resolveHostname(host)
+      if (hostRes.hostType === 'tenant' && hostRes.tenantSlug) {
+        targetCompanySlug = hostRes.tenantSlug
+      }
+    }
+  } catch {}
+
+  const result = await AuthService.signIn(email, pass, targetCompanySlug)
   if (!result.success || !result.data) {
     await clearTenantSessionCookie()
     return result

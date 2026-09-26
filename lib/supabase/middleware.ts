@@ -17,6 +17,12 @@ export async function updateSession(request: NextRequest) {
       hostWithoutPort === 'localhost' ||
       hostWithoutPort === '127.0.0.1'
     )
+    const isPslOrLocal = Boolean(
+      isLocal ||
+      hostWithoutPort.endsWith('.vercel.app') ||
+      hostWithoutPort.endsWith('.pages.dev') ||
+      hostWithoutPort.endsWith('.netlify.app')
+    )
     const pathname = request.nextUrl.pathname
     const search = request.nextUrl.search
 
@@ -27,7 +33,15 @@ export async function updateSession(request: NextRequest) {
     // Clean subdomain paths (e.g. /hr/employees) MUST be rewritten to /[tenantSlug]/hr/employees with tenant headers
     // so Next.js matches the action in the route manifest without 404ing!
     if (request.headers.has('next-action')) {
-      if (hostType === 'tenant' && tenantSlug) {
+      const isAuthAction =
+        pathname === '/login' ||
+        pathname === '/register' ||
+        pathname === '/verify' ||
+        pathname === '/forgot-password' ||
+        pathname === '/reset-password' ||
+        pathname.startsWith('/platform')
+
+      if (hostType === 'tenant' && tenantSlug && !isAuthAction) {
         const rewriteUrl = request.nextUrl.clone()
         if (pathname === '/' || pathname === '') {
           rewriteUrl.pathname = `/${tenantSlug}/dashboard`
@@ -352,7 +366,7 @@ export async function updateSession(request: NextRequest) {
         const hasAuthError = request.nextUrl.searchParams.has('error') || request.nextUrl.searchParams.has('logged_out')
         if (hasValidTenantCookie && tenantSessionData?.companySlug && !hasAuthError && !hasValidPlatformCookie) {
           const targetSlug = tenantSessionData.companySlug
-          if (isLocal) {
+          if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
             return applyNoCacheHeaders(NextResponse.redirect(redirectUrl, 307))
           }
@@ -371,7 +385,7 @@ export async function updateSession(request: NextRequest) {
       if (pathname === '/dashboard') {
         if (hasValidTenantCookie && tenantSessionData?.companySlug) {
           const targetSlug = tenantSessionData.companySlug
-          if (isLocal) {
+          if (isPslOrLocal) {
             const redirectUrl = new URL(`/${targetSlug}/dashboard`, request.url)
             return NextResponse.redirect(redirectUrl, 307)
           }
@@ -404,9 +418,9 @@ export async function updateSession(request: NextRequest) {
         const potentialSlug = firstSegment.toLowerCase().trim()
         const subPath = pathParts.slice(1).join('/')
 
-        // On localhost: Do not redirect to *.localhost (which fails DNS resolution on Windows).
-        // Pass through directly to Next.js path-based routing app/[tenantSlug]/...
-        if (isLocal) {
+        // On localhost or PSL domains (e.g. *.vercel.app, *.pages.dev):
+        // Wildcard cookies cannot cross subdomains on PSL domains, so pass through directly to Next.js path-based routing app/[tenantSlug]/...
+        if (isPslOrLocal) {
           const requestHeaders = new Headers(request.headers)
           requestHeaders.set('x-tenant-slug', potentialSlug)
           requestHeaders.set('x-tenant-hostname', rawHost)

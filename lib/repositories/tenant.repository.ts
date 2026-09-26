@@ -10,6 +10,7 @@ import type {
 import type { DataScope } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES } from '../auth/rbac.client.ts'
+import { parseAndNormalizePhone } from '../auth/identifier-helper.ts'
 
 export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
   {
@@ -999,6 +1000,7 @@ export class TenantRepository {
     companyUser: CompanyUserWithProfile
     effectivePermissions: string[]
     primaryRole: string
+    employeeRecord?: any
   } | null> {
     if (!userId) return null
 
@@ -1076,14 +1078,68 @@ export class TenantRepository {
 
     // Query employees table to see if employee record has specific role or portal_credentials
     let employeeRole: string | null = null
+    let employeeRecord: any = null
     try {
-      const { data: emp } = await (admin as any)
+      let { data: emp } = await (admin as any)
         .from('employees')
-        .select('role, portal_credentials')
+        .select('*')
         .eq('company_id', company.id)
         .eq('user_id', userId)
         .maybeSingle()
+
+      if (!emp) {
+        // Fallback: match by user's phone or email within this company
+        const userPhone = cu.profile?.phone
+        const userEmail = cu.profile?.email
+
+        let matchedEmp: any = null
+
+        if (userEmail && userEmail.trim()) {
+          const { data: byEmail } = await (admin as any)
+            .from('employees')
+            .select('*')
+            .eq('company_id', company.id)
+            .ilike('email', userEmail.trim())
+            .limit(1)
+            .maybeSingle()
+          if (byEmail) matchedEmp = byEmail
+        }
+
+        if (!matchedEmp && userPhone) {
+          const phoneVariants = parseAndNormalizePhone(userPhone)
+          const phoneCandidates = phoneVariants ? phoneVariants.candidates : [userPhone]
+          const { data: byPhone } = await (admin as any)
+            .from('employees')
+            .select('*')
+            .eq('company_id', company.id)
+            .in('mobile', phoneCandidates)
+            .limit(1)
+            .maybeSingle()
+          if (byPhone) matchedEmp = byPhone
+        }
+
+        if (matchedEmp) {
+          emp = matchedEmp
+          // Auto-link employee record to this authenticated user only if not yet linked
+          if (!matchedEmp.user_id) {
+            try {
+              await (admin as any)
+                .from('employees')
+                .update({
+                  user_id: userId,
+                  email: matchedEmp.email || userEmail || null,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', matchedEmp.id)
+            } catch (linkErr) {
+              console.warn('[TenantRepository] Auto-link employee user_id failed:', linkErr)
+            }
+          }
+        }
+      }
+
       if (emp) {
+        employeeRecord = emp
         employeeRole = emp.portal_credentials?.role || emp.role || null
       }
     } catch {}
@@ -1207,6 +1263,7 @@ export class TenantRepository {
       companyUser,
       effectivePermissions: Array.from(effectivePermSet),
       primaryRole,
+      employeeRecord,
     }
 
     // Cache resolved membership for 30s
