@@ -9,7 +9,13 @@ export class DesignRepository {
     return coalesceQuery(`design_jobs:${companyId}`, async () => {
       let dbJobs: DesignJobRecord[] = []
       try {
-        const supabase = await createClient()
+        let supabase: any
+        if (typeof window === 'undefined') {
+          const { createAdminClient } = await import('../supabase/admin.ts')
+          supabase = createAdminClient()
+        } else {
+          supabase = await createClient()
+        }
         const { data, error } = await (supabase as any)
           .from('design_jobs')
           .select('*, versions:design_versions(*)')
@@ -36,14 +42,18 @@ export class DesignRepository {
       }
 
       const all = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
-      const localJobs = all.filter((d: DesignJobRecord) => isMatchingTenant(d.company_id))
+      const cleanAll = all.filter((d: DesignJobRecord) => !d?.id?.startsWith('dsn-ref-'))
+      if (cleanAll.length !== all.length) {
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanAll)
+      }
+      const localJobs = cleanAll.filter((d: DesignJobRecord) => isMatchingTenant(d.company_id))
 
       const jobMap = new Map<string, DesignJobRecord>()
       for (const j of localJobs) {
-        if (j?.id) jobMap.set(j.id, j)
+        if (j?.id && !j.id.startsWith('dsn-ref-')) jobMap.set(j.id, j)
       }
       for (const j of dbJobs) {
-        if (j?.id) jobMap.set(j.id, j)
+        if (j?.id && !j.id.startsWith('dsn-ref-')) jobMap.set(j.id, j)
       }
 
       // Auto-pull design required and design check work from Commercial Orders & Job Hub
@@ -53,7 +63,13 @@ export class DesignRepository {
       ]
 
       try {
-        const supabase = await createClient()
+        let supabase: any
+        if (typeof window === 'undefined') {
+          const { createAdminClient } = await import('../supabase/admin.ts')
+          supabase = createAdminClient()
+        } else {
+          supabase = await createClient()
+        }
         const { data: dbOrders } = await (supabase as any)
           .from('sales_orders')
           .select('*, items:sales_order_items(*)')
@@ -93,7 +109,9 @@ export class DesignRepository {
       }
 
       const newAutoJobs: DesignJobRecord[] = []
-      const existingAll = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const existingAll = (PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []).filter(
+        (j) => !j.id?.startsWith('dsn-ref-')
+      )
 
       for (const order of tenantOrdersMap.values()) {
         const orderRouting = order.workflow_routing
@@ -241,7 +259,13 @@ export class DesignRepository {
     const isCompanyUuid = uuidRegex.test(companyId)
 
     try {
-      const supabase = await createClient()
+      let supabase: any
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        supabase = createAdminClient()
+      } else {
+        supabase = await createClient()
+      }
       let query = (supabase as any)
         .from('design_jobs')
         .select('*, versions:design_versions(*)')
@@ -335,13 +359,41 @@ export class DesignRepository {
     }
 
     try {
-      const supabase = await createClient()
+      let supabase: any
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        supabase = createAdminClient()
+      } else {
+        supabase = await createClient()
+      }
       const dbPayload = {
-        ...payload,
         id: dsnId,
+        company_id: payload.company_id,
+        design_number: payload.design_number,
+        title: payload.title,
         customer_id: dbCustomerId,
+        customer_name: payload.customer_name,
+        designer_id: payload.designer_id,
+        designer_name: payload.designer_name || 'Design Department',
         sales_order_id: dbSalesOrderId,
         job_order_id: dbJobOrderId,
+        invoice_id: payload.invoice_id && uuidRegex.test(payload.invoice_id) ? payload.invoice_id : null,
+        invoice_number: payload.invoice_number || null,
+        invoice_item_id: payload.invoice_item_id && uuidRegex.test(payload.invoice_item_id) ? payload.invoice_item_id : null,
+        priority: payload.priority || 'normal',
+        status: payload.status || 'received',
+        deadline: payload.deadline,
+        instructions: payload.instructions || null,
+        dimensions_spec: payload.dimensions_spec || null,
+        current_version: typeof payload.current_version === 'number' ? payload.current_version : 1,
+        revision_count: typeof payload.revision_count === 'number' ? payload.revision_count : 0,
+        is_locked: Boolean(payload.is_locked),
+        workflow_routing: payload.workflow_routing || 'design_required',
+        commercial_status: payload.commercial_status || 'invoice_required',
+        intake_source: payload.intake_source || 'direct_customer',
+        customer_approval_required: payload.customer_approval_required !== false,
+        created_at: payload.created_at || now,
+        updated_at: payload.updated_at || now,
       }
       const { data, error } = await (supabase as any)
         .from('design_jobs')
@@ -398,7 +450,13 @@ export class DesignRepository {
   }): Promise<DesignVersionRecord> {
     const now = new Date().toISOString()
     try {
-      const supabase = await createClient()
+      let supabase: any
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        supabase = createAdminClient()
+      } else {
+        supabase = await createClient()
+      }
       const { data: ver, error: verErr } = await (supabase as any)
         .from('design_versions')
         .insert({
@@ -486,7 +544,13 @@ export class DesignRepository {
         : 'rejected'
 
     try {
-      const supabase = await createClient()
+      let supabase: any
+      if (typeof window === 'undefined') {
+        const { createAdminClient } = await import('../supabase/admin.ts')
+        supabase = createAdminClient()
+      } else {
+        supabase = await createClient()
+      }
       await (supabase as any)
         .from('design_versions')
         .update({

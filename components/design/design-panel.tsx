@@ -40,361 +40,22 @@ export interface DesignPanelProps {
   defaultTab?: 'all' | 'new_tasks' | 'design_running' | 'waiting_approval' | 'revision' | 'in_production' | string
 }
 
-function getReferenceSampleJobs(companyId: string): DesignJobRecord[] {
-  return [
-    // 1. INV-000124 (1 Job) - ABC Ltd.
-    {
-      id: 'dsn-ref-124-1',
-      company_id: companyId,
-      invoice_number: 'INV-000124',
-      invoice_id: 'inv-000124',
-      customer_name: 'ABC Ltd.',
-      customer_phone: '01712-345678',
-      title: 'Acrylic LED Sign',
-      product_name: 'Acrylic LED Sign',
-      dimensions_spec: '8 x 3 ft · 1 pcs · Acrylic + ACP',
-      status: 'received',
-      priority: 'normal',
-      deadline: '28 Sep 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-26T10:00:00Z',
-      updated_at: '2026-09-26T10:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    // 2. INV-000125 (3 Jobs) - Karim Enterprise
-    {
-      id: 'dsn-ref-125-1',
-      company_id: companyId,
-      invoice_number: 'INV-000125',
-      invoice_id: 'inv-000125',
-      customer_name: 'Karim Enterprise',
-      customer_phone: '01813-987654',
-      title: 'PVC Banner',
-      product_name: 'PVC Banner',
-      dimensions_spec: '10 x 4 ft · 2 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '28 Sep 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-26T11:00:00Z',
-      updated_at: '2026-09-26T11:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-125-2',
-      company_id: companyId,
-      invoice_number: 'INV-000125',
-      invoice_id: 'inv-000125',
-      customer_name: 'Karim Enterprise',
-      customer_phone: '01813-987654',
-      title: 'Sticker',
-      product_name: 'Sticker',
-      dimensions_spec: '12 x 8 in · 100 pcs',
-      status: 'customer_approval',
-      priority: 'normal',
-      deadline: '28 Sep 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-26T11:30:00Z',
-      updated_at: '2026-09-26T11:30:00Z',
-      design_number: 'JOB-002',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-125-3',
-      company_id: companyId,
-      invoice_number: 'INV-000125',
-      invoice_id: 'inv-000125',
-      customer_name: 'Karim Enterprise',
-      customer_phone: '01813-987654',
-      title: 'Backdrop',
-      product_name: 'Backdrop',
-      dimensions_spec: '10 x 4 ft · 1 pcs',
-      status: 'received',
-      priority: 'normal',
-      deadline: '29 Sep 2026',
-      designer_name: 'Sadia',
-      created_at: '2026-09-26T12:00:00Z',
-      updated_at: '2026-09-26T12:00:00Z',
-      design_number: 'JOB-003',
-      versions: [],
-    },
-    // 3. INV-000126 (1 Job) - Rahman Traders
-    {
-      id: 'dsn-ref-126-1',
-      company_id: companyId,
-      invoice_number: 'INV-000126',
-      invoice_id: 'inv-000126',
-      customer_name: 'Rahman Traders',
-      customer_phone: '01985-445568',
-      title: 'Business Card',
-      product_name: 'Business Card',
-      dimensions_spec: '3.5 x 2 in · 500 pcs · Art Card',
-      status: 'revision',
-      priority: 'urgent',
-      deadline: '29 Sep 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-27T09:00:00Z',
-      updated_at: '2026-09-27T09:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    // 4. INV-000127 (2 Jobs) - Dream Mart
-    {
-      id: 'dsn-ref-127-1',
-      company_id: companyId,
-      invoice_number: 'INV-000127',
-      invoice_id: 'inv-000127',
-      customer_name: 'Dream Mart',
-      customer_phone: '01678-223344',
-      title: 'Shop Sign',
-      product_name: 'Shop Sign',
-      dimensions_spec: '12 x 4 ft · 1 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '30 Sep 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-27T10:00:00Z',
-      updated_at: '2026-09-27T10:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-127-2',
-      company_id: companyId,
-      invoice_number: 'INV-000127',
-      invoice_id: 'inv-000127',
-      customer_name: 'Dream Mart',
-      customer_phone: '01678-223344',
-      title: 'Vehicle Branding',
-      product_name: 'Vehicle Branding',
-      dimensions_spec: '8 x 6 ft · 2 pcs',
-      status: 'customer_approval',
-      priority: 'normal',
-      deadline: '01 Oct 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-27T10:30:00Z',
-      updated_at: '2026-09-27T10:30:00Z',
-      design_number: 'JOB-002',
-      versions: [],
-    },
-    // 5. INV-000128 (1 Job) - Green Valley
-    {
-      id: 'dsn-ref-128-1',
-      company_id: companyId,
-      invoice_number: 'INV-000128',
-      invoice_id: 'inv-000128',
-      customer_name: 'Green Valley',
-      customer_phone: '01321-667788',
-      title: 'Menu Board (Sticker)',
-      product_name: 'Menu Board (Sticker)',
-      dimensions_spec: '2 x 3 ft · 3 pcs · Vinyl Sticker',
-      status: 'approved',
-      priority: 'normal',
-      deadline: '30 Sep 2026',
-      designer_name: 'Sadia',
-      created_at: '2026-09-28T08:30:00Z',
-      updated_at: '2026-09-28T08:30:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    // 6. INV-000129 (1 Job) - Coffee Corner
-    {
-      id: 'dsn-ref-129-1',
-      company_id: companyId,
-      invoice_number: 'INV-000129',
-      invoice_id: 'inv-000129',
-      customer_name: 'Coffee Corner',
-      customer_phone: '01711-234567',
-      title: 'Wall Graphics',
-      product_name: 'Wall Graphics',
-      dimensions_spec: '10 x 4 ft · 1 pcs · Vinyl',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '30 Sep 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-28T09:00:00Z',
-      updated_at: '2026-09-28T09:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    // 7. INV-000130 (4 Jobs) - Star Communication
-    {
-      id: 'dsn-ref-130-1',
-      company_id: companyId,
-      invoice_number: 'INV-000130',
-      invoice_id: 'inv-000130',
-      customer_name: 'Star Communication',
-      customer_phone: '01817-998877',
-      title: 'Exhibition Stall',
-      product_name: 'Exhibition Stall',
-      dimensions_spec: '12 x 8 ft · 1 pcs',
-      status: 'received',
-      priority: 'normal',
-      deadline: '01 Oct 2026',
-      designer_name: 'Sadia',
-      created_at: '2026-09-29T10:00:00Z',
-      updated_at: '2026-09-29T10:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-130-2',
-      company_id: companyId,
-      invoice_number: 'INV-000130',
-      invoice_id: 'inv-000130',
-      customer_name: 'Star Communication',
-      customer_phone: '01817-998877',
-      title: 'Rollup Stand',
-      product_name: 'Rollup Stand',
-      dimensions_spec: '8 x 5 ft · 2 pcs',
-      status: 'received',
-      priority: 'normal',
-      deadline: '01 Oct 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-29T10:30:00Z',
-      updated_at: '2026-09-29T10:30:00Z',
-      design_number: 'JOB-002',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-130-3',
-      company_id: companyId,
-      invoice_number: 'INV-000130',
-      invoice_id: 'inv-000130',
-      customer_name: 'Star Communication',
-      customer_phone: '01817-998877',
-      title: 'Sticker Set',
-      product_name: 'Sticker Set',
-      dimensions_spec: 'Various sizes · 100 pcs',
-      status: 'designing',
-      display_status: 'customer_approval',
-      priority: 'normal',
-      deadline: '01 Oct 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-29T11:00:00Z',
-      updated_at: '2026-09-29T11:00:00Z',
-      design_number: 'JOB-003',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-130-4',
-      company_id: companyId,
-      invoice_number: 'INV-000130',
-      invoice_id: 'inv-000130',
-      customer_name: 'Star Communication',
-      customer_phone: '01817-998877',
-      title: 'Backdrop',
-      product_name: 'Backdrop',
-      dimensions_spec: '10 x 4 ft · 1 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '02 Oct 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-29T11:30:00Z',
-      updated_at: '2026-09-29T11:30:00Z',
-      design_number: 'JOB-004',
-      versions: [],
-    },
-    // 8. INV-000131 (2 Jobs) - Apex Footwear Ltd.
-    {
-      id: 'dsn-ref-131-1',
-      company_id: companyId,
-      invoice_number: 'INV-000131',
-      invoice_id: 'inv-000131',
-      customer_name: 'Apex Footwear Ltd.',
-      customer_phone: '01715-112233',
-      title: 'Promo Wobbler',
-      product_name: 'Promo Wobbler',
-      dimensions_spec: '6 x 6 in · 200 pcs',
-      status: 'received',
-      priority: 'normal',
-      deadline: '02 Oct 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-29T12:00:00Z',
-      updated_at: '2026-09-29T12:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-131-2',
-      company_id: companyId,
-      invoice_number: 'INV-000131',
-      invoice_id: 'inv-000131',
-      customer_name: 'Apex Footwear Ltd.',
-      customer_phone: '01715-112233',
-      title: 'Store Shelf Strip',
-      product_name: 'Store Shelf Strip',
-      dimensions_spec: '36 x 2 in · 50 pcs',
-      status: 'received',
-      priority: 'normal',
-      deadline: '03 Oct 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-29T12:30:00Z',
-      updated_at: '2026-09-29T12:30:00Z',
-      design_number: 'JOB-002',
-      versions: [],
-    },
-    // 9. INV-000132 (3 Jobs) - Dhaka Metro Cafe
-    {
-      id: 'dsn-ref-132-1',
-      company_id: companyId,
-      invoice_number: 'INV-000132',
-      invoice_id: 'inv-000132',
-      customer_name: 'Dhaka Metro Cafe',
-      customer_phone: '01822-446688',
-      title: 'Takeaway Menu Flyer',
-      product_name: 'Takeaway Menu Flyer',
-      dimensions_spec: 'A4 · 1000 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '03 Oct 2026',
-      designer_name: 'Sadia',
-      created_at: '2026-09-30T10:00:00Z',
-      updated_at: '2026-09-30T10:00:00Z',
-      design_number: 'JOB-001',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-132-2',
-      company_id: companyId,
-      invoice_number: 'INV-000132',
-      invoice_id: 'inv-000132',
-      customer_name: 'Dhaka Metro Cafe',
-      customer_phone: '01822-446688',
-      title: 'Table Tent Card',
-      product_name: 'Table Tent Card',
-      dimensions_spec: '4 x 6 in · 50 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '03 Oct 2026',
-      designer_name: 'Shamol',
-      created_at: '2026-09-30T10:30:00Z',
-      updated_at: '2026-09-30T10:30:00Z',
-      design_number: 'JOB-002',
-      versions: [],
-    },
-    {
-      id: 'dsn-ref-132-3',
-      company_id: companyId,
-      invoice_number: 'INV-000132',
-      invoice_id: 'inv-000132',
-      customer_name: 'Dhaka Metro Cafe',
-      customer_phone: '01822-446688',
-      title: 'Delivery Bag Sticker',
-      product_name: 'Delivery Bag Sticker',
-      dimensions_spec: '3 x 3 in · 500 pcs',
-      status: 'designing',
-      priority: 'normal',
-      deadline: '04 Oct 2026',
-      designer_name: 'Rahim',
-      created_at: '2026-09-30T11:00:00Z',
-      updated_at: '2026-09-30T11:00:00Z',
-      design_number: 'JOB-003',
-      versions: [],
-    },
-  ]
+function getDueText(deadline?: string | null, priority?: string): string | null {
+  if (priority === 'urgent') return 'Urgent'
+  if (!deadline) return null
+  const d = new Date(deadline)
+  if (isNaN(d.getTime())) return null
+
+  const now = new Date()
+  const dMidnight = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  const nowMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+  const diffDays = Math.round((dMidnight - nowMidnight) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 0) return 'Overdue'
+  if (diffDays === 0) return 'Today'
+  if (diffDays === 1) return 'Tomorrow'
+  if (diffDays > 1 && diffDays <= 7) return `${diffDays} days left`
+  return null
 }
 
 export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
@@ -475,23 +136,15 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     try {
       let designList = await DesignRepository.getDesignJobs(companyId)
 
-      // If store has fewer than 10 jobs, initialize with reference jobs so the screen matches the reference image
-      if (!designList || designList.length < 10) {
-        const refJobs = getReferenceSampleJobs(companyId)
-        const existingMap = new Map<string, DesignJobRecord>()
-        for (const j of designList || []) {
-          existingMap.set(j.id, j)
-        }
-        for (const r of refJobs) {
-          if (!existingMap.has(r.id)) {
-            existingMap.set(r.id, r)
-          }
-        }
-        designList = Array.from(existingMap.values())
-        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, designList)
+      // Purge any legacy demo jobs starting with 'dsn-ref-'
+      const rawStored = PrintERPDataStore.get<DesignJobRecord[]>(STORAGE_KEYS.DESIGN_JOBS) || []
+      const cleanedStored = rawStored.filter((j) => !j?.id?.startsWith('dsn-ref-'))
+      if (cleanedStored.length !== rawStored.length) {
+        PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, cleanedStored)
       }
 
-      setJobs(designList || [])
+      const cleanList = (designList || []).filter((j) => !j?.id?.startsWith('dsn-ref-'))
+      setJobs(cleanList)
 
       const prodList = PrintERPDataStore.get<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
       setProductionJobs(prodList)
@@ -676,30 +329,6 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       if (job.invoice_id || job.invoice_number) {
         const invKey = job.invoice_id || job.invoice_number || 'inv-unknown'
         if (!invMap.has(invKey)) {
-          const isInv124 = job.invoice_number === 'INV-000124'
-          const isInv125 = job.invoice_number === 'INV-000125'
-          const isInv127 = job.invoice_number === 'INV-000127'
-          const isInv130 = job.invoice_number === 'INV-000130'
-          const overallStatus = isInv125
-            ? 'designing'
-            : isInv127
-            ? 'waiting_approval'
-            : isInv130
-            ? 'new'
-            : undefined
-          const completedCount = isInv125 ? 1 : isInv127 || isInv130 ? 0 : undefined
-          const dueText = isInv124
-            ? 'Today'
-            : isInv125
-            ? '2 days left'
-            : isInv127 ||
-              isInv130 ||
-              job.invoice_number === 'INV-000126' ||
-              job.invoice_number === 'INV-000128' ||
-              job.invoice_number === 'INV-000129'
-            ? null
-            : undefined
-
           invMap.set(invKey, {
             invoiceId: job.invoice_id || invKey,
             invoiceNumber: job.invoice_number || 'N/A',
@@ -711,12 +340,13 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
                   month: 'short',
                   year: 'numeric',
                 })
-              : '26 Sep 2026',
+              : new Date().toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric',
+                }),
             jobs: [job],
             allInvoiceItems: job.all_invoice_items || [],
-            overallStatus,
-            completedCount,
-            dueText,
           })
         } else {
           const entry = invMap.get(invKey)!
@@ -730,8 +360,46 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       }
     })
 
-    // Sort by invoice number (e.g. INV-000124 to INV-000132)
-    const sortedGroups = Array.from(invMap.values()).sort((a, b) =>
+    // Compute dynamic aggregate metrics for each invoice group
+    const groups = Array.from(invMap.values()).map((group) => {
+      const gJobs = group.jobs
+      const completedCount = gJobs.filter(
+        (j) => j.status === 'approved' || j.status === 'sent_to_production' || j.status === 'completed'
+      ).length
+
+      // Determine overall group status based on lifecycle
+      let overallStatus: 'designing' | 'waiting_approval' | 'revision' | 'in_production' | 'approved' | 'new' = 'new'
+      if (gJobs.length > 0 && completedCount === gJobs.length) {
+        overallStatus = 'approved'
+      } else if (gJobs.some((j) => j.status === 'revision')) {
+        overallStatus = 'revision'
+      } else if (gJobs.some((j) => j.status === 'waiting_approval' || j.status === 'customer_approval')) {
+        overallStatus = 'waiting_approval'
+      } else if (gJobs.some((j) => j.status === 'sent_to_production')) {
+        overallStatus = 'in_production'
+      } else if (gJobs.some((j) => j.status === 'designing' || j.status === 'in_progress')) {
+        overallStatus = 'designing'
+      } else {
+        overallStatus = 'new'
+      }
+
+      // Compute group due text from earliest deadline
+      const sortedByDeadline = [...gJobs].filter((j) => j.deadline).sort((a, b) => {
+        return new Date(a.deadline!).getTime() - new Date(b.deadline!).getTime()
+      })
+      const earliestDeadlineJob = sortedByDeadline[0] || gJobs[0]
+      const dueText = getDueText(earliestDeadlineJob?.deadline, earliestDeadlineJob?.priority)
+
+      return {
+        ...group,
+        completedCount,
+        overallStatus,
+        dueText,
+      }
+    })
+
+    // Sort by invoice number (e.g. INV-000009, INV-000010)
+    const sortedGroups = groups.sort((a, b) =>
       a.invoiceNumber.localeCompare(b.invoiceNumber, undefined, { numeric: true })
     )
 
@@ -748,7 +416,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         const updated: DesignJobRecord = {
           ...job,
           status: 'designing',
-          designer_name: user?.profile?.full_name || job.designer_name || 'Shamol',
+          designer_name: user?.profile?.full_name || job.designer_name || 'Design Team',
           updated_at: new Date().toISOString(),
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
@@ -862,10 +530,15 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   )
 
   const handleCreateNewJob = useCallback(
-    (newJob: DesignJobRecord) => {
+    async (newJob: DesignJobRecord) => {
       PrintERPDataStore.addItem(STORAGE_KEYS.DESIGN_JOBS, newJob)
       setJobs((prev) => [newJob, ...prev])
       showNotification('New design job created successfully!', 'success')
+      try {
+        await DesignRepository.createDesignJob(newJob)
+      } catch (e) {
+        console.error('Failed to sync design job to DB:', e)
+      }
     },
     [showNotification]
   )
@@ -1006,7 +679,17 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
                     invoiceNumber: job.design_number || 'JOB-001',
                     customerName: job.customer_name,
                     customerPhone: job.customer_phone,
-                    invoiceDate: '28 Sep 2026',
+                    invoiceDate: (job as any).created_at
+                      ? new Date((job as any).created_at).toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        })
+                      : new Date().toLocaleDateString('en-GB', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                        }),
                     jobs: [job],
                   }}
                   activeTab={activeTab}
@@ -1029,12 +712,28 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
           {filteredJobs.length === 0 && (
             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center text-slate-500 shadow-2xs">
-              <div className="text-sm font-bold text-slate-700 dark:text-slate-300">
-                No design jobs found
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mx-auto mb-3">
+                <Edit3 className="w-6 h-6 stroke-[2]" />
               </div>
-              <p className="text-xs text-slate-400 mt-1">
-                Try selecting a different filter tab or search keyword.
+              <div className="text-base font-bold text-slate-800 dark:text-slate-200">
+                {activeTab === 'all' ? 'No design jobs yet' : 'No jobs found in this tab'}
+              </div>
+              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                {activeTab === 'all'
+                  ? 'Confirmed commercial orders requiring design will appear here automatically, or you can create a direct design job.'
+                  : 'Try selecting another status tab or clear your search filters.'}
               </p>
+              {activeTab === 'all' && (
+                <div className="mt-4">
+                  <Button
+                    onClick={() => setIsNewJobModalOpen(true)}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                    <span>Create New Design Job</span>
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </div>

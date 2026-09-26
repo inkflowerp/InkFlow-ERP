@@ -201,10 +201,13 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
 
   // Formatting date display
   const primaryJob = jobs[0]
-  const displayDueDate = primaryJob?.deadline ? primaryJob.deadline : '28 Sep 2026'
-  const isDueToday = displayDueDate.includes(new Date().toISOString().split('T')[0]) || primaryJob?.priority === 'urgent'
-  const isDueSoon = displayDueDate.includes('29 Sep 2026') || displayDueDate.includes('30 Sep 2026')
-  const dueText = group.dueText !== undefined ? group.dueText : (isDueToday ? 'Today' : isDueSoon ? '2 days left' : null)
+  const displayDueDate = primaryJob?.deadline
+    ? (primaryJob.deadline.includes('T') || primaryJob.deadline.includes('-')
+        ? new Date(primaryJob.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        : primaryJob.deadline)
+    : '—'
+  const isDueToday = primaryJob?.deadline ? new Date(primaryJob.deadline).toDateString() === new Date().toDateString() : false
+  const dueText = group.dueText !== undefined ? group.dueText : (isDueToday ? 'Today' : null)
 
   return (
     <div
@@ -214,7 +217,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
       )}
     >
       {/* =========================================================================
-          CASE A: SINGLE-JOB INVOICE CARD (e.g. INV-000124, INV-000126, INV-000128)
+          CASE A: SINGLE-JOB INVOICE CARD
          ========================================================================= */}
       {isSingleJob && singleJob ? (
         <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -250,7 +253,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 )}
                 <span className="flex items-center gap-1">
                   <Calendar className="w-3 h-3 text-slate-400" />
-                  {invoiceDate || '26 Sep 2026'}
+                  {invoiceDate || '—'}
                 </span>
               </div>
             </div>
@@ -472,7 +475,7 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                   )}
                   <span className="flex items-center gap-1">
                     <Calendar className="w-3 h-3 text-slate-400" />
-                    {invoiceDate || '26 Sep 2026'}
+                    {invoiceDate || '—'}
                   </span>
                 </div>
               </div>
@@ -547,9 +550,13 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {jobs.map((job, idx) => {
                     const jobCode = job.design_number || `JOB-00${idx + 1}`
-                    const designerName = job.designer_name || 'Shamol'
+                    const designerName = job.designer_name || 'Design Team'
                     const designerInitials = getDesignerInitials(designerName)
-                    const jobDueDate = job.deadline || '28 Sep 2026'
+                    const jobDueDate = job.deadline
+                      ? (job.deadline.includes('T') || job.deadline.includes('-')
+                          ? new Date(job.deadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                          : job.deadline)
+                      : '—'
 
                     return (
                       <tr
