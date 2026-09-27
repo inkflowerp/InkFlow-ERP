@@ -33,11 +33,13 @@ import {
   Globe2,
   RefreshCw,
   Trash2,
+  AlertCircle,
 } from 'lucide-react'
 import { companySettingsSchema, CompanySettingsFormData } from '@/features/tenant/tenant.schemas'
 import { updateCompanyAction, updateCompanySettingsAction } from '@/actions/tenant.actions'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { cn } from '@/lib/utils'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -73,9 +75,10 @@ export default function CompanySettingsPage() {
   const [mounted, setMounted] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'general' | 'schedule' | 'tax' | 'prefixes' | 'regional'>('general')
 
-  const lastLoadedCompanyIdRef = React.useRef<string | null>(null)
+  const lastLoadedKeyRef = React.useRef<string | null>(null)
 
   const {
     register,
@@ -106,7 +109,7 @@ export default function CompanySettingsPage() {
       quotation_prefix: settings?.quotation_prefix || 'QT',
       challan_prefix: settings?.challan_prefix || 'CH',
       default_currency: settings?.default_currency || 'BDT',
-      default_language: (settings?.default_language as 'en' | 'bn') || 'bn',
+      default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
       vat_enabled: settings?.vat_enabled ?? true,
       vat_rate: Number(settings?.vat_rate ?? 7.5),
     },
@@ -118,9 +121,10 @@ export default function CompanySettingsPage() {
 
   // Synchronize form when company data loads asynchronously from database
   useEffect(() => {
-    if (company && (!lastLoadedCompanyIdRef.current || lastLoadedCompanyIdRef.current !== company.id)) {
-      if (!isDirty) {
-        lastLoadedCompanyIdRef.current = company.id
+    if (company) {
+      const syncKey = `${company.id}-${company.updated_at || ''}-${settings?.updated_at || (settings ? 'loaded' : 'pending')}`
+      if (lastLoadedKeyRef.current !== syncKey && !isDirty) {
+        lastLoadedKeyRef.current = syncKey
         reset({
           name: company.name || '',
           name_bn: company.name_bn || '',
@@ -141,7 +145,7 @@ export default function CompanySettingsPage() {
           quotation_prefix: settings?.quotation_prefix || 'QT',
           challan_prefix: settings?.challan_prefix || 'CH',
           default_currency: settings?.default_currency || 'BDT',
-          default_language: (settings?.default_language as 'en' | 'bn') || 'bn',
+          default_language: (settings?.default_language === 'en' ? 'en' : 'bn'),
           vat_enabled: settings?.vat_enabled ?? true,
           vat_rate: Number(settings?.vat_rate ?? 7.5),
         })
@@ -171,14 +175,35 @@ export default function CompanySettingsPage() {
   const watchedVatEnabled = watch('vat_enabled')
   const watchedLogoUrl = watch('logo_url')
 
+  const onInvalid = (formErrors: any) => {
+    console.warn('[Settings] Validation failed:', formErrors)
+    const firstKey = Object.keys(formErrors)[0]
+    const firstMsg = formErrors[firstKey]?.message || 'Please check the highlighted settings fields'
+    setErrorMessage(firstMsg)
+
+    // Automatically switch to the tab containing the error so the user sees the field
+    if (['name', 'name_bn', 'legal_name', 'logo_url', 'phone', 'whatsapp', 'email', 'area', 'address', 'address_bn'].includes(firstKey)) {
+      setActiveTab('general')
+    } else if (['office_hours', 'holidays'].includes(firstKey)) {
+      setActiveTab('schedule')
+    } else if (['bin_no', 'tin_no', 'trade_license_no', 'vat_enabled', 'vat_rate'].includes(firstKey)) {
+      setActiveTab('tax')
+    } else if (['invoice_prefix', 'quotation_prefix', 'challan_prefix'].includes(firstKey)) {
+      setActiveTab('prefixes')
+    } else if (['default_currency', 'default_language'].includes(firstKey)) {
+      setActiveTab('regional')
+    }
+  }
+
   const onSubmit = async (data: CompanySettingsFormData) => {
     if (!company) return
     setIsLoading(true)
     setIsSaved(false)
+    setErrorMessage(null)
 
     try {
       // 1. Update company record with all company fields
-      await updateCompanyAction(company.id, {
+      const resCompany = await updateCompanyAction(company.id, {
         name: data.name,
         name_bn: data.name_bn || null,
         legal_name: data.legal_name || null,
@@ -196,8 +221,12 @@ export default function CompanySettingsPage() {
         trade_license_no: data.trade_license_no || null,
       })
 
+      if (resCompany && !resCompany.success) {
+        throw new Error(resCompany.error || 'Failed to update company information.')
+      }
+
       // 2. Update company settings record
-      await updateCompanySettingsAction(company.id, {
+      const resSettings = await updateCompanySettingsAction(company.id, {
         invoice_prefix: data.invoice_prefix,
         quotation_prefix: data.quotation_prefix,
         challan_prefix: data.challan_prefix,
@@ -213,7 +242,11 @@ export default function CompanySettingsPage() {
         holidays: data.holidays || null,
       })
 
-      await refreshTenant()
+      if (resSettings && !resSettings.success) {
+        throw new Error(resSettings.error || 'Failed to update company settings.')
+      }
+
+      await refreshTenant?.()
       reset(data) // Establish saved data as clean form state
       setIsSaved(true)
 
@@ -224,6 +257,9 @@ export default function CompanySettingsPage() {
       }
 
       setTimeout(() => setIsSaved(false), 4000)
+    } catch (err: any) {
+      console.error('[Settings] Save error:', err)
+      setErrorMessage(err.message || 'Failed to save settings. Please try again.')
     } finally {
       setIsLoading(false)
     }
@@ -467,10 +503,16 @@ export default function CompanySettingsPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
+        {errorMessage && (
+          <div className="flex items-center gap-2 p-3.5 text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-300 rounded-xl border border-rose-200 dark:border-rose-800 bangla-text mb-4 shadow-xs">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
         {/* TAB 1: GENERAL IDENTITY */}
-        {activeTab === 'general' && (
-          <div className="space-y-6">
+        <div className={cn('space-y-6', activeTab !== 'general' && 'hidden')}>
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
@@ -645,10 +687,9 @@ export default function CompanySettingsPage() {
               </CardContent>
             </Card>
           </div>
-        )}
 
         {/* TAB 2: OFFICE HOURS & HOLIDAYS */}
-        {activeTab === 'schedule' && (
+        <div className={cn(activeTab !== 'schedule' && 'hidden')}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -712,10 +753,10 @@ export default function CompanySettingsPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
 
         {/* TAB 3: TAX & REGISTRATIONS */}
-        {activeTab === 'tax' && (
+        <div className={cn(activeTab !== 'tax' && 'hidden')}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -804,10 +845,10 @@ export default function CompanySettingsPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
 
         {/* TAB 4: DOCUMENT PREFIXES */}
-        {activeTab === 'prefixes' && (
+        <div className={cn(activeTab !== 'prefixes' && 'hidden')}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -849,10 +890,10 @@ export default function CompanySettingsPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
 
         {/* TAB 5: REGIONAL & LOCALIZATION */}
-        {activeTab === 'regional' && (
+        <div className={cn(activeTab !== 'regional' && 'hidden')}>
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -891,7 +932,7 @@ export default function CompanySettingsPage() {
               </div>
             </CardContent>
           </Card>
-        )}
+        </div>
 
         {/* Action Buttons */}
         <div className="mt-6 flex items-center justify-end gap-3">

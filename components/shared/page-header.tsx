@@ -54,7 +54,7 @@ export function PageHeader({
             <div className="h-9 w-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200/80 dark:border-blue-500/20 flex items-center justify-center shrink-0 shadow-xs">
               {React.isValidElement(icon) ? (
                 icon
-              ) : typeof icon === 'function' ? (
+              ) : icon ? (
                 React.createElement(icon as any, { className: cn('h-5 w-5', iconColor) })
               ) : null}
             </div>

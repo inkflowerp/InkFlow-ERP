@@ -461,7 +461,11 @@ export function Sidebar() {
                     const isChildActive = Boolean(hasChildren && item.children!.some((child) => isItemActive(child.href, child.exact)))
 
                     return (
-                      <div key={item.key} className="relative group/nav">
+                      <div
+                        key={item.key}
+                        ref={isActive ? (el) => { if (el && typeof window !== 'undefined') { el.scrollIntoView({ block: 'nearest' }) } } : undefined}
+                        className="relative group/nav"
+                      >
                         <div className="flex items-center">
                           <Link
                             href={getTenantNavHref(item.href, pathname, company?.slug)}
