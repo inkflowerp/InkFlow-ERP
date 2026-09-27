@@ -241,7 +241,8 @@ export function FinanceDashboardView({
               </div>
               <div className="min-w-0 flex-1">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Payments Received">
-                  Total Payments Received
+                  <span className="xl:hidden 2xl:inline">Total Payments Received</span>
+                  <span className="hidden xl:inline 2xl:hidden">Total Received</span>
                 </span>
                 <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalReceived.toLocaleString()}
@@ -278,7 +279,8 @@ export function FinanceDashboardView({
               </div>
               <div className="min-w-0 flex-1">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Due (Receivable)">
-                  Total Due (Receivable)
+                  <span className="xl:hidden 2xl:inline">Total Due (Receivable)</span>
+                  <span className="hidden xl:inline 2xl:hidden">Customer Due</span>
                 </span>
                 <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalDueReceivable.toLocaleString()}
