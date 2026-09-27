@@ -27,7 +27,6 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -233,8 +232,6 @@ function TrashContent() {
           )
         }
       />
-
-      <SettingsNav />
 
       {/* Notification */}
       {notification && (

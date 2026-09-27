@@ -45,7 +45,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
@@ -299,8 +298,6 @@ export default function CompanySettingsPage() {
         }
       />
 
-      <SettingsNav />
-
       {/* Master Settings Modules Directory Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
         {[
@@ -330,15 +327,6 @@ export default function CompanySettingsPage() {
             icon: Globe2,
             color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
             badge: `${company?.currency || 'BDT'} / ${company?.default_locale === 'en' ? 'EN' : 'BN'}`,
-          },
-          {
-            title: 'Tax & NBR BIN/TIN',
-            titleBn: 'ট্যাক্স ও ভ্যাট',
-            desc: '13-digit BIN, Mushak 6.3 rates, inclusive/exclusive pricing',
-            path: '/settings/tax',
-            icon: Landmark,
-            color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
-            badge: company?.bin_no ? 'BIN Active' : 'No BIN',
           },
           {
             title: 'Document Numbering',
@@ -420,15 +408,6 @@ export default function CompanySettingsPage() {
             icon: Crown,
             color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
             badge: 'Tier Status',
-          },
-          {
-            title: 'Trash & Recycle Bin',
-            titleBn: 'রিসাইকেল বিন ও ট্র্যাশ',
-            desc: '30-day auto-retention, restore or permanently purge deleted items',
-            path: '/settings/trash',
-            icon: Trash2,
-            color: 'text-rose-600 bg-rose-50 dark:bg-rose-950/50',
-            badge: '30d Retention',
           },
         ].map((item) => {
           const Icon = item.icon

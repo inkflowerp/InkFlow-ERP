@@ -19,8 +19,6 @@ import {
   FileText,
   Workflow,
   Crown,
-  Trash2,
-  Landmark,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -64,12 +62,6 @@ export function SettingsNav() {
       titleBn: 'ভাষা ও মুদ্রা',
       href: '/settings/localization',
       icon: Globe2,
-    },
-    {
-      title: 'Tax & NBR BIN/TIN',
-      titleBn: 'ট্যাক্স ও ভ্যাট',
-      href: '/settings/tax',
-      icon: Landmark,
     },
     {
       title: 'Document Numbering',
@@ -125,13 +117,6 @@ export function SettingsNav() {
       titleBn: 'সাবস্ক্রিপশন',
       href: '/settings/subscription',
       icon: Crown,
-    },
-    {
-      title: 'Recycle Bin',
-      titleBn: 'রিসাইকেল বিন',
-      href: '/settings/trash',
-      icon: Trash2,
-      matchExtra: ['/trash'],
     },
   ]
 

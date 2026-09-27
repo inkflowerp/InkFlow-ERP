@@ -203,7 +203,11 @@ export function MobileNav() {
 
     if (pathname === itemHref || cleanPath === itemHref) return true
 
-    if (itemHref === '/settings/trash' && (cleanPath === '/trash' || cleanPath.startsWith('/trash/'))) {
+    if ((itemHref === '/trash' || itemHref === '/settings/trash') && (cleanPath === '/trash' || cleanPath === '/settings/trash' || cleanPath.startsWith('/trash/') || cleanPath.startsWith('/settings/trash/'))) {
+      return true
+    }
+
+    if ((itemHref === '/tax' || itemHref === '/settings/tax') && (cleanPath === '/tax' || cleanPath === '/settings/tax' || cleanPath.startsWith('/tax/') || cleanPath.startsWith('/settings/tax/'))) {
       return true
     }
 
