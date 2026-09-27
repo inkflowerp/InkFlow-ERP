@@ -119,8 +119,6 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           href: '/operator',
           icon: 'Cpu',
           permission: { action: 'view', resource: 'production' },
-          badge: 'Live',
-          badgeVariant: 'live',
         },
         {
           key: 'finishing',
@@ -129,8 +127,6 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           href: '/finishing',
           icon: 'Scissors',
           permission: { action: 'view', resource: 'production' },
-          badge: 'Floor',
-          badgeVariant: 'fast',
         },
         {
           key: 'delivery',
@@ -147,8 +143,6 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           href: '/production/floor-consumption',
           icon: 'Flame',
           permission: { action: 'view', resource: 'production' },
-          badge: 'Live',
-          badgeVariant: 'live',
         },
         {
           key: 'machineries',
