@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { DesignJobRecord } from '@/types/design.types'
 import { type PreflightState } from './types'
+import { DesignTimerBadge } from './design-timer-badge'
 
 export interface InvoiceGroup {
   invoiceId: string
@@ -294,66 +295,66 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               ) : null}
             </div>
 
-            {/* Action Buttons Stack */}
+            {/* Dynamic Progressive Workflow Action Button & Timer */}
             <div className="flex items-center gap-2 relative">
-              {singleJob.status === 'approved' ? (
+              {singleJob.status === 'approved' || (singleJob.status as string) === 'sent_to_production' || (singleJob.status as string) === 'completed' ? (
                 <>
+                  <DesignTimerBadge
+                    startedAt={singleJob.started_at}
+                    completedAt={singleJob.completed_at}
+                    durationSeconds={singleJob.duration_seconds}
+                    isRunning={false}
+                  />
                   <Button
                     size="sm"
-                    variant="outline"
                     disabled
-                    className="h-8 px-3 text-xs opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800"
+                    className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default"
                   >
-                    Start Design
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Sent to Production</span>
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled
-                    className="h-8 px-3 text-xs opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800"
-                  >
-                    Complete Design
-                  </Button>
+                </>
+              ) : singleJob.status === 'customer_approval' || (singleJob as any).is_design_completed ? (
+                <>
+                  <DesignTimerBadge
+                    startedAt={singleJob.started_at}
+                    completedAt={singleJob.completed_at}
+                    durationSeconds={singleJob.duration_seconds}
+                    isRunning={false}
+                  />
                   <Button
                     size="sm"
                     onClick={() => onConfirmToProduction(singleJob)}
-                    className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5"
+                    className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
                   >
                     <Send className="w-3.5 h-3.5" />
                     <span>Send to Production</span>
+                  </Button>
+                </>
+              ) : singleJob.status === 'designing' || (singleJob.status as string) === 'in_progress' ? (
+                <>
+                  <DesignTimerBadge
+                    startedAt={singleJob.started_at}
+                    isRunning={true}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => onCompleteDesign(singleJob)}
+                    className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
+                  >
+                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Design Complete</span>
                   </Button>
                 </>
               ) : (
-                <>
-                  <Button
-                    size="sm"
-                    onClick={() => onStartDesign(singleJob)}
-                    className="h-8 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5"
-                  >
-                    <Play className="w-3 h-3 fill-current" />
-                    <span>Start Design</span>
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onCompleteDesign(singleJob)}
-                    className="h-8 px-3 text-xs border-emerald-300 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 font-semibold rounded-lg flex items-center gap-1.5"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    <span>Complete Design</span>
-                  </Button>
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    disabled
-                    className="h-8 px-3 text-xs bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed rounded-lg flex items-center gap-1.5"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Send to Production</span>
-                  </Button>
-                </>
+                <Button
+                  size="sm"
+                  onClick={() => onStartDesign(singleJob)}
+                  className="h-8 px-3.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
+                >
+                  <Play className="w-3 h-3 fill-current" />
+                  <span>Start Design</span>
+                </Button>
               )}
 
               {/* 3-dots Menu Button */}
@@ -611,64 +612,64 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         {/* 8. Action Buttons Stack */}
                         <td className="py-3 px-4 text-right">
                           <div className="flex items-center justify-end gap-1.5 relative">
-                            {job.status === 'approved' ? (
+                            {job.status === 'approved' || (job.status as string) === 'sent_to_production' || (job.status as string) === 'completed' ? (
                               <>
+                                <DesignTimerBadge
+                                  startedAt={job.started_at}
+                                  completedAt={job.completed_at}
+                                  durationSeconds={job.duration_seconds}
+                                  isRunning={false}
+                                />
                                 <Button
                                   size="sm"
-                                  variant="outline"
                                   disabled
-                                  className="h-7 px-2 text-2xs opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800"
+                                  className="h-7 px-2.5 text-2xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-md flex items-center gap-1 cursor-default"
                                 >
-                                  Start Design
+                                  <Check className="w-3 h-3 stroke-[2.5]" />
+                                  <span>Sent to Production</span>
                                 </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled
-                                  className="h-7 px-2 text-2xs opacity-50 cursor-not-allowed bg-slate-50 dark:bg-slate-800"
-                                >
-                                  Complete
-                                </Button>
+                              </>
+                            ) : job.status === 'customer_approval' || (job as any).is_design_completed ? (
+                              <>
+                                <DesignTimerBadge
+                                  startedAt={job.started_at}
+                                  completedAt={job.completed_at}
+                                  durationSeconds={job.duration_seconds}
+                                  isRunning={false}
+                                />
                                 <Button
                                   size="sm"
                                   onClick={() => onConfirmToProduction(job)}
-                                  className="h-7 px-2.5 text-2xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1"
+                                  className="h-7 px-2.5 text-2xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
                                 >
                                   <Send className="w-3 h-3" />
                                   <span>Send to Production</span>
+                                </Button>
+                              </>
+                            ) : job.status === 'designing' || (job.status as string) === 'in_progress' ? (
+                              <>
+                                <DesignTimerBadge
+                                  startedAt={job.started_at}
+                                  isRunning={true}
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => onCompleteDesign(job)}
+                                  className="h-7 px-2.5 text-2xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Check className="w-3 h-3 stroke-[2.5]" />
+                                  <span>Design Complete</span>
                                 </Button>
                               </>
                             ) : (
-                              <>
-                                <Button
-                                  size="sm"
-                                  onClick={() => onStartDesign(job)}
-                                  className="h-7 px-2.5 text-2xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1"
-                                >
-                                  <Play className="w-2.5 h-2.5 fill-current" />
-                                  <span>Start Design</span>
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => onCompleteDesign(job)}
-                                  className="h-7 px-2.5 text-2xs border-emerald-300 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 font-semibold rounded-md flex items-center gap-1"
-                                >
-                                  <Check className="w-3 h-3" />
-                                  <span>Complete</span>
-                                </Button>
-
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled
-                                  className="h-7 px-2 text-2xs bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed rounded-md flex items-center gap-1"
-                                >
-                                  <Send className="w-3 h-3" />
-                                  <span>Send to Production</span>
-                                </Button>
-                              </>
+                              <Button
+                                size="sm"
+                                onClick={() => onStartDesign(job)}
+                                className="h-7 px-2.5 text-2xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-xs flex items-center gap-1 cursor-pointer"
+                              >
+                                <Play className="w-2.5 h-2.5 fill-current" />
+                                <span>Start Design</span>
+                              </Button>
                             )}
 
                             {/* Row 3-dots Menu */}

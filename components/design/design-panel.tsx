@@ -37,7 +37,7 @@ import { DesignCompareModal } from './modals/design-compare-modal'
 import { DesignNewJobModal } from './modals/design-new-job-modal'
 
 export interface DesignPanelProps {
-  defaultTab?: 'all' | 'new_tasks' | 'design_running' | 'waiting_approval' | 'revision' | 'in_production' | string
+  defaultTab?: 'new_tasks' | 'completed' | 'all' | string
 }
 
 function getDueText(deadline?: string | null, priority?: string): string | null {
@@ -58,7 +58,7 @@ function getDueText(deadline?: string | null, priority?: string): string | null 
   return null
 }
 
-export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
+export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
   const params = useParams()
   const { company } = useTenant()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
@@ -87,10 +87,10 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     setTimeout(() => setNotification(null), 4000)
   }, [])
 
-  // Active Tab
+  // Active Tab - Default is New
   const [activeTab, setActiveTab] = useState<string>(() => {
-    if (defaultTab === 'pipeline') return 'all'
-    return defaultTab
+    if (defaultTab && defaultTab !== 'all' && defaultTab !== 'pipeline') return defaultTab
+    return 'new_tasks'
   })
 
   // Filter Toolbar State
@@ -251,12 +251,14 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
 
     jobs.forEach((j) => {
       const status: string = j.status
-      if (status === 'received' || status === 'new') newTasks++
-      else if (status === 'designing' || status === 'in_progress') designRunning++
-      else if (status === 'customer_approval' || status === 'waiting_approval') waitingApproval++
-      else if (status === 'revision') revision++
-      else if (status === 'approved') inProduction++
-      else newTasks++
+      if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
+        inProduction++
+      } else {
+        newTasks++
+        if (status === 'designing' || status === 'in_progress') designRunning++
+        else if (status === 'customer_approval' || status === 'waiting_approval') waitingApproval++
+        else if (status === 'revision') revision++
+      }
     })
 
     return {
@@ -276,17 +278,21 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
     return jobs.filter((job) => {
       const status: string = job.status
       // Tab Filtering
-      if (activeTab === 'new_tasks' && status !== 'received' && status !== 'new') return false
-      if (activeTab === 'design_running' && status !== 'designing' && status !== 'in_progress')
-        return false
-      if (
-        activeTab === 'waiting_approval' &&
-        status !== 'customer_approval' &&
-        status !== 'waiting_approval'
-      )
-        return false
-      if (activeTab === 'revision' && status !== 'revision') return false
-      if (activeTab === 'in_production' && status !== 'approved') return false
+      if (activeTab === 'new_tasks') {
+        if (status === 'approved' || (status as string) === 'sent_to_production' || (status as string) === 'completed') {
+          return false
+        }
+      } else if (activeTab === 'completed' || activeTab === 'in_production') {
+        if (status !== 'approved' && (status as string) !== 'sent_to_production' && (status as string) !== 'completed') {
+          return false
+        }
+      } else if (activeTab === 'design_running') {
+        if (status !== 'designing' && status !== 'in_progress') return false
+      } else if (activeTab === 'waiting_approval') {
+        if (status !== 'customer_approval' && status !== 'waiting_approval') return false
+      } else if (activeTab === 'revision') {
+        if (status !== 'revision') return false
+      }
 
       // Designer Dropdown Filter
       if (filters.selectedDesigner !== 'all' && job.designer_name !== filters.selectedDesigner) {
@@ -413,15 +419,20 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const handleStartDesign = useCallback(
     (job: DesignJobRecord) => {
       startTransition(() => {
+        const now = new Date().toISOString()
         const updated: DesignJobRecord = {
           ...job,
           status: 'designing',
+          started_at: now,
+          completed_at: null,
+          duration_seconds: null,
+          is_design_completed: false,
           designer_name: user?.profile?.full_name || job.designer_name || 'Design Team',
-          updated_at: new Date().toISOString(),
+          updated_at: now,
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`Job #${job.design_number || job.title} started (Designing)!`, 'success')
+        showNotification(`Timer started! Job #${job.design_number || job.title} is now in design.`, 'success')
       })
     },
     [user, showNotification]
@@ -430,25 +441,91 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
   const handleCompleteDesign = useCallback(
     (job: DesignJobRecord) => {
       startTransition(() => {
+        const now = new Date()
+        const startTime = job.started_at ? new Date(job.started_at).getTime() : now.getTime()
+        const durSec = Math.max(1, Math.round((now.getTime() - startTime) / 1000))
         const updated: DesignJobRecord = {
           ...job,
           status: 'customer_approval',
-          updated_at: new Date().toISOString(),
+          completed_at: now.toISOString(),
+          duration_seconds: durSec,
+          is_design_completed: true,
+          updated_at: now.toISOString(),
         }
         PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
         setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-        showNotification(`Design completed! Proof ready for customer approval.`, 'success')
-        setWhatsAppModalState({ isOpen: true, job: updated, template: 'proof' })
+        showNotification(`Timer stopped! Design completed (${Math.floor(durSec / 60)}m ${durSec % 60}s). Ready to send to production!`, 'success')
       })
     },
     [showNotification]
   )
 
-  const handleConfirmToProduction = useCallback(
-    (job: DesignJobRecord) => {
-      setPreflightModalState({ isOpen: true, job })
+  const handlePreflightConfirmAndRoute = useCallback(
+    async (job: DesignJobRecord, targetMachineId: string) => {
+      const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
+      const now = new Date().toISOString()
+      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number)
+      const updated: DesignJobRecord = {
+        ...job,
+        status: 'approved',
+        workflow_routing: 'ready_production',
+        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
+        is_locked: true,
+        updated_at: now,
+      }
+      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
+      setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
+
+      // Ensure local production queue has the job for Production Floor Panel
+      const prodJob = {
+        id: `prod-${job.id}`,
+        company_id: companyId,
+        production_job_number: job.design_number || `JOB-${Date.now().toString().slice(-4)}`,
+        job_order_id: job.job_order_id || null,
+        customer_name: job.customer_name || 'Customer',
+        product_name: job.product_name || job.title || 'Print Product',
+        department: 'printing' as const,
+        stage: 'queued',
+        status: 'queued' as const,
+        priority: (job.priority as any) || 'normal',
+        assigned_machine_id: machineObj?.id || 'heidelberg_sm74',
+        assigned_machine_name: machineObj?.name || 'Heidelberg Speedmaster',
+        created_at: now,
+        updated_at: now,
+      }
+      PrintERPDataStore.addItem(STORAGE_KEYS.PRODUCTION_JOBS, prodJob as any)
+
+      try {
+        await sendToPrintOperatorAction(job.id, companyId, updated, {
+          assignedMachineId: machineObj?.id,
+          assignedMachineName: machineObj?.name,
+          actorName: user?.profile?.full_name || 'Prepress Designer',
+        })
+      } catch {}
+
+      showNotification(`Job #${job.design_number || job.title} sent to Production Panel successfully! Moved to Completed tab.`, 'success')
     },
-    []
+    [companyId, user, showNotification]
+  )
+
+  const handleConfirmToProduction = useCallback(
+    async (job: DesignJobRecord) => {
+      // Intelligently select machine
+      const titleLower = ((job.title || '') + ' ' + (job.material || '') + ' ' + (job.product_name || '')).toLowerCase()
+      let machineId = 'heidelberg_sm74'
+      if (titleLower.includes('banner') || titleLower.includes('flex') || titleLower.includes('vinyl') || titleLower.includes('eco')) {
+        machineId = 'roland_truevis'
+      } else if (titleLower.includes('uv') || titleLower.includes('board') || titleLower.includes('acrylic')) {
+        machineId = 'docan_uv_flatbed'
+      } else if (titleLower.includes('sticker') || titleLower.includes('cut') || titleLower.includes('plotter')) {
+        machineId = 'graphtec_cutter'
+      } else if (titleLower.includes('card') || titleLower.includes('digital') || titleLower.includes('flyer')) {
+        machineId = 'konica_c1085'
+      }
+
+      await handlePreflightConfirmAndRoute(job, machineId)
+    },
+    [handlePreflightConfirmAndRoute]
   )
 
   const handlePauseProduction = useCallback(
@@ -481,35 +558,6 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
       })
     },
     [showNotification]
-  )
-
-  const handlePreflightConfirmAndRoute = useCallback(
-    async (job: DesignJobRecord, targetMachineId: string) => {
-      const machineObj = PRINT_MACHINERY_LIST.find((m) => m.id === targetMachineId)
-      const now = new Date().toISOString()
-      const hasInvoice = Boolean(job.invoice_id) || Boolean(job.invoice_number)
-      const updated: DesignJobRecord = {
-        ...job,
-        status: 'approved',
-        workflow_routing: 'ready_production',
-        commercial_status: hasInvoice ? 'invoice_created' : (job.commercial_status || 'invoice_required'),
-        is_locked: true,
-        updated_at: now,
-      }
-      PrintERPDataStore.updateItem<DesignJobRecord>(STORAGE_KEYS.DESIGN_JOBS, job.id, updated)
-      setJobs((prev) => prev.map((j) => (j.id === job.id ? updated : j)))
-
-      try {
-        await sendToPrintOperatorAction(job.id, companyId, updated, {
-          assignedMachineId: machineObj?.id,
-          assignedMachineName: machineObj?.name,
-          actorName: user?.profile?.full_name || 'Prepress Designer',
-        })
-      } catch {}
-
-      showNotification(`Job #${job.design_number || job.title} sent to production floor successfully!`, 'success')
-    },
-    [companyId, user, showNotification]
   )
 
   const handleRequestRevision = useCallback(
@@ -608,6 +656,7 @@ export function DesignPanel({ defaultTab = 'all' }: DesignPanelProps) {
         tabCounts={{
           all: metrics.total,
           new_tasks: metrics.newTasks,
+          completed: metrics.inProduction,
           design_running: metrics.designRunning,
           waiting_approval: metrics.waitingApproval,
           revision: metrics.revision || 0,

@@ -12,13 +12,15 @@ import {
   FileCheck,
   Check,
   PauseCircle,
-  PlayCircle,
   RotateCcw,
   ExternalLink,
+  Play,
+  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
 import { type PreflightState } from './types'
+import { DesignTimerBadge } from './design-timer-badge'
 
 interface DesignTableViewProps {
   jobs: DesignJobRecord[]
@@ -239,67 +241,69 @@ export const DesignTableView = React.memo(function DesignTableView({
                         <span>WhatsApp</span>
                       </Button>
 
-                      {activeTab === 'new_tasks' && (
+                      {/* Progressive Action Workflow & Timer */}
+                      {job.status === 'approved' || (job.status as string) === 'sent_to_production' || (job.status as string) === 'completed' ? (
+                        <>
+                          <DesignTimerBadge
+                            startedAt={job.started_at}
+                            completedAt={job.completed_at}
+                            durationSeconds={job.duration_seconds}
+                            isRunning={false}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            disabled
+                            className="h-7 px-2.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold cursor-default"
+                          >
+                            <Check className="h-3 w-3 mr-1 stroke-[2.5]" />
+                            <span>Sent to Production</span>
+                          </Button>
+                        </>
+                      ) : job.status === 'customer_approval' || (job as any).is_design_completed ? (
+                        <>
+                          <DesignTimerBadge
+                            startedAt={job.started_at}
+                            completedAt={job.completed_at}
+                            durationSeconds={job.duration_seconds}
+                            isRunning={false}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => onConfirmToProduction(job)}
+                            className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold cursor-pointer"
+                          >
+                            <Send className="h-3 w-3 mr-1" />
+                            <span>Send to Production</span>
+                          </Button>
+                        </>
+                      ) : job.status === 'designing' || (job.status as string) === 'in_progress' ? (
+                        <>
+                          <DesignTimerBadge
+                            startedAt={job.started_at}
+                            isRunning={true}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => onCompleteDesign(job)}
+                            className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold cursor-pointer"
+                          >
+                            <Check className="h-3 w-3 mr-1 stroke-[2.5]" />
+                            <span>Design Complete</span>
+                          </Button>
+                        </>
+                      ) : (
                         <Button
                           type="button"
                           size="sm"
                           onClick={() => onStartDesign(job)}
-                          className="h-7 px-2.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold"
+                          className="h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold cursor-pointer"
                         >
-                          <Sparkles className="h-3 w-3 mr-1" />
+                          <Play className="h-2.5 w-2.5 mr-1 fill-current" />
                           <span>Start Design</span>
                         </Button>
-                      )}
-
-                      {activeTab === 'design_running' && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => onCompleteDesign(job)}
-                          className="h-7 px-2.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          <span>Complete & Proof</span>
-                        </Button>
-                      )}
-
-                      {activeTab === 'waiting_approval' && (
-                        <Button
-                          type="button"
-                          size="sm"
-                          onClick={() => onConfirmToProduction(job)}
-                          className="h-7 px-2.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
-                        >
-                          <Printer className="h-3 w-3 mr-1" />
-                          <span>Send to Production</span>
-                        </Button>
-                      )}
-
-                      {activeTab === 'in_production' && (
-                        <>
-                          {(job as any).is_production_paused ? (
-                            <Button
-                              type="button"
-                              size="sm"
-                              onClick={() => onResumeProduction(job)}
-                              className="h-7 px-2 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
-                            >
-                              <PlayCircle className="h-3 w-3 mr-1" />
-                              <span>Resume</span>
-                            </Button>
-                          ) : (
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline"
-                              onClick={() => onPauseProduction(job)}
-                              className="h-7 px-2 text-xs border-rose-300 text-rose-700"
-                            >
-                              <PauseCircle className="h-3 w-3 mr-1" />
-                              <span>Pause</span>
-                            </Button>
-                          )}
-                        </>
                       )}
                     </div>
                   </td>

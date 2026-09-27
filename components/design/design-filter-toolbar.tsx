@@ -24,10 +24,11 @@ interface DesignFilterToolbarProps {
   tabCounts: {
     all: number
     new_tasks: number
-    design_running: number
-    waiting_approval: number
-    revision: number
-    in_production: number
+    completed: number
+    design_running?: number
+    waiting_approval?: number
+    revision?: number
+    in_production?: number
   }
   designers: string[]
   onTabChange: (tabId: string) => void
@@ -47,12 +48,9 @@ export const DesignFilterToolbar = React.memo(function DesignFilterToolbar({
   isRefreshing = false,
 }: DesignFilterToolbarProps) {
   const tabs = [
-    { id: 'all', label: 'All Jobs', count: tabCounts.all },
     { id: 'new_tasks', label: 'New', count: tabCounts.new_tasks },
-    { id: 'design_running', label: 'Designing', count: tabCounts.design_running },
-    { id: 'waiting_approval', label: 'Approval', count: tabCounts.waiting_approval },
-    { id: 'revision', label: 'Revision', count: tabCounts.revision },
-    { id: 'in_production', label: 'Approved', count: tabCounts.in_production },
+    { id: 'completed', label: 'Completed', count: tabCounts.completed },
+    { id: 'all', label: 'All Jobs', count: tabCounts.all },
   ]
 
   return (

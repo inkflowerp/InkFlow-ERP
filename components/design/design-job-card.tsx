@@ -21,10 +21,13 @@ import {
   SplitSquareVertical,
   RotateCcw,
   ExternalLink,
+  Play,
+  Send,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
 import { type PreflightState } from './types'
+import { DesignTimerBadge } from './design-timer-badge'
 
 interface DesignJobCardProps {
   job: DesignJobRecord
@@ -342,154 +345,84 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             </div>
           </div>
 
-          {/* Tab-Specific Action Buttons */}
-          <div className="space-y-1.5">
-            {/* TAB 1: NEW TASKS */}
-            {activeTab === 'new_tasks' && (
-              <div className="flex items-center gap-1.5">
+          {/* Progressive Action Workflow & Timer */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              {job.status === 'approved' || (job.status as string) === 'sent_to_production' || (job.status as string) === 'completed' ? (
+                <>
+                  <DesignTimerBadge
+                    startedAt={job.started_at}
+                    completedAt={job.completed_at}
+                    durationSeconds={job.duration_seconds}
+                    isRunning={false}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled
+                    className="flex-1 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-bold h-8 cursor-default"
+                  >
+                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]" />
+                    <span>Sent to Production</span>
+                  </Button>
+                </>
+              ) : job.status === 'customer_approval' || (job as any).is_design_completed ? (
+                <>
+                  <DesignTimerBadge
+                    startedAt={job.started_at}
+                    completedAt={job.completed_at}
+                    durationSeconds={job.duration_seconds}
+                    isRunning={false}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onConfirmToProduction(job)}
+                    className="flex-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-8 shadow-sm cursor-pointer"
+                  >
+                    <Send className="h-3.5 w-3.5 mr-1.5" />
+                    <span>Send to Production</span>
+                  </Button>
+                </>
+              ) : job.status === 'designing' || (job.status as string) === 'in_progress' ? (
+                <>
+                  <DesignTimerBadge
+                    startedAt={job.started_at}
+                    isRunning={true}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => onCompleteDesign(job)}
+                    className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 shadow-sm cursor-pointer"
+                  >
+                    <Check className="h-3.5 w-3.5 mr-1.5 stroke-[2.5]" />
+                    <span>Design Complete</span>
+                  </Button>
+                </>
+              ) : (
                 <Button
                   type="button"
                   size="sm"
                   onClick={() => onStartDesign(job)}
-                  className="flex-1 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-8 shadow-sm"
+                  className="flex-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold h-8 shadow-sm cursor-pointer"
                 >
-                  <Sparkles className="h-3.5 w-3.5 mr-1.5" />
-                  <span>Start Design (কাজ শুরু)</span>
+                  <Play className="h-3 w-3 mr-1.5 fill-current" />
+                  <span>Start Design</span>
                 </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenPreflightModal(job)}
-                  className="text-xs h-8 px-2 border-slate-300 text-slate-700 dark:text-slate-300"
-                >
-                  <FileCheck className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            )}
+              )}
 
-            {/* TAB 2: DESIGN RUNNING */}
-            {activeTab === 'design_running' && (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => onCompleteDesign(job)}
-                  className="flex-1 text-xs bg-blue-600 hover:bg-blue-700 text-white font-bold h-8 shadow-sm"
-                >
-                  <Check className="h-3.5 w-3.5 mr-1.5" />
-                  <span>Design Complete ➔ Send Proof</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenWhatsApp(job, 'proof')}
-                  className="text-xs h-8 px-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            )}
-
-            {/* TAB 3: WAITING FOR APPROVAL */}
-            {activeTab === 'waiting_approval' && (
-              <div className="space-y-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => onConfirmToProduction(job)}
-                  className="w-full text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 shadow-sm"
-                >
-                  <Printer className="h-3.5 w-3.5 mr-1.5" />
-                  <span>Design Confirmed send to production</span>
-                </Button>
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onOpenWhatsApp(job, 'reminder')}
-                    className="flex-1 text-2xs h-7 border-purple-300 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950"
-                  >
-                    <MessageSquare className="h-3 w-3 mr-1" />
-                    <span>WhatsApp Reminder</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onRequestRevision(job)}
-                    className="flex-1 text-2xs h-7 border-amber-300 text-amber-700 dark:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950"
-                  >
-                    <RotateCcw className="h-3 w-3 mr-1" />
-                    <span>Revision Needed</span>
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* TAB 4: IN PRODUCTION */}
-            {activeTab === 'in_production' && (
-              <div className="flex items-center gap-1.5">
-                {(job as any).is_production_paused ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    onClick={() => onResumeProduction(job)}
-                    className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8"
-                  >
-                    <PlayCircle className="h-3.5 w-3.5 mr-1.5" />
-                    <span>File Ready Start Production</span>
-                  </Button>
-                ) : (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onPauseProduction(job)}
-                    className="flex-1 text-xs border-rose-300 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950 font-bold h-8"
-                  >
-                    <PauseCircle className="h-3.5 w-3.5 mr-1.5" />
-                    <span>Pause Production Correction Required</span>
-                  </Button>
-                )}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenWhatsApp(job, 'production')}
-                  className="text-xs h-8 px-2 border-emerald-300 text-emerald-700"
-                >
-                  <MessageSquare className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            )}
-
-            {/* ALL / SEARCH VIEW DEFAULT */}
-            {activeTab === 'all' && (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={() => onOpenWhatsApp(job, 'proof')}
-                  className="flex-1 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8"
-                >
-                  <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-                  <span>হোয়াটসঅ্যাপ প্রুফ</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onOpenPreflightModal(job)}
-                  className="text-xs h-8 px-2.5 border-slate-300"
-                >
-                  <Printer className="h-3.5 w-3.5 mr-1" />
-                  <span>মেশিন</span>
-                </Button>
-              </div>
-            )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => onOpenWhatsApp(job, 'proof')}
+                className="text-xs h-8 px-2 border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950 shrink-0"
+                title="Send WhatsApp Proof"
+              >
+                <MessageSquare className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         </div>
       </div>

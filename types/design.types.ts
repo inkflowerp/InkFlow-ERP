@@ -103,6 +103,10 @@ export interface DesignJobRecord {
   versions: DesignVersionRecord[]
   feedback_logs?: DesignFeedbackRecord[]
   display_status?: string | null
+  started_at?: string | null
+  completed_at?: string | null
+  duration_seconds?: number | null
+  is_design_completed?: boolean
   created_at: string
   updated_at: string
 }

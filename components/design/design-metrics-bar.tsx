@@ -69,8 +69,8 @@ export const DesignMetricsBar = React.memo(function DesignMetricsBar({
       iconBg: 'bg-purple-50 text-purple-600 dark:bg-purple-950/80 dark:text-purple-400',
     },
     {
-      id: 'approved',
-      label: 'Approved',
+      id: 'completed',
+      label: 'Completed',
       count: metrics.inProduction,
       icon: CheckCircle2,
       iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/80 dark:text-emerald-400',
