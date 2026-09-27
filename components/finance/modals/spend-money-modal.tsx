@@ -40,6 +40,7 @@ import { cn } from '@/lib/utils'
 import type { AccountRecord } from '@/types/finance.types'
 import type { EmployeeRecord } from '@/types/workforce.types'
 import { getEmployeesAction } from '@/actions/workforce.actions'
+import { getAccountsAction } from '@/actions/finance.actions'
 
 export interface SpendMoneyModalProps {
   isOpen: boolean
@@ -228,6 +229,8 @@ export function SpendMoneyModal({
   const [paymentAccountId, setPaymentAccountId] = useState<string>(
     accounts.find((a) => a.account_subtype === 'CASH')?.id || accounts[0]?.id || ''
   )
+  const [localAccounts, setLocalAccounts] = useState<AccountRecord[]>([])
+  const [loadingAccounts, setLoadingAccounts] = useState<boolean>(false)
   const [paymentMethod, setPaymentMethod] = useState<string>('cash')
   const [vendorName, setVendorName] = useState<string>('')
   const [description, setDescription] = useState<string>('')
@@ -242,6 +245,61 @@ export function SpendMoneyModal({
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string>('')
   const [employeeSearch, setEmployeeSearch] = useState<string>('')
   const [loadingEmployees, setLoadingEmployees] = useState<boolean>(false)
+
+  // Load fallback accounts if parent provided an empty array
+  useEffect(() => {
+    if (isOpen && accounts.length === 0 && localAccounts.length === 0) {
+      let isMounted = true
+      setLoadingAccounts(true)
+      getAccountsAction()
+        .then((res) => {
+          if (isMounted && res.success && res.data && res.data.length > 0) {
+            setLocalAccounts(res.data)
+          }
+        })
+        .catch((err) => console.warn('Failed to load accounts in SpendMoneyModal:', err))
+        .finally(() => {
+          if (isMounted) setLoadingAccounts(false)
+        })
+
+      return () => {
+        isMounted = false
+      }
+    }
+  }, [isOpen, accounts.length, localAccounts.length])
+
+  // Combined accounts pool
+  const allAccounts = useMemo(() => {
+    return accounts.length > 0 ? accounts : localAccounts
+  }, [accounts, localAccounts])
+
+  // Filter payment accounts (Asset accounts: Cash, Bank, MFS, Receivable)
+  const paymentAccounts = useMemo(() => {
+    const filtered = allAccounts.filter(
+      (a) =>
+        a.account_type === 'ASSET' &&
+        (a.account_subtype === 'CASH' ||
+          a.account_subtype === 'BANK' ||
+          a.account_subtype === 'MFS' ||
+          a.account_subtype === 'RECEIVABLE')
+    )
+    return filtered.length > 0 ? filtered : allAccounts
+  }, [allAccounts])
+
+  // Auto-synchronize paymentAccountId whenever modal opens or accounts update
+  useEffect(() => {
+    if (isOpen && paymentAccounts.length > 0) {
+      const isValid = paymentAccountId && paymentAccounts.some((a) => a.id === paymentAccountId)
+      if (!isValid) {
+        const defaultAccount =
+          paymentAccounts.find((a) => a.account_subtype === 'CASH') ||
+          paymentAccounts[0]
+        if (defaultAccount) {
+          setPaymentAccountId(defaultAccount.id)
+        }
+      }
+    }
+  }, [isOpen, paymentAccounts, paymentAccountId])
 
   // Load employees when modal opens
   useEffect(() => {
@@ -265,21 +323,14 @@ export function SpendMoneyModal({
     }
   }, [isOpen])
 
-  // Filter payment accounts (Asset accounts: Cash, Bank, MFS)
-  const paymentAccounts = useMemo(() => {
-    return accounts.filter(
-      (a) =>
-        a.account_type === 'ASSET' &&
-        (a.account_subtype === 'CASH' ||
-          a.account_subtype === 'BANK' ||
-          a.account_subtype === 'MFS' ||
-          a.account_subtype === 'RECEIVABLE')
-    )
-  }, [accounts])
-
   const selectedAccount = useMemo(() => {
-    return accounts.find((a) => a.id === paymentAccountId)
-  }, [accounts, paymentAccountId])
+    return (
+      allAccounts.find((a) => a.id === paymentAccountId) ||
+      paymentAccounts.find((a) => a.id === paymentAccountId) ||
+      paymentAccounts[0] ||
+      allAccounts[0]
+    )
+  }, [allAccounts, paymentAccounts, paymentAccountId])
 
   const isWorkforceCategory =
     category === 'staff_salary' ||
@@ -367,7 +418,14 @@ export function SpendMoneyModal({
       return
     }
 
-    if (!paymentAccountId) {
+    const activePaymentAccountId =
+      paymentAccountId ||
+      paymentAccounts.find((a) => a.account_subtype === 'CASH')?.id ||
+      paymentAccounts[0]?.id ||
+      allAccounts.find((a) => a.account_subtype === 'CASH')?.id ||
+      allAccounts[0]?.id
+
+    if (!activePaymentAccountId) {
       setError(tBilingual('Please select a payment account', 'টাকা পরিশোধের হিসাব নির্বাচন করুন'))
       return
     }
@@ -388,7 +446,7 @@ export function SpendMoneyModal({
       await onSubmit({
         category,
         amount: numAmt,
-        paymentAccountId,
+        paymentAccountId: activePaymentAccountId,
         employeeId: selectedEmployeeId || undefined,
         employeeName: emp?.name || vendorName || undefined,
         paymentMethod,
@@ -834,16 +892,27 @@ export function SpendMoneyModal({
                 )}
               </div>
               <select
-                value={paymentAccountId}
-                onChange={(e) => setPaymentAccountId(e.target.value)}
+                value={paymentAccountId || paymentAccounts.find((a) => a.account_subtype === 'CASH')?.id || paymentAccounts[0]?.id || ''}
+                onChange={(e) => {
+                  setPaymentAccountId(e.target.value)
+                  if (error) setError(null)
+                }}
                 className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
                 required
               >
-                {paymentAccounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} ({acc.name_bn || acc.code}) — ৳{acc.current_balance.toLocaleString()}
+                {paymentAccounts.length === 0 ? (
+                  <option value="" disabled>
+                    {loadingAccounts
+                      ? tBilingual('Loading accounts...', 'হিসাব লোড হচ্ছে...')
+                      : tBilingual('No payment account available', 'কোন পেমেন্ট হিসাব নেই')}
                   </option>
-                ))}
+                ) : (
+                  paymentAccounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({acc.name_bn || acc.code}) — ৳{(acc.current_balance || 0).toLocaleString()}
+                    </option>
+                  ))
+                )}
               </select>
               {isOverdrawn && (
                 <p className="text-2xs text-rose-600 dark:text-rose-400 font-semibold mt-1 flex items-center gap-1">

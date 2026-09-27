@@ -236,7 +236,14 @@ export class FinanceService {
     }
 
     const accounts = await FinanceRepository.getAccounts(params.companyId)
-    const paymentAccount = accounts.find((a) => a.id === params.paymentAccountId)
+    let paymentAccount = accounts.find((a) => a.id === params.paymentAccountId || a.code === params.paymentAccountId)
+    if (!paymentAccount && accounts.length > 0) {
+      paymentAccount =
+        accounts.find((a) => a.account_type === 'ASSET' && a.account_subtype === 'CASH') ||
+        accounts.find((a) => a.account_type === 'ASSET' && (a.account_subtype === 'BANK' || a.account_subtype === 'MFS')) ||
+        accounts.find((a) => a.account_type === 'ASSET') ||
+        accounts[0]
+    }
     if (!paymentAccount) {
       throw new Error(`Payment account (${params.paymentAccountId}) not found.`)
     }
@@ -344,7 +351,14 @@ export class FinanceService {
     }
 
     const accounts = await FinanceRepository.getAccounts(params.companyId)
-    const paymentAccount = accounts.find((a) => a.id === params.paymentAccountId)
+    let paymentAccount = accounts.find((a) => a.id === params.paymentAccountId || a.code === params.paymentAccountId)
+    if (!paymentAccount && accounts.length > 0) {
+      paymentAccount =
+        accounts.find((a) => a.account_type === 'ASSET' && a.account_subtype === 'CASH') ||
+        accounts.find((a) => a.account_type === 'ASSET' && (a.account_subtype === 'BANK' || a.account_subtype === 'MFS')) ||
+        accounts.find((a) => a.account_type === 'ASSET') ||
+        accounts[0]
+    }
     if (!paymentAccount) {
       throw new Error(`Payment account (${params.paymentAccountId}) not found.`)
     }

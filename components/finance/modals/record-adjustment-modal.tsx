@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   FilePlus2,
   Plus,
@@ -51,6 +51,24 @@ export function RecordAdjustmentModal({
   const [adjustmentDate, setAdjustmentDate] = useState(new Date().toISOString().split('T')[0])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Auto-synchronize lines with valid accounts when modal opens or accounts update
+  useEffect(() => {
+    if (isOpen && accounts.length > 0) {
+      setLines((prev) => {
+        let changed = false
+        const next = prev.map((l, i) => {
+          if (!l.accountId || !accounts.some((a) => a.id === l.accountId)) {
+            changed = true
+            const fallbackAcc = accounts[i] || accounts[0]
+            return { ...l, accountId: fallbackAcc?.id || '' }
+          }
+          return l
+        })
+        return changed ? next : prev
+      })
+    }
+  }, [isOpen, accounts])
 
   const totalDebit = lines.reduce((s, l) => s + (parseFloat(l.debit) || 0), 0)
   const totalCredit = lines.reduce((s, l) => s + (parseFloat(l.credit) || 0), 0)

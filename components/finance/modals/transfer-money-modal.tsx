@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ArrowLeftRight,
   AlertCircle,
@@ -50,8 +50,23 @@ export function TransferMoneyModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const fromAcc = accounts.find((a) => a.id === fromAccountId)
-  const toAcc = accounts.find((a) => a.id === toAccountId)
+  // Auto-synchronize accounts when modal opens or account list updates
+  useEffect(() => {
+    if (isOpen && liquidAccounts.length > 0) {
+      if (!fromAccountId || !liquidAccounts.some((a) => a.id === fromAccountId)) {
+        setFromAccountId(liquidAccounts[0].id)
+      }
+      if (!toAccountId || toAccountId === fromAccountId || !liquidAccounts.some((a) => a.id === toAccountId)) {
+        const nextAcc = liquidAccounts.find((a) => a.id !== fromAccountId) || liquidAccounts[1] || liquidAccounts[0]
+        if (nextAcc) {
+          setToAccountId(nextAcc.id)
+        }
+      }
+    }
+  }, [isOpen, liquidAccounts, fromAccountId, toAccountId])
+
+  const fromAcc = accounts.find((a) => a.id === fromAccountId) || liquidAccounts[0]
+  const toAcc = accounts.find((a) => a.id === toAccountId) || liquidAccounts[1]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,7 +79,15 @@ export function TransferMoneyModal({
       return
     }
 
-    if (fromAccountId === toAccountId) {
+    const activeFromId = fromAccountId || liquidAccounts[0]?.id || accounts[0]?.id || ''
+    const activeToId = toAccountId || liquidAccounts.find((a) => a.id !== activeFromId)?.id || liquidAccounts[1]?.id || ''
+
+    if (!activeFromId || !activeToId) {
+      setError(tBilingual('Please select source and destination accounts', 'উৎস ও গন্তব্য হিসাব নির্বাচন করুন'))
+      return
+    }
+
+    if (activeFromId === activeToId) {
       setError(tBilingual('Source and destination accounts cannot be identical', 'উৎস ও গন্তব্য হিসাব একই হতে পারে না'))
       return
     }
@@ -72,8 +95,8 @@ export function TransferMoneyModal({
     try {
       setIsSubmitting(true)
       await onSubmit({
-        fromAccountId,
-        toAccountId,
+        fromAccountId: activeFromId,
+        toAccountId: activeToId,
         amount: numAmt,
         feeAmount: isNaN(fee) ? 0 : fee,
         transferDate,
@@ -110,7 +133,7 @@ export function TransferMoneyModal({
             {tBilingual('Transfer From (Source)', 'কোথা থেকে পাঠাচ্ছেন?')} *
           </Label>
           <select
-            value={fromAccountId}
+            value={fromAccountId || liquidAccounts[0]?.id || ''}
             onChange={(e) => setFromAccountId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >
@@ -128,7 +151,7 @@ export function TransferMoneyModal({
             {tBilingual('Transfer To (Destination)', 'কোথায় জমা হবে?')} *
           </Label>
           <select
-            value={toAccountId}
+            value={toAccountId || liquidAccounts[1]?.id || liquidAccounts[0]?.id || ''}
             onChange={(e) => setToAccountId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >

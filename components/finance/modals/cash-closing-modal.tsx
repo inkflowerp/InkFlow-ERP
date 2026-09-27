@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   CheckCircle2,
   AlertCircle,
@@ -46,7 +46,20 @@ export function CashClosingModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const selectedAccount = accounts.find((a) => a.id === accountId) || cashAccounts[0]
+  // Auto-synchronize cash account when modal opens or accounts update
+  useEffect(() => {
+    if (isOpen && cashAccounts.length > 0) {
+      if (!accountId || !cashAccounts.some((a) => a.id === accountId)) {
+        setAccountId(cashAccounts[0].id)
+      }
+    }
+  }, [isOpen, cashAccounts, accountId])
+
+  const selectedAccount =
+    accounts.find((a) => a.id === accountId) ||
+    cashAccounts.find((a) => a.id === accountId) ||
+    cashAccounts[0] ||
+    accounts[0]
   const expectedCash = selectedAccount?.current_balance || 0
   const countedNum = parseFloat(countedCash || '0')
   const variance = !isNaN(countedNum) ? Number((countedNum - expectedCash).toFixed(2)) : 0
@@ -54,6 +67,11 @@ export function CashClosingModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+
+    if (!selectedAccount) {
+      setError(tBilingual('Please select a cash account', 'ক্যাশ হিসাব নির্বাচন করুন'))
+      return
+    }
 
     if (isNaN(countedNum) || countedCash.trim() === '') {
       setError(tBilingual('Please enter the physical counted cash in drawer', 'ড্রয়ারের গোনা ক্যাশ টাকার পরিমাণ লিখুন'))
@@ -104,7 +122,7 @@ export function CashClosingModal({
             {tBilingual('Cash Account / Drawer', 'ক্যাশ ড্রয়ার হিসাব')} *
           </Label>
           <select
-            value={accountId}
+            value={accountId || cashAccounts[0]?.id || ''}
             onChange={(e) => setAccountId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >

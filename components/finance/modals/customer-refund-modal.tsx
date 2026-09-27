@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   RotateCcw,
   AlertCircle,
@@ -50,7 +50,19 @@ export function CustomerRefundModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const selectedCustomer = customers.find((c) => c.id === customerId)
+  // Auto-synchronize customer and account when modal opens or lists update
+  useEffect(() => {
+    if (isOpen) {
+      if (customers.length > 0 && (!customerId || !customers.some((c) => c.id === customerId))) {
+        setCustomerId(customers[0].id)
+      }
+      if (liquidAccounts.length > 0 && (!refundAccountId || !liquidAccounts.some((a) => a.id === refundAccountId))) {
+        setRefundAccountId(liquidAccounts[0].id)
+      }
+    }
+  }, [isOpen, customers, liquidAccounts, customerId, refundAccountId])
+
+  const selectedCustomer = customers.find((c) => c.id === customerId) || customers[0]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,17 +79,26 @@ export function CustomerRefundModal({
       return
     }
 
-    if (!selectedCustomer) {
+    const activeCustomerId = customerId || customers[0]?.id || ''
+    const activeCustomer = customers.find((c) => c.id === activeCustomerId) || selectedCustomer
+    const activeRefundAccountId = refundAccountId || liquidAccounts[0]?.id || accounts[0]?.id || ''
+
+    if (!activeCustomerId || !activeCustomer) {
       setError(tBilingual('Please select a customer', 'গ্রাহক নির্বাচন করুন'))
+      return
+    }
+
+    if (!activeRefundAccountId) {
+      setError(tBilingual('Please select a refund account', 'টাকা ফেরতের হিসাব নির্বাচন করুন'))
       return
     }
 
     try {
       setIsSubmitting(true)
       await onSubmit({
-        customerId: selectedCustomer.id,
-        customerName: selectedCustomer.name,
-        refundAccountId,
+        customerId: activeCustomer.id,
+        customerName: activeCustomer.name,
+        refundAccountId: activeRefundAccountId,
         amount: numAmt,
         refundDate,
         reason,
@@ -113,7 +134,7 @@ export function CustomerRefundModal({
             {tBilingual('Customer', 'গ্রাহকের নাম')} *
           </Label>
           <select
-            value={customerId}
+            value={customerId || customers[0]?.id || ''}
             onChange={(e) => setCustomerId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >
@@ -152,7 +173,7 @@ export function CustomerRefundModal({
             {tBilingual('Refunded From (Account)', 'কোন হিসাব থেকে টাকা ফেরত দেওয়া হলো?')} *
           </Label>
           <select
-            value={refundAccountId}
+            value={refundAccountId || liquidAccounts[0]?.id || ''}
             onChange={(e) => setRefundAccountId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >

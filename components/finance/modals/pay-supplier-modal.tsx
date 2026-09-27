@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   ShoppingBag,
   AlertCircle,
@@ -54,7 +54,19 @@ export function PaySupplierModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const selectedSupplier = suppliers.find((s) => s.id === supplierId)
+  // Auto-synchronize supplier and payment account when modal opens or lists update
+  useEffect(() => {
+    if (isOpen) {
+      if (suppliers.length > 0 && (!supplierId || !suppliers.some((s) => s.id === supplierId))) {
+        setSupplierId(suppliers[0].id)
+      }
+      if (liquidAccounts.length > 0 && (!paymentAccountId || !liquidAccounts.some((a) => a.id === paymentAccountId))) {
+        setPaymentAccountId(liquidAccounts[0].id)
+      }
+    }
+  }, [isOpen, suppliers, liquidAccounts, supplierId, paymentAccountId])
+
+  const selectedSupplier = suppliers.find((s) => s.id === supplierId) || suppliers[0]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,17 +78,26 @@ export function PaySupplierModal({
       return
     }
 
-    if (!supplierId || !selectedSupplier) {
+    const activeSupplierId = supplierId || suppliers[0]?.id || ''
+    const activeSupplier = suppliers.find((s) => s.id === activeSupplierId) || selectedSupplier
+    const activePaymentAccountId = paymentAccountId || liquidAccounts[0]?.id || accounts[0]?.id || ''
+
+    if (!activeSupplierId || !activeSupplier) {
       setError(tBilingual('Please select a supplier', 'সরবরাহকারী নির্বাচন করুন'))
+      return
+    }
+
+    if (!activePaymentAccountId) {
+      setError(tBilingual('Please select a payment account', 'টাকা পরিশোধের হিসাব নির্বাচন করুন'))
       return
     }
 
     try {
       setIsSubmitting(true)
       await onSubmit({
-        supplierId,
-        supplierName: selectedSupplier.supplier_name,
-        paymentAccountId,
+        supplierId: activeSupplier.id,
+        supplierName: activeSupplier.supplier_name,
+        paymentAccountId: activePaymentAccountId,
         amount: numAmt,
         paymentDate,
         referenceNumber: referenceNumber || undefined,
@@ -114,7 +135,7 @@ export function PaySupplierModal({
             {tBilingual('Select Supplier', 'সরবরাহকারী')} *
           </Label>
           <select
-            value={supplierId}
+            value={supplierId || suppliers[0]?.id || ''}
             onChange={(e) => setSupplierId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >
@@ -153,7 +174,7 @@ export function PaySupplierModal({
             {tBilingual('Paid From (Account)', 'কোন তহবিল থেকে দেওয়া হলো?')} *
           </Label>
           <select
-            value={paymentAccountId}
+            value={paymentAccountId || liquidAccounts[0]?.id || ''}
             onChange={(e) => setPaymentAccountId(e.target.value)}
             className="w-full h-10 px-3 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200"
           >
