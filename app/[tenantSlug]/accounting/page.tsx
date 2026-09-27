@@ -37,6 +37,8 @@ import {
   Users,
   Download,
   ArrowLeftRight,
+  Calendar,
+  ChevronDown,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -65,6 +67,7 @@ import type {
   CashClosingRecord,
 } from '@/types/finance.types'
 
+import { FinanceDashboardView } from '@/components/finance/finance-dashboard-view'
 import { FinanceQuickActions } from '@/components/finance/finance-quick-actions'
 import { SpendMoneyModal } from '@/components/finance/modals/spend-money-modal'
 import { TransferMoneyModal } from '@/components/finance/modals/transfer-money-modal'
@@ -400,189 +403,74 @@ export default function AccountingPage() {
         </div>
       )}
 
-      {/* Page Header */}
-      <PageHeader
-        titleEn="Finance 360 & General Ledger"
-        titleBn="ফাইন্যান্স ৩৬০ ও হিসাব ব্যবস্থাপনা"
-        descriptionEn="Money management, cash closing, General Ledger, Balance Sheet, Trial Balance, and Profitability statements."
-        descriptionBn="দৈনন্দিন টাকা গ্রহণ, খরচ এন্ট্রি, সাধারণ খতিয়ান, ব্যালেন্স শিট, রেওয়ামিল ও আর্থিক বিবরণী।"
-        icon={Landmark}
-        iconColor="text-indigo-600 dark:text-indigo-400"
-        actions={
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href={getTenantNavHref('/billing', pathname, slug)}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-              >
-                <Receipt className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{tBilingual('Billing & Collections', 'বিলিং ও কালেকশন')}</span>
-              </Button>
-            </Link>
+      {/* Page Header - Matching Reference Image */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-1">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-xs shrink-0">
+            <Wallet className="h-6 w-6" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+              Finance Dashboard
+            </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Track your cash flow, receivables, payables, expenses and profit in one place.
+            </p>
+          </div>
+        </div>
 
-            <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-              >
-                <Building className="w-3.5 h-3.5 text-teal-600" />
-                <span>{tBilingual('Suppliers & Mahajan', 'মহাজন খাতা')}</span>
-              </Button>
-            </Link>
+        {/* Header Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Date Range Picker Display */}
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer">
+            <Calendar className="w-3.5 h-3.5 text-slate-400" />
+            <span>01 Sep 2026 - 30 Sep 2026</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
+          </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportStatement}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-              title="Export Financial Summary"
-            >
-              <Download className="w-3.5 h-3.5 text-blue-600" />
-              <span>{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
-            </Button>
+          {/* Timeframe Dropdown */}
+          <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer">
+            <span>This Month</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
+          </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={loadAllData}
-              disabled={isLoading}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
-              <span className="hidden sm:inline">{tBilingual('Refresh Data', 'রিফ্রেশ')}</span>
-            </Button>
-          </div>
-        }
-      />
+          {/* Export Action Button */}
+          <Button
+            onClick={handleExportStatement}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Export</span>
+          </Button>
 
-      {/* Top Financial KPI Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* 1. Cash in Drawer */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            <span>{tBilingual('Cash in Drawer', 'ক্যাশ তহবিল')}</span>
-            <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1.5 font-mono">
-            ৳{(dashboardMetrics?.total_cash_balance || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>{tBilingual('Physical Cash', 'হাতে নগদ')}</span>
-          </div>
-        </Card>
-
-        {/* 2. Bank Balances */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            <span>{tBilingual('Bank Accounts', 'ব্যাংক তহবিল')}</span>
-            <Building className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 mt-1.5 font-mono">
-            ৳{(dashboardMetrics?.total_bank_balance || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-blue-600 dark:text-blue-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            <span>{tBilingual('Commercial Banks', 'ব্যাংক হিসাব')}</span>
-          </div>
-        </Card>
-
-        {/* 3. bKash / MFS */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-rose-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-            <span>{tBilingual('bKash / Nagad', 'বিকাশ / নগদ')}</span>
-            <CreditCard className="h-4 w-4 text-pink-600 dark:text-pink-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-pink-600 dark:text-pink-400 mt-1.5 font-mono">
-            ৳{(dashboardMetrics?.total_mfs_balance || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-pink-600 dark:text-pink-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />
-            <span>{tBilingual('MFS Wallets', 'মোবাইল ওয়ালেট')}</span>
-          </div>
-        </Card>
-
-        {/* 4. Customer Due (AR) */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/50 shadow-xs hover:border-amber-300 dark:hover:border-amber-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
-            <span>{tBilingual('Customer Due (AR)', 'গ্রাহকের বাকি')}</span>
-            <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-400 mt-1.5 font-mono">
-            ৳{(receivables?.total_receivable || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-amber-600 dark:text-amber-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            <span>{receivables?.items?.length || 0} {tBilingual('Invoices Pending', 'বকেয়া চালান')}</span>
-          </div>
-        </Card>
-
-        {/* 5. Supplier Due (AP) */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-200/80 dark:border-rose-900/50 shadow-xs hover:border-rose-300 dark:hover:border-rose-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
-            <span>{tBilingual('Supplier Due (AP)', 'মহাজন পাওনা')}</span>
-            <ShoppingBag className="h-4 w-4 text-rose-600 dark:text-rose-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-rose-700 dark:text-rose-400 mt-1.5 font-mono">
-            ৳{(payables?.total_payable || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-rose-600 dark:text-rose-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-            <span>{payables?.items?.length || 0} {tBilingual('Suppliers Due', 'মহাজন বকেয়া')}</span>
-          </div>
-        </Card>
-
-        {/* 6. Monthly Net Profit */}
-        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/50 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-700 transition-all rounded-2xl relative overflow-hidden group">
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-500" />
-          <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-            <span>{tBilingual('Monthly Profit', 'মাসের নিট লাভ')}</span>
-            <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1.5 font-mono">
-            ৳{(pnl?.net_profit || 0).toLocaleString()}
-          </div>
-          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>{tBilingual('Net Realized', 'অর্জিত লাভ')}</span>
-          </div>
-        </Card>
+          {/* Refresh Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={loadAllData}
+            disabled={isLoading}
+            className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 px-3 gap-1.5 rounded-xl cursor-pointer"
+            title="Refresh Finance Data"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Action Toolbar */}
-      <FinanceQuickActions
-        onReceiveMoney={() => {
-          router.push(getTenantNavHref('/billing', pathname, slug))
-        }}
-        onSpendMoney={() => setIsSpendModalOpen(true)}
-        onTransferMoney={() => setIsTransferModalOpen(true)}
-        onPaySupplier={() => setIsPaySupplierModalOpen(true)}
-        onCustomerRefund={() => setIsRefundModalOpen(true)}
-        onCashClosing={() => setIsCashClosingModalOpen(true)}
-        onRecordAdjustment={() => setIsAdjustmentModalOpen(true)}
-      />
-
-      {/* Modernized Pill Tabs Navigation */}
-      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
+      {/* Modernized Pill Tabs Navigation to switch between Dashboard and Statements */}
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/90 dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
         <Button
           variant={activeTab === 'overview' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('overview')}
           className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
             activeTab === 'overview'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+              ? 'bg-emerald-600 text-white shadow-xs'
               : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
           }`}
         >
           <Activity className="w-3.5 h-3.5 mr-1.5" />
-          {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
+          {tBilingual('Finance Dashboard', 'ফাইন্যান্স ড্যাশবোর্ড')}
         </Button>
 
         <Button
@@ -742,73 +630,21 @@ export default function AccountingPage() {
 
       {/* Main Tab Views */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          {/* Quick Money Flow & Recent Transactions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Liquid Accounts Balances */}
-            <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-              <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-                <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                  <Wallet className="w-4 h-4 text-emerald-600" />
-                  <span>{tBilingual('Liquid Accounts', 'তহবিল ও ওয়ালেট ব্যালেন্স')}</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4 divide-y divide-slate-100 dark:divide-slate-800/50">
-                {accounts
-                  .filter((a) => a.account_subtype === 'CASH' || a.account_subtype === 'BANK' || a.account_subtype === 'MFS')
-                  .map((acc) => (
-                    <div key={acc.id} className="py-2.5 flex items-center justify-between text-xs">
-                      <div>
-                        <div className="font-semibold text-slate-800 dark:text-slate-200">{acc.name}</div>
-                        <div className="text-2xs text-slate-500 font-mono">{acc.code} • {acc.account_subtype}</div>
-                      </div>
-                      <div className="text-right font-mono font-bold text-slate-900 dark:text-slate-100">
-                        ৳{acc.current_balance.toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-              </CardContent>
-            </Card>
-
-            {/* Overdue Receivables Alert Box */}
-            <Card className="rounded-2xl border-amber-200 dark:border-amber-800/60 shadow-xs">
-              <CardHeader className="bg-amber-50/30 dark:bg-amber-950/20 pb-3 border-b border-amber-100 dark:border-amber-900/50 flex flex-row items-center justify-between">
-                <CardTitle className="text-sm font-bold text-amber-900 dark:text-amber-200 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  <span>{tBilingual('Top Overdue Customers', 'বাকি তাগাদা')}</span>
-                </CardTitle>
-                <Link href={getTenantNavHref('/customers', pathname, slug)}>
-                  <Button variant="ghost" size="sm" className="h-7 text-xs text-amber-800">
-                    {tBilingual('View All', 'সব দেখুন')}
-                  </Button>
-                </Link>
-              </CardHeader>
-              <CardContent className="pt-4 divide-y divide-slate-100 dark:divide-slate-800/50">
-                {receivables?.items.slice(0, 5).map((item) => (
-                  <div key={item.reference_id} className="py-2.5 flex items-center justify-between text-xs">
-                    <div>
-                      <div className="font-semibold text-slate-800 dark:text-slate-200">{item.party_name}</div>
-                      <div className="text-2xs text-slate-500 font-mono">Inv #{item.reference_id} • {item.days_overdue} days overdue</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-mono font-bold text-amber-700 dark:text-amber-400">
-                        ৳{item.due_amount.toLocaleString()}
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-6 text-2xs px-2 mt-1 rounded-md"
-                        onClick={() => router.push(getTenantNavHref('/billing', pathname, slug))}
-                      >
-                        {tBilingual('Receive', 'পেমেন্ট')}
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <FinanceDashboardView
+          metrics={dashboardMetrics}
+          pnl={pnl}
+          receivables={receivables}
+          payables={payables}
+          expensesReport={expensesReport}
+          accounts={accounts}
+          onOpenSpendModal={() => setIsSpendModalOpen(true)}
+          onOpenTransferModal={() => setIsTransferModalOpen(true)}
+          onOpenPaySupplierModal={() => setIsPaySupplierModalOpen(true)}
+          onOpenCashClosingModal={() => setIsCashClosingModalOpen(true)}
+          onOpenPaymentModal={() => router.push(getTenantNavHref('/billing', pathname, slug))}
+          onNavigateTab={(tab) => setActiveTab(tab)}
+          onExport={handleExportStatement}
+        />
       )}
 
       {activeTab === 'receivables' && (
