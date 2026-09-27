@@ -95,7 +95,7 @@ export default function AdvancedProductionPage() {
 
   const [mounted, setMounted] = useState(false)
   const [viewMode, setViewMode] = useState<ProductionViewMode>('board')
-  const [activeTab, setActiveTab] = useState<string>('all')
+  const [activeTab, setActiveTab] = useState<string>('queued')
   const [tasks, setTasks] = useState<ProductionTaskRecord[]>([])
   const [machineQueues, setMachineQueues] = useState<MachineQueueGroup[]>([])
   const [selectedDept, setSelectedDept] = useState<string>('all')
@@ -804,7 +804,24 @@ export default function AdvancedProductionPage() {
   // Filter Unified Jobs by the 4 Practical Tabs
   const tabFilteredJobs = useMemo(() => {
     return unifiedJobs.filter((job) => {
+      const isJobSentToDelivery =
+        job.status === 'ready_delivery' ||
+        job.status === 'sent_to_delivery' ||
+        Boolean((job as any).sent_to_delivery)
+
+      const isJobSentToFinishing =
+        job.status === 'sent_to_finishing' ||
+        job.status === 'finishing' ||
+        Boolean((job as any).sent_to_finishing)
+
+      const isJobCompleted =
+        job.status === 'completed' ||
+        isJobSentToDelivery ||
+        isJobSentToFinishing ||
+        Boolean((job as any).is_print_completed)
+
       if (activeTab === 'queued') {
+        if (isJobCompleted || isJobSentToFinishing || isJobSentToDelivery) return false
         return (
           job.status === 'queued' ||
           job.status === 'scheduled' ||
@@ -812,17 +829,18 @@ export default function AdvancedProductionPage() {
         )
       }
       if (activeTab === 'running') {
+        if (isJobCompleted || isJobSentToFinishing || isJobSentToDelivery) return false
         return job.status === 'in_progress' || job.status === 'paused'
       }
       if (activeTab === 'finishing') {
         return (
-          job.status === 'finishing' ||
+          isJobSentToFinishing ||
           job.activeTask?.department === 'finishing' ||
           job.activeTask?.task_type === 'finishing'
         )
       }
       if (activeTab === 'completed') {
-        return job.status === 'completed' || job.status === 'ready_delivery'
+        return isJobCompleted
       }
       return true
     })
@@ -867,8 +885,27 @@ export default function AdvancedProductionPage() {
     let completed = 0
 
     unifiedJobs.forEach((j) => {
-      if (j.status === 'completed' || j.status === 'ready_delivery') {
+      const isJobSentToDelivery =
+        j.status === 'ready_delivery' ||
+        j.status === 'sent_to_delivery' ||
+        Boolean((j as any).sent_to_delivery)
+
+      const isJobSentToFinishing =
+        j.status === 'sent_to_finishing' ||
+        j.status === 'finishing' ||
+        Boolean((j as any).sent_to_finishing)
+
+      const isJobCompleted =
+        j.status === 'completed' ||
+        isJobSentToDelivery ||
+        isJobSentToFinishing ||
+        Boolean((j as any).is_print_completed)
+
+      if (isJobCompleted) {
         completed++
+        if (isJobSentToFinishing) {
+          finishing++
+        }
       } else if (j.status === 'in_progress' || j.status === 'paused') {
         running++
       } else if (
@@ -1013,6 +1050,110 @@ export default function AdvancedProductionPage() {
     }
   }
 
+  const handleSendToFinishing = (job: UnifiedProductionJob) => {
+    const now = new Date().toISOString()
+    try {
+      const allTasks =
+        PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+      const taskIds = new Set(job.tasks.map((t) => t.id))
+      let updated = false
+      const nextTasks = allTasks.map((t) => {
+        if (taskIds.has(t.id)) {
+          if (t.department === 'printing' || t.task_type === 'printing') {
+            updated = true
+            return {
+              ...t,
+              status: 'completed' as const,
+              completed_at: t.completed_at || now,
+              updated_at: now,
+            }
+          }
+          if (t.department === 'finishing' || t.task_type === 'finishing') {
+            updated = true
+            return {
+              ...t,
+              status: 'queued' as const,
+              updated_at: now,
+            }
+          }
+        }
+        return t
+      })
+
+      if (updated) {
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+      }
+
+      const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
+      if (jobIdx !== -1) {
+        allJobs[jobIdx] = {
+          ...allJobs[jobIdx],
+          status: 'finishing',
+          sent_to_finishing: true,
+          is_print_completed: true,
+          updated_at: now,
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+      }
+    } catch (_) {}
+
+    showNotification(
+      isBn
+        ? `জব #${job.jobNumber} সফলভাবে সম্পন্ন ট্যাবে স্থানান্তরিত হয়েছে (ফিনিশিং ফ্লোরে প্রেরিত)।`
+        : `Job #${job.jobNumber} moved to Completed tab! Sent to Finishing & Fabrication Floor.`,
+      'success'
+    )
+    loadData(true)
+  }
+
+  const handleSendToDelivery = (job: UnifiedProductionJob) => {
+    const now = new Date().toISOString()
+    try {
+      const allTasks =
+        PrintERPDataStore.get<ProductionTaskRecord[]>(STORAGE_KEYS.PRODUCTION_TASKS) || []
+      const taskIds = new Set(job.tasks.map((t) => t.id))
+      let updated = false
+      const nextTasks = allTasks.map((t) => {
+        if (taskIds.has(t.id)) {
+          updated = true
+          return {
+            ...t,
+            status: 'completed' as const,
+            completed_at: t.completed_at || now,
+            updated_at: now,
+          }
+        }
+        return t
+      })
+
+      if (updated) {
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_TASKS, nextTasks)
+      }
+
+      const allJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
+      const jobIdx = allJobs.findIndex((j) => j.id === job.id || j.job_number === job.jobNumber)
+      if (jobIdx !== -1) {
+        allJobs[jobIdx] = {
+          ...allJobs[jobIdx],
+          status: 'ready_delivery',
+          sent_to_delivery: true,
+          is_print_completed: true,
+          updated_at: now,
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+      }
+    } catch (_) {}
+
+    showNotification(
+      isBn
+        ? `জব #${job.jobNumber} সফলভাবে সম্পন্ন ট্যাবে স্থানান্তরিত হয়েছে (ডেলিভারিতে প্রেরিত)।`
+        : `Job #${job.jobNumber} moved to Completed tab! Sent to Delivery & Dispatch.`,
+      'success'
+    )
+    loadData(true)
+  }
+
   const handleSendWhatsAppNotice = (task: ProductionTaskRecord) => {
     const rawMsg = ProductionService.generateBangladeshiFloorWhatsAppMessage(
       task,
@@ -1101,12 +1242,6 @@ export default function AdvancedProductionPage() {
 
   const tabsConfig = [
     {
-      id: 'all',
-      label: isBn ? 'সকল প্রোডাকশন জব' : 'All Production Jobs',
-      count: unifiedJobs.length,
-      icon: Layers,
-    },
-    {
       id: 'queued',
       label: isBn ? '১. অপেক্ষমাণ কিউ' : '1. Queued & Ready',
       count: tabMetrics.queued,
@@ -1129,6 +1264,12 @@ export default function AdvancedProductionPage() {
       label: isBn ? '৪. সম্পন্ন কাজ' : '4. Completed Jobs',
       count: tabMetrics.completed,
       icon: CheckCircle2,
+    },
+    {
+      id: 'all',
+      label: isBn ? 'সকল প্রোডাকশন জব' : 'All Production Jobs',
+      count: unifiedJobs.length,
+      icon: Layers,
     },
   ]
 
@@ -1303,6 +1444,8 @@ export default function AdvancedProductionPage() {
                 onReworkTask={(t) => setReworkTaskTarget(t)}
                 onPrintTicket={(t) => setJobTicketTarget(t)}
                 onSendWhatsApp={handleSendWhatsAppNotice}
+                onSendToFinishing={handleSendToFinishing}
+                onSendToDelivery={handleSendToDelivery}
               />
             ))}
 
@@ -1323,6 +1466,8 @@ export default function AdvancedProductionPage() {
                     onReworkTask={(t) => setReworkTaskTarget(t)}
                     onPrintTicket={(t) => setJobTicketTarget(t)}
                     onSendWhatsApp={handleSendWhatsAppNotice}
+                    onSendToFinishing={handleSendToFinishing}
+                    onSendToDelivery={handleSendToDelivery}
                   />
                 ))}
               </div>

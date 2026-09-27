@@ -233,6 +233,9 @@ export interface ProductionTaskRecord {
   selected_finishing?: any[] | null
   add_ons?: string | null
   selected_add_ons?: any[] | null
+  started_at?: string | null
+  duration_seconds?: number | null
+  is_print_completed?: boolean
 }
 
 export interface UnifiedProductionJob {
@@ -258,7 +261,7 @@ export interface UnifiedProductionJob {
   addOns?: string | null
   selectedAddOns?: any[] | null
   instructions?: string | null
-  status: ProductionJobStatus | ProductionTaskStatus | 'finishing' | 'ready_delivery'
+  status: ProductionJobStatus | ProductionTaskStatus | 'finishing' | 'ready_delivery' | 'sent_to_finishing' | 'sent_to_delivery'
   tasks: ProductionTaskRecord[]
   activeTask?: ProductionTaskRecord | null
   assignedMachineName?: string | null
@@ -269,6 +272,12 @@ export interface UnifiedProductionJob {
   designGateReason?: string | null
   isBlockedByDependency?: boolean
   blockingDependencyTaskName?: string | null
+  started_at?: string | null
+  completed_at?: string | null
+  duration_seconds?: number | null
+  is_print_completed?: boolean
+  sent_to_delivery?: boolean
+  sent_to_finishing?: boolean
   created_at: string
   updated_at?: string
   allInvoiceItems?: any[]

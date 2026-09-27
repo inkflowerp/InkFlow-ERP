@@ -44,6 +44,8 @@ export interface ProductionInvoiceGroupCardProps {
   onReworkTask?: (task: ProductionTaskRecord) => void
   onPrintTicket?: (task: ProductionTaskRecord) => void
   onSendWhatsApp?: (task: ProductionTaskRecord) => void
+  onSendToFinishing?: (job: UnifiedProductionJob) => void
+  onSendToDelivery?: (job: UnifiedProductionJob) => void
 }
 
 export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceGroupCard({
@@ -58,6 +60,8 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
   onReworkTask,
   onPrintTicket,
   onSendWhatsApp,
+  onSendToFinishing,
+  onSendToDelivery,
 }: ProductionInvoiceGroupCardProps) {
   const [isExpanded, setIsExpanded] = useState(true)
   const pathname = usePathname() || ''
@@ -182,6 +186,8 @@ export const ProductionInvoiceGroupCard = React.memo(function ProductionInvoiceG
               onReworkTask={onReworkTask}
               onPrintTicket={onPrintTicket}
               onSendWhatsApp={onSendWhatsApp}
+              onSendToFinishing={onSendToFinishing}
+              onSendToDelivery={onSendToDelivery}
             />
           ))}
         </div>
