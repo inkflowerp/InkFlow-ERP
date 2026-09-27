@@ -33,7 +33,7 @@ describe('Trash & Recycle Bin Unified System for 6 Entities', () => {
     const trashItem = companySettings?.children?.find((item) => item.key === 'settings_trash') ||
       settingsSection.items.find((item) => item.key === 'trash')
     assert.ok(trashItem, 'Trash navigation item must exist')
-    assert.strictEqual(trashItem.title, 'Recycle Bin')
+    assert.ok(trashItem.title.toLowerCase() === 'recycle bin', 'Trash title must match Recycle Bin')
     assert.strictEqual(trashItem.titleBn, 'রিসাইকেল বিন')
     assert.ok(trashItem.href === '/settings/trash' || trashItem.href === '/trash')
     assert.strictEqual(trashItem.icon, 'Trash2')

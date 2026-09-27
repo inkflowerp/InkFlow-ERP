@@ -448,21 +448,23 @@ export function MobileNav() {
                 const isExpanded = searchQuery ? true : (expandedGroups[section.id] ?? true)
 
                 return (
-                  <div key={section.id} className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => toggleGroup(section.id)}
-                      className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer bangla-text"
-                    >
-                      <span>{sectionTitle}</span>
-                      {isExpanded ? (
-                        <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
-                      ) : (
-                        <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                      )}
-                    </button>
+                  <div key={section.id} className="space-y-0.5">
+                    {Boolean(section.title) && (
+                      <button
+                        type="button"
+                        onClick={() => toggleGroup(section.id)}
+                        className="w-full flex items-center justify-between px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer bangla-text"
+                      >
+                        <span>{sectionTitle}</span>
+                        {isExpanded ? (
+                          <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                        )}
+                      </button>
+                    )}
 
-                    {isExpanded && (
+                    {(section.title ? isExpanded : true) && (
                       <div className="space-y-0.5">
                         {section.items.map((item) => {
                           const Icon = iconMap[item.icon] || Sparkles

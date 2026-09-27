@@ -418,15 +418,15 @@ export function Sidebar() {
       {/* Navigation Sections */}
       <nav
         aria-label="Sidebar Menu"
-        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-3 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-3 py-2 space-y-1 overscroll-contain touch-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-800 hover:scrollbar-thumb-slate-300 dark:hover:scrollbar-thumb-slate-700"
       >
         {processedSections.map((section) => {
           const isExpanded = expandedGroups[section.id] ?? true
           const sectionTitle = tBilingual(section.title, section.titleBn)
 
           return (
-            <div key={section.id} className="space-y-1">
-              {!collapsed ? (
+            <div key={section.id} className="space-y-0.5">
+              {!collapsed && Boolean(section.title) && (
                 /* Collapsible Group Header Button (Expanded Sidebar) */
                 <button
                   type="button"
@@ -441,13 +441,15 @@ export function Sidebar() {
                     <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform" />
                   )}
                 </button>
-              ) : (
+              )}
+
+              {collapsed && Boolean(section.title) && (
                 /* Subtle Divider in Collapsed Sidebar */
                 <div className="h-px bg-slate-100 dark:bg-slate-800/80 my-1.5 mx-2" />
               )}
 
               {/* Items List */}
-              {(!collapsed ? isExpanded : true) && (
+              {(!collapsed ? (section.title ? isExpanded : true) : true) && (
                 <div className="space-y-0.5 transition-all">
                   {section.items.map((item) => {
                     const Icon = iconMap[item.icon] || Sparkles

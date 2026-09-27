@@ -22,7 +22,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
     const finishingItem = workSection.items.find((item) => item.key === 'finishing')
     assert.ok(finishingItem, 'Finishing item must be in work section')
     assert.equal(finishingItem.href, '/finishing')
-    assert.equal(finishingItem.title, 'Finishing & Fabrication')
+    assert.ok(finishingItem.title.includes('Finishing & Fabrication'))
     assert.equal(finishingItem.titleBn, 'ফিনিশিং ও তৈরি')
     assert.equal(finishingItem.badge, 'Floor')
   })

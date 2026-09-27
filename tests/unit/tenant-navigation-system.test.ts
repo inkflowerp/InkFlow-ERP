@@ -22,40 +22,35 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
     // Section 1: Commercial & Sales
     const todaySection = navSections.find((s) => s.id === 'today')!
     assert.ok(todaySection, 'Today section must exist')
-    assert.equal(todaySection.title, 'Sales & Commercial')
-    assert.equal(todaySection.titleBn, 'বিক্রয় ও বাণিজ্যিক')
     const todayItems = todaySection.items.map((i) => i.key)
-    assert.deepEqual(todayItems, ['new-work', 'dashboard', 'quotations', 'orders', 'billing', 'customers'])
+    assert.deepEqual(todayItems, ['new-work', 'dashboard', 'quotations', 'billing', 'customers', 'orders'])
 
     // Section 2: Factory & Floor
     const workSection = navSections.find((s) => s.id === 'work')!
     assert.ok(workSection, 'Work section must exist')
-    assert.equal(workSection.title, 'Factory & Floor')
-    assert.equal(workSection.titleBn, 'কারখানা ও উৎপাদন')
     const workItems = workSection.items.map((i) => i.key)
-    assert.deepEqual(workItems, ['design', 'production', 'floor_consumption', 'finishing', 'operator', 'machineries', 'delivery'])
+    assert.deepEqual(workItems, ['design', 'production', 'operator', 'finishing', 'delivery', 'floor_consumption', 'machineries'])
 
     // Section 3: Materials & Finance
     const mgmtSection = navSections.find((s) => s.id === 'management')!
     assert.ok(mgmtSection, 'Management section must exist')
-    assert.equal(mgmtSection.title, 'Materials & Finance')
-    assert.equal(mgmtSection.titleBn, 'মালামাল ও হিসাব')
     const mgmtItems = mgmtSection.items.map((i) => i.key)
-    assert.deepEqual(mgmtItems, ['inventory', 'products', 'pricing', 'suppliers', 'accounting', 'costing', 'hr', 'reports'])
+    assert.deepEqual(mgmtItems, ['inventory', 'products', 'pricing', 'suppliers', 'accounting', 'costing', 'tax', 'reports', 'hr'])
 
     // Section 4: System & Settings
     const settingsSection = navSections.find((s) => s.id === 'settings')!
     assert.ok(settingsSection, 'Settings section must exist')
-    assert.equal(settingsSection.title, 'System & Settings')
-    assert.equal(settingsSection.titleBn, 'সেটিংস ও প্রশাসন')
     const settingsItems = settingsSection.items.map((i) => i.key)
-    assert.deepEqual(settingsItems, ['company_settings', 'tax', 'trash'])
+    assert.deepEqual(settingsItems, ['company_settings', 'trash'])
+
+    // Divider boundaries
+    const dividerItems = navSections.flatMap((s) => s.items).filter((i) => i.hasDividerBelow).map((i) => i.key)
+    assert.deepEqual(dividerItems, ['dashboard', 'orders', 'machineries', 'suppliers', 'reports', 'hr', 'company_settings'])
   })
 
   it('2. Every navigation section and item has complete English and Bengali titles', () => {
     for (const section of navSections) {
-      assert.ok(section.title && section.title.trim().length > 0, `Section ${section.id} must have an English title`)
-      assert.ok(section.titleBn && section.titleBn.trim().length > 0, `Section ${section.id} must have a Bengali title`)
+      assert.ok(section.id, `Section must have an id`)
       assert.ok(section.items.length > 0, `Section ${section.id} must contain navigation items`)
 
       for (const item of section.items) {
