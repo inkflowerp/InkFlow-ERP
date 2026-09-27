@@ -71,7 +71,7 @@ export async function getBusinessReportDataAction(
       ProductionRepository.getProductionJobs(companyId).catch(() => [] as ProductionJobRecord[]),
       FinanceService.getExpenses(companyId)
         .then((res: any) =>
-          ((res?.items || res?.breakdown || []) as any[]).map((b: any) => ({
+          (((res?.items || res?.breakdown || []) as any[]).map((b: any) => ({
             id: b.id || `exp-${Math.random()}`,
             company_id: companyId,
             title: b.description || b.category_label || b.category || 'Expense',
@@ -79,7 +79,7 @@ export async function getBusinessReportDataAction(
             category: b.category,
             expense_date: b.transaction_date || b.expense_date || b.date || b.created_at,
             created_at: b.created_at || b.transaction_date || b.date || new Date().toISOString(),
-          })) as ExpenseRecord[]
+          })) as unknown as ExpenseRecord[])
         )
         .catch(async () => {
           return await AccountingService.getExpenses(companyId).catch(() => [] as ExpenseRecord[])

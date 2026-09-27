@@ -314,10 +314,10 @@ export class ReportsService {
     )
 
     const currentJobs = jobs.filter((j) =>
-      isDateInRange((j as any).scheduled_date || j.due_date || j.created_at, start, end)
+      isDateInRange((j as any).scheduled_date || (j as any).due_date || j.created_at, start, end)
     )
     const prevJobs = jobs.filter((j) =>
-      isDateInRange((j as any).scheduled_date || j.due_date || j.created_at, prevStart, prevEnd)
+      isDateInRange((j as any).scheduled_date || (j as any).due_date || j.created_at, prevStart, prevEnd)
     )
 
     // Helper: calculate total sales amount
