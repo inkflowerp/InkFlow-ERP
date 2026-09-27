@@ -43,6 +43,13 @@ import {
 import type {
   ReportPeriodKey,
   BusinessReportCalculatedData,
+  ProductSalesPoint,
+  CustomerTypeSalesPoint,
+  TopSellingProductItem,
+  TopCustomerSalesItem,
+  JobStatusMetric,
+  FinancialSummaryRow,
+  MonthlyOverviewRow,
 } from '@/types/reports.types'
 import type { SalesOrderRecord } from '@/types/order.types'
 import type { CustomerRecord } from '@/types/crm.types'
@@ -60,6 +67,7 @@ export default function BusinessReportsPage() {
   const { company } = useTenant()
 
   const [mounted, setMounted] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [branches, setBranches] = useState<BranchMasterRecord[]>([])
   const [selectedBranch, setSelectedBranch] = useState<string>('all')
 
@@ -571,7 +579,7 @@ export default function BusinessReportsPage() {
             <DonutDistributionChart
               title="Sales by Product / Service"
               totalAmount={reportData.totalPeriodSales}
-              items={reportData.salesByProduct.map((p) => ({
+              items={reportData.salesByProduct.map((p: ProductSalesPoint) => ({
                 id: p.id,
                 label: p.name,
                 amount: p.amount,
@@ -587,7 +595,7 @@ export default function BusinessReportsPage() {
             <DonutDistributionChart
               title="Sales by Customer Type"
               totalAmount={reportData.totalPeriodSales}
-              items={reportData.salesByCustomerType.map((c) => ({
+              items={reportData.salesByCustomerType.map((c: CustomerTypeSalesPoint) => ({
                 id: c.type,
                 label: c.type,
                 amount: c.amount,
@@ -641,7 +649,7 @@ export default function BusinessReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
-                    {reportData.topSellingProducts.slice(0, 5).map((item) => (
+                    {reportData.topSellingProducts.slice(0, 5).map((item: TopSellingProductItem) => (
                       <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                         <td className="py-2.5 px-1 font-mono text-slate-400">{item.rank}</td>
                         <td className="py-2.5 px-2 font-bold text-slate-900 dark:text-white truncate max-w-[130px]">
@@ -696,7 +704,7 @@ export default function BusinessReportsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
-                    {reportData.topCustomers.slice(0, 5).map((item) => (
+                    {reportData.topCustomers.slice(0, 5).map((item: TopCustomerSalesItem) => (
                       <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                         <td className="py-2.5 px-1 font-mono text-slate-400">{item.rank}</td>
                         <td className="py-2.5 px-2 font-bold text-slate-900 dark:text-white truncate max-w-[130px]">
@@ -728,7 +736,7 @@ export default function BusinessReportsPage() {
             </div>
 
             <div className="flex-1 flex flex-col justify-between space-y-3.5">
-              {reportData.jobsByStatus.map((st) => {
+              {reportData.jobsByStatus.map((st: JobStatusMetric) => {
                 let StatusIcon = CheckCircle2
                 if (st.key === 'in_production') StatusIcon = Settings
                 else if (st.key === 'designing') StatusIcon = Sparkles
@@ -796,7 +804,7 @@ export default function BusinessReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
-                  {reportData.financialSummary.map((row) => (
+                  {reportData.financialSummary.map((row: FinancialSummaryRow) => (
                     <tr
                       key={row.key}
                       className={
@@ -844,7 +852,7 @@ export default function BusinessReportsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60">
-                  {reportData.monthlyOverview.map((row) => (
+                  {reportData.monthlyOverview.map((row: MonthlyOverviewRow) => (
                     <tr key={row.month} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
                       <td className="py-2 px-1 font-sans font-bold text-slate-900 dark:text-white truncate">
                         {row.month}

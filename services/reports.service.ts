@@ -314,10 +314,10 @@ export class ReportsService {
     )
 
     const currentJobs = jobs.filter((j) =>
-      isDateInRange(j.scheduled_date || j.created_at, start, end)
+      isDateInRange((j as any).scheduled_date || j.due_date || j.created_at, start, end)
     )
     const prevJobs = jobs.filter((j) =>
-      isDateInRange(j.scheduled_date || j.created_at, prevStart, prevEnd)
+      isDateInRange((j as any).scheduled_date || j.due_date || j.created_at, prevStart, prevEnd)
     )
 
     // Helper: calculate total sales amount
@@ -326,7 +326,7 @@ export class ReportsService {
         (sum, i) =>
           sum +
           (Number(i.grand_total) ||
-            Number(i.total_amount) ||
+            Number((i as any).total_amount) ||
             Number(i.subtotal) ||
             0),
         0
@@ -337,7 +337,7 @@ export class ReportsService {
           sum +
           (Number(o.final_price) ||
             Number(o.subtotal) ||
-            Number(o.total_amount) ||
+            Number((o as any).total_amount) ||
             0),
         0
       )

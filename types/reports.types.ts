@@ -111,6 +111,20 @@ export interface MonthlyOverviewRow {
   margin: number
 }
 
+export interface BusinessReportCalculatedData {
+  dateRangeDisplay: string
+  summary: BusinessReportSummary
+  monthlySalesVsProfit: MonthlySalesVsProfitPoint[]
+  salesByProduct: ProductSalesPoint[]
+  salesByCustomerType: CustomerTypeSalesPoint[]
+  topSellingProducts: TopSellingProductItem[]
+  topCustomers: TopCustomerSalesItem[]
+  jobsByStatus: JobStatusMetric[]
+  financialSummary: FinancialSummaryRow[]
+  monthlyOverview: MonthlyOverviewRow[]
+  totalPeriodSales: number
+}
+
 export type QuickReportType =
   | 'sales'
   | 'production'

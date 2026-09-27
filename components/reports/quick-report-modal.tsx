@@ -170,7 +170,7 @@ export function QuickReportModal({
         i.customer_name || 'Walk-in Customer',
         i.subtotal || 0,
         i.vat_amount || 0,
-        i.grand_total || i.total_amount || 0,
+        i.grand_total || (i as any).total_amount || 0,
         i.paid_amount || 0,
         i.due_amount || 0,
         i.status,
@@ -196,7 +196,7 @@ export function QuickReportModal({
       const rows = customers.map((c) => [
         c.name,
         c.customer_type || 'Regular',
-        c.phone || '',
+        c.mobile || (c as any).phone || '',
         c.total_orders_count || 0,
         c.total_orders_amount || 0,
         c.total_due_balance || 0,
@@ -323,7 +323,7 @@ export function QuickReportModal({
                           {inv.invoice_date || inv.created_at?.slice(0, 10)}
                         </td>
                         <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
-                          {formatBDT(inv.grand_total || inv.total_amount || 0)}
+                          {formatBDT(inv.grand_total || (inv as any).total_amount || 0)}
                         </td>
                         <td className="py-2.5 px-3 text-right text-emerald-600 font-bold">
                           {formatBDT(inv.paid_amount || 0)}
@@ -427,7 +427,8 @@ export function QuickReportModal({
                       (c) =>
                         !searchQuery ||
                         c.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        c.phone?.includes(searchQuery)
+                        c.mobile?.includes(searchQuery) ||
+                        (c as any).phone?.includes(searchQuery)
                     )
                     .map((cust) => (
                       <tr key={cust.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
@@ -437,7 +438,7 @@ export function QuickReportModal({
                         <td className="py-2.5 px-3 text-slate-400 capitalize font-sans">
                           {cust.customer_type || 'Regular'}
                         </td>
-                        <td className="py-2.5 px-3 text-slate-500">{cust.phone || '—'}</td>
+                        <td className="py-2.5 px-3 text-slate-500">{cust.mobile || (cust as any).phone || '—'}</td>
                         <td className="py-2.5 px-3 text-center font-bold">{cust.total_orders_count || 0}</td>
                         <td className="py-2.5 px-3 text-right font-bold text-slate-900 dark:text-white">
                           {formatBDT(cust.total_orders_amount || 0)}

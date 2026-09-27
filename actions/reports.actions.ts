@@ -70,15 +70,15 @@ export async function getBusinessReportDataAction(
       OrderRepository.getOrders(companyId).catch(() => [] as SalesOrderRecord[]),
       ProductionRepository.getProductionJobs(companyId).catch(() => [] as ProductionJobRecord[]),
       FinanceService.getExpenses(companyId)
-        .then((res) =>
-          (res.breakdown || []).map((b: any) => ({
+        .then((res: any) =>
+          ((res?.items || res?.breakdown || []) as any[]).map((b: any) => ({
             id: b.id || `exp-${Math.random()}`,
             company_id: companyId,
-            title: b.description || b.category,
-            amount: b.amount,
+            title: b.description || b.category_label || b.category || 'Expense',
+            amount: Number(b.amount) || 0,
             category: b.category,
-            expense_date: b.date,
-            created_at: b.date,
+            expense_date: b.transaction_date || b.expense_date || b.date || b.created_at,
+            created_at: b.created_at || b.transaction_date || b.date || new Date().toISOString(),
           })) as ExpenseRecord[]
         )
         .catch(async () => {
