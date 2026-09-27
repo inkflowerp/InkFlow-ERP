@@ -231,7 +231,7 @@ export default function TaxPage() {
 
   if (!mounted) {
     return (
-      <div className="space-y-6 max-w-5xl animate-pulse p-4 sm:p-0">
+      <div className="space-y-6 max-w-7xl animate-pulse p-4 sm:p-0">
         <div className="h-20 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
         <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-3/4" />
         <div className="h-44 bg-slate-200 dark:bg-slate-800 rounded-2xl w-full" />
@@ -244,7 +244,7 @@ export default function TaxPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl pb-16">
+    <div className="space-y-6 max-w-7xl pb-16">
       {/* Header */}
       <PageHeader
         titleEn="Bangladesh VAT & NBR Tax Management"
@@ -260,14 +260,14 @@ export default function TaxPage() {
               variant="outline"
               size="sm"
               onClick={handlePrintVatWorksheet}
-              className="h-8 text-xs font-semibold gap-1.5 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="h-9 rounded-xl text-xs font-semibold gap-1.5 border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
             >
               <Printer className="h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
               <span>{tBilingual('Print Worksheet', 'ওয়ার্কশিট প্রিন্ট')}</span>
             </Button>
             <Link
               href={getTenantNavHref('/settings/documents', pathname, slug)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 h-9 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 transition-colors"
             >
               <FileText className="h-3.5 w-3.5 text-blue-600" />
               <span>{tBilingual('Document Templates', 'ডকুমেন্ট টেমপ্লেট')}</span>
@@ -286,36 +286,43 @@ export default function TaxPage() {
       )}
 
       {/* NBR Monthly VAT Return Cockpit (Mushak 9.1 Summary) */}
-      <Card className="border-l-4 border-l-emerald-600 dark:border-l-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10 shadow-sm overflow-hidden">
-        <div className="p-5 border-b border-emerald-200/60 dark:border-emerald-900/40">
+      <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all duration-200">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-bold text-base text-emerald-950 dark:text-emerald-100 flex items-center gap-2">
-                  <Receipt className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>{tBilingual('NBR Monthly VAT Return Summary (Mushak-9.1)', 'এনবিআর মাসিক মূসক রিটার্ন সারাংশ (মূসক-৯.১)')}</span>
-                </h3>
-                <Badge className="bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200 text-2xs font-mono font-bold">
-                  {vatReturnSummary.period}
-                </Badge>
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
+                  <Receipt className="h-5 w-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-base text-slate-900 dark:text-white">
+                      {tBilingual('NBR Monthly VAT Return Summary (Mushak-9.1)', 'এনবিআর মাসিক মূসক রিটার্ন সারাংশ (মূসক-৯.১)')}
+                    </h3>
+                    <Badge className="bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-2xs font-mono font-bold">
+                      {vatReturnSummary.period}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {tBilingual(
+                      'Automated reconciliation of output VAT collected on sales versus input VAT paid on raw materials (Paper, Plates, Inks, Media).',
+                      'বিক্রয়ের উপর সংগৃহীত বিক্রয় মূসক এবং কাঁচামাল ক্রয়ের উপর পরিশোধিত ক্রয় মূসক রেয়াতের স্বয়ংক্রিয় হিসাব।'
+                    )}
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                {tBilingual(
-                  'Automated reconciliation of output VAT collected on sales versus input VAT paid on raw materials (Paper, Plates, Inks, Media).',
-                  'বিক্রয়ের উপর সংগৃহীত বিক্রয় মূসক এবং কাঁচামাল ক্রয়ের উপর পরিশোধিত ক্রয় মূসক রেয়াতের স্বয়ংক্রিয় হিসাব।'
-                )}
-              </p>
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-800 p-0.5 bg-white dark:bg-slate-900 text-xs">
+              <div className="inline-flex rounded-xl border border-slate-200 dark:border-slate-800 p-1 bg-slate-100 dark:bg-slate-950 text-xs">
                 <button
                   type="button"
                   onClick={() => setSelectedPeriodMonth('current')}
-                  className={`px-2.5 py-1 rounded-md font-semibold text-xs transition-all ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
                     selectedPeriodMonth === 'current'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {tBilingual('This Month', 'চলতি মাস')}
@@ -323,21 +330,21 @@ export default function TaxPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedPeriodMonth('previous')}
-                  className={`px-2.5 py-1 rounded-md font-semibold text-xs transition-all ${
+                  className={`px-3 py-1.5 rounded-lg font-semibold text-xs transition-all ${
                     selectedPeriodMonth === 'previous'
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   {tBilingual('Last Month', 'গত মাস')}
                 </button>
               </div>
 
-              <div className="text-right pl-3 border-l border-emerald-200/80 dark:border-emerald-800/80">
+              <div className="text-right pl-4 border-l border-slate-200 dark:border-slate-800">
                 <span className="text-2xs uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400 block">
                   {tBilingual('Net Treasury Payable', 'সরকারি কোষাগারে প্রদেয়')}
                 </span>
-                <div className="text-xl sm:text-2xl font-black font-mono text-emerald-700 dark:text-emerald-300">
+                <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
                   {formatBDT(vatReturnSummary.netPayableVat)}
                 </div>
               </div>
@@ -345,49 +352,61 @@ export default function TaxPage() {
           </div>
         </div>
 
-        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
+        <div className="p-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1.5">
             <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-2xs font-semibold">
-              <span>{tBilingual('1. Gross Taxable Turnover', '১. মোট করযোগ্য বিক্রয়')}</span>
-              <span className="font-mono text-2xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+              <span className="flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-slate-400" />
+                <span>{tBilingual('1. Gross Taxable Turnover', '১. মোট করযোগ্য বিক্রয়')}</span>
+              </span>
+              <span className="font-mono text-2xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-full font-bold">
                 {vatReturnSummary.invoiceCount} {tBilingual('invoices', 'চালান')}
               </span>
             </div>
-            <div className="font-bold text-slate-900 dark:text-slate-100 text-base font-mono">
+            <div className="font-black text-slate-900 dark:text-slate-100 text-lg font-mono">
               {formatBDT(vatReturnSummary.grossTurnover)}
             </div>
+            <div className="text-2xs text-slate-400">Total B2B & Retail Revenue</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between text-blue-600 dark:text-blue-400 text-2xs font-semibold">
-              <span>{tBilingual('2. Output VAT', '২. প্রদেয় বিক্রয় মূসক')}</span>
-              <Badge variant="outline" className="text-2xs font-mono border-blue-200 text-blue-700 dark:border-blue-800 dark:text-blue-300">
+          <div className="p-4 rounded-xl bg-blue-50/40 dark:bg-blue-950/20 border border-blue-200/60 dark:border-blue-800/60 space-y-1.5">
+            <div className="flex items-center justify-between text-blue-700 dark:text-blue-300 text-2xs font-semibold">
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-blue-600" />
+                <span>{tBilingual('2. Output VAT', '২. প্রদেয় বিক্রয় মূসক')}</span>
+              </span>
+              <Badge variant="outline" className="text-2xs font-mono border-blue-300 text-blue-700 dark:border-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900">
                 Mushak 6.3
               </Badge>
             </div>
-            <div className="font-bold text-blue-600 dark:text-blue-400 text-base font-mono">
+            <div className="font-black text-blue-600 dark:text-blue-400 text-lg font-mono">
               +{formatBDT(vatReturnSummary.outputVat)}
             </div>
+            <div className="text-2xs text-blue-600/80 dark:text-blue-400/80">Collected from buyers</div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-1 shadow-2xs">
-            <div className="flex items-center justify-between text-purple-600 dark:text-purple-400 text-2xs font-semibold">
-              <span>{tBilingual('3. Input VAT Rebate', '৩. অনুমোদিত রেয়াত')}</span>
-              <span className="font-mono text-2xs bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded">
+          <div className="p-4 rounded-xl bg-purple-50/40 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/60 space-y-1.5">
+            <div className="flex items-center justify-between text-purple-700 dark:text-purple-300 text-2xs font-semibold">
+              <span className="flex items-center gap-1.5">
+                <Scale className="w-3.5 h-3.5 text-purple-600" />
+                <span>{tBilingual('3. Input VAT Rebate', '৩. অনুমোদিত রেয়াত')}</span>
+              </span>
+              <span className="font-mono text-2xs bg-white dark:bg-slate-900 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full font-bold">
                 {vatReturnSummary.purchaseCount} {tBilingual('bills', 'বিল')}
               </span>
             </div>
-            <div className="font-bold text-purple-600 dark:text-purple-400 text-base font-mono">
+            <div className="font-black text-purple-600 dark:text-purple-400 text-lg font-mono">
               -{formatBDT(vatReturnSummary.inputVat)}
             </div>
+            <div className="text-2xs text-purple-600/80 dark:text-purple-400/80">Paid on raw material procurement</div>
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Main Settings Form */}
       <form onSubmit={handleSaveTax} className="space-y-6">
         {/* VAT Master Controls & Pricing Policies */}
-        <Card className="p-6 space-y-5 border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6 space-y-5 border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
             <div>
               <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
@@ -545,7 +564,7 @@ export default function TaxPage() {
         </Card>
 
         {/* Withholding Tax & Source Deductions (TDS & VDS) */}
-        <Card className="p-6 space-y-4 border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6 space-y-4 border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs">
           <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               <Scale className="h-4 w-4 text-purple-600" />
@@ -669,7 +688,7 @@ export default function TaxPage() {
         </Card>
 
         {/* National Board of Revenue (NBR) Legal Particulars */}
-        <Card className="p-6 space-y-4 border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6 space-y-4 border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-xs">
           <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
             <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
               <Building className="h-4 w-4 text-emerald-600" />
@@ -873,7 +892,7 @@ export default function TaxPage() {
             <Button
               type="submit"
               isLoading={isLoading}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold w-full sm:w-auto h-10 sm:h-9 px-5 shadow-xs"
+              className="bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold w-full sm:w-auto h-10 sm:h-9 px-6 rounded-xl shadow-xs transition-all"
             >
               <Save className="mr-1.5 h-3.5 w-3.5" />
               {tBilingual('Save Tax & VAT Settings', 'ভ্যাট ও ট্যাক্স সেটিংস সংরক্ষণ করুন')}
@@ -883,7 +902,7 @@ export default function TaxPage() {
       </form>
 
       {/* Interactive Live VAT Calculation Tester */}
-      <Card className="p-5 border-slate-200 dark:border-slate-800 space-y-4 shadow-sm">
+      <Card className="p-5 border-slate-200/80 dark:border-slate-800 rounded-2xl space-y-4 shadow-xs">
         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
             <Calculator className="h-5 w-5 text-blue-600 dark:text-blue-400" />

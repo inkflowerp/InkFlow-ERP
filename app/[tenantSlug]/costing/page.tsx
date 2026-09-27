@@ -887,7 +887,7 @@ export default function JobCostingPage() {
               <Button
                 size="sm"
                 onClick={() => setIsNewCostingOpen(true)}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5"
+                className="bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold text-xs h-9 px-4 rounded-xl shadow-xs flex items-center gap-1.5 transition-all"
               >
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>{tBilingual('+ New Costing', '+ কস্টিং গণনা')}</span>
@@ -907,47 +907,106 @@ export default function JobCostingPage() {
         {/* Executive Profitability Intelligence Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Realized Margin */}
-          <Card className="p-4 border-l-4 border-l-emerald-600 bg-emerald-50/20 dark:bg-emerald-950/10 rounded-2xl shadow-xs">
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                 {tBilingual('Average Realized Margin', 'গড় অর্জিত মার্জিন')}
               </span>
-              <span className="text-2xs font-black px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900">
+              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
                 Target &gt; 25%
               </span>
             </div>
-            <div className="text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1 font-mono">
-              {isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
+            <div className="flex items-baseline justify-between mt-2">
+              <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
+                {isSalesRoleShielded ? '•••• %' : `${avgMargin.toFixed(1)}%`}
+              </div>
+              <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+                <TrendingUp className="w-4 h-4" />
+              </div>
             </div>
-            <span className="text-2xs text-emerald-600 font-medium">
-              Across {completedJobs.length} completed production runs
-            </span>
-          </Card>
+            <div className="mt-2 flex items-center gap-1.5 text-2xs text-emerald-700 dark:text-emerald-400 font-medium">
+              <CheckCircle2 className="w-3 h-3 shrink-0" />
+              <span>Across {completedJobs.length} completed production runs</span>
+            </div>
+          </div>
 
           {/* Net Production Profit */}
-          <Card className="p-4 border-l-4 border-l-blue-600 rounded-2xl shadow-xs">
-            <span className="text-xs font-semibold text-slate-500">{tBilingual('Realized Job Profit', 'মোট অর্জিত লাভ')}</span>
-            <div className="text-2xl font-black text-blue-600 mt-1 font-mono">
-              {isSalesRoleShielded ? '৳ ••••••' : <CurrencyDisplay amount={totalActualProfit} />}
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {tBilingual('Realized Job Profit', 'মোট অর্জিত লাভ')}
+              </span>
+              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                Audited
+              </span>
             </div>
-            <span className="text-2xs text-slate-400 font-mono">Total Billed: {formatBDT(totalRevenue)}</span>
-          </Card>
+            <div className="flex items-baseline justify-between mt-2">
+              <div className="text-2xl font-black text-blue-600 dark:text-blue-400 font-mono tracking-tight">
+                {isSalesRoleShielded ? '৳ ••••••' : <CurrencyDisplay amount={totalActualProfit} />}
+              </div>
+              <div className="p-2 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+                <DollarSign className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-2xs text-slate-500 dark:text-slate-400 font-mono">
+              <span>Total Billed:</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-300">{formatBDT(totalRevenue)}</span>
+            </div>
+          </div>
 
           {/* Cost Overruns Alert */}
-          <Card className="p-4 border-l-4 border-l-amber-500 rounded-2xl shadow-xs">
-            <span className="text-xs font-semibold text-slate-500">{tBilingual('Budget Overruns', 'বাজেট অতিরিক্ত ব্যয়')}</span>
-            <div className="text-2xl font-black text-amber-600 mt-1 font-mono">{overrunJobsCount} Jobs</div>
-            <span className="text-2xs text-amber-600 font-medium">Transport/Labor overtime exceeded</span>
-          </Card>
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {tBilingual('Budget Overruns', 'বাজেট অতিরিক্ত ব্যয়')}
+              </span>
+              <span className={`text-2xs font-bold px-2 py-0.5 rounded-full border ${
+                overrunJobsCount > 0
+                  ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+              }`}>
+                {overrunJobsCount > 0 ? 'Requires Audit' : 'Healthy'}
+              </span>
+            </div>
+            <div className="flex items-baseline justify-between mt-2">
+              <div className="text-2xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
+                {overrunJobsCount} Jobs
+              </div>
+              <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2 text-2xs text-amber-600 dark:text-amber-400 font-medium truncate">
+              Transport / overtime exceeded
+            </div>
+          </div>
 
           {/* Material & Nesting Savings */}
-          <Card className="p-4 border-l-4 border-l-purple-600 rounded-2xl shadow-xs">
-            <span className="text-xs font-semibold text-slate-500">{tBilingual('Material & Yield Savings', 'কাঁচামাল ও নেস্টিং সাশ্রয়')}</span>
-            <div className="text-2xl font-black text-purple-600 mt-1 font-mono">
-              {isSalesRoleShielded ? '৳ ••••••' : formatBDT(totalSavings)}
+          <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+            <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600" />
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                {tBilingual('Material & Yield Savings', 'কাঁচামাল ও নেস্টিং সাশ্রয়')}
+              </span>
+              <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                Efficiency
+              </span>
             </div>
-            <span className="text-2xs text-purple-600 font-medium">Favorable gang-run nesting</span>
-          </Card>
+            <div className="flex items-baseline justify-between mt-2">
+              <div className="text-2xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
+                {isSalesRoleShielded ? '৳ ••••••' : formatBDT(totalSavings)}
+              </div>
+              <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+                <Sparkles className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="mt-2 text-2xs text-purple-600 dark:text-purple-400 font-medium truncate">
+              Favorable gang-run nesting yield
+            </div>
+          </div>
         </div>
 
         {/* Sensitive Cost Notice for Sales Mode */}
@@ -1193,8 +1252,29 @@ export default function JobCostingPage() {
                   ))}
                   {filteredCostings.length === 0 && (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-400 text-xs">
-                        No job costings found. Click "+ New Costing" to initialize a job costing sheet.
+                      <td colSpan={8} className="py-16 text-center">
+                        <div className="flex flex-col items-center justify-center gap-2">
+                          <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
+                            <Calculator className="w-6 h-6" />
+                          </div>
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                            {tBilingual('No job costings found', 'কোনো জব কস্টিং পাওয়া যায়নি')}
+                          </span>
+                          <span className="text-xs text-slate-400 max-w-sm">
+                            {tBilingual(
+                              'Try adjusting your search criteria or create a new job costing sheet with full 9-head cost tracking.',
+                              'অন্য কোনো শব্দ দিয়ে সার্চ করুন অথবা নতুন জব কস্টিং শুরু করতে নিচের বাটনে চাপ দিন।'
+                            )}
+                          </span>
+                          <Button
+                            size="sm"
+                            onClick={() => setIsNewCostingOpen(true)}
+                            className="mt-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs h-8 px-3 shadow-xs"
+                          >
+                            <Plus className="w-3.5 h-3.5 mr-1" />
+                            <span>{tBilingual('New Job Costing', 'নতুন কস্টিং শুরু করুন')}</span>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -1329,8 +1409,16 @@ export default function JobCostingPage() {
                 </div>
               ))}
               {filteredCostings.length === 0 && (
-                <div className="p-8 text-center text-slate-400 text-xs">
-                  No job costings found.
+                <div className="p-12 text-center flex flex-col items-center justify-center gap-2">
+                  <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
+                    <Calculator className="w-6 h-6" />
+                  </div>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {tBilingual('No job costings found', 'কোনো জব কস্টিং পাওয়া যায়নি')}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    {tBilingual('Click "+ New Costing" to initialize a job costing sheet.', 'নতুন কস্টিং শুরু করতে উপরের বাটনে চাপ দিন।')}
+                  </span>
                 </div>
               )}
             </div>
@@ -1348,20 +1436,27 @@ export default function JobCostingPage() {
         >
           <form onSubmit={handleCreateCosting} className="space-y-4 pt-1 max-h-[75vh] overflow-y-auto px-1">
             {/* Quick Industry Presets */}
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <Label className="text-xs font-bold text-slate-700 dark:text-slate-300">
                 {tBilingual('Quick Industry Presets', 'শিল্পভিত্তিক দ্রুত প্রিসেট')}
               </Label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {INDUSTRY_PRESETS.map((p) => (
                   <button
                     key={p.id}
                     type="button"
                     onClick={() => handleApplyPreset(p.id)}
-                    className="text-left p-2 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-xs transition-colors"
+                    className="text-left p-3 rounded-xl border border-slate-200/90 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/40 dark:hover:bg-emerald-950/20 text-xs transition-all group shadow-2xs hover:shadow-xs"
                   >
-                    <div className="font-semibold text-slate-800 dark:text-slate-200">{tBilingual(p.nameEn, p.nameBn || p.nameEn)}</div>
-                    <div className="text-2xs text-slate-500 font-mono mt-0.5">Preset Ref: {formatBDT(p.selling)}</div>
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-emerald-700 dark:group-hover:text-emerald-300 truncate">
+                        {tBilingual(p.nameEn, p.nameBn || p.nameEn)}
+                      </span>
+                      <span className="text-2xs font-mono font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100/80 dark:bg-emerald-950/80 px-2 py-0.5 rounded-full shrink-0">
+                        {formatBDT(p.selling)}
+                      </span>
+                    </div>
+                    <div className="text-2xs text-slate-500 dark:text-slate-400 font-mono mt-1.5 truncate">{p.specs}</div>
                   </button>
                 ))}
               </div>

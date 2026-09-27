@@ -35,6 +35,8 @@ import {
   Landmark,
   Receipt,
   Users,
+  Download,
+  ArrowLeftRight,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -131,6 +133,8 @@ export default function AccountingPage() {
   // UI State
   const [activeTab, setActiveTab] = useState<string>('overview')
   const [selectedLedgerAccountId, setSelectedLedgerAccountId] = useState<string>('')
+  const [receivablesSearch, setReceivablesSearch] = useState<string>('')
+  const [payablesSearch, setPayablesSearch] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
 
@@ -339,6 +343,39 @@ export default function AccountingPage() {
     }
   }
 
+  const handleExportStatement = () => {
+    try {
+      const rows = [
+        ['Metric / Account', 'Category', 'Balance / Amount (BDT)'],
+        ['Cash in Drawer', 'Liquid Asset', String(dashboardMetrics?.total_cash_balance || 0)],
+        ['Bank Balances', 'Liquid Asset', String(dashboardMetrics?.total_bank_balance || 0)],
+        ['bKash / MFS Wallets', 'Liquid Asset', String(dashboardMetrics?.total_mfs_balance || 0)],
+        ['Customer Receivables (AR)', 'Current Asset', String(receivables?.total_receivable || 0)],
+        ['Supplier Payables (AP)', 'Current Liability', String(payables?.total_payable || 0)],
+        ['Monthly Net Profit', 'Income Statement', String(pnl?.net_profit || 0)],
+        ['Monthly Revenue', 'Income Statement', String(pnl?.revenue?.total || 0)],
+        ['Monthly OPEX Expenses', 'Income Statement', String(pnl?.operating_expenses?.total || 0)],
+      ]
+
+      const csvContent =
+        'data:text/csv;charset=utf-8,\uFEFF' +
+        rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n')
+      const encodedUri = encodeURI(csvContent)
+      const link = document.createElement('a')
+      link.setAttribute('href', encodedUri)
+      link.setAttribute(
+        'download',
+        `financial_summary_${new Date().toISOString().split('T')[0]}.csv`
+      )
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      showNotification(tBilingual('Financial statement exported to CSV', 'আর্থিক বিবরণী সিএসভি ডাউনলোড সম্পন্ন'))
+    } catch {
+      showNotification('Export failed')
+    }
+  }
+
   if (!mounted) {
     return (
       <div className="space-y-6 pb-20 animate-pulse">
@@ -372,12 +409,12 @@ export default function AccountingPage() {
         icon={Landmark}
         iconColor="text-indigo-600 dark:text-indigo-400"
         actions={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             <Link href={getTenantNavHref('/billing', pathname, slug)}>
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
               >
                 <Receipt className="w-3.5 h-3.5 text-emerald-600" />
                 <span>{tBilingual('Billing & Collections', 'বিলিং ও কালেকশন')}</span>
@@ -388,7 +425,7 @@ export default function AccountingPage() {
               <Button
                 variant="outline"
                 size="sm"
-                className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
               >
                 <Building className="w-3.5 h-3.5 text-teal-600" />
                 <span>{tBilingual('Suppliers & Mahajan', 'মহাজন খাতা')}</span>
@@ -398,12 +435,23 @@ export default function AccountingPage() {
             <Button
               variant="outline"
               size="sm"
+              onClick={handleExportStatement}
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+              title="Export Financial Summary"
+            >
+              <Download className="w-3.5 h-3.5 text-blue-600" />
+              <span>{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
               onClick={loadAllData}
               disabled={isLoading}
-              className="rounded-xl flex items-center gap-1.5 text-xs h-9"
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              <span>{tBilingual('Refresh Data', 'রিফ্রেশ')}</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
+              <span className="hidden sm:inline">{tBilingual('Refresh Data', 'রিফ্রেশ')}</span>
             </Button>
           </div>
         }
@@ -411,57 +459,99 @@ export default function AccountingPage() {
 
       {/* Top Financial KPI Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
-            {tBilingual('Cash in Drawer', 'ক্যাশ তহবিল')}
-          </span>
-          <div className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+        {/* 1. Cash in Drawer */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-teal-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span>{tBilingual('Cash in Drawer', 'ক্যাশ তহবিল')}</span>
+            <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white mt-1.5 font-mono">
             ৳{(dashboardMetrics?.total_cash_balance || 0).toLocaleString()}
           </div>
+          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>{tBilingual('Physical Cash', 'হাতে নগদ')}</span>
+          </div>
         </Card>
 
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
-            {tBilingual('Bank Balances', 'ব্যাংক তহবিল')}
-          </span>
-          <div className="text-base font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+        {/* 2. Bank Balances */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span>{tBilingual('Bank Accounts', 'ব্যাংক তহবিল')}</span>
+            <Building className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 mt-1.5 font-mono">
             ৳{(dashboardMetrics?.total_bank_balance || 0).toLocaleString()}
           </div>
+          <div className="text-2xs text-blue-600 dark:text-blue-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span>{tBilingual('Commercial Banks', 'ব্যাংক হিসাব')}</span>
+          </div>
         </Card>
 
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs p-3.5">
-          <span className="text-2xs font-medium text-slate-500 dark:text-slate-400">
-            {tBilingual('bKash / MFS', 'বিকাশ / নগদ')}
-          </span>
-          <div className="text-base font-bold text-pink-600 dark:text-pink-400 mt-0.5">
+        {/* 3. bKash / MFS */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-slate-200/80 dark:border-slate-800/80 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-rose-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <span>{tBilingual('bKash / Nagad', 'বিকাশ / নগদ')}</span>
+            <CreditCard className="h-4 w-4 text-pink-600 dark:text-pink-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-pink-600 dark:text-pink-400 mt-1.5 font-mono">
             ৳{(dashboardMetrics?.total_mfs_balance || 0).toLocaleString()}
           </div>
+          <div className="text-2xs text-pink-600 dark:text-pink-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-500" />
+            <span>{tBilingual('MFS Wallets', 'মোবাইল ওয়ালেট')}</span>
+          </div>
         </Card>
 
-        <Card className="rounded-2xl border-amber-200 dark:border-amber-800/60 bg-amber-50/30 dark:bg-amber-950/10 shadow-xs p-3.5">
-          <span className="text-2xs font-semibold text-amber-800 dark:text-amber-300">
-            {tBilingual('Customer Due (AR)', 'গ্রাহকের বাকি')}
-          </span>
-          <div className="text-base font-bold text-amber-900 dark:text-amber-200 mt-0.5">
+        {/* 4. Customer Due (AR) */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-amber-200/80 dark:border-amber-900/50 shadow-xs hover:border-amber-300 dark:hover:border-amber-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 to-orange-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
+            <span>{tBilingual('Customer Due (AR)', 'গ্রাহকের বাকি')}</span>
+            <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-amber-700 dark:text-amber-400 mt-1.5 font-mono">
             ৳{(receivables?.total_receivable || 0).toLocaleString()}
           </div>
-        </Card>
-
-        <Card className="rounded-2xl border-rose-200 dark:border-rose-800/60 bg-rose-50/30 dark:bg-rose-950/10 shadow-xs p-3.5">
-          <span className="text-2xs font-semibold text-rose-800 dark:text-rose-300">
-            {tBilingual('Supplier Due (AP)', 'সরবরাহকারী পাওনা')}
-          </span>
-          <div className="text-base font-bold text-rose-900 dark:text-rose-200 mt-0.5">
-            ৳{(payables?.total_payable || 0).toLocaleString()}
+          <div className="text-2xs text-amber-600 dark:text-amber-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            <span>{receivables?.items?.length || 0} {tBilingual('Invoices Pending', 'বকেয়া চালান')}</span>
           </div>
         </Card>
 
-        <Card className="rounded-2xl border-emerald-200 dark:border-emerald-800/60 bg-emerald-50/30 dark:bg-emerald-950/10 shadow-xs p-3.5">
-          <span className="text-2xs font-semibold text-emerald-800 dark:text-emerald-300">
-            {tBilingual('Monthly Net Profit', 'মাসের নিট লাভ')}
-          </span>
-          <div className="text-base font-bold text-emerald-900 dark:text-emerald-200 mt-0.5">
+        {/* 5. Supplier Due (AP) */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-rose-200/80 dark:border-rose-900/50 shadow-xs hover:border-rose-300 dark:hover:border-rose-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500 to-red-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-rose-700 dark:text-rose-400 uppercase tracking-wider">
+            <span>{tBilingual('Supplier Due (AP)', 'মহাজন পাওনা')}</span>
+            <ShoppingBag className="h-4 w-4 text-rose-600 dark:text-rose-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-rose-700 dark:text-rose-400 mt-1.5 font-mono">
+            ৳{(payables?.total_payable || 0).toLocaleString()}
+          </div>
+          <div className="text-2xs text-rose-600 dark:text-rose-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            <span>{payables?.items?.length || 0} {tBilingual('Suppliers Due', 'মহাজন বকেয়া')}</span>
+          </div>
+        </Card>
+
+        {/* 6. Monthly Net Profit */}
+        <Card className="p-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-emerald-200/80 dark:border-emerald-900/50 shadow-xs hover:border-emerald-300 dark:hover:border-emerald-700 transition-all rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 to-cyan-500" />
+          <div className="flex items-center justify-between text-2xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            <span>{tBilingual('Monthly Profit', 'মাসের নিট লাভ')}</span>
+            <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div className="text-xl sm:text-2xl font-black text-emerald-700 dark:text-emerald-400 mt-1.5 font-mono">
             ৳{(pnl?.net_profit || 0).toLocaleString()}
+          </div>
+          <div className="text-2xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            <span>{tBilingual('Net Realized', 'অর্জিত লাভ')}</span>
           </div>
         </Card>
       </div>
@@ -469,7 +559,6 @@ export default function AccountingPage() {
       {/* Quick Action Toolbar */}
       <FinanceQuickActions
         onReceiveMoney={() => {
-          // Open customer billing & collections
           router.push(getTenantNavHref('/billing', pathname, slug))
         }}
         onSpendMoney={() => setIsSpendModalOpen(true)}
@@ -480,107 +569,173 @@ export default function AccountingPage() {
         onRecordAdjustment={() => setIsAdjustmentModalOpen(true)}
       />
 
-      {/* Tabs Navigation */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-200 dark:border-slate-800 pb-2">
+      {/* Modernized Pill Tabs Navigation */}
+      <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-x-auto touch-scroll backdrop-blur-md">
         <Button
           variant={activeTab === 'overview' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('overview')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'overview'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Activity className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Dashboard', 'ড্যাশবোর্ড')}
         </Button>
+
         <Button
           variant={activeTab === 'expenses' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('expenses')}
-          className={`rounded-xl text-xs flex items-center gap-1.5 font-semibold ${
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'expenses'
-              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
+              ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white shadow-xs'
               : 'text-rose-700 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100'
           }`}
         >
           <TrendingDown className="w-3.5 h-3.5" />
           <span>{tBilingual('Expenses & Salary', 'খরচ ও স্টাফ বেতন')}</span>
         </Button>
+
         <Button
           variant={activeTab === 'receivables' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('receivables')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'receivables'
+              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Users className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Customer Due', 'গ্রাহকের বাকি')}
         </Button>
+
         <Button
           variant={activeTab === 'payables' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('payables')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'payables'
+              ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <ShoppingBag className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Supplier Due', 'পাওনাদার')}
         </Button>
+
         <Button
           variant={activeTab === 'closings' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('closings')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'closings'
+              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Clock className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Cash Closings', 'ক্যাশ হিস্ট্রি')}
         </Button>
+
         <Button
           variant={activeTab === 'ledger' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('ledger')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'ledger'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <BookOpen className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('General Ledger', 'খতিয়ান')}
         </Button>
+
         <Button
           variant={activeTab === 'pnl' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('pnl')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'pnl'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <PieChart className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('P&L Statement', 'লাভ-ক্ষতি')}
         </Button>
+
         <Button
           variant={activeTab === 'balance_sheet' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('balance_sheet')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'balance_sheet'
+              ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Scale className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Balance Sheet', 'ব্যালেন্স শিট')}
         </Button>
+
         <Button
           variant={activeTab === 'cash_flow' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('cash_flow')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'cash_flow'
+              ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <ArrowLeftRight className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Cash Flow', 'ক্যাশ ফ্লো')}
         </Button>
+
         <Button
           variant={activeTab === 'trial_balance' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('trial_balance')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'trial_balance'
+              ? 'bg-gradient-to-r from-sky-600 to-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <FileCheck2 className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Trial Balance', 'রেওয়ামিল')}
         </Button>
+
         <Button
           variant={activeTab === 'job_profitability' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('job_profitability')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'job_profitability'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Calculator className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Job Profitability', 'কস্টিং লাভ')}
         </Button>
+
         <Button
           variant={activeTab === 'accounts' ? 'default' : 'ghost'}
           size="sm"
           onClick={() => setActiveTab('accounts')}
-          className="rounded-xl text-xs"
+          className={`rounded-xl text-xs px-3.5 h-8.5 shrink-0 font-bold transition-all ${
+            activeTab === 'accounts'
+              ? 'bg-gradient-to-r from-slate-800 to-slate-900 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+          }`}
         >
+          <Landmark className="w-3.5 h-3.5 mr-1.5" />
           {tBilingual('Chart of Accounts', 'হিসাব তালিকা')}
         </Button>
       </div>
@@ -657,11 +812,20 @@ export default function AccountingPage() {
       )}
 
       {activeTab === 'receivables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {tBilingual('Accounts Receivable & Aging', 'বাকি আদায় তালিকা')}
             </CardTitle>
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder={tBilingual('Search customer or inv...', 'গ্রাহক বা ইনভয়েস খুঁজুন...')}
+                value={receivablesSearch}
+                onChange={(e) => setReceivablesSearch(e.target.value)}
+                className="h-8 pl-8 text-xs rounded-xl"
+              />
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -678,21 +842,40 @@ export default function AccountingPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {receivables?.items.map((i) => (
-                    <tr key={i.reference_id} className="hover:bg-slate-50/50">
-                      <td className="p-3 font-mono font-medium text-blue-600">{i.reference_id}</td>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
-                      <td className="p-3 text-slate-500">{i.due_date}</td>
-                      <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
-                      <td className="p-3 text-center">
-                        <Badge variant="outline" className="text-2xs font-medium">
-                          {i.bucket === '0_30' ? '1–30 Days' : i.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
-                        </Badge>
+                  {(receivables?.items || [])
+                    .filter(
+                      (i) =>
+                        !receivablesSearch ||
+                        i.party_name.toLowerCase().includes(receivablesSearch.toLowerCase()) ||
+                        i.reference_id.toLowerCase().includes(receivablesSearch.toLowerCase())
+                    )
+                    .map((i) => (
+                      <tr key={i.reference_id} className="hover:bg-slate-50/50">
+                        <td className="p-3 font-mono font-medium text-blue-600">{i.reference_id}</td>
+                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
+                        <td className="p-3 text-slate-500">{i.due_date}</td>
+                        <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
+                        <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
+                        <td className="p-3 text-right font-mono font-bold text-amber-600">৳{i.due_amount.toLocaleString()}</td>
+                        <td className="p-3 text-center">
+                          <Badge variant="outline" className="text-2xs font-medium">
+                            {i.bucket === '0_30' ? '1–30 Days' : i.bucket === '31_60' ? '31–60 Days' : '60+ Days'}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  {(receivables?.items || []).filter(
+                    (i) =>
+                      !receivablesSearch ||
+                      i.party_name.toLowerCase().includes(receivablesSearch.toLowerCase()) ||
+                      i.reference_id.toLowerCase().includes(receivablesSearch.toLowerCase())
+                  ).length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-slate-400 text-xs">
+                        {tBilingual('No receivable records found', 'কোনো বকেয়া বিল পাওয়া যায়নি')}
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>
@@ -701,11 +884,20 @@ export default function AccountingPage() {
       )}
 
       {activeTab === 'payables' && (
-        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+        <Card className="rounded-2xl border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden">
+          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200">
               {tBilingual('Supplier Payables & Aging', 'সরবরাহকারী পাওনা')}
             </CardTitle>
+            <div className="relative w-full sm:w-64">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Input
+                placeholder={tBilingual('Search supplier or code...', 'মহাজন বা কোড খুঁজুন...')}
+                value={payablesSearch}
+                onChange={(e) => setPayablesSearch(e.target.value)}
+                className="h-8 pl-8 text-xs rounded-xl"
+              />
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -721,24 +913,43 @@ export default function AccountingPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                  {payables?.items.map((i) => (
-                    <tr key={i.reference_id} className="hover:bg-slate-50/50">
-                      <td className="p-3 font-mono text-slate-500">{i.reference_id}</td>
-                      <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
-                      <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
-                      <td className="p-3 text-right font-mono font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
-                      <td className="p-3 text-center">
-                        <Button
-                          size="sm"
-                          className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg"
-                          onClick={() => setIsPaySupplierModalOpen(true)}
-                        >
-                          {tBilingual('Pay Supplier', 'পরিশোধ')}
-                        </Button>
+                  {(payables?.items || [])
+                    .filter(
+                      (i) =>
+                        !payablesSearch ||
+                        i.party_name.toLowerCase().includes(payablesSearch.toLowerCase()) ||
+                        i.reference_id.toLowerCase().includes(payablesSearch.toLowerCase())
+                    )
+                    .map((i) => (
+                      <tr key={i.reference_id} className="hover:bg-slate-50/50">
+                        <td className="p-3 font-mono text-slate-500">{i.reference_id}</td>
+                        <td className="p-3 font-semibold text-slate-800 dark:text-slate-200">{i.party_name}</td>
+                        <td className="p-3 text-right font-mono">৳{i.total_amount.toLocaleString()}</td>
+                        <td className="p-3 text-right font-mono text-emerald-600">৳{i.paid_amount.toLocaleString()}</td>
+                        <td className="p-3 text-right font-mono font-bold text-rose-600">৳{i.due_amount.toLocaleString()}</td>
+                        <td className="p-3 text-center">
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-amber-600 hover:bg-amber-700 text-white rounded-lg"
+                            onClick={() => setIsPaySupplierModalOpen(true)}
+                          >
+                            {tBilingual('Pay Supplier', 'পরিশোধ')}
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  {(payables?.items || []).filter(
+                    (i) =>
+                      !payablesSearch ||
+                      i.party_name.toLowerCase().includes(payablesSearch.toLowerCase()) ||
+                      i.reference_id.toLowerCase().includes(payablesSearch.toLowerCase())
+                  ).length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="p-8 text-center text-slate-400 text-xs">
+                        {tBilingual('No payable records found', 'কোনো মহাজন পাওনা পাওয়া যায়নি')}
                       </td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

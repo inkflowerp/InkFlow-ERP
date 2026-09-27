@@ -57,9 +57,18 @@ import type { BranchMasterRecord } from '@/types/branch.types'
 function EmptyReportState() {
   const { tBilingual } = useI18n()
   return (
-    <div className="p-8 text-center bg-slate-50/50 dark:bg-slate-900/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
-      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 bangla-text">
-        {tBilingual('No data available for this period.', 'এই সময়ের জন্য কোনো তথ্য পাওয়া যায়নি।')}
+    <div className="p-12 text-center bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-2 m-4">
+      <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
+        <BarChart3 className="w-6 h-6" />
+      </div>
+      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 bangla-text">
+        {tBilingual('No data available for this period', 'এই সময়ের জন্য কোনো তথ্য পাওয়া যায়নি')}
+      </p>
+      <p className="text-xs text-slate-400 max-w-sm">
+        {tBilingual(
+          'Try selecting another date range or filter criteria above to inspect report telemetry.',
+          'অন্য কোনো তারিখ বা ফিল্টার নির্বাচন করে পুনরায় চেষ্টা করুন।'
+        )}
       </p>
     </div>
   )
@@ -425,9 +434,11 @@ export default function ReportingAnalyticsPage() {
         />
 
         {/* Global Multi-Dimensional Filter Toolbar */}
-        <div className="p-3 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 font-bold sm:col-span-2 lg:col-span-1">
-            <Filter className="h-3.5 w-3.5 text-blue-600 shrink-0" />
+        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 text-xs">
+          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold sm:col-span-2 lg:col-span-1 pr-2">
+            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
+              <Filter className="h-3.5 w-3.5 shrink-0" />
+            </div>
             <span>Filters:</span>
           </div>
 
@@ -435,7 +446,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.dateRange}
             onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
-            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
           >
             <option value="today">Today (আজকের)</option>
             <option value="7d">Last 7 Days (গত ৭ দিন)</option>
@@ -448,7 +459,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.branch}
             onChange={(e) => setFilters({ ...filters, branch: e.target.value as any })}
-            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
           >
             <option value="all">All Branches ({branches.length > 0 ? `${branches.length} Outlets` : 'All'})</option>
             {branches.map((b) => (
@@ -462,7 +473,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.customerType}
             onChange={(e) => setFilters({ ...filters, customerType: e.target.value as any })}
-            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
           >
             <option value="all">All Customer Types</option>
             <option value="corporate">Corporate Accounts</option>
@@ -474,7 +485,7 @@ export default function ReportingAnalyticsPage() {
           <select
             value={filters.department}
             onChange={(e) => setFilters({ ...filters, department: e.target.value as any })}
-            className="h-9 sm:h-8 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold w-full lg:w-auto"
+            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
           >
             <option value="all">All Production Depts</option>
             <option value="printing">Wide-Format Printing</option>
@@ -486,103 +497,197 @@ export default function ReportingAnalyticsPage() {
       </div>
 
       {/* Top Highlight Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        <Card className="p-3.5 border-l-4 border-l-blue-600">
-          <span className="text-2xs font-semibold text-slate-500 block">Gross Sales Turnover</span>
-          <div className="text-xl font-black text-slate-900 dark:text-white mt-0.5">
-            <CurrencyDisplay amount={grossSalesTurnover} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+        {/* Gross Sales Turnover */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600" />
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
+              Gross Sales Turnover
+            </span>
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+              Total Billed
+            </span>
           </div>
-          <span className="text-2xs text-slate-400">Total Billed</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-emerald-600">
-          <span className="text-2xs font-semibold text-slate-500 block">Collections Recovery</span>
-          <div className="text-xl font-black text-emerald-600 mt-0.5">{realizedMargin}%</div>
-          <span className="text-2xs text-slate-400">Cash vs Turnover Ratio</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-teal-600">
-          <span className="text-2xs font-semibold text-slate-500 block">Total Collections (আদায়)</span>
-          <div className="text-xl font-black text-teal-600 mt-0.5">
-            <CurrencyDisplay amount={totalCollections} />
+          <div className="flex items-baseline justify-between mt-2">
+            <div className="text-xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
+              <CurrencyDisplay amount={grossSalesTurnover} />
+            </div>
+            <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
+              <DollarSign className="w-4 h-4" />
+            </div>
           </div>
-          <span className="text-2xs text-slate-400">Realized Collections</span>
-        </Card>
-
-        <Card className="p-3.5 border-l-4 border-l-amber-500">
-          <span className="text-2xs font-semibold text-slate-500 block">Total Due (বাকি পাওনা)</span>
-          <div className="text-xl font-black text-amber-600 mt-0.5">
-            <CurrencyDisplay amount={totalDue} />
+          <div className="mt-2 text-2xs text-slate-400 dark:text-slate-500 truncate">
+            Across active filtered period
           </div>
-          <span className="text-2xs text-amber-600 font-medium">Outstanding Balances</span>
-        </Card>
+        </div>
 
-        <Card className="p-3.5 border-l-4 border-l-purple-600">
-          <span className="text-2xs font-semibold text-slate-500 block">Warehouse Stock Value</span>
-          <div className="text-xl font-black text-purple-600 mt-0.5">{formatBDT(totalInventoryValuation)}</div>
-          <span className="text-2xs text-purple-600 font-medium">{materials.length} Raw Materials</span>
-        </Card>
+        {/* Collections Recovery */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
+              Collections Recovery
+            </span>
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+              Recovery Rate
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between mt-2">
+            <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
+              {realizedMargin}%
+            </div>
+            <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
+              <CheckCircle2 className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xs text-emerald-700 dark:text-emerald-400 font-medium truncate">
+            Cash vs Turnover Ratio
+          </div>
+        </div>
+
+        {/* Total Collections */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-600" />
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
+              Total Collections (আদায়)
+            </span>
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
+              Realized
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between mt-2">
+            <div className="text-xl font-black text-teal-600 dark:text-teal-400 font-mono tracking-tight">
+              <CurrencyDisplay amount={totalCollections} />
+            </div>
+            <div className="p-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform">
+              <TrendingUp className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xs text-slate-400 dark:text-slate-500 truncate">
+            Realized cash inflow
+          </div>
+        </div>
+
+        {/* Total Due */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
+              Total Due (বাকি পাওনা)
+            </span>
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+              Receivables
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between mt-2">
+            <div className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
+              <CurrencyDisplay amount={totalDue} />
+            </div>
+            <div className="p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
+              <Clock className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xs text-amber-600 dark:text-amber-400 font-medium truncate">
+            Outstanding Balances
+          </div>
+        </div>
+
+        {/* Warehouse Stock Value */}
+        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
+          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600" />
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
+              Warehouse Stock Value
+            </span>
+            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+              Inventory
+            </span>
+          </div>
+          <div className="flex items-baseline justify-between mt-2">
+            <div className="text-xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
+              {formatBDT(totalInventoryValuation)}
+            </div>
+            <div className="p-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
+              <Package className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="mt-2 text-2xs text-purple-600 dark:text-purple-400 font-medium truncate">
+            {materials.length} Raw Materials in stock
+          </div>
+        </div>
       </div>
 
       {/* Module Navigation Tabs */}
-      <div className="print:hidden flex items-center gap-1.5 p-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-x-auto touch-scroll">
+      <div className="print:hidden flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-x-auto touch-scroll">
         <Button
           size="sm"
-          variant={activeTab === 'sales' ? 'default' : 'ghost'}
+          variant="ghost"
           onClick={() => setActiveTab('sales')}
-          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
-            activeTab === 'sales' ? 'bg-blue-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
+            activeTab === 'sales'
+              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
           }`}
         >
-          <BarChart3 className="h-3.5 w-3.5 mr-1.5" />
+          <BarChart3 className="h-4 w-4 mr-1.5" />
           {tBilingual('Sales & Commercial', 'বিক্রয় ও সেলস')}
         </Button>
 
         <Button
           size="sm"
-          variant={activeTab === 'production' ? 'default' : 'ghost'}
+          variant="ghost"
           onClick={() => setActiveTab('production')}
-          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
-            activeTab === 'production' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
+            activeTab === 'production'
+              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
           }`}
         >
-          <PrintIcon className="h-3.5 w-3.5 mr-1.5" />
+          <PrintIcon className="h-4 w-4 mr-1.5" />
           {tBilingual('Production & Quality', 'প্রোডাকশন ও মান')}
         </Button>
 
         <Button
           size="sm"
-          variant={activeTab === 'financial' ? 'default' : 'ghost'}
+          variant="ghost"
           onClick={() => setActiveTab('financial')}
-          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
-            activeTab === 'financial' ? 'bg-amber-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
+            activeTab === 'financial'
+              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
           }`}
         >
-          <DollarSign className="h-3.5 w-3.5 mr-1.5" />
+          <DollarSign className="h-4 w-4 mr-1.5" />
           {tBilingual('Financial & Aging', 'বাকি ও নগদ হিসাব')}
         </Button>
 
         <Button
           size="sm"
-          variant={activeTab === 'inventory' ? 'default' : 'ghost'}
+          variant="ghost"
           onClick={() => setActiveTab('inventory')}
-          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
-            activeTab === 'inventory' ? 'bg-purple-600 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
+            activeTab === 'inventory'
+              ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
           }`}
         >
-          <Package className="h-3.5 w-3.5 mr-1.5" />
+          <Package className="h-4 w-4 mr-1.5" />
           {tBilingual('Inventory & Valuation', 'মজুদ হিসাব')}
         </Button>
 
         <Button
           size="sm"
-          variant={activeTab === 'customers' ? 'default' : 'ghost'}
+          variant="ghost"
           onClick={() => setActiveTab('customers')}
-          className={`text-xs h-9 sm:h-8 px-3.5 shrink-0 bangla-text ${
-            activeTab === 'customers' ? 'bg-slate-800 text-white shadow-xs' : 'text-slate-600 dark:text-slate-400'
+          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
+            activeTab === 'customers'
+              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
           }`}
         >
-          <Users className="h-3.5 w-3.5 mr-1.5" />
+          <Users className="h-4 w-4 mr-1.5" />
           {tBilingual('Customer Insights', 'গ্রাহক তথ্য')}
         </Button>
       </div>
@@ -605,14 +710,18 @@ export default function ReportingAnalyticsPage() {
                 size="sm"
                 variant={salesSubTab === sub.id ? 'default' : 'outline'}
                 onClick={() => setSalesSubTab(sub.id as any)}
-                className="text-xs h-8 px-3 shrink-0 whitespace-nowrap"
+                className={`text-xs h-8 px-3.5 rounded-xl shrink-0 whitespace-nowrap font-semibold transition-all ${
+                  salesSubTab === sub.id
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
+                }`}
               >
                 {sub.label}
               </Button>
             ))}
           </div>
 
-          <Card>
+          <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
             <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                 <CardTitle className="text-base capitalize">
@@ -714,13 +823,13 @@ export default function ReportingAnalyticsPage() {
       {activeTab === 'production' && (
         <div className="space-y-4">
           {productionMetrics.length === 0 ? (
-            <Card><CardContent className="p-6"><EmptyReportState /></CardContent></Card>
+            <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs"><CardContent className="p-0"><EmptyReportState /></CardContent></Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {productionMetrics.map((pm: any) => (
-                <Card key={pm.id} className="p-4 space-y-1">
+                <Card key={pm.id} className="p-4 space-y-1.5 rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all">
                   <span className="text-xs text-slate-500 font-semibold">{pm.metric}</span>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white">{pm.value}</div>
+                  <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{pm.value}</div>
                   <div className="text-xs text-slate-400">{pm.subtext}</div>
                 </Card>
               ))}
@@ -733,7 +842,7 @@ export default function ReportingAnalyticsPage() {
           TAB 3: FINANCIAL & AGING REPORTS
          ========================================================================= */}
       {activeTab === 'financial' && (
-        <Card>
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base">Accounts Receivable Aging (বাকি পাওনা বয়সকাল)</CardTitle>
             <CardDescription className="text-xs">
@@ -824,7 +933,7 @@ export default function ReportingAnalyticsPage() {
           TAB 4: INVENTORY & VALUATION
          ========================================================================= */}
       {activeTab === 'inventory' && (
-        <Card>
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
               <div>
@@ -927,7 +1036,7 @@ export default function ReportingAnalyticsPage() {
           TAB 5: CUSTOMER LIFETIME VALUE & INSIGHTS
          ========================================================================= */}
       {activeTab === 'customers' && (
-        <Card>
+        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
           <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
             <CardTitle className="text-base">Top Customer Lifetime Value (LTV) & Dues</CardTitle>
           </CardHeader>
