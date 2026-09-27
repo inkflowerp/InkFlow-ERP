@@ -205,19 +205,19 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 1: 8 KEY FINANCIAL PERFORMANCE INDICATORS (2 Rows x 4 Cols)
          ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
         {/* 1. Total Revenue */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <DollarSign className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Total Revenue
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {totalRevenue.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -225,11 +225,11 @@ export function FinanceDashboardView({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
               <span className="inline-flex items-center gap-0.5 text-2xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
                 ↑ 12%
               </span>
-              <span className="text-3xs text-slate-400 font-medium">
+              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
                 vs last month
               </span>
             </div>
@@ -237,17 +237,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 2. Total Payments Received */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                 <Clock className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Total Payments Received
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {totalReceived.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -255,11 +255,11 @@ export function FinanceDashboardView({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
               <span className="inline-flex items-center gap-0.5 text-2xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
                 ↑ 8%
               </span>
-              <span className="text-3xs text-slate-400 font-medium">
+              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
                 vs last month
               </span>
             </div>
@@ -267,17 +267,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 3. Total Due (Receivable) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <FileText className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Total Due (Receivable)
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {totalDueReceivable.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -285,11 +285,11 @@ export function FinanceDashboardView({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
               <span className="inline-flex items-center gap-0.5 text-2xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-full">
                 ↓ 5%
               </span>
-              <span className="text-3xs text-slate-400 font-medium">
+              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
                 vs last month
               </span>
             </div>
@@ -297,17 +297,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 4. Total Expenses */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <Receipt className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Total Expenses
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {totalExpenses.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -315,11 +315,11 @@ export function FinanceDashboardView({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
               <span className="inline-flex items-center gap-0.5 text-2xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/50 px-2 py-0.5 rounded-full">
                 ↑ 15%
               </span>
-              <span className="text-3xs text-slate-400 font-medium">
+              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
                 vs last month
               </span>
             </div>
@@ -327,17 +327,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 5. Net Profit */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <TrendingUp className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Net Profit
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {netProfit.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -345,11 +345,11 @@ export function FinanceDashboardView({
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0">
+            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
               <span className="inline-flex items-center gap-0.5 text-2xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-full">
                 ↑ 20%
               </span>
-              <span className="text-3xs text-slate-400 font-medium">
+              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
                 vs last month
               </span>
             </div>
@@ -357,17 +357,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 6. Cash in Hand */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                 <Wallet className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Cash in Hand
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {cashInHand.toLocaleString()}
                 </div>
               </div>
@@ -376,17 +376,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 7. Bank Balance */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
                 <Building2 className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Bank Balance
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {bankBalance.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1 flex items-center gap-1">
@@ -399,17 +399,17 @@ export function FinanceDashboardView({
         </div>
 
         {/* 8. Total Due (Payable) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-5 shadow-xs hover:shadow-md transition-shadow">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3.5">
-              <div className="h-11 w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
+              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <Building className="w-5 h-5" />
               </div>
-              <div>
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
                   Total Due (Payable)
                 </span>
-                <div className="text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
+                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
                   ৳ {totalDuePayable.toLocaleString()}
                 </div>
                 <div className="text-2xs text-slate-400 font-medium mt-1">
@@ -944,7 +944,7 @@ export function FinanceDashboardView({
             Quick Actions
           </h3>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-2.5">
             {/* 1. Record Payment */}
             <button
               type="button"
