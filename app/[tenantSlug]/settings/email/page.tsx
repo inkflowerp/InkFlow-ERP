@@ -39,7 +39,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import {
@@ -367,8 +366,6 @@ export default function TenantEmailSettingsPage() {
           </div>
         }
       />
-
-      <SettingsNav />
 
       {/* Toast Notification */}
       {notification && (

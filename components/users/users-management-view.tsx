@@ -55,7 +55,6 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PageHeader } from '@/components/shared/page-header'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { UserPermissionsDrawer } from '@/components/users/user-permissions-drawer'
 import { PermissionSimulator } from '@/components/users/permission-simulator'
 import { RolesMatrixTab } from '@/components/users/roles-matrix-tab'
@@ -524,8 +523,6 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
           }
         />
       )}
-
-      {!hideHeader && <SettingsNav />}
 
       {/* Security Posture & Quota Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">

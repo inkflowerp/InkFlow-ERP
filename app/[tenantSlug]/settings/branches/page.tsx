@@ -19,7 +19,6 @@ import {
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -343,8 +342,6 @@ export default function BranchesSettingsPage() {
           </Button>
         }
       />
-
-      <SettingsNav />
 
       {/* Branch Quota Alert */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl border bg-slate-50/80 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-xs">

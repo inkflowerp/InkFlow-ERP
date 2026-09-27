@@ -33,7 +33,6 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { formatDate } from '@/lib/formatters'
 import {
   DEFAULT_PLANS,
@@ -214,8 +213,6 @@ export default function TenantSubscriptionPage() {
         icon={Crown}
         iconColor="text-amber-500"
       />
-
-      <SettingsNav />
 
       {/* Notification Toast */}
       {notification && (

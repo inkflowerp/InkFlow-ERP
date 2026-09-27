@@ -22,7 +22,6 @@ import { usePathname } from 'next/navigation'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useI18n } from '@/i18n/context'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
@@ -187,8 +186,6 @@ export default function CompanyProfileSettingsPage() {
         icon={Building2}
         iconColor="text-blue-600"
       />
-
-      <SettingsNav />
 
       {/* Account Type & Subscription Tier Card */}
       <Card className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border-0 shadow-md">

@@ -30,7 +30,6 @@ import {
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -285,8 +284,6 @@ export default function DocumentDesignerPage() {
             </Button>
           }
         />
-
-        <SettingsNav />
 
         {/* Notification */}
         {notification && (

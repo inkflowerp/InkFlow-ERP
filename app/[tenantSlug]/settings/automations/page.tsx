@@ -59,7 +59,6 @@ import { FeatureGate } from '@/components/shared/feature-gate'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
-import { SettingsNav } from '@/components/settings/settings-nav'
 import { PageHeader } from '@/components/shared/page-header'
 import { useI18n } from '@/i18n/context'
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
@@ -385,8 +384,6 @@ export default function WorkflowAutomationsPage() {
             </div>
           }
         />
-
-        <SettingsNav />
 
         {/* Safety & Architecture Compliance Banner */}
         <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-slate-50 dark:from-slate-900 dark:via-indigo-950/20 dark:to-slate-900 border border-indigo-100 dark:border-indigo-950/60 flex items-start gap-3.5 shadow-xs">
