@@ -577,6 +577,7 @@ export default function AdvancedProductionPage() {
     const jobMap = new Map<string, UnifiedProductionJob>()
     const localDesignJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.DESIGN_JOBS) || []
     const localInvoices = PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []
+    const localProductionJobs = PrintERPDataStore.get<any[]>(STORAGE_KEYS.PRODUCTION_JOBS) || []
 
     for (const t of filteredTasks) {
       // Grouping key: by job_order_id OR (job_number + customer + product)
@@ -743,6 +744,27 @@ export default function AdvancedProductionPage() {
     return Array.from(jobMap.values()).map((job) => {
       job.tasks.sort((a, b) => (a.sequence_order || 0) - (b.sequence_order || 0))
 
+      const matchedPj = localProductionJobs.find(
+        (pj) =>
+          pj.id === job.id ||
+          pj.job_number === job.jobNumber ||
+          (job.tasks && job.tasks.some((t) => t.job_order_id && pj.job_order_id === t.job_order_id))
+      )
+
+      const isSentDelivery = Boolean(
+        (job as any).sent_to_delivery ||
+        matchedPj?.sent_to_delivery ||
+        (matchedPj?.status === 'ready_delivery' && matchedPj?.is_print_completed) ||
+        job.status === 'sent_to_delivery'
+      )
+
+      const isSentFinishing = Boolean(
+        (job as any).sent_to_finishing ||
+        matchedPj?.sent_to_finishing ||
+        (matchedPj?.status === 'finishing' && matchedPj?.is_print_completed) ||
+        job.status === 'sent_to_finishing'
+      )
+
       const allCompleted = job.tasks.length > 0 && job.tasks.every((t) => t.status === 'completed')
       const runningTask = job.tasks.find((t) => t.status === 'in_progress')
       const pausedTask = job.tasks.find((t) => t.status === 'paused')
@@ -757,12 +779,13 @@ export default function AdvancedProductionPage() {
       const hasFinishingTask = job.tasks.some(
         (t) => t.department === 'finishing' || t.task_type === 'finishing'
       )
-      const hasFinishingPending = job.tasks.some(
-        (t) => (t.department === 'finishing' || t.task_type === 'finishing') && t.status !== 'completed'
-      )
 
       let overallStatus: any = 'queued'
-      if (allCompleted) {
+      if (isSentDelivery) {
+        overallStatus = 'ready_delivery'
+      } else if (isSentFinishing) {
+        overallStatus = 'finishing'
+      } else if (allCompleted) {
         overallStatus = hasFinishingTask ? 'completed' : 'ready_delivery'
       } else if (runningTask) {
         overallStatus = 'in_progress'
@@ -772,12 +795,8 @@ export default function AdvancedProductionPage() {
         overallStatus = 'on_hold'
       } else if (reworkTask) {
         overallStatus = 'rework'
-      } else if (hasPrintDone && hasFinishingPending) {
-        // After printing complete (if finishing available) -> sent to finishing
-        overallStatus = 'finishing'
-      } else if (hasPrintDone && !hasFinishingTask) {
-        // After printing complete (if finishing not available) -> sent to Delivery and Dispatch
-        overallStatus = 'ready_delivery'
+      } else if (hasPrintDone) {
+        overallStatus = 'print_completed'
       } else if (scheduledTask) {
         overallStatus = 'scheduled'
       }
@@ -792,6 +811,9 @@ export default function AdvancedProductionPage() {
       return {
         ...job,
         status: overallStatus,
+        sent_to_delivery: isSentDelivery,
+        sent_to_finishing: isSentFinishing,
+        is_print_completed: Boolean(hasPrintDone || matchedPj?.is_print_completed),
         activeTask,
         assignedMachineName: activeTask?.assigned_machine_name || job.assignedMachineName,
         assignedOperatorName: activeTask?.assigned_operator_name || job.assignedOperatorName,
@@ -811,25 +833,19 @@ export default function AdvancedProductionPage() {
 
       const isJobSentToFinishing =
         job.status === 'sent_to_finishing' ||
-        job.status === 'finishing' ||
         Boolean((job as any).sent_to_finishing)
 
-      const isJobCompleted =
-        job.status === 'completed' ||
+      const isJobCompletedAndSent =
         isJobSentToDelivery ||
         isJobSentToFinishing ||
-        Boolean((job as any).is_print_completed)
+        job.status === 'completed'
 
       if (activeTab === 'queued') {
-        if (isJobCompleted || isJobSentToFinishing || isJobSentToDelivery) return false
-        return (
-          job.status === 'queued' ||
-          job.status === 'scheduled' ||
-          job.status === 'ready'
-        )
+        // Queued & Ready: Show active floor jobs that haven't been sent to Delivery or Finishing yet
+        return !isJobSentToDelivery && !isJobSentToFinishing && job.status !== 'completed'
       }
       if (activeTab === 'running') {
-        if (isJobCompleted || isJobSentToFinishing || isJobSentToDelivery) return false
+        if (isJobSentToDelivery || isJobSentToFinishing || job.status === 'completed') return false
         return job.status === 'in_progress' || job.status === 'paused'
       }
       if (activeTab === 'finishing') {
@@ -840,7 +856,7 @@ export default function AdvancedProductionPage() {
         )
       }
       if (activeTab === 'completed') {
-        return isJobCompleted
+        return isJobCompletedAndSent
       }
       return true
     })
@@ -892,30 +908,29 @@ export default function AdvancedProductionPage() {
 
       const isJobSentToFinishing =
         j.status === 'sent_to_finishing' ||
-        j.status === 'finishing' ||
         Boolean((j as any).sent_to_finishing)
 
-      const isJobCompleted =
-        j.status === 'completed' ||
+      const isJobCompletedAndSent =
         isJobSentToDelivery ||
         isJobSentToFinishing ||
-        Boolean((j as any).is_print_completed)
+        j.status === 'completed'
 
-      if (isJobCompleted) {
+      if (isJobCompletedAndSent) {
         completed++
         if (isJobSentToFinishing) {
           finishing++
         }
-      } else if (j.status === 'in_progress' || j.status === 'paused') {
-        running++
-      } else if (
-        j.status === 'finishing' ||
-        j.activeTask?.department === 'finishing' ||
-        j.activeTask?.task_type === 'finishing'
-      ) {
-        finishing++
       } else {
         queued++
+        if (j.status === 'in_progress' || j.status === 'paused') {
+          running++
+        }
+        if (
+          j.activeTask?.department === 'finishing' ||
+          j.activeTask?.task_type === 'finishing'
+        ) {
+          finishing++
+        }
       }
     })
 
