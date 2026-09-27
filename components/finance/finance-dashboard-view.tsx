@@ -192,9 +192,9 @@ export function FinanceDashboardView({
   return (
     <div className="space-y-6">
       {/* =========================================================================
-          ROW 1: 8 KEY FINANCIAL PERFORMANCE INDICATORS (2 Rows x 4 Cols)
+          ROW 1: 8 KEY FINANCIAL PERFORMANCE INDICATORS (2 Rows x 4 Cols on XL)
          ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
         {/* 1. Total Revenue */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
           <div className="flex items-start justify-between gap-2">
@@ -451,9 +451,9 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 2: CHARTS (Income vs Expenses Bar Chart + Payment Breakdown Donut)
          ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Income vs Expenses Bar Chart (Col 1 to 8) */}
-        <div className="lg:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Income vs Expenses Bar Chart (Col 1 to 8 on XL) */}
+        <div className="xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Income vs Expenses
@@ -584,8 +584,8 @@ export function FinanceDashboardView({
           </div>
         </div>
 
-        {/* Payment Breakdown Donut (Col 8 to 12) */}
-        <div className="lg:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        {/* Payment Breakdown Donut (Col 8 to 12 on XL) */}
+        <div className="xl:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Payment Breakdown
@@ -780,7 +780,7 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 3: 3 LIST COLUMNS (Top Receivables, Top Payables, Recent Transactions)
          ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
         {/* Col 1: Top Receivables (Customer Due) */}
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
@@ -930,7 +930,7 @@ export function FinanceDashboardView({
         </div>
 
         {/* Col 3: Recent Transactions */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between md:col-span-2 lg:col-span-1">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between md:col-span-2 xl:col-span-1">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -1021,9 +1021,9 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 4: MONTHLY SUMMARY TABLE + QUICK ACTIONS HUD
          ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Monthly Summary Table (Col 1 to 7) */}
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        {/* Left: Monthly Summary Table (Col 1 to 7 on XL) */}
+        <div className="xl:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3.5">
               Monthly Summary
@@ -1092,8 +1092,8 @@ export function FinanceDashboardView({
           </div>
         </div>
 
-        {/* Right: Quick Actions 8-Button Matrix (Col 8 to 12) */}
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        {/* Right: Quick Actions 8-Button Matrix (Col 8 to 12 on XL) */}
+        <div className="xl:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3.5">
               Quick Actions
