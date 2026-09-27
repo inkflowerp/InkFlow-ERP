@@ -190,34 +190,34 @@ export function FinanceDashboardView({
   const cardOffset = -(bankLen + cashLen + bkashLen + nagadLen)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 2xl:space-y-6">
       {/* =========================================================================
           ROW 1: 8 KEY FINANCIAL PERFORMANCE INDICATORS (2 Rows x 4 Cols on XL)
          ========================================================================= */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5 2xl:gap-4">
         {/* 1. Total Revenue */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <DollarSign className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <DollarSign className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Revenue">
                   Total Revenue
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalRevenue.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {invoicesCount} Invoices
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-2xs font-bold px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   revenueTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -225,7 +225,7 @@ export function FinanceDashboardView({
               >
                 {revenueTrend.isUp ? '↑' : '↓'} {revenueTrend.percent}%
               </span>
-              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -233,28 +233,28 @@ export function FinanceDashboardView({
         </div>
 
         {/* 2. Total Payments Received */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                <Clock className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <Clock className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Payments Received">
                   Total Payments Received
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalReceived.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {paymentsCount} Payments
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-2xs font-bold px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   paymentsTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -262,7 +262,7 @@ export function FinanceDashboardView({
               >
                 {paymentsTrend.isUp ? '↑' : '↓'} {paymentsTrend.percent}%
               </span>
-              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -270,28 +270,28 @@ export function FinanceDashboardView({
         </div>
 
         {/* 3. Total Due (Receivable) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
-                <FileText className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <FileText className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Due (Receivable)">
                   Total Due (Receivable)
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalDueReceivable.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {customersDueCount} Customers
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-2xs font-bold px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   totalDueReceivable === 0
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-amber-600 bg-amber-50 dark:bg-amber-950/50'
@@ -299,7 +299,7 @@ export function FinanceDashboardView({
               >
                 {totalDueReceivable === 0 ? '✓ Zero Due' : 'Active Due'}
               </span>
-              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 outstanding
               </span>
             </div>
@@ -307,28 +307,28 @@ export function FinanceDashboardView({
         </div>
 
         {/* 4. Total Expenses */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                <Receipt className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <Receipt className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Expenses">
                   Total Expenses
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalExpenses.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {expensesCount} Transactions
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-2xs font-bold px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   expensesTrend.isUp
                     ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
                     : 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
@@ -336,7 +336,7 @@ export function FinanceDashboardView({
               >
                 {expensesTrend.isUp ? '↑' : '↓'} {expensesTrend.percent}%
               </span>
-              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -344,28 +344,28 @@ export function FinanceDashboardView({
         </div>
 
         {/* 5. Net Profit */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                <TrendingUp className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Net Profit">
                   Net Profit
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {netProfit.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {profitMarginPercent}% Margin
                 </div>
               </div>
             </div>
-            <div className="flex flex-col items-end gap-0.5 shrink-0 pl-1">
+            <div className="flex flex-col items-end gap-0.5 shrink-0">
               <span
                 className={cn(
-                  'inline-flex items-center gap-0.5 text-2xs font-bold px-2 py-0.5 rounded-full',
+                  'inline-flex items-center gap-0.5 text-[10px] 2xl:text-2xs font-bold px-1.5 2xl:px-2 py-0.5 rounded-full',
                   profitTrend.isUp
                     ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50'
                     : 'text-rose-600 bg-rose-50 dark:bg-rose-950/50'
@@ -373,7 +373,7 @@ export function FinanceDashboardView({
               >
                 {profitTrend.isUp ? '↑' : '↓'} {profitTrend.percent}%
               </span>
-              <span className="text-3xs text-slate-400 font-medium whitespace-nowrap">
+              <span className="text-[9px] 2xl:text-3xs text-slate-400 font-medium whitespace-nowrap hidden sm:inline xl:hidden 2xl:inline">
                 vs last period
               </span>
             </div>
@@ -381,20 +381,20 @@ export function FinanceDashboardView({
         </div>
 
         {/* 6. Cash in Hand */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                <Wallet className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <Wallet className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Cash in Hand">
                   Cash in Hand
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {cashInHand.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   Drawer & Petty Cash
                 </div>
               </div>
@@ -403,22 +403,22 @@ export function FinanceDashboardView({
         </div>
 
         {/* 7. Bank Balance */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
-                <Building2 className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0">
+                <Building2 className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Bank Balance">
                   Bank Balance
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {bankBalance.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 flex items-center gap-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 flex items-center gap-1 truncate">
                   <Users className="w-3 h-3 text-slate-400 shrink-0" />
-                  <span>{bankAccountsCount} Bank Accounts</span>
+                  <span>{bankAccountsCount} Accounts</span>
                 </div>
               </div>
             </div>
@@ -426,20 +426,20 @@ export function FinanceDashboardView({
         </div>
 
         {/* 8. Total Due (Payable) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
-              <div className="h-10 w-10 sm:h-11 sm:w-11 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
-                <Building className="w-5 h-5" />
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs hover:shadow-md transition-shadow min-w-0">
+          <div className="flex items-start justify-between gap-1.5 2xl:gap-2">
+            <div className="flex items-start gap-2.5 2xl:gap-3.5 min-w-0 flex-1">
+              <div className="h-9 w-9 2xl:h-11 2xl:w-11 rounded-xl 2xl:rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <Building className="w-4.5 h-4.5 2xl:w-5 2xl:h-5" />
               </div>
-              <div className="min-w-0">
-                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate">
+              <div className="min-w-0 flex-1">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block truncate" title="Total Due (Payable)">
                   Total Due (Payable)
                 </span>
-                <div className="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight truncate">
+                <div className="text-base sm:text-lg 2xl:text-xl font-black text-slate-900 dark:text-white font-mono mt-0.5 tracking-tight">
                   ৳ {totalDuePayable.toLocaleString()}
                 </div>
-                <div className="text-2xs text-slate-400 font-medium mt-1 truncate">
+                <div className="text-2xs text-slate-400 font-medium mt-0.5 2xl:mt-1 truncate">
                   {suppliersDueCount} Suppliers
                 </div>
               </div>
@@ -451,9 +451,9 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 2: CHARTS (Income vs Expenses Bar Chart + Payment Breakdown Donut)
          ========================================================================= */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* Income vs Expenses Bar Chart (Col 1 to 8 on XL) */}
-        <div className="xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 2xl:gap-6">
+        {/* Income vs Expenses Bar Chart (Col 1 to 7 on XL, 1 to 8 on 2XL) */}
+        <div className="xl:col-span-7 2xl:col-span-8 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Income vs Expenses
@@ -584,8 +584,8 @@ export function FinanceDashboardView({
           </div>
         </div>
 
-        {/* Payment Breakdown Donut (Col 8 to 12 on XL) */}
-        <div className="xl:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        {/* Payment Breakdown Donut (Col 8 to 12 on XL, 9 to 12 on 2XL) */}
+        <div className="xl:col-span-5 2xl:col-span-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Payment Breakdown
@@ -595,9 +595,9 @@ export function FinanceDashboardView({
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row lg:flex-row items-center justify-between gap-6 py-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 2xl:gap-6 py-2">
             {/* Donut Graphic */}
-            <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
+            <div className="relative w-32 h-32 2xl:w-36 2xl:h-36 shrink-0 flex items-center justify-center">
               <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
                 {/* Background Ring */}
                 <circle
@@ -687,19 +687,19 @@ export function FinanceDashboardView({
 
               {/* Donut Center Display */}
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2">
-                <span className="text-xs font-black text-slate-900 dark:text-white font-mono truncate max-w-[90px]">
+                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
                   ৳ {totalReceivedAmount.toLocaleString()}
                 </span>
-                <span className="text-3xs text-slate-400 font-medium">
+                <span className="text-[10px] 2xl:text-3xs text-slate-400 font-medium">
                   Total Received
                 </span>
               </div>
             </div>
 
             {/* Legend & Breakdown values */}
-            <div className="flex-1 w-full space-y-2 text-xs">
+            <div className="flex-1 w-full space-y-1.5 2xl:space-y-2 text-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                   <span className="h-2.5 w-2.5 rounded-full bg-emerald-500 shrink-0" />
                   <span className="font-medium text-slate-700 dark:text-slate-300 truncate">Cash</span>
                 </div>
@@ -714,9 +714,9 @@ export function FinanceDashboardView({
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                   <span className="h-2.5 w-2.5 rounded-full bg-blue-500 shrink-0" />
-                  <span className="font-medium text-slate-700 dark:text-slate-300 truncate">Bank Transfer</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300 whitespace-nowrap">Bank Transfer</span>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="font-mono font-bold text-slate-900 dark:text-white">
@@ -729,7 +729,7 @@ export function FinanceDashboardView({
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                   <span className="h-2.5 w-2.5 rounded-full bg-pink-500 shrink-0" />
                   <span className="font-medium text-slate-700 dark:text-slate-300 truncate">bKash</span>
                 </div>
@@ -744,7 +744,7 @@ export function FinanceDashboardView({
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                   <span className="h-2.5 w-2.5 rounded-full bg-orange-500 shrink-0" />
                   <span className="font-medium text-slate-700 dark:text-slate-300 truncate">Nagad</span>
                 </div>
@@ -759,7 +759,7 @@ export function FinanceDashboardView({
               </div>
 
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                   <span className="h-2.5 w-2.5 rounded-full bg-purple-500 shrink-0" />
                   <span className="font-medium text-slate-700 dark:text-slate-300 truncate">Card (SSL)</span>
                 </div>
@@ -780,9 +780,9 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 3: 3 LIST COLUMNS (Top Receivables, Top Payables, Recent Transactions)
          ========================================================================= */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 2xl:gap-6">
         {/* Col 1: Top Receivables (Customer Due) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -856,7 +856,7 @@ export function FinanceDashboardView({
         </div>
 
         {/* Col 2: Top Payables (Supplier Due) */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -930,7 +930,7 @@ export function FinanceDashboardView({
         </div>
 
         {/* Col 3: Recent Transactions */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between md:col-span-2 xl:col-span-1">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between md:col-span-2 xl:col-span-1">
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">
@@ -1021,25 +1021,25 @@ export function FinanceDashboardView({
       {/* =========================================================================
           ROW 4: MONTHLY SUMMARY TABLE + QUICK ACTIONS HUD
          ========================================================================= */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 2xl:gap-6">
         {/* Left: Monthly Summary Table (Col 1 to 7 on XL) */}
-        <div className="xl:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        <div className="xl:col-span-7 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3.5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 2xl:mb-3.5">
               Monthly Summary
             </h3>
 
-            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-              <table className="w-full text-xs text-left min-w-[500px]">
+            <div className="overflow-x-auto -mx-3.5 sm:mx-0 px-3.5 sm:px-0">
+              <table className="w-full text-xs text-left min-w-[460px] 2xl:min-w-[500px]">
                 <thead>
                   <tr className="text-2xs font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 pb-2">
-                    <th className="pb-2.5 font-semibold">Month</th>
-                    <th className="pb-2.5 font-semibold text-center">Invoices</th>
-                    <th className="pb-2.5 font-semibold text-right">Revenue</th>
-                    <th className="pb-2.5 font-semibold text-right">Received</th>
-                    <th className="pb-2.5 font-semibold text-right">Due</th>
-                    <th className="pb-2.5 font-semibold text-right">Expenses</th>
-                    <th className="pb-2.5 font-semibold text-right">Profit</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold">Month</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-center">Invoices</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Revenue</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Received</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Due</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Expenses</th>
+                    <th className="pb-2 2xl:pb-2.5 font-semibold text-right">Profit</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
@@ -1055,27 +1055,27 @@ export function FinanceDashboardView({
                         key={row.month}
                         className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors"
                       >
-                        <td className="py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <td className="py-2.5 2xl:py-3 font-bold text-slate-900 dark:text-white whitespace-nowrap">
                           {row.month}
                         </td>
-                        <td className="py-3 text-center text-slate-600 dark:text-slate-300 font-mono">
+                        <td className="py-2.5 2xl:py-3 text-center text-slate-600 dark:text-slate-300 font-mono">
                           {row.invoices}
                         </td>
-                        <td className="py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="py-2.5 2xl:py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
                           ৳ {row.revenue.toLocaleString()}
                         </td>
-                        <td className="py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="py-2.5 2xl:py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
                           ৳ {row.received.toLocaleString()}
                         </td>
-                        <td className="py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="py-2.5 2xl:py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
                           ৳ {row.due.toLocaleString()}
                         </td>
-                        <td className="py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
+                        <td className="py-2.5 2xl:py-3 text-right font-mono font-semibold text-slate-800 dark:text-slate-200">
                           ৳ {row.expenses.toLocaleString()}
                         </td>
                         <td
                           className={cn(
-                            'py-3 text-right font-mono font-bold',
+                            'py-2.5 2xl:py-3 text-right font-mono font-bold',
                             row.profit >= 0
                               ? 'text-emerald-600 dark:text-emerald-400'
                               : 'text-rose-600 dark:text-rose-400'
@@ -1093,18 +1093,18 @@ export function FinanceDashboardView({
         </div>
 
         {/* Right: Quick Actions 8-Button Matrix (Col 8 to 12 on XL) */}
-        <div className="xl:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-4 sm:p-5 shadow-xs flex flex-col justify-between">
+        <div className="xl:col-span-5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800/80 p-3.5 2xl:p-5 shadow-xs flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3.5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3 2xl:mb-3.5">
               Quick Actions
             </h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4 gap-2.5">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-4 gap-2 2xl:gap-2.5">
               {/* 1. Record Payment */}
               <button
                 type="button"
                 onClick={onOpenPaymentModal}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <CreditCard className="w-4 h-4 text-emerald-600 shrink-0" />
                 <span className="leading-tight">Record Payment</span>
@@ -1114,7 +1114,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenSpendModal}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Receipt className="w-4 h-4 text-rose-600 shrink-0" />
                 <span className="leading-tight">Add Expense</span>
@@ -1124,7 +1124,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenPaySupplierModal}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <ArrowLeftRight className="w-4 h-4 text-amber-600 shrink-0" />
                 <span className="leading-tight">Supplier Pay</span>
@@ -1134,7 +1134,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenTransferModal}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Landmark className="w-4 h-4 text-sky-600 shrink-0" />
                 <span className="leading-tight">Bank Transfer</span>
@@ -1144,7 +1144,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('receivables')}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <FileText className="w-4 h-4 text-purple-600 shrink-0" />
                 <span className="leading-tight">Customer Due</span>
@@ -1154,7 +1154,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('payables')}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
                 <span className="leading-tight">Supplier Due</span>
@@ -1164,7 +1164,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={onOpenCashClosingModal}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <Wallet className="w-4 h-4 text-teal-600 shrink-0" />
                 <span className="leading-tight">Cash Closing</span>
@@ -1174,7 +1174,7 @@ export function FinanceDashboardView({
               <button
                 type="button"
                 onClick={() => onNavigateTab('pnl')}
-                className="flex items-center gap-2 p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
+                className="flex items-center gap-2 p-2 2xl:p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] 2xl:text-xs font-semibold transition-all cursor-pointer text-left min-h-[42px] 2xl:min-h-[44px]"
               >
                 <PieChart className="w-4 h-4 text-blue-600 shrink-0" />
                 <span className="leading-tight">Profit & Loss</span>
