@@ -47,6 +47,7 @@ import { Badge } from '@/components/ui/badge'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { PageHeader } from '@/components/shared/page-header'
 import {
   ProductionTaskRecord,
   UnifiedProductionJob,
@@ -1333,58 +1334,49 @@ export default function AdvancedProductionPage() {
     <FeatureGate feature="production">
       <div className="space-y-4 pb-16 max-w-7xl mx-auto">
         {/* =========================================================================
-            1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
+            1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-sm shadow-blue-500/25 shrink-0">
-              <Printer className="w-6 h-6 stroke-[2.2]" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {isBn ? 'প্রোডাকশন প্ল্যানিং ও প্রিন্টিং ফ্লোর' : 'Printing Floor & Production'}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                {isBn
-                  ? 'টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফ্লোর এক্সিকিউশন ও অপারেটর ট্র্যাকিং।'
-                  : 'Live machine dispatching, multi-stage task progression, shop floor execution, and operator tracking.'}
-              </p>
-            </div>
-          </div>
+        <PageHeader
+          titleEn="Printing Floor & Production"
+          titleBn="প্রোডাকশন প্ল্যানিং ও প্রিন্টিং ফ্লোর"
+          descriptionEn="Live machine dispatching, multi-stage task progression, shop floor execution, and operator tracking."
+          descriptionBn="টাস্ক শিডিউলিং, মেশিনে রানিং কাজের পর্যবেক্ষণ, ফ্লোর এক্সিকিউশন ও অপারেটর ট্র্যাকিং।"
+          icon={Printer}
+          actions={
+            <>
+              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+                >
+                  <Cpu className="h-4 w-4 text-blue-600" />
+                  <span>{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
+                </Button>
+              </Link>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+                title="Refresh Production Jobs"
               >
-                <Cpu className="h-4 w-4 text-blue-600" />
-                <span>{isBn ? 'মেশিন বহর' : 'Machinery Fleet'}</span>
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-            </Link>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-              title="Refresh Production Jobs"
-            >
-              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-
-            <Button
-              onClick={() => setIsWorkOrderModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>{tBilingual('New Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
-            </Button>
-          </div>
-        </div>
+              <Button
+                onClick={() => setIsWorkOrderModalOpen(true)}
+                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>{tBilingual('New Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
+              </Button>
+            </>
+          }
+        />
 
         {/* =========================================================================
             2. TOP METRICS KPI BAR (Modernized matching DesignMetricsBar)

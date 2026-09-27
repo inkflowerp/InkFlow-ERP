@@ -485,18 +485,26 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
       {/* Header & Main CTAs */}
       {!hideHeader && (
         <PageHeader
-          titleEn="User & Access Control Center"
-          titleBn="ইউজার ও এক্সেস কন্ট্রোল সেন্টার"
-          descriptionEn="Enterprise multi-tenant RBAC panel: manage members, roles, permissions, live simulation, and security logs."
-          descriptionBn="প্রতিষ্ঠান সদস্য, ভূমিকা, পারমিশন ম্যাট্রিক্স, লাইভ সিমুলেশন ও নিরাপত্তা লগ ব্যবস্থাপনা।"
-          icon={ShieldCheck}
-          iconColor="text-sky-500"
+          titleEn={activeTab === 'roles' ? 'Roles & Permissions Matrix' : 'User & Access Control Center'}
+          titleBn={activeTab === 'roles' ? 'রোল ও পারমিশন ম্যাট্রিক্স' : 'ইউজার ও এক্সেস কন্ট্রোল সেন্টার'}
+          descriptionEn={
+            activeTab === 'roles'
+              ? 'Fine-grained enterprise authorization matrix, system roles, and resource access levels.'
+              : 'Enterprise multi-tenant RBAC panel: manage members, roles, permissions, live simulation, and security logs.'
+          }
+          descriptionBn={
+            activeTab === 'roles'
+              ? 'সিস্টেম রোল, নিরাপত্তা পারমিশন ও রিসোর্স এক্সেস লেভেল কন্ট্রোল ম্যাট্রিক্স।'
+              : 'প্রতিষ্ঠান সদস্য, ভূমিকা, পারমিশন ম্যাট্রিক্স, লাইভ সিমুলেশন ও নিরাপত্তা লগ ব্যবস্থাপনা।'
+          }
+          icon={activeTab === 'roles' ? Shield : ShieldCheck}
           actions={
             <div className="flex items-center gap-2.5 flex-wrap">
               <Link href={getTenantNavHref('/hr', pathname, company?.slug)}>
                 <Button
                   variant="outline"
-                  className="text-xs border-blue-300 text-blue-800 bg-blue-50/70 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 font-semibold bangla-text"
+                  size="sm"
+                  className="text-xs border-blue-300 text-blue-800 bg-blue-50/70 hover:bg-blue-100 dark:border-blue-800 dark:text-blue-300 dark:bg-blue-950/40 font-semibold bangla-text rounded-xl h-9"
                 >
                   <Users2 className="mr-1.5 h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
                   {tBilingual('Workforce Roster', 'কর্মী ও পেরোল')} →
@@ -504,9 +512,10 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               </Link>
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleOpenInvite}
                 title={!userCheck.allowed ? userCheck.reason : undefined}
-                className="bangla-text text-xs border-slate-700"
+                className="bangla-text text-xs border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl h-9"
               >
                 <Mail className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Invite Member', 'সদস্য আমন্ত্রণ')}
@@ -514,7 +523,7 @@ export function UsersManagementView({ hideHeader = false, initialTab }: UsersMan
               <Button
                 onClick={handleOpenAddUser}
                 title={!userCheck.allowed ? userCheck.reason : undefined}
-                className="bg-primary hover:bg-primary/90 text-xs text-white font-semibold bangla-text shadow-sm"
+                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] bangla-text"
               >
                 <UserPlus className="mr-1.5 h-3.5 w-3.5" />
                 {tBilingual('Add User', 'নতুন ব্যবহারকারী')}

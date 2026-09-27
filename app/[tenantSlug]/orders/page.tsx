@@ -831,48 +831,38 @@ export default function OrdersPage() {
       )}
 
       {/* =========================================================================
-          1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
+          1. HEADER: Standardized PageHeader matching Quotations & Billing
          ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
-            <Briefcase className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {tBilingual('Orders & Job Flow', 'অর্ডার ও জব ফ্লো হাব')}
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              {tBilingual(
-                'Track commercial sales orders, intake routing, job tickets, and delivery progress.',
-                'প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো ও কারখানা ডেলিভারি ব্যবস্থাপনা।'
-              )}
-            </p>
-          </div>
-        </div>
+      <PageHeader
+        titleEn="Orders & Job Flow"
+        titleBn="অর্ডার ও জব ফ্লো হাব"
+        descriptionEn="Track commercial sales orders, intake routing, job tickets, and delivery progress."
+        descriptionBn="প্রেস অর্ডার বুকিং, অগ্রিম ও বাকি ট্র্যাকিং, ৩-মুখী ফ্লো ও কারখানা ডেলিভারি ব্যবস্থাপনা।"
+        icon={Briefcase}
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+              title="Refresh Orders"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-            title="Refresh Orders"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-indigo-600' : ''}`} />
-            <span className="hidden sm:inline">Refresh</span>
-          </Button>
-
-          <Button
-            onClick={() => setIsWorkOrderModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
-          </Button>
-        </div>
-      </div>
+            <Button
+              onClick={() => setIsWorkOrderModalOpen(true)}
+              className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>{tBilingual('New Order Booking', 'নতুন অর্ডার বুকিং')}</span>
+            </Button>
+          </>
+        }
+      />
 
       {/* Top Metrics KPI Bar */}
       <OrdersMetricsBar

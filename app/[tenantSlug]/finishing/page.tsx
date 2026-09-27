@@ -446,71 +446,61 @@ export default function FinishingAndFabricationPage() {
     <FeatureGate feature="production">
       <div className="space-y-5 max-w-7xl mx-auto pb-16 p-4 sm:p-6">
         {/* =========================================================================
-            1. HEADER: Reference Layout with squircle icon, title, subtitle & buttons
+            1. HEADER: Standardized PageHeader matching Quotations & Billing
            ========================================================================= */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
-              <Scissors className="w-6 h-6 stroke-[2.2]" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-                {tBilingual('Finishing & Fabrication Floor', 'ফিনিশিং ও সাইনেজ ফেব্রিকেশন')}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                {tBilingual(
-                  'Post-press binding, die-cutting, acrylic 3D fabrication, neon wiring, and final QC inspection.',
-                  'পোস্ট-প্রেস ফিনিশিং, বাইন্ডিং, এক্রিলিক ৩ডি ও নিয়ন ফেব্রিকেশন এবং কিউসি ইন্সপেকশন।'
-                )}
-              </p>
-            </div>
-          </div>
+        <PageHeader
+          titleEn="Finishing & Fabrication Floor"
+          titleBn="ফিনিশিং ও সাইনেজ ফেব্রিকেশন"
+          descriptionEn="Post-press binding, die-cutting, acrylic 3D fabrication, neon wiring, and final QC inspection."
+          descriptionBn="পোস্ট-প্রেস ফিনিশিং, বাইন্ডিং, এক্রিলিক ৩ডি ও নিয়ন ফেব্রিকেশন এবং কিউসি ইন্সপেকশন।"
+          icon={Scissors}
+          actions={
+            <>
+              <Link href={getTenantNavHref('/production', pathname, slug)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+                >
+                  <LayoutGrid className="h-4 w-4 text-indigo-600" />
+                  <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
+                </Button>
+              </Link>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <Link href={getTenantNavHref('/production', pathname, slug)}>
+              <Link href={getTenantNavHref('/delivery', pathname, slug)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs font-semibold h-9 px-3.5 gap-1.5 border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl cursor-pointer shadow-2xs"
+                >
+                  <Truck className="h-4 w-4 text-emerald-600" />
+                  <span>{tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}</span>
+                </Button>
+              </Link>
+
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl cursor-pointer shadow-2xs"
+                onClick={() => loadData(false)}
+                disabled={loading}
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+                title="Refresh Tasks"
               >
-                <LayoutGrid className="h-4 w-4 text-indigo-600" />
-                <span>{tBilingual('Production Board', 'প্রোডাকশন বোর্ড')}</span>
+                <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
               </Button>
-            </Link>
 
-            <Link href={getTenantNavHref('/delivery', pathname, slug)}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-semibold h-10 px-3.5 gap-1.5 border-emerald-200/80 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 rounded-xl cursor-pointer shadow-2xs"
-              >
-                <Truck className="h-4 w-4 text-emerald-600" />
-                <span>{tBilingual('Delivery & Challan ➔', 'ডেলিভারি ও চালান ➔')}</span>
-              </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadData(false)}
-              disabled={loading}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-10 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
-              title="Refresh Tasks"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
-
-            <Link href={getTenantNavHref('/operator', pathname, slug)}>
-              <Button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98] h-10"
-              >
-                <Printer className="w-4 h-4 stroke-[2.5]" />
-                <span>{tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}</span>
-              </Button>
-            </Link>
-          </div>
-        </div>
+              <Link href={getTenantNavHref('/operator', pathname, slug)}>
+                <Button
+                  className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+                >
+                  <Printer className="w-4 h-4 stroke-[2.5]" />
+                  <span>{tBilingual('Operator Terminal', 'অপারেটর টার্মিনাল')}</span>
+                </Button>
+              </Link>
+            </>
+          }
+        />
 
         {/* Toast Notification */}
         {notification && (

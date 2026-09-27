@@ -12,12 +12,14 @@ import {
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
 import { useTenant } from '@/hooks/use-tenant'
+import { useI18n } from '@/i18n/context'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { DesignRepository } from '@/lib/repositories/design.repository'
 import { sendToPrintOperatorAction } from '@/actions/design.actions'
 import type { DesignJobRecord } from '@/types/design.types'
 import type { ProductionJobRecord } from '@/types/production.types'
 import { WorkOrderModal } from '@/components/shared/work-order-modal'
+import { PageHeader } from '@/components/shared/page-header'
 
 import {
   type PreflightState,
@@ -61,6 +63,7 @@ function getDueText(deadline?: string | null, priority?: string): string | null 
 export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
   const params = useParams()
   const { company } = useTenant()
+  const { tBilingual } = useI18n()
   const tenantSlug = (params?.tenantSlug as string) || company?.slug || 'default'
   const { user } = useAuth()
   const companyId = company?.id || tenantSlug
@@ -614,33 +617,24 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
   return (
     <div className="space-y-4 pb-16 max-w-7xl mx-auto">
       {/* =========================================================================
-          1. HEADER: Reference Layout with squircle icon, title, subtitle & button
+          1. HEADER: Standardized PageHeader matching Quotations & Billing
          ========================================================================= */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-2">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm shadow-indigo-500/25 shrink-0">
-            <Edit3 className="w-6 h-6 stroke-[2.2]" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Design Panel
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-              Manage design jobs, create proofs, handle revisions and send to production.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2.5">
+      <PageHeader
+        titleEn="Design Panel"
+        titleBn="ডিজাইন প্যানেল ও প্রুফিং হাব"
+        descriptionEn="Manage design jobs, create proofs, handle revisions and send to production."
+        descriptionBn="ডিজাইন জব, প্রুফ তৈরি, রিভিশন কন্ট্রোল ও প্রোডাকশনে প্রেরণের সমন্বিত কেন্দ্র।"
+        icon={Edit3}
+        actions={
           <Button
             onClick={() => setIsWorkOrderModalOpen(true)}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
+            className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>Add Work Order</span>
+            <span>{tBilingual('Add Work Order', 'নতুন ওয়ার্ক অর্ডার')}</span>
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* 2. Top Metrics KPI Bar (6 Cards matching reference) */}
       <DesignMetricsBar

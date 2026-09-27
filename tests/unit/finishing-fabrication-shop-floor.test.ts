@@ -24,7 +24,7 @@ describe('Finishing & Fabrication Floor Management & Shop Floor Terminal Tests',
     assert.equal(finishingItem.href, '/finishing')
     assert.ok(finishingItem.title.includes('Finishing & Fabrication'))
     assert.equal(finishingItem.titleBn, 'ফিনিশিং ও তৈরি')
-    assert.equal(finishingItem.badge, 'Floor')
+    assert.equal(finishingItem.badge, undefined)
   })
 
   it('2. Production task accurately routes to Digital Finishing station (Eyelets/Seaming/Standee)', async () => {

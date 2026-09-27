@@ -240,11 +240,6 @@ export default function HrmDashboardPage() {
         descriptionBn="কর্মী ব্যবস্থাপনা, লাইভ হাজিরা পর্যবেক্ষণ ও বেতন নিয়ন্ত্রণ কেন্দ্র"
         icon={LayoutDashboard}
         iconColor="text-blue-600"
-        badge={
-          <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300 bangla-text">
-            {tBilingual('Live Floor Sync', 'লাইভ ফ্লোর সিঙ্ক')}
-          </Badge>
-        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button

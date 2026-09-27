@@ -627,13 +627,13 @@ export default function CustomersPage() {
         icon={Users}
         iconColor="text-blue-600 dark:text-blue-400"
         actions={
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
             {can('export', 'customers') && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleExportCSV}
-                className="text-xs font-semibold h-9"
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3.5 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
               >
                 <Download className="mr-1.5 h-3.5 w-3.5" />
                 <span>{tBilingual('Export', 'এক্সপোর্ট')}</span>
@@ -644,7 +644,7 @@ export default function CustomersPage() {
               <Button
                 size="sm"
                 onClick={handleOpenAddCustomer}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs h-9 px-4 shadow-sm"
+                className="bg-gradient-to-r from-blue-600 via-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs h-9 px-4 rounded-xl shadow-sm shadow-blue-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
               >
                 <Plus className="mr-1.5 h-4 w-4" />
                 <span>{tBilingual('New Customer', 'নতুন গ্রাহক')}</span>

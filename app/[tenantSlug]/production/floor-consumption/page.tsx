@@ -144,11 +144,6 @@ export default function FloorConsumptionPage() {
         descriptionBn="প্রিন্ট ফ্লোর রিয়েল-টাইম মেটেরিয়াল ব্যবহার, রোল কাটিং ট্র্যাকিং, জব ভিত্তিক মেটেরিয়াল কনজাম্পশন ও স্ক্র্যাপ অডিট"
         icon={Flame}
         iconColor="text-amber-500"
-        badge={
-          <Badge variant="outline" className="border-amber-500/30 bg-amber-500/10 text-amber-400 font-normal text-xs">
-            Factory &amp; Floor
-          </Badge>
-        }
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <Button
