@@ -1,151 +1,141 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import Link from 'next/link'
-import { useParams, useRouter, useSearchParams, usePathname } from 'next/navigation'
-import { getTenantNavHref } from '@/lib/tenant/tenant-url'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import {
-  FileSpreadsheet,
-  Download,
-  Printer,
-  Calendar,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Users,
-  Printer as PrintIcon,
-  Package,
-  Layers,
-  AlertTriangle,
-  CheckCircle2,
-  Building,
-  FileText,
   BarChart3,
-  PieChart,
+  Calendar,
+  ChevronDown,
+  Download,
+  FileSpreadsheet,
+  Printer,
+  ShoppingCart,
+  ClipboardList,
+  TrendingUp,
+  Wallet,
+  CheckCircle2,
+  Settings,
   Sparkles,
-  GitBranch,
-  Calculator,
   Clock,
-  ArrowRight,
-  RefreshCw,
+  PauseCircle,
+  Package,
+  FileText,
+  Users,
+  Truck,
+  PieChart,
+  ArrowUpRight,
+  ArrowDownRight,
+  X,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { CurrencyDisplay } from '@/components/shared/currency-display'
-import { PageHeader } from '@/components/shared/page-header'
-import {
-  exportToCsv,
-  ReportsService,
-} from '@/services/reports.service'
-import { ReportFilterState } from '@/types/reports.types'
-import { formatBDT, formatDate, formatDateTime } from '@/lib/formatters'
+import { Input } from '@/components/ui/input'
+import { FeatureGate } from '@/components/subscriptions/feature-gate'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
-import { SalesOrderRecord } from '@/types/order.types'
-import { CustomerRecord } from '@/types/crm.types'
-import { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
-import { MaterialRecord } from '@/types/inventory.types'
-import { ProductionJobRecord } from '@/types/production.types'
-import { FeatureGate } from '@/components/subscriptions/feature-gate'
+import { formatBDT } from '@/lib/formatters'
 import { listBranchesAction } from '@/actions/branch.actions'
+import { getBusinessReportDataAction } from '@/actions/reports.actions'
+import {
+  ReportsService,
+  exportToCsv,
+} from '@/services/reports.service'
+import type {
+  ReportPeriodKey,
+  BusinessReportCalculatedData,
+} from '@/types/reports.types'
+import type { SalesOrderRecord } from '@/types/order.types'
+import type { CustomerRecord } from '@/types/crm.types'
+import type { InvoiceRecord, PaymentRecord } from '@/types/billing.types'
+import type { MaterialRecord } from '@/types/inventory.types'
+import type { ProductionJobRecord } from '@/types/production.types'
+import type { ExpenseRecord } from '@/types/accounting.types'
 import type { BranchMasterRecord } from '@/types/branch.types'
 
-function EmptyReportState() {
-  const { tBilingual } = useI18n()
-  return (
-    <div className="p-12 text-center bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-2 m-4">
-      <div className="p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
-        <BarChart3 className="w-6 h-6" />
-      </div>
-      <p className="text-sm font-semibold text-slate-700 dark:text-slate-200 bangla-text">
-        {tBilingual('No data available for this period', 'এই সময়ের জন্য কোনো তথ্য পাওয়া যায়নি')}
-      </p>
-      <p className="text-xs text-slate-400 max-w-sm">
-        {tBilingual(
-          'Try selecting another date range or filter criteria above to inspect report telemetry.',
-          'অন্য কোনো তারিখ বা ফিল্টার নির্বাচন করে পুনরায় চেষ্টা করুন।'
-        )}
-      </p>
-    </div>
-  )
-}
+import { MonthlySalesProfitChart } from '@/components/reports/monthly-sales-profit-chart'
+import { DonutDistributionChart } from '@/components/reports/donut-distribution-chart'
+import { QuickReportModal, QuickReportType } from '@/components/reports/quick-report-modal'
 
-function matchesDateRange(dateStr?: string | null, range?: string): boolean {
-  if (!dateStr || !range || range === 'all') return true
-  try {
-    const d = new Date(dateStr)
-    const now = new Date()
-    if (range === 'today') {
-      return d.toDateString() === now.toDateString()
-    } else if (range === '7d') {
-      const past7 = new Date()
-      past7.setDate(past7.getDate() - 7)
-      return d >= past7
-    } else if (range === 'this_month') {
-      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
-    } else if (range === 'last_month') {
-      const prevMonth = now.getMonth() === 0 ? 11 : now.getMonth() - 1
-      const prevYear = now.getMonth() === 0 ? now.getFullYear() - 1 : now.getFullYear()
-      return d.getMonth() === prevMonth && d.getFullYear() === prevYear
-    } else if (range === 'quarter') {
-      const past90 = new Date()
-      past90.setDate(past90.getDate() - 90)
-      return d >= past90
-    }
-    return true
-  } catch {
-    return true
-  }
-}
-
-export default function ReportingAnalyticsPage() {
-  const params = useParams()
-  const pathname = usePathname()
+export default function BusinessReportsPage() {
   const { company } = useTenant()
-  const { locale, tBilingual } = useI18n()
-  const slug = (params?.tenantSlug as string) || company?.slug || 'my-company'
 
   const [mounted, setMounted] = useState(false)
   const [branches, setBranches] = useState<BranchMasterRecord[]>([])
-  const [syncCount, setSyncCount] = useState(0)
+  const [selectedBranch, setSelectedBranch] = useState<string>('all')
 
-  // Global Multi-Dimensional Filters
-  const [filters, setFilters] = useState<ReportFilterState>({
-    dateRange: 'this_month',
-    branch: 'all',
-    customerType: 'all',
-    department: 'all',
-  })
+  // Date Filtering State
+  const [period, setPeriod] = useState<ReportPeriodKey>('this_month')
+  const [customStartDate, setCustomStartDate] = useState<string>('')
+  const [customEndDate, setCustomEndDate] = useState<string>('')
+  const [showDatePickerModal, setShowDatePickerModal] = useState(false)
 
-  // Active Report Domain Module
-  const [activeTab, setActiveTab] = useState<'sales' | 'production' | 'financial' | 'inventory' | 'customers'>('sales')
-  const [salesSubTab, setSalesSubTab] = useState<'product' | 'customer' | 'salesperson' | 'area' | 'payment'>('product')
+  // Chart configuration
+  const [monthlyChartMonths, setMonthlyChartMonths] = useState<6 | 9 | 12>(9)
 
-  // Live Data Stores for dynamic aggregation
-  const [orders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
-  const [invoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
-  const [payments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
-  const [materials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
-  const [customers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
-  const [jobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+  // Export dropdown state
+  const [showExportMenu, setShowExportMenu] = useState(false)
+
+  // Quick report modal state
+  const [activeQuickReport, setActiveQuickReport] = useState<QuickReportType | null>(null)
+
+  // Live Data Stores (Fallback & Offline Sync)
+  const [storeOrders] = useDataStore<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS, [])
+  const [storeInvoices] = useDataStore<InvoiceRecord[]>(STORAGE_KEYS.INVOICES, [])
+  const [storePayments] = useDataStore<PaymentRecord[]>(STORAGE_KEYS.PAYMENTS, [])
+  const [storeMaterials] = useDataStore<MaterialRecord[]>(STORAGE_KEYS.MATERIALS, [])
+  const [storeCustomers] = useDataStore<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS, [])
+  const [storeJobs] = useDataStore<ProductionJobRecord[]>(STORAGE_KEYS.PRODUCTION_JOBS, [])
+  const [storeExpenses] = useDataStore<ExpenseRecord[]>(STORAGE_KEYS.EXPENSES, [])
+
+  // Authoritative Server-side PostgreSQL Data
+  const [serverInvoices, setServerInvoices] = useState<InvoiceRecord[]>([])
+  const [serverOrders, setServerOrders] = useState<SalesOrderRecord[]>([])
+  const [serverPayments, setServerPayments] = useState<PaymentRecord[]>([])
+  const [serverJobs, setServerJobs] = useState<ProductionJobRecord[]>([])
+  const [serverExpenses, setServerExpenses] = useState<ExpenseRecord[]>([])
+  const [serverCustomers, setServerCustomers] = useState<CustomerRecord[]>([])
+  const [serverMaterials, setServerMaterials] = useState<MaterialRecord[]>([])
+
+  // Fetch Authoritative Server Data
+  const loadServerData = useCallback(async () => {
+    try {
+      setLoading(true)
+      const res = await getBusinessReportDataAction(
+        selectedBranch === 'all' ? null : selectedBranch
+      )
+      if (res.success && res.data) {
+        setServerInvoices(res.data.invoices || [])
+        setServerOrders(res.data.orders || [])
+        setServerPayments(res.data.payments || [])
+        setServerJobs(res.data.productionJobs || [])
+        setServerExpenses(res.data.expenses || [])
+        setServerCustomers(res.data.customers || [])
+        setServerMaterials(res.data.materials || [])
+        if (res.data.branches?.length) {
+          setBranches(res.data.branches)
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to load server reports data, falling back to local store', err)
+    } finally {
+      setLoading(false)
+    }
+  }, [selectedBranch])
 
   useEffect(() => {
     setMounted(true)
+    loadServerData()
     listBranchesAction({ includeInactive: false }).then((res) => {
       if (res.success && res.data) {
         setBranches(res.data as BranchMasterRecord[])
       }
     })
-  }, [])
+  }, [loadServerData])
 
   // Realtime Broadcast Listener for Live Multi-User Sync
   useEffect(() => {
     const handleSync = () => {
-      setSyncCount((prev) => prev + 1)
+      loadServerData()
     }
 
     window.addEventListener('printerp_table_synced:orders', handleSync)
@@ -153,6 +143,7 @@ export default function ReportingAnalyticsPage() {
     window.addEventListener('printerp_table_synced:payments', handleSync)
     window.addEventListener('printerp_table_synced:materials', handleSync)
     window.addEventListener('printerp_table_synced:customers', handleSync)
+    window.addEventListener('printerp_table_synced:expenses', handleSync)
     window.addEventListener('printerp_table_synced:branches', handleSync)
     window.addEventListener('printerp_data_sync', handleSync)
 
@@ -162,960 +153,905 @@ export default function ReportingAnalyticsPage() {
       window.removeEventListener('printerp_table_synced:payments', handleSync)
       window.removeEventListener('printerp_table_synced:materials', handleSync)
       window.removeEventListener('printerp_table_synced:customers', handleSync)
+      window.removeEventListener('printerp_table_synced:expenses', handleSync)
       window.removeEventListener('printerp_table_synced:branches', handleSync)
       window.removeEventListener('printerp_data_sync', handleSync)
     }
-  }, [])
+  }, [loadServerData])
 
-  // Filter-Aware Datasets
-  const filteredOrders = useMemo(() => {
-    return (orders || []).filter((o) => {
-      const matchDate = matchesDateRange(o.created_at || (o as any).order_date, filters.dateRange)
-      const matchBranch = filters.branch === 'all' || (o as any).branch_id === filters.branch || (o as any).branch === filters.branch
-      const matchCustomerType = filters.customerType === 'all' || (o as any).customer_type === filters.customerType
-      return matchDate && matchBranch && matchCustomerType
+  // Resolve Effective Datasets: Merge Server & Local Store
+  const effectiveInvoices = useMemo(() => {
+    return serverInvoices.length > 0 ? serverInvoices : storeInvoices || []
+  }, [serverInvoices, storeInvoices])
+
+  const effectiveOrders = useMemo(() => {
+    return serverOrders.length > 0 ? serverOrders : storeOrders || []
+  }, [serverOrders, storeOrders])
+
+  const effectivePayments = useMemo(() => {
+    return serverPayments.length > 0 ? serverPayments : storePayments || []
+  }, [serverPayments, storePayments])
+
+  const effectiveJobs = useMemo(() => {
+    return serverJobs.length > 0 ? serverJobs : storeJobs || []
+  }, [serverJobs, storeJobs])
+
+  const effectiveExpenses = useMemo(() => {
+    return serverExpenses.length > 0 ? serverExpenses : storeExpenses || []
+  }, [serverExpenses, storeExpenses])
+
+  const effectiveCustomers = useMemo(() => {
+    return serverCustomers.length > 0 ? serverCustomers : storeCustomers || []
+  }, [serverCustomers, storeCustomers])
+
+  const effectiveMaterials = useMemo(() => {
+    return serverMaterials.length > 0 ? serverMaterials : storeMaterials || []
+  }, [serverMaterials, storeMaterials])
+
+  // Compute Full Real-Data Business Report Metrics
+  const reportData: BusinessReportCalculatedData = useMemo(() => {
+    return ReportsService.computeBusinessReport({
+      invoices: effectiveInvoices,
+      orders: effectiveOrders,
+      payments: effectivePayments,
+      expenses: effectiveExpenses,
+      jobs: effectiveJobs,
+      customers: effectiveCustomers,
+      materials: effectiveMaterials,
+      period,
+      customStartDate,
+      customEndDate,
+      monthlyChartMonths,
     })
-  }, [orders, filters, syncCount])
+  }, [
+    effectiveInvoices,
+    effectiveOrders,
+    effectivePayments,
+    effectiveExpenses,
+    effectiveJobs,
+    effectiveCustomers,
+    effectiveMaterials,
+    period,
+    customStartDate,
+    customEndDate,
+    monthlyChartMonths,
+  ])
 
-  const filteredInvoices = useMemo(() => {
-    return (invoices || []).filter((i) => {
-      const matchDate = matchesDateRange(i.created_at || (i as any).invoice_date, filters.dateRange)
-      const matchBranch = filters.branch === 'all' || (i as any).branch_id === filters.branch
-      return matchDate && matchBranch
-    })
-  }, [invoices, filters, syncCount])
-
-  const filteredPayments = useMemo(() => {
-    return (payments || []).filter((p) => {
-      const matchDate = matchesDateRange(p.created_at || (p as any).payment_date, filters.dateRange)
-      const matchBranch = filters.branch === 'all' || (p as any).branch_id === filters.branch
-      return matchDate && matchBranch
-    })
-  }, [payments, filters, syncCount])
-
-  const filteredMaterials = useMemo(() => {
-    if (filters.department === 'all') return materials || []
-    return (materials || []).filter((m) => {
-      const cat = (m.category || '').toLowerCase()
-      if (filters.department === 'printing') return cat.includes('paper') || cat.includes('vinyl') || cat.includes('banner') || cat.includes('ink') || cat.includes('sheet')
-      if (filters.department === 'finishing') return cat.includes('lamination') || cat.includes('eyelet') || cat.includes('glue') || cat.includes('tape')
-      if (filters.department === 'fabrication') return cat.includes('acrylic') || cat.includes('led') || cat.includes('board') || cat.includes('metal') || cat.includes('pvc')
-      if (filters.department === 'installation') return cat.includes('frame') || cat.includes('structure') || cat.includes('cable') || cat.includes('screw')
-      return true
-    })
-  }, [materials, filters.department, syncCount])
-
-  const filteredCustomers = useMemo(() => {
-    if (filters.customerType === 'all') return customers || []
-    return (customers || []).filter((c) => (c.customer_type || '').toLowerCase() === filters.customerType.toLowerCase())
-  }, [customers, filters.customerType, syncCount])
-
-  const filteredJobs = useMemo(() => {
-    if (filters.department === 'all') return jobs || []
-    return (jobs || []).filter((j) => (j.department || '').toLowerCase() === filters.department.toLowerCase())
-  }, [jobs, filters.department, syncCount])
-
-  // Dynamic datasets computed from filtered records
-  const salesByProduct = useMemo(() => ReportsService.getSalesByProduct(filteredOrders), [filteredOrders])
-  const salesByCustomer = useMemo(() => ReportsService.getSalesByCustomer(filteredOrders), [filteredOrders])
-  const salesByPerson = useMemo(() => ReportsService.getSalesByPerson(filteredOrders), [filteredOrders])
-  const salesByArea = useMemo(() => ReportsService.getSalesByArea(filteredOrders), [filteredOrders])
-  const paymentMethods = useMemo(() => ReportsService.getPaymentMethods(filteredPayments), [filteredPayments])
-  const productionMetrics = useMemo(() => ReportsService.getProductionMetrics(filteredJobs), [filteredJobs])
-  const financialAging = useMemo(() => ReportsService.getFinancialAging(filteredInvoices), [filteredInvoices])
-  const inventoryValuation = useMemo(() => ReportsService.getInventoryValuation(filteredMaterials), [filteredMaterials])
-  const customerReports = useMemo(() => ReportsService.getCustomerReports(filteredCustomers, filteredOrders), [filteredCustomers, filteredOrders])
-
-  const totalInventoryValuation = useMemo(() => {
-    return inventoryValuation.reduce((acc: number, i: any) => acc + (i.totalValue || 0), 0)
-  }, [inventoryValuation])
-
-  const grossSalesTurnover = useMemo(() => {
-    return (filteredInvoices || []).reduce((acc: number, i: any) => acc + (Number(i.grand_total) || Number(i.total_amount) || Number(i.subtotal) || 0), 0)
-  }, [filteredInvoices])
-
-  const totalCollections = useMemo(() => {
-    return (filteredPayments || []).reduce((acc: number, p: any) => acc + (Number(p.amount) || 0), 0)
-  }, [filteredPayments])
-
-  const totalDue = useMemo(() => {
-    return (filteredInvoices || []).reduce((acc: number, i: any) => acc + (Number(i.due_amount) || 0), 0)
-  }, [filteredInvoices])
-
-  const realizedMargin = useMemo(() => {
-    if (grossSalesTurnover === 0) return 0
-    return Math.round(((totalCollections / grossSalesTurnover) * 100) * 10) / 10
-  }, [grossSalesTurnover, totalCollections])
-
-  // Active sales dataset
-  const activeSalesDataset = useMemo(() => {
-    switch (salesSubTab) {
-      case 'product':
-        return salesByProduct
-      case 'customer':
-        return salesByCustomer
-      case 'salesperson':
-        return salesByPerson
-      case 'area':
-        return salesByArea
-      case 'payment':
-        return paymentMethods
-      default:
-        return salesByProduct
+  // Export Handlers
+  const handleExport = (format: 'excel' | 'csv' | 'print') => {
+    setShowExportMenu(false)
+    if (format === 'print') {
+      window.print()
+      return
     }
-  }, [salesSubTab, salesByProduct, salesByCustomer, salesByPerson, salesByArea, paymentMethods])
 
-  // CSV Export Trigger
-  const handleExport = (isExcel: boolean) => {
-    let filename = `PrintERP_${activeTab}_report`
-    let headers: string[] = []
-    let rows: (string | number)[][] = []
+    const filename = `PrintERP_Business_Report_${period}_${new Date().toISOString().slice(0, 10)}`
+    const isExcel = format === 'excel'
 
-    if (activeTab === 'sales') {
-      filename = `PrintERP_Sales_${salesSubTab}_Report`
-      headers = ['Category / Item', 'Volume / Orders', 'Revenue (BDT)', 'Share (%)']
-      rows = activeSalesDataset.map((item: any) => [
-        item.label,
-        item.ordersCount,
-        item.revenue,
-        `${item.sharePercent}%`,
-      ])
-    } else if (activeTab === 'financial') {
-      filename = `PrintERP_Accounts_Receivable_Aging`
-      headers = ['Aging Bracket', 'Invoices Count', 'Overdue Amount (BDT)', 'Risk Category']
-      rows = financialAging.map((a: any) => [a.range, a.invoicesCount, a.amount, a.riskLevel?.toUpperCase() || 'LOW'])
-    } else if (activeTab === 'inventory') {
-      filename = `PrintERP_Inventory_Valuation`
-      headers = ['Material Name', 'Category', 'Stock Qty', 'Unit', 'Unit Cost (BDT)', 'Total Value (BDT)', 'Status']
-      rows = inventoryValuation.map((i: any) => [
-        i.materialName,
-        i.category,
-        i.stockQty,
-        i.unit,
-        i.unitCost,
-        i.totalValue,
-        i.isLowStock ? 'LOW STOCK' : 'Adequate',
-      ])
-    } else if (activeTab === 'customers') {
-      filename = `PrintERP_Customer_LTV_Report`
-      headers = ['Customer Name', 'Type', 'Lifetime Sales (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Total Orders']
-      rows = customerReports.map((c: any) => [
-        c.customerName,
-        c.customerType,
-        c.lifetimeSales,
-        c.totalPaid,
-        c.dueBalance,
-        c.ordersCount,
-      ])
-    } else {
-      filename = `PrintERP_Production_KPIs`
-      headers = ['Metric', 'Value', 'Context']
-      rows = productionMetrics.map((p: any) => [p.metric, p.value, p.subtext])
-    }
+    const headers = ['Category / Item', 'Volume / Count', 'Amount (BDT)', 'Details']
+    const rows: (string | number)[][] = [
+      ['Total Sales Turnover', `${reportData.summary.invoicesCount} Invoices`, reportData.summary.totalSales, 'Gross Billed'],
+      ['Total Production Jobs', `${reportData.summary.totalJobs} Jobs`, reportData.summary.uniqueCustomersCount, 'Unique Customers'],
+      ['Gross Profit', `${reportData.summary.grossProfitMarginPercent}% Margin`, reportData.summary.grossProfit, 'Operating Margin'],
+      ['Total Expenses', `${reportData.summary.expenseTransactionsCount} Transactions`, reportData.summary.totalExpenses, 'OPEX Outflow'],
+      ['Net Profit', '', reportData.summary.grossProfit - reportData.summary.totalExpenses, 'Net Bottomline'],
+    ]
 
     exportToCsv(filename, headers, rows, isExcel)
   }
 
   if (!mounted) {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto pb-16">
-        <div className="h-14 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <div key={n} className="h-20 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+      <div className="space-y-6 max-w-[1600px] mx-auto p-4 sm:p-6 pb-16">
+        <div className="h-16 bg-slate-100 dark:bg-slate-900 rounded-2xl animate-pulse" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((n) => (
+            <div key={n} className="h-28 bg-slate-100 dark:bg-slate-900 rounded-2xl animate-pulse" />
           ))}
         </div>
-        <div className="h-96 bg-slate-100 dark:bg-slate-900 rounded-xl animate-pulse" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((n) => (
+            <div key={n} className="h-72 bg-slate-100 dark:bg-slate-900 rounded-2xl animate-pulse" />
+          ))}
+        </div>
       </div>
     )
   }
 
   return (
     <FeatureGate feature="reports">
-      <div className="space-y-6 max-w-7xl print:max-w-none print:w-full print:bg-white print:text-slate-900 print:dark:bg-white print:dark:text-slate-900 print:m-0 print:p-0">
-      {/* Printable Report Header (Visible Only When Printing) */}
-      <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-xl font-black text-slate-900 uppercase tracking-tight">
-              {company?.name || 'Printing & Signage Solutions'}
-            </h1>
-            <p className="text-xs text-slate-600 font-semibold mt-0.5">
-              Executive Business Intelligence & Financial Statement Report
-            </p>
-          </div>
-          <div className="text-right text-xs text-slate-600">
-            <div className="font-bold text-slate-900">
-              Module: {activeTab.toUpperCase()}
+      <div className="space-y-5 max-w-[1600px] mx-auto p-3 sm:p-6 print:p-0 print:m-0 print:max-w-none text-slate-900 dark:text-slate-100 transition-colors">
+        
+        {/* =========================================================================
+            PRINT-ONLY EXECUTIVE HEADER
+           ========================================================================= */}
+        <div className="hidden print:block border-b-2 border-slate-900 pb-4 mb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">
+                {company?.name || 'Printing & Signage Solutions'}
+              </h1>
+              <p className="text-xs text-slate-600 font-semibold mt-0.5">
+                Executive Business Intelligence & Performance Report
+              </p>
             </div>
-            <div>Period: {filters.dateRange.toUpperCase().replace('_', ' ')}</div>
-            <div>Printed: {formatDateTime(new Date(), locale)}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Non-Print Header & Filter Bar */}
-      <div className="print:hidden space-y-4">
-        <PageHeader
-          titleEn="Business Intelligence & Reporting Engine"
-          titleBn="রিপোর্টিং ও ব্যবসায়িক অ্যানালিটিক্স"
-          descriptionEn="Multi-dimensional sales trends, production scrap analysis, receivable aging, and stock valuation."
-          descriptionBn="সেলস ট্রেন্ড, অপচয় বিশ্লেষণ, বাকি টাকা আদায়ের মেয়াদ এবং স্টক মূল্যায়ন প্রতিবেদন।"
-          icon={BarChart3}
-          iconColor="text-blue-600"
-          actions={
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs h-8 hidden md:inline-flex"
-              >
-                <Link href={getTenantNavHref('/reports/branches', pathname, slug)}>
-                  <GitBranch className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
-                  {tBilingual('Branch Telemetry', 'শাখা রিপোর্ট')}
-                </Link>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs h-8 hidden sm:inline-flex"
-              >
-                <Link href={getTenantNavHref('/accounting', pathname, slug)}>
-                  <DollarSign className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
-                  {tBilingual('Accounting OPEX', 'হিসাব')}
-                </Link>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs h-8 hidden lg:inline-flex"
-              >
-                <Link href={getTenantNavHref('/costing', pathname, slug)}>
-                  <Calculator className="mr-1.5 h-3.5 w-3.5 text-purple-600" />
-                  {tBilingual('Job Costing', 'কস্টিং')}
-                </Link>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleExport(false)}
-                className="text-xs h-8 bangla-text"
-              >
-                <Download className="mr-1.5 h-3.5 w-3.5 text-slate-600" />
-                {tBilingual('CSV', 'সিএসভি')}
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleExport(true)}
-                className="text-xs h-8 text-emerald-700 border-emerald-300 hover:bg-emerald-50 dark:border-emerald-800 bangla-text"
-              >
-                <FileSpreadsheet className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
-                {tBilingual('Excel CSV', 'এক্সেল')}
-              </Button>
-
-              <Button
-                size="sm"
-                onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-8 bangla-text shadow-xs"
-              >
-                <Printer className="mr-1.5 h-3.5 w-3.5" />
-                {tBilingual('Print', 'প্রিন্ট')}
-              </Button>
+            <div className="text-right text-xs text-slate-600">
+              <div className="font-bold text-slate-900">Period: {reportData.dateRangeDisplay}</div>
+              <div>Generated: {new Date().toLocaleDateString('en-GB')}</div>
             </div>
-          }
-        />
-
-        {/* Global Multi-Dimensional Filter Toolbar */}
-        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-2.5 text-xs">
-          <div className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-bold sm:col-span-2 lg:col-span-1 pr-2">
-            <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400">
-              <Filter className="h-3.5 w-3.5 shrink-0" />
-            </div>
-            <span>Filters:</span>
-          </div>
-
-          {/* Date Range */}
-          <select
-            value={filters.dateRange}
-            onChange={(e) => setFilters({ ...filters, dateRange: e.target.value as any })}
-            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
-          >
-            <option value="today">Today (আজকের)</option>
-            <option value="7d">Last 7 Days (গত ৭ দিন)</option>
-            <option value="this_month">This Month (চলতি মাস)</option>
-            <option value="last_month">Last Month (গত মাস)</option>
-            <option value="quarter">This Financial Quarter (ত্রৈমাসিক)</option>
-          </select>
-
-          {/* Branch */}
-          <select
-            value={filters.branch}
-            onChange={(e) => setFilters({ ...filters, branch: e.target.value as any })}
-            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
-          >
-            <option value="all">All Branches ({branches.length > 0 ? `${branches.length} Outlets` : 'All'})</option>
-            {branches.map((b) => (
-              <option key={b.id} value={b.id}>
-                {b.name} {b.code ? `(${b.code})` : ''}
-              </option>
-            ))}
-          </select>
-
-          {/* Customer Segment */}
-          <select
-            value={filters.customerType}
-            onChange={(e) => setFilters({ ...filters, customerType: e.target.value as any })}
-            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
-          >
-            <option value="all">All Customer Types</option>
-            <option value="corporate">Corporate Accounts</option>
-            <option value="agency">Advertising Agencies</option>
-            <option value="retail">Direct Retail Walk-in</option>
-          </select>
-
-          {/* Department */}
-          <select
-            value={filters.department}
-            onChange={(e) => setFilters({ ...filters, department: e.target.value as any })}
-            className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 w-full lg:w-auto"
-          >
-            <option value="all">All Production Depts</option>
-            <option value="printing">Wide-Format Printing</option>
-            <option value="finishing">Finishing & Eyelets</option>
-            <option value="fabrication">Workshop Fabrication</option>
-            <option value="installation">Field Installation</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Top Highlight Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
-        {/* Gross Sales Turnover */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600" />
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
-              Gross Sales Turnover
-            </span>
-            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
-              Total Billed
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <div className="text-xl font-black text-slate-900 dark:text-white font-mono tracking-tight">
-              <CurrencyDisplay amount={grossSalesTurnover} />
-            </div>
-            <div className="p-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 group-hover:scale-105 transition-transform">
-              <DollarSign className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xs text-slate-400 dark:text-slate-500 truncate">
-            Across active filtered period
           </div>
         </div>
 
-        {/* Collections Recovery */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600" />
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
-              Collections Recovery
-            </span>
-            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-              Recovery Rate
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
-              {realizedMargin}%
+        {/* =========================================================================
+            HEADER: TITLE + DATE CONTROLS + EXPORT
+           ========================================================================= */}
+        <div className="print:hidden flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 rounded-2xl shadow-xs">
+          {/* Left Title */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-white shadow-md shadow-orange-500/20 shrink-0">
+              <BarChart3 className="w-6 h-6 stroke-[2.2]" />
             </div>
-            <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 group-hover:scale-105 transition-transform">
-              <CheckCircle2 className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xs text-emerald-700 dark:text-emerald-400 font-medium truncate">
-            Cash vs Turnover Ratio
-          </div>
-        </div>
-
-        {/* Total Collections */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-teal-500 via-cyan-500 to-teal-600" />
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
-              Total Collections (আদায়)
-            </span>
-            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800">
-              Realized
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <div className="text-xl font-black text-teal-600 dark:text-teal-400 font-mono tracking-tight">
-              <CurrencyDisplay amount={totalCollections} />
-            </div>
-            <div className="p-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform">
-              <TrendingUp className="w-4 h-4" />
+            <div>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                Business Reports
+              </h1>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-xl">
+                Get a complete view of your business performance, sales, production, finance and profit.
+              </p>
             </div>
           </div>
-          <div className="mt-2 text-2xs text-slate-400 dark:text-slate-500 truncate">
-            Realized cash inflow
-          </div>
-        </div>
 
-        {/* Total Due */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600" />
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
-              Total Due (বাকি পাওনা)
-            </span>
-            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-              Receivables
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <div className="text-xl font-black text-amber-600 dark:text-amber-400 font-mono tracking-tight">
-              <CurrencyDisplay amount={totalDue} />
-            </div>
-            <div className="p-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 group-hover:scale-105 transition-transform">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xs text-amber-600 dark:text-amber-400 font-medium truncate">
-            Outstanding Balances
-          </div>
-        </div>
-
-        {/* Warehouse Stock Value */}
-        <div className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 shadow-xs hover:shadow-md transition-all duration-200 group">
-          <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-purple-600" />
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-semibold text-slate-500 dark:text-slate-400">
-              Warehouse Stock Value
-            </span>
-            <span className="text-2xs font-bold px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
-              Inventory
-            </span>
-          </div>
-          <div className="flex items-baseline justify-between mt-2">
-            <div className="text-xl font-black text-purple-600 dark:text-purple-400 font-mono tracking-tight">
-              {formatBDT(totalInventoryValuation)}
-            </div>
-            <div className="p-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 group-hover:scale-105 transition-transform">
-              <Package className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="mt-2 text-2xs text-purple-600 dark:text-purple-400 font-medium truncate">
-            {materials.length} Raw Materials in stock
-          </div>
-        </div>
-      </div>
-
-      {/* Module Navigation Tabs */}
-      <div className="print:hidden flex items-center gap-2 p-1.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-xs overflow-x-auto touch-scroll">
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setActiveTab('sales')}
-          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
-            activeTab === 'sales'
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <BarChart3 className="h-4 w-4 mr-1.5" />
-          {tBilingual('Sales & Commercial', 'বিক্রয় ও সেলস')}
-        </Button>
-
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setActiveTab('production')}
-          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
-            activeTab === 'production'
-              ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <PrintIcon className="h-4 w-4 mr-1.5" />
-          {tBilingual('Production & Quality', 'প্রোডাকশন ও মান')}
-        </Button>
-
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setActiveTab('financial')}
-          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
-            activeTab === 'financial'
-              ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <DollarSign className="h-4 w-4 mr-1.5" />
-          {tBilingual('Financial & Aging', 'বাকি ও নগদ হিসাব')}
-        </Button>
-
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setActiveTab('inventory')}
-          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
-            activeTab === 'inventory'
-              ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Package className="h-4 w-4 mr-1.5" />
-          {tBilingual('Inventory & Valuation', 'মজুদ হিসাব')}
-        </Button>
-
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setActiveTab('customers')}
-          className={`text-xs h-9 px-4 rounded-xl shrink-0 bangla-text font-bold transition-all ${
-            activeTab === 'customers'
-              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-xs'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
-          }`}
-        >
-          <Users className="h-4 w-4 mr-1.5" />
-          {tBilingual('Customer Insights', 'গ্রাহক তথ্য')}
-        </Button>
-      </div>
-
-      {/* =========================================================================
-          TAB 1: SALES REPORTS
-         ========================================================================= */}
-      {activeTab === 'sales' && (
-        <div className="space-y-4">
-          <div className="print:hidden flex items-center gap-1.5 overflow-x-auto touch-scroll pb-1.5">
-            {[
-              { id: 'product', label: 'Product-Wise Sales' },
-              { id: 'customer', label: 'Customer-Wise Sales' },
-              { id: 'salesperson', label: 'Salesperson-Wise' },
-              { id: 'area', label: 'Area-Wise Regional' },
-              { id: 'payment', label: 'Payment Channel Share' },
-            ].map((sub) => (
-              <Button
-                key={sub.id}
-                size="sm"
-                variant={salesSubTab === sub.id ? 'default' : 'outline'}
-                onClick={() => setSalesSubTab(sub.id as any)}
-                className={`text-xs h-8 px-3.5 rounded-xl shrink-0 whitespace-nowrap font-semibold transition-all ${
-                  salesSubTab === sub.id
-                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
-                    : 'text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'
-                }`}
+          {/* Right Controls */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            {/* Branches Filter if Multiple Branches Exist */}
+            {branches.length > 1 && (
+              <select
+                value={selectedBranch}
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                className="h-9 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-2xs"
               >
-                {sub.label}
-              </Button>
-            ))}
-          </div>
+                <option value="all">All Outlets ({branches.length})</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            )}
 
-          <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                <CardTitle className="text-base capitalize">
-                  {salesSubTab.replace('_', ' ')} Sales Breakdown
-                </CardTitle>
-                <span className="text-xs text-slate-400">
-                  Total: {formatBDT(grossSalesTurnover)}
-                </span>
-              </div>
-            </CardHeader>
-            <CardContent className="p-0">
-              {activeSalesDataset.length === 0 ? (
-                <EmptyReportState />
-              ) : (
-                <>
-                  {/* Desktop Table */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                        <tr>
-                          <th className="py-3 px-4">Segment / Item Name</th>
-                          <th className="py-3 px-4 font-mono text-center">Orders Count</th>
-                          <th className="py-3 px-4 font-mono text-right">Revenue (৳ BDT)</th>
-                          <th className="py-3 px-4 text-right">Turnover Share</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                        {activeSalesDataset.map((row: any) => (
-                          <tr key={row.id} className="hover:bg-slate-50/50">
-                            <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
-                              {row.label}
-                              {row.category && (
-                                <span className="ml-2 text-2xs font-normal text-slate-400">({row.category})</span>
-                              )}
-                            </td>
-                            <td className="py-3.5 px-4 font-mono text-center">{row.ordersCount}</td>
-                            <td className="py-3.5 px-4 font-mono font-bold text-right text-slate-900 dark:text-white">
-                              {formatBDT(row.revenue)}
-                            </td>
-                            <td className="py-3.5 px-4 text-right">
-                              <div className="flex items-center justify-end gap-2 font-mono font-bold">
-                                <span>{row.sharePercent}%</span>
-                                <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-600 rounded-full" style={{ width: `${row.sharePercent}%` }} />
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+            {/* Date Range Display Pill */}
+            <button
+              onClick={() => setShowDatePickerModal(true)}
+              className="h-9 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 shadow-2xs cursor-pointer"
+            >
+              <Calendar className="w-3.5 h-3.5 text-slate-400" />
+              <span>{reportData.dateRangeDisplay}</span>
+              <ChevronDown className="w-3 h-3 text-slate-400 ml-0.5" />
+            </button>
+
+            {/* Period Dropdown */}
+            <select
+              value={period}
+              onChange={(e) => {
+                const val = e.target.value as ReportPeriodKey
+                setPeriod(val)
+                if (val === 'custom') {
+                  setShowDatePickerModal(true)
+                }
+              }}
+              className="h-9 px-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 cursor-pointer shadow-2xs"
+            >
+              <option value="today">Today</option>
+              <option value="yesterday">Yesterday</option>
+              <option value="this_week">This Week</option>
+              <option value="last_week">Last Week</option>
+              <option value="this_month">This Month</option>
+              <option value="last_month">Last Month</option>
+              <option value="last_3_months">Last 3 Months</option>
+              <option value="last_6_months">Last 6 Months</option>
+              <option value="this_year">This Year</option>
+              <option value="all_time">All Time</option>
+              <option value="custom">Custom Range...</option>
+            </select>
+
+            {/* Export Button & Dropdown */}
+            <div className="relative">
+              <Button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                className="h-9 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs flex items-center gap-1.5 shadow-xs transition-all"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export</span>
+                <ChevronDown className="w-3 h-3 ml-0.5 opacity-80" />
+              </Button>
+
+              {showExportMenu && (
+                <div
+                  className="absolute right-0 mt-1.5 w-44 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl z-50 py-1 divide-y divide-slate-100 dark:divide-slate-800 text-xs"
+                  onMouseLeave={() => setShowExportMenu(false)}
+                >
+                  <div className="p-1">
+                    <button
+                      onClick={() => handleExport('excel')}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 flex items-center gap-2 font-medium"
+                    >
+                      <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                      Excel CSV (.xlsx)
+                    </button>
+                    <button
+                      onClick={() => handleExport('csv')}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium"
+                    >
+                      <Download className="w-4 h-4 text-slate-500" />
+                      Standard CSV
+                    </button>
                   </div>
-
-                  {/* Mobile Card List */}
-                  <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
-                    {activeSalesDataset.map((row: any) => (
-                      <div key={row.id} className="p-4 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <div className="font-bold text-sm text-slate-900 dark:text-white">
-                              {row.label}
-                            </div>
-                            {row.category && (
-                              <span className="text-2xs text-slate-400">{row.category}</span>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <div className="font-mono font-bold text-sm text-slate-900 dark:text-white">
-                              {formatBDT(row.revenue)}
-                            </div>
-                            <span className="text-2xs text-slate-400 font-mono">
-                              {row.ordersCount} orders
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                          <span className="text-2xs text-slate-500">Market Share:</span>
-                          <div className="flex items-center gap-2 font-mono font-bold text-xs">
-                            <span>{row.sharePercent}%</span>
-                            <div className="w-20 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                              <div className="h-full bg-blue-600 rounded-full" style={{ width: `${row.sharePercent}%` }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                  <div className="p-1">
+                    <button
+                      onClick={() => handleExport('print')}
+                      className="w-full px-3 py-2 text-left rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 font-medium"
+                    >
+                      <Printer className="w-4 h-4 text-slate-500" />
+                      Print / PDF Report
+                    </button>
                   </div>
-                </>
+                </div>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* =========================================================================
-          TAB 2: PRODUCTION & QUALITY REPORTS
-         ========================================================================= */}
-      {activeTab === 'production' && (
-        <div className="space-y-4">
-          {productionMetrics.length === 0 ? (
-            <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs"><CardContent className="p-0"><EmptyReportState /></CardContent></Card>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {productionMetrics.map((pm: any) => (
-                <Card key={pm.id} className="p-4 space-y-1.5 rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md transition-all">
-                  <span className="text-xs text-slate-500 font-semibold">{pm.metric}</span>
-                  <div className="text-2xl font-black text-slate-900 dark:text-white font-mono">{pm.value}</div>
-                  <div className="text-xs text-slate-400">{pm.subtext}</div>
-                </Card>
-              ))}
             </div>
-          )}
+          </div>
         </div>
-      )}
 
-      {/* =========================================================================
-          TAB 3: FINANCIAL & AGING REPORTS
-         ========================================================================= */}
-      {activeTab === 'financial' && (
-        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base">Accounts Receivable Aging (বাকি পাওনা বয়সকাল)</CardTitle>
-            <CardDescription className="text-xs">
-              Client debt categorization based on invoice issue and overdue dates.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0">
-            {financialAging.length === 0 ? (
-              <EmptyReportState />
-            ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                      <tr>
-                        <th className="py-3 px-4">Aging Bracket</th>
-                        <th className="py-3 px-4 text-center">Invoices Count</th>
-                        <th className="py-3 px-4 text-right">Overdue Amount</th>
-                        <th className="py-3 px-4 text-center">Collection Risk</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {financialAging.map((fa: any) => (
-                        <tr key={fa.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{fa.range}</td>
-                          <td className="py-3.5 px-4 text-center">{fa.invoicesCount} Invoices</td>
-                          <td className="py-3.5 px-4 text-right font-black text-sm">{formatBDT(fa.amount)}</td>
-                          <td className="py-3.5 px-4 text-center">
-                            <Badge
-                              variant="outline"
-                              className={`capitalize text-2xs ${
-                                fa.riskLevel === 'low'
-                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                  : fa.riskLevel === 'moderate'
-                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                  : fa.riskLevel === 'high'
-                                  ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                  : 'bg-red-50 text-red-700 border-red-200'
-                              }`}
-                            >
-                              {fa.riskLevel}
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Mobile Card List */}
-                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-                  {financialAging.map((fa: any) => (
-                    <div key={fa.id} className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-white">{fa.range}</div>
-                          <span className="text-2xs text-slate-400">{fa.invoicesCount} Invoices</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-black text-base text-red-600">{formatBDT(fa.amount)}</div>
-                          <Badge
-                            variant="outline"
-                            className={`capitalize text-2xs mt-1 ${
-                              fa.riskLevel === 'low'
-                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                : fa.riskLevel === 'moderate'
-                                ? 'bg-blue-50 text-blue-700 border-blue-200'
-                                : fa.riskLevel === 'high'
-                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                : 'bg-red-50 text-red-700 border-red-200'
-                            }`}
-                          >
-                            {fa.riskLevel} Risk
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* =========================================================================
-          TAB 4: INVENTORY & VALUATION
-         ========================================================================= */}
-      {activeTab === 'inventory' && (
-        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-              <div>
-                <CardTitle className="text-base">Stock Ledger Valuation (গুদাম মজুদ মূল্যায়ন)</CardTitle>
-                <CardDescription className="text-xs">
-                  Physical warehouse stock balance multiplied by weighted purchase unit cost.
-                </CardDescription>
+        {/* =========================================================================
+            ROW 1: TOP 4 KPI CARDS
+           ========================================================================= */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* 1. Total Sales */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <ShoppingCart className="w-5 h-5 stroke-[2.2]" />
               </div>
-              <strong className="text-purple-700 font-mono text-sm">
-                Total Value: {formatBDT(totalInventoryValuation)}
-              </strong>
+              {reportData.summary.salesTrendPercent !== null && (
+                <span
+                  className={`text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${
+                    reportData.summary.salesTrendPercent >= 0
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {reportData.summary.salesTrendPercent >= 0 ? (
+                    <ArrowUpRight className="w-3 h-3" />
+                  ) : (
+                    <ArrowDownRight className="w-3 h-3" />
+                  )}
+                  {Math.abs(reportData.summary.salesTrendPercent)}%
+                </span>
+              )}
             </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            {inventoryValuation.length === 0 ? (
-              <EmptyReportState />
-            ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                      <tr>
-                        <th className="py-3 px-4">Material Substrate</th>
-                        <th className="py-3 px-4">Category</th>
-                        <th className="py-3 px-4 text-center">Stock on Hand</th>
-                        <th className="py-3 px-4 text-right">Avg Unit Cost</th>
-                        <th className="py-3 px-4 text-right">Stock Valuation</th>
-                        <th className="py-3 px-4 text-center">Reorder Status</th>
+            <div className="mt-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Total Sales
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight mt-0.5">
+                {formatBDT(reportData.summary.totalSales)}
+              </div>
+              <div className="mt-1.5 text-2xs text-slate-400 font-medium">
+                {reportData.summary.invoicesCount} Invoices
+              </div>
+            </div>
+          </div>
+
+          {/* 2. Total Jobs */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+                <ClipboardList className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              {reportData.summary.jobsTrendPercent !== null && (
+                <span
+                  className={`text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${
+                    reportData.summary.jobsTrendPercent >= 0
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {reportData.summary.jobsTrendPercent >= 0 ? (
+                    <ArrowUpRight className="w-3 h-3" />
+                  ) : (
+                    <ArrowDownRight className="w-3 h-3" />
+                  )}
+                  {Math.abs(reportData.summary.jobsTrendPercent)}%
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Total Jobs
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight mt-0.5">
+                {reportData.summary.totalJobs}
+              </div>
+              <div className="mt-1.5 text-2xs text-slate-400 font-medium">
+                {reportData.summary.uniqueCustomersCount} Customers
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Gross Profit */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-11 h-11 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+                <TrendingUp className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              {reportData.summary.profitTrendPercent !== null && (
+                <span
+                  className={`text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${
+                    reportData.summary.profitTrendPercent >= 0
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {reportData.summary.profitTrendPercent >= 0 ? (
+                    <ArrowUpRight className="w-3 h-3" />
+                  ) : (
+                    <ArrowDownRight className="w-3 h-3" />
+                  )}
+                  {Math.abs(reportData.summary.profitTrendPercent)}%
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Gross Profit
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight mt-0.5">
+                {formatBDT(reportData.summary.grossProfit)}
+              </div>
+              <div className="mt-1.5 text-2xs text-slate-400 font-medium">
+                {reportData.summary.grossProfitMarginPercent}% Margin
+              </div>
+            </div>
+          </div>
+
+          {/* 4. Total Expenses */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs hover:shadow-md transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-11 h-11 rounded-xl bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
+                <Wallet className="w-5 h-5 stroke-[2.2]" />
+              </div>
+              {reportData.summary.expensesTrendPercent !== null && (
+                <span
+                  className={`text-2xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 ${
+                    reportData.summary.expensesTrendPercent <= 0
+                      ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      : 'bg-rose-50 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                  }`}
+                >
+                  {reportData.summary.expensesTrendPercent <= 0 ? (
+                    <ArrowDownRight className="w-3 h-3" />
+                  ) : (
+                    <ArrowUpRight className="w-3 h-3" />
+                  )}
+                  {Math.abs(reportData.summary.expensesTrendPercent)}%
+                </span>
+              )}
+            </div>
+            <div className="mt-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Total Expenses
+              </span>
+              <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-mono tracking-tight mt-0.5">
+                {formatBDT(reportData.summary.totalExpenses)}
+              </div>
+              <div className="mt-1.5 text-2xs text-slate-400 font-medium">
+                {reportData.summary.expenseTransactionsCount} Transactions
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ROW 2: MIDDLE SECTION (3 CARDS)
+            - Monthly Sales vs Profit
+            - Sales by Product / Service
+            - Sales by Customer Type
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Card 1: Monthly Sales vs Profit Chart */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <MonthlySalesProfitChart
+              data={reportData.monthlySalesVsProfit}
+              monthsCount={monthlyChartMonths}
+              onMonthsCountChange={setMonthlyChartMonths}
+            />
+          </div>
+
+          {/* Card 2: Sales by Product / Service */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <DonutDistributionChart
+              title="Sales by Product / Service"
+              totalAmount={reportData.totalPeriodSales}
+              items={reportData.salesByProduct.map((p) => ({
+                id: p.id,
+                label: p.name,
+                amount: p.amount,
+                sharePercent: p.sharePercent,
+                color: p.color,
+              }))}
+              periodLabel={period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+            />
+          </div>
+
+          {/* Card 3: Sales by Customer Type */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <DonutDistributionChart
+              title="Sales by Customer Type"
+              totalAmount={reportData.totalPeriodSales}
+              items={reportData.salesByCustomerType.map((c) => ({
+                id: c.type,
+                label: c.type,
+                amount: c.amount,
+                sharePercent: c.sharePercent,
+                color: c.color,
+              }))}
+              periodLabel={period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+            />
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ROW 3: LOWER SECTION (3 CARDS)
+            - Top Selling Products / Services
+            - Top Customers by Sales
+            - Jobs by Status
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Card 1: Top Selling Products */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Top Selling Products / Services
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  {period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+                </span>
+                <button
+                  onClick={() => setActiveQuickReport('all_products')}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  View All
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-x-auto">
+              {reportData.topSellingProducts.length === 0 ? (
+                <div className="flex items-center justify-center h-48 text-xs text-slate-400">
+                  No product sales records found
+                </div>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                    <tr>
+                      <th className="py-2 px-1 w-6">#</th>
+                      <th className="py-2 px-2">Product / Service</th>
+                      <th className="py-2 px-2 text-right">Quantity</th>
+                      <th className="py-2 px-2 text-right">Sales Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
+                    {reportData.topSellingProducts.slice(0, 5).map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="py-2.5 px-1 font-mono text-slate-400">{item.rank}</td>
+                        <td className="py-2.5 px-2 font-bold text-slate-900 dark:text-white truncate max-w-[130px]">
+                          {item.name}
+                        </td>
+                        <td className="py-2.5 px-2 text-right font-mono text-slate-600 dark:text-slate-400 text-2xs">
+                          {item.quantityFormatted}
+                        </td>
+                        <td className="py-2.5 px-2 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(item.amount)}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {inventoryValuation.map((item) => (
-                        <tr key={item.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{item.materialName}</td>
-                          <td className="py-3.5 px-4 font-sans text-slate-500">{item.category}</td>
-                          <td className="py-3.5 px-4 text-center font-bold">
-                            {item.stockQty} {item.unit}s
-                          </td>
-                          <td className="py-3.5 px-4 text-right text-slate-600">{formatBDT(item.unitCost)}</td>
-                          <td className="py-3.5 px-4 text-right font-black text-slate-900 dark:text-white">
-                            {formatBDT(item.totalValue)}
-                          </td>
-                          <td className="py-3.5 px-4 text-center">
-                            {item.isLowStock ? (
-                              <span className="px-2 py-0.5 rounded text-2xs font-bold bg-red-100 text-red-800">
-                                Low Stock Warning
-                              </span>
-                            ) : (
-                              <span className="px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
-                                Healthy
-                              </span>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+
+          {/* Card 2: Top Customers by Sales */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Top Customers by Sales
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                  {period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+                </span>
+                <button
+                  onClick={() => setActiveQuickReport('all_customers')}
+                  className="text-xs font-bold text-blue-600 hover:text-blue-700 cursor-pointer"
+                >
+                  View All
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-x-auto">
+              {reportData.topCustomers.length === 0 ? (
+                <div className="flex items-center justify-center h-48 text-xs text-slate-400">
+                  No customer sales records found
                 </div>
-
-                {/* Mobile Card List */}
-                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-                  {inventoryValuation.map((item) => (
-                    <div key={item.id} className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-bold text-sm text-slate-900 dark:text-white">{item.materialName}</div>
-                          <span className="font-sans text-2xs text-slate-400">{item.category}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="font-black text-sm text-slate-900 dark:text-white">{formatBDT(item.totalValue)}</div>
-                          <div className="text-2xs text-slate-400">@ {formatBDT(item.unitCost)}/{item.unit}</div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                        <span className="font-bold text-slate-700 dark:text-slate-300">
-                          Stock: {item.stockQty} {item.unit}s
-                        </span>
-                        {item.isLowStock ? (
-                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-red-100 text-red-800">
-                            Low Stock Warning
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800">
-                            Healthy
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* =========================================================================
-          TAB 5: CUSTOMER LIFETIME VALUE & INSIGHTS
-         ========================================================================= */}
-      {activeTab === 'customers' && (
-        <Card className="rounded-2xl border-slate-200/80 dark:border-slate-800 shadow-xs">
-          <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
-            <CardTitle className="text-base">Top Customer Lifetime Value (LTV) & Dues</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {customerReports.length === 0 ? (
-              <EmptyReportState />
-            ) : (
-              <>
-                {/* Desktop Table */}
-                <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-xs font-mono">
-                    <thead className="bg-slate-50/80 dark:bg-slate-900/80 font-semibold text-slate-500 border-b">
-                      <tr>
-                        <th className="py-3 px-4 font-sans">Customer Account</th>
-                        <th className="py-3 px-4 font-sans">Type</th>
-                        <th className="py-3 px-4 text-center">Total Orders</th>
-                        <th className="py-3 px-4 text-right">Lifetime Sales</th>
-                        <th className="py-3 px-4 text-right text-emerald-700">Total Paid</th>
-                        <th className="py-3 px-4 text-right text-amber-700">Current Due</th>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="text-[11px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                    <tr>
+                      <th className="py-2 px-1 w-6">#</th>
+                      <th className="py-2 px-2">Customer</th>
+                      <th className="py-2 px-2 text-center">Invoices</th>
+                      <th className="py-2 px-2 text-right">Sales Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
+                    {reportData.topCustomers.slice(0, 5).map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                        <td className="py-2.5 px-1 font-mono text-slate-400">{item.rank}</td>
+                        <td className="py-2.5 px-2 font-bold text-slate-900 dark:text-white truncate max-w-[130px]">
+                          {item.customerName}
+                        </td>
+                        <td className="py-2.5 px-2 text-center font-mono text-slate-600 dark:text-slate-400 text-2xs">
+                          {item.invoicesCount}
+                        </td>
+                        <td className="py-2.5 px-2 text-right font-mono font-bold text-slate-900 dark:text-white">
+                          {formatBDT(item.amount)}
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                      {customerReports.map((cust) => (
-                        <tr key={cust.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4 font-sans font-bold text-slate-900 dark:text-white">
-                            {cust.customerName}
-                          </td>
-                          <td className="py-3.5 px-4 font-sans text-slate-500">{cust.customerType}</td>
-                          <td className="py-3.5 px-4 text-center font-bold">{cust.ordersCount}</td>
-                          <td className="py-3.5 px-4 text-right font-bold text-slate-900 dark:text-white">
-                            {formatBDT(cust.lifetimeSales)}
-                          </td>
-                          <td className="py-3.5 px-4 text-right font-bold text-emerald-700">
-                            {formatBDT(cust.totalPaid)}
-                          </td>
-                          <td className="py-3.5 px-4 text-right font-black text-amber-700">
-                            {formatBDT(cust.dueBalance)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
 
-                {/* Mobile Card List */}
-                <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800 font-mono">
-                  {customerReports.map((cust) => (
-                    <div key={cust.id} className="p-4 space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <div className="font-sans font-bold text-sm text-slate-900 dark:text-white">
-                            {cust.customerName}
-                          </div>
-                          <span className="font-sans text-2xs text-slate-400 capitalize">{cust.customerType}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-xs text-slate-400 font-sans">{cust.ordersCount} orders</div>
-                          <div className="font-bold text-xs text-slate-900 dark:text-white">
-                            Sales: {formatBDT(cust.lifetimeSales)}
-                          </div>
-                        </div>
-                      </div>
+          {/* Card 3: Jobs by Status */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Jobs by Status
+              </h3>
+              <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                {period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+              </span>
+            </div>
 
-                      <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-slate-800/60">
-                        <span className="text-emerald-700 font-bold">
-                          Paid: {formatBDT(cust.totalPaid)}
-                        </span>
-                        <span className="text-amber-700 font-black">
-                          Due: {formatBDT(cust.dueBalance)}
+            <div className="flex-1 flex flex-col justify-between space-y-3.5">
+              {reportData.jobsByStatus.map((st) => {
+                let StatusIcon = CheckCircle2
+                if (st.key === 'in_production') StatusIcon = Settings
+                else if (st.key === 'designing') StatusIcon = Sparkles
+                else if (st.key === 'pending') StatusIcon = Clock
+                else if (st.key === 'on_hold') StatusIcon = PauseCircle
+
+                return (
+                  <div key={st.key} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center gap-2">
+                        <StatusIcon
+                          className="w-4 h-4 shrink-0"
+                          style={{ color: st.color }}
+                        />
+                        <span className="font-semibold text-slate-800 dark:text-slate-200">
+                          {st.label}
                         </span>
                       </div>
+                      <span className="font-mono text-2xs font-bold text-slate-600 dark:text-slate-400">
+                        {st.count} ({st.percentage}%)
+                      </span>
                     </div>
+
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{
+                          width: `${Math.min(st.percentage, 100)}%`,
+                          backgroundColor: st.color,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            ROW 4: BOTTOM SECTION (3 CARDS)
+            - Financial Summary
+            - Monthly Overview
+            - Quick Reports (8 Action Tiles)
+           ========================================================================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Card 1: Financial Summary */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Financial Summary
+              </h3>
+              <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                {period === 'this_month' ? 'This Month' : period.replace('_', ' ')}
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="text-[11px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                  <tr>
+                    <th className="py-2 px-2">Item</th>
+                    <th className="py-2 px-2 text-right">Amount (৳)</th>
+                    <th className="py-2 px-2 text-right">% of Sales</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60 font-sans">
+                  {reportData.financialSummary.map((row) => (
+                    <tr
+                      key={row.key}
+                      className={
+                        row.highlight === 'green'
+                          ? 'bg-emerald-50/70 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 font-bold'
+                          : row.highlight === 'red'
+                          ? 'bg-rose-50/70 dark:bg-rose-950/30 text-rose-800 dark:text-rose-300 font-bold'
+                          : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30 text-slate-800 dark:text-slate-200 font-medium'
+                      }
+                    >
+                      <td className="py-2.5 px-2.5 rounded-l-lg">{row.item}</td>
+                      <td className="py-2.5 px-2 text-right font-mono">
+                        {row.amount.toLocaleString('en-US')}
+                      </td>
+                      <td className="py-2.5 px-2.5 text-right font-mono rounded-r-lg">
+                        {row.percentOfSales}%
+                      </td>
+                    </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Card 2: Monthly Overview */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                Monthly Overview
+              </h3>
+              <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+                Last 6 Months
+              </span>
+            </div>
+
+            <div className="flex-1 overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead className="text-[11px] font-semibold text-slate-400 border-b border-slate-100 dark:border-slate-800 font-sans">
+                  <tr>
+                    <th className="py-2 px-1">Month</th>
+                    <th className="py-2 px-1 text-right">Sales</th>
+                    <th className="py-2 px-1 text-right">Cost</th>
+                    <th className="py-2 px-1 text-right">Profit</th>
+                    <th className="py-2 px-1 text-right">Margin</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100/70 dark:divide-slate-800/60">
+                  {reportData.monthlyOverview.map((row) => (
+                    <tr key={row.month} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <td className="py-2 px-1 font-sans font-bold text-slate-900 dark:text-white truncate">
+                        {row.month}
+                      </td>
+                      <td className="py-2 px-1 text-right text-slate-700 dark:text-slate-300">
+                        {row.sales.toLocaleString('en-US')}
+                      </td>
+                      <td className="py-2 px-1 text-right text-slate-500">
+                        {row.cost.toLocaleString('en-US')}
+                      </td>
+                      <td className="py-2 px-1 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                        {row.profit.toLocaleString('en-US')}
+                      </td>
+                      <td className="py-2 px-1 text-right font-bold text-emerald-600 dark:text-emerald-400">
+                        {row.margin}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Card 3: Quick Reports */}
+          <div className="rounded-2xl bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-xs flex flex-col">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-3">
+              Quick Reports
+            </h3>
+
+            <div className="grid grid-cols-2 gap-2.5 flex-1">
+              {/* 1. Sales Report */}
+              <button
+                onClick={() => setActiveQuickReport('sales')}
+                className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/40 border border-emerald-100/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 dark:text-emerald-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <TrendingUp className="w-4 h-4" />
                 </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                <span className="truncate">Sales Report</span>
+              </button>
+
+              {/* 2. Production Report */}
+              <button
+                onClick={() => setActiveQuickReport('production')}
+                className="p-3 rounded-xl bg-blue-50/60 dark:bg-blue-950/30 hover:bg-blue-100/70 dark:hover:bg-blue-900/40 border border-blue-100/80 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/60 text-blue-600 dark:text-blue-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Settings className="w-4 h-4" />
+                </div>
+                <span className="truncate">Production Report</span>
+              </button>
+
+              {/* 3. Inventory Report */}
+              <button
+                onClick={() => setActiveQuickReport('inventory')}
+                className="p-3 rounded-xl bg-cyan-50/60 dark:bg-cyan-950/30 hover:bg-cyan-100/70 dark:hover:bg-cyan-900/40 border border-cyan-100/80 dark:border-cyan-800/60 text-cyan-700 dark:text-cyan-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-cyan-100 dark:bg-cyan-900/60 text-cyan-600 dark:text-cyan-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Package className="w-4 h-4" />
+                </div>
+                <span className="truncate">Inventory Report</span>
+              </button>
+
+              {/* 4. Financial Report */}
+              <button
+                onClick={() => setActiveQuickReport('financial')}
+                className="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/40 border border-indigo-100/80 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/60 text-indigo-600 dark:text-indigo-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <FileText className="w-4 h-4" />
+                </div>
+                <span className="truncate">Financial Report</span>
+              </button>
+
+              {/* 5. Customer Report */}
+              <button
+                onClick={() => setActiveQuickReport('customer')}
+                className="p-3 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 hover:bg-purple-100/70 dark:hover:bg-purple-900/40 border border-purple-100/80 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/60 text-purple-600 dark:text-purple-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Users className="w-4 h-4" />
+                </div>
+                <span className="truncate">Customer Report</span>
+              </button>
+
+              {/* 6. Supplier Report */}
+              <button
+                onClick={() => setActiveQuickReport('supplier')}
+                className="p-3 rounded-xl bg-sky-50/60 dark:bg-sky-950/30 hover:bg-sky-100/70 dark:hover:bg-sky-900/40 border border-sky-100/80 dark:border-sky-800/60 text-sky-700 dark:text-sky-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-sky-100 dark:bg-sky-900/60 text-sky-600 dark:text-sky-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <Truck className="w-4 h-4" />
+                </div>
+                <span className="truncate">Supplier Report</span>
+              </button>
+
+              {/* 7. Profitability Report */}
+              <button
+                onClick={() => setActiveQuickReport('profitability')}
+                className="p-3 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-900/40 border border-amber-100/80 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <PieChart className="w-4 h-4" />
+                </div>
+                <span className="truncate">Profitability Report</span>
+              </button>
+
+              {/* 8. Custom Report */}
+              <button
+                onClick={() => setActiveQuickReport('custom')}
+                className="p-3 rounded-xl bg-rose-50/60 dark:bg-rose-950/30 hover:bg-rose-100/70 dark:hover:bg-rose-900/40 border border-rose-100/80 dark:border-rose-800/60 text-rose-700 dark:text-rose-300 flex items-center gap-2.5 text-xs font-bold transition-all text-left group cursor-pointer"
+              >
+                <div className="p-1.5 rounded-lg bg-rose-100 dark:bg-rose-900/60 text-rose-600 dark:text-rose-400 shrink-0 group-hover:scale-105 transition-transform">
+                  <FileSpreadsheet className="w-4 h-4" />
+                </div>
+                <span className="truncate">Custom Report</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* =========================================================================
+            CUSTOM DATE RANGE PICKER MODAL
+           ========================================================================= */}
+        {showDatePickerModal && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-blue-600" />
+                  Select Date Range
+                </h3>
+                <button
+                  onClick={() => setShowDatePickerModal(false)}
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                    Start Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+                <div>
+                  <label className="text-2xs font-semibold text-slate-500 uppercase tracking-wider block mb-1">
+                    End Date
+                  </label>
+                  <Input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="h-9 text-xs rounded-xl"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDatePickerModal(false)}
+                  className="text-xs h-8"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setPeriod('custom')
+                    setShowDatePickerModal(false)
+                  }}
+                  disabled={!customStartDate || !customEndDate}
+                  className="text-xs h-8 bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Apply Range
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* =========================================================================
+            DRILL-DOWN QUICK REPORT & VIEW ALL MODAL
+           ========================================================================= */}
+        <QuickReportModal
+          open={activeQuickReport !== null}
+          onOpenChange={(open) => {
+            if (!open) setActiveQuickReport(null)
+          }}
+          type={activeQuickReport}
+          invoices={effectiveInvoices}
+          orders={effectiveOrders}
+          productionJobs={effectiveJobs}
+          customers={effectiveCustomers}
+          materials={effectiveMaterials}
+          expenses={effectiveExpenses}
+          companyName={company?.name}
+        />
       </div>
     </FeatureGate>
   )
