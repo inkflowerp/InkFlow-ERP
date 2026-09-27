@@ -1,7 +1,6 @@
 'use client'
 
 import React, { useState } from 'react'
-import { formatBDT } from '@/lib/formatters'
 
 export interface DonutSliceItem {
   id: string
@@ -29,82 +28,72 @@ export function DonutDistributionChart({
 }: DonutDistributionChartProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
 
-  const radius = 68
-  const strokeWidth = 24
-  const circumference = 2 * Math.PI * radius
+  // Donut geometry matching Finance Dashboard
+  const R = 38
+  const C = 2 * Math.PI * R // ~238.761
 
-  // Calculate arc offsets
-  let accumulatedPercent = 0
   const validItems = items.filter((it) => it.amount > 0 || it.sharePercent > 0)
   const isAllZero = validItems.length === 0 || totalAmount === 0
 
+  let accumulatedPercent = 0
   const slices = validItems.map((item) => {
-    const strokeDasharray = `${(item.sharePercent / 100) * circumference} ${circumference}`
-    const strokeDashoffset = -((accumulatedPercent / 100) * circumference)
+    const len = (item.sharePercent / 100) * C
+    const offset = -((accumulatedPercent / 100) * C)
     accumulatedPercent += item.sharePercent
     return {
       ...item,
-      strokeDasharray,
-      strokeDashoffset,
+      len,
+      offset,
     }
   })
 
   const activeItem = hoveredId ? items.find((i) => i.id === hoveredId) : null
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full justify-between">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate pr-2">
           {title}
         </h3>
         {periodLabel && (
-          <span className="text-2xs font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0">
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
             {periodLabel}
           </span>
         )}
       </div>
 
-      {/* Main Container: Donut + Legend */}
-      <div className="flex-1 flex flex-col sm:flex-row items-center justify-between gap-4 py-1">
-        {/* SVG Donut */}
-        <div className="relative w-44 h-44 shrink-0 flex items-center justify-center">
-          <svg
-            className="w-full h-full -rotate-90 transform overflow-visible"
-            viewBox="0 0 180 180"
-          >
-            {/* Background Track */}
+      {/* Donut & Legend Container matching Finance Dashboard */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 2xl:gap-6 py-2">
+        {/* Donut Graphic */}
+        <div className="relative w-32 h-32 2xl:w-36 2xl:h-36 shrink-0 flex items-center justify-center">
+          <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+            {/* Background Ring */}
             <circle
-              cx="90"
-              cy="90"
-              r={radius}
-              stroke="currentColor"
-              className="text-slate-100 dark:text-slate-800/80"
-              strokeWidth={strokeWidth}
+              cx="50"
+              cy="50"
+              r={R}
               fill="transparent"
+              stroke="currentColor"
+              className="text-slate-100 dark:text-slate-800"
+              strokeWidth="14"
             />
 
-            {/* Slices */}
             {!isAllZero &&
               slices.map((slice) => {
                 const isHovered = hoveredId === slice.id
                 return (
                   <circle
                     key={slice.id}
-                    cx="90"
-                    cy="90"
-                    r={radius}
-                    stroke={slice.color}
-                    strokeWidth={isHovered ? strokeWidth + 4 : strokeWidth}
-                    strokeDasharray={slice.strokeDasharray}
-                    strokeDashoffset={slice.strokeDashoffset}
-                    strokeLinecap="round"
+                    cx="50"
+                    cy="50"
+                    r={R}
                     fill="transparent"
+                    stroke={slice.color}
+                    strokeWidth={isHovered ? 16 : 14}
+                    strokeDasharray={`${slice.len.toFixed(1)} ${C.toFixed(1)}`}
+                    strokeDashoffset={slice.offset.toFixed(1)}
                     className="cursor-pointer transition-all duration-200"
-                    style={{
-                      opacity: hoveredId === null || isHovered ? 1 : 0.6,
-                      transformOrigin: '90px 90px',
-                    }}
                     onMouseEnter={() => setHoveredId(slice.id)}
                     onMouseLeave={() => setHoveredId(null)}
                   />
@@ -112,23 +101,23 @@ export function DonutDistributionChart({
               })}
           </svg>
 
-          {/* Center Text */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pointer-events-none">
+          {/* Donut Center Display */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-2 pointer-events-none">
             {activeItem ? (
               <>
-                <span className="text-xs font-black text-slate-900 dark:text-white font-mono truncate max-w-[110px]">
-                  {formatBDT(activeItem.amount)}
+                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
+                  ৳ {activeItem.amount.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-slate-500 font-semibold truncate max-w-[110px]">
-                  {activeItem.label} ({activeItem.sharePercent}%)
+                <span className="text-[10px] 2xl:text-3xs text-blue-600 dark:text-blue-400 font-bold truncate max-w-[85px]">
+                  {activeItem.sharePercent}%
                 </span>
               </>
             ) : (
               <>
-                <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[120px]">
-                  {formatBDT(totalAmount)}
+                <span className="text-xs 2xl:text-sm font-black text-slate-900 dark:text-white font-mono truncate max-w-[85px] 2xl:max-w-[100px]">
+                  ৳ {totalAmount.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-slate-400 font-semibold">
+                <span className="text-[10px] 2xl:text-3xs text-slate-400 font-medium">
                   {centerSubtext}
                 </span>
               </>
@@ -136,43 +125,38 @@ export function DonutDistributionChart({
           </div>
         </div>
 
-        {/* Legend List */}
-        <div className="flex-1 w-full space-y-1.5 min-w-[130px]">
+        {/* Legend & Breakdown values matching Finance Dashboard */}
+        <div className="flex-1 w-full space-y-1.5 2xl:space-y-2 text-xs">
           {isAllZero ? (
             <div className="text-center py-4 text-xs text-slate-400">
               No sales records in this period
             </div>
           ) : (
-            validItems.slice(0, 6).map((item) => {
+            validItems.slice(0, 5).map((item) => {
               const isHovered = hoveredId === item.id
               return (
                 <div
                   key={item.id}
                   onMouseEnter={() => setHoveredId(item.id)}
                   onMouseLeave={() => setHoveredId(null)}
-                  className={`flex items-center justify-between gap-2 px-2 py-1 rounded-lg cursor-pointer transition-colors text-xs ${
-                    isHovered
-                      ? 'bg-slate-100 dark:bg-slate-800'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                  className={`flex items-center justify-between py-0.5 px-1.5 rounded-lg transition-colors cursor-pointer ${
+                    isHovered ? 'bg-slate-50 dark:bg-slate-800/60' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2 truncate">
+                  <div className="flex items-center gap-1.5 2xl:gap-2 min-w-0">
                     <span
-                      className="w-2.5 h-2.5 rounded-full shrink-0"
+                      className="h-2.5 w-2.5 rounded-full shrink-0"
                       style={{ backgroundColor: item.color }}
                     />
-                    <span
-                      className={`truncate font-medium ${
-                        isHovered
-                          ? 'text-slate-900 dark:text-white font-bold'
-                          : 'text-slate-700 dark:text-slate-300'
-                      }`}
-                    >
+                    <span className="font-medium text-slate-700 dark:text-slate-300 truncate">
                       {item.label}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0 font-mono text-2xs">
-                    <span className="font-bold text-slate-800 dark:text-slate-200">
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="font-mono font-bold text-slate-900 dark:text-white">
+                      ৳ {item.amount.toLocaleString()}
+                    </span>
+                    <span className="text-slate-400 text-2xs w-7 text-right font-medium">
                       {item.sharePercent}%
                     </span>
                   </div>
