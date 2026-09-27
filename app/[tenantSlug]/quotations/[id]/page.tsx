@@ -507,10 +507,10 @@ function QuotationDetailContent() {
               variant="ghost"
               onClick={() => fetchQuotationDetail(false)}
               disabled={isRefreshing}
-              className="h-7 text-xs text-slate-500 gap-1"
+              className="h-7 w-7 p-0 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer"
+              title="Sync / Refresh quotation data"
             >
-              <RefreshCw className={`h-3 w-3 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Sync
+              <RefreshCw className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
             </Button>
           </div>
 

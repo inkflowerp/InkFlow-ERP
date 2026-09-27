@@ -121,10 +121,10 @@ export function SecurityAuditTab({ companyId, companySlug }: SecurityAuditTabPro
                 size="sm"
                 onClick={fetchLogs}
                 disabled={isLoading}
-                className="border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+                title="Refresh audit logs"
+                className="h-8 w-8 p-0 border-slate-200 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
               >
                 <RotateCcw className={cn('w-3.5 h-3.5', isLoading && 'animate-spin')} />
-                Refresh
               </Button>
 
               <Button

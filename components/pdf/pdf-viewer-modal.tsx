@@ -79,9 +79,9 @@ export function PdfViewerModal({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-slate-950 text-slate-100 border-slate-800">
-        <DialogHeader className="p-4 border-b border-slate-800 flex flex-row items-center justify-between space-y-0">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} maxWidth="max-w-5xl">
+      <DialogContent onClose={onClose} className="max-w-5xl h-[90vh] flex flex-col p-0 gap-0 overflow-hidden bg-slate-950 text-slate-100 border-slate-800">
+        <DialogHeader className="p-4 border-b border-slate-800 flex flex-row items-center justify-between space-y-0 bg-slate-900 text-slate-100 dark:bg-slate-900 pr-14">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
               <FileText className="h-4 w-4" />

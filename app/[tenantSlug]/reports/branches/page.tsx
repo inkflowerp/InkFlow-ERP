@@ -280,7 +280,7 @@ export default function MultiBranchReportingPage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="h-10 px-3 border-slate-300 dark:border-slate-700"
+              className="h-10 w-10 p-0 border-slate-300 dark:border-slate-700 cursor-pointer"
               title={tBilingual('Refresh Data', 'রিফ্রেশ করুন')}
             >
               <RefreshCw className={`w-3.5 h-3.5 text-slate-600 dark:text-slate-300 ${isLoading ? 'animate-spin' : ''}`} />
