@@ -176,24 +176,6 @@ export function QuotationTable({
                   {/* Primary Item */}
                   <td className="py-3.5 px-4 text-xs text-slate-700 dark:text-slate-300 max-w-[220px]">
                     <div className="flex items-center gap-1.5 truncate font-medium">
-                      <span className={cn(
-                        'text-2xs font-bold uppercase px-1.5 py-0.2 rounded border shrink-0',
-                        sector === 'offset_print'
-                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950/60 dark:text-purple-300'
-                          : sector === 'signage_fabrication'
-                          ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300'
-                          : sector === 'ready_merchandise'
-                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300'
-                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300'
-                      )}>
-                        {sector === 'offset_print'
-                          ? 'Offset'
-                          : sector === 'signage_fabrication'
-                          ? 'Signage'
-                          : sector === 'ready_merchandise'
-                          ? 'Merch'
-                          : 'Digital'}
-                      </span>
                       <span className="truncate">{primaryItem?.description || 'Custom Print Job'}</span>
                     </div>
                     <div className="text-2xs text-slate-400">
@@ -333,16 +315,6 @@ export function QuotationTable({
                     <span>{q.quotation_number}</span>
                     <ExternalLink className="h-3.5 w-3.5 opacity-70" />
                   </Link>
-                  <span className={cn(
-                    'text-2xs font-bold uppercase px-1.5 py-0.2 rounded border',
-                    sector === 'offset_print'
-                      ? 'bg-purple-50 text-purple-700 border-purple-200'
-                      : sector === 'signage_fabrication'
-                      ? 'bg-amber-50 text-amber-700 border-amber-200'
-                      : 'bg-blue-50 text-blue-700 border-blue-200'
-                  )}>
-                    {sector === 'offset_print' ? 'Offset' : sector === 'signage_fabrication' ? 'Signage' : 'Digital'}
-                  </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   {getStatusBadge(q.status)}

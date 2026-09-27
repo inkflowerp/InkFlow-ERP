@@ -61,7 +61,6 @@ import {
 } from '@/actions/quotation.actions'
 import { moveToTrashAction } from '@/actions/trash.actions'
 import { QuotationTable } from '@/components/quotations/quotation-table'
-import { NeedsAttentionPanel } from '@/components/quotations/needs-attention-panel'
 import { FollowUpModal } from '@/components/quotations/follow-up-modal'
 import { NewQuotationModal } from '@/components/quotations/new-quotation-modal'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -744,13 +743,7 @@ export default function QuotationsPage() {
     today.setHours(0, 0, 0, 0)
 
     return quotations.filter((q) => {
-      // 1. Sector filter
-      if (sectorFilter !== 'all') {
-        const sec = QuotationService.getSectorForQuotation(q)
-        if (sec !== sectorFilter) return false
-      }
-
-      // 2. Search filter
+      // 1. Search filter
       const term = search.toLowerCase().trim()
       const qNum = (q.quotation_number || '').toLowerCase()
       const qCust = (q.customer_name || '').toLowerCase()
@@ -1186,135 +1179,10 @@ export default function QuotationsPage() {
         </div>
 
         {/* =========================================================================
-            3. MAIN NAVIGATION TABS (QUOTATIONS / ATTENTION HUB)
+            3. QUOTATIONS DIRECTORY
            ========================================================================= */}
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-
-            <button
-              onClick={() => setActiveTab('quotations')}
-              className={cn(
-                'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-                activeTab === 'quotations'
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <FileSpreadsheet className="h-4 w-4" />
-              <span>Quotations Directory</span>
-              <Badge
-                className={cn(
-                  'text-2xs py-0 px-1.5 font-bold',
-                  activeTab === 'quotations'
-                    ? 'bg-blue-800 text-white'
-                    : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                )}
-              >
-                {quotations.length}
-              </Badge>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('attention')}
-              className={cn(
-                'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-                activeTab === 'attention'
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-              )}
-            >
-              <AlertCircle className="h-4 w-4" />
-              <span>Attention Hub</span>
-              {urgentAlertCount > 0 ? (
-                <Badge
-                  className={cn(
-                    'text-2xs py-0 px-1.5 font-bold',
-                    activeTab === 'attention'
-                      ? 'bg-amber-800 text-white'
-                      : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse'
-                  )}
-                >
-                  {urgentAlertCount} Urgent
-                </Badge>
-              ) : (
-                <Badge
-                  className={cn(
-                    'text-2xs py-0 px-1.5 font-bold',
-                    activeTab === 'attention'
-                      ? 'bg-amber-800 text-white'
-                      : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                  )}
-                >
-                  0
-                </Badge>
-              )}
-            </button>
-          </div>
-
-          {/* -------------------------------------------------------------------------
-              TAB 1: QUOTATIONS DIRECTORY
-             ------------------------------------------------------------------------- */}
-          {activeTab === 'quotations' && (
-            <div className="space-y-4">
-              {/* Sector Streams Filter & Active Pipeline Highlights */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-slate-900 text-white dark:bg-slate-950 border border-slate-800 shadow-md">
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-                  <span className="text-2xs uppercase font-bold text-slate-400 mr-1 hidden md:inline">
-                    Sector:
-                  </span>
-                  {[
-                    { id: 'all', labelEn: 'All Sectors', labelBn: 'সকল সেক্টর', count: sectorCounts.all, icon: '🖨️' },
-                    { id: 'digital_print', labelEn: 'Digital Flex/Vinyl', labelBn: 'ডিজিটাল ব্যানার', count: sectorCounts.digital_print, icon: '🎨' },
-                    { id: 'offset_print', labelEn: 'Offset Press', labelBn: 'অফসেট প্রেস', count: sectorCounts.offset_print, icon: '📑' },
-                    { id: 'signage_fabrication', labelEn: '3D Signage', labelBn: '৩ডি সাইনেজ', count: sectorCounts.signage_fabrication, icon: '💡' },
-                    { id: 'ready_merchandise', labelEn: 'Merchandise', labelBn: 'মার্চেন্ডাইজ', count: sectorCounts.ready_merchandise, icon: '🎁' },
-                  ].map((sec) => {
-                    const isSelected = sectorFilter === sec.id
-                    return (
-                      <button
-                        key={sec.id}
-                        type="button"
-                        onClick={() => setSectorFilter(sec.id as any)}
-                        className={`h-8 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'bg-white/10 text-slate-300 hover:bg-white/20'
-                        }`}
-                      >
-                        <span>{sec.icon}</span>
-                        <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
-                        <span
-                          className={`text-2xs px-1.5 py-0.2 rounded-full ${
-                            isSelected ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-400'
-                          }`}
-                        >
-                          {sec.count}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0 text-xs border-t sm:border-t-0 border-white/10 pt-2 sm:pt-0">
-                  <div className="text-right">
-                    <span className="text-2xs uppercase font-semibold text-slate-400 block">
-                      {locale === 'bn' ? 'চলতি পাইপলাইন' : 'Active Pipeline'}
-                    </span>
-                    <span className="font-mono font-bold text-cyan-300">
-                      {formatBDT(effectiveMetrics.totalPipelineValue)}
-                    </span>
-                  </div>
-                  <div className="h-6 w-px bg-white/10 hidden sm:block" />
-                  <div className="text-right">
-                    <span className="text-2xs uppercase font-semibold text-amber-400 block">
-                      {locale === 'bn' ? 'প্রত্যাশিত অগ্রিম (৫০%)' : 'Est. Advance (50%)'}
-                    </span>
-                    <span className="font-mono font-bold text-amber-300">
-                      {formatBDT(effectiveMetrics.expectedAdvance)}
-                    </span>
-                  </div>
-                </div>
-              </div>
+          <div className="space-y-4">
 
               {/* Search & Status Filter Tabs */}
               <Card className="p-3.5 shadow-xs border-slate-200 dark:border-slate-800 rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
@@ -1433,39 +1301,6 @@ export default function QuotationsPage() {
                 </CardContent>
               </Card>
             </div>
-          )}
-
-          {/* -------------------------------------------------------------------------
-              TAB 3: ATTENTION HUB (TRIAGE VIEW)
-             ------------------------------------------------------------------------- */}
-          {activeTab === 'attention' && (
-            <div className="space-y-4">
-              <NeedsAttentionPanel
-                quotations={quotations}
-                tenantSlug={slug}
-                companyName={company?.name || 'InkFlow'}
-                onOpenFollowUp={handleOpenFollowUp}
-              />
-
-              {priorityItems.length === 0 && (
-                <Card className="p-12 text-center space-y-3 rounded-2xl border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
-                  <CheckCircle2 className="h-10 w-10 text-emerald-500 mx-auto" />
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white">Attention Hub Cleared</h3>
-                  <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    There are currently no proposals expiring within 3 days or pending urgent follow-ups. All proposals are progressing smoothly.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setActiveTab('quotations')}
-                    className="rounded-xl text-xs font-bold"
-                  >
-                    View All Quotations
-                  </Button>
-                </Card>
-              )}
-            </div>
-          )}
         </div>
 
         {/* =========================================================================

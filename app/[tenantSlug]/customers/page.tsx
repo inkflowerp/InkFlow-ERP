@@ -628,17 +628,6 @@ export default function CustomersPage() {
         iconColor="text-blue-600 dark:text-blue-400"
         actions={
           <div className="flex items-center gap-2 shrink-0">
-            <Link href={getTenantNavHref('/trash?tab=customers', pathname, slug)}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs font-semibold h-9 text-slate-600 dark:text-slate-300"
-              >
-                <Trash2 className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
-                <span className="hidden sm:inline">{tBilingual('Trash Bin', 'ট্র্যাশ বিন')}</span>
-              </Button>
-            </Link>
-
             {can('export', 'customers') && (
               <Button
                 variant="outline"

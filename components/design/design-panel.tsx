@@ -633,11 +633,11 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
 
         <div className="flex items-center gap-2.5">
           <Button
-            onClick={() => setIsNewJobModalOpen(true)}
+            onClick={() => setIsWorkOrderModalOpen(true)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm rounded-xl px-4 py-2.5 shadow-sm shadow-indigo-500/20 flex items-center gap-1.5 cursor-pointer transition-transform active:scale-[0.98]"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>New Design Job</span>
+            <span>Add Work Order</span>
           </Button>
         </div>
       </div>
@@ -775,11 +775,11 @@ export function DesignPanel({ defaultTab = 'new_tasks' }: DesignPanelProps) {
               {activeTab === 'all' && (
                 <div className="mt-4">
                   <Button
-                    onClick={() => setIsNewJobModalOpen(true)}
+                    onClick={() => setIsWorkOrderModalOpen(true)}
                     className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs rounded-xl px-4 py-2 cursor-pointer shadow-xs inline-flex items-center gap-1.5"
                   >
                     <Plus className="w-4 h-4 stroke-[2.5]" />
-                    <span>Create New Design Job</span>
+                    <span>Add Work Order</span>
                   </Button>
                 </div>
               )}

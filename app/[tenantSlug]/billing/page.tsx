@@ -510,7 +510,7 @@ function BillingContent() {
   const [activeTab, setActiveTab] = useState<BillingTab>(initialTab)
 
   // Period & Filters
-  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('this_month')
+  const [selectedPeriod, setSelectedPeriod] = useState<BillingPeriod>('today')
   const [customStartDate, setCustomStartDate] = useState<string>(() => {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`
@@ -519,7 +519,7 @@ function BillingContent() {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })
-  const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
+  const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('today')
   const [sectorFilter, setSectorFilter] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
@@ -980,11 +980,14 @@ function BillingContent() {
 
       if (!matchSearch) return false
 
-      if (sectorFilter !== 'all') {
-        const sec = getSectorForInvoice(inv)
-        if (sec !== sectorFilter) return false
+      if (invoiceFilterTab === 'today') {
+        const todayStr = new Date().toISOString().split('T')[0]
+        return (
+          inv.invoice_date === todayStr ||
+          inv.due_date === todayStr ||
+          (Boolean(inv.created_at) && inv.created_at.startsWith(todayStr))
+        )
       }
-
       if (invoiceFilterTab === 'draft') return inv.status === 'unpaid' && inv.paid_amount === 0
       if (invoiceFilterTab === 'unpaid') return (inv.status === 'unpaid' || inv.status === 'partially_paid') && inv.due_amount > 0
       if (invoiceFilterTab === 'partially_paid') return inv.status === 'partially_paid'
@@ -995,7 +998,7 @@ function BillingContent() {
       if (invoiceFilterTab === 'vat') return inv.invoice_type === 'vat_invoice'
       return true
     })
-  }, [invoices, search, invoiceFilterTab, sectorFilter])
+  }, [invoices, search, invoiceFilterTab])
 
   // Filtered Priority Items
   const filteredPriorityItems = useMemo(() => {
@@ -1539,49 +1542,12 @@ function BillingContent() {
            ------------------------------------------------------------------------- */}
         {activeTab === 'invoices' && (
           <div className="space-y-4">
-            {/* Sector Category Filters HUD */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-              {[
-                { id: 'all', labelEn: 'All Sectors', labelBn: 'সকল সেক্টর', count: sectorCounts.all, icon: '🖨️' },
-                { id: 'digital_print', labelEn: 'Digital Flex/Vinyl', labelBn: 'ডিজিটাল ব্যানার', count: sectorCounts.digital_print, icon: '🎨' },
-                { id: 'offset_print', labelEn: 'Offset Press', labelBn: 'অফসেট প্রেস', count: sectorCounts.offset_print, icon: '📑' },
-                { id: 'signage_fabrication', labelEn: '3D Signage', labelBn: '৩ডি সাইনেজ', count: sectorCounts.signage_fabrication, icon: '💡' },
-                { id: 'ready_merchandise', labelEn: 'Merchandise', labelBn: 'মার্চেন্ডাইজ', count: sectorCounts.ready_merchandise, icon: '🎁' },
-              ].map((sec) => {
-                const isSelected = sectorFilter === sec.id
-                return (
-                  <button
-                    key={sec.id}
-                    onClick={() => setSectorFilter(sec.id as any)}
-                    className={cn(
-                      'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer',
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60'
-                    )}
-                  >
-                    <span>{sec.icon}</span>
-                    <span>{locale === 'bn' ? sec.labelBn : sec.labelEn}</span>
-                    <Badge
-                      className={cn(
-                        'text-2xs px-1.5 py-0 font-mono font-bold',
-                        isSelected
-                          ? 'bg-blue-800 text-white'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                      )}
-                    >
-                      {sec.count}
-                    </Badge>
-                  </button>
-                )
-              })}
-            </div>
-
             {/* Filter Pills & Fast Search */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
               {/* Status Filter Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
                 {[
+                  { id: 'today', label: 'Today' },
                   { id: 'all', label: 'All Invoices' },
                   { id: 'unpaid', label: 'Unpaid / Due' },
                   { id: 'overdue', label: 'Overdue' },
@@ -1631,10 +1597,10 @@ function BillingContent() {
             <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
               {/* Desktop Table View */}
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[1050px]">
                   <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                     <tr>
-                      <th className="p-3.5">Invoice # & Sector</th>
+                      <th className="p-3.5">Invoice #</th>
                       <th className="p-3.5">Customer & Phone</th>
                       <th className="p-3.5">Date</th>
                       <th className="p-3.5">Due Date</th>
@@ -1643,7 +1609,7 @@ function BillingContent() {
                       <th className="p-3.5 text-right">Due</th>
                       <th className="p-3.5 text-center">Status</th>
                       <th className="p-3.5">Salesperson</th>
-                      <th className="p-3.5 text-right">Actions</th>
+                      <th className="p-3.5 text-right min-w-[210px] whitespace-nowrap">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1664,7 +1630,6 @@ function BillingContent() {
                               >
                                 {inv.invoice_number}
                               </Link>
-                              {getSectorBadge(getSectorForInvoice(inv))}
                               {inv.invoice_type === 'vat_invoice' && (
                                 <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-2xs py-0 px-1">
                                   VAT 6.3
@@ -1710,15 +1675,15 @@ function BillingContent() {
                           <td className="p-3.5 text-slate-600 dark:text-slate-300">
                             {inv.salesperson_name || inv.created_by_name || 'Commercial'}
                           </td>
-                          <td className="p-3.5 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
+                          <td className="p-3.5 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
                               {inv.due_amount > 0 && inv.status !== 'cancelled' && (
                                 <>
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleSendReminder(inv.id)}
-                                    className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 shadow-xs cursor-pointer rounded-lg"
+                                    className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 shadow-xs cursor-pointer rounded-lg shrink-0"
                                     title="Send WhatsApp payment reminder"
                                   >
                                     <MessageSquare className="h-3 w-3 mr-1" />
@@ -1731,7 +1696,7 @@ function BillingContent() {
                                       setSelectedInvoiceIdForPayment(inv.id)
                                       setIsReceivePaymentOpen(true)
                                     }}
-                                    className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 shadow-xs cursor-pointer rounded-lg"
+                                    className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 shadow-xs cursor-pointer rounded-lg shrink-0"
                                     title="Receive payment for this invoice"
                                   >
                                     Collect
@@ -1739,7 +1704,7 @@ function BillingContent() {
                                 </>
                               )}
 
-                              <Link href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}>
+                              <Link href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)} className="shrink-0">
                                 <Button
                                   size="sm"
                                   variant="ghost"
