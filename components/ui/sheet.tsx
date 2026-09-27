@@ -13,7 +13,7 @@ interface SheetProps {
   className?: string
 }
 
-export function Sheet({ open, onOpenChange, children, side = 'right', className }: SheetProps) {
+export function Sheet({ open, onOpenChange, children, side = 'left', className }: SheetProps) {
   const [mounted, setMounted] = React.useState(false)
 
   React.useEffect(() => {

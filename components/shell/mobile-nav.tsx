@@ -293,8 +293,8 @@ export function MobileNav() {
         <Menu className="h-5 w-5" />
       </button>
 
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetHeader className="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
+      <Sheet open={open} onOpenChange={setOpen} side="left">
+        <SheetHeader onClose={() => setOpen(false)} className="border-b border-slate-100 px-4 py-3 dark:border-slate-800">
           <div className="flex items-center justify-between">
             {/* Logo and Brand */}
             <Link
