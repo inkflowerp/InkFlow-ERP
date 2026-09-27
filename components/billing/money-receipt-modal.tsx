@@ -24,6 +24,8 @@ import { CustomerRecord } from '@/types/crm.types'
 import { formatBDT, numberToWordsBDT } from '@/lib/formatters'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
+import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
+import { MoneyReceiptPdfDocument } from '@/components/pdf/documents/money-receipt-pdf-document'
 
 export interface MoneyReceiptModalProps {
   open: boolean
@@ -454,14 +456,24 @@ export function MoneyReceiptModal({
               <MessageSquare className="h-4 w-4" />
               WhatsApp Share
             </Button>
-            <Button
-              type="button"
-              onClick={handlePrint}
-              className="h-10 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold gap-1.5 shadow-xs cursor-pointer"
-            >
-              <Printer className="h-4 w-4" />
-              Print / PDF
-            </Button>
+            {payment && (
+              <PdfActionButtons
+                document={
+                  <MoneyReceiptPdfDocument
+                    payment={payment}
+                    company={{
+                      name: company?.name,
+                      tagline: company?.legal_name || 'Printing & Signage Specialists',
+                      address: company?.address,
+                      phone: company?.phone,
+                      email: company?.email,
+                    }}
+                  />
+                }
+                filename={`RCP-${payment.receipt_number}`}
+                title={`Receipt #${payment.receipt_number}`}
+              />
+            )}
           </div>
         </div>
       </div>

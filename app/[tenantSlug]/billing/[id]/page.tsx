@@ -45,6 +45,8 @@ import { getInvoiceByIdAction, getInvoicesAction, sendInvoiceAction, sendPayment
 import { generateInvoiceTextMessage } from '@/lib/billing-utils'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 import { cn } from '@/lib/utils'
+import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
+import { InvoicePdfDocument } from '@/components/pdf/documents/invoice-pdf-document'
 
 export default function InvoiceCockpitPage() {
   const params = useParams()
@@ -285,14 +287,24 @@ export default function InvoiceCockpitPage() {
               WhatsApp
             </Button>
 
-            <Button
-              size="sm"
-              onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-xs text-white h-9 font-bold"
-            >
-              <Printer className="mr-1.5 h-3.5 w-3.5" />
-              Print / PDF
-            </Button>
+            <PdfActionButtons
+              document={
+                <InvoicePdfDocument
+                  invoice={invoice}
+                  company={{
+                    name: company?.name,
+                    tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Packaging Solutions',
+                    address: company?.address,
+                    phone: company?.phone,
+                    email: company?.email,
+                    website: company?.website,
+                    binNumber: (company as any)?.bin_no || (company as any)?.bin_number,
+                  }}
+                />
+              }
+              filename={`INV-${invoice.invoice_number}`}
+              title={`Invoice #${invoice.invoice_number}`}
+            />
           </div>
         </div>
       </div>

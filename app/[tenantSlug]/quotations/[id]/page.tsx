@@ -57,6 +57,8 @@ import {
   convertQuotationToInvoiceAction,
   sendQuotationAction,
 } from '@/actions/quotation.actions'
+import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
+import { QuotationPdfDocument } from '@/components/pdf/documents/quotation-pdf-document'
 import {
   formatBDT,
   toBengaliNumerals,
@@ -660,15 +662,24 @@ function QuotationDetailContent() {
 
               {/* CONVERSION & UTILITY */}
               <div className="flex flex-wrap items-center gap-2">
-                {/* Print / Save PDF */}
-                <Button
-                  size="sm"
-                  onClick={() => window.print()}
-                  className="h-9 text-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 gap-1.5 cursor-pointer"
-                >
-                  <Printer className="h-4 w-4" />
-                  Print / Save PDF
-                </Button>
+                {/* Print / Vector PDF Engine */}
+                <PdfActionButtons
+                  document={
+                    <QuotationPdfDocument
+                      quotation={quote}
+                      company={{
+                        name: company?.name,
+                        tagline: company?.legal_name || 'Printing & Signage Specialists',
+                        address: company?.address,
+                        phone: company?.phone,
+                        email: company?.email,
+                        binNumber: company?.bin_no,
+                      }}
+                    />
+                  }
+                  filename={`QUO-${quote.quotation_number}`}
+                  title={`Quotation #${quote.quotation_number}`}
+                />
 
                 {/* Convert to Job Order */}
                 {quote.status !== 'converted' && !quote.converted_order_id ? (

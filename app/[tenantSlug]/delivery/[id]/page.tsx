@@ -37,6 +37,8 @@ import { STORAGE_KEYS } from '@/lib/db/data-store'
 import { getChallanByIdAction } from '@/actions/logistics.actions'
 import { LogisticsService } from '@/services/logistics.service'
 import { formatBDT } from '@/lib/formatters'
+import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
+import { ChallanPdfDocument } from '@/components/pdf/documents/challan-pdf-document'
 
 type CopyType = 'all' | 'customer' | 'gate_pass' | 'office'
 
@@ -292,14 +294,22 @@ export default function DeliveryChallanDetailPage() {
               <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
               {locale === 'bn' ? 'হোয়াটসঅ্যাপে পাঠান' : 'WhatsApp Slip'}
             </Button>
-            <Button
-              size="sm"
-              onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 dark:bg-slate-100 dark:hover:bg-white dark:text-slate-900 text-xs text-white h-8 font-bold shadow-xs"
-            >
-              <Printer className="mr-1.5 h-3.5 w-3.5" />
-              {locale === 'bn' ? 'চালান প্রিন্ট করুন' : 'Print Challan'}
-            </Button>
+            <PdfActionButtons
+              document={
+                <ChallanPdfDocument
+                  challan={challan}
+                  company={{
+                    name: company?.name,
+                    tagline: (company as any)?.tagline || (company as any)?.legal_name || 'Printing & Signage Manufacturing',
+                    address: company?.address,
+                    phone: company?.phone,
+                    email: company?.email,
+                  }}
+                />
+              }
+              filename={`CHL-${challan.challan_number}`}
+              title={`Delivery Challan #${challan.challan_number}`}
+            />
           </div>
         </div>
 

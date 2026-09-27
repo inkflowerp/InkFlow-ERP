@@ -11,7 +11,10 @@
     "test": "node --experimental-strip-types --test tests/unit/*.test.ts tests/integration/*.test.ts tests/security/*.test.ts tests/roles/*.test.ts tests/edge-cases/*.test.ts tests/acceptance/*.test.ts"
   },
   "dependencies": {
+    "@formepdf/core": "^0.25.0",
+    "@formepdf/react": "^0.25.0",
     "@hookform/resolvers": "^5.9.1",
+    "@prisma/client": "^6.4.1",
     "@supabase/server": "^1.5.3",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.114.0",
@@ -29,8 +32,7 @@
     "react-hook-form": "^7.87.0",
     "recharts": "^3.10.1",
     "tailwind-merge": "^3.6.0",
-    "zod": "^4.5.4",
-    "@prisma/client": "^6.4.1"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
