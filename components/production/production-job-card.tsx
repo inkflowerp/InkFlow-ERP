@@ -597,7 +597,14 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
       const nextTasks = allTasks.map((t) => {
         if (taskIds.has(t.id)) {
           if (t.department === 'printing' || t.task_type === 'printing') {
-            return { ...t, status: 'completed' as const, completed_at: now, updated_at: now }
+            return {
+              ...t,
+              status: 'completed' as const,
+              completed_at: now,
+              updated_at: now,
+              sent_to_finishing: toFinishing,
+              sent_to_delivery: !toFinishing,
+            }
           }
           if (toFinishing && (t.department === 'finishing' || t.task_type === 'finishing')) {
             return { ...t, status: 'queued' as const, updated_at: now }
@@ -618,8 +625,20 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           is_print_completed: true,
           updated_at: now,
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+      } else {
+        allJobs.push({
+          id: job.id,
+          job_number: job.jobNumber,
+          invoice_number: job.invoiceNumber,
+          status: toFinishing ? 'finishing' : 'ready_delivery',
+          sent_to_finishing: toFinishing,
+          sent_to_delivery: !toFinishing,
+          is_print_completed: true,
+          created_at: now,
+          updated_at: now,
+        })
       }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
     dispatchToast({

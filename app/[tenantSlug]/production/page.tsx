@@ -753,6 +753,7 @@ export default function AdvancedProductionPage() {
 
       const isSentDelivery = Boolean(
         (job as any).sent_to_delivery ||
+        job.tasks.some((t: any) => t.sent_to_delivery) ||
         matchedPj?.sent_to_delivery ||
         (matchedPj?.status === 'ready_delivery' && matchedPj?.is_print_completed) ||
         job.status === 'sent_to_delivery'
@@ -760,6 +761,7 @@ export default function AdvancedProductionPage() {
 
       const isSentFinishing = Boolean(
         (job as any).sent_to_finishing ||
+        job.tasks.some((t: any) => t.sent_to_finishing) ||
         matchedPj?.sent_to_finishing ||
         (matchedPj?.status === 'finishing' && matchedPj?.is_print_completed) ||
         job.status === 'sent_to_finishing'
@@ -1079,6 +1081,7 @@ export default function AdvancedProductionPage() {
             return {
               ...t,
               status: 'completed' as const,
+              sent_to_finishing: true,
               completed_at: t.completed_at || now,
               updated_at: now,
             }
@@ -1109,8 +1112,19 @@ export default function AdvancedProductionPage() {
           is_print_completed: true,
           updated_at: now,
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+      } else {
+        allJobs.push({
+          id: job.id,
+          job_number: job.jobNumber,
+          invoice_number: job.invoiceNumber,
+          status: 'finishing',
+          sent_to_finishing: true,
+          is_print_completed: true,
+          created_at: now,
+          updated_at: now,
+        })
       }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
     showNotification(
@@ -1135,6 +1149,7 @@ export default function AdvancedProductionPage() {
           return {
             ...t,
             status: 'completed' as const,
+            sent_to_delivery: true,
             completed_at: t.completed_at || now,
             updated_at: now,
           }
@@ -1156,8 +1171,19 @@ export default function AdvancedProductionPage() {
           is_print_completed: true,
           updated_at: now,
         }
-        PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
+      } else {
+        allJobs.push({
+          id: job.id,
+          job_number: job.jobNumber,
+          invoice_number: job.invoiceNumber,
+          status: 'ready_delivery',
+          sent_to_delivery: true,
+          is_print_completed: true,
+          created_at: now,
+          updated_at: now,
+        })
       }
+      PrintERPDataStore.set(STORAGE_KEYS.PRODUCTION_JOBS, allJobs)
     } catch (_) {}
 
     showNotification(
