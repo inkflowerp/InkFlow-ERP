@@ -236,9 +236,8 @@ export default function MachineryDetailPage() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => loadData()} className="gap-1.5 h-8">
-            <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+          <Button variant="outline" size="sm" onClick={() => loadData()} className="h-8 w-8 p-0 flex items-center justify-center shrink-0 cursor-pointer" title="Refresh" aria-label="Refresh">
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </Button>
         </div>
       </div>

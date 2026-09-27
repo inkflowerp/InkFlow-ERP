@@ -36,13 +36,7 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
   const companyAddress = company?.address || "Dhaka, Bangladesh";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "accounts@inkflow-erp.com"}`;
 
-  const qrPayload = JSON.stringify({
-    rcpt: payment.receipt_number,
-    date: payment.payment_date,
-    amount: payment.amount,
-    customer: payment.customer_name,
-    method: payment.payment_method,
-  });
+  const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`;
 
   const styles = StyleSheet.create({
     page: {
@@ -52,10 +46,10 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
       flexDirection: "row",
       justifyContent: "space-between",
       marginBottom: 16,
-      gap: 16,
     },
     metaCol: {
-      flex: 1,
+      width: "48.5%",
+      flexShrink: 0,
     },
     card: {
       backgroundColor: theme.colors.muted,
@@ -134,6 +128,7 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
 
               <KeyValue
                 size="sm"
+                labelFlex={1.3}
                 items={[
                   { key: "Receipt No:", value: payment.receipt_number },
                   { key: "Payment Date:", value: payment.payment_date },
@@ -208,7 +203,7 @@ const MoneyReceiptPdfContent = ({ payment, company }: { payment: PaymentRecord; 
           {/* Signatures & Security */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 36 }}>
             <View>
-              <PdfQRCode value={qrPayload} size={54} margin={1} />
+              <PdfQRCode value={qrPayload} size={64} margin={2} />
               <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 4, textAlign: "center" }}>
                 Scan to Verify Voucher
               </Text>

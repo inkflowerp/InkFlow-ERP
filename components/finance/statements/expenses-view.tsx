@@ -537,7 +537,7 @@ export function ExpensesView({
             </div>
 
             {/* Print & Close Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+            <div className="print:hidden flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
               <Button
                 variant="outline"
                 size="sm"

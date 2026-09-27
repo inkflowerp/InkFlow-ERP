@@ -247,11 +247,11 @@ export default function HrmDashboardPage() {
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="text-xs h-9 px-3 gap-1.5 rounded-xl font-semibold text-slate-700 dark:text-slate-300"
-              title="Refresh Dashboard"
+              className="text-xs h-9 w-9 p-0 rounded-xl font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-center shrink-0 cursor-pointer"
+              title={tBilingual('Refresh Dashboard', 'ড্যাশবোর্ড রিফ্রেশ করুন')}
+              aria-label={tBilingual('Refresh Dashboard', 'ড্যাশবোর্ড রিফ্রেশ করুন')}
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">{tBilingual('Refresh', 'রিফ্রেশ')}</span>
             </Button>
 
             <Link href={getTenantNavHref('/operator', pathname, slug)}>

@@ -578,11 +578,11 @@ export default function AccountingPage() {
               loadAllData(r.startDate, r.endDate)
             }}
             disabled={isLoading}
-            className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 px-3 gap-1.5 rounded-xl cursor-pointer"
+            className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 w-9 p-0 rounded-xl cursor-pointer flex items-center justify-center shrink-0"
             title="Refresh Finance Data"
+            aria-label="Refresh Finance Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
-            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>

@@ -493,10 +493,11 @@ export default function AttendanceSettingsPage() {
               size="sm"
               onClick={loadAllData}
               disabled={isLoading}
-              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 h-9 rounded-xl text-xs font-semibold gap-1.5"
+              className="border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 h-9 w-9 p-0 rounded-xl flex items-center justify-center shrink-0 cursor-pointer"
+              title={tBilingual('Refresh', 'রিফ্রেশ')}
+              aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
               <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin text-indigo-500' : ''}`} />
-              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
             </Button>
 
             <Button

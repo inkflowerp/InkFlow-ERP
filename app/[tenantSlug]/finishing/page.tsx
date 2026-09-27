@@ -483,11 +483,11 @@ export default function FinishingAndFabricationPage() {
                 size="sm"
                 onClick={() => loadData(false)}
                 disabled={loading}
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
                 title="Refresh Tasks"
+                aria-label="Refresh Tasks"
               >
                 <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
               </Button>
 
               <Link href={getTenantNavHref('/operator', pathname, slug)}>

@@ -49,13 +49,7 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
     ? "PAYMENT RECEIPT"
     : "COMMERCIAL INVOICE";
 
-  const qrPayload = JSON.stringify({
-    inv: invoice.invoice_number,
-    date: invoice.invoice_date,
-    total: invoice.grand_total,
-    due: invoice.due_amount,
-    customer: invoice.customer_name,
-  });
+  const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/invoice?id=${encodeURIComponent(invoice.invoice_number || invoice.id)}`;
 
   const styles = StyleSheet.create({
     page: {
@@ -65,10 +59,10 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
       flexDirection: "row",
       justifyContent: "space-between",
       marginBottom: 16,
-      gap: 16,
     },
     metaCol: {
-      flex: 1,
+      width: "48.5%",
+      flexShrink: 0,
     },
     clientCard: {
       backgroundColor: theme.colors.muted,
@@ -82,10 +76,10 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
       flexDirection: "row",
       justifyContent: "space-between",
       marginTop: 16,
-      gap: 20,
     },
     notesCol: {
-      flex: 1.2,
+      width: "54%",
+      flexShrink: 0,
     },
     summaryCard: {
       width: 240,
@@ -314,7 +308,7 @@ const InvoicePdfContent = ({ invoice, company }: { invoice: InvoiceRecord; compa
           {/* Signatures & QR Code */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 24 }}>
             <View>
-              <PdfQRCode value={qrPayload} size={54} margin={1} />
+              <PdfQRCode value={qrPayload} size={64} margin={2} />
               <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 4, textAlign: "center" }}>
                 Scan to Verify
               </Text>

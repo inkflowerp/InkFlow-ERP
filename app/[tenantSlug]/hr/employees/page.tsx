@@ -1178,10 +1178,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
               size="sm"
               onClick={loadData}
               disabled={isLoading}
-              className="gap-1.5 text-xs h-9"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"
+              title={tBilingual('Refresh', 'রিফ্রেশ')}
+              aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-              {tBilingual('Refresh', 'রিফ্রেশ')}
             </Button>
             <Button
               size="sm"

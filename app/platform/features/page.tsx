@@ -503,10 +503,11 @@ export default function PlatformFeaturesPage() {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 text-xs font-semibold flex items-center gap-1.5 h-9 transition-colors cursor-pointer disabled:opacity-50"
+            className="h-9 w-9 p-0 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-800 flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+            title="Refresh"
+            aria-label="Refresh"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>

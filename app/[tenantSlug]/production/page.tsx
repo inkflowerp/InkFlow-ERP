@@ -1360,11 +1360,11 @@ export default function AdvancedProductionPage() {
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+                className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
                 title="Refresh Production Jobs"
+                aria-label="Refresh Production Jobs"
               >
                 <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
               </Button>
 
               <Button

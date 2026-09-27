@@ -35,12 +35,7 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
   const companyAddress = company?.address || "Dhaka, Bangladesh";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "dispatch@inkflow-erp.com"}`;
 
-  const qrPayload = JSON.stringify({
-    ch: challan.challan_number,
-    date: challan.scheduled_date,
-    customer: challan.customer_name,
-    items: (challan.items || []).length,
-  });
+  const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/challan?id=${encodeURIComponent(challan.challan_number || challan.id)}`;
 
   const styles = StyleSheet.create({
     page: {
@@ -50,10 +45,10 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
       flexDirection: "row",
       justifyContent: "space-between",
       marginBottom: 16,
-      gap: 16,
     },
     metaCol: {
-      flex: 1,
+      width: "48.5%",
+      flexShrink: 0,
     },
     card: {
       backgroundColor: theme.colors.muted,
@@ -190,7 +185,7 @@ const ChallanPdfContent = ({ challan, company }: { challan: DeliveryChallanRecor
           {/* Signatures & Security Pass */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 28 }}>
             <View>
-              <PdfQRCode value={qrPayload} size={54} margin={1} />
+              <PdfQRCode value={qrPayload} size={64} margin={2} />
               <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 4, textAlign: "center" }}>
                 Gate Pass Verification
               </Text>

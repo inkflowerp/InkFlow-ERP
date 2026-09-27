@@ -38,32 +38,38 @@ const generateQRMatrix = (
   errorLevel: QRCodeErrorLevel,
   margin: number
 ): boolean[][] => {
-  const qr = QRCode.create(value, { errorCorrectionLevel: errorLevel });
-  const { size, data } = qr.modules;
-  const totalSize = size + margin * 2;
-  const matrix: boolean[][] = [];
-  for (let row = 0; row < totalSize; row += 1) {
-    const rowData: boolean[] = [];
-    for (let col = 0; col < totalSize; col += 1) {
-      const isInMargin =
-        row < margin ||
-        row >= size + margin ||
-        col < margin ||
-        col >= size + margin;
-      if (isInMargin) {
-        rowData.push(false);
-      } else {
-        rowData.push(data[(row - margin) * size + (col - margin)] === 1);
+  try {
+    const textToEncode = (value && value.trim()) || "https://rangao.inkflow-erp.vercel.app";
+    const qr = QRCode.create(textToEncode, { errorCorrectionLevel: errorLevel });
+    const { size, data } = qr.modules;
+    const totalSize = size + margin * 2;
+    const matrix: boolean[][] = [];
+    for (let row = 0; row < totalSize; row += 1) {
+      const rowData: boolean[] = [];
+      for (let col = 0; col < totalSize; col += 1) {
+        const isInMargin =
+          row < margin ||
+          row >= size + margin ||
+          col < margin ||
+          col >= size + margin;
+        if (isInMargin) {
+          rowData.push(false);
+        } else {
+          rowData.push(data[(row - margin) * size + (col - margin)] === 1);
+        }
       }
+      matrix.push(rowData);
     }
-    matrix.push(rowData);
+    return matrix;
+  } catch (err) {
+    console.error("Failed to generate QR Matrix:", err);
+    return Array.from({ length: 25 }, () => Array(25).fill(false));
   }
-  return matrix;
 };
 
 export const PdfQRCode = ({
   value,
-  size = 100,
+  size = 64,
   color = "#000000",
   backgroundColor = "#ffffff",
   errorLevel = "M",
@@ -73,11 +79,12 @@ export const PdfQRCode = ({
 }: PdfQRCodeProps) => {
   const theme = usePdfcnTheme();
   const styles = useSafeMemo(() => createQRCodeStyles(theme), [theme]);
+  const safeMargin = Math.max(margin ?? 2, 2);
   const matrix = useSafeMemo(
-    () => generateQRMatrix(value, errorLevel, margin),
-    [value, errorLevel, margin]
+    () => generateQRMatrix(value, errorLevel, safeMargin),
+    [value, errorLevel, safeMargin]
   );
-  const moduleSize = size / matrix.length;
+  const totalGridSize = matrix.length || 25;
   const resolvedColor = resolveColor(color, theme.colors);
   const resolvedBgColor =
     backgroundColor === "transparent"
@@ -90,9 +97,9 @@ export const PdfQRCode = ({
 
   return (
     <View style={containerStyles as never}>
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <Svg width={size} height={size} viewBox={`0 0 ${totalGridSize} ${totalGridSize}`}>
         {resolvedBgColor !== undefined && (
-          <Rect x={0} y={0} width={size} height={size} fill={resolvedBgColor} />
+          <Rect x={0} y={0} width={totalGridSize} height={totalGridSize} fill={resolvedBgColor} />
         )}
         {matrix
           .flatMap((row, y) =>
@@ -103,10 +110,10 @@ export const PdfQRCode = ({
           .map((pos) => (
             <Rect
               key={`qr-${pos.y}-${pos.x}`}
-              x={pos.x * moduleSize}
-              y={pos.y * moduleSize}
-              width={moduleSize}
-              height={moduleSize}
+              x={pos.x}
+              y={pos.y}
+              width={1}
+              height={1}
               fill={resolvedColor}
             />
           ))}

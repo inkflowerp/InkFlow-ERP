@@ -151,10 +151,11 @@ export default function FloorConsumptionPage() {
               size="sm"
               onClick={() => loadFloorData()}
               disabled={loading}
-              className="gap-2 border-slate-700 hover:bg-slate-800 text-slate-300"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-slate-700 hover:bg-slate-800 text-slate-300 cursor-pointer"
+              title={isBn ? 'রিফ্রেশ' : 'Refresh'}
+              aria-label={isBn ? 'রিফ্রেশ' : 'Refresh'}
             >
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              <span>{isBn ? 'রিফ্রেশ' : 'Refresh'}</span>
             </Button>
 
             <Button

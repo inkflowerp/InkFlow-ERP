@@ -81,7 +81,7 @@ export const KeyValue = ({
   direction = "horizontal",
   divided = false,
   size = "md",
-  labelFlex = 1,
+  labelFlex = 1.25,
   labelColor,
   valueColor,
   boldValue = false,

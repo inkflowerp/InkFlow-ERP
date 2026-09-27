@@ -291,11 +291,11 @@ export function InvoiceRequestsPanel({
               size="sm"
               variant="outline"
               onClick={onRefresh}
-              className="h-8 text-xs font-bold gap-1 cursor-pointer"
+              className="h-8 w-8 p-0 flex items-center justify-center shrink-0 cursor-pointer"
               title="Refresh requests"
+              aria-label="Refresh requests"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
-              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         </CardHeader>

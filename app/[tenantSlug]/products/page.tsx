@@ -1745,11 +1745,11 @@ export default function ProductsCatalogPage() {
               size="sm"
               onClick={handleRefreshAll}
               disabled={isLoading}
-              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 px-3 gap-1.5 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl"
+              className="border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs h-9 w-9 p-0 cursor-pointer text-slate-700 dark:text-slate-300 rounded-xl flex items-center justify-center shrink-0"
               title="Refresh all catalog and master records"
+              aria-label="Refresh all catalog and master records"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin')} />
-              <span className="hidden sm:inline">Refresh</span>
             </Button>
           </div>
         }

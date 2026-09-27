@@ -176,10 +176,11 @@ export function MobileOperationsDashboard({ tenantSlug }: MobileOperationsDashbo
           <h2 className="text-sm font-bold text-slate-200 uppercase tracking-wide">Floor Tasks</h2>
           <button
             onClick={fetchData}
-            className="text-xs text-indigo-400 flex items-center gap-1 hover:text-indigo-300 cursor-pointer"
+            className="p-1 rounded-lg text-indigo-400 hover:text-indigo-300 hover:bg-slate-800 transition-colors flex items-center justify-center cursor-pointer"
+            title="Refresh Floor Tasks"
+            aria-label="Refresh Floor Tasks"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
           </button>
         </div>
 

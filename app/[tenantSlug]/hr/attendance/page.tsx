@@ -1094,10 +1094,11 @@ function AttendanceContent() {
                 variant="outline"
                 onClick={loadDutyLogData}
                 disabled={isLogLoading}
-                className="h-8 text-xs gap-1.5 border-slate-200 dark:border-slate-800"
+                className="h-8 w-8 p-0 flex items-center justify-center shrink-0 border-slate-200 dark:border-slate-800 cursor-pointer"
+                title={tBilingual('Refresh Log', 'রিফ্রেশ')}
+                aria-label={tBilingual('Refresh Log', 'রিফ্রেশ')}
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isLogLoading ? 'animate-spin' : ''}`} />
-                {tBilingual('Refresh Log', 'রিফ্রেশ')}
               </Button>
             </div>
           )}

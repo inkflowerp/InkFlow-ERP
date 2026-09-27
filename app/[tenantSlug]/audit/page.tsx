@@ -114,10 +114,11 @@ export default function TenantAuditLogsPage() {
               size="sm"
               variant="outline"
               onClick={loadLogs}
-              className="h-9 text-xs"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"
+              title={tBilingual('Refresh', 'রিফ্রেশ')}
+              aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
             >
-              <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
+              <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           </div>
         }

@@ -271,10 +271,11 @@ export default function MachineriesListPage() {
               size="sm"
               onClick={() => loadData()}
               disabled={loading}
-              className="gap-1.5"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer"
+              title="Refresh"
+              aria-label="Refresh"
             >
               <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">Refresh</span>
             </Button>
 
             {canCreate && (

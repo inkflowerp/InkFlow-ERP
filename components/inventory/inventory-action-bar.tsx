@@ -125,11 +125,11 @@ export function InventoryActionBar({
           size="sm"
           onClick={onRefresh}
           disabled={loading}
-          className="text-xs h-9 px-3 cursor-pointer gap-1.5 font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-          title="Refresh live inventory data"
+          className="text-xs h-9 w-9 p-0 flex items-center justify-center cursor-pointer font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 shrink-0"
+          title={isBn ? 'ইনভেন্টরি রিফ্রেশ করুন' : 'Refresh live inventory data'}
+          aria-label={isBn ? 'ইনভেন্টরি রিফ্রেশ করুন' : 'Refresh live inventory data'}
         >
           <RefreshCw className={cn('h-3.5 w-3.5 text-slate-500', loading && 'animate-spin')} />
-          <span>{isBn ? 'রিফ্রেশ' : 'Refresh'}</span>
         </Button>
       </div>
     </div>

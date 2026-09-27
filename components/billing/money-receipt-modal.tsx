@@ -26,6 +26,7 @@ import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { PdfActionButtons } from '@/components/pdf/pdf-action-buttons'
 import { MoneyReceiptPdfDocument } from '@/components/pdf/documents/money-receipt-pdf-document'
+import { QRCodeSVG } from '@/components/attendance/qr-code-svg'
 
 export interface MoneyReceiptModalProps {
   open: boolean
@@ -416,13 +417,25 @@ export function MoneyReceiptModal({
             </div>
           ) : null}
 
-          {/* TOTAL & SIGNATURES */}
+          {/* TOTAL, QR CODE & SIGNATURES */}
           <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-4 border-t border-slate-200 dark:border-slate-800">
             <div className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-600 to-teal-700 text-white font-numeric tabular-nums shadow-sm min-w-[200px]">
               <span className="text-2xs uppercase font-bold text-emerald-100 block">Total Amount Received</span>
               <div className="text-2xl font-bold tracking-normal">
                 {formatBDT(payment.amount)}
               </div>
+            </div>
+
+            {/* QR Code Verification for Direct Print */}
+            <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <QRCodeSVG
+                value={`https://rangao.inkflow-erp.vercel.app/api/pdf/receipt?id=${encodeURIComponent(payment.receipt_number || payment.id)}`}
+                size={64}
+                className="bg-white p-1 rounded"
+              />
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-1">
+                Scan to Verify Voucher
+              </span>
             </div>
 
             <div className="text-center pt-6 space-y-1">

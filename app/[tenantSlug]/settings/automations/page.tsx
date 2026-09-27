@@ -376,10 +376,11 @@ export default function WorkflowAutomationsPage() {
                 size="sm"
                 variant="outline"
                 onClick={loadData}
-                className="flex-1 sm:flex-none h-10 sm:h-9 text-xs border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl"
+                className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl cursor-pointer"
+                title={tBilingual('Refresh', 'রিফ্রেশ')}
+                aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
               >
-                <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                {tBilingual('Refresh', 'রিফ্রেশ')}
+                <RotateCcw className="h-3.5 w-3.5" />
               </Button>
             </div>
           }

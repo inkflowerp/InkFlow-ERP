@@ -652,10 +652,11 @@ export default function DeliveryLogisticsPage() {
                 variant="outline"
                 onClick={() => loadLogisticsData()}
                 disabled={isLoading}
-                className="text-xs text-slate-700 dark:text-slate-300"
+                className="h-9 w-9 p-0 flex items-center justify-center shrink-0 cursor-pointer text-slate-700 dark:text-slate-300"
+                title={tBilingual('Refresh', 'রিফ্রেশ')}
+                aria-label={tBilingual('Refresh', 'রিফ্রেশ')}
               >
-                <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-                {tBilingual('Refresh', 'রিফ্রেশ')}
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
               </Button>
 
               <Button

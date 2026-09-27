@@ -38,13 +38,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
   const companyAddress = company?.address || "Dhaka, Bangladesh";
   const companyContact = `${company?.phone || "+880 1700-000000"}  ·  ${company?.email || "sales@inkflow-erp.com"}`;
 
-  const qrPayload = JSON.stringify({
-    quo: quotation.quotation_number,
-    date: quotation.quotation_date,
-    valid: quotation.valid_until,
-    total: quotation.grand_total,
-    customer: quotation.customer_name,
-  });
+  const qrPayload = `https://rangao.inkflow-erp.vercel.app/api/pdf/quotation?id=${encodeURIComponent(quotation.quotation_number || quotation.id)}`;
 
   const styles = StyleSheet.create({
     page: {
@@ -54,10 +48,10 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
       flexDirection: "row",
       justifyContent: "space-between",
       marginBottom: 16,
-      gap: 16,
     },
     metaCol: {
-      flex: 1,
+      width: "48.5%",
+      flexShrink: 0,
     },
     clientCard: {
       backgroundColor: theme.colors.muted,
@@ -71,10 +65,10 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
       flexDirection: "row",
       justifyContent: "space-between",
       marginTop: 16,
-      gap: 20,
     },
     notesCol: {
-      flex: 1.2,
+      width: "54%",
+      flexShrink: 0,
     },
     summaryCard: {
       width: 240,
@@ -281,7 +275,7 @@ const QuotationPdfContent = ({ quotation, company }: { quotation: QuotationRecor
           {/* Signatures & QR Code */}
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end", marginTop: 24 }}>
             <View>
-              <PdfQRCode value={qrPayload} size={54} margin={1} />
+              <PdfQRCode value={qrPayload} size={64} margin={2} />
               <Text variant="xs" color="mutedForeground" noMargin style={{ fontSize: 7, marginTop: 4, textAlign: "center" }}>
                 Scan to Verify
               </Text>
