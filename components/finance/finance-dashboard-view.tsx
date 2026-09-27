@@ -944,85 +944,85 @@ export function FinanceDashboardView({
             Quick Actions
           </h3>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5">
             {/* 1. Record Payment */}
             <button
               type="button"
               onClick={onOpenPaymentModal}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-emerald-200/80 dark:border-emerald-900/60 bg-emerald-50/40 dark:bg-emerald-950/20 hover:bg-emerald-50 text-emerald-800 dark:text-emerald-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <CreditCard className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-              <span className="truncate">Record Payment</span>
+              <CreditCard className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="leading-tight">Record Payment</span>
             </button>
 
             {/* 2. Add Expense */}
             <button
               type="button"
               onClick={onOpenSpendModal}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-rose-200/80 dark:border-rose-900/60 bg-rose-50/40 dark:bg-rose-950/20 hover:bg-rose-50 text-rose-800 dark:text-rose-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <Receipt className="w-3.5 h-3.5 text-rose-600 shrink-0" />
-              <span className="truncate">Add Expense</span>
+              <Receipt className="w-4 h-4 text-rose-600 shrink-0" />
+              <span className="leading-tight">Add Expense</span>
             </button>
 
             {/* 3. Supplier Payment */}
             <button
               type="button"
               onClick={onOpenPaySupplierModal}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-amber-200/80 dark:border-amber-900/60 bg-amber-50/40 dark:bg-amber-950/20 hover:bg-amber-50 text-amber-800 dark:text-amber-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-              <span className="truncate">Supplier Payment</span>
+              <ArrowLeftRight className="w-4 h-4 text-amber-600 shrink-0" />
+              <span className="leading-tight">Supplier Payment</span>
             </button>
 
             {/* 4. Bank Transfer */}
             <button
               type="button"
               onClick={onOpenTransferModal}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-sky-200/80 dark:border-sky-900/60 bg-sky-50/40 dark:bg-sky-950/20 hover:bg-sky-50 text-sky-800 dark:text-sky-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <Landmark className="w-3.5 h-3.5 text-sky-600 shrink-0" />
-              <span className="truncate">Bank Transfer</span>
+              <Landmark className="w-4 h-4 text-sky-600 shrink-0" />
+              <span className="leading-tight">Bank Transfer</span>
             </button>
 
             {/* 5. Customer Due Report */}
             <button
               type="button"
               onClick={() => onNavigateTab('receivables')}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-purple-200/80 dark:border-purple-900/60 bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-50 text-purple-800 dark:text-purple-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <FileText className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-              <span className="truncate">Customer Due</span>
+              <FileText className="w-4 h-4 text-purple-600 shrink-0" />
+              <span className="leading-tight">Customer Due</span>
             </button>
 
             {/* 6. Supplier Due Report */}
             <button
               type="button"
               onClick={() => onNavigateTab('payables')}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 hover:bg-indigo-50 text-indigo-800 dark:text-indigo-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <FileText className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span className="truncate">Supplier Due</span>
+              <FileText className="w-4 h-4 text-indigo-600 shrink-0" />
+              <span className="leading-tight">Supplier Due</span>
             </button>
 
             {/* 7. Cash Closing */}
             <button
               type="button"
               onClick={onOpenCashClosingModal}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-teal-200/80 dark:border-teal-900/60 bg-teal-50/40 dark:bg-teal-950/20 hover:bg-teal-50 text-teal-800 dark:text-teal-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <Wallet className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-              <span className="truncate">Cash Closing</span>
+              <Wallet className="w-4 h-4 text-teal-600 shrink-0" />
+              <span className="leading-tight">Cash Closing</span>
             </button>
 
             {/* 8. Profit & Loss Report */}
             <button
               type="button"
               onClick={() => onNavigateTab('pnl')}
-              className="flex items-center gap-1.5 p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] font-semibold transition-all cursor-pointer text-left"
+              className="flex items-center gap-2 p-2.5 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/40 dark:bg-blue-950/20 hover:bg-blue-50 text-blue-800 dark:text-blue-300 text-[11px] font-semibold transition-all cursor-pointer text-left min-h-[44px]"
             >
-              <PieChart className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-              <span className="truncate">Profit & Loss</span>
+              <PieChart className="w-4 h-4 text-blue-600 shrink-0" />
+              <span className="leading-tight">Profit & Loss</span>
             </button>
           </div>
         </div>
