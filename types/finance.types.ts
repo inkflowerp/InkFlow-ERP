@@ -405,6 +405,80 @@ export interface FinancialDashboardMetrics {
   monthly_expenses: number
   monthly_gross_profit: number
   monthly_net_profit: number
+  invoices_count?: number
+  payments_count?: number
+  customers_due_count?: number
+  suppliers_due_count?: number
+  expenses_count?: number
+  bank_accounts_count?: number
+  profit_margin_percent?: number
+  total_payments_received?: number
+  revenue_trend?: { percent: number; isUp: boolean }
+  payments_trend?: { percent: number; isUp: boolean }
+  receivables_trend?: { percent: number; isUp: boolean }
+  expenses_trend?: { percent: number; isUp: boolean }
+  profit_trend?: { percent: number; isUp: boolean }
+  payment_breakdown?: {
+    cash: number
+    bank: number
+    bkash: number
+    nagad: number
+    card: number
+    total: number
+    cash_pct: number
+    bank_pct: number
+    bkash_pct: number
+    nagad_pct: number
+    card_pct: number
+  }
+  daily_trends?: {
+    day: number
+    date: string
+    label: string
+    income: number
+    expense: number
+  }[]
+  monthly_summary?: {
+    month: string
+    yearMonth: string
+    invoices: number
+    revenue: number
+    received: number
+    due: number
+    expenses: number
+    profit: number
+  }[]
+  recent_transactions?: {
+    id: string
+    type: string
+    title: string
+    subtitle: string
+    amount: number
+    isCredit: boolean
+    time: string
+    date: string
+    color: string
+  }[]
+  top_receivables?: {
+    rank: number
+    id: string
+    name: string
+    phone: string
+    amount: number
+    daysOverdue: number
+    status: string
+    isOverdue: boolean
+  }[]
+  top_payables?: {
+    rank: number
+    id: string
+    name: string
+    phone: string
+    amount: number
+    daysOverdue: number
+    status: string
+    isOverdue: boolean
+  }[]
 }
 
 // ============================================================================

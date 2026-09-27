@@ -299,10 +299,10 @@ export async function getBranchProfitabilityAction(period?: string) {
   }
 }
 
-export async function getFinancialDashboardAction() {
+export async function getFinancialDashboardAction(options?: { startDate?: string; endDate?: string; branchId?: string }) {
   try {
     const companyId = await getTenantCompanyId()
-    const dashboard = await FinanceService.getFinancialDashboard(companyId)
+    const dashboard = await FinanceService.getFinancialDashboard(companyId, options)
     return { success: true, data: dashboard }
   } catch (err: any) {
     return { success: false, error: err.message || 'Failed to fetch financial dashboard.' }

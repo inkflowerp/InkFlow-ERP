@@ -11,6 +11,7 @@ import { SupplierRepository } from '../lib/repositories/supplier.repository.ts'
 import { CostingRepository } from '../lib/repositories/costing.repository.ts'
 import { BranchAnalyticsRepository } from '../lib/repositories/branch-analytics.repository.ts'
 import { WorkforceRepository } from '../lib/repositories/workforce.repository.ts'
+import { CustomerRepository } from '../lib/repositories/customer.repository.ts'
 import type { ExpenseCategory } from '../types/accounting.types.ts'
 import type {
   AccountRecord,
@@ -1549,20 +1550,361 @@ export class FinanceService {
   // 11. FINANCIAL DASHBOARD
   // ============================================================================
 
-  static async getFinancialDashboard(companyId: string): Promise<FinancialDashboardMetrics> {
-    const accounts = await FinanceRepository.getAccounts(companyId)
-    const pnl = await this.getProfitAndLoss(companyId)
-    const ar = await this.getReceivablesAging(companyId)
-    const ap = await this.getPayablesAging(companyId)
+  static async getTransactions(companyId: string, options?: any): Promise<FinancialTransactionRecord[]> {
+    return FinanceRepository.getTransactions(companyId, options)
+  }
 
+  static async getFinancialDashboard(
+    companyId: string,
+    options?: { startDate?: string; endDate?: string; branchId?: string }
+  ): Promise<FinancialDashboardMetrics> {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = today.getMonth() // 0-indexed
+    const defaultStart = `${year}-${String(month + 1).padStart(2, '0')}-01`
+    const lastDay = new Date(year, month + 1, 0).getDate()
+    const defaultEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+
+    const startDate = options?.startDate || defaultStart
+    const endDate = options?.endDate || defaultEnd
+    const branchId = options?.branchId
+
+    // 1. Chart of Accounts & Balances
+    const accounts = await FinanceRepository.getAccounts(companyId, branchId)
     let cashBal = 0
     let bankBal = 0
     let mfsBal = 0
+    let bankAccountsCount = 0
 
     for (const acc of accounts) {
-      if (acc.account_subtype === 'CASH') cashBal += acc.current_balance
-      if (acc.account_subtype === 'BANK') bankBal += acc.current_balance
-      if (acc.account_subtype === 'MFS') mfsBal += acc.current_balance
+      if (acc.account_subtype === 'CASH') cashBal += Number(acc.current_balance || 0)
+      if (acc.account_subtype === 'BANK') {
+        bankBal += Number(acc.current_balance || 0)
+        bankAccountsCount++
+      }
+      if (acc.account_subtype === 'MFS') mfsBal += Number(acc.current_balance || 0)
+    }
+
+    // 2. Invoices & Revenue
+    const allInvoices = await BillingRepository.getInvoices(companyId)
+    const invoicesInPeriod = allInvoices.filter((i) => {
+      const d = i.invoice_date || i.created_at?.split('T')[0] || ''
+      return (!startDate || d >= startDate) && (!endDate || d <= endDate)
+    })
+    const invoicesCount = invoicesInPeriod.length
+    const invoiceRevenue = invoicesInPeriod.reduce((sum, i) => sum + Number(i.grand_total || 0), 0)
+
+    // Prior period invoices for trend
+    const curStartObj = new Date(startDate)
+    const periodDays = Math.max(1, Math.round((new Date(endDate).getTime() - curStartObj.getTime()) / (1000 * 60 * 60 * 24)))
+    const priorEndObj = new Date(curStartObj.getTime() - 24 * 60 * 60 * 1000)
+    const priorStartObj = new Date(priorEndObj.getTime() - (periodDays - 1) * 24 * 60 * 60 * 1000)
+    const priorStart = priorStartObj.toISOString().split('T')[0]
+    const priorEnd = priorEndObj.toISOString().split('T')[0]
+
+    const priorInvoices = allInvoices.filter((i) => {
+      const d = i.invoice_date || i.created_at?.split('T')[0] || ''
+      return d >= priorStart && d <= priorEnd
+    })
+    const priorRevenue = priorInvoices.reduce((sum, i) => sum + Number(i.grand_total || 0), 0)
+
+    // 3. Profit and Loss
+    const pnl = await this.getProfitAndLoss(companyId, startDate, endDate, branchId)
+    const priorPnl = await this.getProfitAndLoss(companyId, priorStart, priorEnd, branchId)
+
+    const monthlyRevenue = pnl.revenue.total > 0 ? pnl.revenue.total : Number(invoiceRevenue.toFixed(2))
+    const monthlyExpenses = pnl.operating_expenses.total
+    const monthlyGrossProfit = pnl.gross_profit
+    const monthlyNetProfit = Number((monthlyRevenue - monthlyExpenses).toFixed(2))
+    const profitMarginPercent = monthlyRevenue > 0 ? Number(((monthlyNetProfit / monthlyRevenue) * 100).toFixed(1)) : 0
+
+    // 4. Receivables Aging & Top Customer Dues
+    const ar = await this.getReceivablesAging(companyId)
+    const customers = await CustomerRepository.getCustomers(companyId).catch(() => [])
+    const custPhoneMap = new Map(customers.map((c) => [c.id, c.mobile || (c as any).phone || '']))
+
+    const custDueMap = new Map<string, { id: string; name: string; amount: number; maxOverdue: number }>()
+    for (const item of ar.items || []) {
+      const cid = item.party_id || item.party_name
+      const existing = custDueMap.get(cid)
+      if (existing) {
+        existing.amount += Number(item.due_amount || 0)
+        existing.maxOverdue = Math.max(existing.maxOverdue, Number(item.days_overdue || 0))
+      } else {
+        custDueMap.set(cid, {
+          id: item.party_id,
+          name: item.party_name,
+          amount: Number(item.due_amount || 0),
+          maxOverdue: Number(item.days_overdue || 0),
+        })
+      }
+    }
+
+    const topReceivables = Array.from(custDueMap.values())
+      .filter((c) => c.amount > 0)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5)
+      .map((c, idx) => ({
+        rank: idx + 1,
+        id: c.id,
+        name: c.name,
+        phone: custPhoneMap.get(c.id) || '',
+        amount: Number(c.amount.toFixed(2)),
+        daysOverdue: c.maxOverdue,
+        status: c.maxOverdue > 0 ? `${c.maxOverdue} days overdue` : 'Due today',
+        isOverdue: c.maxOverdue > 0,
+      }))
+
+    const customersDueCount = custDueMap.size
+
+    // 5. Payables Aging & Top Supplier Dues
+    const ap = await this.getPayablesAging(companyId)
+    const suppliers = await SupplierRepository.getSuppliers(companyId).catch(() => [])
+    const suppPhoneMap = new Map(suppliers.map((s) => [s.id, s.mobile || '']))
+
+    const suppDueMap = new Map<string, { id: string; name: string; amount: number; maxOverdue: number }>()
+    for (const item of ap.items || []) {
+      const sid = item.party_id || item.party_name
+      const existing = suppDueMap.get(sid)
+      if (existing) {
+        existing.amount += Number(item.due_amount || 0)
+        existing.maxOverdue = Math.max(existing.maxOverdue, Number(item.days_overdue || 0))
+      } else {
+        suppDueMap.set(sid, {
+          id: item.party_id,
+          name: item.party_name,
+          amount: Number(item.due_amount || 0),
+          maxOverdue: Number(item.days_overdue || 0),
+        })
+      }
+    }
+
+    const topPayables = Array.from(suppDueMap.values())
+      .filter((s) => s.amount > 0)
+      .sort((a, b) => b.amount - a.amount)
+      .slice(0, 5)
+      .map((s, idx) => ({
+        rank: idx + 1,
+        id: s.id,
+        name: s.name,
+        phone: suppPhoneMap.get(s.id) || '',
+        amount: Number(s.amount.toFixed(2)),
+        daysOverdue: s.maxOverdue,
+        status: s.maxOverdue > 0 ? `${s.maxOverdue} days overdue` : 'Due today',
+        isOverdue: s.maxOverdue > 0,
+      }))
+
+    const suppliersDueCount = suppDueMap.size
+
+    // 6. Expenses in Period
+    const expReport = await this.getExpenses(companyId, { startDate, endDate, branchId })
+    const expensesCount = (expReport.items || []).length
+
+    // 7. Transactions & Payments
+    const allTxns = await FinanceRepository.getTransactions(companyId, { branchId, status: 'POSTED' })
+    const txnsInPeriod = allTxns.filter((t) => {
+      const d = t.transaction_date || t.created_at?.split('T')[0] || ''
+      return (!startDate || d >= startDate) && (!endDate || d <= endDate)
+    })
+
+    let totalPaymentsReceived = 0
+    let paymentsCount = 0
+    let cashReceived = 0
+    let bankReceived = 0
+    let bkashReceived = 0
+    let nagadReceived = 0
+    let cardReceived = 0
+
+    const accSubtypeMap = new Map(accounts.map((a) => [a.id, a.account_subtype]))
+
+    for (const txn of txnsInPeriod) {
+      if (txn.transaction_type === 'CUSTOMER_PAYMENT') {
+        const amt = Number(txn.total_amount || 0)
+        totalPaymentsReceived += amt
+        paymentsCount++
+
+        for (const line of txn.lines || []) {
+          if (Number(line.debit || 0) > 0) {
+            const st = accSubtypeMap.get(line.account_id)
+            if (st === 'CASH') cashReceived += Number(line.debit)
+            else if (st === 'BANK') bankReceived += Number(line.debit)
+            else if (st === 'MFS') {
+              const acc = accounts.find((a) => a.id === line.account_id)
+              const nameLower = (acc?.name || '').toLowerCase()
+              if (nameLower.includes('nagad')) nagadReceived += Number(line.debit)
+              else bkashReceived += Number(line.debit)
+            } else {
+              cardReceived += Number(line.debit)
+            }
+          }
+        }
+      }
+    }
+
+    if (totalPaymentsReceived === 0 && invoicesInPeriod.length > 0) {
+      for (const inv of invoicesInPeriod) {
+        const p = Number(inv.paid_amount || 0)
+        if (p > 0) {
+          totalPaymentsReceived += p
+          paymentsCount++
+          cashReceived += p
+        }
+      }
+    }
+
+    const pbTotal = totalPaymentsReceived > 0 ? totalPaymentsReceived : 1
+    const paymentBreakdown = {
+      cash: Number(cashReceived.toFixed(2)),
+      bank: Number(bankReceived.toFixed(2)),
+      bkash: Number(bkashReceived.toFixed(2)),
+      nagad: Number(nagadReceived.toFixed(2)),
+      card: Number(cardReceived.toFixed(2)),
+      total: Number(totalPaymentsReceived.toFixed(2)),
+      cash_pct: totalPaymentsReceived > 0 ? Math.round((cashReceived / pbTotal) * 100) : 0,
+      bank_pct: totalPaymentsReceived > 0 ? Math.round((bankReceived / pbTotal) * 100) : 0,
+      bkash_pct: totalPaymentsReceived > 0 ? Math.round((bkashReceived / pbTotal) * 100) : 0,
+      nagad_pct: totalPaymentsReceived > 0 ? Math.round((nagadReceived / pbTotal) * 100) : 0,
+      card_pct: totalPaymentsReceived > 0 ? Math.round((cardReceived / pbTotal) * 100) : 0,
+    }
+
+    // 8. Trends
+    const calcTrend = (cur: number, prior: number) => {
+      if (prior === 0) return { percent: cur > 0 ? 100 : 0, isUp: cur >= 0 }
+      const diff = cur - prior
+      const pct = Math.abs(Math.round((diff / prior) * 100))
+      return { percent: pct, isUp: diff >= 0 }
+    }
+
+    const revenueTrend = calcTrend(monthlyRevenue, priorRevenue || priorPnl.revenue.total)
+    const expensesTrend = calcTrend(monthlyExpenses, priorPnl.operating_expenses.total)
+    const profitTrend = calcTrend(monthlyNetProfit, priorPnl.net_profit)
+
+    // 9. Daily Trends (for current period)
+    const dailyMap = new Map<number, { day: number; date: string; label: string; income: number; expense: number }>()
+    const startD = new Date(startDate)
+    const endD = new Date(endDate)
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    for (let d = new Date(startD); d <= endD; d.setDate(d.getDate() + 1)) {
+      const dayNum = d.getDate()
+      const dStr = d.toISOString().split('T')[0]
+      const label = `${dayNum} ${monthNames[d.getMonth()]}`
+      dailyMap.set(dayNum, { day: dayNum, date: dStr, label, income: 0, expense: 0 })
+    }
+
+    for (const inv of invoicesInPeriod) {
+      const invDate = inv.invoice_date || inv.created_at?.split('T')[0]
+      if (invDate) {
+        const dObj = new Date(invDate)
+        const dNum = dObj.getDate()
+        const entry = dailyMap.get(dNum)
+        if (entry) {
+          entry.income += Number(inv.grand_total || 0)
+        }
+      }
+    }
+
+    for (const exp of expReport.items || []) {
+      const expDate = exp.transaction_date || exp.created_at?.split('T')[0]
+      if (expDate) {
+        const dObj = new Date(expDate)
+        const dNum = dObj.getDate()
+        const entry = dailyMap.get(dNum)
+        if (entry) {
+          entry.expense += Number(exp.amount || 0)
+        }
+      }
+    }
+
+    const dailyTrends = Array.from(dailyMap.values()).sort((a, b) => a.day - b.day)
+
+    // 10. Recent Transactions
+    const recentTransactions = allTxns.slice(0, 10).map((t) => {
+      let isCredit = false
+      let color = 'slate'
+      let title = t.transaction_type.replace(/_/g, ' ')
+      if (t.transaction_type === 'CUSTOMER_PAYMENT') {
+        isCredit = true
+        color = 'emerald'
+        title = 'Payment Received'
+      } else if (t.transaction_type === 'EXPENSE') {
+        isCredit = false
+        color = 'rose'
+        title = 'Expense'
+      } else if (t.transaction_type === 'SUPPLIER_PAYMENT') {
+        isCredit = false
+        color = 'rose'
+        title = 'Supplier Payment'
+      } else if (t.transaction_type === 'ACCOUNT_TRANSFER') {
+        color = 'blue'
+        title = 'Bank Transfer'
+      } else if (t.transaction_type === 'SALES_INVOICE') {
+        isCredit = true
+        color = 'purple'
+        title = 'Invoice Created'
+      }
+
+      return {
+        id: t.id,
+        type: t.transaction_type,
+        title,
+        subtitle: t.reference_id || t.narration || 'System transaction',
+        amount: Number(t.total_amount || 0),
+        isCredit,
+        time: t.created_at ? new Date(t.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : t.transaction_date,
+        date: t.transaction_date,
+        color,
+      }
+    })
+
+    // 11. Monthly Summary Table (Past 4 months)
+    const monthlySummary: {
+      month: string
+      yearMonth: string
+      invoices: number
+      revenue: number
+      received: number
+      due: number
+      expenses: number
+      profit: number
+    }[] = []
+
+    for (let mOffset = 0; mOffset < 4; mOffset++) {
+      const targetMonthDate = new Date(today.getFullYear(), today.getMonth() - mOffset, 1)
+      const mYear = targetMonthDate.getFullYear()
+      const mMonth = targetMonthDate.getMonth()
+      const ym = `${mYear}-${String(mMonth + 1).padStart(2, '0')}`
+      const mLabel = `${monthNames[mMonth]} ${mYear}`
+      const mStart = `${ym}-01`
+      const mLastDay = new Date(mYear, mMonth + 1, 0).getDate()
+      const mEnd = `${ym}-${String(mLastDay).padStart(2, '0')}`
+
+      const mInvoices = allInvoices.filter((i) => {
+        const d = i.invoice_date || i.created_at?.split('T')[0] || ''
+        return d >= mStart && d <= mEnd
+      })
+
+      const mRev = mInvoices.reduce((s, i) => s + Number(i.grand_total || 0), 0)
+      const mRec = mInvoices.reduce((s, i) => s + Number(i.paid_amount || 0), 0)
+      const mDue = mInvoices.reduce((s, i) => s + Number(i.due_amount || 0), 0)
+
+      const mTxns = allTxns.filter((t) => {
+        const d = t.transaction_date || t.created_at?.split('T')[0] || ''
+        return d >= mStart && d <= mEnd && t.transaction_type === 'EXPENSE'
+      })
+      const mExp = mTxns.reduce((s, t) => s + Number(t.total_amount || 0), 0)
+      const mProf = Number((mRev - mExp).toFixed(2))
+
+      monthlySummary.push({
+        month: mLabel,
+        yearMonth: ym,
+        invoices: mInvoices.length,
+        revenue: Number(mRev.toFixed(2)),
+        received: Number(mRec.toFixed(2)),
+        due: Number(mDue.toFixed(2)),
+        expenses: Number(mExp.toFixed(2)),
+        profit: mProf,
+      })
     }
 
     return {
@@ -1572,10 +1914,27 @@ export class FinanceService {
       total_liquid_assets: Number((cashBal + bankBal + mfsBal).toFixed(2)),
       total_receivables: ar.total_receivable,
       total_payables: ap.total_payable,
-      monthly_revenue: pnl.revenue.total,
-      monthly_expenses: pnl.operating_expenses.total,
-      monthly_gross_profit: pnl.gross_profit,
-      monthly_net_profit: pnl.net_profit,
+      monthly_revenue: monthlyRevenue,
+      monthly_expenses: monthlyExpenses,
+      monthly_gross_profit: monthlyGrossProfit,
+      monthly_net_profit: monthlyNetProfit,
+      invoices_count: invoicesCount,
+      payments_count: paymentsCount,
+      customers_due_count: customersDueCount,
+      suppliers_due_count: suppliersDueCount,
+      expenses_count: expensesCount,
+      bank_accounts_count: bankAccountsCount,
+      profit_margin_percent: profitMarginPercent,
+      total_payments_received: Number(totalPaymentsReceived.toFixed(2)),
+      revenue_trend: revenueTrend,
+      expenses_trend: expensesTrend,
+      profit_trend: profitTrend,
+      payment_breakdown: paymentBreakdown,
+      daily_trends: dailyTrends,
+      monthly_summary: monthlySummary,
+      recent_transactions: recentTransactions,
+      top_receivables: topReceivables,
+      top_payables: topPayables,
     }
   }
 }

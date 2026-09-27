@@ -141,6 +141,59 @@ export default function AccountingPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [notification, setNotification] = useState<string | null>(null)
 
+  // Timeframe state
+  const [timeframe, setTimeframe] = useState<'this_month' | 'last_month' | 'this_quarter' | 'this_year' | 'all_time'>('this_month')
+  const [isTimeframeMenuOpen, setIsTimeframeMenuOpen] = useState(false)
+
+  const getDateRangeForTimeframe = (tf: string) => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = now.getMonth() // 0-indexed
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+    if (tf === 'last_month') {
+      const prevMonthDate = new Date(year, month - 1, 1)
+      const prevYear = prevMonthDate.getFullYear()
+      const prevMonth = prevMonthDate.getMonth()
+      const lastDay = new Date(prevYear, prevMonth + 1, 0).getDate()
+      const startStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-01`
+      const endStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      const label = `01 ${monthNames[prevMonth]} ${prevYear} - ${lastDay} ${monthNames[prevMonth]} ${prevYear}`
+      return { startDate: startStr, endDate: endStr, label, title: 'Last Month' }
+    }
+
+    if (tf === 'this_quarter') {
+      const qStartMonth = Math.floor(month / 3) * 3
+      const qEndMonth = qStartMonth + 2
+      const lastDay = new Date(year, qEndMonth + 1, 0).getDate()
+      const startStr = `${year}-${String(qStartMonth + 1).padStart(2, '0')}-01`
+      const endStr = `${year}-${String(qEndMonth + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+      const label = `01 ${monthNames[qStartMonth]} ${year} - ${lastDay} ${monthNames[qEndMonth]} ${year}`
+      return { startDate: startStr, endDate: endStr, label, title: 'This Quarter' }
+    }
+
+    if (tf === 'this_year') {
+      const startStr = `${year}-01-01`
+      const endStr = `${year}-12-31`
+      const label = `01 Jan ${year} - 31 Dec ${year}`
+      return { startDate: startStr, endDate: endStr, label, title: 'This Year' }
+    }
+
+    if (tf === 'all_time') {
+      const label = `All History`
+      return { startDate: '2020-01-01', endDate: `${year}-12-31`, label, title: 'All Time' }
+    }
+
+    // default: 'this_month'
+    const lastDay = new Date(year, month + 1, 0).getDate()
+    const startStr = `${year}-${String(month + 1).padStart(2, '0')}-01`
+    const endStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`
+    const label = `01 ${monthNames[month]} ${year} - ${lastDay} ${monthNames[month]} ${year}`
+    return { startDate: startStr, endDate: endStr, label, title: 'This Month' }
+  }
+
+  const activeRange = getDateRangeForTimeframe(timeframe)
+
   // Modals
   const [isSpendModalOpen, setIsSpendModalOpen] = useState(false)
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false)
@@ -158,21 +211,24 @@ export default function AccountingPage() {
     setTimeout(() => setNotification(null), 3500)
   }
 
-  const loadAllData = async () => {
+  const loadAllData = async (customStart?: string, customEnd?: string) => {
     try {
       setIsLoading(true)
+      const curStart = customStart !== undefined ? customStart : activeRange.startDate
+      const curEnd = customEnd !== undefined ? customEnd : activeRange.endDate
+
       const [accRes, dashRes, pnlRes, bsRes, cfRes, tbRes, glRes, arRes, apRes, jpRes, expRes] = await Promise.all([
         getAccountsAction().catch(() => ({ success: false, data: [] })),
-        getFinancialDashboardAction().catch(() => ({ success: false, data: null })),
-        getProfitAndLossAction().catch(() => ({ success: false, data: null })),
+        getFinancialDashboardAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
+        getProfitAndLossAction(curStart, curEnd).catch(() => ({ success: false, data: null })),
         getBalanceSheetAction().catch(() => ({ success: false, data: null })),
-        getCashFlowAction().catch(() => ({ success: false, data: null })),
+        getCashFlowAction(curStart, curEnd).catch(() => ({ success: false, data: null })),
         getTrialBalanceAction().catch(() => ({ success: false, data: null })),
-        getGeneralLedgerAction({ accountId: selectedLedgerAccountId || undefined }).catch(() => ({ success: false, data: [] })),
+        getGeneralLedgerAction({ accountId: selectedLedgerAccountId || undefined, startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: [] })),
         getReceivablesAgingAction().catch(() => ({ success: false, data: null })),
         getPayablesAgingAction().catch(() => ({ success: false, data: null })),
         getJobProfitabilityAction().catch(() => ({ success: false, data: [] })),
-        getExpensesAction().catch(() => ({ success: false, data: null })),
+        getExpensesAction({ startDate: curStart, endDate: curEnd }).catch(() => ({ success: false, data: null })),
       ])
 
       if (accRes && accRes.success && Array.isArray(accRes.data)) setAccounts(accRes.data)
@@ -194,10 +250,12 @@ export default function AccountingPage() {
   }
 
   useEffect(() => {
-    loadAllData()
+    const range = getDateRangeForTimeframe(timeframe)
+    loadAllData(range.startDate, range.endDate)
 
     const handleRealtimeSync = () => {
-      loadAllData()
+      const r = getDateRangeForTimeframe(timeframe)
+      loadAllData(r.startDate, r.endDate)
     }
 
     if (typeof window !== 'undefined') {
@@ -219,7 +277,7 @@ export default function AccountingPage() {
         window.removeEventListener('storage', handleRealtimeSync)
       }
     }
-  }, [selectedLedgerAccountId])
+  }, [timeframe, selectedLedgerAccountId])
 
   // Handlers for Modals
   const handleSpendMoney = async (data: any) => {
@@ -349,16 +407,45 @@ export default function AccountingPage() {
   const handleExportStatement = () => {
     try {
       const rows = [
-        ['Metric / Account', 'Category', 'Balance / Amount (BDT)'],
+        ['InkFlow ERP - Financial Statement & Dashboard Export'],
+        ['Company', company?.name || 'PrintERP Tenant'],
+        ['Timeframe', `${activeRange.title} (${activeRange.label})`],
+        ['Exported At', new Date().toLocaleString()],
+        [],
+        ['Metric / Account', 'Category', 'Amount (BDT)'],
+        ['Total Revenue', 'Income Statement', String(dashboardMetrics?.monthly_revenue || 0)],
+        ['Total Payments Received', 'Cash Flow', String(dashboardMetrics?.total_payments_received || 0)],
+        ['Total Due (Receivables)', 'Current Asset', String(dashboardMetrics?.total_receivables || 0)],
+        ['Total Expenses', 'Income Statement', String(dashboardMetrics?.monthly_expenses || 0)],
+        ['Net Profit', 'Income Statement', String(dashboardMetrics?.monthly_net_profit || 0)],
         ['Cash in Drawer', 'Liquid Asset', String(dashboardMetrics?.total_cash_balance || 0)],
         ['Bank Balances', 'Liquid Asset', String(dashboardMetrics?.total_bank_balance || 0)],
-        ['bKash / MFS Wallets', 'Liquid Asset', String(dashboardMetrics?.total_mfs_balance || 0)],
-        ['Customer Receivables (AR)', 'Current Asset', String(receivables?.total_receivable || 0)],
-        ['Supplier Payables (AP)', 'Current Liability', String(payables?.total_payable || 0)],
-        ['Monthly Net Profit', 'Income Statement', String(pnl?.net_profit || 0)],
-        ['Monthly Revenue', 'Income Statement', String(pnl?.revenue?.total || 0)],
-        ['Monthly OPEX Expenses', 'Income Statement', String(pnl?.operating_expenses?.total || 0)],
+        ['MFS Balances', 'Liquid Asset', String(dashboardMetrics?.total_mfs_balance || 0)],
+        ['Total Payables', 'Current Liability', String(dashboardMetrics?.total_payables || 0)],
+        [],
+        ['Payment Breakdown', 'Amount (BDT)', 'Percentage'],
+        ['Cash', String(dashboardMetrics?.payment_breakdown?.cash || 0), `${dashboardMetrics?.payment_breakdown?.cash_pct || 0}%`],
+        ['Bank Transfer', String(dashboardMetrics?.payment_breakdown?.bank || 0), `${dashboardMetrics?.payment_breakdown?.bank_pct || 0}%`],
+        ['bKash', String(dashboardMetrics?.payment_breakdown?.bkash || 0), `${dashboardMetrics?.payment_breakdown?.bkash_pct || 0}%`],
+        ['Nagad', String(dashboardMetrics?.payment_breakdown?.nagad || 0), `${dashboardMetrics?.payment_breakdown?.nagad_pct || 0}%`],
+        ['Card / SSL', String(dashboardMetrics?.payment_breakdown?.card || 0), `${dashboardMetrics?.payment_breakdown?.card_pct || 0}%`],
       ]
+
+      if (dashboardMetrics?.top_receivables && dashboardMetrics.top_receivables.length > 0) {
+        rows.push([])
+        rows.push(['Top Customer Receivables', 'Phone', 'Due Amount (BDT)', 'Status'])
+        for (const item of dashboardMetrics.top_receivables) {
+          rows.push([item.name, item.phone || '-', String(item.amount), item.status])
+        }
+      }
+
+      if (dashboardMetrics?.top_payables && dashboardMetrics.top_payables.length > 0) {
+        rows.push([])
+        rows.push(['Top Supplier Payables', 'Phone', 'Due Amount (BDT)', 'Status'])
+        for (const item of dashboardMetrics.top_payables) {
+          rows.push([item.name, item.phone || '-', String(item.amount), item.status])
+        }
+      }
 
       const csvContent =
         'data:text/csv;charset=utf-8,\uFEFF' +
@@ -368,7 +455,7 @@ export default function AccountingPage() {
       link.setAttribute('href', encodedUri)
       link.setAttribute(
         'download',
-        `financial_summary_${new Date().toISOString().split('T')[0]}.csv`
+        `financial_statement_${timeframe}_${new Date().toISOString().split('T')[0]}.csv`
       )
       document.body.appendChild(link)
       link.click()
@@ -422,16 +509,55 @@ export default function AccountingPage() {
         {/* Header Controls */}
         <div className="flex flex-wrap items-center gap-2.5">
           {/* Date Range Picker Display */}
-          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer">
+          <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>01 Sep 2026 - 30 Sep 2026</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
+            <span>{activeRange.label}</span>
           </div>
 
           {/* Timeframe Dropdown */}
-          <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer">
-            <span>This Month</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsTimeframeMenuOpen(!isTimeframeMenuOpen)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 shadow-2xs hover:bg-slate-50 dark:hover:bg-slate-800/60 cursor-pointer transition-colors"
+            >
+              <span>{activeRange.title}</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 ml-1 transition-transform ${isTimeframeMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isTimeframeMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-20"
+                  onClick={() => setIsTimeframeMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-1.5 w-44 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-30 py-1 text-xs">
+                  {[
+                    { id: 'this_month', label: 'This Month' },
+                    { id: 'last_month', label: 'Last Month' },
+                    { id: 'this_quarter', label: 'This Quarter' },
+                    { id: 'this_year', label: 'This Year' },
+                    { id: 'all_time', label: 'All Time' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        setTimeframe(item.id as any)
+                        setIsTimeframeMenuOpen(false)
+                      }}
+                      className={`w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors font-medium ${
+                        timeframe === item.id
+                          ? 'text-blue-600 dark:text-blue-400 font-bold bg-blue-50/50 dark:bg-blue-950/20'
+                          : 'text-slate-700 dark:text-slate-300'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Export Action Button */}
@@ -447,12 +573,16 @@ export default function AccountingPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={loadAllData}
+            onClick={() => {
+              const r = getDateRangeForTimeframe(timeframe)
+              loadAllData(r.startDate, r.endDate)
+            }}
             disabled={isLoading}
             className="border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 text-xs font-semibold h-9 px-3 gap-1.5 rounded-xl cursor-pointer"
             title="Refresh Finance Data"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+            <span className="hidden sm:inline">Refresh</span>
           </Button>
         </div>
       </div>
