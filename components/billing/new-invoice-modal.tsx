@@ -1437,10 +1437,6 @@ export function NewInvoiceModal({
       setErrorMessage('Phone Number is required.')
       return null
     }
-    if (!address.trim()) {
-      setErrorMessage('Address is required.')
-      return null
-    }
     if (items.length === 0) {
       setErrorMessage('At least one item is required.')
       return null
@@ -1698,9 +1694,92 @@ export function NewInvoiceModal({
           </div>
         </div>
       }
-      hideFooter
+      footerClassName="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3"
+      footer={
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isSubmitting}
+            className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+          >
+            Cancel
+          </Button>
+
+          <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+            {/* Direct Print Button */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleSaveAndPrint}
+              disabled={isSubmitting}
+              className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5 cursor-pointer"
+            >
+              <Printer className="h-4 w-4" />
+              <span>Save & Print PDF</span>
+            </Button>
+
+            {/* Send via WhatsApp / Email Dropdown */}
+            <div className="relative" ref={sendMenuRef}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowSendMenu(!showSendMenu)}
+                disabled={isSubmitting}
+                className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5 cursor-pointer"
+              >
+                <Send className="h-4 w-4" />
+                <span>Save & Send</span>
+                <ChevronDown className="h-3.5 w-3.5" />
+              </Button>
+
+              {showSendMenu && (
+                <div className="absolute right-0 bottom-full mb-1.5 w-52 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl py-1 z-50 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAndSend('whatsapp')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
+                  >
+                    <Smartphone className="h-4 w-4 text-emerald-600" />
+                    <span>Send via WhatsApp</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleSaveAndSend('email')}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
+                  >
+                    <Mail className="h-4 w-4 text-blue-600" />
+                    <span>Send PDF via Email</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Primary Save Button */}
+            <Button
+              type="button"
+              onClick={handleSaveOnly}
+              disabled={isSubmitting}
+              className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
+            >
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Saving Invoice...</span>
+                </>
+              ) : (
+                <>
+                  <Receipt className="h-4 w-4" />
+                  <span>Save Invoice</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      }
     >
-      <div className="space-y-4 pt-1 pb-4 max-h-[82vh] overflow-y-auto pr-1">
+      <div className="space-y-4 pt-1 pb-2">
         {/* ERROR BANNER */}
         {errorMessage && (
           <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-xs text-rose-900 dark:text-rose-200 flex items-start gap-2 animate-in fade-in-0">
@@ -1881,14 +1960,13 @@ export function NewInvoiceModal({
             {/* Row 2: [Billing Address (2 cols)] [Email (1 col)] */}
             <div className="md:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
-                Billing Address <span className="text-rose-500">*</span>
+                Billing Address (Optional)
               </Label>
               <Input
                 placeholder="Full address for delivery & invoice"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 className="text-xs h-9"
-                required
               />
             </div>
 
@@ -3032,7 +3110,7 @@ export function NewInvoiceModal({
                     type="number"
                     value={discountAmount || ''}
                     onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
-                    className="h-8.5 text-xs font-mono font-bold text-right"
+                    className="h-8.5 text-xs font-mono font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0.00"
                     min={0}
                   />
@@ -3050,7 +3128,7 @@ export function NewInvoiceModal({
                       type="number"
                       value={vatPercentage || ''}
                       onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-                      className="w-8 h-6 text-2xs font-mono font-bold text-center bg-transparent focus:outline-none"
+                      className="w-8 h-6 text-2xs font-mono font-bold text-center bg-transparent focus:outline-none no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="0"
                       min={0}
                       max={100}
@@ -3075,31 +3153,9 @@ export function NewInvoiceModal({
 
               {/* Advance */}
               <div className="grid grid-cols-12 items-center gap-2">
-                <div className="col-span-5 flex items-center gap-1">
-                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
-                    {tBilingual('Advance', 'অগ্রিম')}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdvancePercentage(50)
-                      setAdvanceAmount(Math.round(grandTotal * 0.5))
-                    }}
-                    className="px-1 py-0.5 rounded text-3xs font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer"
-                  >
-                    50%
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAdvancePercentage(100)
-                      setAdvanceAmount(grandTotal)
-                    }}
-                    className="px-1 py-0.5 rounded text-3xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer"
-                  >
-                    100%
-                  </button>
-                </div>
+                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  {tBilingual('Advance', 'অগ্রিম')}
+                </span>
                 <div className="col-span-7">
                   <Input
                     type="number"
@@ -3111,7 +3167,7 @@ export function NewInvoiceModal({
                         setAdvancePercentage(Math.round((val / grandTotal) * 100))
                       }
                     }}
-                    className="h-8.5 text-xs font-mono font-bold text-right"
+                    className="h-8.5 text-xs font-mono font-bold text-right no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     placeholder="0.00"
                     min={0}
                     max={grandTotal}
@@ -3148,93 +3204,6 @@ export function NewInvoiceModal({
               />
             </div>
           )}
-        </div>
-      </div>
-
-      {/* =========================================================================
-          STANDARDIZED MODAL BOTTOM ACTION BAR
-         ========================================================================= */}
-      <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => onOpenChange(false)}
-          disabled={isSubmitting}
-          className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-        >
-          Cancel
-        </Button>
-
-        <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
-          {/* Direct Print Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleSaveAndPrint}
-            disabled={isSubmitting}
-            className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 gap-1.5"
-          >
-            <Printer className="h-4 w-4" />
-            <span>Save & Print PDF</span>
-          </Button>
-
-          {/* Send via WhatsApp / Email Dropdown */}
-          <div className="relative" ref={sendMenuRef}>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowSendMenu(!showSendMenu)}
-              disabled={isSubmitting}
-              className="h-10 px-4 rounded-xl font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 gap-1.5"
-            >
-              <Send className="h-4 w-4" />
-              <span>Save & Send</span>
-              <ChevronDown className="h-3.5 w-3.5" />
-            </Button>
-
-            {showSendMenu && (
-              <div className="absolute right-0 bottom-full mb-1 w-52 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xl py-1 z-50 text-xs">
-                <button
-                  type="button"
-                  onClick={() => handleSaveAndSend('whatsapp')}
-                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
-                >
-                  <Smartphone className="h-4 w-4 text-emerald-600" />
-                  <span>Send via WhatsApp</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleSaveAndSend('email')}
-                  className="w-full text-left px-3.5 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer"
-                >
-                  <Mail className="h-4 w-4 text-blue-600" />
-                  <span>Send PDF via Email</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-
-
-          {/* Primary Save Button */}
-          <Button
-            type="button"
-            onClick={handleSaveOnly}
-            disabled={isSubmitting}
-            className="h-10 px-5 rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs flex items-center gap-2"
-          >
-            {isSubmitting ? (
-              <>
-                <RefreshCw className="h-4 w-4 animate-spin" />
-                <span>Saving Invoice...</span>
-              </>
-            ) : (
-              <>
-                <Receipt className="h-4 w-4" />
-                <span>Save Invoice</span>
-              </>
-            )}
-          </Button>
         </div>
       </div>
     </ModalDialog>

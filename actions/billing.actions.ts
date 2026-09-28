@@ -210,9 +210,6 @@ export async function createInvoiceAction(
       if (!newCust.mobile || !newCust.mobile.trim()) {
         return { success: false, error: 'Phone Number is required.' }
       }
-      if (!newCust.address || !newCust.address.trim()) {
-        return { success: false, error: 'Address is required.' }
-      }
 
       if (newCust.save_customer !== false) {
         const dupCheck = await CrmService.findDuplicates(
@@ -230,7 +227,7 @@ export async function createInvoiceAction(
           resolvedCustomerId = exactMatch.id
           customerName = exactMatch.name
           customerPhone = exactMatch.mobile
-          customerAddress = exactMatch.address || newCust.address
+          customerAddress = exactMatch.address || newCust.address || ''
           customerEmail = exactMatch.email || newCust.email || null
         } else {
           const createdCust = await CustomerRepository.createCustomer({
@@ -239,7 +236,7 @@ export async function createInvoiceAction(
             company_name: newCust.company_name?.trim() || null,
             mobile: newCust.mobile.trim(),
             whatsapp: newCust.whatsapp?.trim() || null,
-            address: newCust.address.trim(),
+            address: newCust.address ? newCust.address.trim() : null,
             customer_type: newCust.customer_type || 'regular',
             email: newCust.email?.trim().toLowerCase() || null,
           })
@@ -252,7 +249,7 @@ export async function createInvoiceAction(
       } else {
         customerName = newCust.name.trim()
         customerPhone = newCust.mobile.trim()
-        customerAddress = newCust.address.trim()
+        customerAddress = newCust.address ? newCust.address.trim() : ''
         customerEmail = newCust.email || null
       }
     }

@@ -1742,9 +1742,60 @@ export function NewQuotationModal({
             </div>
           </div>
         }
-        hideFooter
+        footerClassName="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3"
+        footer={
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting || isSending}
+              className="w-full sm:w-auto h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+            >
+              Cancel
+            </Button>
+
+            <div className="flex flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleSaveAsDraft}
+                disabled={isSubmitting || isSending}
+                className="h-10 px-4 rounded-xl font-bold border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+              >
+                {isSubmitting && submitActionType === 'draft' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <span>Saving...</span>
+                  </>
+                ) : (
+                  'Save as Draft'
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleCreateQuotation}
+                disabled={isSubmitting || isSending}
+                className="h-10 px-5 rounded-xl font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs flex items-center gap-2 cursor-pointer"
+              >
+                {isSubmitting && submitActionType === 'create' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    <span>Create Quotation</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        }
       >
-        <div className="space-y-4 max-h-[80vh] overflow-y-auto pr-1 pb-4 text-slate-900 dark:text-slate-100">
+        <div className="space-y-4 pt-1 pb-2 text-slate-900 dark:text-slate-100">
           {/* Submission Alerts */}
           {submitError && (
             <div className="p-3 bg-red-50 text-red-900 dark:bg-red-950/40 dark:text-red-200 rounded-xl border border-red-200 text-xs flex items-center gap-2 animate-in fade-in-0">
@@ -2718,7 +2769,7 @@ export function NewQuotationModal({
                           }
                         }}
                         placeholder="0"
-                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       />
                       <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
                         {formatBDT(effectiveDiscountAmount)}
@@ -2766,81 +2817,39 @@ export function NewQuotationModal({
             </div>
           </div>
 
-          {/* =========================================================================
-              BOTTOM BAR: OPTIONS & ACTIONS (SAME AS REFERENCE IMAGE 2)
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">Options</span>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 dark:text-slate-300">
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={sendToCustomer}
-                    onChange={(e) => setSendToCustomer(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span>Send quotation to customer (WhatsApp/Email)</span>
-                </label>
+          {/* Options Card */}
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 shadow-xs">
+            <span className="text-xs font-bold text-slate-900 dark:text-white">Options</span>
+            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 dark:text-slate-300">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={sendToCustomer}
+                  onChange={(e) => setSendToCustomer(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span>Send quotation to customer (WhatsApp/Email)</span>
+              </label>
 
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={createJobOrder}
-                    onChange={(e) => setCreateJobOrder(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span>Create job order(s) after approval</span>
-                </label>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={createJobOrder}
+                  onChange={(e) => setCreateJobOrder(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span>Create job order(s) after approval</span>
+              </label>
 
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <input
-                    type="checkbox"
-                    checked={printPdfAfterSaving}
-                    onChange={(e) => setPrintPdfAfterSaving(e.target.checked)}
-                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                  />
-                  <span>Print PDF after saving</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 self-end md:self-auto">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleSaveAsDraft}
-                disabled={isSubmitting || isSending}
-                className="text-xs h-9 px-4 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer font-medium"
-              >
-                {isSubmitting && submitActionType === 'draft' ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save as Draft'
-                )}
-              </Button>
-
-              <Button
-                type="button"
-                onClick={handleCreateQuotation}
-                disabled={isSubmitting || isSending}
-                className="text-xs h-9 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
-              >
-                {isSubmitting && submitActionType === 'create' ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <FileText className="h-4 w-4" />
-                    Create Quotation
-                  </>
-                )}
-              </Button>
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={printPdfAfterSaving}
+                  onChange={(e) => setPrintPdfAfterSaving(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                />
+                <span>Print PDF after saving</span>
+              </label>
             </div>
           </div>
         </div>
@@ -2915,7 +2924,7 @@ export function NewQuotationModal({
                 placeholder="0"
                 value={quickAddPrice || ''}
                 onChange={(e) => setQuickAddPrice(parseFloat(e.target.value) || 0)}
-                className="text-xs h-9 font-mono font-bold"
+                className="text-xs h-9 font-mono font-bold no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
 
@@ -2928,7 +2937,7 @@ export function NewQuotationModal({
                 placeholder="0"
                 value={quickAddMinPrice || ''}
                 onChange={(e) => setQuickAddMinPrice(parseFloat(e.target.value) || 0)}
-                className="text-xs h-9 font-mono text-amber-700 dark:text-amber-400"
+                className="text-xs h-9 font-mono text-amber-700 dark:text-amber-400 no-spinner [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>

@@ -661,3 +661,16 @@ input[data-numeric],
   opacity: 0.4 !important;
 }
 
+/* Disable spin buttons on number inputs */
+input.no-spinner::-webkit-outer-spin-button,
+input.no-spinner::-webkit-inner-spin-button,
+input.no-spinners::-webkit-outer-spin-button,
+input.no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input.no-spinner,
+input.no-spinners {
+  -moz-appearance: textfield;
+}
