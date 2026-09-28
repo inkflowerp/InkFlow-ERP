@@ -224,301 +224,16 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
           CASE A: SINGLE-JOB INVOICE CARD
          ========================================================================= */}
       {isSingleJob && singleJob ? (
-        <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-          {/* Left Column: Chevron, Icon, Invoice & Customer */}
-          <div className="flex items-center gap-3 min-w-[240px]">
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
-              title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-5 h-5 text-blue-600" />
-              ) : (
-                <ChevronRight className="w-5 h-5 text-blue-600" />
-              )}
-            </button>
-
-            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
-              <FileText className="w-5 h-5" />
-            </div>
-
-            <div className="min-w-0">
-              <Link
-                href={invoiceHref}
-                className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5"
-              >
-                <span>{invoiceNumber}</span>
-              </Link>
-              <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
-                {customerName}
-              </div>
-              <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
-                {customerPhone && (
-                  <span className="flex items-center gap-1 font-mono">
-                    <Phone className="w-3 h-3 text-slate-400" />
-                    {customerPhone}
-                  </span>
-                )}
-                <span className="flex items-center gap-1">
-                  <Calendar className="w-3 h-3 text-slate-400" />
-                  {invoiceDate || '—'}
-                </span>
-              </div>
-            </div>
-
-            <Badge
-              variant="outline"
-              className="ml-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs px-2.5 py-0.5 rounded-full border-none"
-            >
-              1 Job
-            </Badge>
-          </div>
-
-          {/* Middle Column: Product Title & Specs */}
-          <div className="flex-1 lg:px-4 min-w-0">
-            <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
-              {singleJobSpecs?.serviceName || singleJob.title || singleJob.product_name || 'Design Product'}
-            </div>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400 mt-1 font-mono">
-              <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold" title={singleJobSpecs?.material}>
-                <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                <span className="truncate max-w-[200px]">{singleJobSpecs?.material}</span>
-              </span>
-              <span className="text-slate-300 dark:text-slate-700">·</span>
-              <span className="text-slate-700 dark:text-slate-300 font-semibold">
-                {singleJobSpecs?.size}
-              </span>
-              <span className="text-slate-300 dark:text-slate-700">·</span>
-              <span className="text-slate-700 dark:text-slate-300 font-semibold">
-                {singleJobSpecs?.quantity}
-              </span>
-              {singleJobSpecs?.finishing && singleJobSpecs.finishing !== 'None' && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-700">·</span>
-                  <span className="text-amber-700 dark:text-amber-400 font-semibold truncate max-w-[150px]" title={singleJobSpecs?.finishing}>
-                    ✨ {singleJobSpecs.finishing}
-                  </span>
-                </>
-              )}
-              {singleJobSpecs?.addOn && singleJobSpecs.addOn !== 'None' && (
-                <>
-                  <span className="text-slate-300 dark:text-slate-700">·</span>
-                  <span className="text-indigo-700 dark:text-indigo-400 font-semibold truncate max-w-[150px]" title={singleJobSpecs?.addOn}>
-                    ➕ {singleJobSpecs.addOn}
-                  </span>
-                </>
-              )}
-            </div>
-          </div>
-
-          {/* Right Column: Status & Due Date */}
-          <div className="flex items-center gap-4 shrink-0">
-            <div className="text-right">
-              <div className="flex justify-end">{renderStatusBadge(singleJob.status)}</div>
-              <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 font-mono">
-                <Calendar className="w-3 h-3 text-slate-400" />
-                <span>{displayDueDate}</span>
-              </div>
-              {dueText ? (
-                <div className="text-2xs font-bold text-rose-600 dark:text-rose-400 text-right">
-                  {dueText}
-                </div>
-              ) : null}
-            </div>
-
-            {/* Dynamic Progressive Workflow Action Button & Timer */}
-            <div className="flex items-center gap-2 relative">
-              {singleJob.status === 'approved' || (singleJob.status as string) === 'sent_to_production' || (singleJob.status as string) === 'completed' ? (
-                <>
-                  <DesignTimerBadge
-                    startedAt={singleJob.started_at}
-                    completedAt={singleJob.completed_at}
-                    durationSeconds={singleJob.duration_seconds}
-                    isRunning={false}
-                  />
-                  <Button
-                    size="sm"
-                    disabled
-                    className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default"
-                  >
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Sent to Production</span>
-                  </Button>
-                </>
-              ) : singleJob.status === 'customer_approval' || (singleJob as any).is_design_completed ? (
-                <>
-                  <DesignTimerBadge
-                    startedAt={singleJob.started_at}
-                    completedAt={singleJob.completed_at}
-                    durationSeconds={singleJob.duration_seconds}
-                    isRunning={false}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => onConfirmToProduction(singleJob)}
-                    className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                  >
-                    <Send className="w-3.5 h-3.5" />
-                    <span>Send to Production</span>
-                  </Button>
-                </>
-              ) : singleJob.status === 'designing' || (singleJob.status as string) === 'in_progress' ? (
-                <>
-                  <DesignTimerBadge
-                    startedAt={singleJob.started_at}
-                    isRunning={true}
-                  />
-                  <Button
-                    size="sm"
-                    onClick={() => onCompleteDesign(singleJob)}
-                    className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                  >
-                    <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                    <span>Design Complete</span>
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  size="sm"
-                  onClick={() => onStartDesign(singleJob)}
-                  className="h-8 px-3.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
-                >
-                  <Play className="w-3 h-3 fill-current" />
-                  <span>Start Design</span>
-                </Button>
-              )}
-
-              {/* 3-dots Menu Button */}
-              <div className="relative">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() =>
-                    setActiveMenuJobId(activeMenuJobId === singleJob.id ? null : singleJob.id)
-                  }
-                  className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </Button>
-
-                {activeMenuJobId === singleJob.id && (
-                  <div
-                    className="absolute right-0 top-9 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-30 py-1 text-xs"
-                    onMouseLeave={() => setActiveMenuJobId(null)}
-                  >
-                    <Link
-                      href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
-                    >
-                      <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
-                      <span>Open Studio Workbench</span>
-                    </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMenuJobId(null)
-                        onOpenWhatsApp(singleJob, 'proof')
-                      }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-emerald-600"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Send WhatsApp Proof</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMenuJobId(null)
-                        onOpenLightbox(singleJob)
-                      }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>View Full Artwork</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMenuJobId(null)
-                        onRequestRevision(singleJob)
-                      }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-rose-600"
-                    >
-                      <AlertCircle className="w-3.5 h-3.5" />
-                      <span>Request Revision</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setActiveMenuJobId(null)
-                        onOpenPreflightModal(singleJob)
-                      }}
-                      className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-purple-600"
-                    >
-                      <Sliders className="w-3.5 h-3.5" />
-                      <span>Preflight Quality Check</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {isExpanded && singleJobSpecs && (
-            <div className="px-5 pb-5 pt-1 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
-              <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 text-xs font-mono space-y-2 mt-3">
-                <div className="text-2xs font-bold uppercase tracking-wider text-slate-500">
-                  {tBilingual('Technical Specifications (6-Field Specs)', 'টেকনিক্যাল স্পেসিফিকেশন (৬-ফিল্ড স্পেক্স)')}:
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Service name:', 'সার্ভিসের নাম:')}</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.serviceName}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Material name:', 'মেটেরিয়াল নাম:')}</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.material}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Size:', 'সাইজ:')}</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.size}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Quantity:', 'পরিমাণ:')}</span>
-                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.quantity}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
-                    <span className={`font-semibold break-words ${singleJobSpecs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.finishing}</span>
-                  </div>
-                  <div className="flex items-baseline gap-1.5 min-w-0">
-                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
-                    <span className={`font-semibold break-words ${singleJobSpecs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.addOn}</span>
-                  </div>
-                </div>
-                {singleJob.instructions && (
-                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400">
-                    <span className="font-semibold text-slate-500">{tBilingual('Instructions / Notes:', 'নির্দেশনা / নোট:')}</span> {singleJob.instructions}
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        /* =========================================================================
-            CASE B: MULTI-JOB INVOICE CARD (e.g. INV-000125, INV-000127, INV-000130)
-           ========================================================================= */
         <div>
-          {/* Header Row */}
-          <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/80">
-            {/* Left: Chevron, Icon, Invoice & Customer */}
-            <div className="flex items-center gap-3 min-w-[240px]">
+          {/* Main Row */}
+          <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            {/* Left Column: Chevron, Icon, Invoice & Customer */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+                className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+                title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
               >
                 {isExpanded ? (
                   <ChevronDown className="w-5 h-5 text-blue-600" />
@@ -534,14 +249,14 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               <div className="min-w-0">
                 <Link
                   href={invoiceHref}
-                  className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5"
+                  className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
                 >
                   <span>{invoiceNumber}</span>
                 </Link>
-                <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5">
+                <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5 max-w-[170px]" title={customerName}>
                   {customerName}
                 </div>
-                <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5">
+                <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
                   {customerPhone && (
                     <span className="flex items-center gap-1 font-mono">
                       <Phone className="w-3 h-3 text-slate-400" />
@@ -557,7 +272,302 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
 
               <Badge
                 variant="outline"
-                className="ml-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs px-2.5 py-0.5 rounded-full border-none"
+                className="ml-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0"
+              >
+                1 Job
+              </Badge>
+            </div>
+
+            {/* Middle Column: Product Title & Specs */}
+            <div className="flex-1 lg:px-4 min-w-0">
+              <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                {singleJobSpecs?.serviceName || singleJob.title || singleJob.product_name || 'Design Product'}
+              </div>
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600 dark:text-slate-400 mt-1 font-mono">
+                <span className="inline-flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap" title={singleJobSpecs?.material}>
+                  <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <span className="truncate max-w-[220px]">{singleJobSpecs?.material}</span>
+                </span>
+                <span className="text-slate-300 dark:text-slate-700 select-none">·</span>
+                <span className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">
+                  {singleJobSpecs?.size}
+                </span>
+                <span className="text-slate-300 dark:text-slate-700 select-none">·</span>
+                <span className="text-slate-700 dark:text-slate-300 font-semibold whitespace-nowrap">
+                  {singleJobSpecs?.quantity}
+                </span>
+                {singleJobSpecs?.finishing && singleJobSpecs.finishing !== 'None' && (
+                  <>
+                    <span className="text-slate-300 dark:text-slate-700 select-none">·</span>
+                    <span className="text-amber-700 dark:text-amber-400 font-semibold whitespace-nowrap truncate max-w-[150px]" title={singleJobSpecs?.finishing}>
+                      ✨ {singleJobSpecs.finishing}
+                    </span>
+                  </>
+                )}
+                {singleJobSpecs?.addOn && singleJobSpecs.addOn !== 'None' && (
+                  <>
+                    <span className="text-slate-300 dark:text-slate-700 select-none">·</span>
+                    <span className="text-indigo-700 dark:text-indigo-400 font-semibold whitespace-nowrap truncate max-w-[150px]" title={singleJobSpecs?.addOn}>
+                      ➕ {singleJobSpecs.addOn}
+                    </span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Status & Due Date */}
+            <div className="flex items-center gap-4 shrink-0">
+              <div className="text-right whitespace-nowrap">
+                <div className="flex justify-end">{renderStatusBadge(singleJob.status)}</div>
+                <div className="flex items-center justify-end gap-1 text-xs text-slate-700 dark:text-slate-300 mt-1 font-mono whitespace-nowrap">
+                  <Calendar className="w-3 h-3 text-slate-400" />
+                  <span>{displayDueDate}</span>
+                </div>
+                {dueText ? (
+                  <div className="text-2xs font-bold text-rose-600 dark:text-rose-400 text-right whitespace-nowrap">
+                    {dueText}
+                  </div>
+                ) : null}
+              </div>
+
+              {/* Dynamic Progressive Workflow Action Button & Timer */}
+              <div className="flex items-center gap-2 relative">
+                {singleJob.status === 'approved' || (singleJob.status as string) === 'sent_to_production' || (singleJob.status as string) === 'completed' ? (
+                  <>
+                    <DesignTimerBadge
+                      startedAt={singleJob.started_at}
+                      completedAt={singleJob.completed_at}
+                      durationSeconds={singleJob.duration_seconds}
+                      isRunning={false}
+                    />
+                    <Button
+                      size="sm"
+                      disabled
+                      className="h-8 px-3.5 text-xs bg-emerald-600/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold rounded-lg flex items-center gap-1.5 cursor-default"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Sent to Production</span>
+                    </Button>
+                  </>
+                ) : singleJob.status === 'customer_approval' || (singleJob as any).is_design_completed ? (
+                  <>
+                    <DesignTimerBadge
+                      startedAt={singleJob.started_at}
+                      completedAt={singleJob.completed_at}
+                      durationSeconds={singleJob.duration_seconds}
+                      isRunning={false}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => onConfirmToProduction(singleJob)}
+                      className="h-8 px-3.5 text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send to Production</span>
+                    </Button>
+                  </>
+                ) : singleJob.status === 'designing' || (singleJob.status as string) === 'in_progress' ? (
+                  <>
+                    <DesignTimerBadge
+                      startedAt={singleJob.started_at}
+                      isRunning={true}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => onCompleteDesign(singleJob)}
+                      className="h-8 px-3.5 text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                      <span>Design Complete</span>
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => onStartDesign(singleJob)}
+                    className="h-8 px-3.5 text-xs bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-xs flex items-center gap-1.5 transition-transform active:scale-[0.98] cursor-pointer"
+                  >
+                    <Play className="w-3 h-3 fill-current" />
+                    <span>Start Design</span>
+                  </Button>
+                )}
+
+                {/* 3-dots Menu Button */}
+                <div className="relative">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      setActiveMenuJobId(activeMenuJobId === singleJob.id ? null : singleJob.id)
+                    }
+                    className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
+                  >
+                    <MoreVertical className="w-4 h-4" />
+                  </Button>
+
+                  {activeMenuJobId === singleJob.id && (
+                    <div
+                      className="absolute right-0 top-9 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-30 py-1 text-xs"
+                      onMouseLeave={() => setActiveMenuJobId(null)}
+                    >
+                      <Link
+                        href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+                        <span>Open Studio Workbench</span>
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveMenuJobId(null)
+                          onOpenWhatsApp(singleJob, 'proof')
+                        }}
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-emerald-600"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Send WhatsApp Proof</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveMenuJobId(null)
+                          onOpenLightbox(singleJob)
+                        }}
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-slate-700 dark:text-slate-300"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Full Artwork</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveMenuJobId(null)
+                          onRequestRevision(singleJob)
+                        }}
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-rose-600"
+                      >
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        <span>Request Revision</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveMenuJobId(null)
+                          onOpenPreflightModal(singleJob)
+                        }}
+                        className="w-full text-left px-3 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 text-purple-600"
+                      >
+                        <Sliders className="w-3.5 h-3.5" />
+                        <span>Preflight Quality Check</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Technical Specifications (6-Field Specs) Panel - Rendered full width BELOW the row */}
+          {isExpanded && singleJobSpecs && (
+            <div className="px-5 pb-5 pt-0 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 text-xs font-mono space-y-3 mt-3 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+                  <div className="text-2xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                    <Sliders className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{tBilingual('Technical Specifications (6-Field Specs)', 'টেকনিক্যাল স্পেসিফিকেশন (৬-ফিল্ড স্পেক্স)')}:</span>
+                  </div>
+                  <span className="text-2xs text-slate-400 font-sans">
+                    {invoiceNumber} · {singleJob.title || singleJob.product_name}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-2.5">
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Service name:', 'সার্ভিসের নাম:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.serviceName}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Material name:', 'মেটেরিয়াল নাম:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.material}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Size:', 'সাইজ:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.size}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Quantity:', 'পরিমাণ:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.quantity}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.finishing}</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.addOn}</span>
+                  </div>
+                </div>
+                {singleJob.instructions && (
+                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-slate-500">{tBilingual('Instructions / Notes:', 'নির্দেশনা / নোট:')}</span> {singleJob.instructions}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        /* =========================================================================
+            CASE B: MULTI-JOB INVOICE CARD (e.g. INV-000125, INV-000127, INV-000130)
+           ========================================================================= */
+        <div>
+          {/* Header Row */}
+          <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800/80">
+            {/* Left: Chevron, Icon, Invoice & Customer */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer p-1 -ml-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="w-5 h-5 text-blue-600" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-blue-600" />
+                )}
+              </button>
+
+              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
+                <FileText className="w-5 h-5" />
+              </div>
+
+              <div className="min-w-0">
+                <Link
+                  href={invoiceHref}
+                  className="font-mono text-sm font-bold text-slate-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+                >
+                  <span>{invoiceNumber}</span>
+                </Link>
+                <div className="font-bold text-xs text-slate-900 dark:text-slate-100 truncate mt-0.5 max-w-[170px]" title={customerName}>
+                  {customerName}
+                </div>
+                <div className="flex items-center gap-2.5 text-2xs text-slate-500 dark:text-slate-400 mt-0.5 whitespace-nowrap">
+                  {customerPhone && (
+                    <span className="flex items-center gap-1 font-mono">
+                      <Phone className="w-3 h-3 text-slate-400" />
+                      {customerPhone}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3 text-slate-400" />
+                    {invoiceDate || '—'}
+                  </span>
+                </div>
+              </div>
+
+              <Badge
+                variant="outline"
+                className="ml-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold text-xs px-2.5 py-0.5 rounded-full border-none whitespace-nowrap shrink-0"
               >
                 {jobs.length} Jobs
               </Badge>
