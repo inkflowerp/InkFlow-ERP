@@ -28,7 +28,45 @@ export class OrderRepository {
           if (error) {
             throw new Error(`Failed to fetch orders: ${error.message}`)
           }
-          return (data || []) as unknown as SalesOrderRecord[]
+          const orders = (data || []) as unknown as SalesOrderRecord[]
+
+          // Self-healing: hydrate line items for any orders missing sales_order_items but having invoice_id
+          const missingItems = orders.filter((o) => (!o.items || o.items.length === 0) && o.invoice_id)
+          if (missingItems.length > 0) {
+            try {
+              const invoiceIds = missingItems.map((o) => o.invoice_id).filter(Boolean)
+              const { data: invItems } = await (supabase as any)
+                .from('invoice_items')
+                .select('*')
+                .in('invoice_id', invoiceIds)
+              if (invItems && invItems.length > 0) {
+                const map = new Map<string, any[]>()
+                invItems.forEach((it: any) => {
+                  if (!map.has(it.invoice_id)) map.set(it.invoice_id, [])
+                  map.get(it.invoice_id)!.push({
+                    id: it.id,
+                    order_id: '',
+                    item_name: it.item_description || it.description || it.item_name || 'Printing Item',
+                    material_spec: it.material_spec || null,
+                    width: it.width || 0,
+                    height: it.height || 0,
+                    dimension_unit: it.dimension_unit || 'ft',
+                    quantity: Number(it.quantity) || 1,
+                    unit: it.unit || 'pcs',
+                    unit_price: Number(it.unit_price) || 0,
+                    total_price: Number(it.total_price) || 0,
+                  })
+                })
+                missingItems.forEach((o) => {
+                  if (o.invoice_id && map.has(o.invoice_id)) {
+                    o.items = map.get(o.invoice_id)!
+                  }
+                })
+              }
+            } catch {}
+          }
+
+          return orders
         } catch (err: any) {
           const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
           return all.filter((o: SalesOrderRecord) => o.company_id === companyId)
@@ -229,8 +267,9 @@ export class OrderRepository {
       if (!error && data) {
         if (order.items && order.items.length > 0) {
           const itemsPayload = order.items.map((it) => ({
+            order_id: data.id,
             sales_order_id: data.id,
-            item_name: it.item_name,
+            item_name: it.item_name || 'Printing Item',
             material_spec: it.material_spec || null,
             width: it.width || 1,
             height: it.height || 1,
@@ -240,7 +279,13 @@ export class OrderRepository {
             unit_price: it.unit_price || 0,
             total_price: it.total_price || (it.quantity || 1) * (it.unit_price || 0),
           }))
-          await (supabase as any).from('sales_order_items').insert(itemsPayload)
+          try {
+            await (supabase as any).from('sales_order_items').insert(itemsPayload)
+          } catch {
+            // Fallback without sales_order_id column in case strict schema
+            const fallbackPayload = itemsPayload.map(({ sales_order_id, ...rest }) => rest)
+            await (supabase as any).from('sales_order_items').insert(fallbackPayload)
+          }
         }
 
         await (supabase as any).from('order_timeline_events').insert({

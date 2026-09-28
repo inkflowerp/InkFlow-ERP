@@ -958,6 +958,32 @@ export class BillingRepository {
             .eq('company_id', companyId)
         } catch {}
 
+        if (invoice.items && Array.isArray(invoice.items) && invoice.items.length > 0) {
+          try {
+            const supabase = await createClient()
+            const { count } = await (supabase as any)
+              .from('sales_order_items')
+              .select('*', { count: 'exact', head: true })
+              .eq('order_id', existingDbOrder.id)
+
+            if (!count || count === 0) {
+              const itemsToInsert = invoice.items.map((it: any) => ({
+                order_id: existingDbOrder.id,
+                item_name: it.item_description || it.description || it.item_name || 'Printing Item',
+                material_spec: it.material_spec || it.material || null,
+                width: it.width || 0,
+                height: it.height || 0,
+                dimension_unit: it.dimension_unit || 'ft',
+                quantity: Number(it.quantity) || 1,
+                unit: it.unit || 'pcs',
+                unit_price: Number(it.unit_price) || 0,
+                total_price: Number(it.total_price) || 0,
+              }))
+              await (supabase as any).from('sales_order_items').insert(itemsToInsert)
+            }
+          } catch {}
+        }
+
         const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
         const ordIdx = orders.findIndex(
           (o) =>
@@ -976,6 +1002,7 @@ export class BillingRepository {
             final_price: invoice.grand_total || orders[ordIdx].final_price,
             advance_amount: invoice.paid_amount !== undefined ? invoice.paid_amount : orders[ordIdx].advance_amount,
             due_amount: invoice.due_amount !== undefined ? invoice.due_amount : orders[ordIdx].due_amount,
+            items: (orders[ordIdx].items && orders[ordIdx].items.length > 0) ? orders[ordIdx].items : (invoice.items || []),
           }
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
           provisionedOrder = orders[ordIdx]
@@ -1105,6 +1132,9 @@ export class BillingRepository {
           }
           if (invoice.due_amount !== undefined) {
             ord.due_amount = invoice.due_amount
+          }
+          if ((!ord.items || ord.items.length === 0) && invoice.items && invoice.items.length > 0) {
+            ord.items = invoice.items
           }
           ord.updated_at = new Date().toISOString()
           PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)

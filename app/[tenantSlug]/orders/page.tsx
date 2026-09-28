@@ -21,6 +21,7 @@ import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
 import { getOrdersAction, getJobOrdersAction } from '@/actions/order.actions'
+import { getInvoicesAction } from '@/actions/billing.actions'
 import type { SalesOrderRecord, JobOrderRecord } from '@/types/order.types'
 import type { InvoiceRecord } from '@/types/billing.types'
 
@@ -144,17 +145,22 @@ export default function OrdersPage() {
       // 1. Ingest from Server Actions (Supabase backed)
       let serverOrders: SalesOrderRecord[] = []
       let serverJobs: JobOrderRecord[] = []
+      let serverInvoices: InvoiceRecord[] = []
 
       try {
-        const [ordersRes, jobsRes] = await Promise.allSettled([
+        const [ordersRes, jobsRes, invoicesRes] = await Promise.allSettled([
           getOrdersAction(companyId),
           getJobOrdersAction(companyId),
+          getInvoicesAction({}, companyId),
         ])
         if (ordersRes.status === 'fulfilled' && ordersRes.value.success && ordersRes.value.data) {
           serverOrders = ordersRes.value.data
         }
         if (jobsRes.status === 'fulfilled' && jobsRes.value.success && jobsRes.value.data) {
           serverJobs = jobsRes.value.data
+        }
+        if (invoicesRes.status === 'fulfilled' && invoicesRes.value.success && invoicesRes.value.data) {
+          serverInvoices = invoicesRes.value.data
         }
       } catch (e) {
         console.warn('[OrdersPage] Server action fetch fallback:', e)
@@ -163,7 +169,7 @@ export default function OrdersPage() {
       // 2. Ingest from PrintERPDataStore & Browser Storage across all partitions
       const rawOrders: SalesOrderRecord[] = [...serverOrders]
       const rawJobs: JobOrderRecord[] = [...serverJobs]
-      const rawInvoices: InvoiceRecord[] = []
+      const rawInvoices: InvoiceRecord[] = [...serverInvoices]
 
       // Ingest orders across unpartitioned and tenant-partitioned keys
       const localOrdersGlobal = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
@@ -450,9 +456,87 @@ export default function OrdersPage() {
             (j.job_number && o.order_number && j.job_number.replace('JOB-', '').replace(/-[A-Z]$/, '') === o.order_number.replace('ORD-', ''))
         )
 
+        // Multi-tier items hydration: if order items array is empty, resolve from invoice, job, or notes
+        let finalMappedItems = mappedItems
+        if (finalMappedItems.length === 0) {
+          const matchingInv = tenantInvoices.find(
+            (inv) =>
+              (inv.id && o.invoice_id && inv.id === o.invoice_id) ||
+              (inv.invoice_number && o.invoice_number && inv.invoice_number === o.invoice_number) ||
+              (inv.order_number && o.order_number && inv.order_number.toUpperCase() === o.order_number.toUpperCase()) ||
+              (inv.invoice_number && o.order_number && inv.invoice_number.replace('INV-', 'ORD-').toUpperCase() === o.order_number.toUpperCase()) ||
+              (inv.sales_order_id && (inv.sales_order_id === o.id || inv.sales_order_id === o.order_number))
+          )
+          if (matchingInv && matchingInv.items && matchingInv.items.length > 0) {
+            finalMappedItems = matchingInv.items.map((it: any, idx: number) => {
+              const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
+              const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
+              const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+              return {
+                id: it.id || `item-inv-${orderId}-${idx}`,
+                itemName: it.item_description || it.description || it.item_name || 'Printing Item',
+                dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+                width: it.width,
+                height: it.height,
+                dimensionUnit: it.unit || 'ft',
+                quantity: Number(it.quantity) || 1,
+                unit: it.unit || 'pcs',
+                unitPrice: it.unit_price,
+                totalPrice: it.total_price,
+                materialSpec: it.material_spec || it.material,
+                finishing: it.finishing,
+                itemKind,
+                workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
+                designRequired: isReady ? false : it.design_required,
+                notes: it.notes || it.remarks,
+              }
+            })
+          }
+        }
+
+        if (finalMappedItems.length === 0 && linkedJob) {
+          finalMappedItems = [{
+            id: linkedJob.id || `job-item-${orderId}`,
+            itemName: linkedJob.product_name || 'Printing Item',
+            dimensions: linkedJob.size_spec || undefined,
+            width: undefined,
+            height: undefined,
+            dimensionUnit: undefined,
+            quantity: Number(linkedJob.quantity) || 1,
+            unit: 'pcs',
+            unitPrice: 0,
+            totalPrice: 0,
+            materialSpec: linkedJob.material_spec || undefined,
+            finishing: linkedJob.production_instructions?.replace(/^Finishing:\s*/, '') || undefined,
+            itemKind: 'custom',
+            workflowRouting: (linkedJob.workflow_routing as any) || (linkedJob.artwork_status === 'pending' ? 'design_required' : 'ready_production'),
+            designRequired: linkedJob.artwork_status === 'pending' || linkedJob.workflow_routing === 'design_required',
+            notes: linkedJob.production_instructions || undefined,
+          }]
+        }
+
+        if (finalMappedItems.length === 0 && o.notes && o.notes.includes('Work Order:')) {
+          const match = o.notes.match(/Work Order:\s*([^.]+?)(?:\.\s*Routing|$)/i)
+          if (match && match[1]) {
+            const desc = match[1].trim()
+            finalMappedItems = [{
+              id: `parsed-note-${orderId}`,
+              itemName: desc.replace(/\s*\([^)]*\)\s*×\s*\d+\s*\w+/, '').trim() || desc,
+              dimensions: desc.match(/\(([^)]+)\)/)?.[1] || undefined,
+              quantity: Number(desc.match(/×\s*(\d+)/)?.[1]) || 1,
+              unit: desc.match(/×\s*\d+\s*([a-zA-Z]+)/)?.[1] || 'pcs',
+              unitPrice: 0,
+              totalPrice: 0,
+              itemKind: 'custom',
+              workflowRouting: (o.workflow_routing as any) || 'ready_production',
+              designRequired: o.workflow_routing === 'design_required',
+            }]
+          }
+        }
+
         let calculatedStage: OrderStage = 'new_orders'
         const ordStatus = String(o.status || '')
-        const allReady = mappedItems.length > 0 && mappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
+        const allReady = finalMappedItems.length > 0 && finalMappedItems.every((it) => it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product')
 
         if (ordStatus === 'completed' || ordStatus === 'delivered') {
           calculatedStage = 'delivered'
@@ -495,8 +579,8 @@ export default function OrdersPage() {
           customerAddress: o.customer_address || (o as any).address || undefined,
           customerType: o.customer_type || (o as any).customer_category || undefined,
           isWalkIn: isWalk,
-          items: mappedItems,
-          itemsCount: mappedItems.reduce((acc, it) => acc + it.quantity, 0),
+          items: finalMappedItems,
+          itemsCount: finalMappedItems.reduce((acc, it) => acc + it.quantity, 0),
           priority: o.priority || 'normal',
           orderDate: o.order_date || o.created_at?.split('T')[0] || new Date().toISOString().split('T')[0],
           deliveryDate: o.delivery_date || '',
@@ -598,6 +682,35 @@ export default function OrdersPage() {
           existing.dueAmount = Math.max(0, existing.totalAmount - existing.advanceAmount)
           existing.paymentStatus = existing.dueAmount <= 0 ? 'paid' : existing.advanceAmount > 0 ? 'partial' : 'unpaid'
           existing.rawInvoice = inv
+
+          // Hydrate line items if order currently has 0 items
+          if (existing.items.length === 0 && inv.items && inv.items.length > 0) {
+            const invMapped: OrderItemSpec[] = inv.items.map((it: any, idx: number) => {
+              const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
+              const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
+              const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+              return {
+                id: it.id || `inv-item-${inv.id}-${idx}`,
+                itemName: it.item_description || it.description || it.item_name || 'Printing Item',
+                dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+                width: it.width,
+                height: it.height,
+                dimensionUnit: it.unit || 'ft',
+                quantity: Number(it.quantity) || 1,
+                unit: it.unit || 'pcs',
+                unitPrice: it.unit_price,
+                totalPrice: it.total_price,
+                materialSpec: it.material_spec || it.material,
+                finishing: it.finishing,
+                itemKind,
+                workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
+                designRequired: isReady ? false : it.design_required,
+                notes: it.notes || it.remarks,
+              }
+            })
+            existing.items = invMapped
+            existing.itemsCount = invMapped.reduce((acc, it) => acc + it.quantity, 0)
+          }
         } else {
           const synthOrderNumber = inv.order_number || inv.invoice_number?.replace('INV-', 'ORD-') || `ORD-${inv.id.slice(-4)}`
           const synthKey = `ORD_${synthOrderNumber.trim().toUpperCase()}`
@@ -609,6 +722,33 @@ export default function OrdersPage() {
             ord.advanceAmount = Math.max(Number(inv.paid_amount || 0), ord.advanceAmount)
             ord.dueAmount = Math.max(0, ord.totalAmount - ord.advanceAmount)
             ord.paymentStatus = ord.dueAmount <= 0 ? 'paid' : ord.advanceAmount > 0 ? 'partial' : 'unpaid'
+            if (ord.items.length === 0 && inv.items && inv.items.length > 0) {
+              const invMapped: OrderItemSpec[] = inv.items.map((it: any, idx: number) => {
+                const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
+                const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
+                const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+                return {
+                  id: it.id || `inv-item-${inv.id}-${idx}`,
+                  itemName: it.item_description || it.description || it.item_name || 'Printing Item',
+                  dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
+                  width: it.width,
+                  height: it.height,
+                  dimensionUnit: it.unit || 'ft',
+                  quantity: Number(it.quantity) || 1,
+                  unit: it.unit || 'pcs',
+                  unitPrice: it.unit_price,
+                  totalPrice: it.total_price,
+                  materialSpec: it.material_spec || it.material,
+                  finishing: it.finishing,
+                  itemKind,
+                  workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
+                  designRequired: isReady ? false : it.design_required,
+                  notes: it.notes || it.remarks,
+                }
+              })
+              ord.items = invMapped
+              ord.itemsCount = invMapped.reduce((acc, it) => acc + it.quantity, 0)
+            }
             return
           }
 

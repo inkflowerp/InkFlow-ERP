@@ -167,58 +167,81 @@ export const OrderCard = React.memo(function OrderCard({
         <div className="lg:col-span-5 flex flex-col justify-between space-y-2 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-3 lg:pb-0 lg:pr-4">
           <div className="space-y-1.5">
             <div className="text-2xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>{tBilingual(`Work Specs (${order.items.length} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length}টি):`)}</span>
+              <span>{tBilingual(`Work Specs (${order.items.length || 1} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length || 1}টি):`)}</span>
               <span className="font-mono text-slate-500">
-                {tBilingual(`Total Items: ${order.itemsCount}`, `মোট আইটেম: ${order.itemsCount}`)}
+                {tBilingual(`Total Items: ${order.itemsCount || 1}`, `মোট আইটেম: ${order.itemsCount || 1}`)}
               </span>
             </div>
 
             {/* Multi-Item Line items */}
             <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
-              {order.items.map((it, idx) => (
-                <div
-                  key={it.id || idx}
-                  className="p-2 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-0.5"
-                >
+              {order.items.length === 0 ? (
+                <div className="p-2 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-1">
                   <div className="flex items-start justify-between gap-1">
                     <strong className="text-slate-800 dark:text-slate-200 line-clamp-1 font-semibold">
-                      {it.itemName}
+                      {order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || (order.notes && order.notes.replace(/^Work Order:\s*/, '').split(';')[0]) || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ')}
                     </strong>
                     <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
-                      {formatOrderItemQuantityAndUnit(it, tBilingual)}
+                      {order.rawJob?.quantity ? `${order.rawJob.quantity} pcs` : '1 pcs'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-2xs text-slate-500 font-mono flex-wrap">
-                    {it.dimensions && <span>📐 {it.dimensions}</span>}
-                    {it.materialSpec && <span>• 📄 {it.materialSpec}</span>}
-                    {it.finishing && <span>• ✨ {it.finishing}</span>}
+                    {order.rawJob?.size_spec && <span>📐 {order.rawJob.size_spec}</span>}
+                    {order.rawJob?.material_spec && <span>• 📄 {order.rawJob.material_spec}</span>}
+                    {order.invoiceNumber && <span>• 🧾 Inv: #{order.invoiceNumber}</span>}
                   </div>
-                  {/* Workflow routing & item classification tag */}
                   <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
-                    {it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product' ? (
-                      <span className="text-2xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
-                        {tBilingual('Ready Product (In Stock)', 'রেডি প্রোডাক্ট (ইন-স্টক)')}
-                      </span>
-                    ) : it.itemKind === 'outsource' || it.workflowRouting === 'outsource' ? (
-                      <span className="text-2xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
-                        {tBilingual('Outsourced Product', 'আউটসোর্স পণ্য')}
-                      </span>
-                    ) : it.workflowRouting === 'design_required' ? (
-                      <span className="text-2xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800">
-                        {tBilingual('Custom Print (Design Needed)', 'কাস্টম প্রিন্ট (ডিজাইন দরকার)')}
-                      </span>
-                    ) : it.workflowRouting === 'design_ok' ? (
-                      <span className="text-2xs font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-200 dark:border-cyan-800">
-                        {tBilingual('Ready File Verified', 'রেডি ফাইল চেক')}
-                      </span>
-                    ) : (
-                      <span className="text-2xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
-                        {tBilingual('Machine Floor Production', 'প্রেসে প্রোডাকশন')}
-                      </span>
-                    )}
+                    <span className="text-2xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
+                      {tBilingual('Production Queue', 'প্রিন্ট কিউ')}
+                    </span>
                   </div>
                 </div>
-              ))}
+              ) : (
+                order.items.map((it, idx) => (
+                  <div
+                    key={it.id || idx}
+                    className="p-2 rounded bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-0.5"
+                  >
+                    <div className="flex items-start justify-between gap-1">
+                      <strong className="text-slate-800 dark:text-slate-200 line-clamp-1 font-semibold">
+                        {it.itemName}
+                      </strong>
+                      <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
+                        {formatOrderItemQuantityAndUnit(it, tBilingual)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-2xs text-slate-500 font-mono flex-wrap">
+                      {it.dimensions && <span>📐 {it.dimensions}</span>}
+                      {it.materialSpec && <span>• 📄 {it.materialSpec}</span>}
+                      {it.finishing && <span>• ✨ {it.finishing}</span>}
+                    </div>
+                    {/* Workflow routing & item classification tag */}
+                    <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
+                      {it.itemKind === 'ready_product' || it.workflowRouting === 'ready_product' ? (
+                        <span className="text-2xs font-bold bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-300 dark:border-emerald-800">
+                          {tBilingual('Ready Product (In Stock)', 'রেডি প্রোডাক্ট (ইন-স্টক)')}
+                        </span>
+                      ) : it.itemKind === 'outsource' || it.workflowRouting === 'outsource' ? (
+                        <span className="text-2xs font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 px-1.5 py-0.2 rounded border border-purple-300 dark:border-purple-800">
+                          {tBilingual('Outsourced Product', 'আউটসোর্স পণ্য')}
+                        </span>
+                      ) : it.workflowRouting === 'design_required' ? (
+                        <span className="text-2xs font-bold bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.2 rounded border border-blue-200 dark:border-blue-800">
+                          {tBilingual('Custom Print (Design Needed)', 'কাস্টম প্রিন্ট (ডিজাইন দরকার)')}
+                        </span>
+                      ) : it.workflowRouting === 'design_ok' ? (
+                        <span className="text-2xs font-bold bg-cyan-50 dark:bg-cyan-950/60 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-200 dark:border-cyan-800">
+                          {tBilingual('Ready File Verified', 'রেডি ফাইল চেক')}
+                        </span>
+                      ) : (
+                        <span className="text-2xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
+                          {tBilingual('Machine Floor Production', 'প্রেসে প্রোডাকশন')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
