@@ -168,20 +168,65 @@ export const OrderCard = React.memo(function OrderCard({
         {/* Center Column: Multi-Item Technical Specs Breakdown (5 Cols) */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-2 border-b lg:border-b-0 lg:border-r border-slate-100 dark:border-slate-800 pb-3 lg:pb-0 lg:pr-4">
           <div className="space-y-1.5">
-            <div className="text-2xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-              <span>{tBilingual(`Work Specs (${order.items.length || 1} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length || 1}টি):`)}</span>
-              <span className="font-mono text-slate-500">
-                {order.items.some((it) => (it.unit || '').toLowerCase() === 'sft')
-                  ? `${order.itemsCount} ${tBilingual('sft total', 'বর্গফুট মোট')}`
-                  : tBilingual(`Total Items: ${order.itemsCount || 1}`, `মোট আইটেম: ${order.itemsCount || 1}`)}
-              </span>
-            </div>
+            {(() => {
+              let totalSft = 0
+              let totalPcs = 0
+              let hasSft = false
+
+              order.items.forEach((it) => {
+                const qty = Number(it.quantity) || 1
+                totalPcs += qty
+
+                let w = Number(it.width) || 0
+                let h = Number(it.height) || 0
+                let dimUnit = (it.dimensionUnit || 'ft').toLowerCase()
+
+                if ((!w || !h) && it.dimensions) {
+                  const match = it.dimensions.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)(?:\s*([a-zA-Z]+))?/i)
+                  if (match) {
+                    w = parseFloat(match[1]) || 0
+                    h = parseFloat(match[2]) || 0
+                    if (match[3]) dimUnit = match[3].toLowerCase()
+                  }
+                }
+
+                if (w > 0 && h > 0) {
+                  hasSft = true
+                  if (dimUnit === 'inch' || dimUnit === 'in') {
+                    totalSft += (w * h * qty) / 144
+                  } else {
+                    totalSft += w * h * qty
+                  }
+                } else if ((it.unit || '').toLowerCase() === 'sft' || (it.unit || '').toLowerCase() === 'sqft') {
+                  hasSft = true
+                  totalSft += qty
+                }
+              })
+
+              const sftFormatted = Number.isInteger(totalSft) ? totalSft.toLocaleString() : totalSft.toFixed(1)
+
+              return (
+                <div className="text-2xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                  <span>{tBilingual(`Work Specs (${order.items.length || 1} Works):`, `কাজের বিবরণ ও স্পেক (${order.items.length || 1}টি):`)}</span>
+                  <span className="font-mono text-slate-500">
+                    {hasSft && totalSft > 0
+                      ? `${sftFormatted} ${tBilingual('sft total', 'বর্গফুট মোট')} (${totalPcs || order.itemsCount || 1} ${tBilingual('pcs', 'টি')})`
+                      : tBilingual(`Total Items: ${order.itemsCount || totalPcs || 1}`, `মোট আইটেম: ${order.itemsCount || totalPcs || 1}`)}
+                  </span>
+                </div>
+              )
+            })()}
 
             {/* Multi-Item Line items */}
-            <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {order.items.length === 0 ? (() => {
                 const synthItem: OrderItemSpec = {
                   id: `synth-${order.id}`,
+                  serviceName:
+                    order.rawJob?.product_name ||
+                    order.rawInvoice?.items?.[0]?.item_description ||
+                    (order.notes && order.notes.replace(/^Work Order:\s*/, '').split(';')[0]) ||
+                    tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
                   itemName:
                     order.rawJob?.product_name ||
                     order.rawInvoice?.items?.[0]?.item_description ||
@@ -194,38 +239,74 @@ export const OrderCard = React.memo(function OrderCard({
                 }
                 const specs = resolveOrderItemSpecs(synthItem, order.rawJob, order.rawInvoice, tBilingual)
                 return (
-                  <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-1.5">
+                  <div className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-2">
                     <div className="flex items-start justify-between gap-1.5">
                       <strong className="text-slate-900 dark:text-slate-100 line-clamp-1 font-semibold text-xs">
-                        {synthItem.itemName}
+                        {synthItem.serviceName || synthItem.itemName}
                       </strong>
                       <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
                         {specs.quantity}
                       </span>
                     </div>
 
-                    {/* Explicit Technical Specs Grid: Material, Size, Quantity */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 p-1.5 rounded bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 text-2xs font-mono">
-                      <div className="flex items-center gap-1 min-w-0" title={specs.material}>
-                        <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📄 {tBilingual('Mat:', 'উপাদান:')}</span>
-                        <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.material}</span>
-                      </div>
-                      <div className="flex items-center gap-1 min-w-0" title={specs.size}>
-                        <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📐 {tBilingual('Size:', 'সাইজ:')}</span>
-                        <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.size}</span>
-                      </div>
-                      <div className="flex items-center gap-1 min-w-0" title={specs.quantity}>
-                        <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📦 {tBilingual('Qty:', 'পরিমাণ:')}</span>
-                        <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.quantity}</span>
+                    {/* Structured 6-Field Technical Specs */}
+                    <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 font-mono">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Service name:', 'সার্ভিসের নাম:')}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.serviceName}>
+                            {specs.serviceName}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Material name:', 'মেটেরিয়াল নাম:')}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.material}>
+                            {specs.material}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Size:', 'সাইজ:')}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.size}>
+                            {specs.size}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Quantity:', 'পরিমাণ:')}
+                          </span>
+                          <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.quantity}>
+                            {specs.quantity}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Finishing:', 'ফিনিশিং:')}
+                          </span>
+                          <span className={`font-semibold break-words ${specs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-slate-500'}`} title={specs.finishing}>
+                            {specs.finishing}
+                          </span>
+                        </div>
+
+                        <div className="flex items-baseline gap-1 min-w-0">
+                          <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                            {tBilingual('Add-on:', 'অ্যাড-অন:')}
+                          </span>
+                          <span className={`font-semibold break-words ${specs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-500'}`} title={specs.addOn}>
+                            {specs.addOn}
+                          </span>
+                        </div>
                       </div>
                     </div>
-
-                    {specs.finishing && (
-                      <div className="text-2xs text-amber-700 dark:text-amber-400 font-mono flex items-center gap-1 px-0.5">
-                        <span className="font-bold shrink-0">✨ {tBilingual('Finishing:', 'ফিনিশিং:')}</span>
-                        <span className="font-medium truncate">{specs.finishing}</span>
-                      </div>
-                    )}
 
                     <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">
                       <span className="text-2xs font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.2 rounded border border-indigo-200 dark:border-indigo-800">
@@ -245,39 +326,75 @@ export const OrderCard = React.memo(function OrderCard({
                   return (
                     <div
                       key={it.id || idx}
-                      className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-1.5"
+                      className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-2xs space-y-2"
                     >
                       <div className="flex items-start justify-between gap-1.5">
                         <strong className="text-slate-900 dark:text-slate-100 line-clamp-1 font-semibold text-xs">
-                          {it.itemName}
+                          {specs.serviceName}
                         </strong>
                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 shrink-0 bg-white dark:bg-slate-700/60 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 text-2xs">
                           {specs.quantity}
                         </span>
                       </div>
 
-                      {/* Explicit Technical Specs Grid: Material, Size, Quantity */}
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1 p-1.5 rounded bg-white dark:bg-slate-900/60 border border-slate-200/70 dark:border-slate-800 text-2xs font-mono">
-                        <div className="flex items-center gap-1 min-w-0" title={specs.material}>
-                          <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📄 {tBilingual('Mat:', 'উপাদান:')}</span>
-                          <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.material}</span>
-                        </div>
-                        <div className="flex items-center gap-1 min-w-0" title={specs.size}>
-                          <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📐 {tBilingual('Size:', 'সাইজ:')}</span>
-                          <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.size}</span>
-                        </div>
-                        <div className="flex items-center gap-1 min-w-0" title={specs.quantity}>
-                          <span className="font-bold text-slate-600 dark:text-slate-400 shrink-0">📦 {tBilingual('Qty:', 'পরিমাণ:')}</span>
-                          <span className="truncate text-slate-900 dark:text-slate-200 font-semibold">{specs.quantity}</span>
+                      {/* Structured 6-Field Technical Specs */}
+                      <div className="rounded-md bg-white dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 p-2 text-2xs space-y-1 font-mono">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-3 gap-y-1">
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Service name:', 'সার্ভিসের নাম:')}
+                            </span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.serviceName}>
+                              {specs.serviceName}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Material name:', 'মেটেরিয়াল নাম:')}
+                            </span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.material}>
+                              {specs.material}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Size:', 'সাইজ:')}
+                            </span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.size}>
+                              {specs.size}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Quantity:', 'পরিমাণ:')}
+                            </span>
+                            <span className="font-bold text-slate-900 dark:text-slate-100 break-words" title={specs.quantity}>
+                              {specs.quantity}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Finishing:', 'ফিনিশিং:')}
+                            </span>
+                            <span className={`font-semibold break-words ${specs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-slate-500'}`} title={specs.finishing}>
+                              {specs.finishing}
+                            </span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1 min-w-0">
+                            <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">
+                              {tBilingual('Add-on:', 'অ্যাড-অন:')}
+                            </span>
+                            <span className={`font-semibold break-words ${specs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-500'}`} title={specs.addOn}>
+                              {specs.addOn}
+                            </span>
+                          </div>
                         </div>
                       </div>
-
-                      {specs.finishing && (
-                        <div className="text-2xs text-amber-700 dark:text-amber-400 font-mono flex items-center gap-1 px-0.5">
-                          <span className="font-bold shrink-0">✨ {tBilingual('Finishing:', 'ফিনিশিং:')}</span>
-                          <span className="font-medium truncate">{specs.finishing}</span>
-                        </div>
-                      )}
 
                       {/* Workflow routing & item classification tag */}
                       <div className="pt-0.5 flex items-center gap-1.5 flex-wrap">

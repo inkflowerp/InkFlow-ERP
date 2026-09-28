@@ -11,6 +11,7 @@ export type OrderStage =
 
 export interface OrderItemSpec {
   id: string
+  serviceName?: string
   itemName: string
   dimensions?: string
   width?: number
@@ -22,6 +23,7 @@ export interface OrderItemSpec {
   totalPrice?: number
   materialSpec?: string
   finishing?: string
+  addOn?: string
   itemKind?: 'service' | 'ready_product' | 'material' | 'outsource' | 'custom' | 'custom_manufacturing'
   workflowRouting?: 'ready_product' | 'design_required' | 'design_ok' | 'ready_production' | 'custom' | 'outsource' | string
   designRequired?: boolean
@@ -216,10 +218,12 @@ export function inferMaterialFromItemName(name?: string, fallback?: string): str
 }
 
 export interface ResolvedItemSpecs {
+  serviceName: string
   material: string
   size: string
   quantity: string
-  finishing?: string
+  finishing: string
+  addOn: string
 }
 
 export function resolveOrderItemSpecs(
@@ -228,10 +232,18 @@ export function resolveOrderItemSpecs(
   fallbackInvoice?: InvoiceRecord,
   tBilingual: (en: string, bn: string) => string = (en, _bn) => en
 ): ResolvedItemSpecs {
-  // 1. Material Resolution
+  // 1. Service Name Resolution
+  const rawServiceName = (item.serviceName || item.itemName || '').trim()
+  const serviceName =
+    rawServiceName ||
+    fallbackJob?.product_name ||
+    (fallbackInvoice?.items?.[0] as any)?.item_description ||
+    tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ')
+
+  // 2. Material Name Resolution
   let material = item.materialSpec?.trim()
   if (!material) {
-    material = inferMaterialFromItemName(item.itemName)
+    material = inferMaterialFromItemName(serviceName)
   }
   if (!material && fallbackJob?.material_spec) {
     material = fallbackJob.material_spec
@@ -248,26 +260,54 @@ export function resolveOrderItemSpecs(
     } else if (item.itemKind === 'outsource' || item.workflowRouting === 'outsource') {
       material = tBilingual('Outsourced Media', 'আউটসোর্স মিডিয়া')
     } else {
-      material = inferMaterialFromItemName(item.itemName, tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')) || tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')
+      material = inferMaterialFromItemName(serviceName, tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')) || tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')
     }
   }
 
-  // 2. Size / Dimensions Resolution
-  let size = item.dimensions?.trim()
-  const w = Number(item.width) || 0
-  const h = Number(item.height) || 0
-  if (!size && w > 0 && h > 0) {
-    size = `${w} × ${h} ${item.dimensionUnit || item.unit || 'ft'}`
+  // 3. Size / Dimensions Resolution
+  let w = Number(item.width) || 0
+  let h = Number(item.height) || 0
+  let dimUnit = (item.dimensionUnit || '').toLowerCase()
+  if (!dimUnit || dimUnit === 'sft' || dimUnit === 'sqft' || dimUnit === 'বর্গফুট') {
+    dimUnit = 'ft'
   }
-  if (!size && fallbackJob?.size_spec) {
-    size = fallbackJob.size_spec
-  }
-  if (!size && fallbackInvoice?.items) {
-    const matched = fallbackInvoice.items.find((invIt: any) =>
+
+  let size = ''
+  if (item.dimensions && item.dimensions.trim()) {
+    // If dimensions string contains "sft" as dimension unit (e.g. "100 × 100 sft"), normalize it to "ft"
+    let cleaned = item.dimensions.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
+    if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(cleaned.trim())) {
+      cleaned = `${cleaned.trim()} ${dimUnit}`
+    }
+    size = cleaned
+    const match = cleaned.match(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)/i)
+    if (match && (!w || !h)) {
+      w = parseFloat(match[1]) || 0
+      h = parseFloat(match[2]) || 0
+    }
+  } else if (w > 0 && h > 0) {
+    size = `${w} × ${h} ${dimUnit}`
+  } else if (fallbackJob?.size_spec) {
+    let rawJobSpec = fallbackJob.size_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
+    if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(rawJobSpec.trim())) {
+      rawJobSpec = `${rawJobSpec.trim()} ft`
+    }
+    size = rawJobSpec
+  } else if (fallbackInvoice?.items) {
+    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
       invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
     )
-    size = matched?.dimensions_spec || (matched?.width && matched?.height ? `${matched.width} × ${matched.height} ${matched.unit || 'ft'}` : undefined)
+    if (matched?.dimensions_spec) {
+      size = matched.dimensions_spec.replace(/([\d.]+)\s*(?:×|x|\*)\s*([\d.]+)\s*(?:sft|sqft|বর্গফুট)/gi, '$1 × $2 ft')
+      if (/^[\d.]+\s*(?:×|x|\*)\s*[\d.]+$/.test(size.trim())) {
+        size = `${size.trim()} ft`
+      }
+    } else if (matched?.width && matched?.height) {
+      const u = (matched.unit === 'sft' || matched.unit === 'sqft') ? 'ft' : (matched.unit || 'ft')
+      size = `${matched.width} × ${matched.height} ${u}`
+    }
   }
+
   if (!size) {
     const unitLower = (item.unit || '').toLowerCase()
     if ((unitLower === 'sft' || unitLower === 'sqft') && item.quantity) {
@@ -279,7 +319,7 @@ export function resolveOrderItemSpecs(
     }
   }
 
-  // 3. Quantity Resolution
+  // 4. Quantity Resolution
   let quantity = formatOrderItemQuantityAndUnit(item, tBilingual)
   const unitLower = (item.unit || '').toLowerCase()
   if ((unitLower === 'sft' || unitLower === 'sqft') && !quantity.includes('(')) {
@@ -287,14 +327,71 @@ export function resolveOrderItemSpecs(
     quantity = `${quantity} (${pcsStr})`
   }
 
-  // 4. Finishing Resolution
-  const finishing = item.finishing?.trim() || fallbackJob?.production_instructions?.replace(/^Finishing:\s*/i, '').trim() || undefined
+  // 5. Finishing Resolution
+  let finishing = item.finishing?.trim() || (Array.isArray((item as any).selected_finishing) ? (item as any).selected_finishing.map((f: any) => f.name || f).join(', ') : undefined)
+  if (!finishing && (fallbackJob as any)?.finishing) {
+    finishing = (fallbackJob as any).finishing
+  }
+  if (!finishing && Array.isArray((fallbackJob as any)?.selected_finishing) && (fallbackJob as any).selected_finishing.length > 0) {
+    finishing = (fallbackJob as any).selected_finishing.map((f: any) => f.name || f.label || f.id || f).join(', ')
+  }
+  if (!finishing && fallbackJob?.production_instructions) {
+    const match = fallbackJob.production_instructions.match(/Finishing:\s*([^|;]+)/i)
+    if (match) {
+      finishing = match[1].trim()
+    } else if (fallbackJob.production_instructions.startsWith('Finishing:')) {
+      finishing = fallbackJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim()
+    }
+  }
+  if (!finishing && fallbackInvoice?.items) {
+    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+    )
+    if (matched?.finishing) finishing = matched.finishing
+    else if (Array.isArray(matched?.selected_finishing) && matched.selected_finishing.length > 0) {
+      finishing = matched.selected_finishing.map((f: any) => f.name || f.label || f).join(', ')
+    }
+  }
+  if (!finishing || finishing.toLowerCase() === 'none' || finishing.toLowerCase() === 'null') {
+    finishing = 'None'
+  }
+
+  // 6. Add-on Resolution
+  let addOn = item.addOn?.trim() || (item as any).add_on?.trim() || (item as any).add_ons?.trim() || (item as any).addon?.trim()
+  if (!addOn && Array.isArray((item as any).selected_add_ons) && (item as any).selected_add_ons.length > 0) {
+    addOn = (item as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
+  }
+  if (!addOn && (fallbackJob as any)?.add_ons) {
+    addOn = (fallbackJob as any).add_ons
+  }
+  if (!addOn && Array.isArray((fallbackJob as any)?.selected_add_ons) && (fallbackJob as any).selected_add_ons.length > 0) {
+    addOn = (fallbackJob as any).selected_add_ons.map((a: any) => a.name || a.label || a.id || a).join(', ')
+  }
+  if (!addOn && fallbackJob?.production_instructions) {
+    const match = fallbackJob.production_instructions.match(/Add-?on:\s*([^|;]+)/i)
+    if (match) addOn = match[1].trim()
+  }
+  if (!addOn && fallbackInvoice?.items) {
+    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+    )
+    if (matched?.add_on) addOn = matched.add_on
+    else if (matched?.add_ons) addOn = matched.add_ons
+    else if (Array.isArray(matched?.selected_add_ons) && matched.selected_add_ons.length > 0) {
+      addOn = matched.selected_add_ons.map((a: any) => a.name || a.label || a).join(', ')
+    }
+  }
+  if (!addOn || addOn.toLowerCase() === 'none' || addOn.toLowerCase() === 'null') {
+    addOn = 'None'
+  }
 
   return {
+    serviceName,
     material,
     size,
     quantity,
     finishing,
+    addOn,
   }
 }
 

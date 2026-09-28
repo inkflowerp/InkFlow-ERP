@@ -74,5 +74,58 @@ describe('Order Item Specs & Material Resolution', () => {
     assert.equal(specs.size, '12 × 4 ft')
     assert.equal(specs.quantity, '1 পিস')
     assert.equal(specs.finishing, 'High Gloss Lamination')
+    assert.equal(specs.addOn, 'None')
+  })
+
+  it('resolves all 6 structured specs for the user screenshot example (Eco Vinyl 100 × 100 sft, 10 pcs)', () => {
+    const item: OrderItemSpec = {
+      id: 'it-user-case',
+      serviceName: 'Eco Vinyl Print',
+      itemName: 'Eco Vinyl Print',
+      dimensions: '100 × 100 sft',
+      quantity: 10,
+      unit: 'sft',
+      materialSpec: 'Eco Vinyl (ইকো ভিনাইল)',
+      finishing: 'None',
+      addOn: 'None',
+    }
+    const specs = resolveOrderItemSpecs(item, undefined, undefined, (en, _bn) => en)
+
+    assert.equal(specs.serviceName, 'Eco Vinyl Print')
+    assert.equal(specs.material, 'Eco Vinyl (ইকো ভিনাইল)')
+    // Crucial fix: linear dimensions "100 × 100 sft" must normalize to "100 × 100 ft"
+    assert.equal(specs.size, '100 × 100 ft')
+    assert.equal(specs.quantity, '100000 sft (10 pcs)')
+    assert.equal(specs.finishing, 'None')
+    assert.equal(specs.addOn, 'None')
+  })
+
+  it('resolves Add-on correctly from addOn property and job instructions', () => {
+    const itemWithAddOn: OrderItemSpec = {
+      id: 'it-addon',
+      serviceName: 'PVC Board Sign',
+      itemName: 'PVC Board Sign',
+      dimensions: '4 × 2 ft',
+      quantity: 1,
+      addOn: '3mm PVC Board Pasting',
+    }
+    const specs1 = resolveOrderItemSpecs(itemWithAddOn, undefined, undefined, (en, _bn) => en)
+    assert.equal(specs1.serviceName, 'PVC Board Sign')
+    assert.equal(specs1.addOn, '3mm PVC Board Pasting')
+
+    const itemWithoutAddOn: OrderItemSpec = {
+      id: 'it-job-addon',
+      itemName: 'Vinyl Print',
+      quantity: 1,
+    }
+    const jobWithInstructions: any = {
+      id: 'job-addon-1',
+      product_name: 'Sticker Print',
+      production_instructions: 'Finishing: Matt Lamination | Add-on: 5mm Acrylic Mount',
+    }
+    const specs2 = resolveOrderItemSpecs(itemWithoutAddOn, jobWithInstructions, undefined, (en, _bn) => en)
+    assert.equal(specs2.finishing, 'Matt Lamination')
+    assert.equal(specs2.addOn, '5mm Acrylic Mount')
   })
 })
+

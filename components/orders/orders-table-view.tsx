@@ -145,6 +145,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                     {(() => {
                       const firstItem: OrderItemSpec = order.items[0] || {
                         id: `synth-${order.id}`,
+                        serviceName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || 'Print Work',
                         itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || 'Print Work',
                         quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
                         unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
@@ -167,9 +168,18 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                               📦 {specs.quantity}
                             </span>
                           </div>
-                          {specs.finishing && (
-                            <div className="text-amber-700 dark:text-amber-400">
-                              ✨ {specs.finishing}
+                          {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {specs.finishing !== 'None' && (
+                                <span className="text-amber-700 dark:text-amber-400 font-medium">
+                                  ✨ {tBilingual('Finishing: ', 'ফিনিশিং: ')}{specs.finishing}
+                                </span>
+                              )}
+                              {specs.addOn !== 'None' && (
+                                <span className="text-indigo-700 dark:text-indigo-400 font-medium">
+                                  ➕ {tBilingual('Add-on: ', 'অ্যাড-অন: ')}{specs.addOn}
+                                </span>
+                              )}
                             </div>
                           )}
                         </div>

@@ -425,10 +425,13 @@ export default function OrdersPage() {
           const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
           const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
           const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+          const itemName = it.product_name || it.item_name || it.service_name || 'Printing Item'
+          const serviceName = it.service_name || it.serviceName || it.product_name || it.item_name || 'Printing Work'
 
           return {
             id: it.id || `item-${orderId}-${idx}`,
-            itemName: it.product_name || it.item_name || 'Printing Item',
+            serviceName,
+            itemName,
             dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.dimension_unit || it.unit || 'ft'}` : undefined),
             width: it.width,
             height: it.height,
@@ -438,7 +441,8 @@ export default function OrdersPage() {
             unitPrice: it.unit_price,
             totalPrice: it.total_price,
             materialSpec: it.material_spec || it.material || it.media_type,
-            finishing: it.finishing,
+            finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
+            addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
             itemKind,
             workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
             designRequired: isReady ? false : it.design_required,
@@ -473,9 +477,12 @@ export default function OrdersPage() {
               const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
               const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
               const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+              const itemName = it.item_description || it.description || it.item_name || 'Printing Item'
+              const serviceName = it.service_name || it.product_name || itemName
               return {
                 id: it.id || `item-inv-${orderId}-${idx}`,
-                itemName: it.item_description || it.description || it.item_name || 'Printing Item',
+                serviceName,
+                itemName,
                 dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
                 width: it.width,
                 height: it.height,
@@ -485,7 +492,8 @@ export default function OrdersPage() {
                 unitPrice: it.unit_price,
                 totalPrice: it.total_price,
                 materialSpec: it.material_spec || it.material,
-                finishing: it.finishing,
+                finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
+                addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
                 itemKind,
                 workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
                 designRequired: isReady ? false : it.design_required,
@@ -498,6 +506,7 @@ export default function OrdersPage() {
         if (finalMappedItems.length === 0 && linkedJob) {
           finalMappedItems = [{
             id: linkedJob.id || `job-item-${orderId}`,
+            serviceName: linkedJob.product_name || 'Printing Work',
             itemName: linkedJob.product_name || 'Printing Item',
             dimensions: linkedJob.size_spec || undefined,
             width: undefined,
@@ -508,7 +517,8 @@ export default function OrdersPage() {
             unitPrice: 0,
             totalPrice: 0,
             materialSpec: linkedJob.material_spec || undefined,
-            finishing: linkedJob.production_instructions?.replace(/^Finishing:\s*/, '') || undefined,
+            finishing: linkedJob.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (linkedJob.production_instructions?.startsWith('Finishing:') ? linkedJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
+            addOn: linkedJob.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
             itemKind: 'custom',
             workflowRouting: (linkedJob.workflow_routing as any) || (linkedJob.artwork_status === 'pending' ? 'design_required' : 'ready_production'),
             designRequired: linkedJob.artwork_status === 'pending' || linkedJob.workflow_routing === 'design_required',
@@ -522,6 +532,7 @@ export default function OrdersPage() {
             const desc = match[1].trim()
             finalMappedItems = [{
               id: `parsed-note-${orderId}`,
+              serviceName: desc.replace(/\s*\([^)]*\)\s*×\s*\d+\s*\w+/, '').trim() || desc,
               itemName: desc.replace(/\s*\([^)]*\)\s*×\s*\d+\s*\w+/, '').trim() || desc,
               dimensions: desc.match(/\(([^)]+)\)/)?.[1] || undefined,
               quantity: Number(desc.match(/×\s*(\d+)/)?.[1]) || 1,
@@ -535,7 +546,7 @@ export default function OrdersPage() {
           }
         }
 
-        // Cross-hydrate missing dimensions, materials, or finishing on all items
+        // Cross-hydrate missing dimensions, materials, finishing, or add-ons on all items
         const matchingInvForSpecs = tenantInvoices.find(
           (inv) =>
             (inv.id && o.invoice_id && inv.id === o.invoice_id) ||
@@ -558,18 +569,29 @@ export default function OrdersPage() {
             invIt?.material_spec ||
             (invIt as any)?.material ||
             linkedJob?.material_spec ||
-            inferMaterialFromItemName(item.itemName)
+            inferMaterialFromItemName(item.serviceName || item.itemName)
           const finish =
             item.finishing ||
             invIt?.finishing ||
-            linkedJob?.production_instructions?.replace(/^Finishing:\s*/, '') ||
+            (Array.isArray((invIt as any)?.selected_finishing) ? (invIt as any).selected_finishing.map((f: any) => f.name || f).join(', ') : undefined) ||
+            linkedJob?.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() ||
+            (linkedJob?.production_instructions?.startsWith('Finishing:') ? linkedJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined) ||
+            undefined
+          const addOn =
+            item.addOn ||
+            (invIt as any)?.add_on ||
+            (invIt as any)?.addon ||
+            (Array.isArray((invIt as any)?.selected_add_ons) ? (invIt as any).selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined) ||
+            linkedJob?.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() ||
             undefined
 
           return {
             ...item,
+            serviceName: item.serviceName || item.itemName || linkedJob?.product_name || invIt?.item_description || undefined,
             dimensions: dims,
             materialSpec: mat,
             finishing: finish,
+            addOn: addOn,
           }
         })
 
@@ -673,11 +695,14 @@ export default function OrdersPage() {
             items: [
               {
                 id: `job-item-${j.id}`,
+                serviceName: j.product_name || (j as any).title || 'Production Print Job',
                 itemName: j.product_name || (j as any).title || 'Production Print Job',
                 dimensions: j.size_spec || (j.quantity ? `${j.quantity} pcs` : undefined),
                 quantity: Number(j.quantity) || 1,
                 unit: 'pcs',
                 materialSpec: j.material_spec || inferMaterialFromItemName(j.product_name || (j as any).title),
+                finishing: j.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (j.production_instructions?.startsWith('Finishing:') ? j.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
+                addOn: j.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
                 itemKind: 'custom',
                 workflowRouting: j.workflow_routing || 'ready_production',
                 notes: j.production_instructions ? j.production_instructions : undefined,
@@ -728,9 +753,11 @@ export default function OrdersPage() {
               const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
               const isOutsource = isOutsourceProduct(it) || it.item_kind === 'outsource'
               const itemKind = isOutsource ? 'outsource' : isReady ? 'ready_product' : (it.item_kind || 'custom')
+              const itName = it.item_description || it.description || it.item_name || 'Printing Item'
               return {
                 id: it.id || `inv-item-${inv.id}-${idx}`,
-                itemName: it.item_description || it.description || it.item_name || 'Printing Item',
+                serviceName: it.service_name || it.product_name || itName,
+                itemName: itName,
                 dimensions: it.dimensions_spec || (it.width && it.height ? `${it.width} × ${it.height} ${it.unit || 'ft'}` : undefined),
                 width: it.width,
                 height: it.height,
@@ -740,7 +767,8 @@ export default function OrdersPage() {
                 unitPrice: it.unit_price,
                 totalPrice: it.total_price,
                 materialSpec: it.material_spec || it.material,
-                finishing: it.finishing,
+                finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
+                addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
                 itemKind,
                 workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
                 designRequired: isReady ? false : it.design_required,
@@ -769,6 +797,7 @@ export default function OrdersPage() {
                 const itName = it.item_description || it.description || it.item_name || 'Printing Item'
                 return {
                   id: it.id || `inv-item-${inv.id}-${idx}`,
+                  serviceName: it.service_name || it.product_name || itName,
                   itemName: itName,
                   dimensions:
                     it.dimensions_spec ||
@@ -782,7 +811,8 @@ export default function OrdersPage() {
                   unitPrice: it.unit_price,
                   totalPrice: it.total_price,
                   materialSpec: it.material_spec || it.material || inferMaterialFromItemName(itName),
-                  finishing: it.finishing,
+                  finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
+                  addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
                   itemKind,
                   workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'ready_production')),
                   designRequired: isReady ? false : it.design_required,
@@ -804,6 +834,7 @@ export default function OrdersPage() {
 
             return {
               id: it.id || `inv-item-${inv.id}-${idx}`,
+              serviceName: it.service_name || it.product_name || itName,
               itemName: itName,
               dimensions:
                 it.dimensions_spec ||
@@ -817,7 +848,8 @@ export default function OrdersPage() {
               unitPrice: it.unit_price,
               totalPrice: it.total_price,
               materialSpec: it.material || it.material_spec || inferMaterialFromItemName(itName),
-              finishing: it.finishing,
+              finishing: it.finishing || (Array.isArray(it.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f).join(', ') : undefined),
+              addOn: it.add_on || it.addOn || it.addon || (Array.isArray(it.selected_add_ons) ? it.selected_add_ons.map((a: any) => a.name || a).join(', ') : undefined),
               itemKind,
               workflowRouting: isReady ? 'ready_product' : (it.workflow_routing || (it.design_required ? 'design_required' : 'design_ok')),
               designRequired: isReady ? false : it.design_required,

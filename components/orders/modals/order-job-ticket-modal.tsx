@@ -149,22 +149,24 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
               <thead>
                 <tr className="bg-slate-100 text-2xs font-bold text-slate-700 uppercase">
                   <th className="border border-slate-300 p-2 w-8 text-center">#</th>
-                  <th className="border border-slate-300 p-2">{tBilingual('Item Name & Material', 'কাজের নাম ও মেটেরিয়াল')}</th>
-                  <th className="border border-slate-300 p-2">{tBilingual('Dimensions', 'সাইজ / মাপ')}</th>
+                  <th className="border border-slate-300 p-2">{tBilingual('Service & Material', 'সার্ভিস ও মেটেরিয়াল')}</th>
+                  <th className="border border-slate-300 p-2">{tBilingual('Size', 'সাইজ / মাপ')}</th>
                   <th className="border border-slate-300 p-2">{tBilingual('Quantity & Area', 'পরিমাণ ও ক্ষেত্রফল')}</th>
-                  <th className="border border-slate-300 p-2">{tBilingual('Finishing', 'ফিনিশিং / বাইন্ডিং')}</th>
+                  <th className="border border-slate-300 p-2">{tBilingual('Finishing & Add-on', 'ফিনিশিং ও অ্যাড-অন')}</th>
                   <th className="border border-slate-300 p-2">{tBilingual('Floor Routing', 'ফ্লোর রাউটিং')}</th>
                 </tr>
               </thead>
               <tbody>
                 {(order.items.length === 0 ? [{
                   id: `job-item-${order.id}`,
+                  serviceName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
                   itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
                   quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
                   unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
                   materialSpec: order.rawJob?.material_spec || order.rawInvoice?.items?.[0]?.material_spec || undefined,
                   dimensions: order.rawJob?.size_spec || order.rawInvoice?.items?.[0]?.dimensions_spec || undefined,
-                  finishing: order.rawJob?.production_instructions?.replace(/^Finishing:\s*/i, '') || undefined,
+                  finishing: order.rawJob?.production_instructions?.match(/Finishing:\s*([^|;]+)/i)?.[1]?.trim() || (order.rawJob?.production_instructions?.startsWith('Finishing:') ? order.rawJob.production_instructions.replace(/^Finishing:\s*/, '').split('|')[0].trim() : undefined),
+                  addOn: order.rawJob?.production_instructions?.match(/Add-?on:\s*([^|;]+)/i)?.[1]?.trim() || undefined,
                   workflowRouting: 'ready_production',
                 } as OrderItemSpec] : order.items).map((it, idx) => {
                   const specs = resolveOrderItemSpecs(it, order.rawJob, order.rawInvoice, tBilingual)
@@ -172,7 +174,7 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                     <tr key={it.id || idx} className="border border-slate-300 text-2xs">
                       <td className="border border-slate-300 p-2 text-center font-bold">{idx + 1}</td>
                       <td className="border border-slate-300 p-2">
-                        <strong className="text-slate-900 block">{it.itemName}</strong>
+                        <strong className="text-slate-900 block">{specs.serviceName}</strong>
                         <span className="text-2xs text-slate-700 font-mono font-medium block">
                           📄 {specs.material}
                         </span>
@@ -184,7 +186,20 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                         📦 {specs.quantity}
                       </td>
                       <td className="border border-slate-300 p-2">
-                        {specs.finishing ? `✨ ${specs.finishing}` : (it.finishing || tBilingual('Standard Cutting', 'সাধারণ কাটিং'))}
+                        <div>
+                          <span className="text-slate-500 font-medium">{tBilingual('Finishing: ', 'ফিনিশিং: ')}</span>
+                          <span className={specs.finishing !== 'None' ? 'font-semibold text-amber-800' : 'text-slate-600'}>
+                            {specs.finishing}
+                          </span>
+                        </div>
+                        {specs.addOn !== 'None' && (
+                          <div className="mt-0.5">
+                            <span className="text-slate-500 font-medium">{tBilingual('Add-on: ', 'অ্যাড-অন: ')}</span>
+                            <span className="font-semibold text-indigo-800">
+                              {specs.addOn}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="border border-slate-300 p-2">
                         <span className="bg-slate-100 px-1.5 py-0.5 rounded text-2xs font-bold uppercase">
