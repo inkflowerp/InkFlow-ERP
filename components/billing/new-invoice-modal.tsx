@@ -1676,11 +1676,8 @@ export function NewInvoiceModal({
             </div>
             <div>
               <h2 className="text-base font-black text-slate-900 dark:text-white">
-                {locale === 'bn' ? 'নতুন চালান / ইনভয়েস তৈরি' : 'Create New Commercial Invoice'}
+                {locale === 'bn' ? 'নতুন চালান / ইনভয়েস' : 'New Invoice'}
               </h2>
-              <p className="text-2xs text-slate-500 dark:text-slate-400">
-                Easier than Excel • Faster than paper • Save-First Guarantee
-              </p>
             </div>
           </div>
 
@@ -1741,7 +1738,7 @@ export function NewInvoiceModal({
             SECTION 1: CUSTOMER SEARCH & DETAILS
            ========================================================================= */}
         <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                 1
@@ -1751,12 +1748,38 @@ export function NewInvoiceModal({
               </h3>
             </div>
 
-            {isExistingCustomerSelected && (
-              <span className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
-                <UserCheck className="h-3.5 w-3.5" />
-                Customer Linked & Pricing Resolved
-              </span>
-            )}
+            <div className="flex items-center gap-2">
+              {isExistingCustomerSelected && (
+                <span className="inline-flex items-center gap-1 text-2xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-md border border-blue-200 dark:border-blue-800">
+                  <UserCheck className="h-3.5 w-3.5" />
+                  Customer Linked & Pricing Resolved
+                </span>
+              )}
+
+              {/* Customer Type Tabs */}
+              <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+                {[
+                  { value: 'retail', label: isBn ? 'খুচরা' : 'Retail' },
+                  { value: 'reseller', label: isBn ? 'রিসেলার' : 'Reseller' },
+                  { value: 'corporate', label: isBn ? 'কর্পোরেট' : 'Corporate' },
+                  { value: 'government', label: isBn ? 'সরকারি / সংস্থা' : 'Govt / Org' },
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setCustomerType(tab.value as any)}
+                    className={cn(
+                      'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
+                      customerType === tab.value
+                        ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                    )}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Customer Search & Inputs */}
@@ -1855,8 +1878,8 @@ export function NewInvoiceModal({
               )}
             </div>
 
-            {/* Row 2: [Billing Address] [Email] [Customer Type] */}
-            <div>
+            {/* Row 2: [Billing Address (2 cols)] [Email (1 col)] */}
+            <div className="md:col-span-2">
               <Label className="text-xs font-semibold mb-1 block">
                 Billing Address <span className="text-rose-500">*</span>
               </Label>
@@ -1869,7 +1892,7 @@ export function NewInvoiceModal({
               />
             </div>
 
-            <div className="relative" ref={emailSearchRef}>
+            <div className="relative md:col-span-1" ref={emailSearchRef}>
               <Label className="text-xs font-semibold mb-1 block">Email (for PDF Invoice)</Label>
               <div className="relative">
                 <Input
@@ -1897,20 +1920,6 @@ export function NewInvoiceModal({
                   onHover={setCustomerHighlightedIndex}
                 />
               )}
-            </div>
-
-            <div>
-              <Label className="text-xs font-semibold mb-1 block">{tBilingual('Customer Type', 'গ্রাহকের ধরন')}</Label>
-              <select
-                value={customerType}
-                onChange={(e) => setCustomerType(e.target.value as any)}
-                className="w-full h-9 px-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-              >
-                <option value="retail">{tBilingual('Retail / Walk-in', 'খুচরা গ্রাহক')}</option>
-                <option value="corporate">{tBilingual('Corporate', 'কর্পোরেট')}</option>
-                <option value="reseller">{tBilingual('Reseller / Dealer', 'রিসেলার / ডিলার')}</option>
-                <option value="government">{tBilingual('Government / Org', 'সরকারি প্রতিষ্ঠান')}</option>
-              </select>
             </div>
           </div>
 
@@ -2876,84 +2885,209 @@ export function NewInvoiceModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Subtotal', 'মোট বিল')}</Label>
-              </div>
-              <div className="h-9 px-3 flex items-center bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
-                {formatBDT(subtotal)}
-              </div>
-            </div>
-
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Discount (৳)', 'ছাড় (৳)')}</Label>
-              </div>
-              <Input
-                type="number"
-                value={discountAmount || ''}
-                onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
-                className="h-9 text-xs font-mono font-bold"
-                placeholder="0.00"
-                min={0}
+          {/* 3-Column Financial Totals & Commercial Settlement */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-stretch text-xs">
+            {/* Column 1: Note */}
+            <div className="lg:col-span-4 flex flex-col">
+              <Label className="text-xs font-semibold mb-1.5 block text-slate-700 dark:text-slate-300">
+                {tBilingual('Note', 'নোট')}
+              </Label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={tBilingual(
+                  'Write special instructions, delivery notes, or terms here...',
+                  'বিশেষ নির্দেশনা, ডেলিভারি নোট বা শর্তাবলী লিখুন...'
+                )}
+                className="w-full flex-1 min-h-[190px] p-2.5 text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none font-sans"
               />
             </div>
 
-            <div>
-              <div className="h-6 flex items-center justify-between gap-1 mb-1">
-                <Label className="text-xs font-semibold whitespace-nowrap shrink-0">{tBilingual('NBR VAT (%)', 'এনবিআর ভ্যাট (%)')}</Label>
-                <div className="flex items-center gap-0.5 shrink-0">
-                  {[0, 5, 7.5, 15].map((rate) => (
-                    <button
-                      key={rate}
-                      type="button"
-                      onClick={() => setVatPercentage(rate)}
-                      className={cn(
-                        'px-1 py-0.5 rounded text-2xs font-bold cursor-pointer transition-all whitespace-nowrap',
-                        vatPercentage === rate
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300'
-                      )}
+            {/* Column 2: Commercial & Logistics Details */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-2">
+              <div className="space-y-2">
+                {/* Ref/PO no. */}
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                    {tBilingual('Ref/PO no.', 'রেফারেন্স / পিও')}
+                  </Label>
+                  <div className="col-span-7">
+                    <Input
+                      placeholder="e.g. PO-2026-9812"
+                      value={referenceNo}
+                      onChange={(e) => setReferenceNo(e.target.value)}
+                      className="h-8.5 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+
+                {/* Due Date */}
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                    {tBilingual('Due Date', 'পরিশোধের তারিখ')}
+                  </Label>
+                  <div className="col-span-7">
+                    <Input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
+                      className="h-8.5 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Delivery Date */}
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                    {tBilingual('Delivery Date', 'ডেলিভারি তারিখ')}
+                  </Label>
+                  <div className="col-span-7">
+                    <Input
+                      type="date"
+                      value={deliveryDate}
+                      onChange={(e) => setDeliveryDate(e.target.value)}
+                      className="h-8.5 text-xs"
+                    />
+                  </div>
+                </div>
+
+                {/* Delivery Method */}
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                    {tBilingual('Delivery Method', 'ডেলিভারি মাধ্যম')}
+                  </Label>
+                  <div className="col-span-7">
+                    <select
+                      value={deliveryMethod}
+                      onChange={(e) => setDeliveryMethod(e.target.value as any)}
+                      className="w-full h-8.5 px-2 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
                     >
-                      {rate}%
-                    </button>
-                  ))}
+                      <option value="customer_pickup">{tBilingual('Customer Pickup', 'কাস্টমার পিকআপ')}</option>
+                      <option value="company_delivery">{tBilingual('Company Delivery', 'কোম্পানি ডেলিভারি')}</option>
+                      <option value="courier">{tBilingual('Courier (Sundarban / SA)', 'কুরিয়ার (সুন্দরবন / এসএ)')}</option>
+                    </select>
+                  </div>
                 </div>
               </div>
-              <Input
-                type="number"
-                value={vatPercentage || ''}
-                onChange={(e) => setVatPercentage(Math.max(0, Number(e.target.value) || 0))}
-                className="h-9 text-xs font-mono font-bold"
-                placeholder="0%"
-                min={0}
-                max={100}
-              />
+
+              {/* Payment Method at bottom */}
+              <div className="pt-1 mt-auto space-y-1">
+                <div className="grid grid-cols-12 items-center gap-2">
+                  <Label className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400 truncate">
+                    {tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}
+                  </Label>
+                  <div className="col-span-7">
+                    <select
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value as any)}
+                      className="w-full h-8.5 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
+                    >
+                      <option value="cash">{tBilingual('Cash Counter', 'ক্যাশ কাউন্টার')}</option>
+                      <option value="bkash">{tBilingual('bKash Merchant', 'বিকাশ')}</option>
+                      <option value="nagad">{tBilingual('Nagad Wallet', 'নগদ')}</option>
+                      <option value="bank">{tBilingual('Bank Transfer', 'ব্যাংক ট্রান্সফার')}</option>
+                      <option value="cheque">{tBilingual('Bank Cheque', 'ব্যাংক চেক')}</option>
+                      <option value="other_mfs">{tBilingual('Other MFS', 'অন্যান্য')}</option>
+                    </select>
+                  </div>
+                </div>
+                {paymentMethod !== 'cash' && (
+                  <div className="grid grid-cols-12 items-center gap-2 pt-0.5">
+                    <span className="col-span-5 text-2xs text-slate-400 truncate">
+                      {tBilingual('Trx Note', 'নোট')}
+                    </span>
+                    <div className="col-span-7">
+                      <Input
+                        placeholder={tBilingual('Trx ID / Cheque / Account Note', 'ট্রানজেকশন আইডি / চেক নং')}
+                        value={paymentMethodNote}
+                        onChange={(e) => setPaymentMethodNote(e.target.value)}
+                        className="h-7 text-2xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Grand Total', 'সর্বমোট বিল')}</Label>
+            {/* Column 3: Financial Totals */}
+            <div className="lg:col-span-4 flex flex-col justify-between space-y-2">
+              {/* Subtotal */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  {tBilingual('Subtotal', 'মোট বিল')}
+                </span>
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-bold text-slate-900 dark:text-white">
+                  {formatBDT(subtotal)}
+                </div>
               </div>
-              <div className="h-9 px-3 flex items-center bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300 text-sm">
-                {formatBDT(grandTotal)}
-              </div>
-            </div>
 
-            <div>
-              <div className="h-6 flex items-center justify-between gap-1 mb-1">
-                <Label className="text-xs font-semibold whitespace-nowrap shrink-0">{tBilingual('Advance Paid (৳)', 'অগ্রিম পরিশোধ (৳)')}</Label>
-                <div className="flex items-center gap-1 shrink-0">
+              {/* Discount */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <span className="col-span-5 text-xs font-semibold text-slate-600 dark:text-slate-400">
+                  {tBilingual('Discount', 'ছাড় (৳)')}
+                </span>
+                <div className="col-span-7">
+                  <Input
+                    type="number"
+                    value={discountAmount || ''}
+                    onChange={(e) => setDiscountAmount(Math.max(0, Number(e.target.value) || 0))}
+                    className="h-8.5 text-xs font-mono font-bold text-right"
+                    placeholder="0.00"
+                    min={0}
+                  />
+                </div>
+              </div>
+
+              {/* Vat []% */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <div className="col-span-5 flex items-center gap-1.5 flex-wrap">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    {tBilingual('Vat', 'ভ্যাট')}
+                  </span>
+                  <div className="inline-flex items-center border border-slate-300 dark:border-slate-700 rounded-md overflow-hidden bg-white dark:bg-slate-900">
+                    <input
+                      type="number"
+                      value={vatPercentage || ''}
+                      onChange={(e) => setVatPercentage(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                      className="w-8 h-6 text-2xs font-mono font-bold text-center bg-transparent focus:outline-none"
+                      placeholder="0"
+                      min={0}
+                      max={100}
+                    />
+                    <span className="pr-1 text-2xs text-slate-400 font-medium">%</span>
+                  </div>
+                </div>
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-slate-100 dark:bg-slate-800 rounded-md font-mono font-semibold text-slate-700 dark:text-slate-300">
+                  {formatBDT(vatAmount)}
+                </div>
+              </div>
+
+              {/* Grand Total */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <span className="col-span-5 text-xs font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Grand Total', 'সর্বমোট বিল')}
+                </span>
+                <div className="col-span-7 h-8.5 px-3 flex items-center justify-end text-right bg-blue-50 dark:bg-blue-950/50 border border-blue-200 dark:border-blue-800 rounded-md font-mono font-black text-blue-700 dark:text-blue-300">
+                  {formatBDT(grandTotal)}
+                </div>
+              </div>
+
+              {/* Advance */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <div className="col-span-5 flex items-center gap-1">
+                  <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    {tBilingual('Advance', 'অগ্রিম')}
+                  </span>
                   <button
                     type="button"
                     onClick={() => {
                       setAdvancePercentage(50)
                       setAdvanceAmount(Math.round(grandTotal * 0.5))
                     }}
-                    className="px-1.5 py-0.5 rounded text-2xs font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer whitespace-nowrap"
+                    className="px-1 py-0.5 rounded text-3xs font-bold bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-300 cursor-pointer"
                   >
-                    {isBn ? '৫০%' : '50%'}
+                    50%
                   </button>
                   <button
                     type="button"
@@ -2961,140 +3095,57 @@ export function NewInvoiceModal({
                       setAdvancePercentage(100)
                       setAdvanceAmount(grandTotal)
                     }}
-                    className="px-1.5 py-0.5 rounded text-2xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer whitespace-nowrap"
+                    className="px-1 py-0.5 rounded text-3xs font-bold bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 cursor-pointer"
                   >
-                    {isBn ? '১০০%' : '100%'}
+                    100%
                   </button>
                 </div>
+                <div className="col-span-7">
+                  <Input
+                    type="number"
+                    value={advanceAmount || ''}
+                    onChange={(e) => {
+                      const val = Math.max(0, Number(e.target.value) || 0)
+                      setAdvanceAmount(val)
+                      if (grandTotal > 0) {
+                        setAdvancePercentage(Math.round((val / grandTotal) * 100))
+                      }
+                    }}
+                    className="h-8.5 text-xs font-mono font-bold text-right"
+                    placeholder="0.00"
+                    min={0}
+                    max={grandTotal}
+                  />
+                </div>
               </div>
-              <Input
-                type="number"
-                value={advanceAmount || ''}
-                onChange={(e) => {
-                  const val = Math.max(0, Number(e.target.value) || 0)
-                  setAdvanceAmount(val)
-                  if (grandTotal > 0) {
-                    setAdvancePercentage(Math.round((val / grandTotal) * 100))
-                  }
-                }}
-                className="h-9 text-xs font-mono font-bold"
-                placeholder="0.00"
-                min={0}
-                max={grandTotal}
-              />
-            </div>
 
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Balance Due', 'ডেলিভারিতে বাকি')}</Label>
-              </div>
-              <div className={cn(
-                'h-9 px-3 flex items-center rounded-md font-mono font-black text-sm border',
-                dueAmount > 0
-                  ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
-                  : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
-              )}>
-                {formatBDT(dueAmount)}
-              </div>
-            </div>
-
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Payment Method', 'পরিশোধের মাধ্যম')}</Label>
-              </div>
-              <select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value as any)}
-                className="w-full h-9 text-xs rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 px-2 font-medium"
-              >
-                <option value="cash">{tBilingual('Cash Counter', 'ক্যাশ কাউন্টার')}</option>
-                <option value="bkash">{tBilingual('bKash Merchant', 'বিকাশ')}</option>
-                <option value="nagad">{tBilingual('Nagad Wallet', 'নগদ')}</option>
-                <option value="bank">{tBilingual('Bank Transfer', 'ব্যাংক ট্রান্সফার')}</option>
-                <option value="cheque">{tBilingual('Bank Cheque', 'ব্যাংক চেক')}</option>
-                <option value="other_mfs">{tBilingual('Other MFS', 'অন্যান্য')}</option>
-              </select>
-            </div>
-
-            <div>
-              <div className="h-6 flex items-center mb-1">
-                <Label className="text-xs font-semibold">{tBilingual('Due Date', 'পরিশোধের শেষ তারিখ')}</Label>
-              </div>
-              <Input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="h-9 text-xs"
-                required
-              />
-            </div>
-          </div>
-
-          {/* Additional Commercial Details (Reference, Delivery & Payment Notes) */}
-          <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div>
-              <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Ref / Customer PO No.', 'রেফারেন্স / পিও নং')}</Label>
-              <Input
-                placeholder="e.g. PO-2026-9812 / Work Order Ref"
-                value={referenceNo}
-                onChange={(e) => setReferenceNo(e.target.value)}
-                className="h-9 text-xs font-medium"
-              />
-            </div>
-
-            <div>
-              <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Payment Note / Trx ID', 'ট্রানজেকশন তথ্য / নোট')}</Label>
-              <Input
-                placeholder="e.g. bKash TrxID: 9X29A887B / Cheque No: 48912"
-                value={paymentMethodNote}
-                onChange={(e) => setPaymentMethodNote(e.target.value)}
-                className="h-9 text-xs"
-              />
-            </div>
-
-            <div>
-              <Label className="text-2xs font-semibold mb-1 block">{tBilingual('Delivery Date & Method', 'ডেলিভারির তারিখ ও মাধ্যম')}</Label>
-              <div className="grid grid-cols-2 gap-1.5">
-                <Input
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="h-9 text-xs"
-                />
-                <select
-                  value={deliveryMethod}
-                  onChange={(e) => setDeliveryMethod(e.target.value as any)}
-                  className="h-9 px-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-                >
-                  <option value="customer_pickup">{tBilingual('Customer Pickup', 'কাস্টমার পিকআপ')}</option>
-                  <option value="company_delivery">{tBilingual('Company Delivery', 'কোম্পানি ডেলিভারি')}</option>
-                  <option value="courier">{tBilingual('Courier (Sundarban / SA)', 'কুরিয়ার (সুন্দরবন / এসএ)')}</option>
-                </select>
+              {/* Due */}
+              <div className="grid grid-cols-12 items-center gap-2">
+                <span className="col-span-5 text-xs font-bold text-slate-900 dark:text-white">
+                  {tBilingual('Due', 'বাকি')}
+                </span>
+                <div className={cn(
+                  'col-span-7 h-8.5 px-3 flex items-center justify-end text-right rounded-md font-mono font-black border',
+                  dueAmount > 0
+                    ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/50 dark:text-rose-300 dark:border-rose-800'
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                )}>
+                  {formatBDT(dueAmount)}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Advanced collapsible fields */}
           {isAdvancedMode && (
-            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs animate-in fade-in-0">
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Invoice Notes / Special Instructions</Label>
-                <Input
-                  placeholder="Notes printed on invoice..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="h-9 text-xs"
-                />
-              </div>
-              <div>
-                <Label className="text-xs font-semibold mb-1 block">Terms & Conditions</Label>
-                <Input
-                  placeholder="Delivery upon full payment, no return on custom prints..."
-                  value={termsAndConditions}
-                  onChange={(e) => setTermsAndConditions(e.target.value)}
-                  className="h-9 text-xs"
-                />
-              </div>
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 text-xs animate-in fade-in-0">
+              <Label className="text-xs font-semibold mb-1 block">Terms & Conditions</Label>
+              <Input
+                placeholder="Delivery upon full payment, no return on custom prints..."
+                value={termsAndConditions}
+                onChange={(e) => setTermsAndConditions(e.target.value)}
+                className="h-9 text-xs"
+              />
             </div>
           )}
         </div>

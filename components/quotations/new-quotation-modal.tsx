@@ -74,6 +74,16 @@ import {
   getAddOnRate,
 } from '@/lib/finishing-addons'
 
+const DEFAULT_NOTES_TEXT = `Prices are valid for 7 days.
+Installation will be scheduled after confirmation.
+Design and site measurement included in this quotation.`
+
+const DEFAULT_TERMS_TEXT = `1. This quotation is valid for 7 days from the date above.
+2. Prices are subject to change without prior notice.
+3. Advance payment may be required to start the work.
+4. Delivery and installation timeline will be confirmed after approval.
+5. Any additional work beyond this quotation will be quoted separately.`
+
 interface CatalogComboboxProps {
   products: ProductRecord[]
   selectedProductId?: string | null
@@ -618,9 +628,10 @@ export function NewQuotationModal({
   const [resolvedRatesMap, setResolvedRatesMap] = useState<Map<string, ResolvedProductRate>>(new Map())
 
   const [discountAmount, setDiscountAmount] = useState<number>(0)
-  const [discountType, setDiscountType] = useState<'fixed' | 'percent'>('fixed')
+  const [discountType, setDiscountType] = useState<'fixed' | 'percent'>('percent')
   const [discountPercentValue, setDiscountPercentValue] = useState<number>(0)
-  const [vatRate, setVatRate] = useState<number>(7.5)
+  const [vatRate, setVatRate] = useState<number>(15)
+  const [isVatEnabled, setIsVatEnabled] = useState<boolean>(true)
 
   // Bangladeshi Commercial Terms (Advance 50% standard)
   const [advancePercentage, setAdvancePercentage] = useState<number>(50)
@@ -635,11 +646,16 @@ export function NewQuotationModal({
   const [deliveryMethod, setDeliveryMethod] = useState<QuotationDeliveryMethod>('customer_pickup')
   const [installationRequired, setInstallationRequired] = useState(false)
 
-  const [customerNotes, setCustomerNotes] = useState('')
-  const [termsAndConditions, setTermsAndConditions] = useState(() =>
-    locale === 'bn' ? DEFAULT_QUOTATION_TERMS_BN : DEFAULT_QUOTATION_TERMS
-  )
+  const [customerNotes, setCustomerNotes] = useState(DEFAULT_NOTES_TEXT)
+  const [termsAndConditions, setTermsAndConditions] = useState(DEFAULT_TERMS_TEXT)
+  const [selectedTermsTemplate, setSelectedTermsTemplate] = useState('default')
   const [internalNotes, setInternalNotes] = useState('')
+
+  // Bottom Bar Options & Actions (Image 2)
+  const [sendToCustomer, setSendToCustomer] = useState(true)
+  const [createJobOrder, setCreateJobOrder] = useState(false)
+  const [printPdfAfterSaving, setPrintPdfAfterSaving] = useState(false)
+  const [submitActionType, setSubmitActionType] = useState<'create' | 'draft'>('create')
 
   // -------------------------------------------------------------
   // UI & SUBMISSION STATE
@@ -1387,8 +1403,9 @@ export function NewQuotationModal({
   }, [calculatedSubtotal, effectiveDiscountAmount])
 
   const calculatedVat = useMemo(() => {
+    if (!isVatEnabled) return 0
     return Math.round((subtotalAfterDiscount * Math.max(0, vatRate)) / 100)
-  }, [subtotalAfterDiscount, vatRate])
+  }, [subtotalAfterDiscount, isVatEnabled, vatRate])
 
   const calculatedGrandTotal = useMemo(() => {
     return subtotalAfterDiscount + calculatedVat
@@ -1491,7 +1508,7 @@ export function NewQuotationModal({
       salesperson_name: salespersonName.trim() || currentUser?.profile?.full_name || 'Sales Representative',
       items: finalItems,
       discount_amount: effectiveDiscountAmount,
-      vat_rate: vatRate,
+      vat_rate: isVatEnabled ? vatRate : 0,
       advance_percentage: advancePercentage,
       advance_amount: calculatedAdvanceAmount,
       due_on_delivery: calculatedDueOnDelivery,
@@ -1502,7 +1519,10 @@ export function NewQuotationModal({
       installation_required: installationRequired,
       notes: customerNotes.trim() || undefined,
       terms_and_conditions: termsAndConditions.trim() || undefined,
-      internal_notes: internalNotes.trim() || undefined,
+      internal_notes: [
+        internalNotes.trim(),
+        createJobOrder ? '[Option: Create job order after approval]' : '',
+      ].filter(Boolean).join('\n') || undefined,
       language_mode: locale === 'bn' ? 'bn' as const : 'en' as const,
     }
 
@@ -1590,6 +1610,55 @@ export function NewQuotationModal({
     }
   }
 
+  const handleSaveAsDraft = async () => {
+    setSubmitActionType('draft')
+    const saved = await handleSaveQuotation()
+    if (saved) {
+      onOpenChange(false)
+    }
+  }
+
+  const handleCreateQuotation = async () => {
+    setSubmitActionType('create')
+    const saved = await handleSaveQuotation()
+    if (!saved) return
+
+    if (printPdfAfterSaving) {
+      window.open(`/${company?.slug || slug || 'classic-printer'}/quotations/${saved.id}?print=true`, '_blank')
+    }
+
+    if (sendToCustomer) {
+      const rawPhone = saved.customer_whatsapp || saved.customer_phone || customerPhone || ''
+      if (rawPhone) {
+        const clean = rawPhone.replace(/\D/g, '')
+        const formatted = clean.startsWith('880') ? clean : clean.startsWith('0') ? `88${clean}` : `880${clean}`
+
+        const itemsSummary = saved.items
+          .map((it, idx) => `${idx + 1}. ${it.description} (${it.area_sft > 0 ? `${it.width}×${it.height}ft = ${it.area_sft}sft` : `${it.quantity} ${it.unit}`}) - ${formatBDT(it.item_total)}`)
+          .join('\n')
+
+        const text = encodeURIComponent(
+          `প্রিয় ${saved.customer_name},\n\nআপনার জন্য ${company?.name || 'InkFlow'} এর অফিশিয়াল কোটেশন প্রস্তুত করা হয়েছে:\n` +
+          `কোটেশন নং: #${saved.quotation_number}\n` +
+          `তারিখ: ${saved.quotation_date} (মেয়াদ: ${saved.valid_until} পর্যন্ত)\n\n` +
+          `আইটেম বিবরণ:\n${itemsSummary}\n\n` +
+          `মোট মূল্য: ${formatBDT(saved.grand_total)}\n\n` +
+          `নোট:\n${saved.notes || ''}\n\n` +
+          `শর্তাবলী:\n${saved.terms_and_conditions || ''}\n\n` +
+          `ধন্যবাদ!`
+        )
+        window.open(`https://wa.me/${formatted}?text=${text}`, '_blank')
+      }
+
+      sendQuotationAction(
+        { quotationId: saved.id, channel: 'whatsapp', format: 'pdf' },
+        effectiveCompanyId
+      ).catch(() => {})
+    }
+
+    onOpenChange(false)
+  }
+
   // Multi-Channel Dispatch Handler (WhatsApp / Email)
   const handleSend = async (channel: 'whatsapp' | 'email', format: 'pdf' | 'text') => {
     let quoteToUse = saveSuccessQuote
@@ -1667,15 +1736,9 @@ export function NewQuotationModal({
               <FileSpreadsheet className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>New Commercial Quotation</span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-300 font-mono font-semibold">
-                  Bangladesh Commercial Master 2.3
-                </span>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                New Quotation
               </h2>
-              <p className="text-xs text-slate-500">
-                Digital Print • Offset Packaging • 3D Signage
-              </p>
             </div>
           </div>
         }
@@ -1701,7 +1764,7 @@ export function NewQuotationModal({
               SECTION 1: CUSTOMER INFORMATION
              ========================================================================= */}
           <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
                   1
@@ -1711,27 +1774,49 @@ export function NewQuotationModal({
                 </h3>
               </div>
 
-              {selectedCustomer ? (
-                <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold">
-                    <UserCheck className="h-3 w-3 mr-1 text-emerald-600" />
-                    Existing Customer Selected
-                  </Badge>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClearCustomer}
-                    className="h-6 text-2xs text-slate-400 hover:text-slate-700"
-                  >
-                    Change
-                  </Button>
+              <div className="flex items-center gap-2">
+                {selectedCustomer && (
+                  <div className="flex items-center gap-1.5 mr-1">
+                    <Badge variant="outline" className="bg-emerald-50 text-emerald-800 border-emerald-300 text-xs font-semibold">
+                      <UserCheck className="h-3 w-3 mr-1 text-emerald-600" />
+                      Existing Customer
+                    </Badge>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleClearCustomer}
+                      className="h-6 text-2xs text-slate-400 hover:text-slate-700 cursor-pointer"
+                    >
+                      Change
+                    </Button>
+                  </div>
+                )}
+
+                {/* Customer Type Tabs */}
+                <div className="inline-flex items-center p-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700">
+                  {[
+                    { value: 'retail', label: 'Retail' },
+                    { value: 'reseller', label: 'Reseller' },
+                    { value: 'corporate', label: 'Corporate' },
+                    { value: 'government', label: 'Govt / Org' },
+                  ].map((tab) => (
+                    <button
+                      key={tab.value}
+                      type="button"
+                      onClick={() => setCustomerType(tab.value)}
+                      className={cn(
+                        'px-2.5 py-1 text-xs font-medium rounded-md transition-all cursor-pointer',
+                        customerType === tab.value
+                          ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs font-semibold'
+                          : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                      )}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
                 </div>
-              ) : (
-                <span className="text-2xs text-slate-400">
-                  Search directory or type new customer
-                </span>
-              )}
+              </div>
             </div>
 
             {/* Customer Inputs Grid */}
@@ -1845,8 +1930,8 @@ export function NewQuotationModal({
                 )}
               </div>
 
-              {/* Row 2: Address, Email, Customer Type */}
-              <div>
+              {/* Row 2: Address, Email */}
+              <div className="sm:col-span-2">
                 <Label htmlFor="custAddressInput" className="text-xs font-semibold mb-1 block">
                   Delivery / Office Address
                 </Label>
@@ -1859,7 +1944,7 @@ export function NewQuotationModal({
                 />
               </div>
 
-              <div className="relative" ref={emailSearchRef}>
+              <div className="sm:col-span-1 relative" ref={emailSearchRef}>
                 <Label htmlFor="custEmailInput" className="text-xs font-semibold mb-1 block">
                   Email Address
                 </Label>
@@ -1871,23 +1956,6 @@ export function NewQuotationModal({
                   onChange={(e) => handleCustomerFieldChange('email', e.target.value)}
                   className="text-xs h-9"
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="custTypeSelect" className="text-xs font-semibold mb-1 block">
-                  Customer Type <span className="text-rose-500">*</span>
-                </Label>
-                <select
-                  id="custTypeSelect"
-                  value={customerType}
-                  onChange={(e) => setCustomerType(e.target.value)}
-                  className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-200"
-                >
-                  <option value="retail">{tBilingual('Retail / Walk-in', 'খুচরা গ্রাহক')}</option>
-                  <option value="reseller">{tBilingual('Reseller / Dealer', 'রিসেলার / ডিলার')}</option>
-                  <option value="corporate">{tBilingual('Corporate', 'কর্পোরেট')}</option>
-                  <option value="government">{tBilingual('Government / Org', 'সরকারি প্রতিষ্ঠান')}</option>
-                </select>
               </div>
             </div>
 
@@ -2208,7 +2276,6 @@ export function NewQuotationModal({
                     {/* Standard Dimension Presets */}
                     {isService && Array.isArray(item.available_dimension_presets) && item.available_dimension_presets.length > 0 && (
                       <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                        <span className="text-2xs font-bold text-slate-400 mr-1">Standard Sizes:</span>
                         {item.available_dimension_presets.map((preset, pIdx) => (
                           <button
                             key={pIdx}
@@ -2541,390 +2608,236 @@ export function NewQuotationModal({
           </div>
 
           {/* =========================================================================
-              SECTION 4: PRICING, DISCOUNT & BANGLADESHI ADVANCE TERMS HUD
+              BOTTOM AREA: NOTES, TERMS & CONDITIONS, AMOUNT SUMMARY (SAME AS REFERENCE IMAGE 2)
              ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                4
-              </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Commercial Pricing, VAT & Advance Payment HUD
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
-              {/* Discount Input */}
-              <div className="sm:col-span-4">
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-semibold">Negotiated Discount</Label>
-                  <div className="flex gap-1 text-2xs">
-                    <button
-                      type="button"
-                      onClick={() => setDiscountType('fixed')}
-                      className={cn(
-                        'px-1.5 py-0.5 rounded cursor-pointer',
-                        discountType === 'fixed'
-                          ? 'bg-blue-600 text-white font-bold'
-                          : 'text-slate-500 hover:bg-slate-200'
-                      )}
-                    >
-                      ৳ BDT
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDiscountType('percent')}
-                      className={cn(
-                        'px-1.5 py-0.5 rounded cursor-pointer',
-                        discountType === 'percent'
-                          ? 'bg-blue-600 text-white font-bold'
-                          : 'text-slate-500 hover:bg-slate-200'
-                      )}
-                    >
-                      %
-                    </button>
-                  </div>
-                </div>
-                {discountType === 'fixed' ? (
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    value={discountAmount || ''}
-                    onChange={(e) => setDiscountAmount(parseFloat(e.target.value) || 0)}
-                    className="text-xs h-9 font-mono"
-                  />
-                ) : (
-                  <Input
-                    type="number"
-                    placeholder="0 %"
-                    value={discountPercentValue || ''}
-                    onChange={(e) => setDiscountPercentValue(parseFloat(e.target.value) || 0)}
-                    className="text-xs h-9 font-mono"
-                  />
-                )}
-              </div>
-
-              {/* VAT Selector */}
-              <div className="sm:col-span-3">
-                <Label className="text-xs font-semibold mb-1 block">NBR Mushak-6.3 VAT</Label>
-                <select
-                  value={vatRate}
-                  onChange={(e) => setVatRate(parseFloat(e.target.value) || 0)}
-                  className="w-full h-9 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-                >
-                  <option value={0}>0% (Non-VAT / Exempt)</option>
-                  <option value={5}>5% (Service VAT)</option>
-                  <option value={7.5}>7.5% (Standard Print VAT)</option>
-                  <option value={15}>15% (Full Standard NBR VAT)</option>
-                </select>
-              </div>
-
-              {/* Advance Requirement Selector */}
-              <div className="sm:col-span-5">
-                <div className="flex items-center justify-between mb-1">
-                  <Label className="text-xs font-semibold">Advance Payment Terms</Label>
-                  <span className="text-2xs text-blue-600 font-bold">Standard: 50%</span>
-                </div>
-                <div className="grid grid-cols-4 gap-1">
-                  {[
-                    { label: '50% Adv', val: 50 },
-                    { label: '100% Full', val: 100 },
-                    { label: '30% Adv', val: 30 },
-                    { label: '0% Post', val: 0 },
-                  ].map((adv) => (
-                    <button
-                      key={adv.val}
-                      type="button"
-                      onClick={() => {
-                        setAdvancePercentage(adv.val)
-                        setCustomAdvanceAmount(null)
-                      }}
-                      className={cn(
-                        'h-9 rounded-lg text-xs font-bold border transition-all cursor-pointer',
-                        advancePercentage === adv.val && customAdvanceAmount === null
-                          ? 'bg-slate-900 text-white border-slate-900 dark:bg-slate-100 dark:text-slate-900'
-                          : 'bg-white dark:bg-slate-900 border-slate-300 text-slate-700 dark:text-slate-300 hover:border-slate-400'
-                      )}
-                    >
-                      {adv.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Commercial Master Financial Summary Display Box */}
-            <div className="p-4 bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-950 text-white rounded-xl space-y-3 shadow-lg">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs border-b border-white/10 pb-3">
-                <div>
-                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Subtotal</span>
-                  <span className="font-mono font-bold text-slate-200">{formatBDT(calculatedSubtotal)}</span>
-                </div>
-
-                <div>
-                  <span className="text-2xs text-slate-400 uppercase font-semibold block">Discount</span>
-                  <span className="font-mono font-bold text-rose-300">-{formatBDT(effectiveDiscountAmount)}</span>
-                </div>
-
-                <div>
-                  <span className="text-2xs text-slate-400 uppercase font-semibold block">VAT ({vatRate}%)</span>
-                  <span className="font-mono font-bold text-slate-200">+{formatBDT(calculatedVat)}</span>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-2xs text-cyan-300 uppercase font-bold block">Grand Total</span>
-                  <span className="font-mono font-black text-cyan-300 text-base">{formatBDT(calculatedGrandTotal)}</span>
-                </div>
-              </div>
-
-              {/* Commercial Advance & Delivery Breakdown */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-between">
-                  <div>
-                    <span className="text-2xs text-emerald-300 uppercase font-bold block">অগ্রিম প্রদেয় (Advance Required)</span>
-                    <span className="text-xs text-emerald-200 font-medium">Work order confirmation</span>
-                  </div>
-                  <span className="font-mono font-black text-emerald-300 text-lg">
-                    {formatBDT(calculatedAdvanceAmount)}
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-400/30 flex items-center justify-between">
-                  <div>
-                    <span className="text-2xs text-amber-300 uppercase font-bold block">{tBilingual('Due on Delivery', 'ডেলিভারির সময় প্রদেয়')}</span>
-                    <span className="text-xs text-amber-200 font-medium">Upon Challan delivery</span>
-                  </div>
-                  <span className="font-mono font-black text-amber-300 text-lg">
-                    {formatBDT(calculatedDueOnDelivery)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* =========================================================================
-              SECTION 5: DELIVERY & LOGISTICS
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                5
-              </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Delivery & Logistics
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3.5">
+            {/* CARD 1: NOTES */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
               <div>
-                <Label htmlFor="delDate" className="text-xs font-semibold mb-1 block">
-                  Expected Delivery Date
-                </Label>
-                <Input
-                  id="delDate"
-                  type="date"
-                  value={deliveryDate}
-                  onChange={(e) => setDeliveryDate(e.target.value)}
-                  className="text-xs h-9"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="delMethod" className="text-xs font-semibold mb-1 block">
-                  Delivery Method
-                </Label>
-                <select
-                  id="delMethod"
-                  value={deliveryMethod}
-                  onChange={(e) => setDeliveryMethod(e.target.value as QuotationDeliveryMethod)}
-                  className="w-full h-9 px-3 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium"
-                >
-                  <option value="customer_pickup">{tBilingual('Customer Pickup', 'গ্রাহক পিকআপ')}</option>
-                  <option value="company_delivery">{tBilingual('Company Delivery', 'আমাদের ডেলিভারি')}</option>
-                  <option value="courier">{tBilingual('Courier Service', 'কুরিয়ার সার্ভিস (সুন্দরবন / এসএ)')}</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="delLoc" className="text-xs font-semibold mb-1 block">
-                  Delivery Location / Site
-                </Label>
-                <Input
-                  id="delLoc"
-                  placeholder="e.g. Uttara Sector 4, Dhaka"
-                  value={deliveryLocation}
-                  onChange={(e) => setDeliveryLocation(e.target.value)}
-                  className="text-xs h-9"
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2.5">Notes</h3>
+                <textarea
+                  id="customerNotes"
+                  rows={4}
+                  value={customerNotes}
+                  onChange={(e) => setCustomerNotes(e.target.value)}
+                  placeholder="Quotation notes..."
+                  className="w-full min-h-[118px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans"
                 />
               </div>
             </div>
-          </div>
 
-          {/* =========================================================================
-              SECTION 6: TERMS, PAYMENT INSTRUCTIONS & INTERNAL NOTES
-             ========================================================================= */}
-          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 space-y-3.5 shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded-lg bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300 flex items-center justify-center font-bold text-xs">
-                6
-              </div>
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
-                Commercial Terms & Payment Accounts
-              </h3>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="flex flex-col">
-                <div className="h-6 flex items-center justify-between gap-1 mb-1">
-                  <Label htmlFor="custNotes" className="text-xs font-semibold whitespace-nowrap">
-                    Payment Instructions & Accounts
-                  </Label>
+            {/* CARD 2: TERMS & CONDITIONS */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-xs font-bold text-slate-900 dark:text-white">Terms & Conditions</h3>
+                  <select
+                    value={selectedTermsTemplate}
+                    onChange={(e) => {
+                      const val = e.target.value
+                      setSelectedTermsTemplate(val)
+                      if (val === 'default') {
+                        setTermsAndConditions(DEFAULT_TERMS_TEXT)
+                      } else if (val === 'bangla') {
+                        setTermsAndConditions(DEFAULT_QUOTATION_TERMS_BN)
+                      } else if (val === 'standard') {
+                        setTermsAndConditions(DEFAULT_QUOTATION_TERMS)
+                      }
+                    }}
+                    className="text-2xs font-medium text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-2 py-0.5 cursor-pointer focus:outline-none"
+                  >
+                    <option value="default">Use Default</option>
+                    <option value="standard">Standard (15 Days)</option>
+                    <option value="bangla">বাংলা শর্তাবলী</option>
+                  </select>
                 </div>
                 <textarea
-                  id="custNotes"
-                  rows={3}
-                  placeholder="bKash Merchant: 017XXXXXXXX, Bank AC: ..."
-                  value={paymentMethodNote}
-                  onChange={(e) => setPaymentMethodNote(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs"
-                />
-              </div>
-
-              <div className="flex flex-col">
-                <div className="h-6 flex items-center justify-between gap-1 mb-1">
-                  <Label htmlFor="termsCond" className="text-xs font-semibold whitespace-nowrap">
-                    Terms & Conditions (Printed)
-                  </Label>
-                </div>
-                <textarea
-                  id="termsCond"
-                  rows={3}
+                  id="termsAndConditions"
+                  rows={4}
                   value={termsAndConditions}
                   onChange={(e) => setTermsAndConditions(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-mono"
+                  className="w-full min-h-[118px] p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs text-slate-700 dark:text-slate-300 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 leading-relaxed font-sans overflow-y-auto"
                 />
               </div>
+            </div>
 
-              <div className="flex flex-col">
-                <div className="h-6 flex items-center justify-between gap-1.5 mb-1">
-                  <Label htmlFor="intNotes" className="text-xs text-amber-800 dark:text-amber-300 font-bold truncate">
-                    Internal Notes & Floor Margin
-                  </Label>
-                  <span className="text-2xs bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200 px-1.5 py-0.5 rounded font-bold shrink-0 whitespace-nowrap">
-                    Private / Staff Only
-                  </span>
+            {/* CARD 3: AMOUNT SUMMARY */}
+            <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-4 shadow-xs flex flex-col justify-between">
+              <div>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-2.5">Amount Summary</h3>
+                <div className="space-y-2">
+                  {/* Subtotal */}
+                  <div className="flex items-center justify-between py-1 text-xs">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Subtotal</span>
+                    <span className="font-bold font-numeric text-slate-900 dark:text-slate-100">
+                      {formatBDT(calculatedSubtotal)}
+                    </span>
+                  </div>
+
+                  {/* Discount */}
+                  <div className="flex items-center justify-between py-1 text-xs">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Discount</span>
+                    <div className="flex items-center gap-2">
+                      <div className="inline-flex items-center rounded-md border border-slate-200 dark:border-slate-700 overflow-hidden">
+                        <button
+                          type="button"
+                          onClick={() => setDiscountType('percent')}
+                          className={cn(
+                            'px-2 py-0.5 text-xs font-semibold transition-colors cursor-pointer',
+                            discountType === 'percent'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                          )}
+                        >
+                          %
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDiscountType('fixed')}
+                          className={cn(
+                            'px-2 py-0.5 text-xs font-semibold transition-colors border-l border-slate-200 dark:border-slate-700 cursor-pointer',
+                            discountType === 'fixed'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                          )}
+                        >
+                          ৳
+                        </button>
+                      </div>
+                      <input
+                        type="number"
+                        min="0"
+                        max={discountType === 'percent' ? 100 : undefined}
+                        value={discountType === 'percent' ? (discountPercentValue || '') : (discountAmount || '')}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value) || 0
+                          if (discountType === 'percent') {
+                            setDiscountPercentValue(val)
+                          } else {
+                            setDiscountAmount(val)
+                          }
+                        }}
+                        placeholder="0"
+                        className="w-14 h-7 text-xs text-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                      <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
+                        {formatBDT(effectiveDiscountAmount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* VAT (15%) */}
+                  <div className="flex items-center justify-between py-1 text-xs">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">VAT ({vatRate}%)</span>
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isVatEnabled}
+                        onClick={() => setIsVatEnabled(!isVatEnabled)}
+                        className={cn(
+                          'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none',
+                          isVatEnabled ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-700'
+                        )}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out',
+                            isVatEnabled ? 'translate-x-4' : 'translate-x-0'
+                          )}
+                        />
+                      </button>
+                      <span className="w-16 text-right font-bold font-numeric text-slate-900 dark:text-slate-100">
+                        {formatBDT(calculatedVat)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Total Amount */}
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800 text-emerald-600 dark:text-emerald-400">
+                    <span className="text-sm font-bold">Total Amount</span>
+                    <span className="text-base font-extrabold font-numeric">
+                      {formatBDT(calculatedGrandTotal)}
+                    </span>
+                  </div>
                 </div>
-                <textarea
-                  id="intNotes"
-                  rows={3}
-                  placeholder="Private cost estimates, subcontractor rates, internal margins..."
-                  value={internalNotes}
-                  onChange={(e) => setInternalNotes(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50/40 dark:bg-amber-950/20 text-xs text-slate-800 dark:text-slate-200"
-                />
               </div>
             </div>
           </div>
 
           {/* =========================================================================
-              SECTION 7: ACTIONS BAR (SAVE-FIRST GUARANTEE)
+              BOTTOM BAR: OPTIONS & ACTIONS (SAME AS REFERENCE IMAGE 2)
              ========================================================================= */}
-          <div className="pt-2 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 border-t border-slate-200 dark:border-slate-800">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="w-full sm:w-auto text-xs min-h-[40px] cursor-pointer"
-            >
-              Cancel
-            </Button>
+          <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">Options</span>
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-700 dark:text-slate-300">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={sendToCustomer}
+                    onChange={(e) => setSendToCustomer(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span>Send quotation to customer (WhatsApp/Email)</span>
+                </label>
 
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Print Button (Saves first) */}
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={createJobOrder}
+                    onChange={(e) => setCreateJobOrder(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span>Create job order(s) after approval</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={printPdfAfterSaving}
+                    onChange={(e) => setPrintPdfAfterSaving(e.target.checked)}
+                    className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                  />
+                  <span>Print PDF after saving</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 self-end md:self-auto">
               <Button
                 type="button"
                 variant="outline"
-                onClick={handlePrint}
+                onClick={handleSaveAsDraft}
                 disabled={isSubmitting || isSending}
-                className="flex-1 sm:flex-initial text-xs min-h-[40px] border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                className="text-xs h-9 px-4 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer font-medium"
               >
-                <Printer className="h-4 w-4 mr-1.5 text-slate-600 dark:text-slate-400" />
-                Print Proposal
-              </Button>
-
-              {/* Send Dropdown Menu (Saves first) */}
-              <div className="relative flex-1 sm:flex-initial" ref={sendDropdownRef}>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setSendDropdownOpen(!sendDropdownOpen)}
-                  disabled={isSubmitting || isSending}
-                  className="w-full text-xs min-h-[40px] bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 cursor-pointer"
-                >
-                  {isSending ? (
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                  ) : (
-                    <Send className="h-4 w-4 mr-1.5" />
-                  )}
-                  Send Customer
-                  <ChevronDown className="h-3.5 w-3.5 ml-1" />
-                </Button>
-
-                {sendDropdownOpen && (
-                  <div className="absolute bottom-full right-0 mb-2 w-64 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-2xl z-50 p-1 divide-y divide-slate-100 dark:divide-slate-800 text-xs">
-                    <div className="p-1.5 font-bold text-slate-400 uppercase text-2xs">
-                      WhatsApp Direct (Bangla / English)
-                    </div>
-                    <div className="py-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSend('whatsapp', 'pdf')}
-                        className="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 rounded-lg cursor-pointer"
-                      >
-                        <MessageSquare className="h-4 w-4 text-emerald-600 shrink-0" />
-                        <div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">Send WhatsApp</div>
-                          <div className="text-2xs text-slate-400">Includes items, advance payable & terms</div>
-                        </div>
-                      </button>
-                    </div>
-
-                    <div className="p-1.5 font-bold text-slate-400 uppercase text-2xs">
-                      Email Proposal
-                    </div>
-                    <div className="py-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSend('email', 'pdf')}
-                        className="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 rounded-lg cursor-pointer"
-                      >
-                        <Mail className="h-4 w-4 text-blue-600 shrink-0" />
-                        <div>
-                          <div className="font-semibold text-slate-800 dark:text-slate-200">Send Email with PDF</div>
-                          <div className="text-2xs text-slate-400">Formal A4 PDF document</div>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Save Quotation Primary Button */}
-              <Button
-                type="button"
-                onClick={handleSaveAndClose}
-                disabled={isSubmitting || isSending}
-                className="flex-1 sm:flex-initial text-xs min-h-[40px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 shadow-sm cursor-pointer"
-              >
-                {isSubmitting ? (
+                {isSubmitting && submitActionType === 'draft' ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
                     Saving...
                   </>
                 ) : (
+                  'Save as Draft'
+                )}
+              </Button>
+
+              <Button
+                type="button"
+                onClick={handleCreateQuotation}
+                disabled={isSubmitting || isSending}
+                className="text-xs h-9 px-4 bg-emerald-500 hover:bg-emerald-600 text-white font-bold flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                {isSubmitting && submitActionType === 'create' ? (
                   <>
-                    <Save className="h-4 w-4 mr-1.5" />
-                    Save Quotation
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-4 w-4" />
+                    Create Quotation
                   </>
                 )}
               </Button>
