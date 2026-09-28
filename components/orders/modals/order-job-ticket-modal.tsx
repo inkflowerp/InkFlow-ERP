@@ -10,7 +10,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { Printer, CheckSquare, Layers, Building, Phone, Calendar, Scissors, Sparkles } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
-import { type UnifiedOrderRecord, formatOrderItemQuantityAndUnit } from '../types'
+import {
+  type UnifiedOrderRecord,
+  type OrderItemSpec,
+  formatOrderItemQuantityAndUnit,
+  resolveOrderItemSpecs,
+} from '../types'
 
 interface OrderJobTicketModalProps {
   isOpen: boolean
@@ -152,39 +157,51 @@ export const OrderJobTicketModal = React.memo(function OrderJobTicketModal({
                 </tr>
               </thead>
               <tbody>
-                {order.items.map((it, idx) => (
-                  <tr key={it.id || idx} className="border border-slate-300 text-2xs">
-                    <td className="border border-slate-300 p-2 text-center font-bold">{idx + 1}</td>
-                    <td className="border border-slate-300 p-2">
-                      <strong className="text-slate-900 block">{it.itemName}</strong>
-                      {it.materialSpec && (
-                        <span className="text-2xs text-slate-600 font-mono">{it.materialSpec}</span>
-                      )}
-                    </td>
-                    <td className="border border-slate-300 p-2 font-mono font-bold">
-                      {it.dimensions || (it.width && it.height ? `${it.width} × ${it.height} ${it.dimensionUnit || 'ft'}` : tBilingual('Standard', 'সাধারণ'))}
-                    </td>
-                    <td className="border border-slate-300 p-2 font-mono font-bold">
-                      {formatOrderItemQuantityAndUnit(it, tBilingual)}
-                    </td>
-                    <td className="border border-slate-300 p-2">
-                      {it.finishing || tBilingual('Standard Cutting', 'সাধারণ কাটিং')}
-                    </td>
-                    <td className="border border-slate-300 p-2">
-                      <span className="bg-slate-100 px-1.5 py-0.5 rounded text-2xs font-bold uppercase">
-                        {it.workflowRouting === 'design_required'
-                          ? tBilingual('Design Needed', 'ডিজাইন দরকার')
-                          : it.workflowRouting === 'design_ok'
-                          ? tBilingual('Ready File', 'রেডি ফাইল')
-                          : it.workflowRouting === 'ready_product'
-                          ? tBilingual('Ready Stock', 'রেডি স্টক')
-                          : it.workflowRouting === 'outsource'
-                          ? tBilingual('Outsource', 'আউটসোর্স')
-                          : tBilingual('Production', 'প্রোডাকশন')}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
+                {(order.items.length === 0 ? [{
+                  id: `job-item-${order.id}`,
+                  itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || tBilingual('Custom Printing Work', 'কাস্টম প্রিন্টিং কাজ'),
+                  quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
+                  unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
+                  materialSpec: order.rawJob?.material_spec || order.rawInvoice?.items?.[0]?.material_spec || undefined,
+                  dimensions: order.rawJob?.size_spec || order.rawInvoice?.items?.[0]?.dimensions_spec || undefined,
+                  finishing: order.rawJob?.production_instructions?.replace(/^Finishing:\s*/i, '') || undefined,
+                  workflowRouting: 'ready_production',
+                } as OrderItemSpec] : order.items).map((it, idx) => {
+                  const specs = resolveOrderItemSpecs(it, order.rawJob, order.rawInvoice, tBilingual)
+                  return (
+                    <tr key={it.id || idx} className="border border-slate-300 text-2xs">
+                      <td className="border border-slate-300 p-2 text-center font-bold">{idx + 1}</td>
+                      <td className="border border-slate-300 p-2">
+                        <strong className="text-slate-900 block">{it.itemName}</strong>
+                        <span className="text-2xs text-slate-700 font-mono font-medium block">
+                          📄 {specs.material}
+                        </span>
+                      </td>
+                      <td className="border border-slate-300 p-2 font-mono font-bold">
+                        📐 {specs.size}
+                      </td>
+                      <td className="border border-slate-300 p-2 font-mono font-bold text-indigo-900">
+                        📦 {specs.quantity}
+                      </td>
+                      <td className="border border-slate-300 p-2">
+                        {specs.finishing ? `✨ ${specs.finishing}` : (it.finishing || tBilingual('Standard Cutting', 'সাধারণ কাটিং'))}
+                      </td>
+                      <td className="border border-slate-300 p-2">
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded text-2xs font-bold uppercase">
+                          {it.workflowRouting === 'design_required'
+                            ? tBilingual('Design Needed', 'ডিজাইন দরকার')
+                            : it.workflowRouting === 'design_ok'
+                            ? tBilingual('Ready File', 'রেডি ফাইল')
+                            : it.workflowRouting === 'ready_product'
+                            ? tBilingual('Ready Stock', 'রেডি স্টক')
+                            : it.workflowRouting === 'outsource'
+                            ? tBilingual('Outsource', 'আউটসোর্স')
+                            : tBilingual('Production', 'প্রোডাকশন')}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>

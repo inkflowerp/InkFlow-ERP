@@ -180,6 +180,125 @@ export function formatOrderItemQuantityAndUnit(
   return `${qty} ${unitDisplay}`
 }
 
+export function inferMaterialFromItemName(name?: string, fallback?: string): string | undefined {
+  if (!name) return fallback || undefined
+  const lower = name.toLowerCase()
+  if (lower.includes('eco vinyl') || lower.includes('eco-vinyl')) return 'Eco Vinyl (ইকো ভিনাইল)'
+  if (lower.includes('vinyl') || lower.includes('ভিনাইল')) return 'Vinyl Sticker (ভিনাইল স্টিকার)'
+  if (lower.includes('star flex') || lower.includes('স্টার ফ্লেক্স')) return 'Star Flex Media (স্টার ফ্লেক্স)'
+  if (lower.includes('flex') || lower.includes('ফ্লেক্স')) return 'Flex Banner (ফ্লেক্স ব্যানার)'
+  if (lower.includes('backlit') || lower.includes('ব্যাকলিট')) return 'Backlit Film (ব্যাকলিট)'
+  if (lower.includes('one way vision') || lower.includes('one-way') || lower.includes('ওয়ান ওয়ে')) return 'One Way Vision (ওয়ান ওয়ে ভিশন)'
+  if (lower.includes('pvc') || lower.includes('foam')) return 'PVC Foam Board (পিভিসি বোর্ড)'
+  if (lower.includes('canvas') || lower.includes('ক্যানভাস')) return 'Cotton Canvas (ক্যানভাস)'
+  if (lower.includes('satin') || lower.includes('সিল্ক')) return 'Satin Fabric (সাটিন ফেব্রিক)'
+  if (lower.includes('frost') || lower.includes('ফ্রস্টেড')) return 'Frosted Glass Film (ফ্রস্টেড ফিল্ম)'
+  if (lower.includes('reflective') || lower.includes('রেডিয়াম')) return 'Reflective Vinyl (রেডিয়াম ভিনাইল)'
+  if (lower.includes('cloth') || lower.includes('কাপড়')) return 'Cloth Media (কাপড় ব্যানার)'
+  if (lower.includes('art card') || lower.includes('artcard')) return '300gsm Art Card'
+  if (lower.includes('art paper') || lower.includes('artpaper')) return '150gsm Art Paper'
+  if (lower.includes('visiting card') || lower.includes('business card') || lower.includes('ভিজিটিং কার্ড')) return '300gsm Matt Art Card'
+  if (lower.includes('cash memo') || lower.includes('bill') || lower.includes('মেমো') || lower.includes('ক্যাশ মেমো')) return 'NCR Carbonless Paper (এনসিআর)'
+  if (lower.includes('letterhead') || lower.includes('লেটারহেড')) return '100gsm Executive Bond Paper'
+  if (lower.includes('envelope') || lower.includes('খাম')) return '100gsm Offset Paper'
+  if (lower.includes('sticker') || lower.includes('স্টিকার')) return 'Vinyl Sticker (স্টিকার)'
+  if (lower.includes('banner') || lower.includes('ব্যানার')) return 'Flex Banner (ব্যানার)'
+  if (lower.includes('poster') || lower.includes('পোস্টার')) return '170gsm Art Paper'
+  if (lower.includes('flyer') || lower.includes('leaflet') || lower.includes('লিফলেট')) return '120gsm Art Paper'
+  if (lower.includes('brochure') || lower.includes('ব্রোশিউর')) return '150gsm Gloss Art Paper'
+  if (lower.includes('id card') || lower.includes('আইডি কার্ড')) return 'PVC Card (পিভিসি কার্ড)'
+  if (lower.includes('crest') || lower.includes('ক্রেস্ট')) return 'Acrylic & Wood Crest (ক্রেস্ট)'
+  if (lower.includes('mug') || lower.includes('মগ')) return 'Ceramic Sublimation (সিরামিক মগ)'
+  if (lower.includes('t-shirt') || lower.includes('tshirt') || lower.includes('টি-শার্ট')) return '100% Cotton Fabric (টি-শার্ট)'
+  if (lower.includes('x-banner') || lower.includes('x banner')) return 'Star Flex Media (এক্স-ব্যানার)'
+  if (lower.includes('rollup') || lower.includes('roll-up') || lower.includes('রোলআপ')) return 'Satin Media (রোলআপ ব্যানার)'
+  return fallback || undefined
+}
+
+export interface ResolvedItemSpecs {
+  material: string
+  size: string
+  quantity: string
+  finishing?: string
+}
+
+export function resolveOrderItemSpecs(
+  item: OrderItemSpec,
+  fallbackJob?: JobOrderRecord,
+  fallbackInvoice?: InvoiceRecord,
+  tBilingual: (en: string, bn: string) => string = (en, _bn) => en
+): ResolvedItemSpecs {
+  // 1. Material Resolution
+  let material = item.materialSpec?.trim()
+  if (!material) {
+    material = inferMaterialFromItemName(item.itemName)
+  }
+  if (!material && fallbackJob?.material_spec) {
+    material = fallbackJob.material_spec
+  }
+  if (!material && fallbackInvoice?.items) {
+    const matched = (fallbackInvoice.items as any[]).find((invIt: any) =>
+      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+    )
+    material = matched?.material_spec || matched?.material || inferMaterialFromItemName(matched?.item_description || matched?.item_name || undefined)
+  }
+  if (!material) {
+    if (item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product') {
+      material = tBilingual('Ready Product (In Stock)', 'রেডি পণ্য (ইন-স্টক)')
+    } else if (item.itemKind === 'outsource' || item.workflowRouting === 'outsource') {
+      material = tBilingual('Outsourced Media', 'আউটসোর্স মিডিয়া')
+    } else {
+      material = inferMaterialFromItemName(item.itemName, tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')) || tBilingual('Standard Media', 'স্ট্যান্ডার্ড মিডিয়া')
+    }
+  }
+
+  // 2. Size / Dimensions Resolution
+  let size = item.dimensions?.trim()
+  const w = Number(item.width) || 0
+  const h = Number(item.height) || 0
+  if (!size && w > 0 && h > 0) {
+    size = `${w} × ${h} ${item.dimensionUnit || item.unit || 'ft'}`
+  }
+  if (!size && fallbackJob?.size_spec) {
+    size = fallbackJob.size_spec
+  }
+  if (!size && fallbackInvoice?.items) {
+    const matched = fallbackInvoice.items.find((invIt: any) =>
+      invIt.item_description === item.itemName || invIt.item_name === item.itemName || invIt.description === item.itemName
+    )
+    size = matched?.dimensions_spec || (matched?.width && matched?.height ? `${matched.width} × ${matched.height} ${matched.unit || 'ft'}` : undefined)
+  }
+  if (!size) {
+    const unitLower = (item.unit || '').toLowerCase()
+    if ((unitLower === 'sft' || unitLower === 'sqft') && item.quantity) {
+      size = `${item.quantity} ${tBilingual('sft', 'বর্গফুট')}`
+    } else {
+      size = item.itemKind === 'ready_product' || item.workflowRouting === 'ready_product'
+        ? tBilingual('Standard Unit', 'স্ট্যান্ডার্ড মাপ')
+        : tBilingual('Standard Size', 'মানসম্মত সাইজ')
+    }
+  }
+
+  // 3. Quantity Resolution
+  let quantity = formatOrderItemQuantityAndUnit(item, tBilingual)
+  const unitLower = (item.unit || '').toLowerCase()
+  if ((unitLower === 'sft' || unitLower === 'sqft') && !quantity.includes('(')) {
+    const pcsStr = tBilingual('1 pc', '১টি')
+    quantity = `${quantity} (${pcsStr})`
+  }
+
+  // 4. Finishing Resolution
+  const finishing = item.finishing?.trim() || fallbackJob?.production_instructions?.replace(/^Finishing:\s*/i, '').trim() || undefined
+
+  return {
+    material,
+    size,
+    quantity,
+    finishing,
+  }
+}
+
+
 export interface UnifiedOrderRecord {
   id: string
   orderNumber: string

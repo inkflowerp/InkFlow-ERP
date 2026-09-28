@@ -16,8 +16,10 @@ import {
   type UnifiedOrderRecord,
   type OrderStage,
   type OrderLiveStatus,
+  type OrderItemSpec,
   ORDER_LIVE_STATUSES,
   formatOrderItemQuantityAndUnit,
+  resolveOrderItemSpecs,
 } from './types'
 import { getTenantNavHref } from '@/lib/tenant/tenant-url'
 
@@ -140,9 +142,39 @@ export const OrdersTableView = React.memo(function OrdersTableView({
                         </span>
                       )}
                     </div>
-                    <div className="text-2xs text-slate-500 font-mono">
-                      {order.items[0] ? formatOrderItemQuantityAndUnit(order.items[0], tBilingual) : 'Standard'} • {order.itemsCount} {tBilingual('Items', 'আইটেম')}
-                    </div>
+                    {(() => {
+                      const firstItem: OrderItemSpec = order.items[0] || {
+                        id: `synth-${order.id}`,
+                        itemName: order.rawJob?.product_name || order.rawInvoice?.items?.[0]?.item_description || 'Print Work',
+                        quantity: Number(order.rawJob?.quantity || order.rawInvoice?.items?.[0]?.quantity) || 1,
+                        unit: order.rawInvoice?.items?.[0]?.unit || 'pcs',
+                        materialSpec: order.rawJob?.material_spec || order.rawInvoice?.items?.[0]?.material_spec,
+                        dimensions: order.rawJob?.size_spec || order.rawInvoice?.items?.[0]?.dimensions_spec,
+                      }
+                      const specs = resolveOrderItemSpecs(firstItem, order.rawJob, order.rawInvoice, tBilingual)
+                      return (
+                        <div className="text-2xs text-slate-500 font-mono space-y-0.5 mt-0.5">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-slate-700 dark:text-slate-300 font-semibold" title={specs.material}>
+                              📄 {specs.material}
+                            </span>
+                            <span>•</span>
+                            <span className="text-slate-700 dark:text-slate-300 font-semibold" title={specs.size}>
+                              📐 {specs.size}
+                            </span>
+                            <span>•</span>
+                            <span className="text-indigo-600 dark:text-indigo-400 font-bold" title={specs.quantity}>
+                              📦 {specs.quantity}
+                            </span>
+                          </div>
+                          {specs.finishing && (
+                            <div className="text-amber-700 dark:text-amber-400">
+                              ✨ {specs.finishing}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })()}
                   </td>
 
                   {/* Live Status & Stage */}
