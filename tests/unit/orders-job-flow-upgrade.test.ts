@@ -117,4 +117,81 @@ describe('Orders & Job Flow Upgrade & Invoice Works Ingestion', () => {
     assert.strictEqual(found.priority, 'urgent')
     assert.strictEqual(found.items[0].item_name, 'Frosted Vinyl Glass Sticker')
   })
+
+  it('4. Creating an invoice for an existing order updates the order instead of creating duplicate records', async () => {
+    // 1. Initial order placed via Work Order modal
+    const initialOrder: Partial<SalesOrderRecord> = {
+      id: 'ord-client-1727400000',
+      company_id: TENANT_ID,
+      order_number: 'ORD-000011',
+      customer_name: 'Asif',
+      customer_phone: '0155555',
+      order_date: '2026-09-27',
+      delivery_date: '',
+      priority: 'normal',
+      status: 'confirmed',
+      workflow_routing: 'design_required',
+      final_price: 0,
+      advance_amount: 50000,
+      due_amount: 0,
+      items: [
+        {
+          id: 'item-work-1',
+          item_name: 'Printing Item',
+          width: 100,
+          height: 100,
+          dimension_unit: 'ft',
+          quantity: 10,
+          unit: 'pcs',
+          unit_price: 0,
+          total_price: 0,
+        } as any,
+      ],
+    }
+
+    PrintERPDataStore.createSalesOrderWithIntegrations(initialOrder)
+
+    // 2. Invoice created later with billing figures for ORD-000011
+    const invoicePayload: Partial<InvoiceRecord> = {
+      id: 'inv-test-flow-011',
+      company_id: TENANT_ID,
+      invoice_number: 'INV-000011',
+      customer_name: 'Asif',
+      customer_phone: '0155555',
+      invoice_date: '2026-09-27',
+      status: 'partial',
+      subtotal: 2200000,
+      grand_total: 2200000,
+      paid_amount: 50000,
+      due_amount: 2150000,
+      items: [
+        {
+          id: 'inv-item-1',
+          item_description: 'Printing Item 100000 sft',
+          quantity: 10,
+          unit: 'pcs',
+          unit_price: 220000,
+          total_price: 2200000,
+          workflow_routing: 'ready_production',
+        } as any,
+      ],
+    }
+
+    await BillingRepository.createInvoice(invoicePayload as InvoiceRecord)
+
+    // Verify orders store has only ONE order for ORD-000011
+    const allOrders = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+    const matchingOrders = allOrders.filter(
+      (o) => o.order_number?.replace(/\s+/g, '').toUpperCase() === 'ORD-000011'
+    )
+
+    assert.strictEqual(matchingOrders.length, 1, 'Should only have 1 order record for ORD-000011, no duplicates')
+    const unified = matchingOrders[0]
+    assert.strictEqual(unified.invoice_number, 'INV-000011', 'Should link the invoice number')
+    assert.strictEqual(unified.final_price, 2200000, 'Should have the final billed price')
+    assert.strictEqual(unified.advance_amount, 50000, 'Should retain advance amount')
+    assert.strictEqual(unified.due_amount, 2150000, 'Should have correct due amount')
+    assert.ok(unified.items.length >= 1, 'Should preserve order items')
+  })
 })
+

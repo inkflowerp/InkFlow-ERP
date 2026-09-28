@@ -79,7 +79,7 @@ export const OrdersTableView = React.memo(function OrdersTableView({
 
               return (
                 <tr
-                  key={order.id}
+                  key={order.orderNumber ? `ord-${order.orderNumber}` : order.id}
                   className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
                 >
                   {/* Order # */}

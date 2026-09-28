@@ -204,6 +204,22 @@ export class OrderRepository {
 
     try {
       const supabase = await createClient()
+
+      // Check if order already exists in Supabase by order_number
+      const { data: existing } = await (supabase as any)
+        .from('sales_orders')
+        .select('*')
+        .eq('company_id', order.company_id)
+        .eq('order_number', orderNumber)
+        .maybeSingle()
+
+      if (existing) {
+        // Update existing order instead of creating duplicate
+        const updated = await this.updateOrder(existing.id, payload, order.company_id)
+        if (updated) return updated
+        return existing as unknown as SalesOrderRecord
+      }
+
       const { data, error } = await (supabase as any)
         .from('sales_orders')
         .insert(payload)
@@ -252,7 +268,12 @@ export class OrderRepository {
     }
 
     const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-    all.unshift(localOrder)
+    const existingIdx = all.findIndex((o) => (order.id && o.id === order.id) || (orderNumber && o.order_number === orderNumber))
+    if (existingIdx >= 0) {
+      all[existingIdx] = { ...all[existingIdx], ...localOrder }
+    } else {
+      all.unshift(localOrder)
+    }
     PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)
 
     // Auto-provision design job if order needs design or design check
@@ -375,13 +396,15 @@ export class OrderRepository {
       delete payload.company_id
       delete payload.items
 
-      const { data, error } = await (supabase as any)
-        .from('sales_orders')
-        .update(payload)
-        .eq('id', id)
-        .eq('company_id', companyId)
-        .select()
-        .single()
+      const isUuid = Boolean(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+      let query = (supabase as any).from('sales_orders').update(payload).eq('company_id', companyId)
+      if (isUuid) {
+        query = query.or(`id.eq.${id},order_number.eq.${id}`)
+      } else {
+        query = query.eq('order_number', id)
+      }
+
+      const { data, error } = await query.select().maybeSingle()
 
       if (!error && data) {
         return data as unknown as SalesOrderRecord
@@ -389,7 +412,7 @@ export class OrderRepository {
     } catch {}
 
     const all = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
-    const idx = all.findIndex((o) => o.id === id && o.company_id === companyId)
+    const idx = all.findIndex((o) => (o.id === id || o.order_number === id) && (o.company_id === companyId || !companyId || companyId === 'default'))
     if (idx >= 0) {
       all[idx] = { ...all[idx], ...updates, updated_at: new Date().toISOString() }
       PrintERPDataStore.set(STORAGE_KEYS.ORDERS, all)

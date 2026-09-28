@@ -222,32 +222,188 @@ export default function OrdersPage() {
         return c1 === c2 || c1 === s
       }
 
-      // Deduplicate Sales Orders by ID or Order Number
+      const isValidUuid = (id?: string | null): boolean => {
+        return Boolean(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id))
+      }
+
+      const getCanonOrderKey = (o: { id?: string; order_number?: string }): string => {
+        if (o.order_number && o.order_number.trim()) {
+          return `ORD_${o.order_number.trim().toUpperCase()}`
+        }
+        return `ID_${o.id || 'unknown'}`
+      }
+
+      const mergeRawOrders = (existing: SalesOrderRecord, incoming: SalesOrderRecord): SalesOrderRecord => {
+        // 1. Prefer database UUID id so server updates and foreign keys work cleanly
+        const id = isValidUuid(existing.id)
+          ? existing.id
+          : isValidUuid(incoming.id)
+          ? incoming.id
+          : (existing.id || incoming.id)
+
+        // 2. Line items: prefer whichever record has real line items with dimensions/specs
+        const existingItems = Array.isArray(existing.items) ? existing.items : []
+        const incomingItems = Array.isArray(incoming.items) ? incoming.items : []
+        let items = existingItems
+        if (incomingItems.length > 0) {
+          if (existingItems.length === 0) {
+            items = incomingItems
+          } else {
+            const incHasSpecs = incomingItems.some(
+              (it: any) => it.width || it.material_spec || (Number(it.quantity) > 0 && (it.dimension_unit || it.dimensions_spec))
+            )
+            const existHasSpecs = existingItems.some(
+              (it: any) => it.width || it.material_spec || (Number(it.quantity) > 0 && (it.dimension_unit || it.dimensions_spec))
+            )
+            if (incHasSpecs && !existHasSpecs) {
+              items = incomingItems
+            } else if (incomingItems.length > existingItems.length) {
+              items = incomingItems
+            }
+          }
+        }
+
+        // 3. Financial amounts: take the non-zero authoritative numbers
+        const finalPrice = Math.max(
+          Number(existing.final_price || existing.subtotal || 0),
+          Number(incoming.final_price || incoming.subtotal || 0)
+        )
+        const advanceAmount = Math.max(
+          Number(existing.advance_amount || 0),
+          Number(incoming.advance_amount || 0)
+        )
+        const dueAmount = Math.max(
+          0,
+          existing.due_amount !== undefined && existing.due_amount !== null && (existing.final_price || existing.subtotal)
+            ? Number(existing.due_amount)
+            : incoming.due_amount !== undefined && incoming.due_amount !== null && (incoming.final_price || incoming.subtotal)
+            ? Number(incoming.due_amount)
+            : finalPrice - advanceAmount
+        )
+
+        // 4. Invoices and references
+        const invoiceId = existing.invoice_id || incoming.invoice_id || null
+        const invoiceNumber = existing.invoice_number || incoming.invoice_number || null
+
+        // 5. Customer information
+        const customerName = existing.customer_name || incoming.customer_name || 'Customer'
+        const customerPhone = existing.customer_phone || incoming.customer_phone || ''
+        const customerAddress = existing.customer_address || incoming.customer_address || ''
+        const customerId = existing.customer_id || incoming.customer_id || undefined
+        const customerType = existing.customer_type || incoming.customer_type || undefined
+
+        // 6. Delivery Date
+        const deliveryDate =
+          existing.delivery_date && existing.delivery_date !== 'N/A' && existing.delivery_date !== ''
+            ? existing.delivery_date
+            : incoming.delivery_date && incoming.delivery_date !== 'N/A'
+            ? incoming.delivery_date
+            : ''
+
+        // 7. Status and stage
+        const status =
+          existing.status && existing.status !== 'draft'
+            ? existing.status
+            : incoming.status || existing.status || 'confirmed'
+
+        const commercialStatus =
+          existing.commercial_status === 'invoice_created' || incoming.commercial_status === 'invoice_created'
+            ? 'invoice_created'
+            : existing.commercial_status || incoming.commercial_status
+
+        const productionGateStatus =
+          existing.production_gate_status === 'ready_for_production' || incoming.production_gate_status === 'ready_for_production'
+            ? 'ready_for_production'
+            : existing.production_gate_status || incoming.production_gate_status
+
+        const priority =
+          existing.priority === 'urgent' || incoming.priority === 'urgent'
+            ? 'urgent'
+            : existing.priority || incoming.priority || 'normal'
+
+        const notes =
+          existing.notes && incoming.notes && existing.notes !== incoming.notes
+            ? `${existing.notes} | ${incoming.notes}`
+            : existing.notes || incoming.notes || undefined
+
+        return {
+          ...incoming,
+          ...existing,
+          id,
+          order_number: existing.order_number || incoming.order_number,
+          customer_id: customerId,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          customer_address: customerAddress,
+          customer_type: customerType,
+          delivery_date: deliveryDate,
+          priority,
+          status,
+          commercial_status: commercialStatus,
+          production_gate_status: productionGateStatus,
+          invoice_id: invoiceId,
+          invoice_number: invoiceNumber,
+          final_price: finalPrice,
+          advance_amount: advanceAmount,
+          due_amount: dueAmount,
+          items,
+          notes,
+        }
+      }
+
+      // Deduplicate & Merge Sales Orders by Canonical Order Number
       const orderDedupMap = new Map<string, SalesOrderRecord>()
       rawOrders.filter((o) => isMatchingTenant(o.company_id)).forEach((o) => {
-        const key = o.id || o.order_number
-        if (key && !orderDedupMap.has(key)) {
+        const key = getCanonOrderKey(o)
+        if (!orderDedupMap.has(key)) {
           orderDedupMap.set(key, o)
+        } else {
+          orderDedupMap.set(key, mergeRawOrders(orderDedupMap.get(key)!, o))
         }
       })
       const tenantOrders = Array.from(orderDedupMap.values())
 
-      // Deduplicate Job Orders by ID or Job Number
+      // Clean local store duplicates if present
+      try {
+        const localCurrent = PrintERPDataStore.get<SalesOrderRecord[]>(STORAGE_KEYS.ORDERS) || []
+        const localCanonMap = new Map<string, SalesOrderRecord>()
+        let hadLocalDuplicates = false
+        localCurrent.forEach((lo) => {
+          const k = getCanonOrderKey(lo)
+          if (localCanonMap.has(k)) {
+            hadLocalDuplicates = true
+            localCanonMap.set(k, mergeRawOrders(localCanonMap.get(k)!, lo))
+          } else {
+            localCanonMap.set(k, lo)
+          }
+        })
+        if (hadLocalDuplicates) {
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, Array.from(localCanonMap.values()))
+        }
+      } catch {}
+
+      // Deduplicate Job Orders by Canonical Job Number (or ID)
       const jobDedupMap = new Map<string, JobOrderRecord>()
       rawJobs.filter((j) => isMatchingTenant(j.company_id)).forEach((j) => {
-        const key = j.id || j.job_number
-        if (key && !jobDedupMap.has(key)) {
+        const key = j.job_number && j.job_number.trim() ? `JOB_${j.job_number.trim().toUpperCase()}` : `ID_${j.id}`
+        if (!jobDedupMap.has(key)) {
           jobDedupMap.set(key, j)
+        } else {
+          const prev = jobDedupMap.get(key)!
+          jobDedupMap.set(key, { ...prev, ...j })
         }
       })
       const tenantJobOrders = Array.from(jobDedupMap.values())
 
-      // Deduplicate Invoices by ID or Invoice Number
+      // Deduplicate Invoices by Canonical Invoice Number (or ID)
       const invoiceDedupMap = new Map<string, InvoiceRecord>()
       rawInvoices.filter((i) => isMatchingTenant(i.company_id)).forEach((i) => {
-        const key = i.id || i.invoice_number
-        if (key && !invoiceDedupMap.has(key)) {
+        const key = i.invoice_number && i.invoice_number.trim() ? `INV_${i.invoice_number.trim().toUpperCase()}` : `ID_${i.id}`
+        if (!invoiceDedupMap.has(key)) {
           invoiceDedupMap.set(key, i)
+        } else {
+          const prev = invoiceDedupMap.get(key)!
+          invoiceDedupMap.set(key, { ...prev, ...i })
         }
       })
       const tenantInvoices = Array.from(invoiceDedupMap.values())
@@ -256,6 +412,7 @@ export default function OrdersPage() {
 
       // A. Process Sales Orders
       tenantOrders.forEach((o) => {
+        const canonicalKey = getCanonOrderKey(o)
         const orderId = o.id || o.order_number
         const mappedItems: OrderItemSpec[] = (o.items || []).map((it: any, idx: number) => {
           const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
@@ -289,7 +446,7 @@ export default function OrdersPage() {
             j.order_id === o.order_number ||
             (j as any).sales_order_id === o.id ||
             (j as any).sales_order_id === o.order_number ||
-            j.order_number === o.order_number ||
+            (j.order_number && o.order_number && j.order_number.toUpperCase() === o.order_number.toUpperCase()) ||
             (j.job_number && o.order_number && j.job_number.replace('JOB-', '').replace(/-[A-Z]$/, '') === o.order_number.replace('ORD-', ''))
         )
 
@@ -324,11 +481,13 @@ export default function OrdersPage() {
         const originVal: any =
           (o as any).quotation_id || (o as any).quotation_number ? 'quotation' : 'sales_order'
 
-        unifiedMap.set(orderId, {
+        unifiedMap.set(canonicalKey, {
           id: o.id,
           orderNumber: o.order_number,
           jobNumber: linkedJob?.job_number,
           jobOrderId: linkedJob?.id,
+          invoiceId: o.invoice_id || undefined,
+          invoiceNumber: o.invoice_number || undefined,
           origin: originVal,
           customerId: o.customer_id || undefined,
           customerName: o.customer_name,
@@ -357,23 +516,28 @@ export default function OrdersPage() {
 
       // B. Process Standalone Job Orders (if not already mapped)
       tenantJobOrders.forEach((j) => {
+        const jobOrderNumber = j.order_number?.trim().toUpperCase() || j.job_number?.replace('JOB-', 'ORD-').replace(/-[A-Z]$/, '').trim().toUpperCase()
         const isMapped = Array.from(unifiedMap.values()).some(
           (u) =>
             u.id === j.order_id ||
             u.id === (j as any).sales_order_id ||
-            u.orderNumber === j.order_number ||
+            (j.order_number && u.orderNumber?.toUpperCase() === j.order_number.trim().toUpperCase()) ||
+            (jobOrderNumber && u.orderNumber?.toUpperCase() === jobOrderNumber) ||
             u.jobNumber === j.job_number ||
             u.jobOrderId === j.id
         )
 
         if (!isMapped) {
-          const synthOrderNumber = j.order_number || j.job_number?.replace('JOB-', 'ORD-') || `ORD-${j.id.slice(-6)}`
+          const synthOrderNumber = j.order_number || j.job_number?.replace('JOB-', 'ORD-').replace(/-[A-Z]$/, '') || `ORD-${j.id.slice(-6)}`
+          const synthKey = `ORD_${synthOrderNumber.trim().toUpperCase()}`
+          if (unifiedMap.has(synthKey)) return
+
           let jobStage: OrderStage = 'new_orders'
           if (j.status === 'completed') jobStage = 'ready_delivery'
           else if (j.status === 'in_progress') jobStage = 'in_production'
           else if (j.artwork_status === 'pending' || j.workflow_routing === 'design_required') jobStage = 'in_design'
 
-          unifiedMap.set(j.id, {
+          unifiedMap.set(synthKey, {
             id: j.id,
             orderNumber: synthOrderNumber,
             jobNumber: j.job_number,
@@ -415,11 +579,13 @@ export default function OrdersPage() {
 
       // C. Process Invoices (Merge or Synthesize Orders)
       tenantInvoices.forEach((inv) => {
+        const invOrderNum = inv.order_number?.trim().toUpperCase() || inv.invoice_number?.replace('INV-', 'ORD-').trim().toUpperCase()
         const matchingKey = inv.sales_order_id || inv.order_number || inv.id
         const existing = Array.from(unifiedMap.values()).find(
           (u) =>
             u.id === matchingKey ||
-            u.orderNumber === inv.order_number ||
+            (inv.order_number && u.orderNumber?.toUpperCase() === inv.order_number.trim().toUpperCase()) ||
+            (invOrderNum && u.orderNumber?.toUpperCase() === invOrderNum) ||
             (inv.sales_order_id && u.id === inv.sales_order_id)
         )
 
@@ -427,12 +593,25 @@ export default function OrdersPage() {
           // Enrich with Invoice Reference & Live Payment Balance
           existing.invoiceId = inv.id
           existing.invoiceNumber = inv.invoice_number
-          existing.totalAmount = Number(inv.grand_total || existing.totalAmount)
-          existing.advanceAmount = Number(inv.paid_amount || existing.advanceAmount)
+          existing.totalAmount = Math.max(Number(inv.grand_total || 0), existing.totalAmount)
+          existing.advanceAmount = Math.max(Number(inv.paid_amount || 0), existing.advanceAmount)
           existing.dueAmount = Math.max(0, existing.totalAmount - existing.advanceAmount)
           existing.paymentStatus = existing.dueAmount <= 0 ? 'paid' : existing.advanceAmount > 0 ? 'partial' : 'unpaid'
           existing.rawInvoice = inv
         } else {
+          const synthOrderNumber = inv.order_number || inv.invoice_number?.replace('INV-', 'ORD-') || `ORD-${inv.id.slice(-4)}`
+          const synthKey = `ORD_${synthOrderNumber.trim().toUpperCase()}`
+          if (unifiedMap.has(synthKey)) {
+            const ord = unifiedMap.get(synthKey)!
+            ord.invoiceId = inv.id
+            ord.invoiceNumber = inv.invoice_number
+            ord.totalAmount = Math.max(Number(inv.grand_total || 0), ord.totalAmount)
+            ord.advanceAmount = Math.max(Number(inv.paid_amount || 0), ord.advanceAmount)
+            ord.dueAmount = Math.max(0, ord.totalAmount - ord.advanceAmount)
+            ord.paymentStatus = ord.dueAmount <= 0 ? 'paid' : ord.advanceAmount > 0 ? 'partial' : 'unpaid'
+            return
+          }
+
           // Synthesize Order from Direct Counter Invoice
           const mappedItems: OrderItemSpec[] = (inv.items || []).map((it: any, idx: number) => {
             const isReady = isReadyProduct(it) || it.workflow_routing === 'ready_product' || it.item_kind === 'ready_product'
@@ -481,9 +660,7 @@ export default function OrdersPage() {
             inv.customer_name?.toLowerCase().includes('walk') ||
             inv.customer_name?.toLowerCase().includes('counter')
 
-          const synthOrderNumber = inv.order_number || inv.invoice_number?.replace('INV-', 'ORD-') || `ORD-${inv.id.slice(-4)}`
-
-          unifiedMap.set(inv.id, {
+          unifiedMap.set(synthKey, {
             id: inv.id,
             orderNumber: synthOrderNumber,
             invoiceId: inv.id,
@@ -944,7 +1121,7 @@ export default function OrdersPage() {
         <div className="space-y-3">
           {filteredOrders.map((order) => (
             <OrderCard
-              key={order.id}
+              key={order.orderNumber ? `ord-${order.orderNumber}` : order.id}
               order={order}
               tenantSlug={tenantSlug}
               onOpenWhatsApp={handleOpenWhatsApp}

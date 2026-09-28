@@ -918,7 +918,71 @@ export class BillingRepository {
       const effectiveOrderNumber = invoice.order_number || invoice.invoice_number.replace('INV-', 'ORD-')
       let provisionedOrder: any = null
 
-      if (effectiveSalesOrderId) {
+      // Check if an order already exists in Supabase by order_number or sales_order_id
+      let existingDbOrder: any = null
+      try {
+        const supabase = await createClient()
+        let query = (supabase as any)
+          .from('sales_orders')
+          .select('*')
+          .eq('company_id', companyId)
+
+        if (effectiveSalesOrderId && isValidUUID(effectiveSalesOrderId)) {
+          query = query.or(`id.eq.${effectiveSalesOrderId},order_number.eq.${effectiveOrderNumber}`)
+        } else {
+          query = query.eq('order_number', effectiveOrderNumber)
+        }
+        const { data } = await query.maybeSingle()
+        if (data) {
+          existingDbOrder = data
+        }
+      } catch {}
+
+      if (existingDbOrder) {
+        effectiveSalesOrderId = existingDbOrder.id
+        try {
+          const supabase = await createClient()
+          await (supabase as any)
+            .from('sales_orders')
+            .update({
+              commercial_status: 'invoice_created',
+              production_gate_status: 'ready_for_production',
+              invoice_id: invoice.id,
+              invoice_number: invoice.invoice_number,
+              final_price: invoice.grand_total || existingDbOrder.final_price,
+              advance_amount: invoice.paid_amount !== undefined ? invoice.paid_amount : existingDbOrder.advance_amount,
+              due_amount: invoice.due_amount !== undefined ? invoice.due_amount : existingDbOrder.due_amount,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', existingDbOrder.id)
+            .eq('company_id', companyId)
+        } catch {}
+
+        const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
+        const ordIdx = orders.findIndex(
+          (o) =>
+            o.id === existingDbOrder.id ||
+            o.order_number === effectiveOrderNumber ||
+            (invoice.sales_order_id && o.id === invoice.sales_order_id)
+        )
+        if (ordIdx >= 0) {
+          orders[ordIdx] = {
+            ...orders[ordIdx],
+            id: existingDbOrder.id,
+            commercial_status: 'invoice_created',
+            production_gate_status: 'ready_for_production',
+            invoice_id: invoice.id,
+            invoice_number: invoice.invoice_number,
+            final_price: invoice.grand_total || orders[ordIdx].final_price,
+            advance_amount: invoice.paid_amount !== undefined ? invoice.paid_amount : orders[ordIdx].advance_amount,
+            due_amount: invoice.due_amount !== undefined ? invoice.due_amount : orders[ordIdx].due_amount,
+          }
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
+          provisionedOrder = orders[ordIdx]
+        } else {
+          provisionedOrder = existingDbOrder
+        }
+      } else if (effectiveSalesOrderId) {
         try {
           const supabase = await createClient()
           await (supabase as any)
@@ -934,7 +998,7 @@ export class BillingRepository {
         } catch {}
 
         const orders = PrintERPDataStore.get<any[]>(STORAGE_KEYS.ORDERS) || []
-        const ord = orders.find((o) => o.id === invoice.sales_order_id)
+        const ord = orders.find((o) => o.id === invoice.sales_order_id || o.order_number === effectiveOrderNumber)
         if (ord) {
           ord.commercial_status = 'invoice_created'
           ord.invoice_id = invoice.id
@@ -1026,6 +1090,24 @@ export class BillingRepository {
               PrintERPDataStore.set(STORAGE_KEYS.JOB_ORDERS, [...newJobs, ...existingJobOrders])
             }
           }
+        } else {
+          ord.commercial_status = 'invoice_created'
+          ord.invoice_id = invoice.id
+          ord.invoice_number = invoice.invoice_number
+          if (!ord.production_gate_status || ord.production_gate_status === 'blocked_commercial') {
+            ord.production_gate_status = 'ready_for_production'
+          }
+          if (invoice.grand_total) {
+            ord.final_price = invoice.grand_total
+          }
+          if (invoice.paid_amount !== undefined) {
+            ord.advance_amount = Math.max(ord.advance_amount || 0, invoice.paid_amount)
+          }
+          if (invoice.due_amount !== undefined) {
+            ord.due_amount = invoice.due_amount
+          }
+          ord.updated_at = new Date().toISOString()
+          PrintERPDataStore.set(STORAGE_KEYS.ORDERS, orders)
         }
         provisionedOrder = ord
         effectiveSalesOrderId = ord.id
@@ -1056,10 +1138,10 @@ export class BillingRepository {
       }
 
       // 2.2 Persist auto-provisioned sales order to PostgreSQL if database connection exists
-      if (provisionedOrder && !invoice.sales_order_id) {
+      if (provisionedOrder && !existingDbOrder) {
         try {
           const supabase = await createClient()
-          await (supabase as any).from('sales_orders').insert({
+          await (supabase as any).from('sales_orders').upsert({
             id: provisionedOrder.id,
             company_id: provisionedOrder.company_id,
             order_number: provisionedOrder.order_number,
@@ -1081,7 +1163,7 @@ export class BillingRepository {
             due_amount: provisionedOrder.due_amount,
             created_at: provisionedOrder.created_at,
             updated_at: provisionedOrder.updated_at,
-          })
+          }, { onConflict: 'company_id,order_number' })
         } catch {}
       }
 
