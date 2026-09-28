@@ -152,18 +152,18 @@ export function Sidebar() {
     return { today: true, work: true, management: true, settings: true }
   })
 
-  // State of expanded sub-item groups (e.g. company_settings)
+  // State of expanded sub-item groups (e.g. company_settings, hr)
   const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>(() => {
     if (typeof window === 'undefined') {
-      return { company_settings: true }
+      return { company_settings: true, hr: true }
     }
     try {
       const saved = localStorage.getItem(EXPANDED_SUB_NAV_STORAGE_KEY)
       if (saved) {
-        return JSON.parse(saved)
+        return { hr: true, company_settings: true, ...JSON.parse(saved) }
       }
     } catch {}
-    return { company_settings: true }
+    return { company_settings: true, hr: true }
   })
 
   const navSections = useMemo(() => getNavigationConfig(), [])
@@ -309,7 +309,11 @@ export function Sidebar() {
       for (const item of section.items) {
         if (item.children && item.children.length > 0) {
           const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
-          if (hasActiveChild || (cleanPath.startsWith('/settings') && item.key === 'company_settings')) {
+          if (
+            hasActiveChild ||
+            (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
+            (cleanPath.startsWith('/hr') && item.key === 'hr')
+          ) {
             setExpandedSubNav((prev) => {
               if (prev[item.key]) return prev
               const next = { ...prev, [item.key]: true }

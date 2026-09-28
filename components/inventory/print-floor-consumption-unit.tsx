@@ -62,17 +62,6 @@ export interface PrintFloorConsumptionUnitProps {
   companyId?: string
 }
 
-const PRODUCTION_MACHINES = [
-  { id: 'all', name: 'All Workstations' },
-  { id: 'roland', name: 'Roland Eco-Solvent (64")' },
-  { id: 'mimaki', name: 'Mimaki UV Flatbed 2513' },
-  { id: 'hp', name: 'HP Latex 570 (64")' },
-  { id: 'laser', name: 'Laser Cutting Bay' },
-  { id: 'cnc', name: 'CNC Router Workstation' },
-  { id: 'screen', name: 'Screen Print Table' },
-  { id: 'finishing', name: 'Finishing & Grommeting' },
-]
-
 export function PrintFloorConsumptionUnit({
   floorConsumptions = [],
   materials = [],
@@ -89,7 +78,6 @@ export function PrintFloorConsumptionUnit({
   const isBn = locale === 'bn'
 
   // Filter States
-  const [selectedMachine, setSelectedMachine] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
   const [search, setSearch] = useState<string>('')
 
@@ -126,11 +114,6 @@ export function PrintFloorConsumptionUnit({
   // Filtered Floor Consumptions
   const filteredRecords = useMemo(() => {
     return floorConsumptions.filter((rec) => {
-      const matchMachine =
-        selectedMachine === 'all' ||
-        (rec.machine_name && rec.machine_name.toLowerCase().includes(selectedMachine.toLowerCase())) ||
-        (rec.machine_id && rec.machine_id.toLowerCase().includes(selectedMachine.toLowerCase()))
-
       const matchStatus = selectedStatus === 'all' || rec.status === selectedStatus
 
       const q = search.trim().toLowerCase()
@@ -143,9 +126,9 @@ export function PrintFloorConsumptionUnit({
         (rec.machine_name && rec.machine_name.toLowerCase().includes(q)) ||
         (rec.job_reference && rec.job_reference.toLowerCase().includes(q))
 
-      return matchMachine && matchStatus && matchSearch
+      return matchStatus && matchSearch
     })
-  }, [floorConsumptions, selectedMachine, selectedStatus, search])
+  }, [floorConsumptions, selectedStatus, search])
 
   // Aggregate KPI Calculations
   const kpis = useMemo(() => {
@@ -259,9 +242,9 @@ export function PrintFloorConsumptionUnit({
   return (
     <div className="space-y-4">
       {/* ========================================================= */}
-      {/* 5-KPI SUMMARY HUD BAR */}
+      {/* 4-KPI SUMMARY HUD BAR */}
       {/* ========================================================= */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {/* KPI 1: Dispatched to Floor */}
         <Card className="p-3.5 bg-linear-to-br from-indigo-50/70 to-indigo-100/40 dark:from-indigo-950/40 dark:to-indigo-900/20 border-indigo-200 dark:border-indigo-900/60 shadow-xs">
           <div className="flex items-center justify-between">
@@ -316,7 +299,7 @@ export function PrintFloorConsumptionUnit({
             <span className="text-xl font-black text-blue-700 dark:text-blue-400 font-mono">
               {kpis.totalRemainingQty.toLocaleString()}
             </span>
-            <Badge variant="outline" className="text-2xs font-mono bg-blue-50 dark:bg-blue-950 text-blue-700">
+            <Badge variant="outline" className="text-2xs font-mono bg-blue-50 dark:bg-blue-950 text-blue-700 border-blue-300 dark:border-blue-800">
               {kpis.activeFloorItemsCount} active lines
             </Badge>
           </div>
@@ -341,24 +324,6 @@ export function PrintFloorConsumptionUnit({
             </span>
           </div>
         </Card>
-
-        {/* KPI 5: Action Button / Reconcile */}
-        <Card className="p-3.5 bg-linear-to-br from-purple-50/70 to-purple-100/40 dark:from-purple-950/40 dark:to-purple-900/20 border-purple-200 dark:border-purple-900/60 shadow-xs flex flex-col justify-between">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold uppercase text-purple-700 dark:text-purple-400 tracking-wider">
-              {tBilingual('Quick Floor Run', 'দ্রুত কনজাম্পশন')}
-            </span>
-            <Scissors className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-          </div>
-          <Button
-            size="sm"
-            onClick={() => onOpenLogConsumption(null)}
-            className="mt-2 w-full bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold h-8 cursor-pointer shadow-xs gap-1"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>{tBilingual('Log Consumption', 'কনজাম্পশন এন্ট্রি')}</span>
-          </Button>
-        </Card>
       </div>
 
       {/* ========================================================= */}
@@ -378,7 +343,7 @@ export function PrintFloorConsumptionUnit({
                 size="sm"
                 variant="outline"
                 onClick={onRequestMaterial}
-                className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1.5"
+                className="border-amber-300 dark:border-amber-700/60 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1.5 transition-colors"
               >
                 <Plus className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
                 <span>{tBilingual('Request Material from Store', 'স্টোর থেকে রিকুইজিশন')}</span>
@@ -387,7 +352,7 @@ export function PrintFloorConsumptionUnit({
             <Button
               size="sm"
               onClick={() => setIsIssueRollOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1"
+              className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold h-7.5 px-3 cursor-pointer shadow-xs gap-1 transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>{tBilingual('Direct Issue to Floor', '+ সরাসরি ফ্লোরে ইস্যু')}</span>
@@ -547,7 +512,7 @@ export function PrintFloorConsumptionUnit({
       {/* FILTER & SEARCH BAR */}
       {/* ========================================================= */}
       <Card className="p-3.5">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
           {/* Search Input */}
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
@@ -562,23 +527,8 @@ export function PrintFloorConsumptionUnit({
             />
           </div>
 
-          {/* Machine Workstation Selector */}
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto scrollbar-thin">
-            {PRODUCTION_MACHINES.map((m) => (
-              <Button
-                key={m.id}
-                size="sm"
-                variant={selectedMachine === m.id ? 'default' : 'outline'}
-                onClick={() => setSelectedMachine(m.id)}
-                className="text-xs h-8 px-2.5 cursor-pointer shrink-0 font-semibold"
-              >
-                {m.name}
-              </Button>
-            ))}
-          </div>
-
           {/* Status Filter */}
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1 shrink-0 overflow-x-auto w-full sm:w-auto">
             {[
               { id: 'all', label: 'All Floor Items' },
               { id: 'on_floor', label: 'In Use / Active' },
@@ -592,7 +542,9 @@ export function PrintFloorConsumptionUnit({
                 onClick={() => setSelectedStatus(st.id)}
                 className={cn(
                   'text-2xs h-7 px-2 font-medium cursor-pointer',
-                  selectedStatus === st.id ? 'font-bold bg-slate-200 dark:bg-slate-800' : ''
+                  selectedStatus === st.id
+                    ? 'font-bold bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100'
                 )}
               >
                 {st.label}
@@ -633,11 +585,11 @@ export function PrintFloorConsumptionUnit({
                     </p>
                     <Button
                       size="sm"
-                      onClick={() => onOpenLogConsumption(null)}
-                      className="mt-3 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold cursor-pointer"
+                      onClick={() => setIsIssueRollOpen(true)}
+                      className="mt-3 bg-cyan-600 hover:bg-cyan-700 text-white text-xs font-bold cursor-pointer shadow-xs gap-1"
                     >
                       <Plus className="h-3.5 w-3.5 mr-1" />
-                      Log Floor Consumption
+                      {tBilingual('Direct Issue to Floor', 'সরাসরি ফ্লোরে রোল ইস্যু করুন')}
                     </Button>
                   </td>
                 </tr>

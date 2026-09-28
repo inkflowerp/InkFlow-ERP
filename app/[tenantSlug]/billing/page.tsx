@@ -44,6 +44,8 @@ import {
   Activity,
   BarChart3,
   X,
+  MoreVertical,
+  Eye,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -519,7 +521,7 @@ function BillingContent() {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })
-  const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('today')
+  const [invoiceFilterTab, setInvoiceFilterTab] = useState<string>('all')
   const [sectorFilter, setSectorFilter] = useState<'all' | 'digital_print' | 'offset_print' | 'signage_fabrication' | 'ready_merchandise'>('all')
   const [priorityTab, setPriorityTab] = useState<'all' | 'due_today' | 'overdue' | 'high_value'>('all')
   const [search, setSearch] = useState('')
@@ -610,6 +612,35 @@ function BillingContent() {
   const [selectedInvoiceForCancel, setSelectedInvoiceForCancel] = useState<InvoiceRecord | null>(null)
   const [cancelReason, setCancelReason] = useState('')
   const [isSubmittingCancel, setIsSubmittingCancel] = useState(false)
+
+  // 3-dot dropdown menu state for invoice row actions
+  const [activeMenuInvoiceId, setActiveMenuInvoiceId] = useState<string | null>(null)
+
+  // Close invoice actions menu on click outside or escape key
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-invoice-menu]')) {
+        setActiveMenuInvoiceId(null)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuInvoiceId(null)
+      }
+    }
+    document.addEventListener('click', handleDocumentClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  // Close menu when switching tabs, periods, or filters
+  useEffect(() => {
+    setActiveMenuInvoiceId(null)
+  }, [activeTab, invoiceFilterTab, sectorFilter, search, selectedPeriod])
 
   // Notification Toast
   const [notification, setNotification] = useState<string | null>(null)
@@ -1379,40 +1410,112 @@ function BillingContent() {
             </div>
           </Card>
         </div>
+      </div>
 
-        {/* Period Selector & Custom Date-to-Date Range Bar (Below KPI Cards) */}
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-2.5 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-xs">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-xl text-xs font-bold">
-              {(['today', 'this_week', 'this_month', 'all_time', 'custom'] as BillingPeriod[]).map((p) => {
-                const labels: Record<BillingPeriod, string> = {
-                  today: 'Today',
-                  this_week: 'This Week',
-                  this_month: 'This Month',
-                  all_time: 'All Time',
-                  custom: 'Custom Date',
-                }
-                const isSelected = selectedPeriod === p
-                return (
-                  <button
-                    key={p}
-                    onClick={() => setSelectedPeriod(p)}
-                    className={cn(
-                      'px-3 py-1.5 rounded-lg transition-all cursor-pointer font-bold',
-                      isSelected
-                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                        : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                    )}
-                  >
-                    {labels[p]}
-                  </button>
-                )
-              })}
+      {/* =========================================================================
+          3. MAIN TABS (INVOICES / REQUESTS / PAYMENTS / RECEIVABLES) + PERIOD SELECTOR
+         ========================================================================= */}
+      <div className="space-y-4">
+        {/* Navigation Tabs Header & Period Control Bar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
+          {/* Main Module Tabs */}
+          <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-0.5">
+            <button
+              onClick={() => handleTabChange('invoices')}
+              className={cn(
+                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
+                activeTab === 'invoices'
+                  ? 'bg-blue-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <Receipt className="h-4 w-4" />
+              <span>Invoices</span>
+              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+                {invoices.length}
+              </Badge>
+            </button>
+
+            <button
+              onClick={() => handleTabChange('requests')}
+              className={cn(
+                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
+                activeTab === 'requests'
+                  ? 'bg-amber-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <FileSpreadsheet className="h-4 w-4" />
+              <span>Invoice Requests</span>
+              {pendingRequestsCount > 0 ? (
+                <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
+                  {pendingRequestsCount} Hold
+                </Badge>
+              ) : (
+                <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+                  {invoiceRequests.length}
+                </Badge>
+              )}
+            </button>
+
+            <button
+              onClick={() => handleTabChange('payments')}
+              className={cn(
+                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
+                activeTab === 'payments'
+                  ? 'bg-emerald-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <DollarSign className="h-4 w-4" />
+              <span>Payments</span>
+              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+                {payments.length}
+              </Badge>
+            </button>
+
+            <button
+              onClick={() => handleTabChange('receivables')}
+              className={cn(
+                'px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shrink-0',
+                activeTab === 'receivables'
+                  ? 'bg-purple-600 text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+              )}
+            >
+              <Percent className="h-4 w-4" />
+              <span>Receivables</span>
+              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
+                {customerReceivables.length}
+              </Badge>
+            </button>
+          </div>
+
+          {/* Period Filter Dropdown & Refresh Tools */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 text-xs shadow-2xs">
+              <Calendar className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+              <select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value as BillingPeriod)}
+                className="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-200 outline-none cursor-pointer"
+                title="Select reporting period"
+              >
+                <option value="today" className="bg-white dark:bg-slate-900">Today</option>
+                <option value="this_week" className="bg-white dark:bg-slate-900">This Week</option>
+                <option value="this_month" className="bg-white dark:bg-slate-900">This Month</option>
+                <option value="all_time" className="bg-white dark:bg-slate-900">All Time</option>
+                <option value="custom" className="bg-white dark:bg-slate-900">Custom Date</option>
+              </select>
+              {effectiveMetrics?.startDate && (
+                <span className="text-2xs text-slate-400 font-mono hidden sm:inline ml-1 border-l border-slate-200 dark:border-slate-700 pl-2">
+                  {effectiveMetrics?.startDate === effectiveMetrics?.endDate ? effectiveMetrics.startDate : `${effectiveMetrics.startDate} to ${effectiveMetrics.endDate}`}
+                </span>
+              )}
             </div>
 
-            {/* Date-to-Date Range Inputs */}
             {selectedPeriod === 'custom' && (
-              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs animate-in fade-in slide-in-from-left-2">
+              <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
                 <input
                   type="date"
                   value={customStartDate}
@@ -1437,105 +1540,16 @@ function BillingContent() {
                 </Button>
               </div>
             )}
-          </div>
 
-          <div className="flex items-center gap-2.5 text-xs text-slate-500 font-mono">
-            <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-              <Calendar className="h-3.5 w-3.5 text-blue-500" />
-              <span>
-                {effectiveMetrics?.startDate} to {effectiveMetrics?.endDate}
-              </span>
-            </div>
             <button
               onClick={() => loadBillingData()}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+              className="p-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer shadow-2xs"
               title="Refresh financial metrics"
             >
               <RefreshCw className={cn('h-3.5 w-3.5', isLoading && 'animate-spin text-blue-600')} />
             </button>
           </div>
         </div>
-      </div>
-
-      {/* =========================================================================
-          3. MAIN TABS (INVOICES / REQUESTS / PAYMENTS / RECEIVABLES)
-         ========================================================================= */}
-      <div className="space-y-4">
-        {/* Navigation Tabs Header */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-
-          <button
-            onClick={() => handleTabChange('invoices')}
-            className={cn(
-              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-              activeTab === 'invoices'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <Receipt className="h-4 w-4" />
-            <span>Invoices</span>
-            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'invoices' ? 'bg-blue-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-              {invoices.length}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('requests')}
-            className={cn(
-              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-              activeTab === 'requests'
-                ? 'bg-amber-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            <span>Invoice Requests</span>
-            {pendingRequestsCount > 0 ? (
-              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-amber-100 text-amber-900 border border-amber-300 dark:bg-amber-950 dark:text-amber-300 animate-pulse')}>
-                {pendingRequestsCount} Hold
-              </Badge>
-            ) : (
-              <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'requests' ? 'bg-amber-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-                {invoiceRequests.length}
-              </Badge>
-            )}
-          </button>
-
-          <button
-            onClick={() => handleTabChange('payments')}
-            className={cn(
-              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-              activeTab === 'payments'
-                ? 'bg-emerald-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <DollarSign className="h-4 w-4" />
-            <span>Payments</span>
-            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'payments' ? 'bg-emerald-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-              {payments.length}
-            </Badge>
-          </button>
-
-          <button
-            onClick={() => handleTabChange('receivables')}
-            className={cn(
-              'px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer',
-              activeTab === 'receivables'
-                ? 'bg-purple-600 text-white shadow-sm'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-            )}
-          >
-            <Percent className="h-4 w-4" />
-            <span>Receivables</span>
-            <Badge className={cn('text-2xs py-0 px-1.5 font-bold', activeTab === 'receivables' ? 'bg-purple-800 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300')}>
-              {customerReceivables.length}
-            </Badge>
-          </button>
-        </div>
-
-
 
         {/* -------------------------------------------------------------------------
             TAB 2: INVOICES DIRECTORY & CONTROL
@@ -1547,15 +1561,10 @@ function BillingContent() {
               {/* Status Filter Pills */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
                 {[
-                  { id: 'today', label: 'Today' },
                   { id: 'all', label: 'All Invoices' },
                   { id: 'unpaid', label: 'Unpaid / Due' },
                   { id: 'overdue', label: 'Overdue' },
-                  { id: 'partially_paid', label: 'Partially Paid' },
                   { id: 'paid', label: 'Paid' },
-                  { id: 'due_today', label: 'Due Today' },
-                  { id: 'vat', label: 'VAT 6.3' },
-                  { id: 'cancelled', label: 'Cancelled' },
                 ].map((f) => (
                   <button
                     key={f.id}
@@ -1570,6 +1579,45 @@ function BillingContent() {
                     {f.label}
                   </button>
                 ))}
+
+                {/* More Filters Dropdown (Partially Paid, VAT 6.3, Cancelled) */}
+                <select
+                  value={['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab) ? invoiceFilterTab : ''}
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setInvoiceFilterTab(e.target.value)
+                    }
+                  }}
+                  className={cn(
+                    'h-7.5 px-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer outline-none shrink-0',
+                    ['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab)
+                      ? 'bg-slate-900 text-white border-slate-900 dark:bg-white dark:text-slate-900'
+                      : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                  )}
+                  title="Filter by special status or tax type"
+                >
+                  <option value="" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                    More Filters...
+                  </option>
+                  <option value="partially_paid" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                    Partially Paid
+                  </option>
+                  <option value="vat" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                    VAT 6.3 Tax Invoices
+                  </option>
+                  <option value="cancelled" className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300">
+                    Cancelled
+                  </option>
+                </select>
+
+                {['partially_paid', 'vat', 'cancelled'].includes(invoiceFilterTab) && (
+                  <button
+                    onClick={() => setInvoiceFilterTab('all')}
+                    className="text-2xs text-rose-500 hover:underline font-semibold ml-1 cursor-pointer shrink-0"
+                  >
+                    Clear Filter
+                  </button>
+                )}
               </div>
 
               {/* Fast Search */}
@@ -1596,20 +1644,20 @@ function BillingContent() {
             {/* Invoices List / Table */}
             <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
               {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs min-w-[1050px]">
+              <div className="hidden md:block overflow-x-auto min-h-[340px] pb-12">
+                <table className="w-full text-left text-xs min-w-[940px]">
                   <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                     <tr>
-                      <th className="p-3.5">Invoice #</th>
-                      <th className="p-3.5">Customer & Phone</th>
-                      <th className="p-3.5">Date</th>
-                      <th className="p-3.5">Due Date</th>
-                      <th className="p-3.5 text-right">Total</th>
-                      <th className="p-3.5 text-right">Paid</th>
-                      <th className="p-3.5 text-right">Due</th>
-                      <th className="p-3.5 text-center">Status</th>
-                      <th className="p-3.5">Salesperson</th>
-                      <th className="p-3.5 text-right min-w-[210px] whitespace-nowrap">Actions</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[125px]">Invoice #</th>
+                      <th className="p-3.5 min-w-[160px]">Customer & Phone</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px]">Date</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[90px] min-w-[90px]">Due Date</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Total</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Paid</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[95px] min-w-[95px]">Due</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Status</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[120px]">Salesperson</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1620,122 +1668,174 @@ function BillingContent() {
                         </td>
                       </tr>
                     ) : (
-                      filteredInvoices.map((inv) => (
-                        <tr key={inv.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="p-3.5">
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                      filteredInvoices.map((inv, index) => (
+                        <tr key={inv.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                          <td className="p-3.5 whitespace-nowrap min-w-[125px]">
+                            <div className="flex items-center gap-1.5 flex-nowrap">
                               <Link
                                 href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
-                                className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                                className="font-mono font-bold text-blue-600 dark:text-blue-400 hover:underline whitespace-nowrap"
                               >
                                 {inv.invoice_number}
                               </Link>
                               {inv.invoice_type === 'vat_invoice' && (
-                                <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-2xs py-0 px-1">
+                                <Badge className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 text-2xs py-0 px-1 shrink-0 whitespace-nowrap">
                                   VAT 6.3
                                 </Badge>
                               )}
                             </div>
                             {inv.order_number && (
-                              <span className="text-2xs text-slate-400 font-mono block mt-0.5">
+                              <span className="text-2xs text-slate-400 font-mono block mt-0.5 whitespace-nowrap">
                                 Order: {inv.order_number}
                               </span>
                             )}
                           </td>
-                          <td className="p-3.5">
-                            <div className="font-bold text-slate-900 dark:text-white">{inv.customer_name}</div>
+                          <td className="p-3.5 min-w-[160px]">
+                            <div className="font-bold text-slate-900 dark:text-white leading-tight">{inv.customer_name}</div>
                             {inv.customer_phone ? (
                               <a
                                 href={`tel:${inv.customer_phone}`}
-                                className="text-2xs text-slate-500 font-mono hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5"
+                                className="text-2xs text-slate-500 font-mono hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 mt-0.5 whitespace-nowrap"
                                 title="Call Customer"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <Phone className="h-3 w-3 text-slate-400" />
+                                <Phone className="h-3 w-3 text-slate-400 shrink-0" />
                                 <span>{inv.customer_phone}</span>
                               </a>
                             ) : (
                               <span className="text-2xs text-slate-400 font-mono">—</span>
                             )}
                           </td>
-                          <td className="p-3.5 font-numeric tabular-nums text-slate-500">{inv.invoice_date}</td>
-                          <td className="p-3.5 font-numeric tabular-nums text-slate-500">{inv.due_date}</td>
-                          <td className="p-3.5 text-right font-numeric tabular-nums font-bold text-slate-900 dark:text-white">
+                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{inv.invoice_date}</td>
+                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{inv.due_date}</td>
+                          <td className="p-3.5 text-right font-mono tabular-nums font-bold text-slate-900 dark:text-white whitespace-nowrap">
                             {formatBDT(inv.grand_total)}
                           </td>
-                          <td className="p-3.5 text-right font-numeric tabular-nums text-emerald-600 font-bold">
+                          <td className="p-3.5 text-right font-mono tabular-nums text-emerald-600 font-bold whitespace-nowrap">
                             {formatBDT(inv.paid_amount || 0)}
                           </td>
-                          <td className="p-3.5 text-right font-numeric tabular-nums font-bold text-rose-600 dark:text-rose-400">
+                          <td className="p-3.5 text-right font-mono tabular-nums font-bold text-rose-600 dark:text-rose-400 whitespace-nowrap">
                             {formatBDT(inv.due_amount || 0)}
                           </td>
-                          <td className="p-3.5 text-center">
+                          <td className="p-3.5 text-center whitespace-nowrap">
                             {getStatusBadge(inv.status, inv.due_date, inv.due_amount)}
                           </td>
-                          <td className="p-3.5 text-slate-600 dark:text-slate-300">
+                          <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                             {inv.salesperson_name || inv.created_by_name || 'Commercial'}
                           </td>
-                          <td className="p-3.5 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
-                              {inv.due_amount > 0 && inv.status !== 'cancelled' && (
-                                <>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => handleSendReminder(inv.id)}
-                                    className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 shadow-xs cursor-pointer rounded-lg shrink-0"
-                                    title="Send WhatsApp payment reminder"
+                          <td className="p-3.5 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+                            <div className="relative inline-block text-left" data-invoice-menu>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setActiveMenuInvoiceId(activeMenuInvoiceId === inv.id ? null : inv.id)
+                                }}
+                                className={cn(
+                                  'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
+                                  activeMenuInvoiceId === inv.id
+                                    ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                                    : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                )}
+                                title="Invoice Actions"
+                                aria-label="Invoice Actions"
+                                aria-expanded={activeMenuInvoiceId === inv.id}
+                              >
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+
+                              {activeMenuInvoiceId === inv.id && (
+                                <div
+                                  className={cn(
+                                    'absolute right-0 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                                    index >= filteredInvoices.length - 2 && filteredInvoices.length >= 3
+                                      ? 'bottom-full mb-1'
+                                      : 'top-full mt-1'
+                                  )}
+                                >
+                                  {/* View Invoice */}
+                                  <Link
+                                    href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)}
+                                    onClick={() => setActiveMenuInvoiceId(null)}
+                                    className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
                                   >
-                                    <MessageSquare className="h-3 w-3 mr-1" />
-                                    <span>Remind</span>
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() => {
-                                      setSelectedCustomerIdForPayment(inv.customer_id || undefined)
-                                      setSelectedInvoiceIdForPayment(inv.id)
-                                      setIsReceivePaymentOpen(true)
-                                    }}
-                                    className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 shadow-xs cursor-pointer rounded-lg shrink-0"
-                                    title="Receive payment for this invoice"
-                                  >
-                                    Collect
-                                  </Button>
-                                </>
-                              )}
+                                    <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                    <span className="font-medium">View Invoice</span>
+                                  </Link>
 
-                              <Link href={getTenantNavHref(`/billing/${inv.id}`, pathname, slug)} className="shrink-0">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-7 text-xs px-2 text-slate-600 dark:text-slate-300 rounded-lg"
-                                >
-                                  View
-                                </Button>
-                              </Link>
+                                  {/* Collect Payment */}
+                                  {inv.due_amount > 0 && inv.status !== 'cancelled' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveMenuInvoiceId(null)
+                                        setSelectedCustomerIdForPayment(inv.customer_id || undefined)
+                                        setSelectedInvoiceIdForPayment(inv.id)
+                                        setIsReceivePaymentOpen(true)
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer"
+                                    >
+                                      <DollarSign className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                      <div className="flex flex-col text-left">
+                                        <span className="font-semibold">Collect Payment</span>
+                                        <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 font-mono">
+                                          Due: {formatBDT(inv.due_amount)}
+                                        </span>
+                                      </div>
+                                    </button>
+                                  )}
 
-                              {can('delete', 'invoices') && inv.status !== 'cancelled' && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setSelectedInvoiceForDelete(inv)}
-                                  className="h-7 text-2xs px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
-                                  title="Delete Invoice"
-                                >
-                                  Delete
-                                </Button>
-                              )}
+                                  {/* WhatsApp Reminder */}
+                                  {inv.due_amount > 0 && inv.status !== 'cancelled' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveMenuInvoiceId(null)
+                                        handleSendReminder(inv.id)
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-emerald-700 dark:hover:text-emerald-400 transition-colors cursor-pointer"
+                                    >
+                                      <MessageSquare className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                                      <span>Remind (WhatsApp)</span>
+                                    </button>
+                                  )}
 
-                              {can('delete', 'invoices') && inv.paid_amount === 0 && inv.status !== 'cancelled' && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => setSelectedInvoiceForCancel(inv)}
-                                  className="h-7 text-2xs px-1.5 text-slate-400 hover:text-rose-600 rounded-lg"
-                                  title="Cancel / Void Invoice"
-                                >
-                                  Void
-                                </Button>
+                                  {/* Divider if delete/void actions present */}
+                                  {can('delete', 'invoices') && inv.status !== 'cancelled' && (
+                                    <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                  )}
+
+                                  {/* Cancel / Void Invoice */}
+                                  {can('delete', 'invoices') && inv.paid_amount === 0 && inv.status !== 'cancelled' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveMenuInvoiceId(null)
+                                        setSelectedInvoiceForCancel(inv)
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-amber-700 dark:text-amber-400 transition-colors cursor-pointer"
+                                    >
+                                      <Ban className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                      <span>Cancel / Void Invoice</span>
+                                    </button>
+                                  )}
+
+                                  {/* Delete Invoice */}
+                                  {can('delete', 'invoices') && inv.status !== 'cancelled' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveMenuInvoiceId(null)
+                                        setSelectedInvoiceForDelete(inv)
+                                      }}
+                                      className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                                    >
+                                      <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                                      <span>Delete Invoice</span>
+                                    </button>
+                                  )}
+                                </div>
                               )}
                             </div>
                           </td>
@@ -1975,17 +2075,17 @@ function BillingContent() {
             {/* Payments Table */}
             <Card className="border-slate-200/80 dark:border-slate-800/80 shadow-xs overflow-hidden rounded-2xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
               <div className="hidden md:block overflow-x-auto">
-                <table className="w-full text-left text-xs">
+                <table className="w-full text-left text-xs min-w-[950px]">
                   <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                     <tr>
-                      <th className="p-3.5">Receipt #</th>
-                      <th className="p-3.5">Date</th>
-                      <th className="p-3.5">Customer</th>
-                      <th className="p-3.5">Method</th>
-                      <th className="p-3.5">Reference / TrxID</th>
-                      <th className="p-3.5 text-right">Amount</th>
-                      <th className="p-3.5">Received By</th>
-                      <th className="p-3.5 text-right">Actions</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[130px]">Receipt #</th>
+                      <th className="p-3.5 text-center whitespace-nowrap w-[100px] min-w-[100px]">Date</th>
+                      <th className="p-3.5 min-w-[170px]">Customer</th>
+                      <th className="p-3.5 whitespace-nowrap w-[100px] min-w-[100px]">Method</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[140px]">Reference / TrxID</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[110px] min-w-[110px]">Amount</th>
+                      <th className="p-3.5 whitespace-nowrap min-w-[120px]">Received By</th>
+                      <th className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -1997,29 +2097,29 @@ function BillingContent() {
                       </tr>
                     ) : (
                       filteredPayments.map((pay) => (
-                        <tr key={pay.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                          <td className="p-3.5 font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                        <tr key={pay.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                          <td className="p-3.5 font-mono font-bold text-emerald-600 dark:text-emerald-400 whitespace-nowrap">
                             {pay.receipt_number}
                           </td>
-                          <td className="p-3.5 font-mono text-slate-500">{pay.payment_date}</td>
-                          <td className="p-3.5 font-bold text-slate-900 dark:text-white">
+                          <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{pay.payment_date}</td>
+                          <td className="p-3.5 font-bold text-slate-900 dark:text-white leading-tight">
                             {pay.customer_name || 'Walk-in Customer'}
                           </td>
-                          <td className="p-3.5">
-                            <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md font-semibold">
+                          <td className="p-3.5 whitespace-nowrap">
+                            <Badge className="bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 uppercase text-2xs rounded-md font-semibold whitespace-nowrap">
                               {pay.payment_method}
                             </Badge>
                           </td>
-                          <td className="p-3.5 font-mono text-slate-500 text-2xs">
+                          <td className="p-3.5 font-mono text-slate-500 text-2xs whitespace-nowrap">
                             {pay.mfs_transaction_id || pay.cheque_number || pay.bank_name || '—'}
                           </td>
-                          <td className="p-3.5 text-right font-numeric tabular-nums font-black text-emerald-600 text-sm">
+                          <td className="p-3.5 text-right font-mono tabular-nums font-black text-emerald-600 text-sm whitespace-nowrap">
                             {formatBDT(pay.amount)}
                           </td>
-                          <td className="p-3.5 text-slate-600 dark:text-slate-300">
+                          <td className="p-3.5 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                             {pay.received_by_name || 'Cashier'}
                           </td>
-                          <td className="p-3.5 text-right">
+                          <td className="p-3.5 text-right whitespace-nowrap w-[100px] min-w-[100px]">
                             <Button
                               size="sm"
                               variant="outline"
@@ -2208,16 +2308,16 @@ function BillingContent() {
 
               <CardContent className="p-0">
                 <div className="hidden md:block overflow-x-auto">
-                  <table className="w-full text-left text-xs">
+                  <table className="w-full text-left text-xs min-w-[950px]">
                     <thead className="bg-slate-50/70 dark:bg-slate-950/60 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 uppercase tracking-wider text-2xs font-bold">
                       <tr>
-                        <th className="p-3.5">Customer</th>
-                        <th className="p-3.5">Phone</th>
-                        <th className="p-3.5 text-center">Unpaid Bills</th>
-                        <th className="p-3.5">Oldest Due Date</th>
-                        <th className="p-3.5 text-center">Aging Status</th>
-                        <th className="p-3.5 text-right">Outstanding Due</th>
-                        <th className="p-3.5 text-right">Actions</th>
+                        <th className="p-3.5 min-w-[180px]">Customer</th>
+                        <th className="p-3.5 whitespace-nowrap min-w-[120px]">Phone</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Unpaid Bills</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[110px] min-w-[110px]">Oldest Due Date</th>
+                        <th className="p-3.5 text-center whitespace-nowrap w-[120px] min-w-[120px]">Aging Status</th>
+                        <th className="p-3.5 text-right whitespace-nowrap w-[120px] min-w-[120px]">Outstanding Due</th>
+                        <th className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">Actions</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -2229,53 +2329,53 @@ function BillingContent() {
                         </tr>
                       ) : (
                         customerReceivables.map((c) => (
-                          <tr key={c.customerId || c.customerName} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
-                            <td className="p-3.5">
-                              <span className="font-bold text-slate-900 dark:text-white">{c.customerName}</span>
+                          <tr key={c.customerId || c.customerName} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/60 transition-colors">
+                            <td className="p-3.5 min-w-[180px]">
+                              <span className="font-bold text-slate-900 dark:text-white leading-tight">{c.customerName}</span>
                             </td>
-                            <td className="p-3.5 font-mono text-slate-500">
+                            <td className="p-3.5 font-mono text-slate-500 whitespace-nowrap">
                               {c.customerPhone ? (
                                 <a
                                   href={`tel:${c.customerPhone}`}
-                                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1"
+                                  className="text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:underline inline-flex items-center gap-1 whitespace-nowrap"
                                   title="Call Customer"
                                 >
-                                  <Phone className="h-3 w-3 text-slate-400" />
+                                  <Phone className="h-3 w-3 text-slate-400 shrink-0" />
                                   <span>{c.customerPhone}</span>
                                 </a>
                               ) : (
                                 '—'
                               )}
                             </td>
-                            <td className="p-3.5 text-center font-mono font-bold text-blue-600">
+                            <td className="p-3.5 text-center font-mono font-bold text-blue-600 whitespace-nowrap">
                               {c.unpaidCount} Invoices
                             </td>
-                            <td className="p-3.5 font-mono text-slate-500">{c.oldestDueDate}</td>
-                            <td className="p-3.5 text-center">
+                            <td className="p-3.5 text-center font-mono tabular-nums text-slate-500 whitespace-nowrap">{c.oldestDueDate}</td>
+                            <td className="p-3.5 text-center whitespace-nowrap">
                               {c.maxDaysOverdue > 0 ? (
-                                <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md">
+                                <Badge className="bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20 font-bold text-2xs rounded-md whitespace-nowrap">
                                   {c.maxDaysOverdue}d Overdue
                                 </Badge>
                               ) : (
-                                <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md">
+                                <Badge className="bg-amber-500/10 text-amber-900 dark:text-amber-300 border border-amber-500/20 text-2xs rounded-md whitespace-nowrap">
                                   Due Soon
                                 </Badge>
                               )}
                             </td>
-                            <td className="p-3.5 text-right font-numeric tabular-nums font-black text-rose-600 dark:text-rose-400 text-sm">
+                            <td className="p-3.5 text-right font-mono tabular-nums font-black text-rose-600 dark:text-rose-400 text-sm whitespace-nowrap">
                               {formatBDT(c.totalDue)}
                             </td>
-                            <td className="p-3.5 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
+                            <td className="p-3.5 text-right whitespace-nowrap w-[180px] min-w-[180px]">
+                              <div className="flex items-center justify-end gap-1.5 flex-nowrap">
                                 {c.invoices[0] && (
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleSendReminder(c.invoices[0].id)}
-                                    className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 cursor-pointer rounded-lg"
+                                    className="h-7 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-700 dark:text-emerald-300 px-2 cursor-pointer rounded-lg shrink-0 gap-1"
                                     title="Send WhatsApp payment reminder"
                                   >
-                                    <MessageSquare className="h-3 w-3 mr-1" />
+                                    <MessageSquare className="h-3 w-3" />
                                     <span>Remind</span>
                                   </Button>
                                 )}
@@ -2286,7 +2386,7 @@ function BillingContent() {
                                     setSelectedInvoiceIdForPayment(c.invoices[0]?.id)
                                     setIsReceivePaymentOpen(true)
                                   }}
-                                  className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer rounded-lg"
+                                  className="h-7 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs px-3 cursor-pointer rounded-lg shrink-0"
                                 >
                                   Collect Due
                                 </Button>

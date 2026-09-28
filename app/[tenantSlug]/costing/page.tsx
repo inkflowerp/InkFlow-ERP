@@ -13,21 +13,16 @@ import {
   Clock,
   TrendingUp,
   DollarSign,
-  ShieldCheck,
   ShieldAlert,
   Percent,
   Layers,
   Sparkles,
   Eye,
-  EyeOff,
   ExternalLink,
   ChevronRight,
   TrendingDown,
   Download,
   Filter,
-  FileText,
-  Building,
-  Printer,
   ShoppingBag,
   Wrench,
   Truck,
@@ -818,39 +813,6 @@ export default function JobCostingPage() {
           iconColor="text-emerald-600"
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={getTenantNavHref('/quotations', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  <FileText className="w-3.5 h-3.5 text-blue-600" />
-                  <span>{tBilingual('Quotations', 'কোটেশন')}</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/production/machineries', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  <Printer className="w-3.5 h-3.5 text-purple-600" />
-                  <span>{tBilingual('Machine Fleet', 'মেশিনারিজ')}</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/suppliers', pathname, slug)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl flex items-center gap-1.5 text-xs h-9 font-semibold text-slate-700 dark:text-slate-300"
-                >
-                  <Building className="w-3.5 h-3.5 text-teal-600" />
-                  <span>{tBilingual('Material Rates', 'কাঁচামাল দর')}</span>
-                </Button>
-              </Link>
-
               <Button
                 variant="outline"
                 size="sm"
@@ -859,29 +821,6 @@ export default function JobCostingPage() {
               >
                 <Download className="w-3.5 h-3.5 text-emerald-600" />
                 <span>{tBilingual('Export CSV', 'এক্সপোর্ট')}</span>
-              </Button>
-
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsSalesRoleShielded(!isSalesRoleShielded)}
-                className={`text-xs h-9 rounded-xl font-semibold bangla-text ${
-                  isSalesRoleShielded
-                    ? 'bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300'
-                    : 'text-slate-700 dark:text-slate-300'
-                }`}
-              >
-                {isSalesRoleShielded ? (
-                  <>
-                    <EyeOff className="mr-1.5 h-3.5 w-3.5 text-amber-600" />
-                    {tBilingual('Sales Mode (Masked)', 'সেলস ভিউ (ব্যয় গোপন)')}
-                  </>
-                ) : (
-                  <>
-                    <ShieldCheck className="mr-1.5 h-3.5 w-3.5 text-emerald-600" />
-                    {tBilingual('Owner Mode (Full)', 'মালিক ভিউ (পূর্ণ দৃশ্য)')}
-                  </>
-                )}
               </Button>
 
               <Button

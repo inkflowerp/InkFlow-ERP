@@ -30,7 +30,6 @@ import {
   Briefcase,
   LayoutGrid,
   List,
-  Wallet,
   Clock,
   ArrowUpDown,
   Download,
@@ -1149,30 +1148,6 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="gap-1.5 text-xs h-9 hidden md:inline-flex"
-            >
-              <Link href={getTenantNavHref('/hr/attendance', pathname, tenantSlug)}>
-                <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                {tBilingual('Floor Attendance', 'হাজিরা')}
-              </Link>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="gap-1.5 text-xs h-9 hidden sm:inline-flex"
-            >
-              <Link href={getTenantNavHref('/hr/payroll', pathname, tenantSlug)}>
-                <Wallet className="w-3.5 h-3.5 text-blue-600" />
-                {tBilingual('Payroll & Salary', 'পেরোল')}
-              </Link>
-            </Button>
-
             <Button
               variant="outline"
               size="sm"

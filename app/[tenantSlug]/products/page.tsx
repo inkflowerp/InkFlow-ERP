@@ -23,6 +23,7 @@ import {
   Archive,
   Trash2,
   MoreHorizontal,
+  MoreVertical,
   FileSpreadsheet,
   Check,
   Building2,
@@ -243,6 +244,9 @@ export default function ProductsCatalogPage() {
     lead_time_days: 2,
     notes: '',
   })
+
+  // 3-dot dropdown menu state for catalog tables
+  const [activeMenuProductId, setActiveMenuProductId] = useState<string | null>(null)
 
   // Component recipe state
   const [newComponent, setNewComponent] = useState<ProductComponent>({
@@ -471,6 +475,24 @@ export default function ProductsCatalogPage() {
       }
     }
   }, [companyId])
+
+  // Close 3-dot dropdown menu on outside click
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-product-menu]')) {
+        setActiveMenuProductId(null)
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', handleDocumentClick)
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleDocumentClick)
+      }
+    }
+  }, [])
 
   // Handlers for Configuration Masters
   const handleSavePrintingMethod = async (data: Partial<PrintingMethod>) => {
@@ -1705,6 +1727,142 @@ export default function ProductsCatalogPage() {
     }
   }, [products])
 
+  const renderProductActionMenu = (item: ProductRecord, idx: number, totalCount: number) => {
+    const isOpen = activeMenuProductId === item.id
+    return (
+      <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+        <div className="relative inline-block text-left" data-product-menu>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={(e) => {
+              e.stopPropagation()
+              setActiveMenuProductId(isOpen ? null : item.id)
+            }}
+            className={cn(
+              'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
+              isOpen
+                ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+            )}
+            title={tBilingual('Actions', 'অ্যাকশন')}
+            aria-label="Product Actions"
+            aria-expanded={isOpen}
+          >
+            <MoreVertical className="h-4 w-4" />
+          </Button>
+
+          {isOpen && (
+            <div
+              className={cn(
+                'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                idx >= totalCount - 2 && totalCount >= 3
+                  ? 'bottom-full mb-1'
+                  : 'top-full mt-1'
+              )}
+            >
+              {/* 1. Fast Quote */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMenuProductId(null)
+                  handleOpenFastQuote(item)
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+              >
+                <Calculator className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                <span className="font-medium">{tBilingual('Fast Quote Calculator', 'কোটেশন ক্যালকুলেটর')}</span>
+              </button>
+
+              {/* 2. Adjust Commercial Price / Tariff */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMenuProductId(null)
+                  setPricingProduct(item)
+                  setNewPrice(item.selling_price)
+                  setNewPurchasePrice(item.purchase_price || 0)
+                  setNewTargetMargin(item.target_margin_percentage || 35)
+                  setNewWastage(item.default_wastage_percentage || 0)
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 hover:text-amber-700 dark:hover:text-amber-400 transition-colors cursor-pointer"
+              >
+                <Edit3 className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                <span>{tBilingual('Adjust Price & Margin', 'মূল্য ও মার্জিন নির্ধারণ')}</span>
+              </button>
+
+              {/* 3. Edit Item Specs */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMenuProductId(null)
+                  handleOpenEdit(item)
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+              >
+                <Sliders className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                <span>{tBilingual('Edit Details & Specs', 'তথ্য ও স্পেসিফিকেশন')}</span>
+              </button>
+
+              {/* 4. View Detail Cockpit */}
+              <Link
+                href={getTenantNavHref(`/products/${item.id}`, pathname, slug)}
+                onClick={() => setActiveMenuProductId(null)}
+                className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+              >
+                <ExternalLink className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                <span>{tBilingual('Open Product Cockpit', 'প্রোডাক্ট ককপিট')}</span>
+              </Link>
+
+              {/* Divider */}
+              <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+              {/* 5. Archive / Restore */}
+              {item.is_active !== false ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMenuProductId(null)
+                    handleToggleArchive(item)
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-600 dark:text-slate-400 transition-colors cursor-pointer"
+                >
+                  <Archive className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                  <span>{tBilingual('Archive Item', 'আইটেম আর্কাইভ করুন')}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveMenuProductId(null)
+                    handleToggleArchive(item)
+                  }}
+                  className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-600 dark:text-emerald-400 transition-colors cursor-pointer"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                  <span>{tBilingual('Restore Item', 'আইটেম পুনরুদ্ধার করুন')}</span>
+                </button>
+              )}
+
+              {/* 6. Delete */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMenuProductId(null)
+                  handleInitiateDelete(item)
+                }}
+                className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+              >
+                <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                <span>{tBilingual('Delete Item', 'আইটেম মুছে ফেলুন')}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </td>
+    )
+  }
+
   if (!mounted) {
     return (
       <div className="space-y-6 max-w-7xl pb-12 animate-pulse">
@@ -2670,11 +2828,11 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredProducts.map((item) => {
+                    {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
@@ -2774,51 +2932,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenFastQuote(item)}
-                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
-                              >
-                                <Calculator className="h-3 w-3 mr-1" />
-                                Quote
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setPricingProduct(item)
-                                  setNewPrice(item.selling_price)
-                                  setNewPurchasePrice(item.purchase_price || 0)
-                                  setNewTargetMargin(item.target_margin_percentage || 35)
-                                  setNewWastage(item.default_wastage_percentage || 0)
-                                }}
-                                className="h-7 text-xs px-2"
-                                title="Adjust price"
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Price
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(item)}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleInitiateDelete(item)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Service"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
+                          {renderProductActionMenu(item, idx, filteredProducts.length)}
                         </tr>
                       )
                     })}
@@ -2887,11 +3001,11 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredProducts.map((item) => {
+                    {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
@@ -2982,51 +3096,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenFastQuote(item)}
-                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
-                              >
-                                <Calculator className="h-3 w-3 mr-1" />
-                                Quote
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setPricingProduct(item)
-                                  setNewPrice(item.selling_price)
-                                  setNewPurchasePrice(item.purchase_price || 0)
-                                  setNewTargetMargin(item.target_margin_percentage || 35)
-                                  setNewWastage(item.default_wastage_percentage || 0)
-                                }}
-                                className="h-7 text-xs px-2"
-                                title="Adjust price"
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Price
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(item)}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleInitiateDelete(item)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Product"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
+                          {renderProductActionMenu(item, idx, filteredProducts.length)}
                         </tr>
                       )
                     })}
@@ -3094,11 +3164,11 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap">Compatible Printing</th>
                       <th className="py-3 px-3 whitespace-nowrap">Effective Cost / Unit</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredProducts.map((item) => {
+                    {filteredProducts.map((item, idx) => {
                       const printingList = item.material_config?.compatible_printing_methods || item.printing_methods || []
 
                       return (
@@ -3180,43 +3250,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setPricingProduct(item)
-                                  setNewPrice(item.selling_price)
-                                  setNewPurchasePrice(item.purchase_price || 0)
-                                  setNewTargetMargin(item.target_margin_percentage || 35)
-                                  setNewWastage(item.default_wastage_percentage || 0)
-                                }}
-                                className="h-7 text-xs px-2"
-                                title="Adjust tariff"
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Tariff
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(item)}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleInitiateDelete(item)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Material"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
+                          {renderProductActionMenu(item, idx, filteredProducts.length)}
                         </tr>
                       )
                     })}
@@ -3285,11 +3319,11 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap">Selling Rate</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredProducts.map((item) => {
+                    {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
@@ -3398,51 +3432,7 @@ export default function ProductsCatalogPage() {
                               </span>
                             )}
                           </td>
-                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenFastQuote(item)}
-                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
-                              >
-                                <Calculator className="h-3 w-3 mr-1" />
-                                Quote
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setPricingProduct(item)
-                                  setNewPrice(item.selling_price)
-                                  setNewPurchasePrice(item.purchase_price || 0)
-                                  setNewTargetMargin(item.target_margin_percentage || 35)
-                                  setNewWastage(item.default_wastage_percentage || 0)
-                                }}
-                                className="h-7 text-xs px-2"
-                                title="Adjust price"
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Price
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(item)}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleInitiateDelete(item)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Outsource Item"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
+                          {renderProductActionMenu(item, idx, filteredProducts.length)}
                         </tr>
                       )
                     })}
@@ -3508,11 +3498,11 @@ export default function ProductsCatalogPage() {
                       <th className="py-3 px-3 whitespace-nowrap text-center">Gross Margin</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Min Charge</th>
                       <th className="py-3 px-3 whitespace-nowrap text-center">Status</th>
-                      <th className="py-3 px-4 text-right whitespace-nowrap w-[240px]">Actions</th>
+                      <th className="py-3 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {filteredProducts.map((item) => {
+                    {filteredProducts.map((item, idx) => {
                       const marginPercent =
                         item.selling_price > 0
                           ? Math.round(((item.selling_price - item.base_cost) / item.selling_price) * 1000) / 10
@@ -3630,81 +3620,7 @@ export default function ProductsCatalogPage() {
                           </td>
 
                           {/* Actions */}
-                          <td className="py-3.5 px-4 text-right whitespace-nowrap w-[240px]">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Fast Quote Button */}
-                              <Button
-                                size="sm"
-                                onClick={() => handleOpenFastQuote(item)}
-                                className="h-7 text-xs px-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-xs"
-                              >
-                                <Calculator className="h-3 w-3 mr-1" />
-                                Quote
-                              </Button>
-
-                              {/* Adjust Price Button */}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => {
-                                  setPricingProduct(item)
-                                  setNewPrice(item.selling_price)
-                                  setNewPurchasePrice(item.purchase_price || 0)
-                                  setNewTargetMargin(item.target_margin_percentage || 35)
-                                  setNewWastage(item.default_wastage_percentage || 0)
-                                }}
-                                className="h-7 text-xs px-2"
-                                title="Adjust commercial price with audit log"
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Price
-                              </Button>
-
-                              {/* Edit Button */}
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleOpenEdit(item)}
-                                className="h-7 text-xs px-2"
-                              >
-                                Edit
-                              </Button>
-
-                              {/* Archive / Restore */}
-                              {item.is_active !== false ? (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleToggleArchive(item)}
-                                  className="h-7 w-7 p-0 text-slate-500 hover:text-slate-800 dark:hover:text-white"
-                                  title="Archive Product"
-                                >
-                                  <Archive className="h-3.5 w-3.5" />
-                                </Button>
-                              ) : (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => handleToggleArchive(item)}
-                                  className="h-7 text-xs px-2 text-emerald-600 border-emerald-300 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 font-semibold"
-                                  title="Restore Product"
-                                >
-                                  <RefreshCw className="h-3 w-3 mr-1" />
-                                  Restore
-                                </Button>
-                              )}
-
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => handleInitiateDelete(item)}
-                                className="h-7 w-7 p-0 text-rose-500 hover:text-rose-700 hover:bg-rose-50"
-                                title="Delete Item"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
+                          {renderProductActionMenu(item, idx, filteredProducts.length)}
                         </tr>
                       )
                     })}

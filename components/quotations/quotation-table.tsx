@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -15,6 +15,8 @@ import {
   FileCheck2,
   AlertCircle,
   Trash2,
+  MoreVertical,
+  Eye,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
@@ -45,6 +47,28 @@ export function QuotationTable({
   const { locale } = useI18n()
   const isBn = locale === 'bn'
   const safeQuotations = Array.isArray(quotations) ? quotations : []
+
+  const [activeMenuQuoteId, setActiveMenuQuoteId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-quote-menu]')) {
+        setActiveMenuQuoteId(null)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuQuoteId(null)
+      }
+    }
+    document.addEventListener('click', handleDocumentClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   const getStatusBadge = (status: QuotationStatus) => {
     switch (status) {
@@ -107,7 +131,7 @@ export function QuotationTable({
   return (
     <div>
       {/* Desktop Table View */}
-      <div className="hidden lg:block overflow-x-auto">
+      <div className="hidden lg:block overflow-x-auto min-h-[340px] pb-12">
         <table className="w-full text-left text-sm">
           <thead className="bg-slate-50/80 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 border-b border-slate-200 dark:border-slate-800">
             <tr>
@@ -119,11 +143,11 @@ export function QuotationTable({
               <th className="py-3 px-4">{isBn ? 'পরবর্তী করণীয়' : 'Next Action'}</th>
               <th className="py-3 px-4">{isBn ? 'মেয়াদ' : 'Validity'}</th>
               <th className="py-3 px-4">{isBn ? 'প্রতিনিধি' : 'Salesperson'}</th>
-              <th className="py-3 px-4 text-right">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
+              <th className="py-3 px-4 text-center w-[70px] min-w-[70px]">{isBn ? 'অ্যাকশন' : 'Actions'}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {safeQuotations.map((q) => {
+            {safeQuotations.map((q, index) => {
               const nextAction = QuotationService.calculateNextAction(q)
               const primaryItem = q.items?.[0]
               const sector = QuotationService.getSectorForQuotation(q)
@@ -225,55 +249,111 @@ export function QuotationTable({
                   </td>
 
                   {/* Actions */}
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {cleanPhone ? (
-                        <a
-                          href={waUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center justify-center h-7 px-1.5 text-xs text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 rounded transition-colors"
-                          title="Share Proposal on WhatsApp"
-                        >
-                          <MessageSquare className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-
-                      {q.customer_phone ? (
-                        <a
-                          href={`tel:${q.customer_phone}`}
-                          className="inline-flex items-center justify-center h-7 px-1.5 text-xs text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                          title="Call Customer"
-                        >
-                          <Phone className="h-3.5 w-3.5" />
-                        </a>
-                      ) : null}
-
+                  <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+                    <div className="relative inline-block text-left" data-quote-menu>
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => onOpenFollowUp(q)}
-                        className="h-7 px-2 text-xs text-slate-600 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                        title="Record Follow-Up"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setActiveMenuQuoteId(activeMenuQuoteId === q.id ? null : q.id)
+                        }}
+                        className={cn(
+                          'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
+                          activeMenuQuoteId === q.id
+                            ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                            : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        )}
+                        title={isBn ? 'অ্যাকশন' : 'Actions'}
+                        aria-label="Quotation Actions"
+                        aria-expanded={activeMenuQuoteId === q.id}
                       >
-                        Follow
+                        <MoreVertical className="h-4 w-4" />
                       </Button>
-                      <Link
-                        href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
-                        className="inline-flex items-center px-2 py-1 rounded text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
-                      >
-                        Cockpit →
-                      </Link>
-                      {onTrash && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onTrash(q)}
-                          className="h-7 px-1.5 text-xs text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                          title="Move to Trash"
+
+                      {activeMenuQuoteId === q.id && (
+                        <div
+                          className={cn(
+                            'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                            index >= safeQuotations.length - 2 && safeQuotations.length >= 3
+                              ? 'bottom-full mb-1'
+                              : 'top-full mt-1'
+                          )}
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
+                          {/* 1. Open Cockpit */}
+                          <Link
+                            href={getTenantNavHref(`/quotations/${q.id}`, pathname, tenantSlug)}
+                            onClick={() => setActiveMenuQuoteId(null)}
+                            className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                          >
+                            <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                            <span className="font-medium">
+                              {isBn ? 'কোটেশন ককপিট খুলুন' : 'Open Quotation Cockpit'}
+                            </span>
+                          </Link>
+
+                          {/* 2. Record Follow-Up */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveMenuQuoteId(null)
+                              onOpenFollowUp(q)
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                          >
+                            <Clock className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            <span>{isBn ? 'ফলো-আপ রেকর্ড করুন' : 'Log Follow-Up'}</span>
+                          </button>
+
+                          {/* 3. Share WhatsApp Proposal */}
+                          {cleanPhone ? (
+                            <a
+                              href={waUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={() => setActiveMenuQuoteId(null)}
+                              className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer"
+                            >
+                              <MessageSquare className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                              <span>{isBn ? 'হোয়াটসঅ্যাপে পাঠান' : 'Share on WhatsApp'}</span>
+                            </a>
+                          ) : null}
+
+                          {/* 4. Call Customer */}
+                          {q.customer_phone ? (
+                            <a
+                              href={`tel:${q.customer_phone}`}
+                              onClick={() => setActiveMenuQuoteId(null)}
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 transition-colors"
+                            >
+                              <Phone className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                              <div className="flex flex-col text-left">
+                                <span>{isBn ? 'কল করুন' : 'Call Customer'}</span>
+                                <span className="text-2xs text-slate-400 font-mono">{q.customer_phone}</span>
+                              </div>
+                            </a>
+                          ) : null}
+
+                          {/* Divider if onTrash exists */}
+                          {onTrash ? (
+                            <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                          ) : null}
+
+                          {/* 5. Move to Trash */}
+                          {onTrash ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuQuoteId(null)
+                                onTrash(q)
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                              <span>{isBn ? 'ট্র্যাশে পাঠান' : 'Move to Trash'}</span>
+                            </button>
+                          ) : null}
+                        </div>
                       )}
                     </div>
                   </td>

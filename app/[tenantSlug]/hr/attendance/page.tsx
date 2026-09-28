@@ -19,7 +19,6 @@ import {
   AlertTriangle,
   RefreshCw,
   Plus,
-  QrCode,
   MapPin,
   ChevronLeft,
   ChevronRight,
@@ -31,14 +30,12 @@ import {
   Building,
   Radio,
   FileText,
-  Wallet,
   SlidersHorizontal,
   Download,
   FileSpreadsheet,
   ArrowUpDown,
   CalendarRange,
   Clock3,
-  User,
   Eye,
   Edit2,
   Layers,
@@ -927,50 +924,6 @@ function AttendanceContent() {
         }
         actions={
           <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="gap-1.5 text-xs h-9 hidden md:inline-flex"
-            >
-              <Link href={getTenantNavHref('/hr/employees', pathname, tenantSlug)}>
-                <User className="w-3.5 h-3.5 text-muted-foreground" />
-                {tBilingual('Staff Directory', 'কর্মী তালিকা')}
-              </Link>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              asChild
-              className="gap-1.5 text-xs h-9 hidden sm:inline-flex"
-            >
-              <Link href={getTenantNavHref('/hr/payroll', pathname, tenantSlug)}>
-                <Wallet className="w-3.5 h-3.5 text-blue-600" />
-                {tBilingual('Payroll & Salary', 'পেরোল')}
-              </Link>
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsQrPosterOpen(true)}
-              className="gap-1.5 text-xs h-9"
-            >
-              <Printer className="w-3.5 h-3.5 text-muted-foreground" />
-              {tBilingual('Print QR Poster', 'পোস্টার প্রিন্ট')}
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsPunchModalOpen(true)}
-              className="gap-1.5 text-xs h-9 bg-emerald-500/10 text-emerald-600 border-emerald-500/30 hover:bg-emerald-500/20"
-            >
-              <QrCode className="w-3.5 h-3.5" />
-              {tBilingual('Live QR Scanner', 'কিউআর স্ক্যানার')}
-            </Button>
-
             <Button
               size="sm"
               onClick={() => handleOpenManualModal()}

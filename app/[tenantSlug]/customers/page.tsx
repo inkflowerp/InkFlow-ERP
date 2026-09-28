@@ -25,6 +25,7 @@ import {
   Edit2,
   Receipt,
   Trash2,
+  Eye,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useSubscription } from '@/hooks/use-subscription'
@@ -317,6 +318,33 @@ export default function CustomersPage() {
   const [customerToTrash, setCustomerToTrash] = useState<CustomerRecord | null>(null)
   const [isTrashConfirmOpen, setIsTrashConfirmOpen] = useState(false)
   const [isTrashing, setIsTrashing] = useState(false)
+
+  // 3-dot dropdown menu state for customer row actions
+  const [activeMenuCustomerId, setActiveMenuCustomerId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-customer-menu]')) {
+        setActiveMenuCustomerId(null)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuCustomerId(null)
+      }
+    }
+    document.addEventListener('click', handleDocumentClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
+  useEffect(() => {
+    setActiveMenuCustomerId(null)
+  }, [search, selectedType, selectedDueFilter, sortPreset, page])
 
   const showNotification = (msg: string, type: 'success' | 'info' | 'error' = 'success') => {
     setNotification(msg)
@@ -857,7 +885,7 @@ export default function CustomersPage() {
         <>
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-hidden rounded-2xl border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-950 shadow-xs">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[340px] pb-12">
               <table className="w-full text-xs text-left">
                 <thead className="bg-slate-50/80 dark:bg-slate-900/80 border-b border-slate-200/80 dark:border-slate-800/80 text-slate-500 font-semibold">
                   <tr>
@@ -869,7 +897,7 @@ export default function CustomersPage() {
                     <th className="py-3 px-3 text-right">{tBilingual('Total Invoiced', 'মোট ইনভয়েস')}</th>
                     <th className="py-3 px-3 text-right">{tBilingual('Due Balance', 'বকেয়া স্থিতি')}</th>
                     <th className="py-3 px-3 text-right">{tBilingual('Last Order', 'সর্বশেষ অর্ডার')}</th>
-                    <th className="py-3 px-4 text-center">{tBilingual('Quick Actions', 'অ্যাকশন')}</th>
+                    <th className="py-3 px-4 text-center w-[70px] min-w-[70px]">{tBilingual('Actions', 'অ্যাকশন')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800/80">
@@ -1002,55 +1030,112 @@ export default function CustomersPage() {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            {/* New Quotation Shortcut */}
-                            <Link
-                              href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40 transition-colors"
-                              title="Create Quotation"
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+                          <div className="relative inline-block text-left" data-customer-menu>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setActiveMenuCustomerId(activeMenuCustomerId === c.id ? null : c.id)
+                              }}
+                              className={cn(
+                                'h-8 w-8 p-0 rounded-lg transition-colors cursor-pointer mx-auto flex items-center justify-center',
+                                activeMenuCustomerId === c.id
+                                  ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                                  : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                              )}
+                              title={tBilingual('Actions', 'অ্যাকশন')}
+                              aria-label="Customer Actions"
+                              aria-expanded={activeMenuCustomerId === c.id}
                             >
-                              <FileText className="h-4 w-4" />
-                            </Link>
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
 
-                            {/* Create Invoice Shortcut (Modal) */}
-                            <button
-                              onClick={() => setSelectedCustomerForInvoice(c)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
-                              title="Create Invoice"
-                            >
-                              <Receipt className="h-4 w-4" />
-                            </button>
-
-                            {/* Record Payment (Modal) */}
-                            {hasDue && (
-                              <button
-                                onClick={() => setSelectedCustomerForPayment(c)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
-                                title="Record Payment"
+                            {activeMenuCustomerId === c.id && (
+                              <div
+                                className={cn(
+                                  'absolute right-0 w-56 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                                  idx >= customers.length - 2 && customers.length >= 3
+                                    ? 'bottom-full mb-1'
+                                    : 'top-full mt-1'
+                                )}
                               >
-                                <CreditCard className="h-4 w-4" />
-                              </button>
-                            )}
+                                {/* 1. 360 View */}
+                                <Link
+                                  href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
+                                  onClick={() => setActiveMenuCustomerId(null)}
+                                  className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                                >
+                                  <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                  <span className="font-medium">
+                                    {tBilingual('360 Profile & Ledger', '৩৬০ প্রোফাইল ও লেজার')}
+                                  </span>
+                                </Link>
 
-                            {/* 360 View */}
-                            <Link
-                              href={getTenantNavHref(`/customers/${c.id}`, pathname, slug)}
-                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 hover:bg-blue-600 hover:text-white dark:hover:bg-blue-600 font-bold text-xs transition-colors ml-1"
-                            >
-                              <span>360</span>
-                              <ArrowRight className="h-3 w-3" />
-                            </Link>
+                                {/* 2. Create Quotation */}
+                                <Link
+                                  href={getTenantNavHref(`/quotations/new?customerId=${c.id}`, pathname, slug)}
+                                  onClick={() => setActiveMenuCustomerId(null)}
+                                  className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-amber-700 dark:hover:text-amber-300 transition-colors"
+                                >
+                                  <FileText className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                                  <span>{tBilingual('Create Quotation', 'কোটেশন তৈরি করুন')}</span>
+                                </Link>
 
-                            {/* Trash / Move to Recycle Bin */}
-                            {can('delete', 'customers') && (
-                              <button
-                                onClick={() => handleTrashCustomer(c)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors cursor-pointer"
-                                title="Move to Trash"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </button>
+                                {/* 3. Create Invoice */}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActiveMenuCustomerId(null)
+                                    setSelectedCustomerForInvoice(c)
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-blue-50 dark:hover:bg-blue-950/40 flex items-center gap-2.5 text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                >
+                                  <Receipt className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                                  <span>{tBilingual('Create Invoice', 'নতুন ইনভয়েস তৈরি')}</span>
+                                </button>
+
+                                {/* 4. Record Payment */}
+                                {hasDue && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveMenuCustomerId(null)
+                                      setSelectedCustomerForPayment(c)
+                                    }}
+                                    className="w-full text-left px-3 py-2 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 flex items-center gap-2.5 text-emerald-700 dark:text-emerald-400 transition-colors cursor-pointer"
+                                  >
+                                    <CreditCard className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
+                                    <div className="flex flex-col text-left">
+                                      <span className="font-semibold">{tBilingual('Record Payment', 'পেমেন্ট গ্রহণ')}</span>
+                                      <span className="text-2xs text-emerald-600/80 dark:text-emerald-400/80 font-numeric">
+                                        Due: ৳{(c.total_due_balance || 0).toLocaleString('en-IN')}
+                                      </span>
+                                    </div>
+                                  </button>
+                                )}
+
+                                {/* Divider if delete permitted */}
+                                {can('delete', 'customers') && (
+                                  <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                )}
+
+                                {/* 5. Move to Trash */}
+                                {can('delete', 'customers') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveMenuCustomerId(null)
+                                      handleTrashCustomer(c)
+                                    }}
+                                    className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                                    <span>{tBilingual('Move to Trash', 'ট্র্যাশে পাঠান')}</span>
+                                  </button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </td>

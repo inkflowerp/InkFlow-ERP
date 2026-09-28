@@ -474,7 +474,7 @@ export class ProductionPlanningService {
 
 
     const extraUpdates: Partial<ProductionTaskRecord> = {
-      actual_start: new Date().toISOString(),
+      actual_start: task.actual_start || new Date().toISOString(),
       hold_reason: null,
       hold_notes: null,
     }

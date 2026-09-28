@@ -231,5 +231,29 @@ describe('Tenant Sidebar & Navigation Architecture Tests', () => {
       assert.ok(existsAsDir || existsAsFile, `Target route ${sub.href} must exist at ${targetPath}`)
     }
   })
+
+  it('8. HRM Sub-Modules: Workforce & HRM contains all 5 submodules with verified physical routes', () => {
+    const mgmtSection = navSections.find((s) => s.id === 'management')!
+    const hrItem = mgmtSection.items.find((i) => i.key === 'hr')!
+    assert.ok(hrItem, 'hr item must exist')
+    assert.ok(hrItem.children, 'hr must have children')
+    assert.equal(hrItem.children!.length, 5, 'Must contain all 5 HRM sub-modules')
+
+    const appDir = path.resolve(process.cwd(), 'app', '[tenantSlug]')
+
+    for (const sub of hrItem.children!) {
+      assert.ok(sub.key, 'Submodule must have key')
+      assert.ok(sub.title, 'Submodule must have English title')
+      assert.ok(sub.titleBn, 'Submodule must have Bengali title')
+      assert.ok(sub.href.startsWith('/hr'), `Submodule ${sub.key} href must start with /hr`)
+
+      const relativeRoute = sub.href.replace(/^\//, '')
+      const targetPath = path.join(appDir, relativeRoute)
+      const existsAsDir = fs.existsSync(targetPath) && fs.existsSync(path.join(targetPath, 'page.tsx'))
+      const existsAsFile = fs.existsSync(`${targetPath}.tsx`) || fs.existsSync(`${targetPath}/page.tsx`)
+
+      assert.ok(existsAsDir || existsAsFile, `Target route ${sub.href} must exist at ${targetPath}`)
+    }
+  })
 })
 

@@ -132,6 +132,7 @@ export function MobileNav() {
   })
   const [expandedSubNav, setExpandedSubNav] = useState<Record<string, boolean>>({
     company_settings: true,
+    hr: true,
   })
 
   const pathname = usePathname()
@@ -277,7 +278,11 @@ export function MobileNav() {
       for (const item of section.items) {
         if (item.children && item.children.length > 0) {
           const hasActiveChild = item.children.some((child) => isItemActive(child.href, child.exact))
-          if (hasActiveChild || (cleanPath.startsWith('/settings') && item.key === 'company_settings')) {
+          if (
+            hasActiveChild ||
+            (cleanPath.startsWith('/settings') && item.key === 'company_settings') ||
+            (cleanPath.startsWith('/hr') && item.key === 'hr')
+          ) {
             setExpandedSubNav((prev) => ({ ...prev, [item.key]: true }))
           }
         }

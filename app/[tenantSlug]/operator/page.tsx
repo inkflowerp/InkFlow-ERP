@@ -26,6 +26,11 @@ import {
   Wrench,
   Search,
   LayoutGrid,
+  MoreVertical,
+  Eye,
+  RefreshCw,
+  Copy,
+  ExternalLink,
 } from 'lucide-react'
 import { useI18n } from '@/i18n/context'
 import { useTenant } from '@/hooks/use-tenant'
@@ -37,6 +42,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { cn } from '@/lib/utils'
 import {
   ProductionTaskRecord,
   DEFECT_REASON_LABELS,
@@ -101,6 +107,7 @@ function MobileOperatorPanelContent() {
   })
   const [notification, setNotification] = useState<string | null>(null)
   const [actionInProgressTaskId, setActionInProgressTaskId] = useState<string | null>(null)
+  const [activeMenuTaskId, setActiveMenuTaskId] = useState<string | null>(null)
 
   // Live timer tick for running jobs
   const [timerTick, setTimerTick] = useState<number>(0)
@@ -111,6 +118,24 @@ function MobileOperatorPanelContent() {
     }, 1000)
     return () => clearInterval(interval)
   }, [mounted])
+
+  // Close 3-dot dropdown menu on outside click
+  useEffect(() => {
+    const handleDocClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-operator-queue-menu]')) {
+        setActiveMenuTaskId(null)
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', handleDocClick)
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('click', handleDocClick)
+      }
+    }
+  }, [])
 
   // Completion Modal State
   const [selectedTaskForComplete, setSelectedTaskForComplete] = useState<ProductionTaskRecord | null>(null)
@@ -297,7 +322,7 @@ function MobileOperatorPanelContent() {
     try {
       const res = await startProductionTaskAction(task.id, false, undefined, task)
       if (res.success) {
-        showNotification(`Started production for ${task.task_name}`)
+        showNotification(tBilingual(`Started production for ${task.task_name}`, `${task.task_name} এর উৎপাদন শুরু হয়েছে`))
         loadData()
       } else {
         showNotification(`Error: ${res.error}`)
@@ -309,9 +334,48 @@ function MobileOperatorPanelContent() {
     }
   }
 
-  const handlePauseTask = (task: ProductionTaskRecord) => {
+  const handlePauseTask = async (task: ProductionTaskRecord) => {
     if (actionInProgressTaskId) return
-    setSelectedTaskForHold(task)
+    setActionInProgressTaskId(task.id)
+    try {
+      const res = await pauseProductionTaskAction(task.id, 'Operator paused task from terminal', undefined, task)
+      if (res.success) {
+        showNotification(tBilingual(`Task #${task.task_number} paused.`, `টাস্ক #${task.task_number} সাময়িক স্থগিত করা হয়েছে।`))
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    } finally {
+      setActionInProgressTaskId(null)
+    }
+  }
+
+  const handleResumeTask = async (task: ProductionTaskRecord) => {
+    if (actionInProgressTaskId) return
+    setActionInProgressTaskId(task.id)
+    try {
+      const res = await startProductionTaskAction(task.id, false, undefined, task)
+      if (res.success) {
+        showNotification(tBilingual(`Task #${task.task_number} resumed.`, `টাস্ক #${task.task_number} পুনরায় চালু হয়েছে।`))
+        loadData()
+      } else {
+        showNotification(`Error: ${res.error}`)
+      }
+    } catch (err: any) {
+      showNotification(`Error: ${err.message}`)
+    } finally {
+      setActionInProgressTaskId(null)
+    }
+  }
+
+  const handleCopyTaskInfo = (task: ProductionTaskRecord) => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(`${task.task_number} - ${task.task_name} (Job: #${task.job_number || 'N/A'}, Qty: ${task.quantity} ${task.unit})`)
+      showNotification(tBilingual('Task info copied to clipboard!', 'টাস্ক তথ্য কপি করা হয়েছে!'))
+    }
+    setActiveMenuTaskId(null)
   }
 
   const handleOpenCompleteModal = (task: ProductionTaskRecord) => {
@@ -387,7 +451,7 @@ function MobileOperatorPanelContent() {
       })
 
       if (res.success) {
-        showNotification('Machine breakdown logged! Machine set to Breakdown and task placed on Hold.')
+        showNotification(tBilingual('Machine breakdown logged! Station placed in Breakdown.', 'মেশিন নষ্টের তথ্য লিপিবদ্ধ হয়েছে এবং স্টেশন ডাউন করা হয়েছে।'))
         setBreakdownTask(null)
         setBreakdownTitle('')
         setBreakdownDesc('')
@@ -430,6 +494,14 @@ function MobileOperatorPanelContent() {
   const upcomingTasks = filteredTasks.filter((t) => t.status === 'scheduled' || t.status === 'ready' || t.status === 'queued')
   const heldTasks = filteredTasks.filter((t) => t.status === 'on_hold')
 
+  // Department counts for filter badges
+  const departmentCounts = {
+    all: tasks.length,
+    printing: tasks.filter((t) => t.department === 'printing' || t.task_type === 'printing').length,
+    finishing: tasks.filter((t) => t.department === 'finishing' || t.task_type === 'finishing' || t.task_type === 'lamination' || t.task_type === 'cutting').length,
+    fabrication: tasks.filter((t) => t.department === 'fabrication' || t.task_type === 'fabrication' || t.task_type === 'mounting').length,
+  }
+
   // Helper to format elapsed duration
   const getElapsedTimeString = (actualStart?: string | null) => {
     if (!actualStart) return '00:00'
@@ -449,13 +521,17 @@ function MobileOperatorPanelContent() {
 
   if (!mounted) {
     return (
-      <div className="space-y-4 max-w-3xl mx-auto pb-12 p-4 sm:p-6 animate-pulse">
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
-        <div className="h-10 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
-        <div className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
+      <div className="space-y-6 max-w-[1600px] mx-auto pb-12 p-4 sm:p-6 lg:p-8 animate-pulse">
+        <div className="h-12 bg-slate-200 dark:bg-slate-800 rounded-xl w-1/3" />
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-20 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+          ))}
+        </div>
+        <div className="h-16 bg-slate-200 dark:bg-slate-800 rounded-xl w-full" />
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-28 bg-slate-200 dark:bg-slate-800 rounded-xl" />
+            <div key={i} className="h-24 bg-slate-200 dark:bg-slate-800 rounded-xl" />
           ))}
         </div>
       </div>
@@ -463,7 +539,7 @@ function MobileOperatorPanelContent() {
   }
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto pb-12 p-4 sm:p-6">
+    <div className="space-y-6 max-w-[1600px] mx-auto pb-12 p-4 sm:p-6 lg:p-8">
       {/* Header */}
       <PageHeader
         titleEn="Shop Floor Terminal"
@@ -474,6 +550,16 @@ function MobileOperatorPanelContent() {
         iconColor="text-blue-600"
         actions={
           <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadData()}
+              disabled={loading}
+              className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800 cursor-pointer"
+            >
+              <RefreshCw className={cn('h-3.5 w-3.5 text-slate-600 dark:text-slate-300', loading && 'animate-spin')} />
+              <span>{tBilingual('Refresh', 'রিফ্রেশ')}</span>
+            </Button>
             <Link href={getTenantNavHref('/production', pathname, slug)}>
               <Button variant="outline" size="sm" className="text-xs bangla-text flex items-center gap-1.5 border-slate-200 dark:border-slate-800">
                 <LayoutGrid className="h-3.5 w-3.5 text-indigo-600" />
@@ -498,8 +584,95 @@ function MobileOperatorPanelContent() {
         </div>
       )}
 
+      {/* KPI FLOOR OVERVIEW CARDS */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+        {/* Running Now */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
+              {tBilingual('Running Now', 'চলমান কাজ')}
+            </span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+          </div>
+          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1.5">
+            {activeTasks.filter((t) => t.status === 'in_progress').length}
+          </div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+            {tBilingual('Active on stations', 'স্টেশনে কর্মরত')}
+          </div>
+        </Card>
+
+        {/* Paused Tasks */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
+              {tBilingual('Paused', 'স্থগিত')}
+            </span>
+            <Pause className="h-4 w-4 text-amber-500" />
+          </div>
+          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1.5">
+            {activeTasks.filter((t) => t.status === 'paused').length}
+          </div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+            {tBilingual('Temporarily halted', 'সাময়িকভাবে বন্ধ')}
+          </div>
+        </Card>
+
+        {/* Upcoming In Queue */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
+              {tBilingual('In Queue', 'কিউতে অপেক্ষমাণ')}
+            </span>
+            <Layers className="h-4 w-4 text-blue-500" />
+          </div>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1.5">
+            {upcomingTasks.length}
+          </div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+            {tBilingual('Ready to execute', 'উৎপাদনের জন্য প্রস্তুত')}
+          </div>
+        </Card>
+
+        {/* On Hold */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
+              {tBilingual('On Hold', 'হোল্ড কৃত')}
+            </span>
+            <AlertOctagon className="h-4 w-4 text-rose-500" />
+          </div>
+          <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1.5">
+            {heldTasks.length}
+          </div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+            {tBilingual('Needs attention', 'পর্যালোচনা প্রয়োজন')}
+          </div>
+        </Card>
+
+        {/* Machinery Fleet */}
+        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs col-span-2 sm:col-span-4 lg:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
+              {tBilingual('Fleet In-Use', 'সচল মেশিন')}
+            </span>
+            <Cpu className="h-4 w-4 text-indigo-500" />
+          </div>
+          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1.5">
+            {machineries.filter((m) => m.status === 'in_use').length}{' '}
+            <span className="text-xs font-normal text-slate-400">/ {machineries.length} total</span>
+          </div>
+          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
+            {tBilingual('Active workstations', 'কর্মরত মেশিন')}
+          </div>
+        </Card>
+      </div>
+
       {/* DEPARTMENT / STATION TABS & QUICK SHORTCUTS */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-lg overflow-x-auto">
           {[
             { id: 'all', label: 'All Operations', labelBn: 'সকল কাজ' },
@@ -510,20 +683,29 @@ function MobileOperatorPanelContent() {
             <button
               key={tab.id}
               onClick={() => setSelectedDepartment(tab.id as any)}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
                 selectedDepartment === tab.id
                   ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-xs'
                   : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
               }`}
             >
-              {tBilingual(tab.label, tab.labelBn)}
+              <span>{tBilingual(tab.label, tab.labelBn)}</span>
+              <span
+                className={`text-2xs px-1.5 py-0.5 rounded-full font-mono ${
+                  selectedDepartment === tab.id
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/60 dark:text-blue-300'
+                    : 'bg-slate-200/80 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
+                }`}
+              >
+                {departmentCounts[tab.id as keyof typeof departmentCounts] || 0}
+              </span>
             </button>
           ))}
         </div>
 
         <Link
           href={getTenantNavHref('/finishing', pathname, slug)}
-          className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition-colors"
+          className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 px-3.5 py-2 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-1.5 transition-colors"
         >
           <Scissors className="h-3.5 w-3.5" />
           <span>{tBilingual('Finishing & Fabrication Floor ➔', 'ফিনিশিং ও ফেব্রিকেশন ফ্লোর ➔')}</span>
@@ -532,28 +714,30 @@ function MobileOperatorPanelContent() {
 
       {/* MACHINE STATION SELECTOR & SEARCH */}
       <Card className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-        <CardContent className="p-3 space-y-2.5">
+        <CardContent className="p-4 space-y-3">
           <div className="flex items-center justify-between">
             <Label className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
               <Cpu className="h-4 w-4 text-blue-600" />
               {tBilingual('Active Workstation / Machine Station', 'বর্তমান মেশিন স্টেশন')}
             </Label>
             {selectedStationMachine && (
-              <Badge className={`text-2xs uppercase font-semibold ${
-                selectedStationMachine.status === 'in_use'
-                  ? 'bg-blue-600 text-white'
-                  : selectedStationMachine.status === 'available'
-                  ? 'bg-emerald-600 text-white'
-                  : selectedStationMachine.status === 'breakdown'
-                  ? 'bg-rose-600 text-white'
-                  : 'bg-amber-600 text-white'
-              }`}>
+              <Badge
+                className={`text-2xs uppercase font-semibold ${
+                  selectedStationMachine.status === 'in_use'
+                    ? 'bg-blue-600 text-white'
+                    : selectedStationMachine.status === 'available'
+                    ? 'bg-emerald-600 text-white'
+                    : selectedStationMachine.status === 'breakdown'
+                    ? 'bg-rose-600 text-white'
+                    : 'bg-amber-600 text-white'
+                }`}
+              >
                 {selectedStationMachine.status}
               </Badge>
             )}
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <select
               value={selectedStationMachineId}
               onChange={(e) => setSelectedStationMachineId(e.target.value)}
@@ -583,32 +767,38 @@ function MobileOperatorPanelContent() {
 
       {/* ACTIVE RUNNING TASKS SECTION */}
       {activeTasks.length > 0 && (
-        <div className="space-y-2">
-          <div className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-300 flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
+        <div className="space-y-3">
+          <div className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center justify-between">
+            <span className="flex items-center gap-2">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
               </span>
-              {tBilingual('CURRENTLY RUNNING', 'বর্তমানে চলমান কাজ')} ({activeTasks.length})
+              <span>{tBilingual('CURRENTLY ACTIVE TASKS', 'বর্তমানে সক্রিয় কাজ')} ({activeTasks.length})</span>
             </span>
-            <span className="text-2xs text-blue-600 font-mono">Live Telemetry Active</span>
+            <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-mono font-semibold">Live Telemetry Active</span>
           </div>
 
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {activeTasks.map((task) => {
               const elapsedTime = getElapsedTimeString(task.actual_start)
               const estMinutes = task.estimated_duration_minutes || 30
+              const isPaused = task.status === 'paused'
 
               return (
                 <Card
                   key={task.id}
-                  className="border-2 border-blue-500 bg-blue-50/30 dark:bg-blue-950/30 shadow-md"
+                  className={cn(
+                    'transition-all shadow-md',
+                    isPaused
+                      ? 'border-2 border-amber-500 bg-amber-50/30 dark:bg-amber-950/20'
+                      : 'border-2 border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20'
+                  )}
                 >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <div className="flex items-center gap-2">
+                  <CardContent className="p-4 space-y-3.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Link
                             href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                           >
@@ -617,21 +807,29 @@ function MobileOperatorPanelContent() {
                             </Badge>
                           </Link>
                           <span className="text-xs font-mono text-slate-500">{task.task_number}</span>
+                          <Badge
+                            className={cn(
+                              'text-2xs uppercase font-bold tracking-wider',
+                              isPaused ? 'bg-amber-600 text-white' : 'bg-emerald-600 text-white'
+                            )}
+                          >
+                            {isPaused ? tBilingual('PAUSED', 'স্থগিত') : tBilingual('RUNNING', 'চলমান')}
+                          </Badge>
                         </div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1">
+                        <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 mt-1 truncate">
                           {task.task_name}
                         </h3>
-                        <p className="text-xs text-slate-500">
+                        <p className="text-xs text-slate-500 truncate">
                           {task.customer_name} • {task.product_name}
                         </p>
                       </div>
 
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-blue-700 dark:text-blue-300">
+                      <div className="text-right shrink-0">
+                        <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
                           {task.quantity} <span className="text-xs font-normal text-slate-500">{task.unit}</span>
                         </div>
                         {task.width && task.height && (
-                          <div className="text-2xs text-slate-500">
+                          <div className="text-2xs text-slate-500 font-medium">
                             {task.width} × {task.height} in
                           </div>
                         )}
@@ -639,9 +837,16 @@ function MobileOperatorPanelContent() {
                     </div>
 
                     {/* Machine & Live Runtime Ticker */}
-                    <div className="p-3 bg-white dark:bg-slate-900 rounded-lg border border-blue-200 dark:border-blue-900/50 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <Cpu className="h-4 w-4 text-blue-600 shrink-0" />
+                    <div
+                      className={cn(
+                        'p-3 rounded-lg border flex items-center justify-between text-xs',
+                        isPaused
+                          ? 'bg-amber-100/60 dark:bg-amber-950/40 border-amber-300 dark:border-amber-800'
+                          : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                      )}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Cpu className={cn('h-4 w-4 shrink-0', isPaused ? 'text-amber-600' : 'text-blue-600')} />
                         <div>
                           <span className="font-bold text-slate-800 dark:text-slate-200">
                             {task.assigned_machine_name || 'Manual Station'}
@@ -653,10 +858,17 @@ function MobileOperatorPanelContent() {
                       </div>
 
                       <div className="text-right">
-                        <div className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1 justify-end">
-                          <Activity className="h-3.5 w-3.5 animate-spin text-emerald-500" />
-                          <span>{elapsedTime}</span>
-                        </div>
+                        {isPaused ? (
+                          <div className="text-sm font-bold font-mono text-amber-700 dark:text-amber-400 flex items-center gap-1.5 justify-end">
+                            <Pause className="h-3.5 w-3.5" />
+                            <span>Paused at {elapsedTime}</span>
+                          </div>
+                        ) : (
+                          <div className="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 justify-end">
+                            <Activity className="h-3.5 w-3.5 animate-spin text-emerald-500" />
+                            <span>{elapsedTime}</span>
+                          </div>
+                        )}
                         <span className="text-2xs text-slate-400">
                           Target: {estMinutes} mins
                         </span>
@@ -664,29 +876,50 @@ function MobileOperatorPanelContent() {
                     </div>
 
                     {/* Touch Buttons */}
-                    <div className="grid grid-cols-4 gap-2 pt-1">
-                      <Button
-                        size="lg"
-                        variant="outline"
-                        onClick={() => handlePauseTask(task)}
-                        disabled={!!actionInProgressTaskId}
-                        className="h-12 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300"
-                      >
-                        <Pause className="h-4 w-4 mr-1" />
-                        {tBilingual('Pause', 'স্থগিত')}
-                      </Button>
+                    <div
+                      className={cn(
+                        'grid gap-2 pt-1',
+                        task.assigned_machine_id ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-3'
+                      )}
+                    >
+                      {/* 1. Pause or Resume Button */}
+                      {isPaused ? (
+                        <Button
+                          size="lg"
+                          variant="default"
+                          onClick={() => handleResumeTask(task)}
+                          disabled={!!actionInProgressTaskId}
+                          className="h-11 text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                        >
+                          <Play className="h-4 w-4 mr-1.5 fill-current" />
+                          {tBilingual('Resume', 'চালু করুন')}
+                        </Button>
+                      ) : (
+                        <Button
+                          size="lg"
+                          variant="outline"
+                          onClick={() => handlePauseTask(task)}
+                          disabled={!!actionInProgressTaskId}
+                          className="h-11 text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50 dark:border-amber-700 dark:text-amber-300 cursor-pointer"
+                        >
+                          <Pause className="h-4 w-4 mr-1.5" />
+                          {tBilingual('Pause', 'স্থগিত')}
+                        </Button>
+                      )}
 
+                      {/* 2. Hold / Problem Button */}
                       <Button
                         size="lg"
                         variant="outline"
                         onClick={() => setSelectedTaskForHold(task)}
                         disabled={!!actionInProgressTaskId}
-                        className="h-12 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300"
+                        className="h-11 text-xs font-bold border-rose-300 text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:text-rose-300 cursor-pointer"
                       >
-                        <AlertOctagon className="h-4 w-4 mr-1" />
+                        <AlertOctagon className="h-4 w-4 mr-1.5" />
                         {tBilingual('Hold', 'হোল্ড')}
                       </Button>
 
+                      {/* 3. Breakdown Button (If Machine is Assigned) */}
                       {task.assigned_machine_id && (
                         <Button
                           size="lg"
@@ -696,21 +929,22 @@ function MobileOperatorPanelContent() {
                             setBreakdownTitle(`Breakdown during #${task.task_number}`)
                             setBreakdownDesc(`Machine failure on ${task.assigned_machine_name} while processing ${task.task_name}.`)
                           }}
-                          className="h-12 text-xs font-bold border-rose-400 text-rose-700 hover:bg-rose-50 dark:border-rose-800"
+                          className="h-11 text-xs font-bold border-rose-400 text-rose-700 hover:bg-rose-50 dark:border-rose-800 cursor-pointer"
                         >
-                          <Wrench className="h-4 w-4 mr-1 text-rose-600" />
+                          <Wrench className="h-4 w-4 mr-1.5 text-rose-600" />
                           {tBilingual('Breakdown', 'নষ্ট')}
                         </Button>
                       )}
 
+                      {/* 4. Complete Button */}
                       <Button
                         size="lg"
                         variant="default"
                         onClick={() => handleOpenCompleteModal(task)}
                         disabled={!!actionInProgressTaskId}
-                        className="h-12 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm col-span-1"
+                        className="h-11 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer"
                       >
-                        <CheckCircle2 className="h-4 w-4 mr-1" />
+                        <CheckCircle2 className="h-4 w-4 mr-1.5" />
                         {tBilingual('Complete', 'সম্পন্ন')}
                       </Button>
                     </div>
@@ -723,36 +957,47 @@ function MobileOperatorPanelContent() {
       )}
 
       {/* UPCOMING QUEUE SECTION */}
-      <div className="space-y-2">
-        <div className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center justify-between">
-          <span>{tBilingual('UPCOMING IN QUEUE', 'পরবর্তী কিউ')} ({upcomingTasks.length})</span>
-          <span className="text-2xs text-slate-500">Tap Start to begin production</span>
+      <div className="space-y-3">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-blue-600" />
+            <span>{tBilingual('UPCOMING IN QUEUE', 'পরবর্তী কিউ')} ({upcomingTasks.length})</span>
+          </span>
+          <span className="text-2xs text-slate-500 font-medium">Tap Start to begin production or use 3-dot menu for actions</span>
         </div>
 
         <div className="space-y-2.5">
-          {upcomingTasks.map((task) => (
+          {upcomingTasks.map((task, idx) => (
             <Card
               key={task.id}
-              className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-colors"
+              className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-colors shadow-xs"
             >
-              <CardContent className="p-3.5 flex items-center justify-between gap-3">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2">
+              <CardContent className="p-4 flex items-center justify-between gap-4">
+                <div className="space-y-1.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Link
                       href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                     >
-                      <Badge variant="outline" className="text-2xs font-mono hover:bg-indigo-100 dark:hover:bg-indigo-950/50 hover:text-indigo-700 cursor-pointer transition-colors">
+                      <Badge variant="outline" className="text-2xs font-mono font-bold hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 cursor-pointer transition-colors border-slate-300 dark:border-slate-700">
                         #{task.job_number || task.task_number}
                       </Badge>
                     </Link>
-                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
+                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
                       {task.task_name}
                     </span>
+                    {task.priority === 'urgent' || task.priority === 'very_urgent' ? (
+                      <Badge className="bg-rose-50 text-rose-700 border border-rose-200 text-2xs font-semibold">
+                        {tBilingual('Urgent', 'জরুরি')}
+                      </Badge>
+                    ) : null}
                   </div>
-                  <div className="text-2xs text-slate-500 flex items-center gap-2 flex-wrap">
-                    <span>{task.customer_name}</span>
+
+                  <div className="text-xs text-slate-500 flex items-center gap-2.5 flex-wrap">
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{task.customer_name}</span>
                     <span>•</span>
-                    <span>{task.quantity} {task.unit}</span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100 font-mono">
+                      {task.quantity} {task.unit}
+                    </span>
                     {task.width && task.height && (
                       <>
                         <span>•</span>
@@ -760,33 +1005,126 @@ function MobileOperatorPanelContent() {
                       </>
                     )}
                     <span>•</span>
-                    <span className="font-medium text-slate-700 dark:text-slate-300">
-                      {task.assigned_machine_name || 'Manual'}
+                    <span className="inline-flex items-center gap-1 font-medium text-blue-600 dark:text-blue-400">
+                      <Cpu className="h-3.5 w-3.5" />
+                      {task.assigned_machine_name || 'Manual Station'}
                     </span>
+                    {task.required_material && (
+                      <>
+                        <span>•</span>
+                        <span className="text-slate-400">Media: {task.required_material}</span>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <div className="shrink-0">
+                {/* Primary Action Button + 3-Dot Dropdown Menu */}
+                <div className="shrink-0 flex items-center gap-2" data-operator-queue-menu>
                   <Button
                     size="sm"
                     variant="default"
                     onClick={() => handleStartTask(task)}
                     disabled={task.is_blocked_by_dependency || !!actionInProgressTaskId}
-                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-semibold h-9 px-3.5"
+                    className="text-xs bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 font-bold h-9 px-4 shadow-xs cursor-pointer"
                   >
                     <Play className="h-3.5 w-3.5 fill-current" />
-                    {tBilingual('Start', 'শুরু')}
+                    <span>{tBilingual('Start', 'শুরু')}</span>
                   </Button>
+
+                  <div className="relative">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setActiveMenuTaskId(activeMenuTaskId === task.id ? null : task.id)
+                      }}
+                      className={cn(
+                        'h-9 w-9 p-0 rounded-md border-slate-200 dark:border-slate-800 transition-colors cursor-pointer',
+                        activeMenuTaskId === task.id
+                          ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                          : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                      )}
+                      title={tBilingual('Actions', 'অ্যাকশন')}
+                      aria-label="Queue Task Actions"
+                    >
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+
+                    {activeMenuTaskId === task.id && (
+                      <div
+                        className={cn(
+                          'absolute right-0 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100',
+                          idx >= upcomingTasks.length - 2 && upcomingTasks.length >= 3
+                            ? 'bottom-full mb-1'
+                            : 'top-full mt-1'
+                        )}
+                      >
+                        {/* 1. View Job Details */}
+                        <Link
+                          href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
+                          onClick={() => setActiveMenuTaskId(null)}
+                          className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors"
+                        >
+                          <Eye className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+                          <span className="font-medium">{tBilingual('View Job Details', 'জব বিস্তারিত দেখুন')}</span>
+                        </Link>
+
+                        {/* 2. Place on Hold */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveMenuTaskId(null)
+                            setSelectedTaskForHold(task)
+                          }}
+                          className="w-full text-left px-3 py-2 hover:bg-amber-50 dark:hover:bg-amber-950/40 flex items-center gap-2.5 text-amber-700 dark:text-amber-400 transition-colors cursor-pointer"
+                        >
+                          <AlertOctagon className="h-3.5 w-3.5 shrink-0" />
+                          <span>{tBilingual('Place Task on Hold', 'টাস্ক হোল্ড করুন')}</span>
+                        </button>
+
+                        {/* 3. Report Machine Breakdown */}
+                        {task.assigned_machine_id && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveMenuTaskId(null)
+                              setBreakdownTask(task)
+                              setBreakdownTitle(`Breakdown for queue task #${task.task_number}`)
+                              setBreakdownDesc(`Machine issue on ${task.assigned_machine_name} before starting ${task.task_name}.`)
+                            }}
+                            className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-700 dark:text-rose-400 transition-colors cursor-pointer"
+                          >
+                            <Wrench className="h-3.5 w-3.5 shrink-0" />
+                            <span>{tBilingual('Report Station Breakdown', 'মেশিন নষ্ট রিপোর্ট')}</span>
+                          </button>
+                        )}
+
+                        {/* 4. Copy Task Info */}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyTaskInfo(task)}
+                          className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-600 dark:text-slate-400 transition-colors border-t border-slate-100 dark:border-slate-800 cursor-pointer"
+                        >
+                          <Copy className="h-3.5 w-3.5 shrink-0" />
+                          <span>{tBilingual('Copy Task Info', 'টাস্ক তথ্য কপি করুন')}</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
 
           {upcomingTasks.length === 0 && activeTasks.length === 0 && (
-            <Card className="p-8 text-center border-dashed">
-              <Printer className="h-8 w-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+            <Card className="p-10 text-center border-dashed border-slate-200 dark:border-slate-800">
+              <Printer className="h-10 w-10 text-slate-400 mx-auto mb-2.5 opacity-60" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                 {tBilingual('No active jobs in your queue!', 'আপনার কিউতে কোনো কাজ অপেক্ষমাণ নেই!')}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                {tBilingual('Jobs approved from design or scheduled from production board will appear here.', 'ডিজাইন অনুমোদিত বা প্রোডাকশন বোর্ড থেকে নির্ধারিত কাজ এখানে প্রদর্শিত হবে।')}
               </p>
             </Card>
           )}
@@ -795,29 +1133,30 @@ function MobileOperatorPanelContent() {
 
       {/* HELD TASKS SECTION (IF ANY) */}
       {heldTasks.length > 0 && (
-        <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-          <div className="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
-            <AlertOctagon className="h-3.5 w-3.5" />
-            {tBilingual('ON HOLD / PROBLEM TASKS', 'হোল্ড কৃত কাজ')} ({heldTasks.length})
+        <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+          <div className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-400 flex items-center gap-2">
+            <AlertOctagon className="h-4 w-4" />
+            <span>{tBilingual('ON HOLD / PROBLEM TASKS', 'হোল্ড কৃত কাজ')} ({heldTasks.length})</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {heldTasks.map((task) => (
-              <Card key={task.id} className="border border-amber-200 dark:border-amber-900 bg-amber-50/30 dark:bg-amber-950/20 p-3">
-                <div className="flex items-center justify-between text-xs">
-                  <div>
+              <Card key={task.id} className="border border-rose-200 dark:border-rose-900 bg-rose-50/30 dark:bg-rose-950/20 p-4">
+                <div className="flex items-center justify-between text-xs gap-3">
+                  <div className="min-w-0">
                     <Link
                       href={getTenantNavHref(`/production/${task.job_order_id || task.job_number || task.id}`, pathname, slug)}
                     >
-                      <span className="font-bold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer">
-                        #{task.job_number}: {task.task_name}
+                      <span className="font-bold text-slate-900 dark:text-slate-100 hover:text-indigo-600 dark:hover:text-indigo-400 cursor-pointer block truncate">
+                        #{task.job_number || task.task_number}: {task.task_name}
                       </span>
                     </Link>
-                    <p className="text-2xs text-amber-800 dark:text-amber-300 mt-0.5">
-                      Reason: {task.hold_reason || 'Under inspection'} {task.hold_notes ? `(${task.hold_notes})` : ''}
+                    <p className="text-2xs text-rose-800 dark:text-rose-300 mt-1">
+                      Reason: <span className="font-semibold">{task.hold_reason || 'Under inspection'}</span>{' '}
+                      {task.hold_notes ? `(${task.hold_notes})` : ''}
                     </p>
                   </div>
-                  <Badge variant="outline" className="border-amber-300 text-amber-800 dark:text-amber-300 text-2xs">
+                  <Badge variant="outline" className="border-rose-300 text-rose-800 dark:text-rose-300 text-2xs shrink-0">
                     On Hold
                   </Badge>
                 </div>
@@ -840,7 +1179,12 @@ function MobileOperatorPanelContent() {
             selectedTaskForComplete || undefined
           )
           if (res.success) {
-            showNotification(`Production signed off! Good: ${completionData.good_quantity}, Scrap: ${completionData.rejected_quantity}`)
+            showNotification(
+              tBilingual(
+                `Production signed off! Good: ${completionData.good_quantity}, Scrap: ${completionData.rejected_quantity}`,
+                `উৎপাদন সম্পন্ন! ভালো পণ্য: ${completionData.good_quantity}, নষ্ট: ${completionData.rejected_quantity}`
+              )
+            )
             setSelectedTaskForComplete(null)
             loadData()
           } else {
@@ -923,7 +1267,7 @@ function MobileOperatorPanelContent() {
         onClose={() => setSelectedTaskForHold(null)}
         task={selectedTaskForHold}
         onSuccess={() => {
-          showNotification('Problem reported and task placed on hold.')
+          showNotification(tBilingual('Problem reported and task placed on hold.', 'সমস্যা রিপোর্ট করা হয়েছে এবং টাস্ক হোল্ডে রাখা হয়েছে।'))
           setSelectedTaskForHold(null)
           loadData()
         }}

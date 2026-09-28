@@ -151,7 +151,7 @@ export default function FloorConsumptionPage() {
               size="sm"
               onClick={() => loadFloorData()}
               disabled={loading}
-              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-slate-700 hover:bg-slate-800 text-slate-300 cursor-pointer"
+              className="h-9 w-9 p-0 flex items-center justify-center shrink-0 border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 shadow-xs cursor-pointer transition-colors"
               title={isBn ? 'রিফ্রেশ' : 'Refresh'}
               aria-label={isBn ? 'রিফ্রেশ' : 'Refresh'}
             >
@@ -162,32 +162,19 @@ export default function FloorConsumptionPage() {
               variant="outline"
               size="sm"
               onClick={() => setIsMaterialRequestOpen(true)}
-              className="gap-2 border-amber-500/40 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20"
+              className="gap-2 border-amber-300 dark:border-amber-700/60 bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-900 dark:text-amber-200 font-semibold shadow-xs cursor-pointer transition-colors"
             >
-              <Plus className="h-4 w-4 text-amber-400" />
+              <Plus className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>{isBn ? 'স্টোর থেকে রিকুইজিশন পাঠান' : 'Request Material'}</span>
             </Button>
 
             <Button
-              variant="outline"
               size="sm"
               onClick={() => setIsIssueMasterRollOpen(true)}
-              className="gap-2 border-cyan-500/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/50"
+              className="gap-2 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold shadow-xs cursor-pointer transition-colors"
             >
-              <Disc className="h-4 w-4 text-cyan-400" />
+              <Disc className="h-4 w-4 text-white shrink-0" />
               <span>{isBn ? 'সরাসরি রোল ইস্যু করুন' : 'Direct Issue to Floor'}</span>
-            </Button>
-
-            <Button
-              size="sm"
-              onClick={() => {
-                setSelectedFloorRecord(null)
-                setIsLogConsumptionOpen(true)
-              }}
-              className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-medium shadow-md shadow-orange-950/40"
-            >
-              <Flame className="h-4 w-4" />
-              <span>{isBn ? 'কনজাম্পশন এন্ট্রি' : 'Log Consumption'}</span>
             </Button>
           </div>
         }

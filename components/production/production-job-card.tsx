@@ -42,6 +42,8 @@ import {
   UnifiedProductionJob,
   HOLD_REASON_LABELS,
 } from '@/types/production.types'
+import type { FloorConsumptionRecord, InventoryRollRecord } from '@/types/inventory.types'
+import { getFloorConsumptionsAction } from '@/actions/inventory.actions'
 import { ProductionTimerBadge } from './production-timer-badge'
 
 export interface ProductionJobCardProps {
@@ -60,27 +62,166 @@ export interface ProductionJobCardProps {
   onSendToDelivery?: (job: UnifiedProductionJob) => void
 }
 
-interface MaterialStockItem {
+export interface FloorMaterialStockItem {
   id: string
   name: string
   current_stock: number
   unit: string
+  width_ft: number
+  length_ft: number
+  roll_code?: string | null
+  machine_name?: string | null
 }
 
-const DEFAULT_PRINT_MATERIALS: MaterialStockItem[] = [
-  { id: 'mat-1', name: 'Star Flex (320 GSM)', current_stock: 450, unit: 'sft' },
-  { id: 'mat-2', name: 'Blackout Flex (340 GSM)', current_stock: 320, unit: 'sft' },
-  { id: 'mat-3', name: 'PVC Vinyl Glossy (120 GSM)', current_stock: 500, unit: 'sft' },
-  { id: 'mat-4', name: 'PVC Vinyl Matte (120 GSM)', current_stock: 280, unit: 'sft' },
-  { id: 'mat-5', name: 'Reflective Sheeting Honeycomb', current_stock: 150, unit: 'sft' },
-  { id: 'mat-6', name: 'Canvas Substrate (260 GSM)', current_stock: 200, unit: 'sft' },
-  { id: 'mat-7', name: 'Backlit Film (180 GSM)', current_stock: 180, unit: 'sft' },
-  { id: 'mat-8', name: 'One Way Vision Sticker', current_stock: 220, unit: 'sft' },
-  { id: 'mat-9', name: 'Art Card 300 GSM', current_stock: 1200, unit: 'pcs' },
-  { id: 'mat-10', name: 'Art Card 350 GSM', current_stock: 800, unit: 'pcs' },
-  { id: 'mat-11', name: 'Swedish Board 300 GSM', current_stock: 650, unit: 'pcs' },
-  { id: 'mat-12', name: 'Offset Paper 80 GSM', current_stock: 3500, unit: 'pcs' },
-]
+export const DEFAULT_FLOOR_PRINT_MATERIALS: FloorMaterialStockItem[] = []
+
+export function isNonFloorSubstrate(name: string, unit?: string, category?: string): boolean {
+  if (['pcs', 'sheet', 'ream', 'pkt', 'box'].includes(unit || '')) {
+    const lower = (name || '').toLowerCase()
+    if (!lower.includes('flex') && !lower.includes('vinyl') && !lower.includes('sticker') && !lower.includes('canvas') && !lower.includes('banner')) {
+      return true
+    }
+  }
+  const n = (name || '').toLowerCase()
+  if (
+    n.includes('art card') ||
+    n.includes('swedish board') ||
+    n.includes('offset paper') ||
+    n.includes('duplex board') ||
+    n.includes('box board') ||
+    n.includes('kraft paper') ||
+    n.includes('card stock') ||
+    n.includes('eyelet') ||
+    n.includes('ink cartridge') ||
+    n.includes('tape') ||
+    n.includes('solution')
+  ) {
+    return true
+  }
+  if (category && ['paper', 'board', 'accessories', 'packaging', 'finishing_materials'].includes(category.toLowerCase())) {
+    return true
+  }
+  return false
+}
+
+export function parseRollDimensions(name: string, record?: any): { width_ft: number; length_ft: number } {
+  let width = Number(record?.width_ft || record?.material?.roll_width_ft || record?.width || 0)
+  let length = Number(record?.current_length_ft ?? record?.remaining_length_ft ?? record?.length_ft ?? 0)
+
+  if (width <= 0) {
+    const match = (name || '').match(/(\d+(?:\.\d+)?)\s*(?:ft|'|feet)\b/i)
+    if (match) {
+      width = parseFloat(match[1])
+    } else {
+      const lower = (name || '').toLowerCase()
+      if (lower.includes('flex')) width = 10
+      else if (lower.includes('canvas')) width = 5
+      else if (lower.includes('one way') || lower.includes('reflective')) width = 4
+      else width = 5
+    }
+  }
+
+  if (length <= 0) {
+    const balance = Number(record?.remaining_floor_balance ?? record?.remaining_area_sft ?? record?.current_stock ?? 0)
+    if (balance > 0 && width > 0) {
+      length = Math.round((balance / width) * 10) / 10
+    } else {
+      length = 50
+    }
+  }
+
+  return {
+    width_ft: Math.max(1, width),
+    length_ft: Math.max(1, length),
+  }
+}
+
+export function getAvailableFloorMaterials(companyId?: string): FloorMaterialStockItem[] {
+  const result: FloorMaterialStockItem[] = []
+  const seenKeys = new Set<string>()
+
+  try {
+    // 1. Read Floor Consumption records (only available, active balances)
+    const floorConsumptions = (
+      PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, companyId) ||
+      PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
+      []
+    ).filter((fc) => {
+      if (!fc || !fc.material_name) return false
+      if (companyId && fc.company_id && fc.company_id !== companyId) return false
+      if (fc.status === 'fully_consumed' || fc.status === 'returned') return false
+      if (Number(fc.remaining_floor_balance) <= 0) return false
+      if (isNonFloorSubstrate(fc.material_name, fc.unit, (fc.material as any)?.category)) return false
+      return true
+    })
+
+    floorConsumptions.forEach((fc) => {
+      const { width_ft, length_ft } = parseRollDimensions(fc.material_name, fc)
+      const key = `${fc.material_name.toLowerCase()}_${fc.roll_code || ''}`
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        result.push({
+          id: fc.id,
+          name: fc.material_name,
+          roll_code: fc.roll_code || null,
+          machine_name: fc.machine_name || null,
+          width_ft,
+          length_ft,
+          current_stock: Number(fc.remaining_floor_balance),
+          unit: 'sft',
+        })
+      }
+    })
+
+    // 2. Read Mounted / Active Floor Rolls
+    const mountedRolls = (
+      PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, companyId) ||
+      PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+      []
+    ).filter((r) => {
+      if (!r) return false
+      if (companyId && r.company_id && r.company_id !== companyId) return false
+      const name = r.material?.name || (r as any).material_name || ''
+      if (!name) return false
+      if (r.status === 'depleted' || r.status === 'scrapped') return false
+      const isFloor =
+        r.status === 'mounted' ||
+        r.status === 'in_use' ||
+        r.status === 'on_floor' ||
+        r.location_name === 'Print Floor' ||
+        Boolean(r.mounted_machine_id) ||
+        Boolean(r.mounted_machine_name)
+      if (!isFloor) return false
+      const remLen = Number(r.current_length_ft ?? r.remaining_length_ft ?? 0)
+      const remArea = Number(r.remaining_area_sft ?? 0)
+      if (remLen <= 0 && remArea <= 0) return false
+      if (isNonFloorSubstrate(name, r.material?.unit, (r.material as any)?.category)) return false
+      return true
+    })
+
+    mountedRolls.forEach((r) => {
+      const matName = r.material?.name || (r as any).material_name || 'Floor Roll'
+      const key = `${matName.toLowerCase()}_${r.roll_code || r.roll_tag || ''}`
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        const { width_ft, length_ft } = parseRollDimensions(matName, r)
+        result.push({
+          id: r.id,
+          name: matName,
+          roll_code: r.roll_code || r.roll_tag || null,
+          machine_name: r.mounted_machine_name || r.mounted_press_name || null,
+          width_ft,
+          length_ft,
+          current_stock: Number(r.remaining_area_sft ?? (width_ft * length_ft)),
+          unit: 'sft',
+        })
+      }
+    })
+  } catch (_) {}
+
+  // Return strictly only materials that are actually available in Factory Floor Consumption & Tracking
+  return result
+}
 
 export const ProductionJobCard = React.memo(function ProductionJobCard({
   job,
@@ -157,29 +298,111 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     activeTask?.defect_reason || 'banding'
   )
 
-  // Stock inventory tracking for floor consumption
-  const [materialStockList, setMaterialStockList] = useState<MaterialStockItem[]>(() => {
-    try {
-      const stored = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
-      const map = new Map<string, MaterialStockItem>()
-
-      DEFAULT_PRINT_MATERIALS.forEach((d) => map.set(d.name.toLowerCase(), { ...d }))
-      stored.forEach((s) => {
-        if (s.name) {
-          const key = s.name.toLowerCase()
-          map.set(key, {
-            id: s.id || key,
-            name: s.name,
-            current_stock: Number(s.current_stock ?? 500),
-            unit: s.unit || 'sft',
-          })
-        }
-      })
-      return Array.from(map.values())
-    } catch {
-      return DEFAULT_PRINT_MATERIALS
-    }
+  // Stock inventory tracking for floor consumption (only active floor substrates with width & length)
+  const [materialStockList, setMaterialStockList] = useState<FloorMaterialStockItem[]>(() => {
+    return getAvailableFloorMaterials(company?.id)
   })
+
+  // Synchronize available floor consumptions from backend / server action & local store
+  useEffect(() => {
+    let isMounted = true
+    async function syncFloorConsumptions() {
+      try {
+        const res = await getFloorConsumptionsAction({}, company?.id)
+        if (isMounted && res.success && Array.isArray(res.data)) {
+          const activeFloorItems = res.data.filter((fc) => {
+            if (!fc || !fc.material_name) return false
+            if (company?.id && fc.company_id && fc.company_id !== company.id) return false
+            if (fc.status === 'fully_consumed' || fc.status === 'returned') return false
+            if (Number(fc.remaining_floor_balance) <= 0) return false
+            if (isNonFloorSubstrate(fc.material_name, fc.unit, (fc.material as any)?.category)) return false
+            return true
+          })
+
+          const map = new Map<string, FloorMaterialStockItem>()
+          activeFloorItems.forEach((fc) => {
+            const { width_ft, length_ft } = parseRollDimensions(fc.material_name, fc)
+            const key = `${fc.material_name.toLowerCase()}_${fc.roll_code || ''}`
+            map.set(key, {
+              id: fc.id,
+              name: fc.material_name,
+              roll_code: fc.roll_code || null,
+              machine_name: fc.machine_name || null,
+              width_ft,
+              length_ft,
+              current_stock: Number(fc.remaining_floor_balance),
+              unit: 'sft',
+            })
+          })
+
+          // Also merge active mounted rolls from local storage
+          try {
+            const mountedRolls = (
+              PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
+              PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+              []
+            ).filter((r) => {
+              if (!r) return false
+              if (company?.id && r.company_id && r.company_id !== company.id) return false
+              const name = r.material?.name || (r as any).material_name || ''
+              if (!name) return false
+              if (r.status === 'depleted' || r.status === 'scrapped') return false
+              const isFloor =
+                r.status === 'mounted' ||
+                r.status === 'in_use' ||
+                r.status === 'on_floor' ||
+                r.location_name === 'Print Floor' ||
+                Boolean(r.mounted_machine_id) ||
+                Boolean(r.mounted_machine_name)
+              if (!isFloor) return false
+              const remLen = Number(r.current_length_ft ?? r.remaining_length_ft ?? 0)
+              const remArea = Number(r.remaining_area_sft ?? 0)
+              return (remLen > 0 || remArea > 0) && !isNonFloorSubstrate(name, r.material?.unit, (r.material as any)?.category)
+            })
+
+            mountedRolls.forEach((r) => {
+              const matName = r.material?.name || (r as any).material_name || 'Floor Roll'
+              const key = `${matName.toLowerCase()}_${r.roll_code || r.roll_tag || ''}`
+              if (!map.has(key)) {
+                const { width_ft, length_ft } = parseRollDimensions(matName, r)
+                map.set(key, {
+                  id: r.id,
+                  name: matName,
+                  roll_code: r.roll_code || r.roll_tag || null,
+                  machine_name: r.mounted_machine_name || r.mounted_press_name || null,
+                  width_ft,
+                  length_ft,
+                  current_stock: Number(r.remaining_area_sft ?? (width_ft * length_ft)),
+                  unit: 'sft',
+                })
+              }
+            })
+          } catch (_) {}
+
+          setMaterialStockList(Array.from(map.values()))
+        }
+      } catch (_) {}
+    }
+
+    syncFloorConsumptions()
+
+    if (typeof window !== 'undefined') {
+      const handleSync = () => {
+        syncFloorConsumptions()
+      }
+      window.addEventListener('printerp_table_synced:floor_consumption', handleSync)
+      window.addEventListener('printerp_table_synced:physical_rolls', handleSync)
+      return () => {
+        isMounted = false
+        window.removeEventListener('printerp_table_synced:floor_consumption', handleSync)
+        window.removeEventListener('printerp_table_synced:physical_rolls', handleSync)
+      }
+    }
+
+    return () => {
+      isMounted = false
+    }
+  }, [company?.id])
 
   // Live Elapsed Timer & Button Progression States
   const [startedAt, setStartedAt] = useState<string | null>(
@@ -269,19 +492,18 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     return activeTask?.unit || job.unit || 'sft'
   }, [job.dimensions, calculatedUnit, activeTask?.unit, job.unit])
 
-  // Selected Material Stock Item
+  // Selected Material Stock Item (strictly from Factory Floor Consumption)
   const selectedMaterialStock = useMemo(() => {
+    if (!materialStockList || materialStockList.length === 0) return null
     return (
       materialStockList.find(
-        (m) => m.name.toLowerCase() === selectedMaterial.toLowerCase() || m.id === selectedMaterial
-      ) || {
-        id: 'default',
-        name: selectedMaterial,
-        current_stock: 500,
-        unit: productionUnit,
-      }
+        (m) =>
+          m.name.toLowerCase() === selectedMaterial.toLowerCase() ||
+          m.id === selectedMaterial ||
+          (m.roll_code && selectedMaterial.toLowerCase().includes(m.roll_code.toLowerCase()))
+      ) || null
     )
-  }, [materialStockList, selectedMaterial, productionUnit])
+  }, [materialStockList, selectedMaterial])
 
   const handleMaterialChange = (newMat: string) => {
     setSelectedMaterial(newMat)
@@ -308,17 +530,72 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
     startedAt && !isPrintCompleted && !isHold && !isSent && activeTask?.status !== 'completed'
   )
 
-  // Auto-reduce material consumption & wastage
+  // Auto-reduce floor material consumption & wastage
   const performMaterialDeduction = () => {
-    const matName = selectedMaterial || job.material || 'Star Flex (320 GSM)'
+    const matName = selectedMaterial || job.material || 'Printing Material'
     const totalDeduct = consumedQty + (Number(wastageQty) || 0)
+    const activeItem = selectedMaterialStock
+    if (!activeItem) {
+      return isBn
+        ? `সতর্কতা: ফ্লোরে '${matName}' মজুদ নেই। অনুগ্রহ করে ফ্লোর কনজাম্পশন থেকে রোল ইস্যু করুন।`
+        : `Notice: '${matName}' is not currently available in Factory Floor Consumption. Please issue from Floor Tracking.`
+    }
+    const widthFt = activeItem.width_ft || 10
+    const lengthDeduct = Math.round((totalDeduct / widthFt) * 10) / 10
 
     try {
+      // 1. Update Floor Consumptions
+      const floorConsumptions =
+        PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS, company?.id) ||
+        PrintERPDataStore.get<FloorConsumptionRecord[]>(STORAGE_KEYS.FLOOR_CONSUMPTIONS) ||
+        []
+      const fcIdx = floorConsumptions.findIndex(
+        (fc) =>
+          fc.material_name?.toLowerCase() === matName.toLowerCase() ||
+          fc.id === activeItem.id ||
+          (activeItem.roll_code && fc.roll_code === activeItem.roll_code)
+      )
+      if (fcIdx !== -1) {
+        const prevBal = Number(floorConsumptions[fcIdx].remaining_floor_balance ?? 450)
+        const newBal = Math.max(0, prevBal - totalDeduct)
+        floorConsumptions[fcIdx].remaining_floor_balance = newBal
+        floorConsumptions[fcIdx].consumed_quantity =
+          (Number(floorConsumptions[fcIdx].consumed_quantity) || 0) + totalDeduct
+        floorConsumptions[fcIdx].status = newBal <= 0 ? 'fully_consumed' : 'partially_consumed'
+        floorConsumptions[fcIdx].updated_at = new Date().toISOString()
+        PrintERPDataStore.set(STORAGE_KEYS.FLOOR_CONSUMPTIONS, floorConsumptions)
+      }
+
+      // 2. Update Mounted Rolls
+      const mountedRolls =
+        PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS, company?.id) ||
+        PrintERPDataStore.get<InventoryRollRecord[]>(STORAGE_KEYS.MOUNTED_ROLLS) ||
+        []
+      const rIdx = mountedRolls.findIndex(
+        (r) =>
+          r.material?.name?.toLowerCase() === matName.toLowerCase() ||
+          (r as any).material_name?.toLowerCase() === matName.toLowerCase() ||
+          r.id === activeItem.id ||
+          (activeItem.roll_code && r.roll_code === activeItem.roll_code)
+      )
+      if (rIdx !== -1) {
+        const prevLen = Number(mountedRolls[rIdx].current_length_ft ?? mountedRolls[rIdx].remaining_length_ft ?? 45)
+        const newLen = Math.max(0, Math.round((prevLen - lengthDeduct) * 10) / 10)
+        const prevArea = Number(mountedRolls[rIdx].remaining_area_sft ?? prevLen * (mountedRolls[rIdx].width_ft || widthFt))
+        const newArea = Math.max(0, prevArea - totalDeduct)
+        mountedRolls[rIdx].current_length_ft = newLen
+        mountedRolls[rIdx].remaining_length_ft = newLen
+        mountedRolls[rIdx].remaining_area_sft = newArea
+        mountedRolls[rIdx].status = newLen <= 0 ? 'depleted' : mountedRolls[rIdx].status
+        mountedRolls[rIdx].updated_at = new Date().toISOString()
+        PrintERPDataStore.set(STORAGE_KEYS.MOUNTED_ROLLS, mountedRolls)
+      }
+
+      // 3. Keep general Materials store updated
       const materials = PrintERPDataStore.get<any[]>(STORAGE_KEYS.MATERIALS) || []
       const matchedIdx = materials.findIndex(
         (m) => m.name?.toLowerCase() === matName.toLowerCase() || m.id === matName
       )
-
       let remainingStock = 500
       if (matchedIdx !== -1) {
         const prev = Number(materials[matchedIdx].current_stock ?? 500)
@@ -326,30 +603,20 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
         materials[matchedIdx].current_stock = remainingStock
         materials[matchedIdx].updated_at = new Date().toISOString()
         PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, materials)
-      } else {
-        remainingStock = Math.max(0, 500 - totalDeduct)
-        materials.push({
-          id: crypto.randomUUID(),
-          name: matName,
-          current_stock: remainingStock,
-          unit: productionUnit,
-          category: 'raw_materials',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        PrintERPDataStore.set(STORAGE_KEYS.MATERIALS, materials)
       }
 
-      // Update local state list
+      // 4. Update local state list
+      const newLength = Math.max(0, Math.round(((activeItem?.length_ft ?? 45) - lengthDeduct) * 10) / 10)
+      const newStock = Math.max(0, (activeItem?.current_stock ?? 450) - totalDeduct)
       setMaterialStockList((prev) =>
         prev.map((m) =>
-          m.name.toLowerCase() === matName.toLowerCase()
-            ? { ...m, current_stock: remainingStock }
+          m.name.toLowerCase() === matName.toLowerCase() || m.id === activeItem.id
+            ? { ...m, current_stock: newStock, length_ft: newLength }
             : m
         )
       )
 
-      // Record in Stock Ledger
+      // 5. Record in Stock Ledger
       try {
         const ledger = PrintERPDataStore.get<any[]>(STORAGE_KEYS.STOCK_LEDGER) || []
         ledger.push({
@@ -357,19 +624,19 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
           material_name: matName,
           transaction_type: 'CONSUMPTION',
           quantity_change: -totalDeduct,
-          unit: productionUnit,
-          balance_after: remainingStock,
+          unit: 'sft',
+          balance_after: newStock,
           reference_type: 'PRODUCTION_TASK',
           reference_id: activeTask?.id || job.id,
-          notes: `Auto-deducted print run: ${consumedQty} ${productionUnit} + ${wastageQty || 0} ${productionUnit} scrap for #${job.jobNumber} (${job.title})`,
+          notes: `Floor consumption print run: ${lengthDeduct} ft (${consumedQty} sft) + ${wastageQty || 0} sft scrap for #${job.jobNumber} (${job.title})`,
           created_at: new Date().toISOString(),
         })
         PrintERPDataStore.set(STORAGE_KEYS.STOCK_LEDGER, ledger)
       } catch (_) {}
 
       return isBn
-        ? `মেটেরিয়াল স্টকে স্বয়ংক্রিয় কর্তন: ${consumedQty} ${productionUnit}${wastageQty > 0 ? ` + ${wastageQty} ${productionUnit} অপচয়` : ''}। অবশিষ্ট: ${remainingStock} ${productionUnit}`
-        : `Auto-reduced ${consumedQty} ${productionUnit}${wastageQty > 0 ? ` + ${wastageQty} ${productionUnit} scrap` : ''} from ${matName}. Available stock: ${remainingStock} ${productionUnit}.`
+        ? `ফ্লোর মেটেরিয়ালে স্বয়ংক্রিয় কর্তন: ${lengthDeduct} ft (${consumedQty} sft)${wastageQty > 0 ? ` + ${wastageQty} sft অপচয়` : ''}। ফ্লোরে অবশিষ্ট: ${widthFt} ft × ${newLength} ft`
+        : `Auto-reduced ${lengthDeduct} ft (${consumedQty} sft)${wastageQty > 0 ? ` + ${wastageQty} sft scrap` : ''} from ${matName}. Available floor stock: ${widthFt} ft × ${newLength} ft.`
     } catch (err: any) {
       console.error('Material deduction error:', err)
       return null
@@ -1098,44 +1365,76 @@ export const ProductionJobCard = React.memo(function ProductionJobCard({
                     <Layers className="h-3 w-3 text-blue-600 shrink-0" />
                     <span>{isBn ? 'প্রিন্টিং মেটেরিয়াল:' : 'Printing Material Selection:'}</span>
                   </span>
-                  {selectedMaterial && (
+                  {selectedMaterialStock ? (
                     <span className="text-2xs text-emerald-600 dark:text-emerald-400 font-bold">
-                      Selected ✓
+                      Floor Available ✓
+                    </span>
+                  ) : (
+                    <span className="text-2xs text-amber-600 dark:text-amber-400 font-medium">
+                      {isBn ? 'ফ্লোরে অমজুদ' : 'Not on Floor'}
                     </span>
                   )}
                 </div>
                 <select
-                  value={selectedMaterial || activeTask?.required_material || job.material || ''}
+                  value={selectedMaterialStock ? selectedMaterialStock.name : ''}
                   onChange={(e) => handleMaterialChange(e.target.value)}
                   className="w-full text-xs font-semibold rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 text-slate-800 dark:text-slate-100 focus:outline-hidden focus:ring-1 focus:ring-blue-500 cursor-pointer"
                 >
-                  <option value="">-- Choose Printing Material --</option>
-                  {materialStockList.map((m) => (
-                    <option key={m.id || m.name} value={m.name}>
-                      {m.name} — {m.current_stock.toLocaleString()} {m.unit} available
+                  {materialStockList.length === 0 ? (
+                    <option value="">
+                      {isBn
+                        ? '-- ফ্লোরে কোন মেটেরিয়াল মজুদ নেই (ফ্লোর ট্র্যাকিং থেকে ইস্যু করুন) --'
+                        : '-- No Floor Materials Available (Issue in Floor Tracking) --'}
                     </option>
-                  ))}
+                  ) : (
+                    <>
+                      <option value="">
+                        {isBn ? '-- ফ্লোর মেটেরিয়াল নির্বাচন করুন --' : '-- Choose Floor Material --'}
+                      </option>
+                      {materialStockList.map((m) => (
+                        <option key={m.id || `${m.name}-${m.roll_code || ''}`} value={m.name}>
+                          {m.name}{m.roll_code ? ` [${m.roll_code}]` : ''} — {m.width_ft} ft × {m.length_ft} ft {isBn ? 'মজুদ' : 'available'}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
 
-                {/* Available Material & Floor Consumption Status */}
+                {/* Available Floor Material Status (Show width and length, NOT sft) */}
                 <div className="p-2 bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-lg text-2xs flex items-center justify-between font-mono">
                   <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300 truncate">
                     <Package className="h-3 w-3 text-blue-600 shrink-0" />
                     <span>{isBn ? 'মজুদ:' : 'In Stock:'}</span>
-                    <strong className="text-blue-700 dark:text-blue-300">
-                      {selectedMaterialStock?.current_stock?.toLocaleString() ?? 500}{' '}
-                      {selectedMaterialStock?.unit || productionUnit}
-                    </strong>
-                  </div>
-                  <div className="text-slate-500 shrink-0">
-                    <span>{isBn ? 'প্রয়োজন:' : 'Required:'}</span>{' '}
-                    <strong className="text-emerald-600 dark:text-emerald-400">
-                      {consumedQty} {productionUnit}
-                    </strong>
-                    {wastageQty > 0 && (
-                      <span className="text-amber-600 dark:text-amber-400 ml-1">
-                        (+{wastageQty} {productionUnit})
+                    {selectedMaterialStock ? (
+                      <strong className="text-blue-700 dark:text-blue-300">
+                        {selectedMaterialStock.width_ft} ft × {selectedMaterialStock.length_ft} ft
+                      </strong>
+                    ) : (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        {isBn ? '০ ft × ০ ft (ফ্লোরে নেই)' : '0 ft × 0 ft (Not on Floor)'}
                       </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="text-slate-500 shrink-0">
+                      <span>{isBn ? 'প্রয়োজন:' : 'Required:'}</span>{' '}
+                      <strong className="text-emerald-600 dark:text-emerald-400">
+                        {consumedQty} {productionUnit}
+                      </strong>
+                      {wastageQty > 0 && (
+                        <span className="text-amber-600 dark:text-amber-400 ml-1">
+                          (+{wastageQty} {productionUnit})
+                        </span>
+                      )}
+                    </div>
+                    {materialStockList.length === 0 && (
+                      <Link
+                        href={getTenantNavHref(tenantSlug, '/production/floor-consumption')}
+                        className="text-2xs text-blue-600 dark:text-blue-400 hover:underline font-sans font-bold flex items-center gap-0.5"
+                        title={isBn ? 'ফ্লোর ট্র্যাকিং ওপেন করুন' : 'Open Factory Floor Consumption & Tracking'}
+                      >
+                        <span>{isBn ? 'ফ্লোরে ইস্যু করুন →' : 'Issue to Floor →'}</span>
+                      </Link>
                     )}
                   </div>
                 </div>

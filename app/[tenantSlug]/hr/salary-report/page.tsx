@@ -19,8 +19,6 @@ import {
   Filter,
   CreditCard,
   Briefcase,
-  Users,
-  Wallet,
   CheckCircle2,
   TrendingUp,
   RefreshCw,
@@ -279,20 +277,6 @@ export default function SalaryReportPage() {
           }
           actions={
             <div className="flex flex-wrap items-center gap-2">
-              <Link href={getTenantNavHref('/hr/payroll', pathname, slug)}>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 rounded-xl font-semibold text-slate-700 dark:text-slate-300">
-                  <Wallet className="w-3.5 h-3.5 text-blue-600" />
-                  <span>{tBilingual('Payroll Studio', 'পেরোল স্টুডিও')}</span>
-                </Button>
-              </Link>
-
-              <Link href={getTenantNavHref('/hr/employees', pathname, slug)}>
-                <Button variant="outline" size="sm" className="gap-1.5 text-xs h-9 rounded-xl font-semibold text-slate-700 dark:text-slate-300">
-                  <Users className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>{tBilingual('Staff Roster', 'কর্মী তালিকা')}</span>
-                </Button>
-              </Link>
-
               <Button
                 variant="outline"
                 size="sm"
