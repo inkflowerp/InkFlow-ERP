@@ -30,7 +30,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { DesignJobRecord } from '@/types/design.types'
-import { type PreflightState } from './types'
+import { type PreflightState, resolveDesignJobSpecs } from './types'
+import { useI18n } from '@/i18n/context'
 import { DesignTimerBadge } from './design-timer-badge'
 
 export interface InvoiceGroup {
@@ -168,8 +169,10 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
   const { invoiceId, invoiceNumber, customerName, customerPhone, invoiceDate, jobs } = group
   const invoiceHref = getTenantNavHref(`/billing/${invoiceId || invoiceNumber}`, pathname, tenantSlug)
 
+  const { tBilingual } = useI18n()
   const isSingleJob = jobs.length === 1
   const singleJob = isSingleJob ? jobs[0] : null
+  const singleJobSpecs = singleJob ? resolveDesignJobSpecs(singleJob, group.allInvoiceItems, tBilingual) : null
 
   // Calculate completed count for multi-job invoices
   const completedJobsCount =
@@ -224,12 +227,18 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
         <div className="p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           {/* Left Column: Chevron, Icon, Invoice & Customer */}
           <div className="flex items-center gap-3 min-w-[240px]">
-            <Link
-              href={getTenantNavHref(`/design/${singleJob.id}`, pathname, tenantSlug)}
-              className="text-slate-400 hover:text-blue-600 transition-colors"
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+              title={isExpanded ? 'Collapse Specifications' : 'Expand Specifications'}
             >
-              <ChevronRight className="w-5 h-5 text-blue-600" />
-            </Link>
+              {isExpanded ? (
+                <ChevronDown className="w-5 h-5 text-blue-600" />
+              ) : (
+                <ChevronRight className="w-5 h-5 text-blue-600" />
+              )}
+            </button>
 
             <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400 flex items-center justify-center shrink-0">
               <FileText className="w-5 h-5" />
@@ -270,13 +279,37 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
           {/* Middle Column: Product Title & Specs */}
           <div className="flex-1 lg:px-4 min-w-0">
             <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
-              {singleJob.title || singleJob.product_name || 'Design Product'}
+              {singleJobSpecs?.serviceName || singleJob.title || singleJob.product_name || 'Design Product'}
             </div>
-            <div className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 truncate">
-              <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span>
-                {singleJob.dimensions_spec || '8 x 3 ft · 1 pcs · Acrylic + ACP'}
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-slate-600 dark:text-slate-400 mt-1 font-mono">
+              <span className="flex items-center gap-1 text-slate-700 dark:text-slate-300 font-semibold" title={singleJobSpecs?.material}>
+                <Layers className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <span className="truncate max-w-[200px]">{singleJobSpecs?.material}</span>
               </span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
+              <span className="text-slate-700 dark:text-slate-300 font-semibold">
+                {singleJobSpecs?.size}
+              </span>
+              <span className="text-slate-300 dark:text-slate-700">·</span>
+              <span className="text-slate-700 dark:text-slate-300 font-semibold">
+                {singleJobSpecs?.quantity}
+              </span>
+              {singleJobSpecs?.finishing && singleJobSpecs.finishing !== 'None' && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700">·</span>
+                  <span className="text-amber-700 dark:text-amber-400 font-semibold truncate max-w-[150px]" title={singleJobSpecs?.finishing}>
+                    ✨ {singleJobSpecs.finishing}
+                  </span>
+                </>
+              )}
+              {singleJobSpecs?.addOn && singleJobSpecs.addOn !== 'None' && (
+                <>
+                  <span className="text-slate-300 dark:text-slate-700">·</span>
+                  <span className="text-indigo-700 dark:text-indigo-400 font-semibold truncate max-w-[150px]" title={singleJobSpecs?.addOn}>
+                    ➕ {singleJobSpecs.addOn}
+                  </span>
+                </>
+              )}
             </div>
           </div>
 
@@ -431,6 +464,47 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
               </div>
             </div>
           </div>
+
+          {isExpanded && singleJobSpecs && (
+            <div className="px-5 pb-5 pt-1 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
+              <div className="rounded-lg bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-3 text-xs font-mono space-y-2 mt-3">
+                <div className="text-2xs font-bold uppercase tracking-wider text-slate-500">
+                  {tBilingual('Technical Specifications (6-Field Specs)', 'টেকনিক্যাল স্পেসিফিকেশন (৬-ফিল্ড স্পেক্স)')}:
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2">
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Service name:', 'সার্ভিসের নাম:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.serviceName}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Material name:', 'মেটেরিয়াল নাম:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.material}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Size:', 'সাইজ:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.size}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Quantity:', 'পরিমাণ:')}</span>
+                    <span className="font-bold text-slate-900 dark:text-slate-100 break-words">{singleJobSpecs.quantity}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.finishing}</span>
+                  </div>
+                  <div className="flex items-baseline gap-1.5 min-w-0">
+                    <span className="font-semibold text-slate-500 shrink-0">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
+                    <span className={`font-semibold break-words ${singleJobSpecs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-400 font-bold' : 'text-slate-500'}`}>{singleJobSpecs.addOn}</span>
+                  </div>
+                </div>
+                {singleJob.instructions && (
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-2xs text-slate-600 dark:text-slate-400">
+                    <span className="font-semibold text-slate-500">{tBilingual('Instructions / Notes:', 'নির্দেশনা / নোট:')}</span> {singleJob.instructions}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* =========================================================================
@@ -559,6 +633,8 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                           : job.deadline)
                       : '—'
 
+                    const jobSpecs = resolveDesignJobSpecs(job, group.allInvoiceItems, tBilingual)
+
                     return (
                       <tr
                         key={job.id || `job-${idx}`}
@@ -580,13 +656,27 @@ export const DesignInvoiceGroupCard = React.memo(function DesignInvoiceGroupCard
                         </td>
 
                         {/* 3. Product / Service */}
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-white text-xs">
-                          {job.title || job.product_name || 'Print Item'}
+                        <td className="py-3 px-3 text-xs">
+                          <div className="font-bold text-slate-900 dark:text-white">
+                            {jobSpecs.serviceName}
+                          </div>
+                          <div className="text-2xs text-slate-500 dark:text-slate-400 truncate max-w-[200px]" title={jobSpecs.material}>
+                            📄 {jobSpecs.material}
+                          </div>
                         </td>
 
                         {/* 4. Size & Qty */}
-                        <td className="py-3 px-3 text-slate-600 dark:text-slate-400 text-xs font-mono">
-                          {job.dimensions_spec || '10 x 4 ft · 1 pcs'}
+                        <td className="py-3 px-3 text-xs font-mono">
+                          <div className="text-slate-800 dark:text-slate-200 font-semibold">
+                            {jobSpecs.size} · {jobSpecs.quantity}
+                          </div>
+                          {(jobSpecs.finishing !== 'None' || jobSpecs.addOn !== 'None') && (
+                            <div className="text-2xs text-amber-700 dark:text-amber-400 truncate max-w-[200px]">
+                              {jobSpecs.finishing !== 'None' && `✨ ${jobSpecs.finishing}`}
+                              {jobSpecs.finishing !== 'None' && jobSpecs.addOn !== 'None' && ' · '}
+                              {jobSpecs.addOn !== 'None' && `➕ ${jobSpecs.addOn}`}
+                            </div>
+                          )}
                         </td>
 
                         {/* 5. Designer with Avatar */}

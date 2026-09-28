@@ -26,7 +26,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
-import { type PreflightState } from './types'
+import { type PreflightState, resolveDesignJobSpecs } from './types'
+import { useI18n } from '@/i18n/context'
 import { DesignTimerBadge } from './design-timer-badge'
 
 interface DesignJobCardProps {
@@ -65,6 +66,8 @@ export const DesignJobCard = React.memo(function DesignJobCard({
   const pathname = usePathname() || ''
   const { company } = useTenant()
   const tenantSlug = company?.slug || 'my-company'
+  const { tBilingual } = useI18n()
+  const specs = resolveDesignJobSpecs(job, job.all_invoice_items, tBilingual)
 
   const versions = job.versions || []
   const currentVer = versions[versions.length - 1]
@@ -181,7 +184,7 @@ export const DesignJobCard = React.memo(function DesignJobCard({
             {/* Title & Customer Name */}
             <h3 className="text-sm font-bold text-slate-900 dark:text-white line-clamp-1 leading-snug">
               <Link href={workbenchHref} className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                {job.title}
+                {specs.serviceName}
               </Link>
             </h3>
             <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-400 mt-1">
@@ -200,31 +203,49 @@ export const DesignJobCard = React.memo(function DesignJobCard({
               )}
             </div>
 
-            {/* Job Specifications Strip */}
-            <div className="mt-2.5 grid grid-cols-2 gap-2 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 text-2xs">
-              <div>
-                <span className="text-slate-400 block text-2xs">সাইজ / পরিমাপ:</span>
-                <strong className="font-mono text-slate-700 dark:text-slate-200">
-                  {job.dimensions_spec || 'Standard Spec'}
-                </strong>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-2xs">পরিমাণ (Qty):</span>
-                <strong className="font-mono text-slate-700 dark:text-slate-200">
-                  {job.quantity || 1} {job.unit || 'pcs'}
-                </strong>
-              </div>
-              {job.material && (
-                <div className="col-span-2">
-                  <span className="text-slate-400 block text-2xs">মেটেরিয়াল ও পেপার:</span>
+            {/* Job Specifications Strip (6-Field Specs) */}
+            <div className="mt-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-2.5 border border-slate-200 dark:border-slate-800 text-2xs font-mono space-y-1">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Service / Item:', 'সার্ভিস / আইটেম:')}</span>
                   <strong className="text-slate-700 dark:text-slate-200 truncate block">
-                    {job.material}
+                    {specs.serviceName}
                   </strong>
                 </div>
-              )}
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Material:', 'মেটেরিয়াল:')}</span>
+                  <strong className="text-slate-700 dark:text-slate-200 truncate block" title={specs.material}>
+                    {specs.material}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Size / Dimensions:', 'সাইজ / পরিমাপ:')}</span>
+                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
+                    {specs.size}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Quantity:', 'পরিমাণ (Qty):')}</span>
+                  <strong className="text-slate-700 dark:text-slate-200 truncate block">
+                    {specs.quantity}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Finishing:', 'ফিনিশিং:')}</span>
+                  <strong className={`truncate block ${specs.finishing !== 'None' ? 'text-amber-700 dark:text-amber-300 font-bold' : 'text-slate-500'}`}>
+                    {specs.finishing}
+                  </strong>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-2xs">{tBilingual('Add-on:', 'অ্যাড-অন:')}</span>
+                  <strong className={`truncate block ${specs.addOn !== 'None' ? 'text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-500'}`}>
+                    {specs.addOn}
+                  </strong>
+                </div>
+              </div>
               {job.instructions && (
-                <div className="col-span-2 border-t border-slate-200 dark:border-slate-700/60 pt-1.5 text-slate-600 dark:text-slate-400">
-                  <span className="text-2xs font-bold text-slate-500 block">কাস্টমার নির্দেশনা:</span>
+                <div className="border-t border-slate-200 dark:border-slate-700/60 pt-1.5 text-slate-600 dark:text-slate-400">
+                  <span className="text-2xs font-bold text-slate-500 block">{tBilingual('Instructions:', 'কাস্টমার নির্দেশনা:')}</span>
                   <p className="line-clamp-2 text-2xs italic">{job.instructions}</p>
                 </div>
               )}

@@ -19,7 +19,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { DesignJobRecord } from '@/types/design.types'
-import { type PreflightState } from './types'
+import { type PreflightState, resolveDesignJobSpecs } from './types'
+import { useI18n } from '@/i18n/context'
 import { DesignTimerBadge } from './design-timer-badge'
 
 interface DesignTableViewProps {
@@ -56,6 +57,7 @@ export const DesignTableView = React.memo(function DesignTableView({
   const pathname = usePathname() || ''
   const { company } = useTenant()
   const tenantSlug = company?.slug || 'my-company'
+  const { tBilingual } = useI18n()
 
   if (jobs.length === 0) {
     return (
@@ -92,6 +94,7 @@ export const DesignTableView = React.memo(function DesignTableView({
               const invoiceHref = job.invoice_number
                 ? getTenantNavHref(`/billing/${job.invoice_id || job.invoice_number}`, pathname, tenantSlug)
                 : null
+              const specs = resolveDesignJobSpecs(job, job.all_invoice_items, tBilingual)
 
               return (
                 <tr
@@ -143,11 +146,18 @@ export const DesignTableView = React.memo(function DesignTableView({
                       href={workbenchHref}
                       className="font-bold text-slate-800 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-400 line-clamp-1 transition-colors block"
                     >
-                      {job.title}
+                      {specs.serviceName}
                     </Link>
-                    <div className="text-2xs text-slate-500 font-mono">
-                      {job.dimensions_spec || 'Standard Spec'} | {job.quantity || 1} {job.unit || 'pcs'}
+                    <div className="text-2xs text-slate-500 font-mono mt-0.5">
+                      {specs.size} | {specs.quantity} | {specs.material}
                     </div>
+                    {(specs.finishing !== 'None' || specs.addOn !== 'None') && (
+                      <div className="text-2xs text-amber-700 dark:text-amber-400 font-mono mt-0.5">
+                        {specs.finishing !== 'None' && `✨ ${specs.finishing}`}
+                        {specs.finishing !== 'None' && specs.addOn !== 'None' && ' · '}
+                        {specs.addOn !== 'None' && `➕ ${specs.addOn}`}
+                      </div>
+                    )}
                   </td>
 
                   {/* Preflight Checklist Badges */}

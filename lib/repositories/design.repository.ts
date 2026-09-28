@@ -98,6 +98,56 @@ export class DesignRepository {
         } catch {}
       }
 
+      // Also load Invoices to cross-hydrate items, specs, materials, finishing, and add-ons
+      const invoices: any[] = [
+        ...(PrintERPDataStore.get<any[]>(STORAGE_KEYS.INVOICES) || []),
+        ...(PrintERPDataStore.getAll<any>(STORAGE_KEYS.INVOICES, companyId) || []),
+      ]
+
+      try {
+        let supabase: any
+        if (typeof window === 'undefined') {
+          const { createAdminClient } = await import('../supabase/admin.ts')
+          supabase = createAdminClient()
+        } else {
+          supabase = await createClient()
+        }
+        const { data: dbInvoices } = await (supabase as any)
+          .from('invoices')
+          .select('*, items:invoice_items(*)')
+          .eq('company_id', companyId)
+        if (dbInvoices && Array.isArray(dbInvoices)) {
+          invoices.push(...dbInvoices)
+        }
+      } catch {}
+
+      if (typeof window !== 'undefined') {
+        try {
+          const candidateKeys = [
+            STORAGE_KEYS.INVOICES,
+            `${STORAGE_KEYS.INVOICES}__${companyId}`,
+            `${STORAGE_KEYS.INVOICES}__default`,
+          ]
+          for (const key of candidateKeys) {
+            const raw = localStorage.getItem(key)
+            if (raw) {
+              const parsed = JSON.parse(raw)
+              if (Array.isArray(parsed)) {
+                invoices.push(...parsed)
+              }
+            }
+          }
+        } catch {}
+      }
+
+      const invoicesMap = new Map<string, any>()
+      for (const inv of invoices) {
+        if (!inv || (!inv.id && !inv.invoice_number)) continue
+        if (!isMatchingTenant(inv.company_id)) continue
+        if (inv.id) invoicesMap.set(inv.id, inv)
+        if (inv.invoice_number) invoicesMap.set(inv.invoice_number, inv)
+      }
+
       const tenantOrdersMap = new Map<string, any>()
       for (const ord of orders) {
         if (!ord || (!ord.id && !ord.order_number)) continue
@@ -130,7 +180,15 @@ export class DesignRepository {
 
         if (!orderNeedsDesign) continue
 
-        const items = Array.isArray(order.items) && order.items.length > 0 ? order.items : [null]
+        const matchedInv =
+          (order.invoice_id && invoicesMap.get(order.invoice_id)) ||
+          (order.invoice_number && invoicesMap.get(order.invoice_number))
+
+        let items = Array.isArray(order.items) && order.items.length > 0 ? order.items : []
+        if (items.length === 0 && matchedInv && Array.isArray(matchedInv.items) && matchedInv.items.length > 0) {
+          items = matchedInv.items
+        }
+        if (items.length === 0) items = [null]
 
         items.forEach((it: any, idx: number) => {
           if (it) {
@@ -173,10 +231,21 @@ export class DesignRepository {
             const dsnNum = `DSN-${(order.order_number || 'ORD').replace('ORD-', '')}${ordSuffix}`
             const routingMode = isDesignOk ? 'design_ok' : 'design_required'
 
+            const effectiveAllInvoiceItems =
+              (matchedInv && Array.isArray(matchedInv.items) && matchedInv.items.length > 0)
+                ? matchedInv.items
+                : (Array.isArray(order.items) && order.items.length > 0 ? order.items : null)
+
             const title =
+              it?.service_name ||
               it?.item_name ||
               it?.item_description ||
-              (isDesignOk ? 'Customer Supplied File Check' : 'Order Artwork Design')
+              it?.product_name ||
+              it?.description ||
+              it?.description_bn ||
+              order.order_title ||
+              order.notes ||
+              (isDesignOk ? 'Customer Supplied File Check' : 'Custom Print Design')
 
             const newJob: DesignJobRecord = {
               id: dsnId,
@@ -189,14 +258,18 @@ export class DesignRepository {
               customer_phone: order.customer_phone || (order as any).phone || null,
               customer_address: order.customer_address || (order as any).address || null,
               title: title,
-              product_name: it?.item_name || it?.product_name || null,
+              product_name: it?.item_name || it?.product_name || it?.service_name || null,
               dimensions_spec:
                 it?.dimensions_spec ||
                 (it?.width && it?.height ? `${it.width}×${it.height} ${it.dimension_unit || 'ft'}` : null),
               quantity: Number(it?.quantity) || 1,
               unit: it?.unit || 'pcs',
               material: it?.material_spec || it?.printable_material_name || (it as any)?.material || null,
-              finishing: it?.finishing || null,
+              finishing: it?.finishing || (Array.isArray(it?.selected_finishing) ? it.selected_finishing.map((f: any) => f.name || f.label || f).join(', ') : null),
+              selected_finishing: it?.selected_finishing || null,
+              selected_add_ons: it?.selected_add_ons || null,
+              all_invoice_items: effectiveAllInvoiceItems,
+              invoice_item_id: it?.id || null,
               designer_name: order.salesperson_name || 'Design Team',
               priority: (order.priority as any) || 'urgent',
               deadline: order.delivery_date
@@ -244,8 +317,116 @@ export class DesignRepository {
         })
       }
 
-      if (newAutoJobs.length > 0) {
-        const mergedJobs = [...existingAll, ...newAutoJobs]
+      // Self-heal and enrich stored design jobs with real invoice/order items specs
+      let hasHealedJobs = false
+      for (const j of jobMap.values()) {
+        const inv = (j.invoice_id && invoicesMap.get(j.invoice_id)) || (j.invoice_number && invoicesMap.get(j.invoice_number))
+        const ord = (j.sales_order_id && tenantOrdersMap.get(j.sales_order_id)) || (j.order_number && tenantOrdersMap.get(j.order_number))
+        const candidateItems = (inv && Array.isArray(inv.items) && inv.items.length > 0)
+          ? inv.items
+          : (ord && Array.isArray(ord.items) && ord.items.length > 0 ? ord.items : [])
+
+        if (candidateItems.length > 0) {
+          if (!j.all_invoice_items || j.all_invoice_items.length === 0) {
+            j.all_invoice_items = candidateItems
+            hasHealedJobs = true
+          }
+
+          let matchedItem = j.invoice_item_id ? candidateItems.find((ci: any) => ci.id === j.invoice_item_id) : null
+          if (!matchedItem && candidateItems.length === 1) {
+            matchedItem = candidateItems[0]
+          }
+          if (!matchedItem && j.title) {
+            matchedItem = candidateItems.find((ci: any) =>
+              ci.item_name === j.title ||
+              ci.item_description === j.title ||
+              ci.product_name === j.title
+            )
+          }
+
+          if (matchedItem) {
+            const isGenericTitle =
+              !j.title ||
+              j.title === 'Order Artwork Design' ||
+              j.title === 'Design Required Item' ||
+              j.title === 'Design Check Item' ||
+              j.title === 'Customer Supplied File Check' ||
+              j.title === 'Print Item' ||
+              j.title === 'Design Product'
+
+            const candidateTitle =
+              matchedItem.service_name ||
+              matchedItem.item_name ||
+              matchedItem.item_description ||
+              matchedItem.product_name
+
+            if (isGenericTitle && candidateTitle) {
+              j.title = candidateTitle
+              hasHealedJobs = true
+            }
+
+            if (!j.product_name && (matchedItem.item_name || matchedItem.product_name)) {
+              j.product_name = matchedItem.item_name || matchedItem.product_name
+              hasHealedJobs = true
+            }
+
+            if (!j.dimensions_spec) {
+              const dims =
+                matchedItem.dimensions_spec ||
+                (matchedItem.width && matchedItem.height
+                  ? `${matchedItem.width}×${matchedItem.height} ${matchedItem.dimension_unit || 'ft'}`
+                  : null)
+              if (dims) {
+                j.dimensions_spec = dims
+                hasHealedJobs = true
+              }
+            }
+
+            if (!j.material || j.material === j.title) {
+              const mat =
+                matchedItem.material_spec ||
+                matchedItem.printable_material_name ||
+                matchedItem.material
+              if (mat) {
+                j.material = mat
+                hasHealedJobs = true
+              }
+            }
+
+            if (!j.finishing && (matchedItem.finishing || matchedItem.selected_finishing)) {
+              j.finishing =
+                matchedItem.finishing ||
+                (Array.isArray(matchedItem.selected_finishing)
+                  ? matchedItem.selected_finishing.map((f: any) => f.name || f).join(', ')
+                  : null)
+              hasHealedJobs = true
+            }
+
+            if (!j.selected_finishing && matchedItem.selected_finishing) {
+              j.selected_finishing = matchedItem.selected_finishing
+              hasHealedJobs = true
+            }
+
+            if (!j.selected_add_ons && matchedItem.selected_add_ons) {
+              j.selected_add_ons = matchedItem.selected_add_ons
+              hasHealedJobs = true
+            }
+
+            if (!j.quantity && matchedItem.quantity) {
+              j.quantity = Number(matchedItem.quantity) || 1
+              hasHealedJobs = true
+            }
+
+            if (!j.unit && matchedItem.unit) {
+              j.unit = matchedItem.unit
+              hasHealedJobs = true
+            }
+          }
+        }
+      }
+
+      if (hasHealedJobs || newAutoJobs.length > 0) {
+        const mergedJobs = Array.from(jobMap.values())
         PrintERPDataStore.set(STORAGE_KEYS.DESIGN_JOBS, mergedJobs)
       }
 
