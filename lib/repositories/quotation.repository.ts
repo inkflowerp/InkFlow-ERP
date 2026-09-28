@@ -13,6 +13,7 @@ import {
   deduplicateQuotations,
 } from '../../types/quotation.types.ts'
 import type { InvoiceRecord } from '../../types/billing.types.ts'
+import { generateUUID } from './billing.repository.ts'
 import { measureAsync } from '../performance/logger.ts'
 import { buildPaginatedResponse, type PaginatedResult } from '../api/pagination-helper.ts'
 import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
@@ -693,7 +694,7 @@ export class QuotationRepository {
 
     const dueDate = options?.dueDate || new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0]
     const invNumber = PrintERPDataStore.getNextDocumentNumber(effectiveCompanyId, 'invoice')
-    const invoiceId = `inv-${Date.now()}`
+    const invoiceId = generateUUID()
 
     const advancePaid = options?.paidAmount !== undefined
       ? Math.max(0, Number(options.paidAmount) || 0)
@@ -735,7 +736,7 @@ export class QuotationRepository {
         const routing = isReady ? 'ready_product' : isDesignReq ? 'design_required' : 'design_ok'
 
         return {
-          id: `inv-item-${Date.now()}-${idx + 1}`,
+          id: generateUUID(),
           invoice_id: invoiceId,
           product_id: it.product_id || null,
           item_kind: it.item_kind || (isReady ? 'ready_product' : 'custom_manufacturing'),

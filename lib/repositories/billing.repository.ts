@@ -2483,87 +2483,163 @@ export class BillingRepository {
     return payload
   }
 
+  private static syncDataStoreInvoiceCancelled(invoiceId: string, targetDbId: string | null, reason: string, actorName: string) {
+    try {
+      const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
+      const idx = allInvoices.findIndex((i) => i.id === invoiceId || (targetDbId && i.id === targetDbId) || i.invoice_number === invoiceId)
+      if (idx >= 0) {
+        const inv = allInvoices[idx]
+        const releasedDue = Number(inv.due_amount || 0)
+        allInvoices[idx] = {
+          ...inv,
+          status: 'cancelled',
+          due_amount: 0,
+          notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
+          updated_at: new Date().toISOString(),
+        }
+        PrintERPDataStore.set(STORAGE_KEYS.INVOICES, allInvoices)
+
+        if (inv.customer_id && releasedDue > 0) {
+          const allCust = PrintERPDataStore.get<CustomerRecord[]>(STORAGE_KEYS.CUSTOMERS) || []
+          const cIdx = allCust.findIndex((c) => c.id === inv.customer_id)
+          if (cIdx >= 0) {
+            allCust[cIdx] = {
+              ...allCust[cIdx],
+              total_due_balance: Math.max(0, (Number(allCust[cIdx].total_due_balance) || 0) - releasedDue),
+              updated_at: new Date().toISOString(),
+            }
+            PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
+          }
+        }
+      }
+    } catch {}
+  }
+
   static async cancelInvoice(invoiceId: string, reason: string, actorName: string, companyId: string, actorUserId?: string): Promise<boolean> {
     const mode = getFinancialPersistenceMode()
 
+    let supabase: any = null
     try {
-      let supabase: any
+      supabase = await createClient()
+    } catch {
       try {
-        supabase = await createClient()
-      } catch {
         supabase = createAdminClient()
-      }
-      let { data, error } = await (supabase as any).rpc('cancel_invoice_atomic', {
-        p_company_id: companyId,
-        p_invoice_id: invoiceId,
-        p_reason: reason,
-        p_actor_name: actorName,
-        p_actor_user_id: actorUserId || null,
-      })
+      } catch {}
+    }
 
-      if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
-        const admin = createAdminClient()
-        const adminRes = await (admin as any).rpc('cancel_invoice_atomic', {
+    // 1. Resolve PostgreSQL target invoice UUID (if present in PostgreSQL database)
+    let targetDbId: string | null = null
+    if (isValidUUID(invoiceId)) {
+      targetDbId = invoiceId
+    } else {
+      // If invoiceId is not a UUID (e.g. "INV-000010" or "inv-1790638218818"), check if it's an invoice_number in PostgreSQL
+      try {
+        let client = supabase
+        if (!client) {
+          try { client = createAdminClient() } catch {}
+        }
+        if (client) {
+          const { data: invRow } = await (client as any)
+            .from('invoices')
+            .select('id')
+            .eq('invoice_number', invoiceId)
+            .maybeSingle()
+          if (invRow?.id && isValidUUID(invRow.id)) {
+            targetDbId = invRow.id
+          }
+        }
+      } catch {
+        // Ignore lookup error
+      }
+    }
+
+    // 2. If present in PostgreSQL database as a UUID, execute database cancellation
+    if (targetDbId && (supabase || isSupabaseConfigured())) {
+      try {
+        let { data, error } = await (supabase as any).rpc('cancel_invoice_atomic', {
           p_company_id: companyId,
-          p_invoice_id: invoiceId,
+          p_invoice_id: targetDbId,
           p_reason: reason,
           p_actor_name: actorName,
           p_actor_user_id: actorUserId || null,
         })
-        data = adminRes.data
-        error = adminRes.error
-      }
 
-      if (!error && data && data.success) {
-        return true
-      }
+        if (error && (error.code === '42501' || error.message?.includes('row-level security'))) {
+          const admin = createAdminClient()
+          const adminRes = await (admin as any).rpc('cancel_invoice_atomic', {
+            p_company_id: companyId,
+            p_invoice_id: targetDbId,
+            p_reason: reason,
+            p_actor_name: actorName,
+            p_actor_user_id: actorUserId || null,
+          })
+          data = adminRes.data
+          error = adminRes.error
+        }
 
-      if (error) {
-        console.warn(`[BillingRepository] RPC cancel_invoice_atomic failed (${error.message}). Executing direct table-level PostgreSQL cancellation...`)
-        const client = createAdminClient() || supabase
-        const { data: inv, error: invErr } = await (client as any).from('invoices').select('*').eq('id', invoiceId).maybeSingle()
-        if (inv) {
-          if (inv.status === 'cancelled') {
-            throw new Error('Invoice is already cancelled')
-          }
-          if (inv.status === 'paid') {
-            throw new Error('Paid invoices cannot be cancelled directly. Please perform an authorized payment refund/reversal.')
-          }
-          if (Number(inv.paid_amount || 0) > 0) {
-            throw new Error(`Partially paid invoices (Paid: ৳${inv.paid_amount}) cannot be cancelled directly.`)
-          }
-          const releasedDue = Number(inv.due_amount || 0)
-          await (client as any).from('invoices').update({
-            status: 'cancelled',
-            due_amount: 0,
-            notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
-            updated_at: new Date().toISOString(),
-          }).eq('id', invoiceId)
-
-          if (inv.customer_id && releasedDue > 0) {
-            const { data: cust } = await (client as any).from('customers').select('total_due_balance').eq('id', inv.customer_id).maybeSingle()
-            if (cust) {
-              await (client as any).from('customers').update({
-                total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - releasedDue),
-                updated_at: new Date().toISOString(),
-              }).eq('id', inv.customer_id)
-            }
-          }
+        if (!error && data && data.success) {
+          this.syncDataStoreInvoiceCancelled(invoiceId, targetDbId, reason, actorName)
+          invalidateQueryCache(`invoices:${companyId}`)
           return true
         }
-        if (invErr && mode === 'production') {
-          throw new Error(`Invoice cancellation failed in PostgreSQL: ${error.message}`)
+
+        if (error) {
+          console.warn(`[BillingRepository] RPC cancel_invoice_atomic failed (${error.message}). Executing direct table-level PostgreSQL cancellation...`)
+          const client = createAdminClient() || supabase
+          const { data: inv, error: invErr } = await (client as any).from('invoices').select('*').eq('id', targetDbId).maybeSingle()
+          if (inv) {
+            if (inv.status === 'cancelled') {
+              throw new Error('Invoice is already cancelled')
+            }
+            if (inv.status === 'paid') {
+              throw new Error('Paid invoices cannot be cancelled directly. Please perform an authorized payment refund/reversal.')
+            }
+            if (Number(inv.paid_amount || 0) > 0) {
+              throw new Error(`Partially paid invoices (Paid: ৳${inv.paid_amount}) cannot be cancelled directly.`)
+            }
+            const releasedDue = Number(inv.due_amount || 0)
+            await (client as any).from('invoices').update({
+              status: 'cancelled',
+              due_amount: 0,
+              notes: `${inv.notes || ''} [Cancelled: ${reason} by ${actorName}]`,
+              updated_at: new Date().toISOString(),
+            }).eq('id', targetDbId)
+
+            if (inv.customer_id && releasedDue > 0) {
+              const { data: cust } = await (client as any).from('customers').select('total_due_balance').eq('id', inv.customer_id).maybeSingle()
+              if (cust) {
+                await (client as any).from('customers').update({
+                  total_due_balance: Math.max(0, (Number(cust.total_due_balance) || 0) - releasedDue),
+                  updated_at: new Date().toISOString(),
+                }).eq('id', inv.customer_id)
+              }
+            }
+            this.syncDataStoreInvoiceCancelled(invoiceId, targetDbId, reason, actorName)
+            invalidateQueryCache(`invoices:${companyId}`)
+            return true
+          }
+          if (invErr && mode === 'production') {
+            throw new Error(`Invoice cancellation failed in PostgreSQL: ${error.message}`)
+          }
         }
-      }
-    } catch (err: any) {
-      if (mode === 'production') {
-        throw new Error(`Invoice cancellation failed: ${err.message}`)
+      } catch (err: any) {
+        if (
+          err.message?.includes('already cancelled') ||
+          err.message?.includes('Paid invoices cannot be cancelled') ||
+          err.message?.includes('Partially paid invoices') ||
+          err.message?.includes('Written-off invoices')
+        ) {
+          throw err
+        }
+        if (mode === 'production' && targetDbId) {
+          throw new Error(`Invoice cancellation failed: ${err.message}`)
+        }
       }
     }
 
-    // In-memory simulation for test/training mode
+    // 3. In-memory / DataStore simulation for test/training mode or non-UUID offline invoices
     const allInvoices = PrintERPDataStore.get<InvoiceRecord[]>(STORAGE_KEYS.INVOICES) || []
-    const idx = allInvoices.findIndex((i) => i.id === invoiceId)
+    const idx = allInvoices.findIndex((i) => i.id === invoiceId || i.invoice_number === invoiceId || (targetDbId && i.id === targetDbId))
     if (idx >= 0) {
       const inv = allInvoices[idx]
       if (inv.status === 'cancelled') {
@@ -2579,7 +2655,7 @@ export class BillingRepository {
         throw new Error('Written-off invoices cannot be cancelled.')
       }
 
-      const releasedDue = inv.due_amount
+      const releasedDue = Number(inv.due_amount || 0)
       allInvoices[idx] = {
         ...inv,
         status: 'cancelled',
@@ -2601,9 +2677,11 @@ export class BillingRepository {
           PrintERPDataStore.set(STORAGE_KEYS.CUSTOMERS, allCust)
         }
       }
+      invalidateQueryCache(`invoices:${companyId}`)
       return true
     }
-    return false
+
+    throw new Error(`Invoice "${invoiceId}" not found.`)
   }
 
   /**
