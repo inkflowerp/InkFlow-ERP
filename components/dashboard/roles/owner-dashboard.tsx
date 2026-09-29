@@ -692,6 +692,7 @@ export function OwnerDashboard({
                   : 1248
               }
               icon={ShoppingCart}
+              colorVariant="blue"
               trend={{
                 value: '12.5%',
                 labelEn: 'vs last month',
@@ -711,6 +712,7 @@ export function OwnerDashboard({
                   : 86
               }
               icon={Clock}
+              colorVariant="amber"
               trend={{
                 value: '3.6%',
                 labelEn: 'vs yesterday',
@@ -734,6 +736,7 @@ export function OwnerDashboard({
                   : 42
               }
               icon={Settings}
+              colorVariant="indigo"
               trend={{
                 value: '16.7%',
                 labelEn: 'vs last week',
@@ -753,6 +756,7 @@ export function OwnerDashboard({
                   : 27
               }
               icon={Truck}
+              colorVariant="emerald"
               trend={{
                 value: '28.6%',
                 labelEn: 'vs yesterday',
@@ -774,6 +778,7 @@ export function OwnerDashboard({
               }
               isCurrency={true}
               icon={BarChart3}
+              colorVariant="emerald"
               trend={{
                 value: '12.8%',
                 labelEn: 'vs last month',
@@ -794,6 +799,7 @@ export function OwnerDashboard({
               }
               isCurrency={true}
               icon={FileText}
+              colorVariant="rose"
               trend={{
                 value: '5.4%',
                 labelEn: 'vs last month',
@@ -814,6 +820,7 @@ export function OwnerDashboard({
               }
               isCurrency={true}
               icon={Coins}
+              colorVariant="slate"
               trend={{
                 value: '4.2%',
                 labelEn: 'vs last month',
@@ -834,6 +841,7 @@ export function OwnerDashboard({
               }
               isCurrency={true}
               icon={TrendingUp}
+              colorVariant="emerald"
               trend={{
                 value: '20.4%',
                 labelEn: 'vs last month',

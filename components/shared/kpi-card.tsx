@@ -60,13 +60,122 @@ export interface KpiCardProps {
   selected?: boolean
   isActive?: boolean
   isLoading?: boolean
+  isLive?: boolean
+  pulse?: boolean
   className?: string
   children?: React.ReactNode
   footer?: React.ReactNode
 }
 
+const variantStyles: Record<
+  KpiColorVariant,
+  {
+    icon: string
+    text: string
+    dot: string
+    ping: string
+  }
+> = {
+  emerald: {
+    icon: 'text-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+    ping: 'bg-emerald-400',
+  },
+  success: {
+    icon: 'text-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    dot: 'bg-emerald-500',
+    ping: 'bg-emerald-400',
+  },
+  amber: {
+    icon: 'text-amber-500',
+    text: 'text-amber-600 dark:text-amber-400',
+    dot: 'bg-amber-500',
+    ping: 'bg-amber-400',
+  },
+  warning: {
+    icon: 'text-amber-500',
+    text: 'text-amber-600 dark:text-amber-400',
+    dot: 'bg-amber-500',
+    ping: 'bg-amber-400',
+  },
+  rose: {
+    icon: 'text-rose-500',
+    text: 'text-rose-600 dark:text-rose-400',
+    dot: 'bg-rose-500',
+    ping: 'bg-rose-400',
+  },
+  danger: {
+    icon: 'text-rose-500',
+    text: 'text-rose-600 dark:text-rose-400',
+    dot: 'bg-rose-500',
+    ping: 'bg-rose-400',
+  },
+  blue: {
+    icon: 'text-blue-500',
+    text: 'text-blue-600 dark:text-blue-400',
+    dot: 'bg-blue-500',
+    ping: 'bg-blue-400',
+  },
+  info: {
+    icon: 'text-blue-500',
+    text: 'text-blue-600 dark:text-blue-400',
+    dot: 'bg-blue-500',
+    ping: 'bg-blue-400',
+  },
+  indigo: {
+    icon: 'text-indigo-500',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    dot: 'bg-indigo-500',
+    ping: 'bg-indigo-400',
+  },
+  purple: {
+    icon: 'text-purple-500',
+    text: 'text-purple-600 dark:text-purple-400',
+    dot: 'bg-purple-500',
+    ping: 'bg-purple-400',
+  },
+  violet: {
+    icon: 'text-violet-500',
+    text: 'text-violet-600 dark:text-violet-400',
+    dot: 'bg-violet-500',
+    ping: 'bg-violet-400',
+  },
+  cyan: {
+    icon: 'text-cyan-500',
+    text: 'text-cyan-600 dark:text-cyan-400',
+    dot: 'bg-cyan-500',
+    ping: 'bg-cyan-400',
+  },
+  sky: {
+    icon: 'text-sky-500',
+    text: 'text-sky-600 dark:text-sky-400',
+    dot: 'bg-sky-500',
+    ping: 'bg-sky-400',
+  },
+  teal: {
+    icon: 'text-teal-500',
+    text: 'text-teal-600 dark:text-teal-400',
+    dot: 'bg-teal-500',
+    ping: 'bg-teal-400',
+  },
+  slate: {
+    icon: 'text-slate-400 dark:text-slate-500',
+    text: 'text-slate-800 dark:text-slate-100',
+    dot: 'bg-slate-400',
+    ping: 'bg-slate-300',
+  },
+  primary: {
+    icon: 'text-blue-500 dark:text-blue-400',
+    text: 'text-slate-900 dark:text-slate-50',
+    dot: 'bg-blue-500',
+    ping: 'bg-blue-400',
+  },
+}
+
 /**
- * High-fidelity SVG Sparkline matching modern SaaS analytics cards
+ * Compact SVG Micro-Sparkline for data-driven cards
  */
 function KpiSparkline({
   direction = 'up',
@@ -81,12 +190,10 @@ function KpiSparkline({
   color?: string
   id: string
 }) {
-  const width = 84
-  const height = 34
+  const width = 56
+  const height = 20
 
-  // Determine stroke color (#10B981 for green, #EF4444 for red, or custom)
-  const strokeColor =
-    color || (isGood ? '#10B981' : '#EF4444')
+  const strokeColor = color || (isGood ? '#10B981' : '#EF4444')
 
   let linePath = ''
   let areaPath = ''
@@ -95,7 +202,7 @@ function KpiSparkline({
     const min = Math.min(...data)
     const max = Math.max(...data)
     const range = max - min || 1
-    const padding = 4
+    const padding = 2
     const usableHeight = height - padding * 2
 
     const points: [number, number][] = data.map((val, idx) => {
@@ -121,34 +228,27 @@ function KpiSparkline({
     areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
   } else {
     if (direction === 'down') {
-      // Dip down toward right (e.g. Production Cost -4.2%)
-      linePath = 'M 2 12 C 16 10, 28 6, 42 14 C 56 22, 68 26, 82 24'
-      areaPath = 'M 2 12 C 16 10, 28 6, 42 14 C 56 22, 68 26, 82 24 L 84 34 L 0 34 Z'
-    } else if (!isGood || strokeColor === '#EF4444') {
-      // Alert upward wave (e.g. Pending Orders +3.6%, Outstanding +5.4%)
-      linePath = 'M 2 26 C 16 28, 28 18, 42 14 C 56 10, 68 20, 82 8'
-      areaPath = 'M 2 26 C 16 28, 28 18, 42 14 C 56 10, 68 20, 82 8 L 84 34 L 0 34 Z'
+      linePath = 'M 2 6 C 14 6, 24 14, 38 12 C 46 10, 52 16, 54 16'
+      areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
     } else {
-      // Growth upward wave (e.g. Total Orders +12.5%, Sales +12.8%, Profit +20.4%)
-      linePath = 'M 2 24 C 16 26, 26 14, 40 18 C 54 22, 64 8, 82 4'
-      areaPath = 'M 2 24 C 16 26, 26 14, 40 18 C 54 22, 64 8, 82 4 L 84 34 L 0 34 Z'
+      linePath = 'M 2 16 C 14 14, 24 8, 38 10 C 46 12, 52 4, 54 4'
+      areaPath = `${linePath} L ${width} ${height} L 0 ${height} Z`
     }
   }
 
   const gradId = `spark-grad-${id.replace(/[^a-zA-Z0-9_-]/g, '')}`
 
   return (
-    <div className="w-[84px] h-[34px] shrink-0 overflow-hidden select-none pointer-events-none">
+    <div className="w-[56px] h-[20px] shrink-0 overflow-hidden select-none pointer-events-none">
       <svg
-        viewBox="0 0 84 34"
+        viewBox="0 0 56 20"
         className="w-full h-full overflow-visible"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
           <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={strokeColor} stopOpacity="0.22" />
-            <stop offset="75%" stopColor={strokeColor} stopOpacity="0.05" />
+            <stop offset="0%" stopColor={strokeColor} stopOpacity="0.25" />
             <stop offset="100%" stopColor={strokeColor} stopOpacity="0.0" />
           </linearGradient>
         </defs>
@@ -157,7 +257,7 @@ function KpiSparkline({
           d={linePath}
           fill="none"
           stroke={strokeColor}
-          strokeWidth="2.2"
+          strokeWidth="1.8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -185,13 +285,15 @@ export function KpiCard({
   badgeColor,
   sparklineData,
   sparklineColor,
-  showSparkline = true,
-  showMenu = true,
+  showSparkline = false,
+  showMenu = false,
   onMenuClick,
   onClick,
   selected = false,
   isActive = false,
   isLoading = false,
+  isLive = false,
+  pulse = false,
   className,
   children,
   footer,
@@ -218,6 +320,7 @@ export function KpiCard({
     titleLower.includes('due') ||
     titleLower.includes('outstanding') ||
     titleLower.includes('pending') ||
+    titleLower.includes('overdue') ||
     titleLower.includes('বকেয়া')
 
   const isCostMetric =
@@ -254,27 +357,29 @@ export function KpiCard({
   const comparisonText =
     trend?.comparison ||
     (trend?.labelEn && trend?.labelBn ? tBilingual(trend.labelEn, trend.labelBn) : trend?.labelEn) ||
-    'vs last month'
+    ''
 
   const cleanTrendValue = trend
     ? String(trend.value).replace(/^[+-\u2191\u2193]/, '').trim()
     : null
 
+  const styleConfig = variantStyles[colorVariant] || variantStyles.primary
+  const hasLivePulse = isLive || pulse
+
   if (isLoading) {
     return (
-      <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.03)] animate-pulse space-y-4">
+      <div
+        className={cn(
+          'p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs animate-pulse flex flex-col justify-between',
+          className
+        )}
+      >
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-4 w-4 bg-slate-200 dark:bg-slate-800 rounded" />
-            <div className="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded" />
-          </div>
-          <div className="h-4 w-4 bg-slate-200 dark:bg-slate-800 rounded" />
+          <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
+          <div className="h-4 w-4 bg-slate-200 dark:bg-slate-800 rounded-full" />
         </div>
-        <div className="h-8 w-32 bg-slate-200 dark:bg-slate-800 rounded-md" />
-        <div className="flex items-center justify-between pt-1">
-          <div className="h-4 w-28 bg-slate-200 dark:bg-slate-800 rounded" />
-          <div className="h-6 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
-        </div>
+        <div className="h-7 w-28 bg-slate-200 dark:bg-slate-800 rounded mt-1.5" />
+        <div className="h-2.5 w-24 bg-slate-200 dark:bg-slate-800 rounded mt-1" />
       </div>
     )
   }
@@ -283,26 +388,22 @@ export function KpiCard({
     <div
       onClick={onClick}
       className={cn(
-        'group p-5 sm:p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 transition-all duration-200 flex flex-col justify-between relative overflow-hidden',
-        'shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_4px_20px_rgba(0,0,0,0.06)]',
-        onClick ? 'cursor-pointer hover:border-slate-200 dark:hover:border-slate-700 active:scale-[0.99]' : '',
+        'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 shadow-xs rounded-2xl transition-all duration-150 flex flex-col justify-between relative overflow-hidden',
+        onClick ? 'cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 active:scale-[0.99]' : '',
         isSelected && 'ring-2 ring-blue-500/40 border-blue-500/50 bg-blue-50/10 dark:bg-blue-950/10',
         className
       )}
     >
-      {/* 1. TOP ROW: Bare outline icon + title on left, three-dots vertical on right */}
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2.5 min-w-0">
-          {Icon && (
-            <Icon className="w-[18px] h-[18px] text-slate-400 dark:text-slate-500 shrink-0 stroke-[1.8]" />
-          )}
-          <span className="text-[13px] font-medium text-slate-600 dark:text-slate-300 truncate tracking-tight">
+      {/* 1. TOP ROW: Title on Left, Icon/Pulse on Right */}
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="text-2xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
             {title}
           </span>
           {badge && (
             <span
               className={cn(
-                'inline-block px-1.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider',
+                'inline-block px-1.5 py-0.5 rounded text-3xs font-bold uppercase tracking-wider shrink-0',
                 badgeColor || 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
               )}
             >
@@ -311,91 +412,98 @@ export function KpiCard({
           )}
         </div>
 
-        {showMenu && (
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onMenuClick?.(e)
-            }}
-            aria-label="Options"
-            className="p-1 -mr-1 rounded-md text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
-          >
-            <MoreVertical className="w-4 h-4" />
-          </button>
-        )}
+        <div className="flex items-center gap-1 shrink-0">
+          {hasLivePulse ? (
+            <span className="relative flex h-2.5 w-2.5">
+              <span className={cn('animate-ping absolute inline-flex h-full w-full rounded-full opacity-75', styleConfig.ping)} />
+              <span className={cn('relative inline-flex rounded-full h-2.5 w-2.5', styleConfig.dot)} />
+            </span>
+          ) : Icon ? (
+            <Icon className={cn('h-4 w-4 shrink-0', styleConfig.icon)} />
+          ) : null}
+
+          {(showMenu || onMenuClick) && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                onMenuClick?.(e)
+              }}
+              aria-label="Options"
+              className="p-0.5 -mr-1 rounded text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+            >
+              <MoreVertical className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* 2. MIDDLE ROW: Big Bold Metric Value */}
-      <div className="mt-3.5 mb-2 flex items-baseline gap-1.5">
+      {/* 2. MIDDLE ROW: Large Value with Variant Color + Tabular Figures */}
+      <div className={cn('text-2xl font-bold font-mono tracking-tight mt-1.5 leading-none flex items-baseline gap-1', styleConfig.text)}>
         {isCurrency && typeof value === 'number' ? (
-          <div className="text-2xl sm:text-[28px] font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-            <span className="font-semibold mr-1">৳</span>
+          <>
+            <span className="font-semibold text-xl">৳</span>
             {formatLakhCrore(value)}
-          </div>
+          </>
         ) : (
-          <div className="text-2xl sm:text-[28px] font-bold text-slate-900 dark:text-white tracking-tight leading-none">
-            {formatVal(value)}
-          </div>
+          <span>{formatVal(value)}</span>
         )}
 
         {unit && (
-          <span className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 ml-1">
+          <span className="text-xs font-normal text-slate-400 dark:text-slate-500 ml-1 font-sans">
             {unit}
           </span>
         )}
       </div>
 
       {/* Embedded children if any (e.g. progress bars, meters) */}
-      {children && <div className="my-2 w-full">{children}</div>}
+      {children && <div className="mt-2 w-full">{children}</div>}
 
-      {/* 3. BOTTOM ROW: Trend comparison on Left, Smooth Wave Sparkline on Right */}
-      <div className="flex items-end justify-between gap-3 mt-auto pt-1">
-        {/* Left: Trend line */}
-        <div className="flex items-center flex-wrap gap-1 text-xs">
+      {/* 3. BOTTOM ROW: Helper Note / Subtitle / Trend */}
+      {(trend || subtitle || comparisonText || (showSparkline && sparklineData)) && (
+        <div className="flex items-center justify-between gap-2 mt-1">
           {trend ? (
-            <div
-              className={cn(
-                'inline-flex items-center gap-1 font-semibold text-xs sm:text-[13px]',
-                isGood
-                  ? 'text-[#10B981] dark:text-[#34D399]'
-                  : 'text-[#EF4444] dark:text-[#F87171]'
-              )}
-            >
-              <span className="text-sm font-bold leading-none">
-                {direction === 'up' ? '↑' : direction === 'down' ? '↓' : '—'}
+            <div className="flex items-center gap-1 font-semibold text-2xs truncate">
+              <span
+                className={cn(
+                  isGood
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-rose-600 dark:text-rose-400'
+                )}
+              >
+                {direction === 'up' ? '↑' : direction === 'down' ? '↓' : '—'} {cleanTrendValue}
               </span>
-              <span>{cleanTrendValue}</span>
               {comparisonText && (
-                <span className="font-normal text-slate-400 dark:text-slate-500 text-xs ml-0.5">
+                <span className="font-normal text-slate-400 dark:text-slate-500 text-2xs truncate">
                   {comparisonText}
                 </span>
               )}
             </div>
           ) : subtitle ? (
-            <span className="text-xs text-slate-400 dark:text-slate-500 truncate">
+            <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium truncate">
               {subtitle}
-            </span>
-          ) : (
-            <span className="text-xs text-slate-400 dark:text-slate-500">
+            </div>
+          ) : comparisonText ? (
+            <div className="text-2xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium truncate">
               {comparisonText}
-            </span>
+            </div>
+          ) : (
+            <div />
+          )}
+
+          {showSparkline && sparklineData && sparklineData.length > 0 && (
+            <KpiSparkline
+              direction={direction}
+              isGood={isGood}
+              data={sparklineData}
+              color={sparklineColor}
+              id={rawId}
+            />
           )}
         </div>
+      )}
 
-        {/* Right: Sparkline Chart with soft gradient area */}
-        {showSparkline && (
-          <KpiSparkline
-            direction={direction}
-            isGood={isGood}
-            data={sparklineData}
-            color={sparklineColor}
-            id={rawId}
-          />
-        )}
-      </div>
-
-      {footer && <div className="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800">{footer}</div>}
+      {footer && <div className="mt-2 pt-1.5 border-t border-slate-100 dark:border-slate-800">{footer}</div>}
     </div>
   )
 }
@@ -412,15 +520,15 @@ export function KpiGrid({
   const colClass = {
     2: 'grid-cols-1 sm:grid-cols-2',
     3: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3',
-    4: 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4',
+    4: 'grid-cols-2 sm:grid-cols-4',
     5: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-5',
     6: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6',
-    7: 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-7',
+    7: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7',
     8: 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-8',
-  }[columns] || 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4'
+  }[columns] || 'grid-cols-2 sm:grid-cols-4'
 
   return (
-    <div className={cn('grid gap-4 sm:gap-5', colClass, className)}>
+    <div className={cn('grid gap-3', colClass, className)}>
       {children}
     </div>
   )

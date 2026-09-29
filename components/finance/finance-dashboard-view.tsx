@@ -27,6 +27,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { useI18n } from '@/i18n/context'
 import { formatBDT } from '@/lib/formatters'
 import type {
@@ -307,87 +308,59 @@ export function FinanceDashboardView({
       </div>
 
       {/* 2. OPERATIONAL KPI CARDS GRID */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+      <KpiGrid columns={4}>
         {/* Receivable */}
-        <Card
+        <KpiCard
+          titleEn="Customer Due (Receivable)"
+          titleBn="গ্রাহকের বকেয়া (পাওনা)"
+          value={totalReceivables}
+          isCurrency={true}
+          icon={Users}
+          colorVariant="amber"
+          subtitleEn="Pending collections"
+          subtitleBn="আদায়যোগ্য বিল"
           onClick={() => onNavigateTab('receivables')}
-          className="rounded-2xl border-slate-200 dark:border-slate-800 hover:border-amber-400/80 transition-all cursor-pointer shadow-xs p-4 bg-white dark:bg-slate-900 group"
-        >
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-            <span className="font-semibold">{tBilingual('Customer Due (Receivable)', 'গ্রাহকের বকেয়া (পাওনা)')}</span>
-            <Users className="w-4 h-4 text-amber-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-amber-600 dark:text-amber-400">
-            ৳{totalReceivables.toLocaleString()}
-          </div>
-          <div className="flex items-center justify-between mt-2 text-2xs text-slate-400">
-            <span>{tBilingual('Pending collections', 'আদায়যোগ্য বিল')}</span>
-            <span className="text-amber-600 font-semibold group-hover:underline">
-              {tBilingual('View list →', 'তালিকা দেখুন →')}
-            </span>
-          </div>
-        </Card>
+        />
 
         {/* Payable */}
-        <Card
+        <KpiCard
+          titleEn="Supplier Due (Payable)"
+          titleBn="মহাজনের দেনা (প্রদেয়)"
+          value={totalPayables}
+          isCurrency={true}
+          icon={ShoppingBag}
+          colorVariant="rose"
+          subtitleEn="Material & paper bills"
+          subtitleBn="কাঁচামাল ও কাগজের দেনা"
           onClick={() => onNavigateTab('payables')}
-          className="rounded-2xl border-slate-200 dark:border-slate-800 hover:border-rose-400/80 transition-all cursor-pointer shadow-xs p-4 bg-white dark:bg-slate-900 group"
-        >
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-            <span className="font-semibold">{tBilingual('Supplier Due (Payable)', 'মহাজনের দেনা (প্রদেয়)')}</span>
-            <ShoppingBag className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
-            ৳{totalPayables.toLocaleString()}
-          </div>
-          <div className="flex items-center justify-between mt-2 text-2xs text-slate-400">
-            <span>{tBilingual('Material & paper bills', 'কাঁচামাল ও কাগজের দেনা')}</span>
-            <span className="text-rose-600 font-semibold group-hover:underline">
-              {tBilingual('Pay bills →', 'পরিশোধ করুন →')}
-            </span>
-          </div>
-        </Card>
+        />
 
         {/* Today's Collection */}
-        <Card
+        <KpiCard
+          titleEn="Today's Collection"
+          titleBn="আজকের জমা (Money In)"
+          value={todayCollection}
+          isCurrency={true}
+          icon={ArrowDownLeft}
+          colorVariant="emerald"
+          subtitleEn="Collected today"
+          subtitleBn="আজকের মোট আদায়"
           onClick={() => onNavigateTab('transactions')}
-          className="rounded-2xl border-slate-200 dark:border-slate-800 hover:border-emerald-400/80 shadow-xs p-4 bg-white dark:bg-slate-900 cursor-pointer group transition-all"
-        >
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-            <span className="font-semibold">{tBilingual("Today's Collection", 'আজকের জমা (Money In)')}</span>
-            <ArrowDownLeft className="w-4 h-4 text-emerald-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-emerald-600 dark:text-emerald-400">
-            +৳{todayCollection.toLocaleString()}
-          </div>
-          <div className="flex items-center justify-between mt-2 text-2xs text-slate-400">
-            <span>{tBilingual('Collected today', 'আজকের মোট আদায়')}</span>
-            <span className="text-emerald-600 font-semibold group-hover:underline">
-              {tBilingual('Ledger →', 'লেজার →')}
-            </span>
-          </div>
-        </Card>
+        />
 
         {/* Today's Expense */}
-        <Card
+        <KpiCard
+          titleEn="Today's Expense"
+          titleBn="আজকের খরচ (Money Out)"
+          value={todayExpense}
+          isCurrency={true}
+          icon={ArrowUpRight}
+          colorVariant="rose"
+          subtitleEn="Spent today"
+          subtitleBn="আজকের মোট ব্যয়"
           onClick={() => onNavigateTab('expenses')}
-          className="rounded-2xl border-slate-200 dark:border-slate-800 hover:border-rose-400/80 shadow-xs p-4 bg-white dark:bg-slate-900 cursor-pointer group transition-all"
-        >
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 mb-1">
-            <span className="font-semibold">{tBilingual("Today's Expense", 'আজকের খরচ (Money Out)')}</span>
-            <ArrowUpRight className="w-4 h-4 text-rose-500 group-hover:scale-110 transition-transform" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
-            -৳{todayExpense.toLocaleString()}
-          </div>
-          <div className="flex items-center justify-between mt-2 text-2xs text-slate-400">
-            <span>{tBilingual('Spent today', 'আজকের মোট ব্যয়')}</span>
-            <span className="text-rose-600 font-semibold group-hover:underline">
-              {tBilingual('Expenses →', 'খরচ তালিকা →')}
-            </span>
-          </div>
-        </Card>
-      </div>
+        />
+      </KpiGrid>
 
       {/* 3. TWO-COLUMN OPERATIONAL STREAM: OVERDUE CUSTOMERS & SUPPLIER DUES */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

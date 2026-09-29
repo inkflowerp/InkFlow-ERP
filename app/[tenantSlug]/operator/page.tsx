@@ -41,6 +41,7 @@ import { Badge } from '@/components/ui/badge'
 import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -586,91 +587,64 @@ function MobileOperatorPanelContent() {
       )}
 
       {/* KPI FLOOR OVERVIEW CARDS */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-3">
+      <KpiGrid columns={5}>
         {/* Running Now */}
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('Running Now', 'চলমান কাজ')}
-            </span>
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
-          </div>
-          <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1.5">
-            {activeTasks.filter((t) => t.status === 'in_progress').length}
-          </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
-            {tBilingual('Active on stations', 'স্টেশনে কর্মরত')}
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Running Now"
+          titleBn="চলমান কাজ"
+          value={activeTasks.filter((t) => t.status === 'in_progress').length}
+          subtitleEn="Active on stations"
+          subtitleBn="স্টেশনে কর্মরত"
+          colorVariant="emerald"
+          isLive={true}
+        />
 
         {/* Paused Tasks */}
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('Paused', 'স্থগিত')}
-            </span>
-            <Pause className="h-4 w-4 text-amber-500" />
-          </div>
-          <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1.5">
-            {activeTasks.filter((t) => t.status === 'paused').length}
-          </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
-            {tBilingual('Temporarily halted', 'সাময়িকভাবে বন্ধ')}
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="Paused"
+          titleBn="স্থগিত"
+          value={activeTasks.filter((t) => t.status === 'paused').length}
+          subtitleEn="Temporarily halted"
+          subtitleBn="সাময়িকভাবে বন্ধ"
+          icon={Pause}
+          colorVariant="amber"
+        />
 
         {/* Upcoming In Queue */}
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('In Queue', 'কিউতে অপেক্ষমাণ')}
-            </span>
-            <Layers className="h-4 w-4 text-blue-500" />
-          </div>
-          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1.5">
-            {upcomingTasks.length}
-          </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
-            {tBilingual('Ready to execute', 'উৎপাদনের জন্য প্রস্তুত')}
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="In Queue"
+          titleBn="কিউতে অপেক্ষমাণ"
+          value={upcomingTasks.length}
+          subtitleEn="Ready to execute"
+          subtitleBn="উৎপাদনের জন্য প্রস্তুত"
+          icon={Layers}
+          colorVariant="blue"
+        />
 
         {/* On Hold */}
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('On Hold', 'হোল্ড কৃত')}
-            </span>
-            <AlertOctagon className="h-4 w-4 text-rose-500" />
-          </div>
-          <div className="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1.5">
-            {heldTasks.length}
-          </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
-            {tBilingual('Needs attention', 'পর্যালোচনা প্রয়োজন')}
-          </div>
-        </Card>
+        <KpiCard
+          titleEn="On Hold"
+          titleBn="হোল্ড কৃত"
+          value={heldTasks.length}
+          subtitleEn="Needs attention"
+          subtitleBn="পর্যালোচনা প্রয়োজন"
+          icon={AlertOctagon}
+          colorVariant="rose"
+        />
 
         {/* Machinery Fleet */}
-        <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 p-3.5 shadow-xs col-span-2 sm:col-span-4 lg:col-span-1">
-          <div className="flex items-center justify-between">
-            <span className="text-2xs font-bold text-slate-500 uppercase tracking-wider">
-              {tBilingual('Fleet In-Use', 'সচল মেশিন')}
-            </span>
-            <Cpu className="h-4 w-4 text-indigo-500" />
-          </div>
-          <div className="text-2xl font-bold text-indigo-600 dark:text-indigo-400 mt-1.5">
-            {machineries.filter((m) => m.status === 'in_use').length}{' '}
-            <span className="text-xs font-normal text-slate-400">/ {machineries.length} total</span>
-          </div>
-          <div className="text-2xs text-slate-400 mt-0.5 font-medium">
-            {tBilingual('Active workstations', 'কর্মরত মেশিন')}
-          </div>
-        </Card>
-      </div>
+        <KpiCard
+          titleEn="Fleet In-Use"
+          titleBn="সচল মেশিন"
+          value={machineries.filter((m) => m.status === 'in_use').length}
+          unit={`/ ${machineries.length} total`}
+          subtitleEn="Active workstations"
+          subtitleBn="কর্মরত মেশিন"
+          icon={Cpu}
+          colorVariant="indigo"
+          className="col-span-2 sm:col-span-4 lg:col-span-1"
+        />
+      </KpiGrid>
 
       {/* DEPARTMENT / STATION TABS & QUICK SHORTCUTS */}
       <div className="flex items-center justify-between gap-3 flex-wrap">

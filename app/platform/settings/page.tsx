@@ -45,6 +45,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { KpiCard, KpiGrid } from '@/components/shared/kpi-card'
 import { PlatformSettingsNav } from '@/components/platform/platform-settings-nav'
 import { getPlatformBackupStatusAction, getPlatformSettingsAction } from '@/actions/platform-data.actions'
 import { PlatformBackupStatus, PlatformSystemSettings } from '@/types/platform.types'
@@ -339,50 +340,40 @@ export default function PlatformSettingsPage() {
       )}
 
       {/* High-Level Cluster Metrics Ribbon */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Cluster Infrastructure</span>
-            <Server className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white mt-1 flex items-center gap-2">
-            <span>Operational</span>
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          </div>
-          <p className="text-2xs text-slate-400 mt-0.5">PostgreSQL + Redis Vault</p>
-        </Card>
+      <KpiGrid columns={4}>
+        <KpiCard
+          title="Cluster Infrastructure"
+          value="Operational"
+          icon={Server}
+          colorVariant="emerald"
+          isLive={true}
+          subtitle="PostgreSQL + Redis Vault"
+        />
 
-        <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">WAL Continuous Archiving</span>
-            <Database className="h-4 w-4 text-indigo-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white mt-1">PITR Enabled</div>
-          <p className="text-2xs text-slate-400 mt-0.5">{settings?.backup_retention_days ?? 90} Days Retention</p>
-        </Card>
+        <KpiCard
+          title="WAL Continuous Archiving"
+          value="PITR Enabled"
+          icon={Database}
+          colorVariant="indigo"
+          subtitle={`${settings?.backup_retention_days ?? 90} Days Retention`}
+        />
 
-        <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Standard VAT &amp; Currency</span>
-            <Globe className="h-4 w-4 text-purple-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white mt-1">
-            {settings?.default_vat_rate_pct ?? 15}% {settings?.default_currency || 'BDT'}
-          </div>
-          <p className="text-2xs text-slate-400 mt-0.5">NBR Mushak 6.3 Baseline</p>
-        </Card>
+        <KpiCard
+          title="Standard VAT & Currency"
+          value={`${settings?.default_vat_rate_pct ?? 15}% ${settings?.default_currency || 'BDT'}`}
+          icon={Globe}
+          colorVariant="purple"
+          subtitle="NBR Mushak 6.3 Baseline"
+        />
 
-        <Card className="bg-slate-900/80 border-slate-800/80 p-4 rounded-2xl">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-slate-400">Default Onboarding Trial</span>
-            <Clock className="h-4 w-4 text-amber-400" />
-          </div>
-          <div className="text-xl sm:text-2xl font-black text-white mt-1">
-            {settings?.default_trial_days ?? 14} Days
-          </div>
-          <p className="text-2xs text-slate-400 mt-0.5">Full ERP Suite Unlocked</p>
-        </Card>
-      </div>
+        <KpiCard
+          title="Default Onboarding Trial"
+          value={`${settings?.default_trial_days ?? 14} Days`}
+          icon={Clock}
+          colorVariant="amber"
+          subtitle="Full ERP Suite Unlocked"
+        />
+      </KpiGrid>
 
       {/* Quick Governance Links Hub */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
