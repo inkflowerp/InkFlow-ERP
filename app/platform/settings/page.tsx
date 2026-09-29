@@ -278,9 +278,10 @@ export default function PlatformSettingsPage() {
 
           <Button
             size="sm"
+            variant="gradient"
             disabled={saving || !settings || loading}
             onClick={handleSaveSettings}
-            className="h-9 text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold shadow-lg shadow-indigo-600/20 cursor-pointer"
+            className="h-9 text-xs"
           >
             <Save className="h-3.5 w-3.5 mr-1.5" />
             {saving ? 'Saving...' : 'Save Settings'}

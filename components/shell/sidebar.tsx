@@ -634,7 +634,8 @@ export function Sidebar() {
                                   {child.badge && (
                                     <Badge
                                       variant={isSubActive ? 'secondary' : 'default'}
-                                      className="text-3xs px-1.5 py-0 h-4 font-bold shrink-0 ml-1"
+                                      size="xs"
+                                      className="font-bold shrink-0 ml-1"
                                     >
                                       {child.badge}
                                     </Badge>
@@ -657,7 +658,7 @@ export function Sidebar() {
                                 </span>
                               </div>
                               {hasChildren && (
-                                <span className="text-3xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
+                                <span className="text-2xs font-semibold px-1.5 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400 shrink-0">
                                   {item.children!.length} modules
                                 </span>
                               )}

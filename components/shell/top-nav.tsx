@@ -45,7 +45,10 @@ export function TopNav() {
   const slug = (pathSlug && pathSlug !== 'platform-admin' && pathSlug !== 'login' && pathSlug !== 'onboarding' ? pathSlug : company?.slug) || 'app'
 
   return (
-    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2.5 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4">
+    <header className="sticky top-0 z-40 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-2.5 sm:px-6 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/95 gap-2 sm:gap-4 relative">
+      {/* Signature Printing Industry CMYK Micro Accent */}
+      <div className="absolute top-0 inset-x-0 h-0.5 cmyk-rainbow-bar opacity-85" />
+
       {/* LEFT: Mobile Nav Drawer + Company Selector + Breadcrumbs */}
       <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 shrink">
         <React.Suspense fallback={<div className="h-10 w-10 shrink-0" />}>

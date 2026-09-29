@@ -57,19 +57,25 @@
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 217.2 32.6% 15%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84.2% 62%;
+    --destructive-foreground: 224 71% 4%;
     --border: 217.2 32.6% 18%;
     --input: 217.2 32.6% 18%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 217 91% 60%;
 
-    /* Semantic Feedback Accents */
-    --success: 142 76% 36%;
-    --success-foreground: 0 0% 100%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
-    --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
+    /* Semantic Feedback Accents with WCAG AA compliant dark-mode contrast */
+    --success: 142 70% 48%;
+    --success-foreground: 224 71% 4%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 224 71% 4%;
+    --info: 199 89% 58%;
+    --info-foreground: 224 71% 4%;
+
+    /* Printing & Signage CMYK Industry Accents in Dark Mode */
+    --cmyk-cyan: 191 97% 55%;
+    --cmyk-magenta: 326 100% 65%;
+    --cmyk-yellow: 48 100% 55%;
+    --cmyk-key: 210 40% 98%;
   }
 }
 
@@ -101,14 +107,22 @@
   --color-popover-foreground: hsl(var(--popover-foreground));
   --radius: var(--radius);
 
+  /* Printing & Signage CMYK Industry Tokens */
+  --color-cmyk-cyan: hsl(var(--cmyk-cyan));
+  --color-cmyk-magenta: hsl(var(--cmyk-magenta));
+  --color-cmyk-yellow: hsl(var(--cmyk-yellow));
+  --color-cmyk-key: hsl(var(--cmyk-key));
+
   --font-sans: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-bangla: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", "Kalpurush", "Vrinda", "Nirmala UI", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: var(--font-inter), var(--font-hind-siliguri), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-mono: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Responsive Breakpoints */
   --breakpoint-xs: 480px;
 
   /* Typography Scale Tokens (Strictly harmonious, accessible across all devices) */
+  --text-3xs: 0.6875rem; /* 11px - mapped to accessible minimum */
+  --text-3xs--line-height: 0.9375rem; /* 15px */
   --text-2xs: 0.6875rem; /* 11px - strictly minimum readable limit for compact dense tags & hashes */
   --text-2xs--line-height: 0.9375rem; /* 15px */
   --text-xs: 0.75rem; /* 12px - metadata, helper notes, timestamps, secondary badges */
@@ -218,10 +232,11 @@ button, input, select, textarea {
    harmonizes font sizes across all cards, modals, tables, badges & controls.
    ============================================================================== */
 
-/* Standardized 2xs utility */
-.text-2xs {
+/* Standardized 2xs & 3xs utilities (WCAG AA accessible minimum limit) */
+.text-2xs,
+.text-3xs {
   font-size: 0.6875rem; /* 11px */
-  line-height: 1rem;
+  line-height: 0.9375rem; /* 15px */
 }
 
 /* 3. Global Table Typography Consistency */
@@ -251,7 +266,6 @@ textarea {
   font-feature-settings: "tnum" 1;
 }
 
-
 option {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
@@ -270,13 +284,96 @@ option {
 /* Numeric & Tabular Data - Tabular alignment on primary UI font for financial figures, KPIs, tables, codes & IDs */
 .font-numeric,
 .tabular-nums,
-.font-mono,
 input[type="number"],
 input[data-numeric],
 [data-numeric] {
   font-family: var(--font-inter), var(--font-hind-siliguri), "Hind Siliguri", sans-serif !important;
   font-variant-numeric: tabular-nums !important;
   font-feature-settings: "tnum" 1, "zero" 1 !important;
+}
+
+/* Explicit Code & Monospace Elements - JetBrains Mono with tabular alignment */
+.font-mono,
+code,
+kbd,
+pre,
+[data-mono] {
+  font-family: var(--font-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "zero" 1 !important;
+}
+
+/* ==============================================================================
+   Authoritative UI/UX Design System Gradients & Surface Tokens
+   Consistent, premium enterprise printing SaaS aesthetic
+   ============================================================================== */
+
+/* 1. Primary InkFlow Blue-Indigo Brand Gradient */
+.bg-gradient-brand,
+.gradient-primary {
+  background-image: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #4f46e5 100%) !important;
+}
+
+.hover\:bg-gradient-brand-hover:hover {
+  background-image: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #4338ca 100%) !important;
+}
+
+/* 2. Dark Hero & Financial Command Surface Gradient */
+.bg-gradient-dark-hero,
+.gradient-dark-hero {
+  background-image: linear-gradient(145deg, #020617 0%, #0f172a 45%, #1e1b4b 100%) !important;
+}
+
+/* 3. Subtle Clean Dashboard Card Header Gradient */
+.bg-gradient-card-light {
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.9) 60%, rgba(238, 242, 255, 0.6) 100%) !important;
+}
+.dark .bg-gradient-card-light {
+  background-image: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.85) 60%, rgba(30, 27, 75, 0.5) 100%) !important;
+}
+
+/* 4. Semantic Action Gradients */
+.bg-gradient-success {
+  background-image: linear-gradient(135deg, #059669 0%, #10b981 50%, #0d9488 100%) !important;
+}
+.bg-gradient-warning {
+  background-image: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #ea580c 100%) !important;
+}
+.bg-gradient-danger {
+  background-image: linear-gradient(135deg, #e11d48 0%, #f43f5e 50%, #dc2626 100%) !important;
+}
+
+/* 5. Printing Industry CMYK Signature Rainbow Accent Line */
+.cmyk-rainbow-bar {
+  background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #1E293B 100%) !important;
+}
+.dark .cmyk-rainbow-bar {
+  background: linear-gradient(90deg, #00A3E0 0%, #E4007C 33%, #FFD100 66%, #F8FAFC 100%) !important;
+}
+
+/* 6. UI/UX Pro Max Glass Card (Rule 301-309: Light mode >= 80% opacity, border-slate-200, crisp contrast) */
+.glass-card {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+}
+.dark .glass-card {
+  background-color: rgba(15, 23, 42, 0.82);
+  border-color: rgba(51, 65, 85, 0.7);
+}
+
+.glass-card-elevated {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+.dark .glass-card-elevated {
+  background-color: rgba(15, 23, 42, 0.92);
+  border-color: rgba(51, 65, 85, 0.8);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
 }
 
 .nav-link-nowrap {
