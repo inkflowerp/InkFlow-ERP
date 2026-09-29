@@ -11,6 +11,7 @@ import type { DataScope } from '../../types/rbac.types.ts'
 import { MODULE_ACTION_SPECS } from '../../types/rbac.types.ts'
 import { checkPermission, DEFAULT_RESPONSIBILITY_MATRICES } from '../auth/rbac.client.ts'
 import { parseAndNormalizePhone } from '../auth/identifier-helper.ts'
+import { PrintERPDataStore, STORAGE_KEYS } from '../db/data-store.ts'
 
 export const DEFAULT_SYSTEM_ROLES: RoleRow[] = [
   {
@@ -821,6 +822,40 @@ export class TenantRepository {
           branch_id: bId,
           created_at: new Date().toISOString(),
         })
+      }
+    }
+
+    // 4. Bidirectional Sync: Keep linked employee record in workforce roster in sync
+    if (userId && companyId) {
+      try {
+        const empUpdates: any = { updated_at: new Date().toISOString() }
+        if (params.responsibilities !== undefined) empUpdates.responsibilities = params.responsibilities
+        if (params.department !== undefined) empUpdates.department = params.department
+        if (params.branchId !== undefined) empUpdates.branch_id = params.branchId
+
+        await (admin as any)
+          .from('employees')
+          .update(empUpdates)
+          .eq('company_id', companyId)
+          .eq('user_id', userId)
+
+        // Also update local data store for memory/offline fallback
+        try {
+          const localEmployees = PrintERPDataStore.get<any[]>(STORAGE_KEYS.EMPLOYEES, companyId) || []
+          let empChanged = false
+          const updatedLocal = localEmployees.map((emp) => {
+            if (emp.user_id === userId) {
+              empChanged = true
+              return { ...emp, ...empUpdates }
+            }
+            return emp
+          })
+          if (empChanged) {
+            PrintERPDataStore.set(STORAGE_KEYS.EMPLOYEES, updatedLocal, true, companyId)
+          }
+        } catch {}
+      } catch (empSyncErr: any) {
+        console.warn('[TenantRepository] employee roster sync warning:', empSyncErr?.message)
       }
     }
 

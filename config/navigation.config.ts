@@ -174,7 +174,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
           titleBn: 'পণ্য ও সেবা',
           href: '/products',
           icon: 'Layers',
-          permission: { action: 'view', resource: 'inventory' },
+          permission: { action: 'view', resource: 'products' },
         },
         {
           key: 'pricing',
@@ -392,7 +392,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
               titleBn: 'টিম সদস্য',
               href: '/settings/users',
               icon: 'Users',
-              permission: { action: 'manage', resource: 'settings' },
+              permission: { action: 'manage', resource: 'users' },
             },
             {
               key: 'settings_roles',
@@ -400,7 +400,7 @@ export function getNavigationConfig(_tenantSlug?: string): NavSection[] {
               titleBn: 'অনুমতি সেটিংস',
               href: '/settings/roles',
               icon: 'ShieldCheck',
-              permission: { action: 'manage', resource: 'settings' },
+              permission: { action: 'manage', resource: 'users' },
             },
             {
               key: 'settings_subscription',

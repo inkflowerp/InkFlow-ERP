@@ -41,6 +41,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { FeatureGate } from '@/components/shared/feature-gate'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   DEFAULT_QUOTATION_TERMS,
   DEFAULT_QUOTATION_TERMS_BN,
@@ -1142,16 +1143,23 @@ function QuotationDetailContent() {
 
 export default function QuotationDetailPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse" />
-          <p className="text-xs text-slate-500">Loading Quotation...</p>
-        </div>
-      }
+    <PanelAccessGuard
+      module="quotations"
+      action="view"
+      panelTitle="Quotation Details"
+      panelTitleBn="কোটেশন বিস্তারিত"
     >
-      <QuotationDetailContent />
-    </React.Suspense>
+      <React.Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+            <FileSpreadsheet className="h-6 w-6 text-indigo-500 animate-pulse" />
+            <p className="text-xs text-slate-500">Loading Quotation...</p>
+          </div>
+        }
+      >
+        <QuotationDetailContent />
+      </React.Suspense>
+    </PanelAccessGuard>
   )
 }
 

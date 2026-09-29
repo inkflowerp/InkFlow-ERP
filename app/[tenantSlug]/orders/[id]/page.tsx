@@ -34,6 +34,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ModalDialog } from '@/components/shared/modal-dialog'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import {
   SalesOrderRecord,
@@ -994,16 +995,23 @@ function OrderDetailContent() {
 
 export default function OrderDetailPage() {
   return (
-    <React.Suspense
-      fallback={
-        <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
-          <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse" />
-          <p className="text-xs text-slate-500">Loading Order Details...</p>
-        </div>
-      }
+    <PanelAccessGuard
+      module="orders"
+      action="view"
+      panelTitle="Order Lifecycle Details"
+      panelTitleBn="অর্ডার বিস্তারিত"
     >
-      <OrderDetailContent />
-    </React.Suspense>
+      <React.Suspense
+        fallback={
+          <div className="flex flex-col items-center justify-center min-h-[400px] space-y-3">
+            <Briefcase className="h-6 w-6 text-indigo-500 animate-pulse" />
+            <p className="text-xs text-slate-500">Loading Order Details...</p>
+          </div>
+        }
+      >
+        <OrderDetailContent />
+      </React.Suspense>
+    </PanelAccessGuard>
   )
 }
 

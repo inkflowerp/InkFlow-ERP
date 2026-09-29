@@ -416,16 +416,30 @@ export class WorkforceService {
 
     const rawAssigned = portalCreds.role || employee.role || 'operator'
     const normalizedRole = normalizePortalRole(rawAssigned)
-    const canonicalResp =
-      normalizedRole === 'branch_manager'
+    const mapToCanonicalResp = (resp: string) => {
+      const norm = normalizePortalRole(resp)
+      return norm === 'branch_manager'
         ? 'branch_manager'
-        : normalizedRole === 'sales'
+        : norm === 'sales'
         ? 'sales_manager'
-        : normalizedRole === 'accounts'
+        : norm === 'accounts'
         ? 'accountant'
-        : normalizedRole === 'manager'
+        : norm === 'manager'
         ? 'production_manager'
-        : normalizedRole
+        : norm
+    }
+
+    const canonicalResp = mapToCanonicalResp(rawAssigned)
+    const initialResps: string[] =
+      Array.isArray(portalCreds.responsibilities) && portalCreds.responsibilities.length > 0
+        ? portalCreds.responsibilities
+        : Array.isArray(employee.responsibilities) && employee.responsibilities.length > 0
+        ? employee.responsibilities
+        : [rawAssigned]
+
+    const effectiveResponsibilities = Array.from(
+      new Set([canonicalResp, ...initialResps.map(mapToCanonicalResp)])
+    )
 
     try {
       const admin = createAdminClient()
@@ -553,7 +567,7 @@ export class WorkforceService {
               branch_id: employee.branch_id || null,
               invited_email: email,
               status: 'active',
-              responsibilities: [canonicalResp],
+              responsibilities: effectiveResponsibilities,
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
@@ -566,7 +580,7 @@ export class WorkforceService {
             .update({
               branch_id: employee.branch_id || null,
               status: 'active',
-              responsibilities: [canonicalResp],
+              responsibilities: effectiveResponsibilities,
               updated_at: new Date().toISOString(),
             })
             .eq('id', companyUserId)
@@ -583,7 +597,7 @@ export class WorkforceService {
             company_id: employee.company_id,
             user_id: userId,
             branch_id: employee.branch_id || null,
-            responsibilities: [canonicalResp],
+            responsibilities: effectiveResponsibilities,
             status: 'active',
             updated_at: new Date().toISOString(),
           }
@@ -595,14 +609,23 @@ export class WorkforceService {
           PrintERPDataStore.set(STORAGE_KEYS.COMPANY_USERS, localUsers)
         } catch {}
 
-        const roleId = await this.resolveRoleIdForEmployee(employee.company_id, normalizedRole)
-        if (roleId && companyUserId) {
+        if (companyUserId) {
           await (admin as any).from('user_roles').delete().eq('company_user_id', companyUserId)
-          await (admin as any).from('user_roles').insert({
-            company_user_id: companyUserId,
-            role_id: roleId,
-            company_id: employee.company_id,
-          })
+          const roleIdsToAssign = new Set<string>()
+          for (const resp of effectiveResponsibilities) {
+            const rId = await this.resolveRoleIdForEmployee(employee.company_id, resp)
+            if (rId) roleIdsToAssign.add(rId)
+          }
+          const primaryRoleId = await this.resolveRoleIdForEmployee(employee.company_id, normalizedRole)
+          if (primaryRoleId) roleIdsToAssign.add(primaryRoleId)
+
+          for (const rId of Array.from(roleIdsToAssign)) {
+            await (admin as any).from('user_roles').insert({
+              company_user_id: companyUserId,
+              role_id: rId,
+              company_id: employee.company_id,
+            })
+          }
         }
       }
     } catch (e) {
@@ -661,6 +684,7 @@ export class WorkforceService {
       username: cleanUsername,
       password,
       role: normalizedRole,
+      responsibilities: effectiveResponsibilities,
       user_id: userId,
       status: inviteSentAt ? 'invited' : 'active',
       last_invite_sent_at: inviteSentAt || portalCreds.last_invite_sent_at || null,
@@ -669,12 +693,18 @@ export class WorkforceService {
 
     const updatedEmployee = await WorkforceRepository.updateEmployee(employee.id, employee.company_id, {
       portal_credentials: updatedCreds,
+      responsibilities: effectiveResponsibilities,
       user_id: userId,
       email: employee.email || (isSystemEmail ? null : email),
     })
 
     return {
-      employee: updatedEmployee || { ...employee, portal_credentials: updatedCreds, user_id: userId },
+      employee: updatedEmployee || {
+        ...employee,
+        responsibilities: effectiveResponsibilities,
+        portal_credentials: updatedCreds,
+        user_id: userId,
+      },
       inviteUrl,
     }
   }

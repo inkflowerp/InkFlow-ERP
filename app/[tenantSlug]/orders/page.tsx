@@ -17,6 +17,7 @@ import {
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
 import { Button } from '@/components/ui/button'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import { OrderRepository } from '@/lib/repositories/order.repository'
 import { BillingRepository } from '@/lib/repositories/billing.repository'
@@ -1203,7 +1204,13 @@ export default function OrdersPage() {
   ]
 
   return (
-    <div className="space-y-4 pb-12">
+    <PanelAccessGuard
+      module="orders"
+      action="view"
+      panelTitle="Orders & Job Flow"
+      panelTitleBn="কাজের অর্ডার"
+    >
+      <div className="space-y-4 pb-12">
       {/* Toast Notification */}
       {notification && (
         <div
@@ -1417,5 +1424,6 @@ export default function OrdersPage() {
         />
       )}
     </div>
+    </PanelAccessGuard>
   )
 }

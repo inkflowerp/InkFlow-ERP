@@ -207,7 +207,7 @@ export function usePermissions() {
 
   const hasRole = useCallback(
     (allowedRoles: PrimaryRole[]) => {
-      return allowedRoles.includes(activeRole)
+    return allowedRoles.includes(activeRole)
     },
     [activeRole]
   )
@@ -215,146 +215,91 @@ export function usePermissions() {
   const respList = (Array.isArray(userCtx.responsibilities) ? userCtx.responsibilities : []) as string[]
   const userRoleSlugs = Array.isArray(currentUser?.roles) ? currentUser.roles.map((r: any) => r?.slug || r?.name || '') : []
 
-  const isDesigner =
-    !userCtx.isOwner && (
-      activeRole === 'designer' ||
-      (activeRole as any) === 'graphic_designer' ||
-      (currentRole as any) === 'designer' ||
-      (currentRole as any) === 'graphic_designer' ||
-      respList.some((r) => {
-        const s = String(r).toLowerCase()
-        return (
-          s === 'designer' ||
-          s === 'graphic_designer' ||
-          s.includes('design') ||
-          s.includes('graphic') ||
-          s.includes('prepress') ||
-          s.includes('artwork')
-        )
-      }) ||
-      userRoleSlugs.some((r) => {
-        const s = String(r).toLowerCase()
-        return (
-          s === 'designer' ||
-          s === 'graphic_designer' ||
-          s.includes('design') ||
-          s.includes('graphic') ||
-          s.includes('prepress') ||
-          s.includes('artwork')
-        )
-      })
-    )
+  // Check if role is present in ANY of: activeRole, responsibilities, or user roles
+  const hasResponsibilityOrRole = (matchers: string[]) => {
+    const lowerMatchers = matchers.map((m) => m.toLowerCase())
+    if (lowerMatchers.includes(String(activeRole).toLowerCase())) return true
+    if (lowerMatchers.includes(String(currentRole).toLowerCase())) return true
+    if (respList.some((r) => lowerMatchers.includes(String(r).toLowerCase()))) return true
+    if (userRoleSlugs.some((r) => lowerMatchers.includes(String(r).toLowerCase()))) return true
+    return false
+  }
 
+  const matchesKeyword = (keywords: string[]) => {
+    const lowerKeys = keywords.map((k) => k.toLowerCase())
+    const activeStr = String(activeRole).toLowerCase()
+    const currentStr = String(currentRole).toLowerCase()
+    if (lowerKeys.some((k) => activeStr.includes(k) || currentStr.includes(k))) return true
+    if (respList.some((r) => lowerKeys.some((k) => String(r).toLowerCase().includes(k)))) return true
+    if (userRoleSlugs.some((r) => lowerKeys.some((k) => String(r).toLowerCase().includes(k)))) return true
+    return false
+  }
+
+  // 1. Graphic Designer
+  const isDesigner =
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['designer', 'graphic_designer']) ||
+      matchesKeyword(['design', 'graphic', 'prepress', 'pre-press', 'artwork']))
+
+  // 2. Machine / Print Operator (No longer mutually excluded by isDesigner!)
   const isOperator =
     !userCtx.isOwner &&
-    !isDesigner && (
-      activeRole === 'operator' ||
-      (activeRole as any) === 'machine_operator' ||
-      (currentRole as any) === 'operator' ||
-      (currentRole as any) === 'machine_operator' ||
-      respList.some((r) => {
-        const s = String(r).toLowerCase()
-        return (
-          s === 'operator' ||
-          s === 'machine_operator' ||
-          s.includes('operat') ||
-          s.includes('technician') ||
-          s.includes('pressman') ||
-          s.includes('printer') ||
-          s.includes('press') ||
-          s.includes('offset') ||
-          s.includes('finisher') ||
-          s.includes('machinist') ||
-          s.includes('die-cut') ||
-          s.includes('fabricat')
-        )
-      }) ||
-      userRoleSlugs.some((r) => {
-        const s = String(r).toLowerCase()
-        return (
-          s === 'operator' ||
-          s === 'machine_operator' ||
-          s.includes('operat') ||
-          s.includes('technician') ||
-          s.includes('pressman') ||
-          s.includes('printer') ||
-          s.includes('press') ||
-          s.includes('offset') ||
-          s.includes('finisher') ||
-          s.includes('machinist') ||
-          s.includes('die-cut') ||
-          s.includes('fabricat')
-        )
-      })
-    )
+    (hasResponsibilityOrRole(['operator', 'machine_operator', 'pressman', 'printer']) ||
+      matchesKeyword([
+        'operat',
+        'technician',
+        'pressman',
+        'printer',
+        'press',
+        'offset',
+        'machinist',
+        'die-cut',
+      ]))
 
+  // 3. Finishing & Fabrication Operator
+  const isFinishing =
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['finishing_operator', 'fabrication_operator', 'operator']) ||
+      matchesKeyword(['finish', 'fabricat', 'binding', 'cutter', 'lamination']))
+
+  // 4. Branch Manager
   const isBranchManager =
-    !userCtx.isOwner && (
-      activeRole === 'branch_manager' ||
-      (activeRole as any) === 'branch' ||
-      (currentRole as any) === 'branch_manager' ||
-      respList.some((r) => {
-        const s = String(r).toLowerCase()
-        return s === 'branch_manager' || s.includes('branch') || s.includes('outlet') || s.includes('showroom')
-      }) ||
-      userRoleSlugs.some((r) => {
-        const s = String(r).toLowerCase()
-        return s === 'branch_manager' || s.includes('branch') || s.includes('outlet') || s.includes('showroom')
-      })
-    )
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['branch_manager', 'branch_incharge']) ||
+      matchesKeyword(['branch', 'outlet', 'showroom']))
 
+  // 5. Salesperson / Sales Manager (No longer mutually excluded by isBranchManager!)
   const isSales =
     !userCtx.isOwner &&
-    !isBranchManager && (
-      activeRole === 'sales_manager' ||
-      (activeRole as any) === 'sales' ||
-      (activeRole as any) === 'sales_executive' ||
-      (currentRole as any) === 'manager' ||
-      (currentRole as any) === 'sales_manager' ||
-      (currentRole as any) === 'sales' ||
-      respList.includes('sales_manager') ||
-      respList.includes('sales') ||
-      respList.includes('sales_executive') ||
-      userRoleSlugs.includes('sales_manager') ||
-      userRoleSlugs.includes('sales') ||
-      userRoleSlugs.includes('sales_executive')
-    )
+    (hasResponsibilityOrRole(['sales_manager', 'sales', 'sales_executive', 'manager']) ||
+      matchesKeyword(['sale', 'marketing', 'crm']))
 
+  // 6. Production Manager
   const isProduction =
-    !userCtx.isOwner && (
-      activeRole === 'production_manager' ||
-      (activeRole as any) === 'production' ||
-      (currentRole as any) === 'production_manager' ||
-      respList.includes('production_manager') ||
-      respList.includes('production') ||
-      userRoleSlugs.includes('production_manager')
-    )
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['production_manager', 'production']) ||
+      matchesKeyword(['production', 'factory', 'plant']))
 
+  // 7. Accountant
   const isAccountant =
-    !userCtx.isOwner && (
-      activeRole === ('accountant' as any) ||
-      (currentRole as any) === 'accountant' ||
-      respList.includes('accountant') ||
-      respList.includes('accounts') ||
-      respList.includes('billing') ||
-      userRoleSlugs.includes('accountant') ||
-      userRoleSlugs.includes('accounts')
-    )
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['accountant', 'accounts', 'billing', 'cashier']) ||
+      matchesKeyword(['account', 'finance', 'billing', 'cashier']))
 
+  // 8. Delivery Coordinator
   const isDelivery =
-    !userCtx.isOwner && (
-      activeRole === ('delivery' as any) ||
-      activeRole === ('delivery_coordinator' as any) ||
-      (currentRole as any) === 'delivery' ||
-      (currentRole as any) === 'delivery_coordinator' ||
-      (currentRole as any) === 'installer' ||
-      respList.includes('delivery') ||
-      respList.includes('delivery_coordinator') ||
-      respList.includes('installer') ||
-      userRoleSlugs.includes('delivery') ||
-      userRoleSlugs.includes('delivery_coordinator') ||
-      userRoleSlugs.includes('installer')
-    )
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['delivery', 'delivery_coordinator', 'installer']) ||
+      matchesKeyword(['deliver', 'install', 'courier', 'dispatch']))
+
+  // 9. Inventory / Store Manager
+  const isStore =
+    !userCtx.isOwner &&
+    (hasResponsibilityOrRole(['store_manager', 'inventory_manager']) ||
+      matchesKeyword(['store', 'inventor', 'stock', 'warehouse']))
+
+  const activeResponsibilities = respList.length > 0 ? respList : [activeRole]
+  const isMultiRole = activeResponsibilities.length > 1
 
   return {
     activeRole,
@@ -373,9 +318,13 @@ export function usePermissions() {
     isDesigner,
     isProduction,
     isOperator,
+    isFinishing,
+    isStore,
     isAccountant,
     isDelivery,
     isStaff: !userCtx.isOwner,
+    activeResponsibilities,
+    isMultiRole,
   }
 }
 

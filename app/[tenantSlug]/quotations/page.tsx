@@ -45,6 +45,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { FeatureGate } from '@/components/shared/feature-gate'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import {
   QuotationRecord,
   QuotationStatus,
@@ -933,8 +934,14 @@ export default function QuotationsPage() {
   const urgentAlertCount = priorityItems.length
 
   return (
-    <FeatureGate feature="quotation_pdf">
-      <div className="space-y-6 max-w-7xl mx-auto pb-20">
+    <PanelAccessGuard
+      module="quotations"
+      action="view"
+      panelTitle="Quotations"
+      panelTitleBn="কোটেশন"
+    >
+      <FeatureGate feature="quotation_pdf">
+        <div className="space-y-6 max-w-7xl mx-auto pb-20">
         {/* NOTIFICATION TOAST */}
         {notification && (
           <div className="fixed bottom-6 right-6 z-50 px-4 py-3 bg-slate-900/95 text-white dark:bg-slate-100 dark:text-slate-900 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 dark:border-black/10 flex items-center gap-3 text-xs font-semibold animate-in slide-in-from-bottom-5">
@@ -1349,5 +1356,6 @@ export default function QuotationsPage() {
         />
       </div>
     </FeatureGate>
+    </PanelAccessGuard>
   )
 }

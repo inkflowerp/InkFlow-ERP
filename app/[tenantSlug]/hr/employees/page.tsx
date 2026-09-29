@@ -333,6 +333,7 @@ function EmployeeListContent() {
     username: string
     password: string
     role: string
+    responsibilities: string[]
     send_invitation: boolean
   }>({
     create_login: false,
@@ -340,6 +341,7 @@ function EmployeeListContent() {
     username: '',
     password: '',
     role: 'operator',
+    responsibilities: ['operator'],
     send_invitation: true,
   })
   const [isSavingCreds, setIsSavingCreds] = useState(false)
@@ -780,12 +782,21 @@ function EmployeeListContent() {
     const cleanUname = pc?.username || generateSafeEmployeeUsername(emp.name, emp.employee_id_number, emp.mobile)
     const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
     const fallbackEmail = pc?.email || emp.email || (emp.mobile ? `${emp.mobile.replace(/\D/g, '') || cleanUname}@${cleanSlug}.inkflow.app` : `${cleanUname}@${cleanSlug}.inkflow.app`)
+    const assignedRole = normalizePortalRole(pc?.role || emp.role)
+    const currentResps =
+      Array.isArray(pc?.responsibilities) && pc.responsibilities.length > 0
+        ? pc.responsibilities
+        : Array.isArray(emp.responsibilities) && emp.responsibilities.length > 0
+        ? emp.responsibilities
+        : [assignedRole]
+
     setCredsForm({
       create_login: editCreds ? true : (pc?.create_login ?? false),
       email: fallbackEmail,
       username: cleanUname,
       password: pc?.password || `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-      role: normalizePortalRole(pc?.role || emp.role),
+      role: assignedRole,
+      responsibilities: currentResps,
       send_invitation: true,
     })
     setIs360DrawerOpen(true)
@@ -898,6 +909,9 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
           username: sanitizedUname,
           password: credsForm.password.trim() || undefined,
           role: normalizedRole,
+          responsibilities: credsForm.responsibilities && credsForm.responsibilities.length > 0
+            ? credsForm.responsibilities
+            : [normalizedRole],
           send_invitation: credsForm.send_invitation,
         },
         tenantSlug
@@ -4692,12 +4706,20 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             )
                             const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
                             const fallbackEmail = selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
+                            const currentRole = normalizePortalRole(selectedEmployee.role)
+                            const currentResps =
+                              Array.isArray(selectedEmployee.portal_credentials?.responsibilities) && selectedEmployee.portal_credentials.responsibilities.length > 0
+                                ? selectedEmployee.portal_credentials.responsibilities
+                                : Array.isArray(selectedEmployee.responsibilities) && selectedEmployee.responsibilities.length > 0
+                                ? selectedEmployee.responsibilities
+                                : [currentRole]
                             setCredsForm({
                               create_login: true,
                               email: fallbackEmail,
                               username: safeUser,
                               password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-                              role: normalizePortalRole(selectedEmployee.role),
+                              role: currentRole,
+                              responsibilities: currentResps,
                               send_invitation: true,
                             })
                             setIsEditingCredentials(true)
@@ -4883,12 +4905,20 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             )
                             const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
                             const defaultEmail = selectedEmployee.portal_credentials?.email || selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
+                            const currentRole = normalizePortalRole(selectedEmployee.portal_credentials?.role || selectedEmployee.role)
+                            const currentResps =
+                              Array.isArray(selectedEmployee.portal_credentials?.responsibilities) && selectedEmployee.portal_credentials.responsibilities.length > 0
+                                ? selectedEmployee.portal_credentials.responsibilities
+                                : Array.isArray(selectedEmployee.responsibilities) && selectedEmployee.responsibilities.length > 0
+                                ? selectedEmployee.responsibilities
+                                : [currentRole]
                             setCredsForm({
                               create_login: true,
                               email: defaultEmail,
                               username: safeUser,
                               password: selectedEmployee.portal_credentials?.password || '',
-                              role: normalizePortalRole(selectedEmployee.portal_credentials?.role || selectedEmployee.role),
+                              role: currentRole,
+                              responsibilities: currentResps,
                               send_invitation: true,
                             })
                             setIsEditingCredentials(true)
@@ -5037,7 +5067,12 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           </Label>
                           <select
                             value={credsForm.role}
-                            onChange={(e) => setCredsForm({ ...credsForm, role: e.target.value })}
+                            onChange={(e) => {
+                              const newRole = e.target.value
+                              const prev = credsForm.responsibilities || []
+                              const updatedResps = prev.includes(newRole) ? prev : [newRole, ...prev]
+                              setCredsForm({ ...credsForm, role: newRole, responsibilities: updatedResps })
+                            }}
                             className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                           >
                             <option value="branch_manager">{tBilingual('Branch Manager / Outlet In-Charge', 'ব্রাঞ্চ ম্যানেজার ও আউটলেট ইন-চার্জ')}</option>
@@ -5048,6 +5083,60 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             <option value="manager">{tBilingual('Production Manager / Factory Head', 'কারখানা ও প্রডাকশন ম্যানেজার')}</option>
                             <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                           </select>
+                        </div>
+
+                        {/* Multi-Responsibility Cross-Duty Selector */}
+                        <div className="sm:col-span-2 lg:col-span-4 space-y-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                              {tBilingual('Assigned Responsibilities & Multi-Roles (Cross-Duty Access)', 'নির্ধারিত দ্বায়িত্বসমূহ ও ক্রস-রোল এক্সেস')}
+                            </Label>
+                            <span className="text-2xs text-slate-400">
+                              {tBilingual('Owner can assign multiple panel accesses to this employee', 'মালিক এই কর্মীকে একাধিক প্যানেল এক্সেস দিতে পারেন')}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {[
+                              { id: 'designer', label: 'Graphic Design', labelBn: 'ডিজাইন', icon: '🎨' },
+                              { id: 'operator', label: 'Machine Operator', labelBn: 'মেশিন অপারেটর', icon: '⚙️' },
+                              { id: 'finishing', label: 'Finishing & Fabrication', labelBn: 'ফিনিশিং', icon: '✂️' },
+                              { id: 'sales_manager', label: 'Sales & Orders', labelBn: 'সেলস ও অর্ডার', icon: '💼' },
+                              { id: 'production_manager', label: 'Production Head', labelBn: 'প্রডাকশন হেড', icon: '🏭' },
+                              { id: 'store_manager', label: 'Store & Inventory', labelBn: 'স্টোর ও কাঁচামাল', icon: '📦' },
+                              { id: 'accountant', label: 'Accounts & Billing', labelBn: 'হিসাব ও বিলিং', icon: '💰' },
+                              { id: 'delivery_coordinator', label: 'Delivery & Challan', labelBn: 'ডেলিভারি ও চালান', icon: '🚚' },
+                              { id: 'branch_manager', label: 'Branch In-Charge', labelBn: 'ব্রাঞ্চ ইন-চার্জ', icon: '🏢' },
+                            ].map((resp) => {
+                              const isSelected = credsForm.responsibilities?.includes(resp.id) || credsForm.role === resp.id
+                              return (
+                                <button
+                                  key={resp.id}
+                                  type="button"
+                                  onClick={() => {
+                                    const prev = credsForm.responsibilities || [credsForm.role]
+                                    let updated: string[]
+                                    if (isSelected) {
+                                      if (prev.length <= 1) return
+                                      updated = prev.filter((r) => r !== resp.id)
+                                    } else {
+                                      updated = [...prev, resp.id]
+                                    }
+                                    setCredsForm({ ...credsForm, responsibilities: updated })
+                                  }}
+                                  className={cn(
+                                    'px-2.5 py-1 text-2xs rounded-full border transition-all flex items-center gap-1 cursor-pointer font-medium',
+                                    isSelected
+                                      ? 'bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/40 shadow-xs'
+                                      : 'bg-slate-50 dark:bg-slate-800/60 text-slate-500 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                  )}
+                                >
+                                  <span>{resp.icon}</span>
+                                  <span>{tBilingual(resp.label, resp.labelBn)}</span>
+                                  {isSelected && <Check className="w-2.5 h-2.5 ml-0.5" />}
+                                </button>
+                              )
+                            })}
+                          </div>
                         </div>
                       </div>
 
@@ -5120,12 +5209,20 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           )
                           const cleanSlug = tenantSlug ? tenantSlug.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase() : 'workspace'
                           const fallbackEmail = selectedEmployee.email || (selectedEmployee.mobile ? `${selectedEmployee.mobile.replace(/\D/g, '') || safeUser}@${cleanSlug}.inkflow.app` : `${safeUser}@${cleanSlug}.inkflow.app`)
+                          const currentRole = normalizePortalRole(selectedEmployee.role)
+                          const currentResps =
+                            Array.isArray(selectedEmployee.portal_credentials?.responsibilities) && selectedEmployee.portal_credentials.responsibilities.length > 0
+                              ? selectedEmployee.portal_credentials.responsibilities
+                              : Array.isArray(selectedEmployee.responsibilities) && selectedEmployee.responsibilities.length > 0
+                              ? selectedEmployee.responsibilities
+                              : [currentRole]
                           setCredsForm({
                             create_login: true,
                             email: fallbackEmail,
                             username: safeUser,
                             password: `InkFlow@${Math.floor(100000 + Math.random() * 900000)}`,
-                            role: normalizePortalRole(selectedEmployee.role),
+                            role: currentRole,
+                            responsibilities: currentResps,
                             send_invitation: true,
                           })
                           setIsEditingCredentials(true)

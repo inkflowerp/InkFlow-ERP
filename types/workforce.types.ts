@@ -98,6 +98,7 @@ export interface PortalCredentials {
   email?: string
   password?: string
   role?: string
+  responsibilities?: string[]
   user_id?: string | null
   status?: 'active' | 'invited' | 'disabled' | null
   last_invite_sent_at?: string | null

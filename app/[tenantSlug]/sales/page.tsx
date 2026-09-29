@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { useDataStore } from '@/hooks/use-data-store'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
 import {
@@ -196,7 +197,13 @@ export default function SalesManagerPage() {
   const pendingQuotesValue = pendingQuotes.reduce((acc, q) => acc + (q.grand_total || 0), 0)
 
   return (
-    <div className="space-y-6 max-w-7xl">
+    <PanelAccessGuard
+      module="orders"
+      action="view"
+      panelTitle="Commercial & Sales"
+      panelTitleBn="কমার্শিয়াল ও সেলস"
+    >
+      <div className="space-y-6 max-w-7xl">
       {/* Header */}
       <PageHeader
         titleEn="Commercial & Sales Management"
@@ -567,5 +574,6 @@ export default function SalesManagerPage() {
         </Card>
       )}
     </div>
+    </PanelAccessGuard>
   )
 }

@@ -146,12 +146,14 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   const router = useRouter()
   const pathname = usePathname()
   const { company, currentUser, currentRole, currentBranch } = useTenant()
-  const { userCtx, can, isOwner, isBranchManager, isSales, isDesigner, isOperator, isAccountant, isDelivery, activeRole } = usePermissions()
+  const { userCtx, can, isOwner, isBranchManager, isSales, isDesigner, isOperator, isAccountant, isDelivery, isStore, activeRole, activeResponsibilities, isMultiRole } = usePermissions()
   const { locale, tBilingual } = useI18n()
 
   const slug = company?.slug || tenantSlug || 'my-company'
   const canSeeFinancials = isOwner || isBranchManager || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
-  const isStore = (userCtx.responsibilities as string[] || []).includes('store_manager') || (currentUser?.roles?.[0]?.slug as string) === 'store_keeper' || can('manage', 'inventory')
+
+  // Multi-Responsibility active workspace selection state
+  const [selectedRoleWorkspace, setSelectedRoleWorkspace] = useState<string | null>(null)
 
 
   // Live Data Stores
@@ -575,10 +577,6 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     ? tBilingual(currentUser.profile.full_name, currentUser.profile.full_name_bn || currentUser.profile.full_name)
     : 'Team Member'
 
-  const activeResponsibilities = userCtx.responsibilities && userCtx.responsibilities.length > 0
-    ? userCtx.responsibilities
-    : [userCtx.primaryRole || currentRole || 'general_staff']
-
   const convertedTasks: ProductionTaskRecord[] = useMemo(() => {
     return (productionJobs || []).map((job) => ({
       id: job.id,
@@ -738,11 +736,61 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
     )
   }
 
-  // 2. Role-Specific Operational Dashboard Dispatch for Specialized Staff
-  if (!isOwner) {
-    if (isBranchManager) {
+  // 2. Role-Specific Operational Dashboard Dispatch for Staff
+  const availableWorkspaces = useMemo(() => {
+    const list: { id: string; label: string; labelBn: string; icon: string }[] = []
+    if (isBranchManager) list.push({ id: 'branch_manager', label: 'Branch Management', labelBn: 'ব্রাঞ্চ ড্যাশবোর্ড', icon: '🏢' })
+    if (isSales) list.push({ id: 'sales', label: 'Sales & Orders', labelBn: 'সেলস ও অর্ডার', icon: '💼' })
+    if (isDesigner) list.push({ id: 'designer', label: 'Design Workbench', labelBn: 'ডিজাইন প্যানেল', icon: '🎨' })
+    if (isOperator) list.push({ id: 'operator', label: 'Shop Floor Terminal', labelBn: 'অপারেটর টার্মিনাল', icon: '⚙️' })
+    if (isDelivery) list.push({ id: 'delivery', label: 'Delivery & Challans', labelBn: 'ডেলিভারি ও চালান', icon: '🚚' })
+    if (isStore) list.push({ id: 'store', label: 'Inventory & Store', labelBn: 'স্টোর ও কাঁচামাল', icon: '📦' })
+    return list
+  }, [isBranchManager, isSales, isDesigner, isOperator, isDelivery, isStore])
+
+  const activeWorkspaceId = selectedRoleWorkspace || availableWorkspaces[0]?.id
+
+  if (!isOwner && availableWorkspaces.length > 0 && activeWorkspaceId) {
+    const renderWorkspaceSwitcher = () => {
+      if (availableWorkspaces.length <= 1) return null
+      return (
+        <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold text-xs gap-1.5 border-blue-200 py-1">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600 animate-pulse" />
+              {tBilingual('Multi-Responsibility Workspace', 'বহুমুখী দায়িত্ব কর্মক্ষেত্র')}
+            </Badge>
+            <span className="text-xs text-slate-500 hidden md:inline">
+              {tBilingual('Switch active role view:', 'বর্তমান প্যানেল পরিবর্তন করুন:')}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {availableWorkspaces.map((ws) => (
+              <Button
+                key={ws.id}
+                size="sm"
+                variant={activeWorkspaceId === ws.id ? 'default' : 'outline'}
+                className={cn(
+                  'h-8 text-xs font-semibold gap-1.5 transition-all cursor-pointer',
+                  activeWorkspaceId === ws.id
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-xs'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
+                )}
+                onClick={() => setSelectedRoleWorkspace(ws.id)}
+              >
+                <span>{ws.icon}</span>
+                <span>{tBilingual(ws.label, ws.labelBn)}</span>
+              </Button>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    if (activeWorkspaceId === 'branch_manager') {
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <BranchManagerDashboard
             branch={currentBranch}
             orders={orders}
@@ -778,9 +826,10 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       )
     }
 
-    if (isOperator) {
+    if (activeWorkspaceId === 'operator') {
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <OperatorDashboard tasks={convertedTasks} onRefresh={orderHelpers.reload} />
           {activeModal === 'new_work' && (
             <NewWorkWizard
@@ -797,17 +846,19 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       )
     }
 
-    if (isDesigner) {
+    if (activeWorkspaceId === 'designer') {
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <DesignerDashboard tasks={convertedTasks} onRefresh={orderHelpers.reload} />
         </div>
       )
     }
 
-    if (isSales) {
+    if (activeWorkspaceId === 'sales') {
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <SalesDashboard
             metrics={{
               pendingQuotations: (quotations || []).filter((q) => q.status === 'draft' || q.status === 'sent').length,
@@ -846,9 +897,10 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       )
     }
 
-    if (isDelivery) {
+    if (activeWorkspaceId === 'delivery') {
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <DeliveryDashboard
             metrics={{
               readyForDispatchCount: readyDeliveriesCount,
@@ -862,10 +914,11 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
       )
     }
 
-    if (isStore) {
+    if (activeWorkspaceId === 'store') {
       const lowStock = (materials || []).filter((m) => (m.current_stock || 0) <= (m.min_stock_level || 10)).length
       return (
         <div className="space-y-6">
+          {renderWorkspaceSwitcher()}
           <StoreDashboard
             metrics={{
               lowStockCount: lowStock,

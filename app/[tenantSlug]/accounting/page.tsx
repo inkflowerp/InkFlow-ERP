@@ -51,6 +51,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import { formatBDT } from '@/lib/formatters'
 import { useDataStore } from '@/hooks/use-data-store'
 import { STORAGE_KEYS } from '@/lib/db/data-store'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import type { CustomerRecord, SupplierRecord } from '@/types/crm.types'
 import type {
   AccountRecord,
@@ -481,7 +482,13 @@ export default function AccountingPage() {
   }
 
   return (
-    <div className="space-y-6 pb-20">
+    <PanelAccessGuard
+      module="payments"
+      action="view"
+      panelTitle="Finance & Accounts"
+      panelTitleBn="হিসাব ও ক্যাশবুক"
+    >
+      <div className="space-y-6 pb-20">
       {/* Toast Notification */}
       {notification && (
         <div className="fixed top-20 right-6 z-50 p-4 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl border border-slate-700 flex items-center gap-2">
@@ -1175,5 +1182,6 @@ export default function AccountingPage() {
         />
       )}
     </div>
+    </PanelAccessGuard>
   )
 }

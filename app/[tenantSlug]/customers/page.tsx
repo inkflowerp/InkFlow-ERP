@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge'
 import { NewCustomerModal } from '@/components/shared/new-customer-modal'
 import { PaginationControls } from '@/components/shared/pagination-controls'
 import { PageHeader } from '@/components/shared/page-header'
+import { PanelAccessGuard } from '@/components/shared/panel-access-guard'
 import { NewInvoiceModal } from '@/components/billing/new-invoice-modal'
 import { RecordPaymentModal } from '@/components/billing/record-payment-modal'
 import {
@@ -731,7 +732,13 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl pb-16">
+    <PanelAccessGuard
+      module="customers"
+      action="view"
+      panelTitle="Customers & CRM"
+      panelTitleBn="কাস্টমার ও হিসাব"
+    >
+      <div className="space-y-6 max-w-7xl pb-16">
       {/* Page Header */}
       <PageHeader
         titleEn="Customers & Accounts Directory"
@@ -1445,5 +1452,6 @@ export default function CustomersPage() {
         onConfirm={confirmTrashCustomer}
       />
     </div>
+    </PanelAccessGuard>
   )
 }
