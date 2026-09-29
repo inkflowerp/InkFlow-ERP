@@ -1,6 +1,7 @@
 export type PrimaryRole =
   | 'platform_owner'
   | 'business_owner'
+  | 'branch_manager'
   | 'sales_manager'
   | 'designer'
   | 'production_manager'
@@ -9,6 +10,7 @@ export type PrimaryRole =
 
 export type ResponsibilitySlug =
   | 'business_owner'
+  | 'branch_manager'
   | 'sales_manager'
   | 'designer'
   | 'production_manager'

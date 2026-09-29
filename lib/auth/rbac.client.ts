@@ -64,6 +64,29 @@ export function normalizeModuleKey(raw: string): PermissionModule {
 export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<PermissionModule, Partial<Record<PermissionAction, boolean>>>> = {
   business_owner: generateFullModuleMatrix(true),
 
+  branch_manager: {
+    customers: { view: true, create: true, edit: true, export: true },
+    quotations: { view: true, create: true, edit: true, send: true, print: true },
+    orders: { view: true, create: true, edit: true, assign: true, complete: true, print: true },
+    design: { view: true, send: true, download: true },
+    invoices: { view: true, create: true, edit: true, print: true, download: true, send: true },
+    payments: { view: true, create: true, edit: true, print: true },
+    production: { view: true, edit: true, complete: true },
+    machineries: { view: true },
+    delivery: { view: true, create: true, edit: true, assign: true, complete: true, print: true },
+    inventory: { view: true, create: true, edit: true },
+    reports: { view: true, export: true },
+    settings: {},
+    branches: { view: true },
+    tasks: { view: true, create: true, edit: true, complete: true },
+    notifications: { view: true },
+    support: { view: true, create: true, send: true },
+    products: { view: true },
+    pricing: { view: true },
+    users: { view: true },
+    hr: { view: true, create: true, edit: true },
+  },
+
   sales_manager: {
     customers: { view: true, create: true, edit: true, export: true },
     quotations: { view: true, create: true, edit: true, approve: true, send: true, print: true },
@@ -252,6 +275,7 @@ export const DEFAULT_RESPONSIBILITY_MATRICES: Record<ResponsibilitySlug, Record<
 export const DEFAULT_ROLE_MATRICES: Record<PrimaryRole, RolePermissionMatrix> = {
   platform_owner: generateLegacyMatrix(true),
   business_owner: generateLegacyMatrix(true),
+  branch_manager: adaptToLegacyMatrix(DEFAULT_RESPONSIBILITY_MATRICES.branch_manager),
   sales_manager: adaptToLegacyMatrix(DEFAULT_RESPONSIBILITY_MATRICES.sales_manager),
   designer: adaptToLegacyMatrix(DEFAULT_RESPONSIBILITY_MATRICES.designer),
   production_manager: adaptToLegacyMatrix(DEFAULT_RESPONSIBILITY_MATRICES.production_manager),
@@ -379,6 +403,10 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
     owner: 'business_owner',
     business_owner: 'business_owner',
     admin: 'business_owner',
+    branch_manager: 'branch_manager',
+    branch_incharge: 'branch_manager',
+    outlet_manager: 'branch_manager',
+    showroom_manager: 'branch_manager',
     manager: 'sales_manager',
     sales: 'sales_manager',
     sales_manager: 'sales_manager',
@@ -401,7 +429,10 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
   const s = (slug || '').toLowerCase().trim()
   if (map[s]) return map[s]
 
-  // Substring pattern matching for descriptive titles (e.g. "Senior Graphic Designer & Prepress")
+  // Substring pattern matching for descriptive titles (e.g. "Senior Graphic Designer & Prepress", "Branch Manager")
+  if (s.includes('branch') || s.includes('outlet') || s.includes('showroom')) {
+    return 'branch_manager'
+  }
   if (s.includes('design') || s.includes('graphic') || s.includes('prepress') || s.includes('pre-press') || s.includes('artwork')) {
     return 'designer'
   }
@@ -434,9 +465,10 @@ export function normalizeResponsibilitySlug(slug: string): ResponsibilitySlug {
  * Normalizes an employee job title or portal role to the canonical portal role dropdown slug:
  * 'designer' | 'operator' | 'sales' | 'accounts' | 'manager' | 'general_staff'
  */
-export function normalizePortalRole(rawRole?: string | null): 'designer' | 'operator' | 'sales' | 'accounts' | 'manager' | 'general_staff' {
+export function normalizePortalRole(rawRole?: string | null): 'branch_manager' | 'designer' | 'operator' | 'sales' | 'accounts' | 'manager' | 'general_staff' {
   if (!rawRole) return 'operator'
   const resp = normalizeResponsibilitySlug(rawRole)
+  if (resp === 'branch_manager') return 'branch_manager'
   if (resp === 'designer') return 'designer'
   if (resp === 'sales_manager') return 'sales'
   if (resp === 'accountant') return 'accounts'
@@ -609,8 +641,11 @@ export function getEffectiveDataScope(
 
   if (isOwner) return 'company'
 
-  // 3. Manager / Accountant have company scope default
+  // 3. Manager / Accountant have company scope default; Branch Manager strictly scopes to their assigned branch
   const responsibilities = extractResponsibilities(user)
+  if (responsibilities.includes('branch_manager') || user.primaryRole === 'branch_manager' || (user as any).role === 'branch_manager') {
+    return 'branch'
+  }
   if (responsibilities.includes('sales_manager') || responsibilities.includes('accountant')) {
     return 'company'
   }

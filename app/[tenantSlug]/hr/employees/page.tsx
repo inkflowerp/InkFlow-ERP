@@ -117,6 +117,20 @@ import { usePermissions } from '@/hooks/use-permissions'
 
 const ROLE_PRESETS = [
   {
+    title: 'Branch / Outlet Manager',
+    title_bn: 'ব্রাঞ্চ ও আউটলেট ম্যানেজার',
+    role: 'Branch Manager & Outlet In-Charge',
+    department: 'management',
+    employee_type: 'permanent' as EmploymentType,
+    salary_basis: 'monthly' as SalaryBasis,
+    base_salary: 40000,
+    hourly_rate: 192,
+    overtime_hourly_rate: 300,
+    daily_rate: 1400,
+    icon: '🏢',
+    color: 'border-emerald-600/30 bg-emerald-600/5 hover:border-emerald-600/60 text-emerald-700 dark:text-emerald-400',
+  },
+  {
     title: 'Master Offset Printer',
     title_bn: 'মাস্টার অফসেট প্রিন্টার',
     role: 'Master Offset Machine Operator',
@@ -3264,11 +3278,12 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           }
                           className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                         >
+                          <option value="branch_manager">{tBilingual('Branch Manager / Outlet In-Charge', 'ব্রাঞ্চ ম্যানেজার ও আউটলেট ইন-চার্জ')}</option>
                           <option value="designer">{tBilingual('Graphic Designer & Prepress', 'গ্রাফিক ডিজাইনার ও প্রিপ্রেস')}</option>
                           <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর ও টেকনিশিয়ান')}</option>
                           <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
                           <option value="accounts">{tBilingual('Accountant / Billing', 'হিসাবরক্ষক ও বিলিং')}</option>
-                          <option value="manager">{tBilingual('Branch / Production Manager', 'ব্রাঞ্চ ও কারখানা ম্যানেজার')}</option>
+                          <option value="manager">{tBilingual('Production Manager / Factory Head', 'কারখানা ও প্রডাকশন ম্যানেজার')}</option>
                           <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                         </select>
                       </div>
@@ -4777,7 +4792,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                           </span>
                           <div className="mt-1">
                             <Badge variant="outline" className="capitalize bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-300 font-bold text-xs">
-                              {normalizePortalRole(selectedEmployee.portal_credentials.role) === 'designer' ? 'Graphic Designer & Prepress' : selectedEmployee.portal_credentials.role || 'Operator'}
+                              {normalizePortalRole(selectedEmployee.portal_credentials.role) === 'branch_manager'
+                                ? 'Branch Manager & Outlet In-Charge'
+                                : normalizePortalRole(selectedEmployee.portal_credentials.role) === 'designer'
+                                ? 'Graphic Designer & Prepress'
+                                : selectedEmployee.portal_credentials.role || 'Operator'}
                             </Badge>
                           </div>
                         </div>
@@ -5021,11 +5040,12 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                             onChange={(e) => setCredsForm({ ...credsForm, role: e.target.value })}
                             className="w-full h-9 text-xs px-3 rounded-md border border-input bg-background text-foreground"
                           >
+                            <option value="branch_manager">{tBilingual('Branch Manager / Outlet In-Charge', 'ব্রাঞ্চ ম্যানেজার ও আউটলেট ইন-চার্জ')}</option>
                             <option value="designer">{tBilingual('Graphic Designer & Prepress', 'গ্রাফিক ডিজাইনার ও প্রিপ্রেস')}</option>
                             <option value="operator">{tBilingual('Operator / Technician', 'ফ্লোর অপারেটর ও টেকনিশিয়ান')}</option>
                             <option value="sales">{tBilingual('Sales Executive', 'সেলস এক্সিকিউটিভ')}</option>
                             <option value="accounts">{tBilingual('Accountant / Billing', 'হিসাবরক্ষক ও বিলিং')}</option>
-                            <option value="manager">{tBilingual('Branch / Production Manager', 'ব্রাঞ্চ ও কারখানা ম্যানেজার')}</option>
+                            <option value="manager">{tBilingual('Production Manager / Factory Head', 'কারখানা ও প্রডাকশন ম্যানেজার')}</option>
                             <option value="general_staff">{tBilingual('General Staff', 'সাধারণ কর্মী')}</option>
                           </select>
                         </div>

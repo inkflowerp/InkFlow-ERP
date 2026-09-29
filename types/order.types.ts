@@ -102,6 +102,7 @@ export interface OrderTimelineEventRecord {
 export interface SalesOrderRecord {
   id: string
   company_id: string
+  branch_id?: string | null
   order_number: string
   quotation_id?: string | null
   quotation_number?: string | null

@@ -63,6 +63,7 @@ export interface PlatformSessionData {
 
 export type TenantRole =
   | 'business_owner'
+  | 'branch_manager'
   | 'sales_manager'
   | 'graphic_designer'
   | 'production_manager'
@@ -86,6 +87,9 @@ export function resolveTenantRole(
   if (raw === 'business_owner' || raw === 'platform_owner' || raw === 'owner') {
     return 'business_owner'
   }
+  if (raw === 'branch_manager' || raw.includes('branch') || raw.includes('outlet') || raw.includes('showroom')) {
+    return 'branch_manager'
+  }
   if (raw === 'sales_manager' || raw === 'sales' || raw === 'sales_executive' || raw === 'manager') {
     return 'sales_manager'
   }
@@ -95,6 +99,7 @@ export function resolveTenantRole(
     raw.includes('design') ||
     raw.includes('graphic') ||
     raw.includes('prepress') ||
+    raw.includes('pre-press') ||
     raw.includes('artwork')
   ) {
     return 'graphic_designer'
@@ -115,7 +120,7 @@ export function resolveTenantRole(
 }
 
 /**
- * Maps a TenantSessionData or raw role string to a client UI TenantRole ('owner', 'manager', 'designer', 'operator', 'accountant', 'installer').
+ * Maps a TenantSessionData or raw role string to a client UI TenantRole ('owner', 'branch_manager', 'manager', 'designer', 'operator', 'accountant', 'installer').
  */
 export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string | null): any {
   if (!sessionOrRole) return 'owner'
@@ -126,6 +131,14 @@ export function mapSessionToTenantRole(sessionOrRole: TenantSessionData | string
   ).toLowerCase().trim()
 
   if (rawRole === 'business_owner' || rawRole === 'owner' || rawRole === 'platform_owner' || rawRole.includes('owner') || rawRole.includes('admin')) return 'owner'
+  if (
+    rawRole === 'branch_manager' ||
+    rawRole.includes('branch') ||
+    rawRole.includes('outlet') ||
+    rawRole.includes('showroom')
+  ) {
+    return 'branch_manager'
+  }
   if (
     rawRole === 'graphic_designer' ||
     rawRole === 'designer' ||

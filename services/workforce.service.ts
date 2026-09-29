@@ -320,13 +320,24 @@ export class WorkforceService {
         billing: 'accountant',
         manager: 'production_manager',
         production_manager: 'production_manager',
-        branch_manager: 'production_manager',
+        branch_manager: 'branch_manager',
+        branch: 'branch_manager',
         staff: 'general_staff',
       }
       const mappedSlug = mapping[norm] || mapping[rawNorm]
       if (mappedSlug) {
         const matched = roles.find((r) => r.slug?.toLowerCase() === mappedSlug)
         if (matched) return matched.id
+      }
+
+      // Check if any role slug or name includes 'branch' if norm is branch_manager
+      if (norm === 'branch_manager') {
+        const branchRole = roles.find((r) =>
+          r.slug?.toLowerCase().includes('branch') ||
+          r.name?.toLowerCase().includes('branch') ||
+          r.name?.toLowerCase().includes('outlet')
+        )
+        if (branchRole) return branchRole.id
       }
 
       // Check if any role slug or name includes 'designer' or 'design' if norm is designer
@@ -406,7 +417,9 @@ export class WorkforceService {
     const rawAssigned = portalCreds.role || employee.role || 'operator'
     const normalizedRole = normalizePortalRole(rawAssigned)
     const canonicalResp =
-      normalizedRole === 'sales'
+      normalizedRole === 'branch_manager'
+        ? 'branch_manager'
+        : normalizedRole === 'sales'
         ? 'sales_manager'
         : normalizedRole === 'accounts'
         ? 'accountant'
@@ -613,7 +626,9 @@ export class WorkforceService {
         if (!('error' in rec)) {
           inviteUrl = `${resolvedBaseUrl}/verify?token=${rec.token}&email=${encodeURIComponent(email)}&purpose=registration`
           const roleDisplayName =
-            normalizedRole === 'designer'
+            normalizedRole === 'branch_manager'
+              ? 'Branch Manager & Outlet In-Charge'
+              : normalizedRole === 'designer'
               ? 'Graphic Designer & Prepress'
               : normalizedRole === 'sales'
               ? 'Sales Executive'

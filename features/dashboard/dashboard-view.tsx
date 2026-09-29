@@ -75,6 +75,7 @@ import { DesignerDashboard } from '@/components/dashboard/roles/designer-dashboa
 import { OperatorDashboard } from '@/components/dashboard/roles/operator-dashboard'
 import { StoreDashboard } from '@/components/dashboard/roles/store-dashboard'
 import { DeliveryDashboard } from '@/components/dashboard/roles/delivery-dashboard'
+import { BranchManagerDashboard } from '@/components/dashboard/roles/branch-manager-dashboard'
 import { NewWorkWizard } from '@/components/orders/new-work-wizard'
 import { TodaysWorkFeed } from '@/components/dashboard/todays-work-feed'
 import { PrintERPDataStore, STORAGE_KEYS } from '@/lib/db/data-store'
@@ -145,11 +146,11 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
   const router = useRouter()
   const pathname = usePathname()
   const { company, currentUser, currentRole, currentBranch } = useTenant()
-  const { userCtx, can, isOwner, isSales, isDesigner, isOperator, isAccountant, isDelivery, activeRole } = usePermissions()
+  const { userCtx, can, isOwner, isBranchManager, isSales, isDesigner, isOperator, isAccountant, isDelivery, activeRole } = usePermissions()
   const { locale, tBilingual } = useI18n()
 
   const slug = company?.slug || tenantSlug || 'my-company'
-  const canSeeFinancials = isOwner || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
+  const canSeeFinancials = isOwner || isBranchManager || isSales || isAccountant || can('view', 'invoices') || can('view', 'reports')
   const isStore = (userCtx.responsibilities as string[] || []).includes('store_manager') || (currentUser?.roles?.[0]?.slug as string) === 'store_keeper' || can('manage', 'inventory')
 
 
@@ -739,6 +740,44 @@ export function DashboardView({ initialSnapshot = null, tenantSlug }: DashboardV
 
   // 2. Role-Specific Operational Dashboard Dispatch for Specialized Staff
   if (!isOwner) {
+    if (isBranchManager) {
+      return (
+        <div className="space-y-6">
+          <BranchManagerDashboard
+            branch={currentBranch}
+            orders={orders}
+            invoices={invoices}
+            payments={payments}
+            tasks={convertedTasks}
+            onOpenNewWork={() => setActiveModal('new_work')}
+            onOpenPaymentModal={() => setActiveModal('record_payment')}
+            onRefresh={orderHelpers.reload}
+          />
+          {activeModal === 'new_work' && (
+            <NewWorkWizard
+              isOpen={true}
+              isInlineModal={true}
+              onClose={() => setActiveModal(null)}
+              onSuccess={() => {
+                setActiveModal(null)
+                orderHelpers.reload()
+              }}
+            />
+          )}
+          {activeModal === 'record_payment' && (
+            <RecordPaymentModal
+              open={true}
+              onOpenChange={(open) => !open && setActiveModal(null)}
+              onPaymentRecorded={() => {
+                setActiveModal(null)
+                orderHelpers.reload()
+              }}
+            />
+          )}
+        </div>
+      )
+    }
+
     if (isOperator) {
       return (
         <div className="space-y-6">

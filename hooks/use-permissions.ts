@@ -33,6 +33,9 @@ export function usePermissions() {
     ).toLowerCase().trim()
 
     if (raw === 'business_owner' || raw === 'owner' || raw === 'platform_owner' || raw === 'admin') return 'business_owner'
+    if (raw === 'branch_manager' || raw.includes('branch') || raw.includes('outlet') || raw.includes('showroom')) {
+      return 'branch_manager'
+    }
     if (
       raw === 'designer' ||
       raw === 'graphic_designer' ||
@@ -58,6 +61,7 @@ export function usePermissions() {
     const isExplicitStaff = Boolean(
       activeRole === 'operator' ||
         activeRole === 'designer' ||
+        activeRole === 'branch_manager' ||
         activeRole === 'sales_manager' ||
         activeRole === 'production_manager' ||
         activeRole === 'general_staff' ||
@@ -258,8 +262,24 @@ export function usePermissions() {
       })
     )
 
-  const isSales =
+  const isBranchManager =
     !userCtx.isOwner && (
+      activeRole === 'branch_manager' ||
+      (activeRole as any) === 'branch' ||
+      (currentRole as any) === 'branch_manager' ||
+      respList.some((r) => {
+        const s = String(r).toLowerCase()
+        return s === 'branch_manager' || s.includes('branch') || s.includes('outlet') || s.includes('showroom')
+      }) ||
+      userRoleSlugs.some((r) => {
+        const s = String(r).toLowerCase()
+        return s === 'branch_manager' || s.includes('branch') || s.includes('outlet') || s.includes('showroom')
+      })
+    )
+
+  const isSales =
+    !userCtx.isOwner &&
+    !isBranchManager && (
       activeRole === 'sales_manager' ||
       (activeRole as any) === 'sales' ||
       (activeRole as any) === 'sales_executive' ||
@@ -322,6 +342,7 @@ export function usePermissions() {
     hasPermission,
     hasRole,
     isOwner: userCtx.isOwner,
+    isBranchManager,
     isSales,
     isDesigner,
     isProduction,
