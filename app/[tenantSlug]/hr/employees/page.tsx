@@ -77,6 +77,7 @@ import {
   AlertOctagon,
   UserPlus,
   Image as ImageIcon,
+  MoreVertical,
 } from 'lucide-react'
 import { useTenant } from '@/hooks/use-tenant'
 import { useI18n } from '@/i18n/context'
@@ -89,6 +90,7 @@ import { ModalDialog } from '@/components/shared/modal-dialog'
 import { PageHeader } from '@/components/shared/page-header'
 import { CurrencyDisplay } from '@/components/shared/currency-display'
 import { formatBDT, formatDate } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 import type { BranchRow } from '@/types/tenant.types'
 import { listBranchesAction } from '@/actions/branch.actions'
 import type {
@@ -260,6 +262,28 @@ function EmployeeListContent() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [branchFilter, setBranchFilter] = useState('ALL')
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table')
+  const [activeMenuEmployeeId, setActiveMenuEmployeeId] = useState<string | null>(null)
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target?.closest('[data-employee-menu]')) {
+        setActiveMenuEmployeeId(null)
+      }
+    }
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMenuEmployeeId(null)
+      }
+    }
+    document.addEventListener('click', handleDocumentClick)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('click', handleDocumentClick)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
 
   // Modals & Drawers
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
@@ -1371,7 +1395,7 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
               </button>
             )}
           </CardHeader>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto min-h-[380px] pb-16">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-slate-50/80 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 font-bold border-b border-slate-200 dark:border-slate-800 text-2xs uppercase tracking-wider">
@@ -1382,11 +1406,11 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                   <th className="p-3.5">{tBilingual('Salary / Rate', 'মূল বেতন / দৈনিক রেট')}</th>
                   <th className="p-3.5">{tBilingual('Advance Bal.', 'অগ্রিম স্থিতি')}</th>
                   <th className="p-3.5">{tBilingual('Status', 'স্ট্যাটাস')}</th>
-                  <th className="p-3.5 pr-4 text-right">{tBilingual('Actions', 'পদক্ষেপ')}</th>
+                  <th className="p-3.5 pr-4 text-center w-[70px] min-w-[70px]">{tBilingual('Actions', 'পদক্ষেপ')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                {filteredEmployees.map((emp) => (
+                {filteredEmployees.map((emp, idx) => (
                   <tr key={emp.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-900/40 transition-colors group">
                     <td className="p-3.5 pl-4">
                       <div className="flex items-center gap-3">
@@ -1496,47 +1520,101 @@ InkFlow PrintERP পোর্টালে আপনার কর্মচার�
                       </Badge>
                     </td>
 
-                    <td className="p-3.5 pr-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
+                    <td className="p-3.5 pr-4 text-center whitespace-nowrap w-[70px] min-w-[70px]">
+                      <div className="relative inline-block text-left" data-employee-menu>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/50"
-                          onClick={() => handleOpen360(emp, 'notes', !emp.portal_credentials?.create_login)}
-                          title="Manage Credentials & Portal Access"
-                        >
-                          <Key className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0 text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/40"
-                          onClick={() => handleOpen360(emp, 'overview')}
-                          title="View 360° Profile"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-950/40"
-                          onClick={() => handleOpenEdit(emp)}
-                          title="Edit Employee"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 w-7 p-0 text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40"
-                          onClick={() => {
-                            setSelectedEmployee(emp)
-                            setIsDeleteModalOpen(true)
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setActiveMenuEmployeeId(activeMenuEmployeeId === emp.id ? null : emp.id)
                           }}
-                          title="Delete Employee"
+                          className={cn(
+                            'h-7 w-7 p-0 rounded-lg transition-colors cursor-pointer flex items-center justify-center mx-auto',
+                            activeMenuEmployeeId === emp.id
+                              ? 'bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white'
+                              : 'text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                          )}
+                          title={tBilingual('Actions', 'অ্যাকশন')}
+                          aria-label="Employee Actions"
+                          aria-expanded={activeMenuEmployeeId === emp.id}
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <MoreVertical className="h-4 w-4" />
                         </Button>
+
+                        {activeMenuEmployeeId === emp.id && (
+                          <div
+                            className={cn(
+                              'absolute right-0 w-52 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-50 py-1.5 text-xs animate-in fade-in-0 zoom-in-95 duration-100 text-left',
+                              idx >= filteredEmployees.length - 2 && filteredEmployees.length >= 3
+                                ? 'bottom-full mb-1'
+                                : 'top-full mt-1'
+                            )}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuEmployeeId(null)
+                                handleOpen360(emp, 'overview')
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+                              <span className="font-medium">{tBilingual('360° Profile & Records', '৩৬০° প্রোফাইল ও রেকর্ড')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuEmployeeId(null)
+                                handleOpenEdit(emp)
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                            >
+                              <Edit2 className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                              <span>{tBilingual('Edit Employee Info', 'কর্মী সম্পাদনা')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuEmployeeId(null)
+                                handleOpen360(emp, 'notes', !emp.portal_credentials?.create_login)
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                            >
+                              <Key className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                              <span>{tBilingual('Portal & Credentials', 'পোর্টাল ও লগইন')}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuEmployeeId(null)
+                                handleOpen360(emp, 'idcard')
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2.5 text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                            >
+                              <QrCode className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                              <span>{tBilingual('Print ID Card', 'আইডি কার্ড প্রিন্ট')}</span>
+                            </button>
+
+                            <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setActiveMenuEmployeeId(null)
+                                setSelectedEmployee(emp)
+                                setIsDeleteModalOpen(true)
+                              }}
+                              className="w-full text-left px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 flex items-center gap-2.5 text-rose-600 dark:text-rose-400 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                              <span>{tBilingual('Delete Employee', 'কর্মী মুছে ফেলুন')}</span>
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
